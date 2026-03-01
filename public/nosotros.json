@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "titulo": "Nosotros",
+    "path": "/nosotros",
+    "subitems": [
+      { "id": 1, "titulo": "Misión / Visión", "path": "/nosotros/mision-vision" },
+      { "id": 2, "titulo": "Personal",        "path": "/nosotros/personal" },
+      { "id": 3, "titulo": "Contacto",        "path": "/nosotros/contacto" }
+    ]
+  }
+]

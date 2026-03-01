@@ -1,0 +1,57 @@
+// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = { 
+  // ✅ Ignora errores de ESLint y Typescript en build (como tenías)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
+  // ✅ Configuración del optimizador de imágenes de Next //esto es nuevo
+  images: {
+    // Entrega las imágenes optimizadas como "inline" (no descarga el archivo)
+    // contentDispositionType: 'inline',
+
+    // Intenta servir en AVIF/WebP cuando sea posible
+    //formats: ['image/avif', 'image/webp'],
+
+    // Fuentes remotas permitidas
+    remotePatterns: [
+      // Strapi local (desarrollo)
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '1337',
+        pathname: '/uploads/**',
+      },
+      // Producción en dominio principal
+      {
+        protocol: 'https',
+        hostname: 'cetprosmp.edu.pe',
+        pathname: '/uploads/**',
+      },
+      // Producción en subdominio admin (Strapi)
+      {
+        protocol: 'https',
+        hostname: 'admin.cetprosmp.edu.pe',
+        pathname: '/uploads/**',
+      },
+      // Thumbnails de YouTube
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        pathname: '/vi/**',
+      },
+      // Servicio de QR
+      {
+        protocol: 'https',
+        hostname: 'api.qrserver.com',
+        pathname: '/v1/create-qr-code/**',
+      },
+    ],
+  },
+};
+
+module.exports = nextConfig;

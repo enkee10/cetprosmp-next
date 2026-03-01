@@ -1,4 +1,4 @@
-// File: D:\_Desarrollo\cetprosmp\mi-frontend\src\app\(aplicacion)\page.tsx
+// File: /home/user/cetprosmp-next/src/app/(aplicacion)/page.tsx
 import * as entry from '../../../../src/app/(aplicacion)/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

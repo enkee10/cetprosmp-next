@@ -1,0 +1,166 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/carreras/[slug]",
+      "regex": "^/carreras/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/carreras/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/especialidades/[slug]",
+      "regex": "^/especialidades/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/especialidades/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/modulos/[slug]",
+      "regex": "^/modulos/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/modulos/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/nosotros/personal/[id]",
+      "regex": "^/nosotros/personal/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/nosotros/personal/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/publicaciones/[slug]",
+      "regex": "^/publicaciones/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/publicaciones/(?<nxtPslug>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/carreras",
+      "regex": "^/carreras(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/carreras(?:/)?$"
+    },
+    {
+      "page": "/especialidades",
+      "regex": "^/especialidades(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/especialidades(?:/)?$"
+    },
+    {
+      "page": "/inscripcion",
+      "regex": "^/inscripcion(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/inscripcion(?:/)?$"
+    },
+    {
+      "page": "/modulos",
+      "regex": "^/modulos(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/modulos(?:/)?$"
+    },
+    {
+      "page": "/nosotros",
+      "regex": "^/nosotros(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/nosotros(?:/)?$"
+    },
+    {
+      "page": "/nosotros/contacto",
+      "regex": "^/nosotros/contacto(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/nosotros/contacto(?:/)?$"
+    },
+    {
+      "page": "/nosotros/mision-vision",
+      "regex": "^/nosotros/mision\\-vision(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/nosotros/mision\\-vision(?:/)?$"
+    },
+    {
+      "page": "/nosotros/personal",
+      "regex": "^/nosotros/personal(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/nosotros/personal(?:/)?$"
+    },
+    {
+      "page": "/publicaciones",
+      "regex": "^/publicaciones(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publicaciones(?:/)?$"
+    },
+    {
+      "page": "/publicaciones/comunicados",
+      "regex": "^/publicaciones/comunicados(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publicaciones/comunicados(?:/)?$"
+    },
+    {
+      "page": "/publicaciones/eventos",
+      "regex": "^/publicaciones/eventos(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publicaciones/eventos(?:/)?$"
+    },
+    {
+      "page": "/publicaciones/noticias",
+      "regex": "^/publicaciones/noticias(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publicaciones/noticias(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

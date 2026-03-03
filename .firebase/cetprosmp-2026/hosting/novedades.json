@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "titulo": "Publicaciones",
+    "path": "/publicaciones",
+    "subitems": [
+      { "id": 1, "titulo": "Noticias",   "path": "/publicaciones/noticias" },
+      { "id": 2, "titulo": "Eventos",    "path": "/publicaciones/eventos" },
+      { "id": 3, "titulo": "Comunicados","path": "/publicaciones/comunicados" }
+    ]
+  }
+]

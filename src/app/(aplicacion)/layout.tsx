@@ -5,6 +5,7 @@ import ClientProviders from '@/components/ClientProviders';
 import { Box } from '@mui/material';
 import metadata from './metadata'; // importamos directamente el objeto completo
 import Footer from '@/components/Footer/Footer';
+import { AuthProvider } from '../../context/AuthContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -15,20 +16,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <body className={inter.className}>
-        <ClientProviders>
-          <Box className="layout">
-            <Box component="header">
-              <Header />
+        <AuthProvider>
+          <ClientProviders>
+            <Box className="layout">
+              <Box component="header">
+                <Header />
+              </Box>
+              <Box
+                component="main"
+                sx={{ mt: { xs: '48px', md: '64px' }, maxWidth: '1000px', mx: 'auto'}}
+              >
+                {children}
+              </Box>
+              <Footer/>
             </Box>
-            <Box
-              component="main"
-              sx={{ mt: { xs: '48px', md: '64px' }, maxWidth: '1000px', mx: 'auto'}}
-            >
-              {children}
-            </Box>
-            <Footer/>
-          </Box>
-        </ClientProviders>
+          </ClientProviders>
+        </AuthProvider>
       </body>
     </html>
   );

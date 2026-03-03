@@ -7,7 +7,7 @@ import CarrerasMenuWrapper from "./CarrerasMenuWrapper4";
 import NovedadesMenuWrapper from "./NovedadesMenuWrapper";
 import MatriculaMenuWrapper from "./MatriculaMenuWrapper";
 import IntranetMenuWrapper from "./IntranetMenuWrapper";
-import { useUser } from "@/context/UserContext"; // asegúrate que esta ruta es correcta
+import { useAuth } from "@/context/AuthContext"; // asegúrate que esta ruta es correcta
 
 const MenuBox = styled(Box)(({ theme }) => ({
   flexGrow: 1,
@@ -44,7 +44,7 @@ const MenuBox = styled(Box)(({ theme }) => ({
 }));
 
 export default function MenuPrincipal() {
-  const { user } = useUser();
+  const { user } = useAuth();
 
   return (
     <MenuBox>

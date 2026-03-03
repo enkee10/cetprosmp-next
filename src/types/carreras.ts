@@ -7,18 +7,6 @@ export interface Carrera {
     slug: string; // Slug amigable para la URL
     codigo: string;
     duracion: number;
-    descripcion2?: {
-        type: string;
-        children: { text: string }[];
-    }[];
     imagen: string | null;
-    imagenes?: {
-        url: string;
-        alternativeText?: string;
-        caption?: string;
-        width?: number;
-        height?: number;
-        mime?: string;
-    }[];
     modulos?: Modulo[]; // ✅ Agregado
 }

@@ -1,0 +1,609 @@
+[
+  {
+    "id": 1,
+    "tituloComercial": "Peluquería y Barberia",
+    "slug": "peluqueria-barberia",
+    "codigo": "S3496-1-001",
+    "modulos": [
+      {
+        "id": 1,
+        "titulo": "Corte De Cabello, Barba y Peinado",
+        "tituloComercial": "Corte De Cabello, Barba y Peinado",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 20,
+        "metas": 15,
+        "slug": "corte-barba-peinado",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": [
+          {
+            "url": "https://www.youtube.com/watch?v=_6oKX-ZCP_8"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=IyKoAaLrTzw"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "titulo": "Tratamiento Capilar, Coloración, Ondulación y Laceado ",
+        "tituloComercial": "Tratamiento Capilar, Trituración, Ondulación, Laceado",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 20,
+        "metas": 15,
+        "slug": "capilar-coloracion-ondulacion-laceado",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "tituloComercial": "Electrónica",
+    "slug": "electronica",
+    "codigo": "",
+    "modulos": [
+      {
+        "id": 3,
+        "titulo": "Mantenimiento de Teléfonos Celulares",
+        "tituloComercial": "Reparacion de Celulares",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "reparacion-celulares",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "tituloComercial": "Mantenimiento Básico de Sistemas Eléctricos",
+    "slug": "mantenimiento-electronico",
+    "codigo": "",
+    "modulos": [
+      {
+        "id": 4,
+        "titulo": "Mantenimiento de Instalaciones Eléctricas Domiciliarias ",
+        "tituloComercial": "Instalaciones Eléctricas",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "intalaciones-electricas",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "tituloComercial": "Soporte técnico de computadoras",
+    "slug": "soporte-computadoras",
+    "codigo": "J2662-1-001",
+    "modulos": [
+      {
+        "id": 5,
+        "titulo": "Atención de Incidentes y Problemas de Operatividad en El Centro de Cómputo",
+        "tituloComercial": "Atención De Incidentes y Problemas de Operatividad en El Centro de Cómputo",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 20,
+        "metas": 15,
+        "slug": "incidentes-operatividad-computo",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 6,
+        "titulo": "Monitoreo y Acciones de Mantenimiento de Centros de Cómputo",
+        "tituloComercial": "Monitoreo y Acciones de Mantenimiento de Centros de Cómputo",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 20,
+        "metas": 15,
+        "slug": "monitoreo-mantenimiento-computo",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "tituloComercial": "Operación de Computadoras",
+    "slug": "operaciones-computadoras",
+    "codigo": "",
+    "modulos": [
+      {
+        "id": 7,
+        "titulo": "Ofimática",
+        "tituloComercial": "Ofimática",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "ofimatica",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 8,
+        "titulo": "Diseño Publicitario",
+        "tituloComercial": "Diseño Publicitario",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "disenio-publicitario",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 9,
+        "titulo": "Diseño Web",
+        "tituloComercial": "Diseño Web",
+        "orden": 3,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "disenio-web",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "tituloComercial": "Corte y Ensamblaje",
+    "slug": "corte-ensamblaje",
+    "codigo": "CO714-1-003",
+    "modulos": [
+      {
+        "id": 10,
+        "titulo": "Técnicas de Tizado, Tendido y Corte de Prendas de Vestir",
+        "tituloComercial": "Técnicas de Tizado, Tendido y Corte de Prendas de Vestir",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 560,
+        "creditos": 21,
+        "metas": 15,
+        "slug": "tizado-tendido-corte",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 11,
+        "titulo": "Técnicas de Confección de Prendas de Vestir",
+        "tituloComercial": "Técnicas de Confección de Prendas de Vestir",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 544,
+        "creditos": 19,
+        "metas": 15,
+        "slug": "confeccion-prendas-vestir",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "tituloComercial": "Costura y Acabados",
+    "slug": "costura-acabados",
+    "codigo": "CO714-1-004",
+    "modulos": [
+      {
+        "id": 12,
+        "titulo": "Técnicas de Confección de Prendas de Vestir",
+        "tituloComercial": "Oper. Maquinas, Conf. Prendas Damas, Niños, Deportivas",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 544,
+        "creditos": 21,
+        "metas": 15,
+        "slug": "operatividad-confeccion-damas-ninios-deportiva",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 13,
+        "titulo": "Técnicas de Procesos de Acabados en Prendas de Vestir",
+        "tituloComercial": "Técnicas de Procesos de Acabados en Prendas de Vestir",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 19,
+        "metas": 15,
+        "slug": "tecnicas-acabados-prendas-vestir",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "tituloComercial": "Bordado en prendas de vestir",
+    "slug": "bordados-prendas",
+    "codigo": "C0714-1-002",
+    "modulos": [
+      {
+        "id": 14,
+        "titulo": "Bordados Computarizado",
+        "tituloComercial": "Bordados Computarizado",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 20,
+        "metas": 15,
+        "slug": "bordado-computarizado",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "tituloComercial": "Confección Textil",
+    "slug": "confeccion-textil",
+    "codigo": "",
+    "modulos": [
+      {
+        "id": 15,
+        "titulo": "Tejido a Maquina",
+        "tituloComercial": "Tejido a Maquina",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "tejido-maquina",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 16,
+        "titulo": "Tejido a Mano",
+        "tituloComercial": "Tejido a Mano",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "tejido-mano",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "tituloComercial": "Confección de calzado",
+    "slug": "confeccion-calzado",
+    "codigo": "C0715-1-001",
+    "modulos": [
+      {
+        "id": 19,
+        "titulo": "Diseño y Corte de Calzado",
+        "tituloComercial": "Patronaje y Corte de Calzado",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 20,
+        "metas": 15,
+        "slug": "disenio-corte-calzado",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 20,
+        "titulo": "Aparado, Armado y Acabado de Calzado",
+        "tituloComercial": "Aparado, Armado y Acabado de Calzado",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 20,
+        "metas": 15,
+        "slug": "aparado-armado-acabado-calzado",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "tituloComercial": "Artículos de Cuero y Marroquinería",
+    "slug": "cuero-marroquineria",
+    "codigo": "C0715-1-002",
+    "modulos": [
+      {
+        "id": 17,
+        "titulo": "Diseño y Corte de Articulos de Cuero",
+        "tituloComercial": "Patronaje y Corte de Artículos de Cuero y Marroquinería",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 20,
+        "metas": 15,
+        "slug": "disenio-corte-articulos-cuero",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 18,
+        "titulo": "Ensamblado y Acabado de Artículos de Cuero",
+        "tituloComercial": "Ensamblado y Acabado de Artículos de Cuero",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 20,
+        "metas": 15,
+        "slug": "ensamblado-acabado-articulos-cuero",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "tituloComercial": "Manualidades",
+    "slug": "manualidades",
+    "codigo": "",
+    "modulos": [
+      {
+        "id": 21,
+        "titulo": "Decoración de Eventos Especiales",
+        "tituloComercial": "Decoración de Eventos Especiales",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "decoracion-eventos-especiales",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 22,
+        "titulo": "Bisuterías",
+        "tituloComercial": "Bisutería",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 150,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "bisuteria",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 23,
+        "titulo": "Pintura Decorativa",
+        "tituloComercial": "Pintura Decorativa",
+        "orden": 3,
+        "descripcion2": [],
+        "horas": 150,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "pintura-decorativa",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 24,
+        "titulo": "Cerámica al Frio",
+        "tituloComercial": "Cerámica al Frio",
+        "orden": 4,
+        "descripcion2": [],
+        "horas": 150,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "ceramica-al-frio",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "tituloComercial": "Panadería y Pastelería",
+    "slug": "panaderia-pasteleria",
+    "codigo": "C0610-1-001",
+    "modulos": [
+      {
+        "id": 25,
+        "titulo": "Acondicionamiento y Elaboración de Productos de Panadería y Pastelería",
+        "tituloComercial": "Productos Pastelería y Panadería 1",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 20,
+        "metas": 15,
+        "slug": "acondicionamiento-preparacion-panaderia-pasteleria",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 26,
+        "titulo": "Decoración y Presentación de los Productos de Panadería y Pastelería",
+        "tituloComercial": "Productos Pastelería y Panadería 2",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 528,
+        "creditos": 20,
+        "metas": 15,
+        "slug": "decoracion-presentacion-panaderia-pasteleria",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "tituloComercial": "Asistencia en Pastelería y Panadería",
+    "slug": "asistente-panaderia-pasteleria",
+    "codigo": "",
+    "modulos": [
+      {
+        "id": 27,
+        "titulo": "Técnicas de Decoración de Tortas",
+        "tituloComercial": "Técnicas de Decoración de Tortas",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "decoracion-tortas",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 28,
+        "titulo": "Buffet",
+        "tituloComercial": "Buffet",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "buffet",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 29,
+        "titulo": "Cocina Nacional",
+        "tituloComercial": "Cocina Nacional",
+        "orden": 3,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "cocina-nacional",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 30,
+        "titulo": "Técnicas Culinarias",
+        "tituloComercial": "Técnicas Culinarias",
+        "orden": 4,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "tecnicas-culinarias",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "tituloComercial": "Mantenimiento Básico de Casas y Edificios",
+    "slug": "mantenimiento-casas-edificios",
+    "codigo": "",
+    "modulos": [
+      {
+        "id": 31,
+        "titulo": "Mantenimiento de Carpintería",
+        "tituloComercial": "Carpintería en Madera",
+        "orden": 1,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "carpinteria-madera",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      },
+      {
+        "id": 32,
+        "titulo": "Confección de Muebles en Melamina",
+        "tituloComercial": "Carpintería en Melamina",
+        "orden": 2,
+        "descripcion2": [],
+        "horas": 300,
+        "creditos": 0,
+        "metas": 15,
+        "slug": "carpinteria-melamine",
+        "activo": true,
+        "imagen": null,
+        "imagenes": [],
+        "videosYoutube": []
+      }
+    ]
+  }
+]

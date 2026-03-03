@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { IconButton, Menu, Box, Typography, Avatar } from "@mui/material";
 import { googleApps } from "./data/googleApps";
-import { useUser } from "../../../context/UserContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Apps() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { user } = useUser(); // ← acceso al avatar del usuario
+  const { user } = useAuth(); // ← Updated to useAuth
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -77,10 +77,11 @@ export default function Apps() {
               }}
               onClick={handleClose}
             >
-              {app.name === "Cuenta" && user?.picture ? (
+              {/* Updated user properties */}
+              {app.name === "Cuenta" && user?.photoURL ? (
                 <Avatar
-                  alt={user.name}
-                  src={user.picture}
+                  alt={user.displayName!}
+                  src={user.photoURL}
                   sx={{ width: 40, height: 40, margin: "0 auto" }}
                 />
               ) : (

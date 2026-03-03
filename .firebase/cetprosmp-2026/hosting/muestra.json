@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "titulo": "Noticias",
+    "subitems": [
+      { "id": 1, "titulo": "Estudiantes" },
+      { "id": 2, "titulo": "Institución" }
+    ]
+  },
+  {
+    "id": 2,
+    "titulo": "Eventos",
+    "subitems": [
+      { "id": 3, "titulo": "Comunidad" },
+      { "id": 4, "titulo": "Sociedad" }
+    ]
+  },
+  {
+    "id": 3,
+    "titulo": "Comunicados",
+    "subitems": [
+      { "id": 5, "titulo": "Contratado" },
+      { "id": 6, "titulo": "Nombrado" }
+    ]
+  }
+]

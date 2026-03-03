@@ -1,0 +1,253 @@
+[
+  {
+    "id": 1,
+    "tituloComercial": "Estética Personal",
+    "slug": "estetica-personal",
+    "carreras": [
+      {
+        "id": 1,
+        "titulo": "Peluquería y Barberia",
+        "tituloComercial": "Peluquería y Barberia",
+        "codigo": "S3496-1-001",
+        "descripcion2": [],
+        "duracion": 1056,
+        "creditos": 40,
+        "nivel": "Auxiliar Técnico",
+        "slug": "peluqueria-barberia",
+        "imagen": null,
+        "imagenes": []
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "tituloComercial": "Electricidad y Electrónica",
+    "slug": "electricidad-electronica",
+    "carreras": [
+      {
+        "id": 2,
+        "titulo": "Electrónica",
+        "tituloComercial": "Electrónica",
+        "codigo": "",
+        "descripcion2": [],
+        "duracion": 1000,
+        "creditos": 0,
+        "nivel": "Auxiliar Técnico",
+        "slug": "electronica",
+        "imagen": null,
+        "imagenes": []
+      },
+      {
+        "id": 3,
+        "titulo": "Mantenimiento Básico de Sistemas Eléctricos",
+        "tituloComercial": "Mantenimiento Básico de Sistemas Eléctricos",
+        "codigo": "",
+        "descripcion2": [],
+        "duracion": 1000,
+        "creditos": 0,
+        "nivel": "Auxiliar Técnico",
+        "slug": "mantenimiento-electronico",
+        "imagen": null,
+        "imagenes": []
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "tituloComercial": "Computación",
+    "slug": "computacion",
+    "carreras": [
+      {
+        "id": 4,
+        "titulo": "Soporte técnico y operaciones de centros de cómputo",
+        "tituloComercial": "Soporte técnico de computadoras",
+        "codigo": "J2662-1-001",
+        "descripcion2": [],
+        "duracion": 1056,
+        "creditos": 40,
+        "nivel": "Auxiliar Técnico",
+        "slug": "soporte-computadoras",
+        "imagen": null,
+        "imagenes": []
+      },
+      {
+        "id": 5,
+        "titulo": "Operación de Computadoras",
+        "tituloComercial": "Operación de Computadoras",
+        "codigo": "",
+        "descripcion2": [],
+        "duracion": 1000,
+        "creditos": 0,
+        "nivel": "Auxiliar Técnico",
+        "slug": "operaciones-computadoras",
+        "imagen": null,
+        "imagenes": []
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "tituloComercial": "Confección Textil",
+    "slug": "confeccion-textil",
+    "carreras": [
+      {
+        "id": 6,
+        "titulo": "Corte y Ensamblaje",
+        "tituloComercial": "Corte y Ensamblaje",
+        "codigo": "CO714-1-003",
+        "descripcion2": [],
+        "duracion": 1056,
+        "creditos": 40,
+        "nivel": "Auxiliar Técnico",
+        "slug": "corte-ensamblaje",
+        "imagen": null,
+        "imagenes": []
+      },
+      {
+        "id": 7,
+        "titulo": "Costura y Acabados",
+        "tituloComercial": "Costura y Acabados",
+        "codigo": "CO714-1-004",
+        "descripcion2": [],
+        "duracion": 1056,
+        "creditos": 40,
+        "nivel": "Auxiliar Técnico",
+        "slug": "costura-acabados",
+        "imagen": null,
+        "imagenes": []
+      },
+      {
+        "id": 8,
+        "titulo": "Bordado de prendas de vestir",
+        "tituloComercial": "Bordado en prendas de vestir",
+        "codigo": "C0714-1-002",
+        "descripcion2": [],
+        "duracion": 1056,
+        "creditos": 40,
+        "nivel": "Auxiliar Técnico",
+        "slug": "bordados-prendas",
+        "imagen": null,
+        "imagenes": []
+      },
+      {
+        "id": 9,
+        "titulo": "Confección Textil",
+        "tituloComercial": "Confección Textil",
+        "codigo": "",
+        "descripcion2": [],
+        "duracion": 1000,
+        "creditos": 0,
+        "nivel": "Auxiliar Técnico",
+        "slug": "confeccion-textil",
+        "imagen": null,
+        "imagenes": []
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "tituloComercial": "Cuero y Calzado",
+    "slug": "cuero-calzado",
+    "carreras": [
+      {
+        "id": 10,
+        "titulo": "Confección de calzado",
+        "tituloComercial": "Confección de calzado",
+        "codigo": "C0715-1-001",
+        "descripcion2": [],
+        "duracion": 1056,
+        "creditos": 40,
+        "nivel": "Auxiliar Técnico",
+        "slug": "confeccion-calzado",
+        "imagen": null,
+        "imagenes": []
+      },
+      {
+        "id": 11,
+        "titulo": "Confección de Artículos de Cuero y Marroquinería",
+        "tituloComercial": "Artículos de Cuero y Marroquinería",
+        "codigo": "C0715-1-002",
+        "descripcion2": [],
+        "duracion": 1056,
+        "creditos": 40,
+        "nivel": "Auxiliar Técnico",
+        "slug": "cuero-marroquineria",
+        "imagen": null,
+        "imagenes": []
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "tituloComercial": "Manualidades",
+    "slug": "manualidades",
+    "carreras": [
+      {
+        "id": 12,
+        "titulo": "Manualidades",
+        "tituloComercial": "Manualidades",
+        "codigo": "",
+        "descripcion2": [],
+        "duracion": 1000,
+        "creditos": 0,
+        "nivel": "Auxiliar Técnico",
+        "slug": "manualidades",
+        "imagen": null,
+        "imagenes": []
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "tituloComercial": "Hostelería y Turismo",
+    "slug": "hosteleria-turismo",
+    "carreras": [
+      {
+        "id": 13,
+        "titulo": "Panadería y Pastelería",
+        "tituloComercial": "Panadería y Pastelería",
+        "codigo": "C0610-1-001",
+        "descripcion2": [],
+        "duracion": 1056,
+        "creditos": 40,
+        "nivel": "Auxiliar Técnico",
+        "slug": "panaderia-pasteleria",
+        "imagen": null,
+        "imagenes": []
+      },
+      {
+        "id": 14,
+        "titulo": "Asistencia en Pastelería y Panadería",
+        "tituloComercial": "Asistencia en Pastelería y Panadería",
+        "codigo": "",
+        "descripcion2": [],
+        "duracion": 1000,
+        "creditos": 0,
+        "nivel": "Auxiliar Técnico",
+        "slug": "asistente-panaderia-pasteleria",
+        "imagen": null,
+        "imagenes": []
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "tituloComercial": "Carpintería",
+    "slug": "carpinteria",
+    "carreras": [
+      {
+        "id": 15,
+        "titulo": "Mantenimiento Básico de Casas y Edificios",
+        "tituloComercial": "Mantenimiento Básico de Casas y Edificios",
+        "codigo": "",
+        "descripcion2": [],
+        "duracion": 1000,
+        "creditos": 0,
+        "nivel": "Auxiliar Técnico",
+        "slug": "mantenimiento-casas-edificios",
+        "imagen": null,
+        "imagenes": []
+      }
+    ]
+  }
+]

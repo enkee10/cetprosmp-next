@@ -14,9 +14,9 @@ import MenuPrincipal from './MenuPrincipal/MenuPrincipal';
 import Busqueda from './Busqueda2';
 import Apps from './Apps2';
 import Settings from './Settings2';
-import User from './User2';
+import User from './User';
 import Sidebar from '../Sidebar/Sidebar';
-import { useUser } from '../../context/UserContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -26,7 +26,7 @@ export default function Header() {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
-  const { user } = useUser();
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {

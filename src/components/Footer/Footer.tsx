@@ -2,7 +2,7 @@
 
 import { Box, Container, Grid, Typography, Link as MuiLink } from '@mui/material';
 import Image from 'next/image';
-import { useUser } from '@/context/UserContext';
+import { useAuth } from '@/context/AuthContext';
 import datoGeneral from '@/../public/data/dato-general.json';
 import MapaInteractivo from '@/components/Footer/MapaInteractivo';
 import WhatsappFlotante from '@/components/Footer/WhatsappFlotante'; // ✅ Importado
@@ -16,7 +16,7 @@ const redesSociales = [
 ];
 
 const Footer = () => {
-  const { user } = useUser();
+  const { user } = useAuth();
 
   return (
     <Box

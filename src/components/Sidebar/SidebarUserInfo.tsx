@@ -7,52 +7,10 @@ import {
   Button,
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { useUser } from "../../context/UserContext";
-import { useGoogleLogin } from "@react-oauth/google";
-import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SidebarUserInfo() {
-  const { user, setUser, logout } = useUser();
-
-  const login = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        const resGoogle = await axios.get(
-          "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: {
-              Authorization: `Bearer ${tokenResponse.access_token}`,
-            },
-          }
-        );
-
-        const googleUser = resGoogle.data;
-        // API base URL from environment variable
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
-
-        const resStrapi = await axios.post(
-          `${API_BASE}/api/google-sync`,
-          {
-            email: googleUser.email,
-            name: {
-              givenName: googleUser.given_name,
-              familyName: googleUser.family_name,
-            },
-            picture: googleUser.picture,
-          }
-        );
-
-        const { user: userData, token } = resStrapi.data;
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("jwt", token);
-      } catch (error) {
-        console.error("❌ Error en login o sincronización:", error);
-      }
-    },
-    onError: () => console.error("❌ Error al iniciar sesión con Google"),
-    flow: "implicit",
-  });
+  const { user, login, logout } = useAuth();
 
   if (!user) {
     return (
@@ -81,17 +39,17 @@ export default function SidebarUserInfo() {
     <Box display="flex" flexDirection="column" p={2} gap={2}>
       <Box display="flex" alignItems="center" gap={2}>
         <Avatar
-          src={user.avatar}
-          alt={user.nombre || user.nombres}
+          src={user.photoURL!}
+          alt={user.displayName!}
           sx={{ width: 48, height: 48 }}
           imgProps={{ referrerPolicy: "no-referrer" }}
         />
         <Box>
           <Typography variant="subtitle1" fontWeight="bold">
-            {user.nombre || user.nombres}
+            {user.displayName}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {user.cargo || "—"}
+            {user.email}
           </Typography>
         </Box>
       </Box>

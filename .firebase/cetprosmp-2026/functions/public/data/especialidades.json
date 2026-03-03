@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "titulo": "Estética Personal",
+    "tituloComercial": "Estética Personal",
+    "slug": "estetica-personal",
+    "descripcion2": [
+      {
+        "type": "paragraph",
+        "children": [
+          {
+            "text": "Solanum tuberosum, de nombre común patata (en la mayor parte de España, Filipinas y Guinea Ecuatorial) o papa (en Hispanoamérica y en las Islas Canarias)[1]​ [2]​",
+            "type": "text"
+          }
+        ]
+      }
+    ],
+    "imagen": null,
+    "imagenes": []
+  },
+  {
+    "id": 2,
+    "titulo": "Electricidad y Electrónica",
+    "tituloComercial": "Electricidad y Electrónica",
+    "slug": "electricidad-electronica",
+    "descripcion2": [],
+    "imagen": null,
+    "imagenes": []
+  },
+  {
+    "id": 4,
+    "titulo": "Textil y Confección",
+    "tituloComercial": "Confección Textil",
+    "slug": "confeccion-textil",
+    "descripcion2": [],
+    "imagen": null,
+    "imagenes": []
+  },
+  {
+    "id": 5,
+    "titulo": "Cuero y Calzado",
+    "tituloComercial": "Cuero y Calzado",
+    "slug": "cuero-calzado",
+    "descripcion2": [],
+    "imagen": null,
+    "imagenes": []
+  },
+  {
+    "id": 6,
+    "titulo": "Artesanía y Manualidades",
+    "tituloComercial": "Manualidades",
+    "slug": "manualidades",
+    "descripcion2": [],
+    "imagen": null,
+    "imagenes": []
+  },
+  {
+    "id": 7,
+    "titulo": "Hostelería y Turismo",
+    "tituloComercial": "Hostelería y Turismo",
+    "slug": "hosteleria-turismo",
+    "descripcion2": [],
+    "imagen": null,
+    "imagenes": []
+  },
+  {
+    "id": 8,
+    "titulo": "Carpintería",
+    "tituloComercial": "Carpintería",
+    "slug": "carpinteria",
+    "descripcion2": [],
+    "imagen": null,
+    "imagenes": []
+  },
+  {
+    "id": 3,
+    "titulo": "Computación e Informática",
+    "tituloComercial": "Computación",
+    "slug": "computacion",
+    "descripcion2": [
+      {
+        "type": "paragraph",
+        "children": [
+          {
+            "text": "La especialidad de Computación del CETPRO San Martín de Porres ofrece una formación técnica integral orientada a las exigencias del mercado laboral actual. Nuestro objetivo es preparar a los estudiantes para desempeñarse con eficiencia en diversas áreas de la tecnología, brindándoles una base sólida tanto en conocimientos teóricos como en habilidades prácticas.",
+            "type": "text"
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "format": "ordered",
+        "children": [
+          {
+            "type": "list-item",
+            "children": [
+              {
+                "text": "A lo largo de la formación, los estudiantes desarrollan competencias en cuatro módulos especializados. ",
+                "type": "text"
+              },
+              {
+                "bold": true,
+                "text": "En el módulo de Soporte Técnico de PC",
+                "type": "text"
+              },
+              {
+                "text": ", aprenden a ensamblar computadoras, instalar y configurar sistemas operativos, dar mantenimiento preventivo y correctivo, y solucionar fallas comunes de hardware y software. Además, se introducen en el manejo básico de redes y en buenas prácticas de seguridad informática, habilidades muy valoradas en empresas y servicios técnicos.",
+                "type": "text"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "format": "unordered",
+        "children": [
+          {
+            "type": "list-item",
+            "children": [
+              {
+                "text": "En el ",
+                "type": "text"
+              },
+              {
+                "bold": true,
+                "text": "módulo de Aplicativos Informáticos de Ofimática",
+                "type": "text"
+              },
+              {
+                "text": ", se entrenan en el uso profesional de herramientas como Microsoft Word, Excel, PowerPoint y otras plataformas colaborativas. Se enfatiza la creación de documentos formales, hojas de cálculo con funciones automatizadas, presentaciones efectivas y el manejo de datos, esenciales en cualquier entorno administrativo.",
+                "type": "text"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "children": [
+          {
+            "text": "El ",
+            "type": "text"
+          },
+          {
+            "bold": true,
+            "text": "módulo de Diseño Gráfico Publicitario",
+            "type": "text"
+          },
+          {
+            "text": " desarrolla la creatividad del estudiante mediante el uso de programas como Photoshop e Illustrator. Se enseña a crear piezas gráficas para medios impresos y digitales, como logotipos, afiches, banners y contenido visual para redes sociales, aplicando principios de diseño, color y composición.",
+            "type": "text"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "children": [
+          {
+            "text": "Finalmente, el ",
+            "type": "text"
+          },
+          {
+            "bold": true,
+            "text": "módulo de Diseño y Programación Web",
+            "type": "text"
+          },
+          {
+            "text": " introduce al estudiante en el mundo del desarrollo web. Se aprenden lenguajes como HTML, CSS y JavaScript, así como el uso de gestores de contenido, permitiendo crear sitios web modernos, responsivos y funcionales, adaptados a las necesidades actuales del entorno digital.",
+            "type": "text"
+          }
+        ]
+      }
+    ],
+    "imagen": "http://localhost:1337/uploads/computacion_fondo01_e17724e761.avif",
+    "imagenes": [
+      "http://localhost:1337/uploads/computacion01_a_ee8a8aed01.png",
+      "http://localhost:1337/uploads/computacion02_a_26bae19d57.png",
+      "http://localhost:1337/uploads/paseo_campo_992a19249f.png"
+    ]
+  }
+]

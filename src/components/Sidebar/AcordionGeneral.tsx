@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import AcordionPrincipal from "./AcordionPrincipal/AcordionPrincipal";
 import AcordionIntranet from "./AcordionIntranet/AcordionIntranet";
 import { Box } from "@mui/material";
-import { useUser } from "@/context/UserContext";
+import { useAuth } from "@/context/AuthContext";
 
 // Tipos para leer el JSON de intranet
 interface Subitem {
@@ -17,7 +17,7 @@ interface Item {
 }
 
 export default function AcordionGeneral() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
   const [intranetData, setIntranetData] = useState<Item[]>([]);
 

@@ -8,14 +8,12 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
-import { useGoogleLogin } from "@react-oauth/google";
-import { useUser } from "../../../context/UserContext";
-import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
 import CloseIcon from "@mui/icons-material/Close";
-import LogoutIcon from "@mui/icons-material/Logout"; // asegúrate de importar esto
+import LogoutIcon from "@mui/icons-material/Logout";
 
 export default function User() {
-  const { user, setUser, logout } = useUser();
+  const { user, login, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -31,45 +29,6 @@ export default function User() {
     setAnchorEl(null);
   };
 
-  const login = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        const resGoogle = await axios.get(
-          "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-          }
-        );
-
-        const googleUser = resGoogle.data;
-
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
-
-
-        const resStrapi = await axios.post(
-          `${API_BASE}/api/google-sync`,
-          {
-            email: googleUser.email,
-            name: {
-              givenName: googleUser.given_name,
-              familyName: googleUser.family_name,
-            },
-            picture: googleUser.picture,
-          }
-        );
-
-        const { user: userData, token } = resStrapi.data;
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("jwt", token);
-      } catch (error) {
-        console.error("❌ Error en login o sincronización:", error);
-      }
-    },
-    onError: () => console.error("❌ Error al iniciar sesión con Google"),
-    flow: "implicit",
-  });
-
   if (!isMounted) return null;
 
   return (
@@ -78,8 +37,8 @@ export default function User() {
         <>
           <IconButton onClick={handleOpen} color="inherit">
             <Avatar
-              alt={user.nombre || user.nombres || "Usuario"}
-              src={user.avatar}
+              alt={user.displayName || "Usuario"}
+              src={user.photoURL!}
               sx={{ width: 32, height: 32 }}
             />
           </IconButton>
@@ -114,7 +73,6 @@ export default function User() {
               },
             }}
           >
-            {/* Boton Cerrar */}
             <Box display="flex" alignSelf="flex-end">
               <IconButton
                 size="small"
@@ -134,21 +92,13 @@ export default function User() {
               </IconButton>
             </Box>
 
-            {/* Correo y rol */}
             <Typography
               variant="body2"
               sx={{ color: "white", textAlign: "center", fontWeight: "bold" }}
             >
               {user.email}
             </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: "white", mb: 3, textAlign: "center" }}
-            >
-              {user.cargo || "—"}
-            </Typography>
-
-            {/* Avatar, saludo y nombre */}
+            
             <Box
               display="flex"
               flexDirection="column"
@@ -156,18 +106,16 @@ export default function User() {
               mb={2}
             >
               <Avatar
-                src={user.avatar}
-                alt={user.nombre || user.nombres}
-                sx={{ width: 64, height: 64, mb: 1 }}
+                src={user.photoURL!}
+                alt={user.displayName!}
+                sx={{ width: 64, height: 64, my: 1 }}
               />
               <Typography variant="h6" fontWeight="bold">
-                ¡Hola, {user.nombre || user.nombres}!
+                ¡Hola, {user.displayName}!
               </Typography>
             </Box>
 
-            {/* Botón para cuenta */}
-            <Box display= "flex"
-                  justifyContent="center">
+            <Box display="flex" justifyContent="center">
               <Button
                 variant="outlined"
                 href="https://myaccount.google.com"
@@ -186,9 +134,8 @@ export default function User() {
                 Administrar tu Cuenta de Google
               </Button>
             </Box>
-            {/* Botón cerrar sesión */}
-            <Box mt={2} display= "flex"
-                  justifyContent="center" flexWrap="wrap">
+            
+            <Box mt={2} display="flex" justifyContent="center" flexWrap="wrap">
               <Button
                 onClick={() => {
                   logout();
@@ -199,12 +146,12 @@ export default function User() {
                 sx={{
                   fontWeight: "bold",
                   textTransform: "none",
-                  opacity:0.8,
+                  opacity: 0.8,
                   marginBottom: 2,
-                  borderRadius:999,
-                  backgroundColor:"gray",
-                  color:"white",
-                  px:"16px",
+                  borderRadius: 999,
+                  backgroundColor: "gray",
+                  color: "white",
+                  px: "16px",
                   "&:hover": {
                     backgroundColor: "rgba(255,255,255,0.1)",
                     borderColor: "#fff",
@@ -214,15 +161,13 @@ export default function User() {
                 Cerrar sesión
               </Button>
 
-              {/* Divisor */}
               <Divider sx={{ borderColor: "rgba(255,255,255,0.2)", my: 1 }} />
 
-              {/* Footer */}
               <Box
                 sx={{
-                  display:"flex !important",
-                  justifyContent:"space-around !important",
-                  width:"100%",
+                  display: "flex !important",
+                  justifyContent: "space-around !important",
+                  width: "100%",
                   "& .miTexto": {
                     fontSize: 12,
                     color: "white",
@@ -230,12 +175,8 @@ export default function User() {
                   },
                 }}
               >
-                <Typography className="miTexto">
-                  Política de Privacidad
-                </Typography>
-                <Typography className="miTexto">
-                  Condiciones del Servicio
-                </Typography>
+                <Typography className="miTexto">Política de Privacidad</Typography>
+                <Typography className="miTexto">Condiciones del Servicio</Typography>
               </Box>
             </Box>
           </Menu>

@@ -19,23 +19,11 @@ const nextConfig = {
 
     // Fuentes remotas permitidas
     remotePatterns: [
-      // Strapi local (desarrollo)
+      // Permitir imágenes desde localhost (para desarrollo)
       {
         protocol: 'http',
         hostname: 'localhost',
         port: '1337',
-        pathname: '/uploads/**',
-      },
-      // Producción en dominio principal
-      {
-        protocol: 'https',
-        hostname: 'cetprosmp.edu.pe',
-        pathname: '/uploads/**',
-      },
-      // Producción en subdominio admin (Strapi)
-      {
-        protocol: 'https',
-        hostname: 'admin.cetprosmp.edu.pe',
         pathname: '/uploads/**',
       },
       // Thumbnails de YouTube

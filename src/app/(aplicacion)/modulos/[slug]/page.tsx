@@ -3,10 +3,15 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Box, Container, Typography } from '@mui/material';
 import { getModulos } from '@/lib/getModulos';
-import type { Modulo } from '@/types/modulos';
+import type { Modulo, RichTextBlock } from '@/types/modulos';
 import Image from 'next/image';
 import RichText from '@/components/RichText';
-import VideoGallery from '@/components/VideoGallery'; // ✅ Importación directa
+import VideoGallery from '@/components/VideoGallery';
+import { getStrapiMedia } from '@/lib/getStrapiMedia';
+
+interface PageProps {
+  params: { slug: string };
+}
 
 const generarLorem = () => {
   const lorem =
@@ -23,12 +28,9 @@ export async function generateStaticParams() {
   return modulos.map((mod) => ({ slug: mod.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  // Await the params to resolve before accessing properties
+  const { slug } = await Promise.resolve(params);
   const modulos: Modulo[] = await getModulos();
   const modulo = modulos.find((e) => e.slug === slug);
   if (!modulo) return {};
@@ -38,34 +40,26 @@ export async function generateMetadata({
   };
 }
 
-export default async function ModuloDetallePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+export default async function ModuloDetallePage({ params }: PageProps) {
+  // Await the params to resolve before accessing properties
+  const { slug } = await Promise.resolve(params);
   const modulos: Modulo[] = await getModulos();
   const modulo = modulos.find((e) => e.slug === slug);
   if (!modulo) notFound();
 
   const { tituloComercial, descripcion2, imagenes, videosYoutube } = modulo;
-  const tieneDescripcion = descripcion2?.some((b: any) => b.type === 'paragraph');
+  const tieneDescripcion = Array.isArray(descripcion2) && descripcion2.length > 0;
 
   const imagenesFinales: string[] =
     Array.isArray(imagenes) && imagenes.length > 0
-      ? imagenes.map((img: any) =>
-        typeof img === 'string'
-          ? img.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL
-          : img?.url?.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL
-      )
-      : [process.env.NEXT_PUBLIC_DEFAULT_IMG_URL];
+      ? imagenes.map((img) => getStrapiMedia(img.url))
+      : [getStrapiMedia(null)];
 
+  const defaultVideoUrl = process.env.NEXT_PUBLIC_DEFAULT_VIDEO_URL || '';
   const videosFinales: string[] =
     Array.isArray(videosYoutube) && videosYoutube.length > 0
-      ? videosYoutube.map((v: any) =>
-        v.url?.includes('youtube.com') ? v.url : process.env.NEXT_PUBLIC_DEFAULT_VIDEO_URL
-      )
-      : [process.env.NEXT_PUBLIC_DEFAULT_VIDEO_URL];
+      ? videosYoutube.map((v) => (v.url?.includes('youtube.com') ? v.url : defaultVideoUrl)).filter(Boolean)
+      : [];
 
   return (
     <main>
@@ -140,7 +134,7 @@ export default async function ModuloDetallePage({
               },
             }}
           >
-            {tieneDescripcion ? <RichText content={descripcion2} /> : generarLorem()}
+            {tieneDescripcion ? <RichText content={descripcion2 as RichTextBlock[]} /> : generarLorem()}
           </Box>
         </Box>
 

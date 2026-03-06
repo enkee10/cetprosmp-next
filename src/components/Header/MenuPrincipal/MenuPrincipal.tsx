@@ -1,13 +1,14 @@
 // src/components/Header/MenuPrincipal/MenuPrincipal.tsx
 "use client";
-import { Box, Button, styled } from "@mui/material";
+import { Box } from "@mui/material";
 import InicioMenuWrapper from "./InicioMenuWrapper";
 import NosotrosMenuWrapper from "./NosotrosMenuWrapper";
 import CarrerasMenuWrapper from "./CarrerasMenuWrapper4";
 import NovedadesMenuWrapper from "./NovedadesMenuWrapper";
 import MatriculaMenuWrapper from "./MatriculaMenuWrapper";
 import IntranetMenuWrapper from "./IntranetMenuWrapper";
-import { useAuth } from "@/context/AuthContext"; // asegúrate que esta ruta es correcta
+import { useAuth } from "@/context/AuthContext"; // Ruta corregida
+import { styled } from "@mui/material/styles";
 
 const MenuBox = styled(Box)(({ theme }) => ({
   flexGrow: 1,
@@ -21,7 +22,6 @@ const MenuBox = styled(Box)(({ theme }) => ({
     "& button, a": {
       display: "inline-flex",
       alignItems: "flex-start",
-      //alignItems: "center",
       paddingLeft: theme.spacing(0.7),
       paddingRight: theme.spacing(0.7),
       paddingTop: 0,
@@ -34,7 +34,6 @@ const MenuBox = styled(Box)(({ theme }) => ({
 
   [theme.breakpoints.up("lg")]: {
     "& button a": {
-      //display: "inline-flex",
       alignItems: "center",
       paddingTop: theme.spacing(2),
       paddingBottom: theme.spacing(2),
@@ -46,6 +45,9 @@ const MenuBox = styled(Box)(({ theme }) => ({
 export default function MenuPrincipal() {
   const { user } = useAuth();
 
+  // Get user level from our custom user object, default to 0.
+  const userLevel = user?.level ?? 0;
+
   return (
     <MenuBox>
       <InicioMenuWrapper />
@@ -53,7 +55,11 @@ export default function MenuPrincipal() {
       <NosotrosMenuWrapper />
       <NovedadesMenuWrapper />
       <MatriculaMenuWrapper />
-      {user && <IntranetMenuWrapper />}
+      
+      {/* --- THIS IS THE CORRECT LOGIC --- */}
+      {/* Only show Intranet menu if user's permission level is 300 or higher */}
+      {userLevel >= 300 && <IntranetMenuWrapper />}
+
     </MenuBox>
   );
 }

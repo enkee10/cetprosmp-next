@@ -4,8 +4,7 @@ import { Box, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { BoxProps } from '@mui/system';
 import Image from 'next/image';
-
-const portadaDefault = process.env.NEXT_PUBLIC_DEFAULT_IMG_URL!;
+import { getStrapiMedia } from '@/lib/getStrapiMedia'; // Import the hero function
 
 interface PortadaImagenProps extends BoxProps {
   portada: string | null;
@@ -14,6 +13,9 @@ interface PortadaImagenProps extends BoxProps {
 export default function PortadaImagen({ portada, sx, ...rest }: PortadaImagenProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Clean the URL before using it
+  const finalImageSrc = getStrapiMedia(portada);
 
   return (
     <Box
@@ -47,7 +49,7 @@ export default function PortadaImagen({ portada, sx, ...rest }: PortadaImagenPro
       }}
     >
       <Image
-        src={portada || portadaDefault}
+        src={finalImageSrc} // Use the cleaned and safe URL
         alt="Portada"
         fill
         style={{

@@ -1,79 +1,146 @@
-import { initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
-import { getFirestore } from "firebase-admin/firestore";
+
 import { https, auth } from "firebase-functions";
+import { initializeApp, getApps, App } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 // Initialize Firebase Admin SDK
-initializeApp();
+let app: App;
+if (!getApps().length) {
+  app = initializeApp();
+} else {
+  app = getApps()[0];
+}
+
+const authAdmin = getAuth(app);
+const firestore = getFirestore(app);
 
 /**
- * Fallback role assignment on user creation. This is good practice.
+ * Assigns a default 'visitante' role to any new user created in Firebase Auth.
  */
 export const assignDefaultRole = auth.user().onCreate(async (user) => {
-    // ... (This function remains as a fallback)
-});
-
-/**
- * Creates a new user in Auth and Firestore, with the correct role.
- * Called from the admin panel.
- */
-export const createNewUser = https.onCall(async (data, context) => {
-    if (!context.auth || !context.auth.token.level || context.auth.token.level < 600) {
-        throw new https.HttpsError('permission-denied', 'You must be a superuser.');
-    }
-
-    const { email, password, username, nombre, apellidos, celular, tipo_documento, dni, sexo, estado_civil, permisoId } = data;
-
-    if (!email || !password || !username || !permisoId) {
-        throw new https.HttpsError('invalid-argument', 'Missing required fields.');
-    }
-
-    const authAdmin = getAuth();
-    const firestore = getFirestore();
+    const defaultRoleId = 'DqZRaaQwPMwS3uiHiYt6'; 
+    const defaultLevel = 0;
 
     try {
-        // 1. Create the user in Firebase Authentication
-        const userRecord = await authAdmin.createUser({
-            email: email,
-            password: password,
-            displayName: username,
+        await authAdmin.setCustomUserClaims(user.uid, { role: defaultRoleId, level: defaultLevel });
+
+        const userDocRef = firestore.collection('users').doc(user.uid);
+        
+        const displayName = user.displayName || 'Usuario Nuevo';
+        const nameParts = displayName.split(' ');
+        const nombre = nameParts[0] || '';
+        const apellido_paterno = nameParts.slice(1).join(' ') || '';
+
+        await userDocRef.set({
+            uid: user.uid,
+            email: user.email || '',
+            username: displayName,
+            nombre: nombre,
+            apellido_paterno: apellido_paterno,
+            apellido_materno: '',
+            celular: '',
+            permisoId: defaultRoleId,
+            bloqueado: false,
+            foto: user.photoURL || null,
+            createdAt: FieldValue.serverTimestamp(),
+            tipo_documento: 'DNI',
+            dni: '',
+            sexo: 'M',
+            estado_civil: 'Soltero',
+            fecha_nacimiento: null,
+            instruccion: null,
+            direccion: null,
+            distrito: null,
         });
 
-        // 2. Set the selected role from the form
-        const roleDoc = await firestore.collection('permisos').doc(permisoId).get();
-        if (roleDoc.exists) {
-            const roleLevel = roleDoc.data()?.scala;
-            if (typeof roleLevel === 'number') {
-                await authAdmin.setCustomUserClaims(userRecord.uid, { role: permisoId, level: roleLevel });
-            }
-        } else {
-             // If role is invalid, a default role will have been assigned by assignDefaultRole
-             console.warn(`Invalid permisoId "${permisoId}" provided. Default role may be assigned.`);
-        }
+        console.log(`Successfully assigned role '${defaultRoleId}' (level ${defaultLevel}) and created profile for user ${user.uid}`);
 
-        // 3. Create the complete user profile in Firestore
-        const userData = {
-            username, email, nombre, apellidos, celular, 
-            tipo_documento, dni, sexo, estado_civil, permisoId,
-            uid: userRecord.uid, // Store the UID for reference
-        };
-        await firestore.collection('users').doc(userRecord.uid).set(userData);
-
-        return { uid: userRecord.uid, message: "User created successfully" };
-
-    } catch (error: any) {
-        console.error("Error in createNewUser:", error);
-        if (error.code === 'auth/email-already-exists') {
-            throw new https.HttpsError('already-exists', 'A user with this email already exists.');
-        }
-        throw new https.HttpsError('internal', 'An internal error occurred.');
+    } catch (error) {
+        console.error(`Error assigning default role to user ${user.uid}:`, error);
     }
 });
 
 
 /**
- * Sets a user's role. Can only be called by an admin.
+ * Creates a new user in Auth and Firestore, with a specific role.
+ * Reads the permission level from the 'scala' field in the 'permisos' collection.
+ */
+export const createNewUser = https.onCall(async (data, context) => {
+    const requesterLevel = context.auth?.token?.level ?? 0;
+    if (requesterLevel < 600) {
+        throw new https.HttpsError('permission-denied', 'You do not have permission to create new users.');
+    }
+
+    const { email, password, username, permisoId, ...otherData } = data;
+    if (!email || !password || !username || !permisoId) {
+        throw new https.HttpsError('invalid-argument', 'Email, password, username, and permisoId are required.');
+    }
+
+    try {
+        const permisoDoc = await firestore.collection('permisos').doc(permisoId).get();
+        if (!permisoDoc.exists) {
+            throw new https.HttpsError('not-found', `The permission ID '${permisoId}' does not exist.`);
+        }
+        // --- CORRECTED: Reading from 'scala' field as per user's confirmation ---
+        const permissionLevel = permisoDoc.data()?.scala ?? 0; 
+
+        const userRecord = await authAdmin.createUser({ email, password, displayName: username });
+
+        await authAdmin.setCustomUserClaims(userRecord.uid, { role: permisoId, level: permissionLevel });
+
+        await firestore.collection('users').doc(userRecord.uid).set({
+            uid: userRecord.uid,
+            email,
+            username,
+            permisoId,
+            bloqueado: false,
+            createdAt: FieldValue.serverTimestamp(),
+            ...otherData
+        });
+
+        return { result: `Successfully created user ${userRecord.uid} with role ${permisoId}.` };
+
+    } catch (error: any) {
+        if (error.code === 'auth/email-already-exists') {
+            throw new https.HttpsError('already-exists', 'A user with this email address already exists.');
+        }
+        console.error("Error in createNewUser:", error);
+        throw new https.HttpsError('internal', 'An unexpected error occurred.');
+    }
+});
+
+/**
+ * Updates a user's role and their corresponding permission level claim.
+ * Reads the permission level from the 'scala' field in the 'permisos' collection.
  */
 export const setUserRole = https.onCall(async (data, context) => {
-   // ... (This function remains the same)
+    const requesterLevel = context.auth?.token?.level ?? 0;
+    if (requesterLevel < 600) {
+        throw new https.HttpsError('permission-denied', 'You do not have permission to change roles.');
+    }
+
+    const { uid, roleId } = data;
+    if (!uid || !roleId) {
+        throw new https.HttpsError('invalid-argument', 'User ID and Role ID are required.');
+    }
+
+    try {
+        const permisoDoc = await firestore.collection('permisos').doc(roleId).get();
+        if (!permisoDoc.exists) {
+            throw new https.HttpsError('not-found', `The permission ID '${roleId}' does not exist.`);
+        }
+        // --- CORRECTED: Reading from 'scala' field as per user's confirmation ---
+        const newLevel = permisoDoc.data()?.scala ?? 0; 
+
+        await authAdmin.setCustomUserClaims(uid, { role: roleId, level: newLevel });
+
+        await firestore.collection('users').doc(uid).update({ permisoId: roleId });
+
+        return { result: `Role updated for user ${uid}. New level: ${newLevel}.` };
+    
+    } catch (error: any) {
+        console.error("Error in setUserRole:", error);
+        throw new https.HttpsError('internal', 'An unexpected error occurred.');
+    }
 });

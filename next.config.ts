@@ -1,19 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ✅ Ignora errores de ESLint y Typescript en build
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // ✅ Silencia la advertencia de Cross-Origin en desarrollo
+  allowedDevOrigins: [
+    'https://*.cloudworkstations.dev',
+  ],
+
+  // ✅ Configuración del optimizador de imágenes de Next (limpiada)
   images: {
     remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '1337',
-        pathname: '/uploads/**',
-      },
+      // Mantenemos los dominios de producción y servicios externos
       {
         protocol: 'https',
         hostname: 'cetprosmp.edu.pe',
@@ -21,7 +24,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'admin.cetprosmp.edu.pe', // ✅ agregado
+        hostname: 'admin.cetprosmp.edu.pe',
         pathname: '/uploads/**',
       },
       {
@@ -34,6 +37,7 @@ const nextConfig = {
         hostname: 'api.qrserver.com',
         pathname: '/v1/create-qr-code/**',
       },
+      // La regla para 'localhost:1337' ha sido eliminada
     ],
   },
 };

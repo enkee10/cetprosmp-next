@@ -1,0 +1,144 @@
+{
+  "kind": "collectionType",
+  "collectionName": "users",
+  "info": {
+    "singularName": "user",
+    "pluralName": "users",
+    "displayName": "User",
+    "description": "Extended user model"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "users-permissions": {
+      "plugin": true
+    }
+  },
+  "attributes": {
+    "username": {
+      "type": "string",
+      "minLength": 3
+    },
+    "email": {
+      "type": "email",
+      "minLength": 6,
+      "required": true,
+      "unique": true,
+      "regex": "^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "password": {
+      "type": "password",
+      "required": true,
+      "minLength": 8
+    },
+    "resetPasswordToken": {
+      "type": "string"
+    },
+    "confirmationToken": {
+      "type": "string"
+    },
+    "confirmed": {
+      "type": "boolean",
+      "default": false
+    },
+    "blocked": {
+      "type": "boolean",
+      "default": false
+    },
+    "role": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.role",
+      "inversedBy": "users",
+      "required": true
+    },
+    "nombre": {
+      "type": "string"
+    },
+    "apellido_materno": {
+      "type": "string"
+    },
+    "apellido_paterno": {
+      "type": "string"
+    },
+    "apellidos": {
+      "type": "string"
+    },
+    "celular": {
+      "type": "string",
+      "required": true,
+      "minLength": 9,
+      "maxLength": 9,
+      "regex": "^[0-9]{9}$"
+    },
+    "fecha_nacimiento": {
+      "type": "date"
+    },
+    "direccion": {
+      "type": "text"
+    },
+    "distrito": {
+      "type": "string"
+    },
+    "avatar": { 
+      "type": "string"
+     },
+    "foto": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "tipo_documento": {
+      "type": "enumeration",
+      "enum": ["DNI", "CE"],
+      "default": "DNI",
+      "required": true
+    },
+    "dni": {
+      "type": "string",
+      "unique": true,
+      "required": true,
+      "minLength": 8,
+      "maxLength": 8,
+      "regex": "^[0-9]{8}$"
+    },
+    "dni_frente": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images", "files"]
+    },
+    "dni_reverso": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images", "files"]
+    },
+    "sexo": {
+      "type": "enumeration",
+      "enum": ["F", "M"]
+    },
+    "estado_civil": {
+      "type": "enumeration",
+      "enum": ["Soltero", "Casado(a)", "Viudo(a)", "Divorciado(a)"]
+    },
+    "telefono": {
+      "type": "string"
+    },
+    "instruccion": {
+      "type": "enumeration",
+      "enum": [
+        "Primaria completa",
+        "Primaria incompleta",
+        "Secundaria completa",
+        "Secundaria incompleta",
+        "Superior"
+      ]
+    }
+  }
+}

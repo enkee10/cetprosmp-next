@@ -1,9 +1,11 @@
 'use client';
 // src/components/Header/MenuPrincipal/IntranetMenuWrapper.tsx
+
 import React, { useEffect, useRef, useState } from "react";
 import { Box, Button, Popper } from "@mui/material";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import Link from "next/link";
+import NextLink from "next/link";
 import { cerrarTodosLosMenus } from "@/components/Header/MenuPrincipal/_otros/CerrarTodoMenus";
 
 import {
@@ -27,13 +29,15 @@ type Item = {
 
 export default function IntranetMenuWrapper() {
   const anchoMenu = "156px";
+
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [subItems, setSubItems] = useState<SubItem[] | null>(null);
+
   const [anchorSubMenu, setAnchorSubMenu] = useState<HTMLElement | null>(null);
 
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const anchorRef = useRef<HTMLButtonElement | null>(null);
+  const anchorRef = useRef<HTMLAnchorElement | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -63,6 +67,7 @@ export default function IntranetMenuWrapper() {
     };
 
     window.addEventListener("cerrar-todos-los-menus", handleCerrarMenus);
+
     return () => {
       window.removeEventListener("cerrar-todos-los-menus", handleCerrarMenus);
     };
@@ -101,16 +106,28 @@ export default function IntranetMenuWrapper() {
       ref={wrapperRef}
       onMouseEnter={() => {
         cancelCloseTimer();
-        if (items.length > 0) setOpen(true);
+        if (items.length > 0) {
+          setOpen(true);
+        }
       }}
       onMouseLeave={startCloseTimer}
     >
-      <Button color="inherit" ref={anchorRef}>
+      <Button
+        color="inherit"
+        href="/intranet"
+        component={NextLink}
+        ref={anchorRef}
+      >
         Intranet
       </Button>
 
       {items.length > 0 && (
-        <Popper open={open} anchorEl={anchorRef.current} placement="bottom-start" sx={{ zIndex: 1300 }}>
+        <Popper
+          open={open}
+          anchorEl={anchorRef.current}
+          placement="bottom-start"
+          sx={{ zIndex: 1300 }}
+        >
           <MenuContainer ancho={anchoMenu} sx={{ ml: -5 }}>
             {items.map((item) =>
               item.contenido && item.contenido.length > 0 ? (
@@ -133,7 +150,9 @@ export default function IntranetMenuWrapper() {
                   onClick={cerrarTodosLosMenus}
                   style={{ textDecoration: "none" }}
                 >
-                  <MenuItemBox>
+                  <MenuItemBox
+                    onMouseEnter={(e) => handleItemEnter(e, item.contenido)}
+                  >
                     <MenuText>{item.titulo}</MenuText>
                   </MenuItemBox>
                 </Link>
@@ -143,24 +162,27 @@ export default function IntranetMenuWrapper() {
         </Popper>
       )}
 
-      {subItems && (
-        <Popper open anchorEl={anchorSubMenu} placement="right-start" sx={{ zIndex: 1300 }}>
-          <MenuContainer sx={{ mt: 0 }}>
-            {subItems.map((sub) => (
-              <Link
-                key={sub.id}
-                href={`/intranet/${sub.slug}`}
-                onClick={cerrarTodosLosMenus}
-                style={{ textDecoration: "none" }}
-              >
-                <MenuItemBox>
-                  <MenuText>{sub.titulo}</MenuText>
-                </MenuItemBox>
-              </Link>
-            ))}
-          </MenuContainer>
-        </Popper>
-      )}
+      <Popper
+        open={Boolean(subItems)}
+        anchorEl={anchorSubMenu}
+        placement="right-start"
+        sx={{ zIndex: 1300 }}
+      >
+        <MenuContainer ancho={anchoMenu} sx={{ mt: 0 }}>
+          {subItems?.map((sub) => (
+            <Link
+              key={sub.id}
+              href={`/intranet/${sub.slug}`}
+              onClick={cerrarTodosLosMenus}
+              style={{ textDecoration: "none" }}
+            >
+              <MenuItemBox>
+                <MenuText>{sub.titulo}</MenuText>
+              </MenuItemBox>
+            </Link>
+          ))}
+        </MenuContainer>
+      </Popper>
     </Box>
   );
 }

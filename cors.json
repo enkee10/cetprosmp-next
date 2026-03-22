@@ -1,0 +1,14 @@
+
+[
+  {
+    "origin": [
+      "https://3000-firebase-cetprosmp-nextgit-1772340132399.cluster-j6d3cbsvdbe5uxnhqrfzzeyj7i.cloudworkstations.dev",
+      "http://localhost:3000",
+      "https://cetprosmp-2026.web.app",
+      "https://cetprosmp.edu.pe"
+    ],
+    "method": ["GET", "HEAD", "POST", "PUT", "DELETE"],
+    "responseHeader": ["Content-Type", "Authorization", "X-Goog-Upload-Command", "X-Goog-Upload-Protocol", "X-Goog-Upload-Offset"],
+    "maxAgeSeconds": 3600
+  }
+]

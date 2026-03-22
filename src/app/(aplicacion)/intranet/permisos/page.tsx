@@ -4,6 +4,8 @@ import Link from "next/link";
 import { CustomTable } from "@/components/CustomTable";
 import { getAdminApp } from "@/lib/firebase/admin";
 
+export const dynamic = 'force-dynamic';
+
 interface Permiso {
     id: string;
     titulo: string;

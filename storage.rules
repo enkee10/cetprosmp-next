@@ -1,12 +1,11 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
+    // Regla corregida: Se cambió "nivel" por "level" para coincidir con los custom claims de la app.
+    // Esto permite a los usuarios con nivel 400 o superior (coordinadores) leer y escribir archivos.
     match /{allPaths=**} {
-      allow read, write: if false;
+      allow read, write: if request.auth != null && request.auth.token.level >= 400;
     }
   }
 }

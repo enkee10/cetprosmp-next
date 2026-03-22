@@ -1,12 +1,19 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User as FirebaseUser, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import {
+    onAuthStateChanged,
+    User as FirebaseUser,
+    signOut,
+    GoogleAuthProvider,
+    signInWithPopup,
+} from 'firebase/auth';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { CircularProgress, Box } from '@mui/material';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
 
-// Define the structure of our custom user data
+// --- Interfaces y Tipos ---
 interface UserData {
     uid: string;
     email: string | null;
@@ -14,9 +21,9 @@ interface UserData {
     photoURL: string | null;
     role: string | null;
     level: number;
+    [key: string]: any;
 }
 
-// Define the context state
 interface AuthContextType {
     user: UserData | null;
     loading: boolean;
@@ -24,34 +31,42 @@ interface AuthContextType {
     logout: () => Promise<void>;
 }
 
-// Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Create the provider component
+// --- Componente Principal del Proveedor de Autenticación ---
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
-    const router = useRouter(); // Get router instance
+    const router = useRouter();
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+            setLoading(true);
             if (firebaseUser) {
-                try {
+                const userDocRef = doc(db, 'users', firebaseUser.uid);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists()) {
+                    const firestoreData = userDocSnap.data();
                     const token = await firebaseUser.getIdTokenResult();
                     const claims = token.claims;
 
+                    // Lógica de fusión mejorada:
+                    // 1. Empezar con los datos de Firestore (nuestra base de datos custom).
+                    // 2. Sobrescribir con los datos de Firebase Auth (fuente de verdad para la identidad).
+                    // 3. Sobrescribir con los claims del token (fuente de verdad para los permisos).
                     const userData: UserData = {
+                        ...firestoreData,
                         uid: firebaseUser.uid,
                         email: firebaseUser.email,
                         displayName: firebaseUser.displayName,
-                        photoURL: firebaseUser.photoURL,
-                        role: (claims.role as string) || null, // a default role if not set
-                        level: (claims.level as number) || 0, // a default level if not set
+                        photoURL: firebaseUser.photoURL, // <-- Esto asegura que siempre se use la foto de Google.
+                        role: (claims.role as string) || null,
+                        level: (claims.level as number) || 0,
                     };
-
                     setUser(userData);
-                } catch (error) {
-                    console.error("Error fetching user token:", error);
+                } else {
                     setUser(null);
                 }
             } else {
@@ -64,13 +79,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const login = async () => {
+        setLoading(true);
         const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
+        try {
+            await signInWithPopup(auth, provider);
+            router.push('/intranet');
+        } catch (error) {
+            console.error("Error during Google sign-in:", error);
+            setUser(null);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const logout = async () => {
         await signOut(auth);
-        router.push('/'); // Redirect to homepage after logout
+        setUser(null);
+        router.push('/');
     };
 
     if (loading) {
@@ -81,10 +106,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
     }
 
-    return <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider value={{ user, loading, login, logout }}>
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
-// Create a custom hook for easy access to the context
+// --- Hook para consumir el contexto ---
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === undefined) {

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Box, Toolbar, CircularProgress } from '@mui/material';
-import IntranetSidebar from '@/components/intranet/Sidebar';
+import IntranetSidebar from '@/components/intranet/IntranetSidebar'; // + Import centralizado en el nuevo componente unificado
 
 const MIN_PERMISSION_LEVEL = 300;
 

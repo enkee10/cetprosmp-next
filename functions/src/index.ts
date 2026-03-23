@@ -37,33 +37,34 @@ if (!getApps().length) {
 
 const authAdmin = getAuth(app);
 const dbFirestore = getFirestore(app);
+const DEFAULT_ROLE_ID = 'DqZRaaQwPMwS3uiHiYt6'; // define el id del rol por defecto usado al registrar usuarios nuevos
+const DEFAULT_LEVEL = 0; // define el nivel por defecto asignado a usuarios nuevos
 
 /**
  * Asigna un rol por defecto y crea un perfil de usuario en Firestore
  * para cualquier nuevo usuario.
  */
 export const assignDefaultRole = auth.user().onCreate(async (user) => {
-    const defaultRoleId = 'DqZRaaQwPMwS3uiHiYt6'; 
-    const defaultLevel = 0;
-
     try {
-        await authAdmin.setCustomUserClaims(user.uid, { role: defaultRoleId, level: defaultLevel });
+        await authAdmin.setCustomUserClaims(user.uid, { role: DEFAULT_ROLE_ID, level: DEFAULT_LEVEL }); // asigna el rol y nivel base al usuario recien creado
 
-        const userDocRef = dbFirestore.collection('users').doc(user.uid);
+        const userDocRef = dbFirestore.collection('users').doc(user.uid); // obtiene la referencia del perfil del usuario en Firestore
         
-        const { nombre, apellido_paterno, apellido_materno } = separarNombreCompleto(user.displayName || null);
+        const { nombre, apellido_paterno, apellido_materno } = separarNombreCompleto(user.displayName || null); // 
+        const primerNombre = nombre.split(' ').filter(Boolean)[0] || ''; // 
+        const username = [primerNombre, apellido_paterno].filter(Boolean).join(' '); // 
 
         await userDocRef.set({
             uid: user.uid,
             email: user.email || '',
-            username: user.email || '',
+            username, // 
             displayName: user.displayName || '',
-            photoURL: user.photoURL || null, // <-- LA LÍNEA CRÍTICA, AHORA PRESENTE
+            foto: user.photoURL || null, // <-- LA LÍNEA CRÍTICA, AHORA PRESENTE
             nombre,
             apellido_paterno,
             apellido_materno,
             celular: '',
-            permisoId: defaultRoleId,
+            permisoId: DEFAULT_ROLE_ID, // guarda el permiso por defecto dentro del perfil del usuario
             bloqueado: false,
             createdAt: FieldValue.serverTimestamp(),
             tipo_documento: 'DNI',
@@ -82,6 +83,63 @@ export const assignDefaultRole = auth.user().onCreate(async (user) => {
         console.error(`Error assigning default role to user ${user.uid}:`, error);
     }
 });
+
+/**
+ * Registra un usuario publico con correo y contraseña.
+ */
+export const registerUser = https.onCall(async (data) => { // expone una callable publica para registrar usuarios desde el formulario web
+    const { username, email, password } = data; // extrae los datos necesarios enviados por el formulario de registro
+    if (!username || !email || !password) { // valida que el formulario haya enviado todos los campos obligatorios
+        throw new https.HttpsError('invalid-argument', 'Completa nombre de usuario, correo y contrasena.'); // + informa en espanol que el formulario debe enviar todos los datos obligatorios
+    }
+
+    try {
+        const userRecord = await authAdmin.createUser({ email, password, displayName: username }); // crea el usuario en Firebase Auth con el nombre visible definido por el formulario
+        await authAdmin.setCustomUserClaims(userRecord.uid, { role: DEFAULT_ROLE_ID, level: DEFAULT_LEVEL }); // asigna inmediatamente el rol y nivel base al usuario recien registrado
+        const { nombre, apellido_paterno, apellido_materno } = separarNombreCompleto(username); // separa el nombre visible para poblar los campos personalizados del perfil
+        await dbFirestore.collection('users').doc(userRecord.uid).set({ // crea de inmediato el documento base del usuario para que la app lo encuentre al iniciar sesion
+            uid: userRecord.uid, // guarda el identificador del usuario recien registrado
+            email, // guarda el correo del usuario recien registrado
+            username, // guarda el nombre de usuario visible definido en el formulario
+            displayName: username, // conserva el nombre visible del usuario para la interfaz
+            foto: null, // inicializa la foto del usuario sin imagen de perfil
+            nombre, // guarda la parte nombre separada del displayName
+            apellido_paterno, // guarda el apellido paterno separado del displayName
+            apellido_materno, // guarda el apellido materno separado del displayName
+            celular: '', // inicializa el celular del nuevo usuario vacio
+            permisoId: DEFAULT_ROLE_ID, // guarda el permiso por defecto dentro del perfil del usuario
+            bloqueado: false, // deja el usuario habilitado por defecto
+            createdAt: FieldValue.serverTimestamp(), // registra la fecha de creacion del perfil en Firestore
+            tipo_documento: 'DNI', // inicializa el tipo de documento por defecto del usuario
+            dni: '', // inicializa el numero de documento vacio
+            sexo: 'M', // inicializa el sexo con el valor por defecto existente en el sistema
+            estado_civil: 'Soltero', // inicializa el estado civil con el valor por defecto existente en el sistema
+            fecha_nacimiento: null, // inicializa la fecha de nacimiento sin valor
+            instruccion: null, // inicializa el nivel de instruccion sin valor
+            direccion: null, // inicializa la direccion sin valor
+            distrito: null, // inicializa el distrito sin valor
+        }); // cierra la creacion del documento base del usuario
+        return { uid: userRecord.uid, email: userRecord.email }; // devuelve los datos minimos del usuario creado para confirmar el registro
+    } catch (error: any) {
+        if (error.code === 'auth/email-already-exists') { // detecta si el correo ya estaba registrado previamente
+            throw new https.HttpsError('already-exists', 'Ese correo ya esta registrado.'); // + informa al formulario que el correo ya pertenece a otra cuenta
+        }
+        if (error.code === 'auth/invalid-email') { // + detecta cuando el correo enviado no cumple el formato admitido por Firebase Auth
+            throw new https.HttpsError('invalid-argument', 'El correo electronico no es valido.'); // + informa al formulario que debe corregir el correo antes de registrar
+        }
+        if (error.code === 'auth/invalid-password') { // + detecta cuando la contrasena no cumple las reglas minimas aceptadas por Firebase Auth
+            throw new https.HttpsError('invalid-argument', 'La contrasena debe tener al menos 6 caracteres.'); // + informa al formulario la validacion minima de la contrasena
+        }
+        if (error.code === 'auth/operation-not-allowed') { // + detecta cuando el proveedor email y contrasena no esta habilitado en el proyecto
+            throw new https.HttpsError('failed-precondition', 'El acceso con correo y contrasena no esta habilitado en Firebase.'); // + informa al frontend que falta habilitar el proveedor correspondiente
+        }
+        if (error.code === 'auth/too-many-requests') { // + detecta bloqueos temporales del servicio por demasiados intentos seguidos
+            throw new https.HttpsError('resource-exhausted', 'Demasiados intentos. Intenta nuevamente en unos minutos.'); // + informa al frontend que debe esperar antes de volver a intentar
+        }
+        console.error("Error in registerUser:", error); // registra el error del backend para diagnostico
+        throw new https.HttpsError('internal', 'Ocurrio un error inesperado mientras se registraba el usuario.'); // + devuelve un error generico solo cuando el backend falla por una causa no contemplada
+    }
+}); // cierra la callable publica de registro
 
 
 /**
@@ -116,7 +174,7 @@ export const createNewUser = https.onCall(async (data, context) => {
             email,
             username,
             displayName: username,
-            photoURL: null, // <-- CORREGIDO: Establecer explícitamente a null
+            foto: null, // <-- CORREGIDO: Establecer explícitamente a null
             nombre,
             apellido_paterno,
             apellido_materno,

@@ -1,6 +1,6 @@
 import { PermisoForm } from "@/components/intranet/permisos/PermisoForm";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getFirestore as getAdminFirestore } from "firebase-admin/firestore"; // + importa Firestore Admin para consultar datos desde el servidor
+import { getAdminApp } from "@/lib/firebase/admin"; // + importa la app Admin para evitar usar el SDK web en una página server
 
 // Define an interface for the Permiso object for type safety
 interface Permiso {
@@ -10,8 +10,9 @@ interface Permiso {
 }
 
 async function getPermiso(id: string): Promise<Permiso | null> {
-    const docRef = doc(db, "permisos", id);
-    const docSnap = await getDoc(docRef);
+    const adminApp = getAdminApp(); // + obtiene la instancia Admin inicializada para consultas del servidor
+    const adminDb = getAdminFirestore(adminApp); // + obtiene Firestore Admin desde la app del servidor
+    const docSnap = await adminDb.collection("permisos").doc(id).get(); // + lee el permiso directamente desde Firestore Admin
     if (docSnap.exists()) {
         // Cast the document data to our Permiso type
         return { id: docSnap.id, ...docSnap.data() } as Permiso;

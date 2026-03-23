@@ -6,6 +6,18 @@
 
 import type { NextConfig } from "next";
 
+const allowedDevOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "https://*.cloudworkstations.dev",
+  "https://*.firebase.studio",
+  "https://cetprosmp.edu.pe",
+  ...(process.env.ALLOWED_DEV_ORIGINS
+    ?.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean) ?? []),
+];
+
 const nextConfig: NextConfig = {
   /**
    * ---------------------------------------------------------
@@ -41,9 +53,7 @@ const nextConfig: NextConfig = {
    * y Cloud Workstations para recursos internos de Next.
    */
   allowedDevOrigins: [
-    "https://*.cloudworkstations.dev",
-    "https://3000-firebase-cetprosmp-nextgit-1772340132399.cluster-j6d3cbsvdbe5uxnhqrfzzeyj7i.cloudworkstations.dev",
-    "https://cetprosmp.edu.pe",
+    ...allowedDevOrigins,
   ],
 
   /**

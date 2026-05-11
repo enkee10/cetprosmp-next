@@ -1,29 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const COOKIE_NAME = "__session";
+const ACCESS_VALUE = "autorizado";
 
 export function middleware(request: NextRequest) {
-    // 1. En desarrollo local, siempre permite ver todo el sitio.
+    // En desarrollo local con npm run dev, siempre permite ver todo.
     if (process.env.NODE_ENV === "development") {
         return NextResponse.next();
     }
 
-    // 2. Si el modo construcción no está activado en Firebase,
-    // todos pueden ver el sitio normalmente.
+    // Si el modo construcción está desactivado, todos ven la web.
     if (process.env.MAINTENANCE_MODE !== "true") {
         return NextResponse.next();
     }
 
     const { pathname } = request.nextUrl;
 
-    // 3. Rutas que siempre deben estar permitidas.
-    const rutasPermitidas = ["/construccion", "/api/acceso", "/api/salir"];
+    // Rutas permitidas aunque el sitio esté en construcción.
+    const rutasPermitidas = [
+        "/construccion",
+        "/api/acceso"
+    ];
 
     const esRutaPermitida = rutasPermitidas.some((ruta) =>
         pathname.startsWith(ruta)
     );
 
-    // 4. Archivos internos de Next.js, imágenes, íconos, estilos, scripts, etc.
+    // Archivos internos de Next.js y archivos públicos.
     const esArchivoInterno =
         pathname.startsWith("/_next") ||
         pathname.startsWith("/favicon.ico") ||
@@ -37,15 +40,14 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // 5. Verificar cookie de acceso.
+    // Verifica si el navegador tiene la cookie de acceso.
     const cookie = request.cookies.get(COOKIE_NAME)?.value;
-    const claveSecreta = process.env.MAINTENANCE_SECRET;
 
-    if (cookie && claveSecreta && cookie === claveSecreta) {
+    if (cookie === ACCESS_VALUE) {
         return NextResponse.next();
     }
 
-    // 6. Si no tiene acceso, mostrar página de construcción.
+    // Si no tiene acceso, muestra la página de construcción.
     const url = request.nextUrl.clone();
     url.pathname = "/construccion";
 

@@ -4,14 +4,20 @@ import { notFound } from 'next/navigation';
 import { Box, Container, Typography } from '@mui/material';
 import { getCarreras } from '@/lib/getCarreras';
 import type { Carrera } from '@/types/carreras';
+import type { Modulo, RichTextBlock } from '@/types/modulos';
 import Image from 'next/image';
 import RichText from '@/components/RichText';
-import ListaModulos from '@/components/Modulos/ListaModulos';
+import VideoGallery from '@/components/VideoGallery';
+import { getStrapiMedia } from '@/lib/getStrapiMedia';
 
-// Fallback: 4 párrafos de 100 palabras
+interface PageProps {
+  params: Promise<{ carreraSlug: string; moduloSlug: string }>;
+}
+
 const generarLorem = () => {
   const lorem =
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque vitae sem nec ligula malesuada tincidunt. Vivamus in nisi eu lorem luctus finibus. Donec bibendum, magna vel imperdiet pharetra, leo libero sagittis justo, at aliquam arcu erat nec erat. ';
+
   return [...Array(4)].map((_, i) => (
     <Typography component="p" key={i} paragraph>
       {lorem.repeat(3).trim()}
@@ -19,54 +25,57 @@ const generarLorem = () => {
   ));
 };
 
+const buscarModuloEnCarrera = (carreras: Carrera[], carreraSlug: string, moduloSlug: string) => {
+  const carrera = carreras.find((car) => car.slug === carreraSlug);
+  const modulo = carrera?.modulos?.find((mod) => mod.slug === moduloSlug);
+
+  return { carrera, modulo };
+};
+
 export async function generateStaticParams() {
   const carreras: Carrera[] = await getCarreras();
-  return carreras.map((car) => ({
-    slug: car.slug,
-  }));
+
+  return carreras.flatMap((car) =>
+    (car.modulos ?? []).map((mod) => ({
+      carreraSlug: car.slug,
+      moduloSlug: mod.slug,
+    }))
+  );
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { carreraSlug, moduloSlug } = await params;
   const carreras: Carrera[] = await getCarreras();
-  const carrera = carreras.find((e) => e.slug === slug);
+  const { carrera, modulo } = buscarModuloEnCarrera(carreras, carreraSlug, moduloSlug);
 
-  if (!carrera) return {};
+  if (!carrera || !modulo) return {};
 
   return {
-    title: `${carrera.tituloComercial} | CETPRO SMP`,
-    description: `Conoce la carrera de ${carrera.tituloComercial} en el CETPRO San Martín de Porres.`,
+    title: `${modulo.tituloComercial} | ${carrera.tituloComercial} | CETPRO SMP`,
+    description: `Conoce el modulo ${modulo.tituloComercial} de la carrera ${carrera.tituloComercial} en el CETPRO San Martin de Porres.`,
   };
 }
 
-export default async function CarreraDetallePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+export default async function ModuloCarreraDetallePage({ params }: PageProps) {
+  const { carreraSlug, moduloSlug } = await params;
   const carreras: Carrera[] = await getCarreras();
-  const carrera = carreras.find((e) => e.slug === slug);
+  const { modulo } = buscarModuloEnCarrera(carreras, carreraSlug, moduloSlug);
 
-  if (!carrera) notFound();
+  if (!modulo) notFound();
 
-  const { tituloComercial, descripcion2, imagenes } = carrera;
+  const { tituloComercial, descripcion2, imagenes, videosYoutube } = modulo as Modulo;
+  const tieneDescripcion = Array.isArray(descripcion2) && descripcion2.length > 0;
 
-  const tieneDescripcion = descripcion2?.some((b: any) => b.type === 'paragraph');
+  const imagenesFinales: string[] =
+    Array.isArray(imagenes) && imagenes.length > 0
+      ? imagenes.map((img) => getStrapiMedia(img.url))
+      : [getStrapiMedia(null)];
 
-  const imagenesFinales: string[] = imagenes?.length
-    ? imagenes.map((img: any) =>
-        typeof img === 'string'
-          ? img.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL
-          : img?.url?.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL
-      )
-    : [process.env.NEXT_PUBLIC_DEFAULT_IMG_URL, process.env.NEXT_PUBLIC_DEFAULT_IMG_URL];
-
-  const modulosSinCodigo = carrera.modulos ?? [];
+  const defaultVideoUrl = process.env.NEXT_PUBLIC_DEFAULT_VIDEO_URL || '';
+  const videosFinales: string[] =
+    Array.isArray(videosYoutube) && videosYoutube.length > 0
+      ? videosYoutube.map((v) => (v.url?.includes('youtube.com') ? v.url : defaultVideoUrl)).filter(Boolean)
+      : [];
 
   return (
     <main>
@@ -104,7 +113,7 @@ export default async function CarreraDetallePage({
           >
             {imagenesFinales.map((url, i) => (
               <Box
-                key={i}
+                key={`img-${i}`}
                 sx={{
                   position: 'relative',
                   width: '100%',
@@ -122,15 +131,15 @@ export default async function CarreraDetallePage({
                 />
               </Box>
             ))}
+
+            {videosFinales.length > 0 && <VideoGallery videos={videosFinales} />}
           </Box>
 
           <Box
             sx={{
               order: { xs: 1, md: 2 },
               flex: 1,
-              '& p': {
-                textAlign: 'justify',
-              },
+              '& p': { textAlign: 'justify' },
               '& p:first-of-type::first-letter': {
                 float: 'left',
                 fontSize: '2.9rem',
@@ -141,36 +150,17 @@ export default async function CarreraDetallePage({
               },
             }}
           >
-            {tieneDescripcion ? <RichText content={descripcion2} /> : generarLorem()}
+            {tieneDescripcion ? <RichText content={descripcion2 as RichTextBlock[]} /> : generarLorem()}
           </Box>
         </Box>
 
-        {/* Sección Módulos */}
-        {modulosSinCodigo.length > 0 && (
-          <Box mt={8}>
-            <Typography
-              variant="h4"
-              component="h2"
-              gutterBottom
-              sx={{
-                fontWeight: 'bold',
-                fontSize: 'clamp(1.5rem, 5vw, 2rem)',
-                textAlign: { xs: 'center', md: 'left' },
-              }}
-            >
-              Módulos
-            </Typography>
-            <ListaModulos modulos={modulosSinCodigo} />
-          </Box>
-        )}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generarJsonLd(modulo)),
+          }}
+        />
       </Container>
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(generarJsonLd(carrera)),
-        }}
-      />
     </main>
   );
 }

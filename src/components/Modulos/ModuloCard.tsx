@@ -14,7 +14,11 @@ import {
 import Link from 'next/link';
 import type { Modulo } from '@/types/modulos';
 
-const ModuloCard: React.FC<Modulo> = ({
+type ModuloCardProps = Modulo & {
+  carreraSlug?: string;
+};
+
+const ModuloCard: React.FC<ModuloCardProps> = ({
   id,
   slug,
   titulo,
@@ -25,6 +29,7 @@ const ModuloCard: React.FC<Modulo> = ({
   metas,
   descripcion2 = [],
   imagen,
+  carreraSlug,
 }) => {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('lg'));
@@ -48,6 +53,8 @@ const ModuloCard: React.FC<Modulo> = ({
     typeof imagen === 'string' && imagen.trim() !== ''
       ? imagen
       : process.env.NEXT_PUBLIC_DEFAULT_IMG_URL;
+
+  const href = carreraSlug ? `/carreras/${carreraSlug}/${slug}` : `/modulos/${slug}`;
 
   return (
     <Card
@@ -120,7 +127,7 @@ const ModuloCard: React.FC<Modulo> = ({
         </Box>
 
         <Box textAlign="right">
-          <Link href={`/modulos/${slug}`}>
+          <Link href={href}>
             <Button variant="outlined" size="small">
               Ver más
             </Button>

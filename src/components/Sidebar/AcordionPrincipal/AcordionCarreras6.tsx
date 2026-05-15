@@ -145,7 +145,7 @@ export default function AcordionCarreras({
                       {car.modulos.map((mod) => (
                         <CustomListItem key={mod.id}>
                           <Link
-                            href={`/modulos/${mod.slug}`}
+                            href={`/carreras/${car.slug}/${mod.slug}`}
                             style={{ textDecoration: "none", color: "inherit" }}
                           >
                             <CustomTypography>{mod.tituloComercial}</CustomTypography>

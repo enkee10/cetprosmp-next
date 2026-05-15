@@ -7,9 +7,10 @@ import type { Modulo } from '@/types/modulos';
 
 interface Props {
   modulos: Modulo[];
+  carreraSlug?: string;
 }
 
-const ListaModulos: React.FC<Props> = ({ modulos }) => {
+const ListaModulos: React.FC<Props> = ({ modulos, carreraSlug }) => {
   if (modulos.length === 0) {
     return (
       <Typography variant="body1">
@@ -22,7 +23,7 @@ const ListaModulos: React.FC<Props> = ({ modulos }) => {
     <Stack spacing={3} sx={{ width: '100%' }}>
       {modulos.map((mod) => (
         <Box key={mod.id} sx={{ width: '100%' }}>
-          <ModuloCard {...mod} />
+          <ModuloCard {...mod} carreraSlug={carreraSlug} />
         </Box>
       ))}
     </Stack>

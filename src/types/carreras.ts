@@ -1,4 +1,4 @@
-import type { Modulo } from './modulos';
+import type { Modulo, RichTextBlock } from './modulos';
 
 export interface Carrera {
     id: number;
@@ -8,5 +8,7 @@ export interface Carrera {
     codigo: string;
     duracion: number;
     imagen: string | null;
+    imagenes?: (string | { url?: string | null })[];
+    descripcion2?: RichTextBlock[];
     modulos?: Modulo[]; // ✅ Agregado
 }

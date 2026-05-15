@@ -13,7 +13,7 @@ import {
   MenuText,
 } from "@/components/Header/MenuPrincipal/FullCustomMenu/FullCustomMenu";
 
-type Modulo = { id: number; tituloComercial: string; slug: string };
+type Modulo = { id: number; tituloComercial: string; slug: string; carreraSlug?: string };
 type Carrera = {
   id: number;
   tituloComercial: string;
@@ -122,10 +122,10 @@ export default function CarrerasMenuWrapper() {
 
   const handleCarreraEnter = (
     e: React.MouseEvent<HTMLDivElement>,
-    modulos: Modulo[]
+    carrera: Carrera
   ) => {
     setAnchorModulo(e.currentTarget);
-    setModulos(modulos);
+    setModulos(carrera.modulos.map((mod) => ({ ...mod, carreraSlug: carrera.slug })));
   };
 
   return (
@@ -180,7 +180,7 @@ export default function CarrerasMenuWrapper() {
               onClick={cerrarTodosLosMenus}
             >
               <MenuItemBox
-                onMouseEnter={(e) => handleCarreraEnter(e, car.modulos)}
+                onMouseEnter={(e) => handleCarreraEnter(e, car)}
                 iconRight={
                   <ArrowRightIcon fontSize="small" sx={{ mt: 0.5, alignSelf: "flex-start" }} />
                 }
@@ -210,7 +210,7 @@ export default function CarrerasMenuWrapper() {
           {modulos?.map((mod) => (
             <Link
               key={mod.id}
-              href={`/modulos/${mod.slug}`}
+              href={mod.carreraSlug ? `/carreras/${mod.carreraSlug}/${mod.slug}` : `/modulos/${mod.slug}`}
               style={{ textDecoration: "none" }}
               onClick={cerrarTodosLosMenus}
             >

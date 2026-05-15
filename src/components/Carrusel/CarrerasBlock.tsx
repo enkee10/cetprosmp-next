@@ -34,7 +34,7 @@ export default function CarrerasBlock({ carreras }: { carreras: Especialidad['ca
                 <Box key={mod.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.7, mb: 0.5 }}>
                   <FiberManualRecordIcon sx={{ fontSize: 8, mt: '6px' }} />
                   {mod.slug ? (
-                    <Link href={`/modulos/${mod.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <Link href={car.slug ? `/carreras/${car.slug}/${mod.slug}` : `/modulos/${mod.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                       <Typography variant="body2" sx={{ textShadow: '0 0 8px rgba(255,255,255,0.95), 0 0 16px rgba(255,255,255,0.85)' }}>
                         {mod.tituloComercial}
                       </Typography>

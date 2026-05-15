@@ -1,4 +1,4 @@
-# # Example queries for a simple movie app.
+# Example queries for a simple movie app.
 
 # # @auth() directives control who can call each operation.
 # # Anyone should be able to list all movies, so the auth level is set to PUBLIC
@@ -10,12 +10,12 @@
 #     genre
 #   }
 # }
-
+# 
 # # List all users, only admins should be able to list all users, so we use NO_ACCESS
 # query ListUsers @auth(level: NO_ACCESS) {
 #   users { id, username }
 # }
-
+# 
 # # Logged in user can list all their reviews and movie titles associated with the review 
 # # Since the query requires the uid of the current authenticated user, the auth level is set to USER
 # query ListUserReviews @auth(level: USER) {
@@ -36,7 +36,7 @@
 #     }
 #   }
 # }
-
+# 
 # # Get movie by id
 # query GetMovieById($id: UUID!) @auth(level: PUBLIC) {
 #   movie(id: $id) {
@@ -61,7 +61,7 @@
 #     }
 #   }
 # }
-
+# 
 # # Search for movies, actors, and reviews
 # query SearchMovie(
 #   $titleInput: String
@@ -81,3 +81,10 @@
 #     imageUrl
 #   }
 # }
+
+# List Modulos
+query ListModulosTitulos @auth(level: PUBLIC) {
+  modulos {
+    titulo
+  }
+}

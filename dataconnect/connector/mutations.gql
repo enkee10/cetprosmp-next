@@ -1,4 +1,4 @@
-# # Example mutations for a simple movie app
+# Example mutations for a simple movie app
 
 # # Create a movie based on user input
 # mutation CreateMovie(
@@ -14,7 +14,7 @@
 #     }
 #   )
 # }
-
+# 
 # # Upsert (update or insert) a user's username based on their auth.uid
 # mutation UpsertUser($username: String!) @auth(level: USER) {
 #   user_upsert(
@@ -24,7 +24,7 @@
 #     }
 #   )
 # }
-
+# 
 # # Add a review for a movie
 # mutation AddReview(
 #   $movieId: UUID!
@@ -41,7 +41,7 @@
 #     }
 #   )
 # }
-
+# 
 # # Logged in user can delete their review for a movie
 # mutation DeleteReview(
 #   $movieId: UUID!

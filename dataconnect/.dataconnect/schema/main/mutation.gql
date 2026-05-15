@@ -1,0 +1,124 @@
+extend type Mutation {
+  """
+  ✨ Insert a single `Modulo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  modulo_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Modulo_Data!
+  ): Modulo_KeyOutput! @fdc_generated(from: "Modulo", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert `Modulo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  modulo_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Modulo_Data!]!
+  ): [Modulo_KeyOutput!]! @fdc_generated(from: "Modulo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert or update a single `Modulo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Modulo`.
+  """
+  modulo_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Modulo_Data!
+  ): Modulo_KeyOutput! @fdc_generated(from: "Modulo", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update `Modulo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Modulo`.
+  """
+  modulo_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Modulo_Data!]!
+  ): [Modulo_KeyOutput!]! @fdc_generated(from: "Modulo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Update a single `Modulo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Modulo` or `null` if not found.
+  """
+  modulo_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Modulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Modulo_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Modulo_Data!
+  ): Modulo_KeyOutput @fdc_generated(from: "Modulo", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update `Modulo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  modulo_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Modulo_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Modulo_Data!
+  ): Int! @fdc_generated(from: "Modulo", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Delete a single `Modulo` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  modulo_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Modulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Modulo_FirstRow
+  ): Modulo_KeyOutput @fdc_generated(from: "Modulo", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete `Modulo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  modulo_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Modulo_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo", purpose: DELETE_MULTIPLE)
+}

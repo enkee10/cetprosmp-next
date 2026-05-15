@@ -30,7 +30,7 @@ export default async function CarreraesPage() {
         description:
           carrera.descripcion2?.[0]?.children?.[0]?.text ||
           'Carrera técnica en CETPRO SMP',
-        url: `https://www.tusitioweb.edu.pe/carreras/${carrera.id}`,
+        url: `https://www.tusitioweb.edu.pe/carreras/${carrera.slug}`,
       },
     })),
   };

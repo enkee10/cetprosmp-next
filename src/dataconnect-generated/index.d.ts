@@ -68,6 +68,16 @@ export interface Grupo_Key {
   __typename?: 'Grupo_Key';
 }
 
+export interface ListActEconomicasData {
+  actEconomicas: ({
+    id: number;
+    titulo?: string | null;
+    descripcion?: string | null;
+    familiaId?: number | null;
+    especialidadId?: number | null;
+  } & ActEconomica_Key)[];
+}
+
 export interface ListPermisosData {
   permisos: ({
     id: number;
@@ -238,4 +248,16 @@ export const getUserByDocumentIdRef: GetUserByDocumentIdRef;
 
 export function getUserByDocumentId(vars: GetUserByDocumentIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
 export function getUserByDocumentId(dc: DataConnect, vars: GetUserByDocumentIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
+
+interface ListActEconomicasRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListActEconomicasData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListActEconomicasData, undefined>;
+  operationName: string;
+}
+export const listActEconomicasRef: ListActEconomicasRef;
+
+export function listActEconomicas(options?: ExecuteQueryOptions): QueryPromise<ListActEconomicasData, undefined>;
+export function listActEconomicas(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListActEconomicasData, undefined>;
 

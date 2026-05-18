@@ -65,6 +65,16 @@ export interface Grupo_Key {
   __typename?: 'Grupo_Key';
 }
 
+export interface ListActEconomicasData {
+  actEconomicas: ({
+    id: number;
+    titulo?: string | null;
+    descripcion?: string | null;
+    familiaId?: number | null;
+    especialidadId?: number | null;
+  } & ActEconomica_Key)[];
+}
+
 export interface ListPermisosData {
   permisos: ({
     id: number;
@@ -207,4 +217,9 @@ export function listUsers(options?: OperationOptions): Promise<ExecuteOperationR
 export function getUserByDocumentId(dc: DataConnect, vars: GetUserByDocumentIdVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetUserByDocumentIdData>>;
 /** Generated Node Admin SDK operation action function for the 'GetUserByDocumentId' Query. Allow users to pass in custom DataConnect instances. */
 export function getUserByDocumentId(vars: GetUserByDocumentIdVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetUserByDocumentIdData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListActEconomicas' Query. Allow users to execute without passing in DataConnect. */
+export function listActEconomicas(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListActEconomicasData>>;
+/** Generated Node Admin SDK operation action function for the 'ListActEconomicas' Query. Allow users to pass in custom DataConnect instances. */
+export function listActEconomicas(options?: OperationOptions): Promise<ExecuteOperationResponse<ListActEconomicasData>>;
 

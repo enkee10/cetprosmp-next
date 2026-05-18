@@ -1,4 +1,4 @@
-import { listPermisosRef, getPermisoByIdRef, listUsersRef, getUserByDocumentIdRef, connectorConfig } from '../../esm/index.esm.js';
+import { listPermisosRef, getPermisoByIdRef, listUsersRef, getUserByDocumentIdRef, listActEconomicasRef, connectorConfig } from '../../esm/index.esm.js';
 import { CallerSdkTypeEnum } from 'firebase/data-connect';
 import { useDataConnectQuery, validateReactArgs } from '@tanstack-query-firebase/react/data-connect';
 
@@ -24,5 +24,11 @@ export function useListUsers(dcOrOptions, options) {
 export function useGetUserByDocumentId(dcOrVars, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   const ref = getUserByDocumentIdRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useListActEconomicas(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
+  const ref = listActEconomicasRef(dcInstance);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }

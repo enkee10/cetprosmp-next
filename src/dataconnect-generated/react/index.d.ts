@@ -1,4 +1,4 @@
-import { ListPermisosData, GetPermisoByIdData, GetPermisoByIdVariables, ListUsersData, GetUserByDocumentIdData, GetUserByDocumentIdVariables } from '../';
+import { ListPermisosData, GetPermisoByIdData, GetPermisoByIdVariables, ListUsersData, GetUserByDocumentIdData, GetUserByDocumentIdVariables, ListActEconomicasData } from '../';
 import { UseDataConnectQueryResult, useDataConnectQueryOptions} from '@tanstack-query-firebase/react/data-connect';
 import { UseQueryResult} from '@tanstack/react-query';
 import { DataConnect } from 'firebase/data-connect';
@@ -16,3 +16,6 @@ export function useListUsers(dc: DataConnect, options?: useDataConnectQueryOptio
 
 export function useGetUserByDocumentId(vars: GetUserByDocumentIdVariables, options?: useDataConnectQueryOptions<GetUserByDocumentIdData>): UseDataConnectQueryResult<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
 export function useGetUserByDocumentId(dc: DataConnect, vars: GetUserByDocumentIdVariables, options?: useDataConnectQueryOptions<GetUserByDocumentIdData>): UseDataConnectQueryResult<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
+
+export function useListActEconomicas(options?: useDataConnectQueryOptions<ListActEconomicasData>): UseDataConnectQueryResult<ListActEconomicasData, undefined>;
+export function useListActEconomicas(dc: DataConnect, options?: useDataConnectQueryOptions<ListActEconomicasData>): UseDataConnectQueryResult<ListActEconomicasData, undefined>;

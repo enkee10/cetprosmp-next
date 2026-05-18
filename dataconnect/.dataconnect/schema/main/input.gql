@@ -206,6 +206,14 @@ input ActEconomica_Data {
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `ActEconomica`.`titulo` of type `String`)
   """
   titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ActEconomica`.`carreras_on_actEconomica` of type `[Carrera!]!`
+  """
+  carreras_on_actEconomica: [Carrera_Data!]
+  """
+  ✨ Generated from Field `ActEconomica`.`especialidads_on_actEconomica` of type `[Especialidad!]!`
+  """
+  especialidads_on_actEconomica: [Especialidad_Data!]
 }
 """
 ✨ Generated filter input type for table 'ActEconomica'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -593,6 +601,10 @@ input Calendario_Data {
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Calendario`.`titulo` of type `String`)
   """
   titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Calendario`.`grupos_on_calendario` of type `[Grupo!]!`
+  """
+  grupos_on_calendario: [Grupo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Calendario'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -1028,6 +1040,10 @@ input Carrera_Data {
   ✨ `_expr` server value variant of `tituloComercial` (✨ Generated from Field `Carrera`.`tituloComercial` of type `String`)
   """
   tituloComercial_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Carrera`.`modulos_on_carrera` of type `[Modulo!]!`
+  """
+  modulos_on_carrera: [Modulo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Carrera'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -1942,6 +1958,14 @@ input Especialidad_Data {
   ✨ `_expr` server value variant of `tituloComercial` (✨ Generated from Field `Especialidad`.`tituloComercial` of type `String`)
   """
   tituloComercial_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Especialidad`.`actEconomicas_on_especialidad` of type `[ActEconomica!]!`
+  """
+  actEconomicas_on_especialidad: [ActEconomica_Data!]
+  """
+  ✨ Generated from Field `Especialidad`.`personalEspecialidads_on_especialidad` of type `[PersonalEspecialidad!]!`
+  """
+  personalEspecialidads_on_especialidad: [PersonalEspecialidad_Data!]
 }
 """
 ✨ Generated filter input type for table 'Especialidad'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -2277,6 +2301,10 @@ input Familia_Data {
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Familia`.`titulo` of type `String`)
   """
   titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Familia`.`actEconomicas_on_familia` of type `[ActEconomica!]!`
+  """
+  actEconomicas_on_familia: [ActEconomica_Data!]
 }
 """
 ✨ Generated filter input type for table 'Familia'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -2604,6 +2632,14 @@ input Grupo_Data {
   ✨ `_expr` server value variant of `turno` (✨ Generated from Field `Grupo`.`turno` of type `String`)
   """
   turno_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Grupo`.`matriculaGrupos_on_grupo` of type `[MatriculaGrupo!]!`
+  """
+  matriculaGrupos_on_grupo: [MatriculaGrupo_Data!]
+  """
+  ✨ Generated from Field `Grupo`.`paqueteGrupos_on_grupo` of type `[PaqueteGrupo!]!`
+  """
+  paqueteGrupos_on_grupo: [PaqueteGrupo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Grupo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -3039,6 +3075,18 @@ input Matricula_Data {
   ✨ `_expr` server value variant of `recibo` (✨ Generated from Field `Matricula`.`recibo` of type `String`)
   """
   recibo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Matricula`.`matriculaGrupos_on_matricula` of type `[MatriculaGrupo!]!`
+  """
+  matriculaGrupos_on_matricula: [MatriculaGrupo_Data!]
+  """
+  ✨ Generated from Field `Matricula`.`matriculaPaquetes_on_matricula` of type `[MatriculaPaquete!]!`
+  """
+  matriculaPaquetes_on_matricula: [MatriculaPaquete_Data!]
+  """
+  ✨ Generated from Field `Matricula`.`matriculaUsers_on_matricula` of type `[MatriculaUser!]!`
+  """
+  matriculaUsers_on_matricula: [MatriculaUser_Data!]
 }
 """
 ✨ Generated filter input type for table 'Matricula'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -4315,6 +4363,14 @@ input Modulo_Data {
   ✨ `_expr` server value variant of `tituloComercial` (✨ Generated from Field `Modulo`.`tituloComercial` of type `String`)
   """
   tituloComercial_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Modulo`.`grupos_on_modulo` of type `[Grupo!]!`
+  """
+  grupos_on_modulo: [Grupo_Data!]
+  """
+  ✨ Generated from Field `Modulo`.`moduloVideos_on_modulo` of type `[ModuloVideo!]!`
+  """
+  moduloVideos_on_modulo: [ModuloVideo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Modulo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -5229,6 +5285,14 @@ input Paquete_Data {
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Paquete`.`titulo` of type `String`)
   """
   titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Paquete`.`matriculaPaquetes_on_paquete` of type `[MatriculaPaquete!]!`
+  """
+  matriculaPaquetes_on_paquete: [MatriculaPaquete_Data!]
+  """
+  ✨ Generated from Field `Paquete`.`paqueteGrupos_on_paquete` of type `[PaqueteGrupo!]!`
+  """
+  paqueteGrupos_on_paquete: [PaqueteGrupo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Paquete'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -5835,6 +5899,10 @@ input Permiso_Data {
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Permiso`.`titulo` of type `String`)
   """
   titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Permiso`.`users_on_permiso` of type `[User!]!`
+  """
+  users_on_permiso: [User_Data!]
 }
 """
 ✨ Generated filter input type for table 'Permiso'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -6090,6 +6158,26 @@ input Personal_Data {
   ✨ `_expr` server value variant of `memo` (✨ Generated from Field `Personal`.`memo` of type `String`)
   """
   memo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Personal`.`grupos_on_personal` of type `[Grupo!]!`
+  """
+  grupos_on_personal: [Grupo_Data!]
+  """
+  ✨ Generated from Field `Personal`.`personalEspecialidads_on_personal` of type `[PersonalEspecialidad!]!`
+  """
+  personalEspecialidads_on_personal: [PersonalEspecialidad_Data!]
+  """
+  ✨ Generated from Field `Personal`.`semestres_on_coordinador1` of type `[Semestre!]!`
+  """
+  semestres_on_coordinador1: [Semestre_Data!]
+  """
+  ✨ Generated from Field `Personal`.`semestres_on_coordinador2` of type `[Semestre!]!`
+  """
+  semestres_on_coordinador2: [Semestre_Data!]
+  """
+  ✨ Generated from Field `Personal`.`semestres_on_director` of type `[Semestre!]!`
+  """
+  semestres_on_director: [Semestre_Data!]
 }
 """
 ✨ Generated filter input type for table 'Personal'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -6836,6 +6924,10 @@ input Publicacion_Data {
   ✨ `_expr` server value variant of `ubicacion` (✨ Generated from Field `Publicacion`.`ubicacion` of type `String`)
   """
   ubicacion_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Publicacion`.`publicacionVideos_on_publicacion` of type `[PublicacionVideo!]!`
+  """
+  publicacionVideos_on_publicacion: [PublicacionVideo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Publicacion'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -7618,6 +7710,10 @@ input Sector_Data {
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Sector`.`titulo` of type `String`)
   """
   titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Sector`.`familias_on_sector` of type `[Familia!]!`
+  """
+  familias_on_sector: [Familia_Data!]
 }
 """
 ✨ Generated filter input type for table 'Sector'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -7881,6 +7977,10 @@ input Semestre_Data {
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Semestre`.`titulo` of type `String`)
   """
   titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Semestre`.`calendarios_on_semestre` of type `[Calendario!]!`
+  """
+  calendarios_on_semestre: [Calendario_Data!]
 }
 """
 ✨ Generated filter input type for table 'Semestre'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -8448,6 +8548,14 @@ input User_Data {
   ✨ `_expr` server value variant of `username` (✨ Generated from Field `User`.`username` of type `String`)
   """
   username_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `User`.`matriculaUsers_on_user` of type `[MatriculaUser!]!`
+  """
+  matriculaUsers_on_user: [MatriculaUser_Data!]
+  """
+  ✨ Generated from Field `User`.`personals_on_user` of type `[Personal!]!`
+  """
+  personals_on_user: [Personal_Data!]
 }
 """
 ✨ Generated filter input type for table 'User'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -9031,6 +9139,14 @@ input VideoYoutube_Data {
   ✨ `_expr` server value variant of `url` (✨ Generated from Field `VideoYoutube`.`url` of type `String`)
   """
   url_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `VideoYoutube`.`moduloVideos_on_video` of type `[ModuloVideo!]!`
+  """
+  moduloVideos_on_video: [ModuloVideo_Data!]
+  """
+  ✨ Generated from Field `VideoYoutube`.`publicacionVideos_on_video` of type `[PublicacionVideo!]!`
+  """
+  publicacionVideos_on_video: [PublicacionVideo_Data!]
 }
 """
 ✨ Generated filter input type for table 'VideoYoutube'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.

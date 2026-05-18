@@ -44,3 +44,13 @@ query GetUserByDocumentId($documentId: String!) @auth(expr: "has(auth.token.leve
     id
   }
 }
+
+query ListActEconomicas @auth(expr: "has(auth.token.level) && auth.token.level >= 600") {
+  actEconomicas(limit: 500) {
+    id
+    titulo
+    descripcion
+    familiaId
+    especialidadId
+  }
+}

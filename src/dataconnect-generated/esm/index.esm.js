@@ -62,3 +62,16 @@ export function getUserByDocumentId(dcOrVars, varsOrOptions, options) {
   return executeQuery(getUserByDocumentIdRef(dcInstance, inputVars), inputOpts && inputOpts.fetchPolicy);
 }
 
+export const listActEconomicasRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListActEconomicas');
+}
+listActEconomicasRef.operationName = 'ListActEconomicas';
+
+export function listActEconomicas(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listActEconomicasRef(dcInstance, inputVars), inputOpts && inputOpts.fetchPolicy);
+}
+

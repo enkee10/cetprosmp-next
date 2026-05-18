@@ -14,6 +14,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetPermisoById*](#getpermisobyid)
   - [*ListUsers*](#listusers)
   - [*GetUserByDocumentId*](#getuserbydocumentid)
+  - [*ListActEconomicas*](#listacteconomicas)
 - [**Mutations**](#mutations)
 
 # Accessing the connector
@@ -489,6 +490,103 @@ console.log(data.users);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.users);
+});
+```
+
+## ListActEconomicas
+You can execute the `ListActEconomicas` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listActEconomicas(options?: ExecuteQueryOptions): QueryPromise<ListActEconomicasData, undefined>;
+
+interface ListActEconomicasRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListActEconomicasData, undefined>;
+}
+export const listActEconomicasRef: ListActEconomicasRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listActEconomicas(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListActEconomicasData, undefined>;
+
+interface ListActEconomicasRef {
+  ...
+  (dc: DataConnect): QueryRef<ListActEconomicasData, undefined>;
+}
+export const listActEconomicasRef: ListActEconomicasRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listActEconomicasRef:
+```typescript
+const name = listActEconomicasRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListActEconomicas` query has no variables.
+### Return Type
+Recall that executing the `ListActEconomicas` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListActEconomicasData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListActEconomicasData {
+  actEconomicas: ({
+    id: number;
+    titulo?: string | null;
+    descripcion?: string | null;
+    familiaId?: number | null;
+    especialidadId?: number | null;
+  } & ActEconomica_Key)[];
+}
+```
+### Using `ListActEconomicas`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listActEconomicas } from '@dataconnect/generated';
+
+
+// Call the `listActEconomicas()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listActEconomicas();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listActEconomicas(dataConnect);
+
+console.log(data.actEconomicas);
+
+// Or, you can use the `Promise` API.
+listActEconomicas().then((response) => {
+  const data = response.data;
+  console.log(data.actEconomicas);
+});
+```
+
+### Using `ListActEconomicas`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listActEconomicasRef } from '@dataconnect/generated';
+
+
+// Call the `listActEconomicasRef()` function to get a reference to the query.
+const ref = listActEconomicasRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listActEconomicasRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.actEconomicas);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.actEconomicas);
 });
 ```
 

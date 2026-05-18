@@ -30,3 +30,9 @@ export function getUserByDocumentId(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeQuery('GetUserByDocumentId', inputVars, inputOpts);
 }
 
+export function listActEconomicas(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListActEconomicas', undefined, inputOpts);
+}
+

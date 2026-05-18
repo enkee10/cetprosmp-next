@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Button, Container, Typography } from '@mui/material';
 import Link from 'next/link';
 import { getAuth } from 'firebase/auth';
-import { getDataConnect } from 'firebase/data-connect';
 import { app } from '@/lib/firebase';
-import { connectorConfig, listPermisos as dcListPermisos } from '@dataconnect/generated';
+import { getClientDataConnect } from '@/lib/dataconnect';
+import { listPermisos as dcListPermisos } from '@dataconnect/generated';
 import { CustomTable } from '@/components/CustomTable';
 
 interface Permiso {
@@ -19,7 +19,7 @@ export default function PermisosPage() {
   const [permisos, setPermisos] = useState<Permiso[]>([]);
   const [error, setError] = useState<string | null>(null);
   const auth = getAuth(app);
-  const dataConnect = useMemo(() => getDataConnect(app, connectorConfig), []);
+  const dataConnect = useMemo(() => getClientDataConnect(app), []);
 
   useEffect(() => {
     const fetchPermisos = async () => {

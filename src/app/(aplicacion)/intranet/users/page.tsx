@@ -4,9 +4,9 @@ import { Alert, Box, Button, Typography, Chip, Avatar } from '@mui/material';
 import { DataGrid, GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { getDataConnect } from 'firebase/data-connect';
 import { app } from '@/lib/firebase';
-import { connectorConfig, listUsers as dcListUsers } from '@dataconnect/generated';
+import { getClientDataConnect } from '@/lib/dataconnect';
+import { listUsers as dcListUsers } from '@dataconnect/generated';
 import UserForm from '@/components/intranet/UserForm';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -65,7 +65,7 @@ const UsersPage = () => {
 
   const functions = getFunctions(app);
   const auth = getAuth(app);
-  const dataConnect = useMemo(() => getDataConnect(app, connectorConfig), []);
+  const dataConnect = useMemo(() => getClientDataConnect(app), []);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);

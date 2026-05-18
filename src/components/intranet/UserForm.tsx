@@ -6,9 +6,9 @@ import * as yup from 'yup';
 import { TextField, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Avatar, CircularProgress, Typography, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { getAuth } from 'firebase/auth';
-import { getDataConnect } from 'firebase/data-connect';
 import { app, storage } from '@/lib/firebase';
-import { connectorConfig, listPermisos as dcListPermisos } from '@dataconnect/generated';
+import { getClientDataConnect } from '@/lib/dataconnect';
+import { listPermisos as dcListPermisos } from '@dataconnect/generated';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { generateUsername } from './userForm_utilities';
 
@@ -78,7 +78,7 @@ const UserForm: React.FC<UserFormProps> = ({ open, onClose, onSubmit, initialDat
   const [showPassword, setShowPassword] = useState(false);
   const isCreating = !initialData;
   const auth = getAuth(app);
-  const dataConnect = useMemo(() => getDataConnect(app, connectorConfig), []);
+  const dataConnect = useMemo(() => getClientDataConnect(app), []);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const apellidoPaternoRef = useRef<HTMLInputElement>(null);

@@ -1,4 +1,4 @@
-const { listPermisosRef, getPermisoByIdRef, listUsersRef, getUserByDocumentIdRef, connectorConfig } = require('../index.cjs.js');
+const { listPermisosRef, getPermisoByIdRef, listUsersRef, getUserByDocumentIdRef, listActEconomicasRef, connectorConfig } = require('../index.cjs.js');
 const { CallerSdkTypeEnum } = require('firebase/data-connect');
 const { useDataConnectQuery, validateReactArgs } = require('@tanstack-query-firebase/react/data-connect');
 
@@ -24,5 +24,11 @@ exports.useListUsers = function useListUsers(dcOrOptions, options) {
 exports.useGetUserByDocumentId = function useGetUserByDocumentId(dcOrVars, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   const ref = getUserByDocumentIdRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useListActEconomicas = function useListActEconomicas(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
+  const ref = listActEconomicasRef(dcInstance);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }

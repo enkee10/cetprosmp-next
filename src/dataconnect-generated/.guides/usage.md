@@ -12,7 +12,7 @@ For each operation, there is a wrapper hook that can be used to call the operati
 
 Here are all of the hooks that get generated:
 ```ts
-import { useListPermisos, useGetPermisoById, useListUsers, useGetUserByDocumentId } from '@dataconnect/generated/react';
+import { useListPermisos, useGetPermisoById, useListUsers, useGetUserByDocumentId, useListActEconomicas } from '@dataconnect/generated/react';
 // The types of these hooks are available in react/index.d.ts
 
 const { data, isPending, isSuccess, isError, error } = useListPermisos();
@@ -22,6 +22,8 @@ const { data, isPending, isSuccess, isError, error } = useGetPermisoById(getPerm
 const { data, isPending, isSuccess, isError, error } = useListUsers();
 
 const { data, isPending, isSuccess, isError, error } = useGetUserByDocumentId(getUserByDocumentIdVars);
+
+const { data, isPending, isSuccess, isError, error } = useListActEconomicas();
 
 ```
 
@@ -60,7 +62,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { listPermisos, getPermisoById, listUsers, getUserByDocumentId } from '@dataconnect/generated';
+import { listPermisos, getPermisoById, listUsers, getUserByDocumentId, listActEconomicas } from '@dataconnect/generated';
 
 
 // Operation ListPermisos: 
@@ -74,6 +76,9 @@ const { data } = await ListUsers(dataConnect);
 
 // Operation GetUserByDocumentId:  For variables, look at type GetUserByDocumentIdVars in ../index.d.ts
 const { data } = await GetUserByDocumentId(dataConnect, getUserByDocumentIdVars);
+
+// Operation ListActEconomicas: 
+const { data } = await ListActEconomicas(dataConnect);
 
 
 ```

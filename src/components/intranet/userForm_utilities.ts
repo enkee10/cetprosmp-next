@@ -13,7 +13,7 @@ const capitalizeWords = (str: string): string => {
 export const generateUsername = (
   nombre: string,
   apellido_paterno: string,
-  setValue: UseFormSetValue<any>
+  setValue: UseFormSetValue<Record<string, string>>
 ) => {
   const nombrePart = nombre ? nombre.trim().split(/\s+/)[0] || '' : '';
   const apellidoPart = apellido_paterno ? apellido_paterno.trim() : '';

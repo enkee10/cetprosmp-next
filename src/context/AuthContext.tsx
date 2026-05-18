@@ -2,8 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'; // importa las utilidades base de React para el contexto de autenticacion
 import { GoogleAuthProvider, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut, User as FirebaseUser } from 'firebase/auth'; // + importa tambien la utilidad para enviar correos de restablecimiento de contrasena
-import { app, auth, db } from '@/lib/firebase'; // importa la app web y los servicios cliente necesarios para auth y Firestore
-import { doc, getDoc } from 'firebase/firestore'; // importa las utilidades para leer el perfil del usuario en Firestore
+import { app, auth } from '@/lib/firebase'; // importa la app web y el servicio cliente de auth
 import { getFunctions, httpsCallable } from 'firebase/functions'; // importa las utilidades para llamar la function de registro publico
 import { Box, CircularProgress } from '@mui/material'; // importa los componentes visuales del estado de carga global
 import { useRouter } from 'next/navigation'; // importa la navegacion del App Router para redirigir tras autenticar
@@ -46,26 +45,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => { // escucha cambios de sesion del usuario autenticado
             setLoading(true); // activa el estado de carga mientras se resuelve el nuevo estado de sesion
             if (firebaseUser) { // verifica si existe un usuario autenticado en Firebase
-                const userDocRef = doc(db, 'users', firebaseUser.uid); // construye la referencia al perfil del usuario en Firestore
-                const userDocSnap = await getDoc(userDocRef); // lee el perfil del usuario almacenado en Firestore
-
-                if (userDocSnap.exists()) { // valida que exista un perfil asociado al usuario autenticado
-                    const firestoreData = userDocSnap.data(); // obtiene los datos personalizados guardados en Firestore
-                    const token = await firebaseUser.getIdTokenResult(); // obtiene el token actual para leer claims personalizados
-                    const claims = token.claims; // extrae los claims del token para rol y nivel
-                    const userData: UserData = { // fusiona datos de Firestore, Auth y claims en un solo objeto de usuario
-                        ...firestoreData, // conserva los campos personalizados del documento Firestore
-                        uid: firebaseUser.uid, // asegura que el uid venga siempre de Firebase Auth
-                        email: firebaseUser.email, // asegura que el correo venga siempre de Firebase Auth
-                        displayName: firebaseUser.displayName, // asegura que el nombre visible venga siempre de Firebase Auth
-                        photoURL: firebaseUser.photoURL, // asegura que la foto visible venga siempre de Firebase Auth
-                        role: (claims.role as string) || null, // expone el rol personalizado del usuario autenticado
-                        level: (claims.level as number) || 0, // expone el nivel numerico personalizado del usuario autenticado
-                    };
-                    setUser(userData); // guarda el usuario fusionado para el resto de la app
-                } else { // maneja el caso en que no exista perfil Firestore para el usuario autenticado
-                    setUser(null); // limpia el usuario si el perfil aun no existe o es inconsistente
-                }
+                const token = await firebaseUser.getIdTokenResult(); // obtiene el token actual para leer claims personalizados
+                const claims = token.claims; // extrae los claims del token para rol y nivel
+                const userData: UserData = { // construye el usuario con Auth y claims sin dependencia de Firestore
+                    uid: firebaseUser.uid, // asegura que el uid venga siempre de Firebase Auth
+                    email: firebaseUser.email, // asegura que el correo venga siempre de Firebase Auth
+                    displayName: firebaseUser.displayName, // asegura que el nombre visible venga siempre de Firebase Auth
+                    photoURL: firebaseUser.photoURL, // asegura que la foto visible venga siempre de Firebase Auth
+                    role: (claims.role as string) || null, // expone el rol personalizado del usuario autenticado
+                    level: (claims.level as number) || 0, // expone el nivel numerico personalizado del usuario autenticado
+                };
+                setUser(userData); // guarda el usuario para el resto de la app
             } else { // maneja el caso en que no exista un usuario autenticado
                 setUser(null); // limpia el usuario del contexto al cerrar sesion
             }

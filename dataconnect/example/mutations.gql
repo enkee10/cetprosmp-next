@@ -1,0 +1,3 @@
+# Custom operations that accept generated *_Data inputs currently break
+# Data Connect SDK generation. Administrative writes are executed from
+# Cloud Functions with the Admin SDK executeGraphql API.

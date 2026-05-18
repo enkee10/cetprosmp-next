@@ -1,0 +1,98 @@
+I0517 20:03:51.243673   21468 load.go:31] Reloading schema and connectors...
+I0517 20:03:51.291166   21468 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 8466] UpdateResources(): done
+Main schema: sources: schema\schema.gql [8359B] 
+Connector "default": sources: example\mutations.gql [1167B] example\queries.gql [1860B] 
+I0517 20:03:51.329341   21468 codegen.go:101] [connector "default" javascriptSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+I0517 20:03:51.337671   21468 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+I0517 20:03:51.339289   21468 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+I0517 20:03:51.341948   21468 collector.go:107] schema extensions wrote into "D:\\_Desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
+Generated sources: main\input.gql [271845B] main\relation.gql [155000B] main\query.gql [31612B] main\mutation.gql [84774B] prelude.gql [84989B] 
+I0517 20:03:51.344447   21468 collector.go:107] connector "default" javascriptSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+Generated sources: index.d.ts [2415B] package.json [853B] react\esm\package.json [17B] react\index.cjs.js [0B] .guides/setup.md [1682B] .guides/config.json [236B] esm\index.esm.js [297B] index.cjs.js [382B] react\index.d.ts [228B] react\esm\index.esm.js [0B] react\README.md [5454B] esm\package.json [17B] README.md [2876B] .guides/usage.md [1318B] react\package.json [460B] 
+I0517 20:03:51.348025   21468 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
+I0517 20:03:51.360418   21468 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+Generated sources: index.d.ts [2343B] esm\index.esm.js [127B] esm\package.json [17B] index.cjs.js [163B] package.json [632B] 
+I0517 20:03:51.365069   21468 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0517 20:03:51.366933   21468 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+Generated sources: esm\index.esm.js [127B] esm\package.json [17B] index.cjs.js [163B] package.json [632B] index.d.ts [2343B] 
+I0517 20:03:51.367433   21468 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0517 20:03:51.367433   21468 load.go:109] Finished reloading
+I0517 20:03:51.367932   21468 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399
+I0517 20:03:51.368434   21468 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399
+I0517 20:04:03.911276   21468 migrate.go:24] Running migration SQL:
+Step 1: CREATE TABLE "public"."act_economicas" ("id" serial NOT NULL, "especialidad_id" integer NULL, "familia_id" integer NULL, "descripcion" text NULL, "titulo" text NULL, PRIMARY KEY ("id"))
+Step 2: CREATE INDEX "act_economicas_especialidadId_idx" ON "public"."act_economicas" ("especialidad_id")
+Step 3: CREATE INDEX "act_economicas_familiaId_idx" ON "public"."act_economicas" ("familia_id")
+Step 4: CREATE TABLE "public"."calendarios" ("id" serial NOT NULL, "semestre_id" integer NULL, "archivado" boolean NULL, "descripcion" text NULL, "fecha_fin" timestamptz NULL, "fecha_ini" timestamptz NULL, "tipo" text NULL, "titulo" text NULL, PRIMARY KEY ("id"))
+Step 5: CREATE INDEX "calendarios_semestreId_idx" ON "public"."calendarios" ("semestre_id")
+Step 6: CREATE TABLE "public"."carreras" ("id" serial NOT NULL, "act_economica_id" integer NULL, "codigo" text NULL, "creditos" integer NULL, "descripcion" text NULL, "descripcion_2" text NULL, "duracion" text NULL, "nivel" text NULL, "slug" text NULL, "titulo" text NULL, "titulo_comercial" text NULL, PRIMARY KEY ("id"))
+Step 7: CREATE INDEX "carreras_actEconomicaId_idx" ON "public"."carreras" ("act_economica_id")
+Step 8: CREATE TABLE "public"."dato_general" ("id" serial NOT NULL, "correo" text NULL, "direccion" text NULL, "facebook" text NULL, "instagram" text NULL, "nombre_institucion" text NULL, "pagina_web" text NULL, "rd" text NULL, "ruc" text NULL, "telefono_1" text NULL, "telefono_2" text NULL, "tiktok" text NULL, "twitter" text NULL, "youtube" text NULL, PRIMARY KEY ("id"))
+Step 9: CREATE TABLE "public"."especialidades" ("id" serial NOT NULL, "act_economica_id" integer NULL, "descripcion" text NULL, "descripcion_2" text NULL, "slug" text NULL, "titulo" text NULL, "titulo_comercial" text NULL, PRIMARY KEY ("id"))
+Step 10: CREATE INDEX "especialidades_actEconomicaId_idx" ON "public"."especialidades" ("act_economica_id")
+Step 11: CREATE TABLE "public"."familias" ("id" serial NOT NULL, "sector_id" integer NULL, "descripcion" text NULL, "titulo" text NULL, PRIMARY KEY ("id"))
+Step 12: CREATE INDEX "familias_sectorId_idx" ON "public"."familias" ("sector_id")
+Step 13: CREATE TABLE "public"."grupos" ("id" serial NOT NULL, "calendario_id" integer NULL, "modulo_id" integer NULL, "personal_id" integer NULL, "archivado" boolean NULL, "descripcion" text NULL, "nombre_display" text NULL, "turno" text NULL, PRIMARY KEY ("id"))
+Step 14: CREATE INDEX "grupos_calendarioId_idx" ON "public"."grupos" ("calendario_id")
+Step 15: CREATE INDEX "grupos_moduloId_idx" ON "public"."grupos" ("modulo_id")
+Step 16: CREATE INDEX "grupos_personalId_idx" ON "public"."grupos" ("personal_id")
+Step 17: CREATE TABLE "public"."matricula_grupos" ("matricula_id" integer NOT NULL, "grupo_id" integer NOT NULL, "id" serial NOT NULL, PRIMARY KEY ("matricula_id", "grupo_id"))
+Step 18: CREATE INDEX "matricula_grupos_grupoId_idx" ON "public"."matricula_grupos" ("grupo_id")
+Step 19: CREATE INDEX "matricula_grupos_matriculaId_idx" ON "public"."matricula_grupos" ("matricula_id")
+Step 20: CREATE TABLE "public"."matricula_paquetes" ("matricula_id" integer NOT NULL, "paquete_id" integer NOT NULL, "id" serial NOT NULL, PRIMARY KEY ("matricula_id", "paquete_id"))
+Step 21: CREATE INDEX "matricula_paquetes_matriculaId_idx" ON "public"."matricula_paquetes" ("matricula_id")
+Step 22: CREATE INDEX "matricula_paquetes_paqueteId_idx" ON "public"."matricula_paquetes" ("paquete_id")
+Step 23: CREATE TABLE "public"."matricula_users" ("matricula_id" integer NOT NULL, "user_id" integer NOT NULL, "id" serial NOT NULL, PRIMARY KEY ("matricula_id", "user_id"))
+Step 24: CREATE INDEX "matricula_users_matriculaId_idx" ON "public"."matricula_users" ("matricula_id")
+Step 25: CREATE INDEX "matricula_users_userId_idx" ON "public"."matricula_users" ("user_id")
+Step 26: CREATE TABLE "public"."matriculas" ("id" serial NOT NULL, "archivado" boolean NULL, "fecha" timestamptz NULL, "recibo" text NULL, PRIMARY KEY ("id"))
+Step 27: CREATE TABLE "public"."modulo_videos" ("id" serial NOT NULL, "modulo_id" integer NULL, "video_id" integer NULL, "field" text NULL, "orden" integer NULL, PRIMARY KEY ("id"))
+Step 28: CREATE INDEX "modulo_videos_moduloId_idx" ON "public"."modulo_videos" ("modulo_id")
+Step 29: CREATE INDEX "modulo_videos_videoId_idx" ON "public"."modulo_videos" ("video_id")
+Step 30: CREATE TABLE "public"."modulos" ("id" serial NOT NULL, "carrera_id" integer NULL, "activo" boolean NULL, "creditos" integer NULL, "descripcion" text NULL, "descripcion_2" text NULL, "horas" integer NULL, "metas" integer NULL, "orden" integer NULL, "slug" text NULL, "titulo" text NULL, "titulo_comercial" text NULL, PRIMARY KEY ("id"))
+Step 31: CREATE INDEX "modulos_carreraId_idx" ON "public"."modulos" ("carrera_id")
+Step 32: CREATE TABLE "public"."paquete_grupos" ("paquete_id" integer NOT NULL, "grupo_id" integer NOT NULL, "grupo_ord" integer NULL, "id" serial NOT NULL, PRIMARY KEY ("paquete_id", "grupo_id"))
+Step 33: CREATE INDEX "paquete_grupos_grupoId_idx" ON "public"."paquete_grupos" ("grupo_id")
+Step 34: CREATE INDEX "paquete_grupos_paqueteId_idx" ON "public"."paquete_grupos" ("paquete_id")
+Step 35: CREATE TABLE "public"."paquetes" ("id" serial NOT NULL, "archivado" boolean NULL, "descripcion" text NULL, "titulo" text NULL, PRIMARY KEY ("id"))
+Step 36: CREATE TABLE "public"."personal_especialidades" ("personal_id" integer NOT NULL, "especialidad_id" integer NOT NULL, "id" serial NOT NULL, "orden" integer NULL, PRIMARY KEY ("personal_id", "especialidad_id"))
+Step 37: CREATE INDEX "personal_especialidades_especialidadId_idx" ON "public"."personal_especialidades" ("especialidad_id")
+Step 38: CREATE INDEX "personal_especialidades_personalId_idx" ON "public"."personal_especialidades" ("personal_id")
+Step 39: CREATE TABLE "public"."personales" ("id" serial NOT NULL, "user_id" integer NULL, "display_name" text NULL, "memo" text NULL, PRIMARY KEY ("id"))
+Step 40: CREATE INDEX "personales_userId_idx" ON "public"."personales" ("user_id")
+Step 41: CREATE TABLE "public"."publicacion_videos" ("id" serial NOT NULL, "publicacion_id" integer NULL, "video_id" integer NULL, "field" text NULL, "orden" integer NULL, PRIMARY KEY ("id"))
+Step 42: CREATE INDEX "publicacion_videos_publicacionId_idx" ON "public"."publicacion_videos" ("publicacion_id")
+Step 43: CREATE INDEX "publicacion_videos_videoId_idx" ON "public"."publicacion_videos" ("video_id")
+Step 44: CREATE TABLE "public"."publicaciones" ("id" serial NOT NULL, "contenido_1" text NULL, "contenido_2" text NULL, "descripcion_corta" text NULL, "destacado" boolean NULL, "fecha_evento_fin" timestamptz NULL, "fecha_evento_inicio" timestamptz NULL, "fecha_publicacion" timestamptz NULL, "slug" text NULL, "tipo" text NULL, "titulo" text NULL, "ubicacion" text NULL, PRIMARY KEY ("id"))
+Step 45: CREATE TABLE "public"."sectores" ("id" serial NOT NULL, "descripcion" text NULL, "titulo" text NULL, PRIMARY KEY ("id"))
+Step 46: CREATE TABLE "public"."semestres" ("id" serial NOT NULL, "coordinador_1_id" integer NULL, "coordinador_2_id" integer NULL, "director_id" integer NULL, "archivado" boolean NULL, "descripcion" text NULL, "titulo" text NULL, PRIMARY KEY ("id"))
+Step 47: CREATE INDEX "semestres_coordinador1Id_idx" ON "public"."semestres" ("coordinador_1_id")
+Step 48: CREATE INDEX "semestres_coordinador2Id_idx" ON "public"."semestres" ("coordinador_2_id")
+Step 49: CREATE INDEX "semestres_directorId_idx" ON "public"."semestres" ("director_id")
+Step 50: CREATE TABLE "public"."users" ("id" serial NOT NULL, "apellido_materno" text NULL, "apellido_paterno" text NULL, "apellidos" text NULL, "avatar" text NULL, "blocked" boolean NULL, "celular" text NULL, "confirmed" boolean NULL, "direccion" text NULL, "distrito" text NULL, "dni" text NULL, "document_id" text NULL, "email" text NULL, "estado_civil" text NULL, "fecha_nacimiento" timestamptz NULL, "instruccion" text NULL, "nombre" text NULL, "provider" text NULL, "sexo" text NULL, "telefono" text NULL, "tipo_documento" text NULL, "username" text NULL, PRIMARY KEY ("id"))
+Step 51: CREATE TABLE "public"."videos_youtube" ("id" serial NOT NULL, "url" text NULL, PRIMARY KEY ("id"))
+Step 52: ALTER TABLE "public"."act_economicas" ADD CONSTRAINT "act_economicas_especialidad_id_fkey" FOREIGN KEY ("especialidad_id") REFERENCES "public"."especialidades" ("id") ON DELETE SET NULL, ADD CONSTRAINT "act_economicas_familia_id_fkey" FOREIGN KEY ("familia_id") REFERENCES "public"."familias" ("id") ON DELETE SET NULL
+Step 53: ALTER TABLE "public"."calendarios" ADD CONSTRAINT "calendarios_semestre_id_fkey" FOREIGN KEY ("semestre_id") REFERENCES "public"."semestres" ("id") ON DELETE SET NULL
+Step 54: ALTER TABLE "public"."carreras" ADD CONSTRAINT "carreras_act_economica_id_fkey" FOREIGN KEY ("act_economica_id") REFERENCES "public"."act_economicas" ("id") ON DELETE SET NULL
+Step 55: ALTER TABLE "public"."especialidades" ADD CONSTRAINT "especialidades_act_economica_id_fkey" FOREIGN KEY ("act_economica_id") REFERENCES "public"."act_economicas" ("id") ON DELETE SET NULL
+Step 56: ALTER TABLE "public"."familias" ADD CONSTRAINT "familias_sector_id_fkey" FOREIGN KEY ("sector_id") REFERENCES "public"."sectores" ("id") ON DELETE SET NULL
+Step 57: ALTER TABLE "public"."grupos" ADD CONSTRAINT "grupos_calendario_id_fkey" FOREIGN KEY ("calendario_id") REFERENCES "public"."calendarios" ("id") ON DELETE SET NULL, ADD CONSTRAINT "grupos_modulo_id_fkey" FOREIGN KEY ("modulo_id") REFERENCES "public"."modulos" ("id") ON DELETE SET NULL, ADD CONSTRAINT "grupos_personal_id_fkey" FOREIGN KEY ("personal_id") REFERENCES "public"."personales" ("id") ON DELETE SET NULL
+Step 58: ALTER TABLE "public"."matricula_grupos" ADD CONSTRAINT "matricula_grupos_grupo_id_fkey" FOREIGN KEY ("grupo_id") REFERENCES "public"."grupos" ("id") ON DELETE CASCADE, ADD CONSTRAINT "matricula_grupos_matricula_id_fkey" FOREIGN KEY ("matricula_id") REFERENCES "public"."matriculas" ("id") ON DELETE CASCADE
+Step 59: ALTER TABLE "public"."matricula_paquetes" ADD CONSTRAINT "matricula_paquetes_matricula_id_fkey" FOREIGN KEY ("matricula_id") REFERENCES "public"."matriculas" ("id") ON DELETE CASCADE, ADD CONSTRAINT "matricula_paquetes_paquete_id_fkey" FOREIGN KEY ("paquete_id") REFERENCES "public"."paquetes" ("id") ON DELETE CASCADE
+Step 60: ALTER TABLE "public"."matricula_users" ADD CONSTRAINT "matricula_users_matricula_id_fkey" FOREIGN KEY ("matricula_id") REFERENCES "public"."matriculas" ("id") ON DELETE CASCADE, ADD CONSTRAINT "matricula_users_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE CASCADE
+Step 61: ALTER TABLE "public"."modulo_videos" ADD CONSTRAINT "modulo_videos_modulo_id_fkey" FOREIGN KEY ("modulo_id") REFERENCES "public"."modulos" ("id") ON DELETE SET NULL, ADD CONSTRAINT "modulo_videos_video_id_fkey" FOREIGN KEY ("video_id") REFERENCES "public"."videos_youtube" ("id") ON DELETE SET NULL
+Step 62: ALTER TABLE "public"."modulos" ADD CONSTRAINT "modulos_carrera_id_fkey" FOREIGN KEY ("carrera_id") REFERENCES "public"."carreras" ("id") ON DELETE SET NULL
+Step 63: ALTER TABLE "public"."paquete_grupos" ADD CONSTRAINT "paquete_grupos_grupo_id_fkey" FOREIGN KEY ("grupo_id") REFERENCES "public"."grupos" ("id") ON DELETE CASCADE, ADD CONSTRAINT "paquete_grupos_paquete_id_fkey" FOREIGN KEY ("paquete_id") REFERENCES "public"."paquetes" ("id") ON DELETE CASCADE
+Step 64: ALTER TABLE "public"."personal_especialidades" ADD CONSTRAINT "personal_especialidades_especialidad_id_fkey" FOREIGN KEY ("especialidad_id") REFERENCES "public"."especialidades" ("id") ON DELETE CASCADE, ADD CONSTRAINT "personal_especialidades_personal_id_fkey" FOREIGN KEY ("personal_id") REFERENCES "public"."personales" ("id") ON DELETE CASCADE
+Step 65: ALTER TABLE "public"."personales" ADD CONSTRAINT "personales_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE SET NULL
+Step 66: ALTER TABLE "public"."publicacion_videos" ADD CONSTRAINT "publicacion_videos_publicacion_id_fkey" FOREIGN KEY ("publicacion_id") REFERENCES "public"."publicaciones" ("id") ON DELETE SET NULL, ADD CONSTRAINT "publicacion_videos_video_id_fkey" FOREIGN KEY ("video_id") REFERENCES "public"."videos_youtube" ("id") ON DELETE SET NULL
+Step 67: ALTER TABLE "public"."semestres" ADD CONSTRAINT "semestres_coordinador1_id_fkey" FOREIGN KEY ("coordinador_1_id") REFERENCES "public"."personales" ("id") ON DELETE SET NULL, ADD CONSTRAINT "semestres_coordinador2_id_fkey" FOREIGN KEY ("coordinador_2_id") REFERENCES "public"."personales" ("id") ON DELETE SET NULL, ADD CONSTRAINT "semestres_director_id_fkey" FOREIGN KEY ("director_id") REFERENCES "public"."personales" ("id") ON DELETE SET NULL
+I0517 20:04:04.545734   21468 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 3e4a] UpdateResources(): done
+Main schema: sources: schema\schema.gql [8359B] 
+Connector "default": sources: example\mutations.gql [1167B] example\queries.gql [1860B] 
+I0517 20:04:04.565691   21468 configure_emulator.go:21] ConfigureEmulator successed
+Request: service_id: "cetprosmp-2026-service"
+connection_string: "postgres://127.0.0.1:5434/cetprosmp-db?sslmode=disable"
+database: "cetprosmp-db"
+
+Response: 

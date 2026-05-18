@@ -1,4 +1,2194 @@
+extend type ActEconomica {
+  """
+  ✨ List `Carrera` objects in a one-to-many relationship (where `Carrera`.`actEconomica` is this object).
+  """
+  carreras_on_actEconomica(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Carrera_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Carrera_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Carrera_Having
+  ): [Carrera!]! @fdc_generated(from: "Carrera.actEconomica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Especialidad` objects in a one-to-many relationship (where `Especialidad`.`actEconomica` is this object).
+  """
+  especialidads_on_actEconomica(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Especialidad_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Especialidad_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Especialidad_Having
+  ): [Especialidad!]! @fdc_generated(from: "Especialidad.actEconomica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "ActEconomica", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `ActEconomica` table.
+  """
+  _count: Int! @fdc_generated(from: "ActEconomica.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ActEconomica` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ActEconomica.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ActEconomica` table where the `especialidadId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  especialidadId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ActEconomica.especialidadId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ActEconomica` table where the `familiaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  familiaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ActEconomica.familiaId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ActEconomica` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ActEconomica.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ActEconomica` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ActEconomica.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `especialidadId` field in the `ActEconomica` table.
+  """
+  especialidadId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ActEconomica.especialidadId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `familiaId` field in the `ActEconomica` table.
+  """
+  familiaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ActEconomica.familiaId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `ActEconomica` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ActEconomica.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `especialidadId` field in the `ActEconomica` table.
+  """
+  especialidadId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ActEconomica.especialidadId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `familiaId` field in the `ActEconomica` table.
+  """
+  familiaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ActEconomica.familiaId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `ActEconomica` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ActEconomica.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `especialidadId` field in the `ActEconomica` table.
+  """
+  especialidadId_min: Int @fdc_generated(from: "ActEconomica.especialidadId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `familiaId` field in the `ActEconomica` table.
+  """
+  familiaId_min: Int @fdc_generated(from: "ActEconomica.familiaId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `ActEconomica` table.
+  """
+  id_min: Int @fdc_generated(from: "ActEconomica.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `especialidadId` field in the `ActEconomica` table.
+  """
+  especialidadId_max: Int @fdc_generated(from: "ActEconomica.especialidadId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `familiaId` field in the `ActEconomica` table.
+  """
+  familiaId_max: Int @fdc_generated(from: "ActEconomica.familiaId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `ActEconomica` table.
+  """
+  id_max: Int @fdc_generated(from: "ActEconomica.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "ActEconomica.id", purpose: ENTITY_ID)
+}
+extend type Calendario {
+  """
+  ✨ List `Grupo` objects in a one-to-many relationship (where `Grupo`.`calendario` is this object).
+  """
+  grupos_on_calendario(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Grupo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Grupo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Grupo_Having
+  ): [Grupo!]! @fdc_generated(from: "Grupo.calendario", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Calendario", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Calendario` table.
+  """
+  _count: Int! @fdc_generated(from: "Calendario.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Calendario` table where the `archivado` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  archivado_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Calendario.archivado", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Calendario` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Calendario.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Calendario` table where the `fechaFin` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaFin_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Calendario.fechaFin", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Calendario` table where the `fechaIni` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaIni_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Calendario.fechaIni", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Calendario` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Calendario.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Calendario` table where the `semestreId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  semestreId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Calendario.semestreId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Calendario` table where the `tipo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tipo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Calendario.tipo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Calendario` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Calendario.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Calendario` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Calendario.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `semestreId` field in the `Calendario` table.
+  """
+  semestreId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Calendario.semestreId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Calendario` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Calendario.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `semestreId` field in the `Calendario` table.
+  """
+  semestreId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Calendario.semestreId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `fechaFin` field in the `Calendario` table.
+  """
+  fechaFin_min: Timestamp @fdc_generated(from: "Calendario.fechaFin", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaIni` field in the `Calendario` table.
+  """
+  fechaIni_min: Timestamp @fdc_generated(from: "Calendario.fechaIni", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `Calendario` table.
+  """
+  id_min: Int @fdc_generated(from: "Calendario.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `semestreId` field in the `Calendario` table.
+  """
+  semestreId_min: Int @fdc_generated(from: "Calendario.semestreId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `fechaFin` field in the `Calendario` table.
+  """
+  fechaFin_max: Timestamp @fdc_generated(from: "Calendario.fechaFin", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaIni` field in the `Calendario` table.
+  """
+  fechaIni_max: Timestamp @fdc_generated(from: "Calendario.fechaIni", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `Calendario` table.
+  """
+  id_max: Int @fdc_generated(from: "Calendario.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `semestreId` field in the `Calendario` table.
+  """
+  semestreId_max: Int @fdc_generated(from: "Calendario.semestreId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Calendario.id", purpose: ENTITY_ID)
+}
+extend type Carrera {
+  """
+  ✨ List `Modulo` objects in a one-to-many relationship (where `Modulo`.`carrera` is this object).
+  """
+  modulos_on_carrera(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Modulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Modulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Modulo_Having
+  ): [Modulo!]! @fdc_generated(from: "Modulo.carrera", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Carrera", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Carrera` table.
+  """
+  _count: Int! @fdc_generated(from: "Carrera.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `actEconomicaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  actEconomicaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.actEconomicaId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `codigo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  codigo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.codigo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `creditos` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  creditos_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.creditos", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `descripcion2` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion2_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.descripcion2", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `duracion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  duracion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.duracion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `nivel` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nivel_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.nivel", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `slug` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  slug_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.slug", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `tituloComercial` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tituloComercial_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.tituloComercial", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `actEconomicaId` field in the `Carrera` table.
+  """
+  actEconomicaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Carrera.actEconomicaId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `creditos` field in the `Carrera` table.
+  """
+  creditos_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Carrera.creditos", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `Carrera` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Carrera.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `actEconomicaId` field in the `Carrera` table.
+  """
+  actEconomicaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Carrera.actEconomicaId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `creditos` field in the `Carrera` table.
+  """
+  creditos_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Carrera.creditos", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `Carrera` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Carrera.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `actEconomicaId` field in the `Carrera` table.
+  """
+  actEconomicaId_min: Int @fdc_generated(from: "Carrera.actEconomicaId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `creditos` field in the `Carrera` table.
+  """
+  creditos_min: Int @fdc_generated(from: "Carrera.creditos", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `Carrera` table.
+  """
+  id_min: Int @fdc_generated(from: "Carrera.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `actEconomicaId` field in the `Carrera` table.
+  """
+  actEconomicaId_max: Int @fdc_generated(from: "Carrera.actEconomicaId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `creditos` field in the `Carrera` table.
+  """
+  creditos_max: Int @fdc_generated(from: "Carrera.creditos", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `Carrera` table.
+  """
+  id_max: Int @fdc_generated(from: "Carrera.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Carrera.id", purpose: ENTITY_ID)
+}
+extend type DatoGeneral {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "DatoGeneral", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table.
+  """
+  _count: Int! @fdc_generated(from: "DatoGeneral.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `correo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  correo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.correo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `direccion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  direccion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.direccion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `facebook` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  facebook_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.facebook", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `instagram` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  instagram_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.instagram", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `nombreInstitucion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nombreInstitucion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.nombreInstitucion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `paginaWeb` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  paginaWeb_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.paginaWeb", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `rd` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  rd_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.rd", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `ruc` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  ruc_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.ruc", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `telefono1` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  telefono1_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.telefono1", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `telefono2` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  telefono2_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.telefono2", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `tiktok` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tiktok_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.tiktok", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `twitter` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  twitter_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.twitter", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DatoGeneral` table where the `youtube` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  youtube_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DatoGeneral.youtube", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `DatoGeneral` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "DatoGeneral.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `DatoGeneral` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "DatoGeneral.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `DatoGeneral` table.
+  """
+  id_min: Int @fdc_generated(from: "DatoGeneral.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `DatoGeneral` table.
+  """
+  id_max: Int @fdc_generated(from: "DatoGeneral.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "DatoGeneral.id", purpose: ENTITY_ID)
+}
+extend type Especialidad {
+  """
+  ✨ List `ActEconomica` objects in a one-to-many relationship (where `ActEconomica`.`especialidad` is this object).
+  """
+  actEconomicas_on_especialidad(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ActEconomica_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ActEconomica_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ActEconomica_Having
+  ): [ActEconomica!]! @fdc_generated(from: "ActEconomica.especialidad", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `PersonalEspecialidad` objects in a one-to-many relationship (where `PersonalEspecialidad`.`especialidad` is this object).
+  """
+  personalEspecialidads_on_especialidad(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PersonalEspecialidad_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PersonalEspecialidad_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PersonalEspecialidad_Having
+  ): [PersonalEspecialidad!]! @fdc_generated(from: "PersonalEspecialidad.especialidad", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Personal` objects using `PersonalEspecialidad` as the join table (a `PersonalEspecialidad` object exists where its `especialidad` is this and its `personal` is that).
+  """
+  personals_via_PersonalEspecialidad(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PersonalEspecialidad_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PersonalEspecialidad_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PersonalEspecialidad_Having
+  ): [Personal!]! @fdc_generated(from: "PersonalEspecialidad", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Especialidad", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Especialidad` table.
+  """
+  _count: Int! @fdc_generated(from: "Especialidad.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Especialidad` table where the `actEconomicaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  actEconomicaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Especialidad.actEconomicaId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Especialidad` table where the `descripcion2` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion2_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Especialidad.descripcion2", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Especialidad` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Especialidad.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Especialidad` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Especialidad.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Especialidad` table where the `slug` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  slug_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Especialidad.slug", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Especialidad` table where the `tituloComercial` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tituloComercial_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Especialidad.tituloComercial", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Especialidad` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Especialidad.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `actEconomicaId` field in the `Especialidad` table.
+  """
+  actEconomicaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Especialidad.actEconomicaId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `Especialidad` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Especialidad.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `actEconomicaId` field in the `Especialidad` table.
+  """
+  actEconomicaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Especialidad.actEconomicaId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `Especialidad` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Especialidad.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `actEconomicaId` field in the `Especialidad` table.
+  """
+  actEconomicaId_min: Int @fdc_generated(from: "Especialidad.actEconomicaId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `Especialidad` table.
+  """
+  id_min: Int @fdc_generated(from: "Especialidad.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `actEconomicaId` field in the `Especialidad` table.
+  """
+  actEconomicaId_max: Int @fdc_generated(from: "Especialidad.actEconomicaId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `Especialidad` table.
+  """
+  id_max: Int @fdc_generated(from: "Especialidad.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Especialidad.id", purpose: ENTITY_ID)
+}
+extend type Familia {
+  """
+  ✨ List `ActEconomica` objects in a one-to-many relationship (where `ActEconomica`.`familia` is this object).
+  """
+  actEconomicas_on_familia(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ActEconomica_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ActEconomica_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ActEconomica_Having
+  ): [ActEconomica!]! @fdc_generated(from: "ActEconomica.familia", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Familia", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Familia` table.
+  """
+  _count: Int! @fdc_generated(from: "Familia.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Familia` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Familia.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Familia` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Familia.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Familia` table where the `sectorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  sectorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Familia.sectorId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Familia` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Familia.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Familia` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Familia.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `sectorId` field in the `Familia` table.
+  """
+  sectorId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Familia.sectorId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Familia` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Familia.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `sectorId` field in the `Familia` table.
+  """
+  sectorId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Familia.sectorId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `Familia` table.
+  """
+  id_min: Int @fdc_generated(from: "Familia.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `sectorId` field in the `Familia` table.
+  """
+  sectorId_min: Int @fdc_generated(from: "Familia.sectorId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `Familia` table.
+  """
+  id_max: Int @fdc_generated(from: "Familia.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `sectorId` field in the `Familia` table.
+  """
+  sectorId_max: Int @fdc_generated(from: "Familia.sectorId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Familia.id", purpose: ENTITY_ID)
+}
+extend type Grupo {
+  """
+  ✨ List `MatriculaGrupo` objects in a one-to-many relationship (where `MatriculaGrupo`.`grupo` is this object).
+  """
+  matriculaGrupos_on_grupo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaGrupo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaGrupo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaGrupo_Having
+  ): [MatriculaGrupo!]! @fdc_generated(from: "MatriculaGrupo.grupo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `PaqueteGrupo` objects in a one-to-many relationship (where `PaqueteGrupo`.`grupo` is this object).
+  """
+  paqueteGrupos_on_grupo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PaqueteGrupo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PaqueteGrupo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PaqueteGrupo_Having
+  ): [PaqueteGrupo!]! @fdc_generated(from: "PaqueteGrupo.grupo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Matricula` objects using `MatriculaGrupo` as the join table (a `MatriculaGrupo` object exists where its `grupo` is this and its `matricula` is that).
+  """
+  matriculas_via_MatriculaGrupo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaGrupo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaGrupo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaGrupo_Having
+  ): [Matricula!]! @fdc_generated(from: "MatriculaGrupo", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  ✨ List `Paquete` objects using `PaqueteGrupo` as the join table (a `PaqueteGrupo` object exists where its `grupo` is this and its `paquete` is that).
+  """
+  paquetes_via_PaqueteGrupo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PaqueteGrupo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PaqueteGrupo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PaqueteGrupo_Having
+  ): [Paquete!]! @fdc_generated(from: "PaqueteGrupo", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Grupo", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Grupo` table.
+  """
+  _count: Int! @fdc_generated(from: "Grupo.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Grupo` table where the `archivado` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  archivado_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Grupo.archivado", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Grupo` table where the `calendarioId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  calendarioId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Grupo.calendarioId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Grupo` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Grupo.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Grupo` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Grupo.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Grupo` table where the `moduloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  moduloId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Grupo.moduloId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Grupo` table where the `nombreDisplay` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nombreDisplay_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Grupo.nombreDisplay", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Grupo` table where the `personalId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  personalId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Grupo.personalId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Grupo` table where the `turno` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  turno_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Grupo.turno", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `calendarioId` field in the `Grupo` table.
+  """
+  calendarioId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Grupo.calendarioId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `Grupo` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Grupo.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `moduloId` field in the `Grupo` table.
+  """
+  moduloId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Grupo.moduloId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `personalId` field in the `Grupo` table.
+  """
+  personalId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Grupo.personalId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `calendarioId` field in the `Grupo` table.
+  """
+  calendarioId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Grupo.calendarioId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `Grupo` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Grupo.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `moduloId` field in the `Grupo` table.
+  """
+  moduloId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Grupo.moduloId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `personalId` field in the `Grupo` table.
+  """
+  personalId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Grupo.personalId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `calendarioId` field in the `Grupo` table.
+  """
+  calendarioId_min: Int @fdc_generated(from: "Grupo.calendarioId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `Grupo` table.
+  """
+  id_min: Int @fdc_generated(from: "Grupo.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `moduloId` field in the `Grupo` table.
+  """
+  moduloId_min: Int @fdc_generated(from: "Grupo.moduloId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `personalId` field in the `Grupo` table.
+  """
+  personalId_min: Int @fdc_generated(from: "Grupo.personalId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `calendarioId` field in the `Grupo` table.
+  """
+  calendarioId_max: Int @fdc_generated(from: "Grupo.calendarioId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `Grupo` table.
+  """
+  id_max: Int @fdc_generated(from: "Grupo.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `moduloId` field in the `Grupo` table.
+  """
+  moduloId_max: Int @fdc_generated(from: "Grupo.moduloId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `personalId` field in the `Grupo` table.
+  """
+  personalId_max: Int @fdc_generated(from: "Grupo.personalId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Grupo.id", purpose: ENTITY_ID)
+}
+extend type Matricula {
+  """
+  ✨ List `MatriculaGrupo` objects in a one-to-many relationship (where `MatriculaGrupo`.`matricula` is this object).
+  """
+  matriculaGrupos_on_matricula(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaGrupo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaGrupo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaGrupo_Having
+  ): [MatriculaGrupo!]! @fdc_generated(from: "MatriculaGrupo.matricula", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `MatriculaPaquete` objects in a one-to-many relationship (where `MatriculaPaquete`.`matricula` is this object).
+  """
+  matriculaPaquetes_on_matricula(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaPaquete_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaPaquete_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaPaquete_Having
+  ): [MatriculaPaquete!]! @fdc_generated(from: "MatriculaPaquete.matricula", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `MatriculaUser` objects in a one-to-many relationship (where `MatriculaUser`.`matricula` is this object).
+  """
+  matriculaUsers_on_matricula(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaUser_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaUser_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaUser_Having
+  ): [MatriculaUser!]! @fdc_generated(from: "MatriculaUser.matricula", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Grupo` objects using `MatriculaGrupo` as the join table (a `MatriculaGrupo` object exists where its `matricula` is this and its `grupo` is that).
+  """
+  grupos_via_MatriculaGrupo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaGrupo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaGrupo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaGrupo_Having
+  ): [Grupo!]! @fdc_generated(from: "MatriculaGrupo", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  ✨ List `Paquete` objects using `MatriculaPaquete` as the join table (a `MatriculaPaquete` object exists where its `matricula` is this and its `paquete` is that).
+  """
+  paquetes_via_MatriculaPaquete(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaPaquete_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaPaquete_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaPaquete_Having
+  ): [Paquete!]! @fdc_generated(from: "MatriculaPaquete", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  ✨ List `User` objects using `MatriculaUser` as the join table (a `MatriculaUser` object exists where its `matricula` is this and its `user` is that).
+  """
+  users_via_MatriculaUser(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaUser_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaUser_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaUser_Having
+  ): [User!]! @fdc_generated(from: "MatriculaUser", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Matricula", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Matricula` table.
+  """
+  _count: Int! @fdc_generated(from: "Matricula.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Matricula` table where the `archivado` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  archivado_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Matricula.archivado", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Matricula` table where the `fecha` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fecha_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Matricula.fecha", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Matricula` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Matricula.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Matricula` table where the `recibo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  recibo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Matricula.recibo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Matricula` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Matricula.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Matricula` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Matricula.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `fecha` field in the `Matricula` table.
+  """
+  fecha_min: Timestamp @fdc_generated(from: "Matricula.fecha", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `Matricula` table.
+  """
+  id_min: Int @fdc_generated(from: "Matricula.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `fecha` field in the `Matricula` table.
+  """
+  fecha_max: Timestamp @fdc_generated(from: "Matricula.fecha", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `Matricula` table.
+  """
+  id_max: Int @fdc_generated(from: "Matricula.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Matricula.id", purpose: ENTITY_ID)
+}
+extend type MatriculaGrupo {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "MatriculaGrupo", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `MatriculaGrupo` table.
+  """
+  _count: Int! @fdc_generated(from: "MatriculaGrupo.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaGrupo` table where the `grupoId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaGrupo.grupoId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaGrupo` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaGrupo.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaGrupo` table where the `matriculaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  matriculaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaGrupo.matriculaId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `grupoId` field in the `MatriculaGrupo` table.
+  """
+  grupoId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaGrupo.grupoId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `MatriculaGrupo` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaGrupo.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `matriculaId` field in the `MatriculaGrupo` table.
+  """
+  matriculaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaGrupo.matriculaId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `grupoId` field in the `MatriculaGrupo` table.
+  """
+  grupoId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaGrupo.grupoId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `MatriculaGrupo` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaGrupo.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `matriculaId` field in the `MatriculaGrupo` table.
+  """
+  matriculaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaGrupo.matriculaId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `grupoId` field in the `MatriculaGrupo` table.
+  """
+  grupoId_min: Int @fdc_generated(from: "MatriculaGrupo.grupoId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `MatriculaGrupo` table.
+  """
+  id_min: Int @fdc_generated(from: "MatriculaGrupo.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `matriculaId` field in the `MatriculaGrupo` table.
+  """
+  matriculaId_min: Int @fdc_generated(from: "MatriculaGrupo.matriculaId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `grupoId` field in the `MatriculaGrupo` table.
+  """
+  grupoId_max: Int @fdc_generated(from: "MatriculaGrupo.grupoId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `MatriculaGrupo` table.
+  """
+  id_max: Int @fdc_generated(from: "MatriculaGrupo.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `matriculaId` field in the `MatriculaGrupo` table.
+  """
+  matriculaId_max: Int @fdc_generated(from: "MatriculaGrupo.matriculaId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "MatriculaGrupo.matriculaId,grupoId", purpose: ENTITY_ID)
+}
+extend type MatriculaPaquete {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "MatriculaPaquete", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `MatriculaPaquete` table.
+  """
+  _count: Int! @fdc_generated(from: "MatriculaPaquete.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaPaquete` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaPaquete.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaPaquete` table where the `matriculaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  matriculaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaPaquete.matriculaId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaPaquete` table where the `paqueteId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  paqueteId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaPaquete.paqueteId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `MatriculaPaquete` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaPaquete.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `matriculaId` field in the `MatriculaPaquete` table.
+  """
+  matriculaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaPaquete.matriculaId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `paqueteId` field in the `MatriculaPaquete` table.
+  """
+  paqueteId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaPaquete.paqueteId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `MatriculaPaquete` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaPaquete.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `matriculaId` field in the `MatriculaPaquete` table.
+  """
+  matriculaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaPaquete.matriculaId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `paqueteId` field in the `MatriculaPaquete` table.
+  """
+  paqueteId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaPaquete.paqueteId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `MatriculaPaquete` table.
+  """
+  id_min: Int @fdc_generated(from: "MatriculaPaquete.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `matriculaId` field in the `MatriculaPaquete` table.
+  """
+  matriculaId_min: Int @fdc_generated(from: "MatriculaPaquete.matriculaId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `paqueteId` field in the `MatriculaPaquete` table.
+  """
+  paqueteId_min: Int @fdc_generated(from: "MatriculaPaquete.paqueteId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `MatriculaPaquete` table.
+  """
+  id_max: Int @fdc_generated(from: "MatriculaPaquete.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `matriculaId` field in the `MatriculaPaquete` table.
+  """
+  matriculaId_max: Int @fdc_generated(from: "MatriculaPaquete.matriculaId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `paqueteId` field in the `MatriculaPaquete` table.
+  """
+  paqueteId_max: Int @fdc_generated(from: "MatriculaPaquete.paqueteId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "MatriculaPaquete.matriculaId,paqueteId", purpose: ENTITY_ID)
+}
+extend type MatriculaUser {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "MatriculaUser", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `MatriculaUser` table.
+  """
+  _count: Int! @fdc_generated(from: "MatriculaUser.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaUser` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaUser.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaUser` table where the `matriculaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  matriculaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaUser.matriculaId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaUser` table where the `userId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  userId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaUser.userId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `MatriculaUser` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaUser.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `matriculaId` field in the `MatriculaUser` table.
+  """
+  matriculaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaUser.matriculaId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `userId` field in the `MatriculaUser` table.
+  """
+  userId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaUser.userId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `MatriculaUser` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaUser.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `matriculaId` field in the `MatriculaUser` table.
+  """
+  matriculaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaUser.matriculaId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `userId` field in the `MatriculaUser` table.
+  """
+  userId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaUser.userId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `MatriculaUser` table.
+  """
+  id_min: Int @fdc_generated(from: "MatriculaUser.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `matriculaId` field in the `MatriculaUser` table.
+  """
+  matriculaId_min: Int @fdc_generated(from: "MatriculaUser.matriculaId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `userId` field in the `MatriculaUser` table.
+  """
+  userId_min: Int @fdc_generated(from: "MatriculaUser.userId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `MatriculaUser` table.
+  """
+  id_max: Int @fdc_generated(from: "MatriculaUser.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `matriculaId` field in the `MatriculaUser` table.
+  """
+  matriculaId_max: Int @fdc_generated(from: "MatriculaUser.matriculaId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `userId` field in the `MatriculaUser` table.
+  """
+  userId_max: Int @fdc_generated(from: "MatriculaUser.userId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "MatriculaUser.matriculaId,userId", purpose: ENTITY_ID)
+}
 extend type Modulo {
+  """
+  ✨ List `Grupo` objects in a one-to-many relationship (where `Grupo`.`modulo` is this object).
+  """
+  grupos_on_modulo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Grupo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Grupo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Grupo_Having
+  ): [Grupo!]! @fdc_generated(from: "Grupo.modulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `ModuloVideo` objects in a one-to-many relationship (where `ModuloVideo`.`modulo` is this object).
+  """
+  moduloVideos_on_modulo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ModuloVideo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ModuloVideo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ModuloVideo_Having
+  ): [ModuloVideo!]! @fdc_generated(from: "ModuloVideo.modulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
@@ -7,6 +2197,60 @@ extend type Modulo {
   ✨ Count the number of rows in the `Modulo` table.
   """
   _count: Int! @fdc_generated(from: "Modulo.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Modulo` table where the `activo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  activo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.activo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Modulo` table where the `carreraId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  carreraId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Modulo` table where the `creditos` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  creditos_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.creditos", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Modulo` table where the `descripcion2` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion2_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.descripcion2", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Modulo` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Modulo` table where the `horas` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  horas_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.horas", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Modulo` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -17,6 +2261,42 @@ extend type Modulo {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Modulo.id", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Modulo` table where the `metas` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  metas_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.metas", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Modulo` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  orden_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.orden", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Modulo` table where the `slug` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  slug_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.slug", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Modulo` table where the `tituloComercial` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tituloComercial_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.tituloComercial", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Modulo` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   titulo_count(
@@ -25,6 +2305,33 @@ extend type Modulo {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Modulo.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `carreraId` field in the `Modulo` table.
+  """
+  carreraId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `creditos` field in the `Modulo` table.
+  """
+  creditos_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Modulo.creditos", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `horas` field in the `Modulo` table.
+  """
+  horas_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Modulo.horas", purpose: QUERY_SUM)
   """
   ✨ Sum the `id` field in the `Modulo` table.
   """
@@ -35,6 +2342,51 @@ extend type Modulo {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Modulo.id", purpose: QUERY_SUM)
   """
+  ✨ Sum the `metas` field in the `Modulo` table.
+  """
+  metas_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Modulo.metas", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `orden` field in the `Modulo` table.
+  """
+  orden_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Modulo.orden", purpose: QUERY_SUM)
+  """
+  ✨ Average the `carreraId` field in the `Modulo` table.
+  """
+  carreraId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `creditos` field in the `Modulo` table.
+  """
+  creditos_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Modulo.creditos", purpose: QUERY_AVG)
+  """
+  ✨ Average the `horas` field in the `Modulo` table.
+  """
+  horas_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Modulo.horas", purpose: QUERY_AVG)
+  """
   ✨ Average the `id` field in the `Modulo` table.
   """
   id_avg(
@@ -44,15 +2396,2383 @@ extend type Modulo {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Modulo.id", purpose: QUERY_AVG)
   """
+  ✨ Average the `metas` field in the `Modulo` table.
+  """
+  metas_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Modulo.metas", purpose: QUERY_AVG)
+  """
+  ✨ Average the `orden` field in the `Modulo` table.
+  """
+  orden_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Modulo.orden", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `carreraId` field in the `Modulo` table.
+  """
+  carreraId_min: Int @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `creditos` field in the `Modulo` table.
+  """
+  creditos_min: Int @fdc_generated(from: "Modulo.creditos", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `horas` field in the `Modulo` table.
+  """
+  horas_min: Int @fdc_generated(from: "Modulo.horas", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `id` field in the `Modulo` table.
   """
   id_min: Int @fdc_generated(from: "Modulo.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `metas` field in the `Modulo` table.
+  """
+  metas_min: Int @fdc_generated(from: "Modulo.metas", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `orden` field in the `Modulo` table.
+  """
+  orden_min: Int @fdc_generated(from: "Modulo.orden", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `carreraId` field in the `Modulo` table.
+  """
+  carreraId_max: Int @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `creditos` field in the `Modulo` table.
+  """
+  creditos_max: Int @fdc_generated(from: "Modulo.creditos", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `horas` field in the `Modulo` table.
+  """
+  horas_max: Int @fdc_generated(from: "Modulo.horas", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `id` field in the `Modulo` table.
   """
   id_max: Int @fdc_generated(from: "Modulo.id", purpose: QUERY_MAX)
   """
+  ✨ Maximum of the `metas` field in the `Modulo` table.
+  """
+  metas_max: Int @fdc_generated(from: "Modulo.metas", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `orden` field in the `Modulo` table.
+  """
+  orden_max: Int @fdc_generated(from: "Modulo.orden", purpose: QUERY_MAX)
+  """
   A generated field that is used for caching results in SDKs.
   """
   _id: ID! @fdc_generated(from: "Modulo.id", purpose: ENTITY_ID)
+}
+extend type ModuloVideo {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "ModuloVideo", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `ModuloVideo` table.
+  """
+  _count: Int! @fdc_generated(from: "ModuloVideo.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ModuloVideo` table where the `field` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  field_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ModuloVideo.field", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ModuloVideo` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ModuloVideo.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ModuloVideo` table where the `moduloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  moduloId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ModuloVideo.moduloId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ModuloVideo` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  orden_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ModuloVideo.orden", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ModuloVideo` table where the `videoId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  videoId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ModuloVideo.videoId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `ModuloVideo` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ModuloVideo.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `moduloId` field in the `ModuloVideo` table.
+  """
+  moduloId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ModuloVideo.moduloId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `orden` field in the `ModuloVideo` table.
+  """
+  orden_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ModuloVideo.orden", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `videoId` field in the `ModuloVideo` table.
+  """
+  videoId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ModuloVideo.videoId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `ModuloVideo` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ModuloVideo.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `moduloId` field in the `ModuloVideo` table.
+  """
+  moduloId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ModuloVideo.moduloId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `orden` field in the `ModuloVideo` table.
+  """
+  orden_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ModuloVideo.orden", purpose: QUERY_AVG)
+  """
+  ✨ Average the `videoId` field in the `ModuloVideo` table.
+  """
+  videoId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ModuloVideo.videoId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `ModuloVideo` table.
+  """
+  id_min: Int @fdc_generated(from: "ModuloVideo.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `moduloId` field in the `ModuloVideo` table.
+  """
+  moduloId_min: Int @fdc_generated(from: "ModuloVideo.moduloId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `orden` field in the `ModuloVideo` table.
+  """
+  orden_min: Int @fdc_generated(from: "ModuloVideo.orden", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `videoId` field in the `ModuloVideo` table.
+  """
+  videoId_min: Int @fdc_generated(from: "ModuloVideo.videoId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `ModuloVideo` table.
+  """
+  id_max: Int @fdc_generated(from: "ModuloVideo.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `moduloId` field in the `ModuloVideo` table.
+  """
+  moduloId_max: Int @fdc_generated(from: "ModuloVideo.moduloId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `orden` field in the `ModuloVideo` table.
+  """
+  orden_max: Int @fdc_generated(from: "ModuloVideo.orden", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `videoId` field in the `ModuloVideo` table.
+  """
+  videoId_max: Int @fdc_generated(from: "ModuloVideo.videoId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "ModuloVideo.id", purpose: ENTITY_ID)
+}
+extend type Paquete {
+  """
+  ✨ List `MatriculaPaquete` objects in a one-to-many relationship (where `MatriculaPaquete`.`paquete` is this object).
+  """
+  matriculaPaquetes_on_paquete(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaPaquete_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaPaquete_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaPaquete_Having
+  ): [MatriculaPaquete!]! @fdc_generated(from: "MatriculaPaquete.paquete", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `PaqueteGrupo` objects in a one-to-many relationship (where `PaqueteGrupo`.`paquete` is this object).
+  """
+  paqueteGrupos_on_paquete(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PaqueteGrupo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PaqueteGrupo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PaqueteGrupo_Having
+  ): [PaqueteGrupo!]! @fdc_generated(from: "PaqueteGrupo.paquete", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Grupo` objects using `PaqueteGrupo` as the join table (a `PaqueteGrupo` object exists where its `paquete` is this and its `grupo` is that).
+  """
+  grupos_via_PaqueteGrupo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PaqueteGrupo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PaqueteGrupo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PaqueteGrupo_Having
+  ): [Grupo!]! @fdc_generated(from: "PaqueteGrupo", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  ✨ List `Matricula` objects using `MatriculaPaquete` as the join table (a `MatriculaPaquete` object exists where its `paquete` is this and its `matricula` is that).
+  """
+  matriculas_via_MatriculaPaquete(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaPaquete_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaPaquete_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaPaquete_Having
+  ): [Matricula!]! @fdc_generated(from: "MatriculaPaquete", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Paquete", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Paquete` table.
+  """
+  _count: Int! @fdc_generated(from: "Paquete.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Paquete` table where the `archivado` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  archivado_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Paquete.archivado", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Paquete` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Paquete.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Paquete` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Paquete.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Paquete` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Paquete.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Paquete` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Paquete.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Paquete` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Paquete.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `Paquete` table.
+  """
+  id_min: Int @fdc_generated(from: "Paquete.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `Paquete` table.
+  """
+  id_max: Int @fdc_generated(from: "Paquete.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Paquete.id", purpose: ENTITY_ID)
+}
+extend type PaqueteGrupo {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "PaqueteGrupo", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `PaqueteGrupo` table.
+  """
+  _count: Int! @fdc_generated(from: "PaqueteGrupo.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PaqueteGrupo` table where the `grupoId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PaqueteGrupo.grupoId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PaqueteGrupo` table where the `grupoOrd` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoOrd_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PaqueteGrupo.grupoOrd", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PaqueteGrupo` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PaqueteGrupo.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PaqueteGrupo` table where the `paqueteId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  paqueteId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PaqueteGrupo.paqueteId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `grupoId` field in the `PaqueteGrupo` table.
+  """
+  grupoId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PaqueteGrupo.grupoId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `grupoOrd` field in the `PaqueteGrupo` table.
+  """
+  grupoOrd_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PaqueteGrupo.grupoOrd", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `PaqueteGrupo` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PaqueteGrupo.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `paqueteId` field in the `PaqueteGrupo` table.
+  """
+  paqueteId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PaqueteGrupo.paqueteId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `grupoId` field in the `PaqueteGrupo` table.
+  """
+  grupoId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PaqueteGrupo.grupoId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `grupoOrd` field in the `PaqueteGrupo` table.
+  """
+  grupoOrd_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PaqueteGrupo.grupoOrd", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `PaqueteGrupo` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PaqueteGrupo.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `paqueteId` field in the `PaqueteGrupo` table.
+  """
+  paqueteId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PaqueteGrupo.paqueteId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `grupoId` field in the `PaqueteGrupo` table.
+  """
+  grupoId_min: Int @fdc_generated(from: "PaqueteGrupo.grupoId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `grupoOrd` field in the `PaqueteGrupo` table.
+  """
+  grupoOrd_min: Int @fdc_generated(from: "PaqueteGrupo.grupoOrd", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `PaqueteGrupo` table.
+  """
+  id_min: Int @fdc_generated(from: "PaqueteGrupo.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `paqueteId` field in the `PaqueteGrupo` table.
+  """
+  paqueteId_min: Int @fdc_generated(from: "PaqueteGrupo.paqueteId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `grupoId` field in the `PaqueteGrupo` table.
+  """
+  grupoId_max: Int @fdc_generated(from: "PaqueteGrupo.grupoId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `grupoOrd` field in the `PaqueteGrupo` table.
+  """
+  grupoOrd_max: Int @fdc_generated(from: "PaqueteGrupo.grupoOrd", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `PaqueteGrupo` table.
+  """
+  id_max: Int @fdc_generated(from: "PaqueteGrupo.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `paqueteId` field in the `PaqueteGrupo` table.
+  """
+  paqueteId_max: Int @fdc_generated(from: "PaqueteGrupo.paqueteId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "PaqueteGrupo.paqueteId,grupoId", purpose: ENTITY_ID)
+}
+extend type Permiso {
+  """
+  ✨ List `User` objects in a one-to-many relationship (where `User`.`permiso` is this object).
+  """
+  users_on_permiso(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: User_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [User_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: User_Having
+  ): [User!]! @fdc_generated(from: "User.permiso", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Permiso", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Permiso` table.
+  """
+  _count: Int! @fdc_generated(from: "Permiso.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Permiso` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Permiso.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Permiso` table where the `scala` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  scala_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Permiso.scala", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Permiso` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Permiso.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Permiso` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Permiso.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `scala` field in the `Permiso` table.
+  """
+  scala_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Permiso.scala", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Permiso` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Permiso.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `scala` field in the `Permiso` table.
+  """
+  scala_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Permiso.scala", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `Permiso` table.
+  """
+  id_min: Int @fdc_generated(from: "Permiso.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `scala` field in the `Permiso` table.
+  """
+  scala_min: Int @fdc_generated(from: "Permiso.scala", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `Permiso` table.
+  """
+  id_max: Int @fdc_generated(from: "Permiso.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `scala` field in the `Permiso` table.
+  """
+  scala_max: Int @fdc_generated(from: "Permiso.scala", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Permiso.id", purpose: ENTITY_ID)
+}
+extend type Personal {
+  """
+  ✨ List `Grupo` objects in a one-to-many relationship (where `Grupo`.`personal` is this object).
+  """
+  grupos_on_personal(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Grupo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Grupo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Grupo_Having
+  ): [Grupo!]! @fdc_generated(from: "Grupo.personal", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `PersonalEspecialidad` objects in a one-to-many relationship (where `PersonalEspecialidad`.`personal` is this object).
+  """
+  personalEspecialidads_on_personal(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PersonalEspecialidad_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PersonalEspecialidad_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PersonalEspecialidad_Having
+  ): [PersonalEspecialidad!]! @fdc_generated(from: "PersonalEspecialidad.personal", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Semestre` objects in a one-to-many relationship (where `Semestre`.`coordinador1` is this object).
+  """
+  semestres_on_coordinador1(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Semestre_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Semestre_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Semestre_Having
+  ): [Semestre!]! @fdc_generated(from: "Semestre.coordinador1", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Semestre` objects in a one-to-many relationship (where `Semestre`.`coordinador2` is this object).
+  """
+  semestres_on_coordinador2(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Semestre_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Semestre_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Semestre_Having
+  ): [Semestre!]! @fdc_generated(from: "Semestre.coordinador2", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Semestre` objects in a one-to-many relationship (where `Semestre`.`director` is this object).
+  """
+  semestres_on_director(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Semestre_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Semestre_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Semestre_Having
+  ): [Semestre!]! @fdc_generated(from: "Semestre.director", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Especialidad` objects using `PersonalEspecialidad` as the join table (a `PersonalEspecialidad` object exists where its `personal` is this and its `especialidad` is that).
+  """
+  especialidads_via_PersonalEspecialidad(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PersonalEspecialidad_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PersonalEspecialidad_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PersonalEspecialidad_Having
+  ): [Especialidad!]! @fdc_generated(from: "PersonalEspecialidad", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Personal", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Personal` table.
+  """
+  _count: Int! @fdc_generated(from: "Personal.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Personal` table where the `displayName` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  displayName_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Personal.displayName", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Personal` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Personal.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Personal` table where the `memo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  memo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Personal.memo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Personal` table where the `userId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  userId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Personal.userId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Personal` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Personal.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `userId` field in the `Personal` table.
+  """
+  userId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Personal.userId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Personal` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Personal.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `userId` field in the `Personal` table.
+  """
+  userId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Personal.userId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `Personal` table.
+  """
+  id_min: Int @fdc_generated(from: "Personal.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `userId` field in the `Personal` table.
+  """
+  userId_min: Int @fdc_generated(from: "Personal.userId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `Personal` table.
+  """
+  id_max: Int @fdc_generated(from: "Personal.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `userId` field in the `Personal` table.
+  """
+  userId_max: Int @fdc_generated(from: "Personal.userId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Personal.id", purpose: ENTITY_ID)
+}
+extend type PersonalEspecialidad {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "PersonalEspecialidad", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `PersonalEspecialidad` table.
+  """
+  _count: Int! @fdc_generated(from: "PersonalEspecialidad.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PersonalEspecialidad` table where the `especialidadId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  especialidadId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PersonalEspecialidad.especialidadId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PersonalEspecialidad` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PersonalEspecialidad.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PersonalEspecialidad` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  orden_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PersonalEspecialidad.orden", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PersonalEspecialidad` table where the `personalId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  personalId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PersonalEspecialidad.personalId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `especialidadId` field in the `PersonalEspecialidad` table.
+  """
+  especialidadId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PersonalEspecialidad.especialidadId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `PersonalEspecialidad` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PersonalEspecialidad.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `orden` field in the `PersonalEspecialidad` table.
+  """
+  orden_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PersonalEspecialidad.orden", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `personalId` field in the `PersonalEspecialidad` table.
+  """
+  personalId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PersonalEspecialidad.personalId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `especialidadId` field in the `PersonalEspecialidad` table.
+  """
+  especialidadId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PersonalEspecialidad.especialidadId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `PersonalEspecialidad` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PersonalEspecialidad.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `orden` field in the `PersonalEspecialidad` table.
+  """
+  orden_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PersonalEspecialidad.orden", purpose: QUERY_AVG)
+  """
+  ✨ Average the `personalId` field in the `PersonalEspecialidad` table.
+  """
+  personalId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PersonalEspecialidad.personalId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `especialidadId` field in the `PersonalEspecialidad` table.
+  """
+  especialidadId_min: Int @fdc_generated(from: "PersonalEspecialidad.especialidadId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `PersonalEspecialidad` table.
+  """
+  id_min: Int @fdc_generated(from: "PersonalEspecialidad.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `orden` field in the `PersonalEspecialidad` table.
+  """
+  orden_min: Int @fdc_generated(from: "PersonalEspecialidad.orden", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `personalId` field in the `PersonalEspecialidad` table.
+  """
+  personalId_min: Int @fdc_generated(from: "PersonalEspecialidad.personalId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `especialidadId` field in the `PersonalEspecialidad` table.
+  """
+  especialidadId_max: Int @fdc_generated(from: "PersonalEspecialidad.especialidadId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `PersonalEspecialidad` table.
+  """
+  id_max: Int @fdc_generated(from: "PersonalEspecialidad.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `orden` field in the `PersonalEspecialidad` table.
+  """
+  orden_max: Int @fdc_generated(from: "PersonalEspecialidad.orden", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `personalId` field in the `PersonalEspecialidad` table.
+  """
+  personalId_max: Int @fdc_generated(from: "PersonalEspecialidad.personalId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "PersonalEspecialidad.personalId,especialidadId", purpose: ENTITY_ID)
+}
+extend type Publicacion {
+  """
+  ✨ List `PublicacionVideo` objects in a one-to-many relationship (where `PublicacionVideo`.`publicacion` is this object).
+  """
+  publicacionVideos_on_publicacion(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PublicacionVideo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PublicacionVideo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PublicacionVideo_Having
+  ): [PublicacionVideo!]! @fdc_generated(from: "PublicacionVideo.publicacion", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Publicacion", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Publicacion` table.
+  """
+  _count: Int! @fdc_generated(from: "Publicacion.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `contenido1` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  contenido1_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.contenido1", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `contenido2` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  contenido2_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.contenido2", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `descripcionCorta` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcionCorta_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.descripcionCorta", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `destacado` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  destacado_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.destacado", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `fechaEventoFin` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaEventoFin_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.fechaEventoFin", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `fechaEventoInicio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaEventoInicio_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.fechaEventoInicio", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `fechaPublicacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaPublicacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.fechaPublicacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `slug` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  slug_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.slug", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `tipo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tipo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.tipo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Publicacion` table where the `ubicacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  ubicacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Publicacion.ubicacion", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Publicacion` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Publicacion.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Publicacion` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Publicacion.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `fechaEventoFin` field in the `Publicacion` table.
+  """
+  fechaEventoFin_min: Timestamp @fdc_generated(from: "Publicacion.fechaEventoFin", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaEventoInicio` field in the `Publicacion` table.
+  """
+  fechaEventoInicio_min: Timestamp @fdc_generated(from: "Publicacion.fechaEventoInicio", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaPublicacion` field in the `Publicacion` table.
+  """
+  fechaPublicacion_min: Timestamp @fdc_generated(from: "Publicacion.fechaPublicacion", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `Publicacion` table.
+  """
+  id_min: Int @fdc_generated(from: "Publicacion.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `fechaEventoFin` field in the `Publicacion` table.
+  """
+  fechaEventoFin_max: Timestamp @fdc_generated(from: "Publicacion.fechaEventoFin", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaEventoInicio` field in the `Publicacion` table.
+  """
+  fechaEventoInicio_max: Timestamp @fdc_generated(from: "Publicacion.fechaEventoInicio", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaPublicacion` field in the `Publicacion` table.
+  """
+  fechaPublicacion_max: Timestamp @fdc_generated(from: "Publicacion.fechaPublicacion", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `Publicacion` table.
+  """
+  id_max: Int @fdc_generated(from: "Publicacion.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Publicacion.id", purpose: ENTITY_ID)
+}
+extend type PublicacionVideo {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "PublicacionVideo", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `PublicacionVideo` table.
+  """
+  _count: Int! @fdc_generated(from: "PublicacionVideo.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PublicacionVideo` table where the `field` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  field_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PublicacionVideo.field", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PublicacionVideo` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PublicacionVideo.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PublicacionVideo` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  orden_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PublicacionVideo.orden", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PublicacionVideo` table where the `publicacionId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  publicacionId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PublicacionVideo.publicacionId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PublicacionVideo` table where the `videoId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  videoId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PublicacionVideo.videoId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `PublicacionVideo` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PublicacionVideo.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `orden` field in the `PublicacionVideo` table.
+  """
+  orden_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PublicacionVideo.orden", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `publicacionId` field in the `PublicacionVideo` table.
+  """
+  publicacionId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PublicacionVideo.publicacionId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `videoId` field in the `PublicacionVideo` table.
+  """
+  videoId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PublicacionVideo.videoId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `PublicacionVideo` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PublicacionVideo.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `orden` field in the `PublicacionVideo` table.
+  """
+  orden_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PublicacionVideo.orden", purpose: QUERY_AVG)
+  """
+  ✨ Average the `publicacionId` field in the `PublicacionVideo` table.
+  """
+  publicacionId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PublicacionVideo.publicacionId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `videoId` field in the `PublicacionVideo` table.
+  """
+  videoId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PublicacionVideo.videoId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `PublicacionVideo` table.
+  """
+  id_min: Int @fdc_generated(from: "PublicacionVideo.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `orden` field in the `PublicacionVideo` table.
+  """
+  orden_min: Int @fdc_generated(from: "PublicacionVideo.orden", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `publicacionId` field in the `PublicacionVideo` table.
+  """
+  publicacionId_min: Int @fdc_generated(from: "PublicacionVideo.publicacionId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `videoId` field in the `PublicacionVideo` table.
+  """
+  videoId_min: Int @fdc_generated(from: "PublicacionVideo.videoId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `PublicacionVideo` table.
+  """
+  id_max: Int @fdc_generated(from: "PublicacionVideo.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `orden` field in the `PublicacionVideo` table.
+  """
+  orden_max: Int @fdc_generated(from: "PublicacionVideo.orden", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `publicacionId` field in the `PublicacionVideo` table.
+  """
+  publicacionId_max: Int @fdc_generated(from: "PublicacionVideo.publicacionId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `videoId` field in the `PublicacionVideo` table.
+  """
+  videoId_max: Int @fdc_generated(from: "PublicacionVideo.videoId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "PublicacionVideo.id", purpose: ENTITY_ID)
+}
+extend type Sector {
+  """
+  ✨ List `Familia` objects in a one-to-many relationship (where `Familia`.`sector` is this object).
+  """
+  familias_on_sector(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Familia_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Familia_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Familia_Having
+  ): [Familia!]! @fdc_generated(from: "Familia.sector", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Sector", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Sector` table.
+  """
+  _count: Int! @fdc_generated(from: "Sector.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Sector` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Sector.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Sector` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Sector.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Sector` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Sector.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Sector` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Sector.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Sector` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Sector.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `Sector` table.
+  """
+  id_min: Int @fdc_generated(from: "Sector.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `Sector` table.
+  """
+  id_max: Int @fdc_generated(from: "Sector.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Sector.id", purpose: ENTITY_ID)
+}
+extend type Semestre {
+  """
+  ✨ List `Calendario` objects in a one-to-many relationship (where `Calendario`.`semestre` is this object).
+  """
+  calendarios_on_semestre(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Calendario_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Calendario_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Calendario_Having
+  ): [Calendario!]! @fdc_generated(from: "Calendario.semestre", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Semestre", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Semestre` table.
+  """
+  _count: Int! @fdc_generated(from: "Semestre.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Semestre` table where the `archivado` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  archivado_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Semestre.archivado", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Semestre` table where the `coordinador1Id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  coordinador1Id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Semestre.coordinador1Id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Semestre` table where the `coordinador2Id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  coordinador2Id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Semestre.coordinador2Id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Semestre` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Semestre.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Semestre` table where the `directorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  directorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Semestre.directorId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Semestre` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Semestre.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Semestre` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Semestre.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `coordinador1Id` field in the `Semestre` table.
+  """
+  coordinador1Id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Semestre.coordinador1Id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `coordinador2Id` field in the `Semestre` table.
+  """
+  coordinador2Id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Semestre.coordinador2Id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `directorId` field in the `Semestre` table.
+  """
+  directorId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Semestre.directorId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `Semestre` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Semestre.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `coordinador1Id` field in the `Semestre` table.
+  """
+  coordinador1Id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Semestre.coordinador1Id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `coordinador2Id` field in the `Semestre` table.
+  """
+  coordinador2Id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Semestre.coordinador2Id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `directorId` field in the `Semestre` table.
+  """
+  directorId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Semestre.directorId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `Semestre` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Semestre.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `coordinador1Id` field in the `Semestre` table.
+  """
+  coordinador1Id_min: Int @fdc_generated(from: "Semestre.coordinador1Id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `coordinador2Id` field in the `Semestre` table.
+  """
+  coordinador2Id_min: Int @fdc_generated(from: "Semestre.coordinador2Id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `directorId` field in the `Semestre` table.
+  """
+  directorId_min: Int @fdc_generated(from: "Semestre.directorId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `Semestre` table.
+  """
+  id_min: Int @fdc_generated(from: "Semestre.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `coordinador1Id` field in the `Semestre` table.
+  """
+  coordinador1Id_max: Int @fdc_generated(from: "Semestre.coordinador1Id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `coordinador2Id` field in the `Semestre` table.
+  """
+  coordinador2Id_max: Int @fdc_generated(from: "Semestre.coordinador2Id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `directorId` field in the `Semestre` table.
+  """
+  directorId_max: Int @fdc_generated(from: "Semestre.directorId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `Semestre` table.
+  """
+  id_max: Int @fdc_generated(from: "Semestre.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Semestre.id", purpose: ENTITY_ID)
+}
+extend type User {
+  """
+  ✨ List `MatriculaUser` objects in a one-to-many relationship (where `MatriculaUser`.`user` is this object).
+  """
+  matriculaUsers_on_user(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaUser_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaUser_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaUser_Having
+  ): [MatriculaUser!]! @fdc_generated(from: "MatriculaUser.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Personal` objects in a one-to-many relationship (where `Personal`.`user` is this object).
+  """
+  personals_on_user(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Personal_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Personal_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Personal_Having
+  ): [Personal!]! @fdc_generated(from: "Personal.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Matricula` objects using `MatriculaUser` as the join table (a `MatriculaUser` object exists where its `user` is this and its `matricula` is that).
+  """
+  matriculas_via_MatriculaUser(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaUser_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaUser_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaUser_Having
+  ): [Matricula!]! @fdc_generated(from: "MatriculaUser", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "User", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `User` table.
+  """
+  _count: Int! @fdc_generated(from: "User.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `apellidoMaterno` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  apellidoMaterno_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.apellidoMaterno", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `apellidoPaterno` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  apellidoPaterno_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.apellidoPaterno", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `apellidos` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  apellidos_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.apellidos", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `avatar` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  avatar_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.avatar", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `blocked` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  blocked_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.blocked", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `celular` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  celular_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.celular", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `confirmed` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  confirmed_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.confirmed", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `direccion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  direccion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.direccion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `distrito` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  distrito_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.distrito", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `dni` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  dni_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.dni", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `documentId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  documentId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.documentId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `email` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  email_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.email", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `estadoCivil` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  estadoCivil_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.estadoCivil", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `fechaNacimiento` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaNacimiento_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.fechaNacimiento", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `instruccion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  instruccion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.instruccion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `nombre` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nombre_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.nombre", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `permisoId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  permisoId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.permisoId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `provider` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  provider_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.provider", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `sexo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  sexo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.sexo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `telefono` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  telefono_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.telefono", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `tipoDocumento` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tipoDocumento_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.tipoDocumento", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `username` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  username_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.username", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `User` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "User.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `permisoId` field in the `User` table.
+  """
+  permisoId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "User.permisoId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `User` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "User.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `permisoId` field in the `User` table.
+  """
+  permisoId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "User.permisoId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `fechaNacimiento` field in the `User` table.
+  """
+  fechaNacimiento_min: Timestamp @fdc_generated(from: "User.fechaNacimiento", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `User` table.
+  """
+  id_min: Int @fdc_generated(from: "User.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `permisoId` field in the `User` table.
+  """
+  permisoId_min: Int @fdc_generated(from: "User.permisoId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `fechaNacimiento` field in the `User` table.
+  """
+  fechaNacimiento_max: Timestamp @fdc_generated(from: "User.fechaNacimiento", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `User` table.
+  """
+  id_max: Int @fdc_generated(from: "User.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `permisoId` field in the `User` table.
+  """
+  permisoId_max: Int @fdc_generated(from: "User.permisoId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "User.id", purpose: ENTITY_ID)
+}
+extend type VideoYoutube {
+  """
+  ✨ List `ModuloVideo` objects in a one-to-many relationship (where `ModuloVideo`.`video` is this object).
+  """
+  moduloVideos_on_video(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ModuloVideo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ModuloVideo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ModuloVideo_Having
+  ): [ModuloVideo!]! @fdc_generated(from: "ModuloVideo.video", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `PublicacionVideo` objects in a one-to-many relationship (where `PublicacionVideo`.`video` is this object).
+  """
+  publicacionVideos_on_video(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PublicacionVideo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PublicacionVideo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PublicacionVideo_Having
+  ): [PublicacionVideo!]! @fdc_generated(from: "PublicacionVideo.video", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "VideoYoutube", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `VideoYoutube` table.
+  """
+  _count: Int! @fdc_generated(from: "VideoYoutube.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `VideoYoutube` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "VideoYoutube.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `VideoYoutube` table where the `url` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  url_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "VideoYoutube.url", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `VideoYoutube` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "VideoYoutube.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `VideoYoutube` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "VideoYoutube.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `VideoYoutube` table.
+  """
+  id_min: Int @fdc_generated(from: "VideoYoutube.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `VideoYoutube` table.
+  """
+  id_max: Int @fdc_generated(from: "VideoYoutube.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "VideoYoutube.id", purpose: ENTITY_ID)
 }

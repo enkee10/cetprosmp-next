@@ -1,0 +1,46 @@
+query ListPermisos @auth(expr: "has(auth.token.level) && auth.token.level >= 600") {
+  permisos(limit: 500) {
+    id
+    titulo
+    scala
+  }
+}
+
+query GetPermisoById($id: Int!) @auth(expr: "has(auth.token.level) && auth.token.level >= 600") {
+  permiso(id: $id) {
+    id
+    titulo
+    scala
+  }
+}
+
+query ListUsers @auth(expr: "has(auth.token.level) && auth.token.level >= 600") {
+  users(limit: 500) {
+    id
+    documentId
+    username
+    email
+    blocked
+    avatar
+    nombre
+    apellidoPaterno
+    apellidoMaterno
+    celular
+    telefono
+    direccion
+    distrito
+    tipoDocumento
+    dni
+    sexo
+    estadoCivil
+    instruccion
+    fechaNacimiento
+    permisoId
+  }
+}
+
+query GetUserByDocumentId($documentId: String!) @auth(expr: "has(auth.token.level) && auth.token.level >= 600") {
+  users(where: { documentId: { eq: $documentId } }, limit: 1) {
+    id
+  }
+}

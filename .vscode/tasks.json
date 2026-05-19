@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Firebase: Stop stale emulators",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\scripts\\stop-firebase-emulators.ps1"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Firebase: Emulators (Auth+DataConnect+Storage+Functions+Hosting)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\scripts\\start-firebase-emulators.ps1"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

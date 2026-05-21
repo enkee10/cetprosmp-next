@@ -2,12 +2,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Alert, Box, Button, Typography, Chip, Avatar } from '@mui/material';
 import { DataGrid, GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
-import { getAuth } from 'firebase/auth';
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { app } from '@/lib/firebase';
-import { getClientDataConnect } from '@/lib/dataconnect';
-import { listUsers as dcListUsers } from '@dataconnect/generated';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@/lib/firebase';
 import UserForm from '@/components/intranet/UserForm';
+import { useAuth } from '@/context/AuthContext';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -24,6 +22,15 @@ interface User {
   blocked?: boolean;
   bloqueado?: boolean;
   avatar?: string;
+  tipoDocumento?: string;
+  dni?: string;
+  instruccion?: string;
+  estadoCivil?: string;
+  direccion?: string;
+  distrito?: string;
+  fechaNacimiento?: string;
+  telefono?: string;
+  sexo?: string;
 }
 
 interface UserFormData extends Record<string, unknown> {
@@ -57,31 +64,39 @@ const isPermissionDeniedDataConnectError = (error: unknown) => {
 };
 
 const UsersPage = () => {
+  const { user, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const functions = getFunctions(app);
-  const auth = getAuth(app);
-  const dataConnect = useMemo(() => getClientDataConnect(app), []);
+  const listUsers = useMemo(
+    () => httpsCallable<undefined, { users?: Record<string, unknown>[] }>(functions, 'listUsers', { timeout: 15000 }),
+    [],
+  );
 
   const fetchUsers = useCallback(async () => {
+    if (!user) {
+      setUsers([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setErrorMessage(null);
     try {
-      if (auth.currentUser) {
-        await auth.currentUser.getIdToken(true);
-      }
-
-      const result = await dcListUsers(dataConnect);
-      const normalizedUsers: User[] = (result.data.users || []).map((user) => ({
-        ...user,
-        blocked: Boolean(user.blocked),
-        bloqueado: Boolean(user.blocked),
-        permisoId: user.permisoId ?? null,
-      }));
+      const result = await listUsers();
+      const normalizedUsers: User[] = (result.data.users || []).map((user) => {
+        const permisoRaw = user.permisoId;
+        const permisoParsed = typeof permisoRaw === 'string' ? Number(permisoRaw) : Number(permisoRaw ?? NaN);
+        return {
+          ...(user as unknown as User),
+          blocked: Boolean(user.blocked),
+          bloqueado: Boolean(user.bloqueado ?? user.blocked),
+          permisoId: Number.isFinite(permisoParsed) ? permisoParsed : null,
+        };
+      });
       setUsers(normalizedUsers);
     } catch (error) {
       console.error('Error fetching users: ', error);
@@ -93,11 +108,14 @@ const UsersPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [auth, dataConnect]);
+  }, [listUsers, user]);
 
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
     fetchUsers();
-  }, [fetchUsers]);
+  }, [authLoading, fetchUsers]);
 
   const handleAddUser = () => {
     setSelectedUser(null);
@@ -110,6 +128,11 @@ const UsersPage = () => {
   };
 
   const handleDeleteUser = async (documentId: string) => {
+    if (!documentId) {
+      setErrorMessage('No se puede eliminar: el usuario no tiene documentId.');
+      return;
+    }
+
     if (window.confirm('Are you sure you want to delete this user? This action is irreversible.')) {
       try {
         const deleteUser = httpsCallable(functions, 'deleteUser');
@@ -136,12 +159,13 @@ const UsersPage = () => {
           ...dataToUpdate,
         });
 
-        if (dataToUpdate.permisoId) {
+        const currentPermiso = selectedUser.permisoId ? String(selectedUser.permisoId) : '';
+        const nextPermiso = dataToUpdate.permisoId ? String(dataToUpdate.permisoId) : '';
+        if (nextPermiso && nextPermiso !== currentPermiso) {
           const setUserRole = httpsCallable(functions, 'setUserRole');
           await setUserRole({
             uid: selectedUser.documentId,
             roleId: dataToUpdate.permisoId,
-            level: 0,
           });
         }
       } else {

@@ -20,6 +20,21 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Firebase Emulators (Local)
+
+1. Create a local env file based on `.env.emulators.local.example`.
+2. Start emulators:
+
+```powershell
+./scripts/start-firebase-emulators.ps1
+```
+
+3. Start the Next.js app:
+
+```bash
+npm run dev
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

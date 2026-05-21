@@ -7,7 +7,15 @@
   },
   "scripts": {
     "dev": "next dev --turbo",
+    "dev:local": "npx -y concurrently \"npm run emulators:start\" \"npm run dev\"",
     "dev:dc": "npx firebase-tools emulators:start --only dataconnect --project demo-cetprosmp --config firebase.dataconnect.local.json",
+    "emulators:start": "npx -y firebase-tools@latest emulators:start --project cetprosmp-2026 --import=./exportedData --export-on-exit=./exportedData",
+    "emulators:export": "npx -y firebase-tools@latest emulators:export ./exportedData --project cetprosmp-2026",
+    "auth:oob:list": "node scripts/auth-oob.mjs list",
+    "auth:oob:open": "node scripts/auth-oob.mjs open",
+    "auth:oob:latest": "node scripts/auth-oob.mjs latest",
+    "auth:oob:verify": "node scripts/auth-oob.mjs verify",
+    "auth:oob:verify-latest": "node scripts/auth-oob.mjs verify-latest",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

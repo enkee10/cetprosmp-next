@@ -57,15 +57,13 @@
       "port": 9199
     },
     "dataconnect": {
-      "port": 9399,
-      "dataDir": "dataconnect/.dataconnect/pgliteData"
+      "port": 9399
     },
     "ui": {
       "enabled": true,
       "port": 4000
     },
-    "singleProjectMode": true,
-    "exportOnExit": "./exportedData"
+    "singleProjectMode": true
   },
   "dataconnect": {
     "source": "dataconnect"

@@ -46,7 +46,7 @@ foreach ($ownerId in $ownerIds) {
   }
 }
 
-$only = "auth,dataconnect,storage,functions,hosting"
+$only = "auth,firestore,dataconnect,storage,functions,hosting"
 $cmd = "npx -y firebase-tools@latest emulators:start --project $ProjectId --only $only"
 cmd /c $cmd
 exit $LASTEXITCODE

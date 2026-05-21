@@ -11,6 +11,10 @@ const shouldUseEmulator = () => {
     return process.env.NEXT_PUBLIC_USE_DATACONNECT_EMULATOR === 'true';
   }
 
+  if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS) {
+    return process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === 'true';
+  }
+
   return process.env.NODE_ENV !== 'production';
 };
 

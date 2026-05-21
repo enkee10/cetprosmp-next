@@ -218,6 +218,18 @@ const authAdmin = getAuth(app);
 const dataConnect = getDataConnect(connectorConfig, app);
 const DEFAULT_PERMISO_ID = 1;
 const DEFAULT_LEVEL = 0;
+const SUPERADMIN_EMAIL = "enkee03@cetprosmp.edu.pe";
+const SUPERADMIN_ROLE = "600";
+const SUPERADMIN_LEVEL = 600;
+
+function getInitialClaimsByEmail(email: string | null | undefined): { role: string; level: number } {
+  const normalized = (email || "").trim().toLowerCase();
+  if (normalized === SUPERADMIN_EMAIL) {
+    return { role: SUPERADMIN_ROLE, level: SUPERADMIN_LEVEL };
+  }
+
+  return { role: String(DEFAULT_PERMISO_ID), level: DEFAULT_LEVEL };
+}
 
 async function findDataConnectUserIdByDocumentId(documentId: string): Promise<number | null> {
   const response = await dcGetUserByDocumentId(dataConnect, { documentId });
@@ -267,7 +279,8 @@ async function upsertDataConnectUserByDocumentId(documentId: string, data: DataC
  */
 export const assignDefaultRole = auth.user().onCreate(async (user) => {
   try {
-    await authAdmin.setCustomUserClaims(user.uid, { role: String(DEFAULT_PERMISO_ID), level: DEFAULT_LEVEL });
+    const claims = getInitialClaimsByEmail(user.email);
+    await authAdmin.setCustomUserClaims(user.uid, claims);
 
     const { nombre, apellido_paterno, apellido_materno } = separarNombreCompleto(user.displayName || null);
     const primerNombre = nombre.split(" ").filter(Boolean)[0] || "";
@@ -323,42 +336,11 @@ export const registerUser = https.onCall(async (data) => {
 
   try {
     const userRecord = await authAdmin.createUser({ email, password, displayName: username });
-    await authAdmin.setCustomUserClaims(userRecord.uid, { role: String(DEFAULT_PERMISO_ID), level: DEFAULT_LEVEL });
-
-    const { nombre, apellido_paterno, apellido_materno } = separarNombreCompleto(username);
-
-    const profileData = buildUserDataFromInput(
-      {
-        username,
-        email,
-        nombre,
-        apellido_paterno,
-        apellido_materno,
-        foto: null,
-        celular: "",
-        bloqueado: false,
-        tipo_documento: "DNI",
-        dni: "",
-        sexo: "M",
-        estado_civil: "Soltero",
-        fecha_nacimiento: null,
-        instruccion: null,
-        direccion: null,
-        distrito: null,
-        permisoId: DEFAULT_PERMISO_ID,
-      },
-      {
-        documentId: userRecord.uid,
-        email,
-        username,
-        displayName: username,
-        photoURL: null,
-        provider: "password",
-        permisoId: DEFAULT_PERMISO_ID,
-      },
-    );
-
-    await upsertDataConnectUserByDocumentId(userRecord.uid, profileData);
+    const claims = getInitialClaimsByEmail(email);
+    await authAdmin.setCustomUserClaims(userRecord.uid, claims);
+    // Perfil en Data Connect:
+    // Se crea por el trigger auth.user().onCreate (assignDefaultRole).
+    // Evitamos escribir aqui para no duplicar filas por carrera de concurrencia.
 
     return { uid: userRecord.uid, email: userRecord.email };
   } catch (error: unknown) {
@@ -480,8 +462,8 @@ export const listUsers = https.onCall(async (_data, context) => {
       ...user,
       bloqueado: Boolean(user.blocked),
       permisoId: user.permisoId ? String(user.permisoId) : "",
-      permisoTitulo: user.permiso?.titulo || "Sin Permiso",
-      permisoLevel: user.permiso?.scala ?? 0,
+      permisoTitulo: "Sin Permiso",
+      permisoLevel: 0,
     }));
 
     return { users };
@@ -665,14 +647,28 @@ export const deleteUser = https.onCall(async (data, context) => {
   }
 
   try {
-    await authAdmin.deleteUser(uid);
+    let authDeleted = true;
+    try {
+      await authAdmin.deleteUser(uid);
+    } catch (error: unknown) {
+      const authCode = (error as { code?: string } | null)?.code;
+      if (authCode === "auth/user-not-found") {
+        authDeleted = false;
+      } else {
+        throw error;
+      }
+    }
 
     await dataConnect.executeGraphql<{ user_deleteMany: number }, { documentId: string }>(
       DELETE_USER_BY_DOCUMENT_ID_MUTATION,
       { variables: { documentId: uid } },
     );
 
-    return { result: `Successfully deleted user ${uid}.` };
+    return {
+      result: authDeleted
+        ? `Successfully deleted user ${uid}.`
+        : `User ${uid} was not present in Auth. Data Connect profile was removed.`,
+    };
   } catch (error) {
     console.error("Error in deleteUser:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while deleting user.");

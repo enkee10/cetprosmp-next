@@ -13,6 +13,9 @@ interface PermisoFormProps {
     scala: number;
   } | null;
   permisoId?: string;
+  asModal?: boolean;
+  onSaved?: () => void;
+  onCancel?: () => void;
 }
 
 interface PermisoData {
@@ -21,7 +24,7 @@ interface PermisoData {
   scala: number | null;
 }
 
-export function PermisoForm({ permiso, permisoId }: PermisoFormProps) {
+export function PermisoForm({ permiso, permisoId, asModal = false, onSaved, onCancel }: PermisoFormProps) {
   const [titulo, setTitulo] = useState(permiso ? permiso.titulo : '');
   const [scala, setScala] = useState(permiso ? permiso.scala.toString() : '');
   const [loading, setLoading] = useState(false);
@@ -73,59 +76,90 @@ export function PermisoForm({ permiso, permisoId }: PermisoFormProps) {
         scala: parseInt(scala, 10),
       });
 
-      router.push('/intranet/permisos');
-      router.refresh();
+      if (onSaved) {
+        onSaved();
+      } else {
+        router.push('/intranet/permisos');
+        router.refresh();
+      }
     } catch (err) {
       console.error('Error handling permiso form: ', err);
-      setError('No se pudo guardar el permiso en Data Connect.');
+      const code = (err as { code?: string } | null)?.code || '';
+      const message = (err as { message?: string } | null)?.message || '';
+      if (code === 'functions/permission-denied') {
+        setError('No tienes permisos para crear o editar permisos (requiere level >= 600).');
+      } else if (message) {
+        setError(`No se pudo guardar el permiso: ${message}`);
+      } else {
+        setError('No se pudo guardar el permiso en Data Connect.');
+      }
       setLoading(false);
     }
   };
 
   if (loadingPermiso) {
+    const loadingContent = (
+      <Box sx={{ my: 4, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+
+    if (asModal) {
+      return loadingContent;
+    }
+
     return (
       <Container maxWidth="sm">
-        <Box sx={{ my: 4, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
+        {loadingContent}
       </Container>
     );
   }
 
-  return (
-    <Container maxWidth="sm">
-      <Box sx={{ my: 4 }}>
+  const formContent = (
+    <Box sx={asModal ? { pt: 1 } : { my: 4 }}>
+      {!asModal && (
         <Typography variant="h4" component="h1" gutterBottom>
           {permisoId ? 'Editar Permiso' : 'Crear Permiso'}
         </Typography>
+      )}
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-        <form onSubmit={handleSubmit}>
-          <TextField
-            label="Título del Rol"
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            label="Nivel (Scala)"
-            value={scala}
-            onChange={(e) => setScala(e.target.value)}
-            fullWidth
-            margin="normal"
-            type="number"
-            required
-          />
-          <Box sx={{ mt: 2 }}>
-            <Button type="submit" variant="contained" color="primary" disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : (permisoId ? 'Actualizar' : 'Crear')}
+      <form onSubmit={handleSubmit}>
+        <TextField
+          label="Título del Rol"
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          fullWidth
+          margin="normal"
+          required
+        />
+        <TextField
+          label="Nivel (Scala)"
+          value={scala}
+          onChange={(e) => setScala(e.target.value)}
+          fullWidth
+          margin="normal"
+          type="number"
+          required
+        />
+        <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+          <Button type="submit" variant="contained" color="primary" disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : (permisoId ? 'Actualizar' : 'Crear')}
+          </Button>
+          {onCancel && (
+            <Button variant="outlined" onClick={onCancel} disabled={loading}>
+              Cancelar
             </Button>
-          </Box>
-        </form>
-      </Box>
-    </Container>
+          )}
+        </Box>
+      </form>
+    </Box>
   );
+
+  if (asModal) {
+    return formContent;
+  }
+
+  return <Container maxWidth="sm">{formContent}</Container>;
 }

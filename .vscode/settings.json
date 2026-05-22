@@ -1,4 +1,5 @@
 {
   "workbench.browser.openLocalhostLinks": false,
-  "livePreview.useIntegratedBrowser": false
+  "livePreview.useIntegratedBrowser": false,
+  "chatgpt.openOnStartup": true
 }

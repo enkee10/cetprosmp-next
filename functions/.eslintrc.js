@@ -9,7 +9,6 @@ module.exports = {
     "plugin:import/errors",
     "plugin:import/warnings",
     "plugin:import/typescript",
-    "google",
     "plugin:@typescript-eslint/recommended",
   ],
   parser: "@typescript-eslint/parser",
@@ -20,6 +19,7 @@ module.exports = {
   ignorePatterns: [
     "/lib/**/*", // Ignore built files.
     "/node_modules/**/*", // Ignore node_modules
+    "/src/dataconnect-admin-generated/**/*", // Ignore generated SDK code.
   ],
   plugins: ["@typescript-eslint", "import"],
   rules: {

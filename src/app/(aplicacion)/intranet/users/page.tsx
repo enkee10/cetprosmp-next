@@ -63,6 +63,12 @@ const isPermissionDeniedDataConnectError = (error: unknown) => {
   );
 };
 
+const isDeadlineExceededError = (error: unknown) => {
+  const message = String((error as { message?: string } | null)?.message || '').toLowerCase();
+  const code = String((error as { code?: string } | null)?.code || '').toLowerCase();
+  return code.includes('deadline-exceeded') || message.includes('deadline-exceeded');
+};
+
 const UsersPage = () => {
   const { user, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
@@ -76,7 +82,7 @@ const UsersPage = () => {
     [],
   );
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (attempt = 0) => {
     if (!user) {
       setUsers([]);
       setLoading(false);
@@ -99,6 +105,12 @@ const UsersPage = () => {
       });
       setUsers(normalizedUsers);
     } catch (error) {
+      if (isDeadlineExceededError(error) && attempt < 1) {
+        await new Promise((resolve) => setTimeout(resolve, 900));
+        await fetchUsers(attempt + 1);
+        return;
+      }
+
       console.error('Error fetching users: ', error);
       if (isPermissionDeniedDataConnectError(error)) {
         setErrorMessage('No tienes permisos para listar usuarios (se requiere claim level >= 600). Cierra sesión e inicia nuevamente para refrescar claims.');
@@ -280,4 +292,5 @@ const UsersPage = () => {
 };
 
 export default UsersPage;
+
 

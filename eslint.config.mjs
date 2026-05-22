@@ -10,6 +10,14 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    ignores: [
+      ".next/**",
+      "src/dataconnect-generated/**",
+      "src/dataconnect-admin-generated/**",
+      "functions/src/dataconnect-admin-generated/**",
+    ],
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 

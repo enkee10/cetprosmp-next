@@ -52,3 +52,17 @@ I0521 06:02:09.125109   19288 execute.go:57] Database ping is quick (likely cach
 I0521 06:02:09.128741   19288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 3909] ImpersonateQuery query ListUsers: succeeded. Connector: default
 I0521 06:02:09.131255   19288 execute.go:57] Database ping is quick (likely cached), took 1.0191ms
 I0521 06:02:09.133268   19288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 3909] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0521 06:17:06.461821   19288 execute.go:57] Database ping is quick (likely cached), took 1.194ms
+I0521 06:17:06.465535   19288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 3909] ExecuteGraphql mutation : succeeded. 
+I0521 06:17:08.706573   19288 execute.go:57] Database ping is quick (likely cached), took 872µs
+I0521 06:17:08.707918   19288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 3909] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0521 11:19:11.321930   19288 execute.go:57] Database ping is quick (likely cached), took 708.7µs
+I0521 11:19:11.324606   19288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 3909] ImpersonateQuery query ListPermisos: succeeded. Connector: default
+I0521 11:19:11.325182   19288 execute.go:57] Database ping is quick (likely cached), took 476.4µs
+I0521 11:19:11.326682   19288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 3909] ImpersonateQuery query ListPermisos: succeeded. Connector: default
+I0521 11:21:53.418007   19288 execute.go:57] Database ping is quick (likely cached), took 499.2µs
+I0521 11:21:53.422712   19288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 3909] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
+I0521 11:21:53.428049   19288 execute.go:57] Database ping is quick (likely cached), took 227.5µs
+I0521 11:21:53.432325   19288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 3909] ExecuteGraphql mutation : succeeded. 
+I0521 11:21:53.576805   19288 execute.go:57] Database ping is quick (likely cached), took 847.3µs
+I0521 11:21:53.578414   19288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 3909] ImpersonateQuery query ListUsers: succeeded. Connector: default

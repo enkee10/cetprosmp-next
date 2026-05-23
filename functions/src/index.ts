@@ -273,6 +273,15 @@ async function upsertDataConnectUserByDocumentId(documentId: string, data: DataC
   return createdId;
 }
 
+async function deleteDataConnectUserByDocumentId(documentId: string): Promise<number> {
+  const deleted = await dataConnect.executeGraphql<{ user_deleteMany: number }, { documentId: string }>(
+    DELETE_USER_BY_DOCUMENT_ID_MUTATION,
+    { variables: { documentId } },
+  );
+
+  return deleted.data.user_deleteMany ?? 0;
+}
+
 /**
  * Asigna un rol por defecto y crea/actualiza un perfil en Data Connect
  * para cualquier nuevo usuario.
@@ -322,6 +331,21 @@ export const assignDefaultRole = auth.user().onCreate(async (user) => {
     console.log(`Successfully assigned role and created profile for user ${user.uid}`);
   } catch (error) {
     console.error(`Error assigning default role to user ${user.uid}:`, error);
+  }
+});
+
+/**
+ * Sincroniza la eliminacion de Auth hacia Data Connect.
+ * Si se elimina en Auth (consola, SDK, Admin, etc.), elimina su fila en users.
+ */
+export const syncDataConnectUserOnAuthDelete = auth.user().onDelete(async (user) => {
+  try {
+    const deletedCount = await deleteDataConnectUserByDocumentId(user.uid);
+    console.log(
+      `Auth user ${user.uid} deleted. Data Connect rows removed: ${deletedCount}.`,
+    );
+  } catch (error) {
+    console.error(`Error syncing Auth delete for user ${user.uid}:`, error);
   }
 });
 
@@ -659,10 +683,7 @@ export const deleteUser = https.onCall(async (data, context) => {
       }
     }
 
-    await dataConnect.executeGraphql<{ user_deleteMany: number }, { documentId: string }>(
-      DELETE_USER_BY_DOCUMENT_ID_MUTATION,
-      { variables: { documentId: uid } },
-    );
+    await deleteDataConnectUserByDocumentId(uid);
 
     return {
       result: authDeleted

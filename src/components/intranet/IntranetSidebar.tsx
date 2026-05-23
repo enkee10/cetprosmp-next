@@ -22,7 +22,7 @@ import FactoryIcon from '@mui/icons-material/Factory';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 
 const collections = [
-  { name: 'Actividades Económicas', path: '/intranet/act_economicas', icon: <AccountBalanceIcon /> },
+  { name: 'Actividades Económicas', path: '/intranet/act-economicas', icon: <AccountBalanceIcon /> },
   { name: 'Calendarios', path: '/intranet/calendarios', icon: <CalendarMonthIcon /> },
   { name: 'Carreras', path: '/intranet/carreras', icon: <SchoolIcon /> },
   { name: 'Dato General', path: '/intranet/dato_general', icon: <InfoIcon /> },

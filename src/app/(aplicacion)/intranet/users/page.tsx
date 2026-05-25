@@ -33,10 +33,7 @@ interface User {
   sexo?: string;
 }
 
-interface UserFormData extends Record<string, unknown> {
-  permisoId?: string | number | null;
-  password?: string;
-}
+type UserFormSubmitData = Parameters<React.ComponentProps<typeof UserForm>['onSubmit']>[0];
 
 const getCallableErrorMessage = (error: unknown, fallback: string) => {
   const code = (error as { code?: string } | null)?.code;
@@ -157,14 +154,14 @@ const UsersPage = () => {
     }
   };
 
-  const handleFormSubmit = async (data: UserFormData) => {
+  const handleFormSubmit = async (data: UserFormSubmitData) => {
     setLoading(true);
     setErrorMessage(null);
     try {
       if (selectedUser) {
         const updateUserProfile = httpsCallable(functions, 'updateUserProfile');
         const dataToUpdate = { ...data };
-        delete dataToUpdate.password;
+        delete (dataToUpdate as { password?: unknown }).password;
 
         await updateUserProfile({
           documentId: selectedUser.documentId,
@@ -284,7 +281,7 @@ const UsersPage = () => {
           open={formOpen}
           onClose={() => setFormOpen(false)}
           onSubmit={handleFormSubmit}
-          initialData={selectedUser}
+          initialData={selectedUser ? (selectedUser as unknown as Record<string, unknown>) : undefined}
         />
       )}
     </Box>

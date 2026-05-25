@@ -40,7 +40,7 @@ export default function IntranetLayout({
     // If the user is authenticated and has the required permission level,
     // render the normal intranet layout.
     return (
-        <Box sx={{ display: 'flex' }}>
+        <Box sx={{ display: 'flex', backgroundColor: 'pink' }}>
             <IntranetSidebar />
             <Box
                 component="main"

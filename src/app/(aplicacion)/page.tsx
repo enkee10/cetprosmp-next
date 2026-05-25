@@ -62,7 +62,7 @@ export default function HomePage() {
   };
 
   return (
-    <Box component="main" sx={{ pt: { md: '10px', xs: '0px' } }}>
+    <Box component="main" sx={{ pt: { md: '1px', xs: '0px' } }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "next dev --turbo",
     "emulators:start": "npx -y firebase-tools@latest emulators:start --project cetprosmp-2026 --import=./exportedData --export-on-exit=./exportedData",
-    "emulators:safe": "npx -y firebase-tools@latest emulators:start --only auth,functions,firestore,storage,dataconnect --project cetprosmp-2026 --import=./exportedData --export-on-exit=./exportedData",
+    "emulators:safe": "set \"JAVA_HOME=C:\\Tools\\jdk-21\"&& set \"PATH=C:\\Tools\\jdk-21\\bin;%PATH%\"&& npx -y firebase-tools@latest emulators:start --only auth,functions,firestore,storage,dataconnect --project cetprosmp-2026 --import=./exportedData --export-on-exit=./exportedData",
     "emulators:start2": "set FUNCTIONS_DISCOVERY_TIMEOUT=60&& npx -y firebase-tools@latest emulators:start --project cetprosmp-2026 --import=./exportedData --export-on-exit=./exportedData",
     "auth:oob:verify-latest": "node scripts/auth-oob.mjs verify-latest",
     "build": "next build",

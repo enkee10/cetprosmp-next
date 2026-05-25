@@ -17,6 +17,7 @@ import Settings from './Settings2';
 import User from './User';
 import Sidebar from '../Sidebar/Sidebar';
 import { useAuth } from '@/context/AuthContext';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,8 +28,16 @@ export default function Header() {
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const { user } = useAuth();
+  const pathname = usePathname();
+  const isIntranetRoute = pathname?.startsWith('/intranet');
+  const isCompact = Boolean(isIntranetRoute) || scrolled;
 
   useEffect(() => {
+    if (isIntranetRoute) {
+      setScrolled(true);
+      return;
+    }
+
     const handleScroll = () => {
       if (window.scrollY > 20 && isLargeScreen) {
         setScrolled(true);
@@ -37,9 +46,11 @@ export default function Header() {
       }
     };
 
+    // Recalcula inmediatamente al cambiar de ruta/tamaño para evitar estado compacto "pegado".
+    handleScroll();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLargeScreen]);
+  }, [isIntranetRoute, isLargeScreen]);
 
   useEffect(() => {
     if (!isSmallScreen && sidebarOpen) {
@@ -63,7 +74,7 @@ export default function Header() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          minHeight: scrolled ? '48px' : 'auto',
+          minHeight: isCompact ? '48px' : 'auto',
         }}
       >
         <Toolbar
@@ -99,7 +110,7 @@ export default function Header() {
               minWidth: '238px',
             }}
           >
-            <LogoNombre forceCompact={scrolled} />
+            <LogoNombre forceCompact={isCompact} />
           </Box>
 
           <Box

@@ -32,3 +32,21 @@ I0525 10:15:51.184791   15956 execute.go:57] Database ping is quick (likely cach
 I0525 10:15:51.201623   15956 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 9704] ImpersonateQuery query ListUsers: succeeded. Connector: default
 I0525 10:15:51.202209   15956 execute.go:57] Database ping is quick (likely cached), took 585.4µs
 I0525 10:15:51.203382   15956 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 9704] ImpersonateQuery query ListUsers: succeeded. Connector: default
+W0525 15:00:17.232609   15956 execute.go:51] Database ping is slow 50.3347ms
+stats before: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}
+stats After: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}
+I0525 15:00:17.271077   15956 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 9704] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0525 15:00:17.273536   15956 execute.go:57] Database ping is quick (likely cached), took 620.6µs
+I0525 15:00:17.275999   15956 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 9704] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0525 15:09:34.262887   15956 cel.go:45] @auth(expr) is granted
+W0525 15:09:34.303121   15956 execute.go:51] Database ping is slow 36.1514ms
+stats before: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}
+stats After: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}
+I0525 15:09:34.363580   15956 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 9704] ExecuteQuery query ListActEconomicas: succeeded. Connector: default
+I0525 15:09:34.370571   15956 cel.go:45] @auth(expr) is granted
+I0525 15:09:34.371661   15956 execute.go:57] Database ping is quick (likely cached), took 1.0898ms
+I0525 15:09:34.375691   15956 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 9704] ExecuteQuery query ListActEconomicas: succeeded. Connector: default
+I0525 15:09:42.264462   15956 execute.go:57] Database ping is quick (likely cached), took 520.8µs
+I0525 15:09:42.266084   15956 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 9704] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0525 15:09:42.266591   15956 execute.go:57] Database ping is quick (likely cached), took 506.9µs
+I0525 15:09:42.267645   15956 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 9704] ImpersonateQuery query ListUsers: succeeded. Connector: default

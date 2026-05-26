@@ -1,5 +1,7 @@
 {
   "workbench.browser.openLocalhostLinks": false,
   "livePreview.useIntegratedBrowser": false,
-  "chatgpt.openOnStartup": true
+  "chatgpt.openOnStartup": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "javascript.updateImportsOnFileMove.enabled": "always"
 }

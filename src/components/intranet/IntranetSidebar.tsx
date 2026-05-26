@@ -42,7 +42,7 @@ const collections = [
 
 export default function IntranetSidebar() {
   return (
-    <div>
+    <div style={{ backgroundColor: 'pink' }}>
         <Toolbar />
         <Divider />
         <List>

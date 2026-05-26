@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </Box>
       <Box
         component="main"
-        sx={{ mt: { xs: '48px', md: '64px' }, maxWidth: '1000px', mx: 'auto' }}
+        sx={{ mt: { xs: '48px', md: '64px' }, maxWidth: '1200px', mx: 'auto' }}
       >
         {children}
       </Box>

@@ -52,8 +52,28 @@ function asNullableTimestamp(value: unknown): string | null | undefined {
   if (value === null || value === "") return null;
 
   if (typeof value === "string") {
-    const dt = new Date(value);
-    return Number.isNaN(dt.getTime()) ? null : dt.toISOString();
+    const raw = value.trim();
+    if (!raw) return null;
+
+    const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+    if (ymd) {
+      const year = Number(ymd[1]);
+      if (year < 1900 || year > 2100) return null;
+      const dt = new Date(`${raw}T00:00:00.000Z`);
+      if (Number.isNaN(dt.getTime())) return null;
+      return dt.toISOString().slice(0, 10) === raw ? dt.toISOString() : null;
+    }
+
+    const iso = /^(\d{4})-(\d{2})-(\d{2})T/.exec(raw);
+    if (iso) {
+      const year = Number(iso[1]);
+      if (year < 1900 || year > 2100) return null;
+      const dt = new Date(raw);
+      if (Number.isNaN(dt.getTime())) return null;
+      return dt.toISOString();
+    }
+
+    return null;
   }
 
   if (typeof value === "object" && value !== null && "_seconds" in (value as Record<string, unknown>)) {
@@ -236,6 +256,22 @@ async function findDataConnectUserIdByDocumentId(documentId: string): Promise<nu
 
   const firstUser = response.data.users?.[0];
   return firstUser?.id ?? null;
+}
+
+async function waitForDataConnectUserIdByDocumentId(
+  documentId: string,
+  attempts = 20,
+  delayMs = 150,
+): Promise<number | null> {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const userId = await findDataConnectUserIdByDocumentId(documentId);
+    if (userId) {
+      return userId;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+
+  return null;
 }
 
 async function getPermisoById(permisoId: number): Promise<DataConnectPermiso | null> {
@@ -524,7 +560,20 @@ export const createNewUser = https.onCall(async (data, context) => {
 
     const permissionLevel = toNumber(level, permiso.scala ?? DEFAULT_LEVEL);
 
-    const userRecord = await authAdmin.createUser({ email, password, displayName: username });
+    const userRecord = await authAdmin.createUser({
+      email,
+      password,
+      displayName: username,
+      emailVerified: true,
+    });
+    await authAdmin.updateUser(userRecord.uid, { emailVerified: true });
+    const createdAuthUser = await authAdmin.getUser(userRecord.uid);
+    if (!createdAuthUser.emailVerified) {
+      throw new https.HttpsError(
+        "failed-precondition",
+        "No se pudo activar la verificacion de correo al crear el usuario.",
+      );
+    }
     await authAdmin.setCustomUserClaims(userRecord.uid, { role: String(permisoNumberId), level: permissionLevel });
 
     const { nombre, apellido_paterno, apellido_materno } = separarNombreCompleto(username);
@@ -533,6 +582,7 @@ export const createNewUser = https.onCall(async (data, context) => {
       {
         username,
         email,
+        confirmed: true,
         nombre,
         apellido_paterno,
         apellido_materno,
@@ -552,11 +602,29 @@ export const createNewUser = https.onCall(async (data, context) => {
       },
     );
 
-    const dataConnectId = await upsertDataConnectUserByDocumentId(userRecord.uid, profileData);
+    // El trigger assignDefaultRole crea el perfil base en Data Connect.
+    // Esperamos ese registro y luego lo actualizamos con los datos completos
+    // para evitar inserciones duplicadas por carreras entre trigger y callable.
+    const triggerProfileId = await waitForDataConnectUserIdByDocumentId(userRecord.uid);
+    if (!triggerProfileId) {
+      throw new https.HttpsError(
+        "failed-precondition",
+        "No se pudo sincronizar el perfil del usuario en Data Connect. Intenta nuevamente.",
+      );
+    }
+
+    const updated = await dataConnect.executeGraphql<
+      { user_update: unknown },
+      { id: number; data: DataConnectUserInput }
+    >(UPDATE_USER_MUTATION, {
+      variables: { id: triggerProfileId, data: profileData },
+    });
+    const dataConnectId = getIdFromKeyOutput(updated.data.user_update) ?? triggerProfileId;
 
     return {
       result: `Successfully created user ${userRecord.uid} with role ${permisoNumberId}.`,
       uid: userRecord.uid,
+      emailVerified: createdAuthUser.emailVerified,
       dataConnectId,
     };
   } catch (error: unknown) {
@@ -565,8 +633,15 @@ export const createNewUser = https.onCall(async (data, context) => {
     }
 
     const err = error as { code?: string };
+    const message = String((error as { message?: string } | null)?.message || "");
     if (err.code === "auth/email-already-exists") {
       throw new https.HttpsError("already-exists", "A user with this email address already exists.");
+    }
+    if (message.includes("fechaNacimiento is invalid Timestamp")) {
+      throw new https.HttpsError(
+        "invalid-argument",
+        "La fecha de nacimiento no es valida. Usa el formato YYYY-MM-DD.",
+      );
     }
     console.error("Error in createNewUser:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred.");
@@ -604,6 +679,13 @@ export const updateUserProfile = https.onCall(async (data, context) => {
   } catch (error) {
     if (error instanceof https.HttpsError) {
       throw error;
+    }
+    const message = String((error as { message?: string } | null)?.message || "");
+    if (message.includes("fechaNacimiento is invalid Timestamp")) {
+      throw new https.HttpsError(
+        "invalid-argument",
+        "La fecha de nacimiento no es valida. Usa el formato YYYY-MM-DD.",
+      );
     }
     console.error("Error in updateUserProfile:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while updating user profile.");

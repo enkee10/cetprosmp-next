@@ -1,0 +1,203 @@
+﻿Diagnose log at 2026-05-26T12:51:05Z
+
+AppPath: C:\Program Files\Git\mingw64\bin\git-credential-manager.exe
+InstallDir: C:\Program Files\Git\mingw64\bin\
+Version: 2.6.1+786ab03440ddc82e807a97c0e540f5247e44cec6
+
+------------
+Diagnostic: Environment
+Skipped: False
+Success: True
+Exception: None
+Log:
+OSType: Windows
+OSVersion: 10.0 (build 19044)
+Reading environment variables... OK
+ Variables:
+HOMEPATH=\Users\Enrique
+DriverData=C:\Windows\System32\Drivers\DriverData
+COMPUTERNAME=PC-ENRIQUE
+GIT_TRACE2_PARENT_SID=d66c6574-c20e-44a7-90e6-d9241f6d7c6d
+CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
+OPENAI_API_KEY=TU_API_KEY
+TMP=C:\Users\Enrique\AppData\Local\Temp
+HOME=C:\Users\Enrique
+PROCESSOR_REVISION=8c01
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL
+VSCODE_INJECTION=1
+GIT_ASKPASS=c:\Users\Enrique\AppData\Roaming\Code\User\globalStorage\vscode.git\askpass\493597c785d4c5cb\askpass.sh
+GIT_EXEC_PATH=C:/Program Files/Git/mingw64/libexec/git-core
+TEMP=C:\Users\Enrique\AppData\Local\Temp
+LOCALAPPDATA=C:\Users\Enrique\AppData\Local
+MSYSTEM=MINGW64
+TERM=xterm-256color
+VSCODE_PYTHON_AUTOACTIVATE_GUARD=1
+COLORTERM=truecolor
+JAVA_HOME=C:\Users\Enrique\.jdks\jdk-21.0.11+10
+USERDOMAIN=PC-ENRIQUE
+ProgramFiles(x86)=C:\Program Files (x86)
+Path=C:/Program Files/Git/mingw64/libexec/git-core;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\Enrique\bin;C:\Users\Enrique\AppData\Local\cloud-code\installer\google-cloud-sdk\bin;c:\Users\Enrique\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;c:\Users\Enrique\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\MongoDB\Server\5.0\bin;C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin;C:\Program Files\Google\Cloud SDK\bin;C:\Program Files\PostgreSQL\17\bin;C:\Users\Enrique\AppData\Local\nvm;C:\nvm4w\nodejs;C:\nvm4w;C:\Users\Enrique\AppData\Local\Programs\Python\Python313;C:\Users\Enrique\AppData\Local\Programs\Python\Python313\Scripts;C:\Program Files\Git\cmd;C:\Program Files\GitHub CLI\;C:\Users\Enrique\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Enrique\AppData\Local\Programs\Python\Launcher\;C:\Users\Enrique\AppData\Local\Microsoft\WindowsApps;C:\Program Files\heroku\bin;C:\Users\Enrique\AppData\Roaming\npm;C:\Users\Enrique\AppData\Local\nvm;C:\nvm4w\nodejs;C:\Users\Enrique\AppData\Local\Programs\Antigravity\bin;C:\Users\Enrique\.jdks\jdk-21.0.11+10\bin
+JD2_HOME=C:\Users\Enrique\AppData\Local\JDownloader 2
+TERM_PROGRAM=vscode
+PROCESSOR_LEVEL=6
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 140 Stepping 1, GenuineIntel
+TMPDIR=C:\Users\Enrique\AppData\Local\Temp
+VSCODE_GIT_ASKPASS_EXTRA_ARGS=
+TERM_PROGRAM_VERSION=1.121.0
+VSCODE_GIT_ASKPASS_MAIN=c:\Users\Enrique\AppData\Roaming\Code\User\globalStorage\vscode.git\askpass\493597c785d4c5cb\askpass-main.js
+PSModulePath=d:\Documents\WindowsPowerShell\Modules;C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules;C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\platform\PowerShell
+PUBLIC=C:\Users\Public
+NUMBER_OF_PROCESSORS=8
+CommonProgramFiles=C:\Program Files (x86)\Common Files
+__PSLockDownPolicy=0
+VSCODE_GIT_IPC_HANDLE=\\.\pipe\vscode-git-75ea766217-sock
+CHROME_CRASHPAD_PIPE_NAME=\\.\pipe\crashpad_11728_HRIKFUJXTZNQKXHG
+PLINK_PROTOCOL=ssh
+ProgramData=C:\ProgramData
+ProgramW6432=C:\Program Files
+ProgramFiles=C:\Program Files (x86)
+VSCODE_GIT_ASKPASS_NODE=C:\Users\Enrique\AppData\Local\Programs\Microsoft VS Code\Code.exe
+SystemRoot=C:\Windows
+NVM_SYMLINK=C:\nvm4w\nodejs
+NVM_HOME=C:\Users\Enrique\AppData\Local\nvm
+SESSIONNAME=Console
+CommonProgramW6432=C:\Program Files\Common Files
+ZES_ENABLE_SYSMAN=1
+LOGONSERVER=\\PC-ENRIQUE
+USERPROFILE=C:\Users\Enrique
+USERDOMAIN_ROAMINGPROFILE=PC-ENRIQUE
+APPDATA=C:\Users\Enrique\AppData\Roaming
+HOMEDRIVE=C:
+VBOX_MSI_INSTALL_PATH=C:\Program Files\Oracle\VirtualBox\
+USERNAME=Enrique
+PROCESSOR_ARCHITEW6432=AMD64
+PROCESSOR_ARCHITECTURE=x86
+OS=Windows_NT
+ComSpec=C:\Windows\system32\cmd.exe
+SystemDrive=C:
+windir=C:\Windows
+LANG=es_ES.UTF-8
+ALLUSERSPROFILE=C:\ProgramData
+
+
+------------
+Diagnostic: File system
+Skipped: False
+Success: True
+Exception: None
+Log:
+Temporary directory is 'C:\Users\Enrique\AppData\Local\Temp\'...
+Checking basic file I/O...
+Writing to temporary file 'C:\Users\Enrique\AppData\Local\Temp\1ca24110848d820e02de8de5'... OK
+Reading from temporary file 'C:\Users\Enrique\AppData\Local\Temp\1ca24110848d820e02de8de5'... OK
+Deleting temporary file 'C:\Users\Enrique\AppData\Local\Temp\1ca24110848d820e02de8de5'... OK
+Testing IFileSystem instance...
+UserHomePath: C:\Users\Enrique
+UserDataDirectoryPath: C:\Users\Enrique\.gcm
+GetCurrentDirectory(): D:\_Desarrollo\cetprosmp-next
+
+------------
+Diagnostic: Networking
+Skipped: False
+Success: True
+Exception: None
+Log:
+Checking networking and HTTP stack...
+Creating HTTP client... OK
+IsNetworkAvailable: True
+Sending HEAD request to http://example.com...Sending HEAD request to https://example.com... OK
+ OK
+Acquiring free TCP port... OK
+Testing local HTTP loopback connections...
+Creating new HTTP listener for http://localhost:51390/... OK
+Waiting for loopback connection... OK
+Writing response... OK
+Waiting for response data... OK
+Loopback connection data OK
+
+------------
+Diagnostic: Git
+Skipped: False
+Success: True
+Exception: None
+Log:
+Getting Git version... OK
+Git version is '2.51.0.windows.1'
+Locating current repository...Git repository at 'D:/_Desarrollo/cetprosmp-next/.git'
+ OK
+Listing all Git configuration... OK
+Git configuration:
+file:C:/Program Files/Git/etc/gitconfig	diff.astextplain.textconv=astextplain
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.clean=git-lfs clean -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.smudge=git-lfs smudge -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.process=git-lfs filter-process
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.required=true
+file:C:/Program Files/Git/etc/gitconfig	http.sslbackend=openssl
+file:C:/Program Files/Git/etc/gitconfig	http.sslcainfo=C:/Program Files/Git/mingw64/etc/ssl/certs/ca-bundle.crt
+file:C:/Program Files/Git/etc/gitconfig	core.autocrlf=true
+file:C:/Program Files/Git/etc/gitconfig	core.fscache=true
+file:C:/Program Files/Git/etc/gitconfig	core.symlinks=false
+file:C:/Program Files/Git/etc/gitconfig	pull.rebase=false
+file:C:/Program Files/Git/etc/gitconfig	credential.helper=manager
+file:C:/Program Files/Git/etc/gitconfig	credential.https://dev.azure.com.usehttppath=true
+file:C:/Program Files/Git/etc/gitconfig	init.defaultbranch=master
+file:C:/Users/Enrique/.gitconfig	user.email=enkee03@cetprosmpe.edu.pe
+file:C:/Users/Enrique/.gitconfig	user.name=enkee10
+file:C:/Users/Enrique/.gitconfig	user.mail=enkee03@gmail.com
+file:C:/Users/Enrique/.gitconfig	gui.recentrepo=G:/Mi unidad/Rafael2/Sesion 2 - Etiquetas html
+file:C:/Users/Enrique/.gitconfig	core.autocrlf=true
+file:C:/Users/Enrique/.gitconfig	credential.https://github.com.username=enkee03
+file:C:/Users/Enrique/.gitconfig	credential.https://github.com.helper=
+file:C:/Users/Enrique/.gitconfig	credential.https://github.com.helper=!'C:\Program Files\GitHub CLI\gh.exe' auth git-credential
+file:C:/Users/Enrique/.gitconfig	credential.https://git.heroku.com.provider=generic
+file:C:/Users/Enrique/.gitconfig	credential.https://gist.github.com.helper=
+file:C:/Users/Enrique/.gitconfig	credential.https://gist.github.com.helper=!'C:\Program Files\GitHub CLI\gh.exe' auth git-credential
+file:C:/Users/Enrique/.gitconfig	credential.helper=manager
+file:.git/config	core.repositoryformatversion=0
+file:.git/config	core.filemode=false
+file:.git/config	core.bare=false
+file:.git/config	core.logallrefupdates=true
+file:.git/config	core.symlinks=false
+file:.git/config	core.ignorecase=true
+file:.git/config	remote.origin.url=https://github.com/enkee10/cetprosmp-next.git
+file:.git/config	remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+file:.git/config	branch.main.remote=origin
+file:.git/config	branch.main.merge=refs/heads/main
+file:.git/config	branch.main.vscode-merge-base=origin/main
+
+
+------------
+Diagnostic: Credential storage
+Skipped: False
+Success: True
+Exception: None
+Log:
+ICredentialStore instance is of type: CredentialStore
+Writing test credential... OK
+Reading test credential... OK
+Deleting test credential... OK
+
+------------
+Diagnostic: Microsoft authentication (AAD/MSA)
+Skipped: False
+Success: True
+Exception: None
+Log:
+Broker is not enabled.
+Flow type is: Auto
+Gathering MSAL token cache data... OK
+CacheDirectory: C:\Users\Enrique\AppData\Local\.IdentityService
+CacheFileName: msal.cache
+CacheFilePath: C:\Users\Enrique\AppData\Local\.IdentityService\msal.cache
+Creating cache helper... OK
+Verifying MSAL token cache persistence... OK
+
+------------
+Diagnostic: GitHub API
+Skipped: False
+Success: True
+Exception: None
+Log:
+Using 'https://github.com/' as API target.
+Querying '/meta' endpoint... OK
+

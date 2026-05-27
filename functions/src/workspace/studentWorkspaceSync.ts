@@ -4,7 +4,7 @@ const WORKSPACE_SYNC_ENABLED = String(process.env.WORKSPACE_SYNC_ENABLED || "").
 const WORKSPACE_SUBJECT_EMAIL = String(process.env.WORKSPACE_SUBJECT_EMAIL || "").trim();
 const WORKSPACE_PRIMARY_DOMAIN = String(process.env.WORKSPACE_PRIMARY_DOMAIN || "").trim();
 const WORKSPACE_STUDENT_ORG_UNIT_PATH =
-  String(process.env.WORKSPACE_STUDENT_ORG_UNIT_PATH || "/estudiantes-2026-2").trim();
+  String(process.env.WORKSPACE_STUDENT_ORG_UNIT_PATH || "/Estudiantes-2026-2").trim();
 const WORKSPACE_STUDENT_PERMISSION_IDS = String(process.env.WORKSPACE_STUDENT_PERMISSION_IDS || "")
   .split(",")
   .map((value) => Number(value.trim()))
@@ -115,10 +115,15 @@ export async function syncStudentToWorkspace(context: WorkspaceUserContext): Pro
       "Faltan variables WORKSPACE_SUBJECT_EMAIL o WORKSPACE_PRIMARY_DOMAIN para sincronizar Workspace.",
     );
   }
+  const clientEmail = String(process.env.GOOGLE_CLIENT_EMAIL || "").trim();
+  const privateKey = String(process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
+  if (!clientEmail || !privateKey) {
+    throw new Error("Faltan credenciales para Workspace: GOOGLE_CLIENT_EMAIL o GOOGLE_PRIVATE_KEY.");
+  }
 
   const jwtClient = new google.auth.JWT({
-    email: process.env.GOOGLE_CLIENT_EMAIL,
-    key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    email: clientEmail,
+    key: privateKey,
     scopes: ["https://www.googleapis.com/auth/admin.directory.user"],
     subject: WORKSPACE_SUBJECT_EMAIL,
   });

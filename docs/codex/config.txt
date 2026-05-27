@@ -1,0 +1,2 @@
+Solo al comenzar cualquier conversacion sobre este proyecto leer el archivo:
+./docs/codex/contexto-general.md 

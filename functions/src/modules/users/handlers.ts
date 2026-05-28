@@ -152,19 +152,27 @@ export const createNewUser = https.onCall(async (data, context) => {
 
     const shouldSyncStudent = shouldSyncStudentWorkspace(permisoNumberId, permiso?.titulo);
     if (shouldSyncStudent) {
-      await syncStudentToWorkspace({
-        email,
-        username,
-        apellidoPaterno: profileData.apellidoPaterno ?? null,
-        apellidoMaterno: profileData.apellidoMaterno ?? null,
-        nombre: profileData.nombre ?? null,
-        direccion: profileData.direccion ?? null,
-        distrito: profileData.distrito ?? null,
-        telefono: profileData.telefono ?? null,
-        celular: profileData.celular ?? null,
-        dni: profileData.dni ?? null,
-        blocked: Boolean(profileData.blocked),
-      });
+      try {
+        await syncStudentToWorkspace({
+          email,
+          password,
+          username,
+          apellidoPaterno: profileData.apellidoPaterno ?? null,
+          apellidoMaterno: profileData.apellidoMaterno ?? null,
+          nombre: profileData.nombre ?? null,
+          direccion: profileData.direccion ?? null,
+          distrito: profileData.distrito ?? null,
+          telefono: profileData.telefono ?? null,
+          celular: profileData.celular ?? null,
+          dni: profileData.dni ?? null,
+          blocked: Boolean(profileData.blocked),
+        });
+      } catch (workspaceError: unknown) {
+        const rawMessage = String((workspaceError as { message?: string } | null)?.message || "");
+        const safeMessage = rawMessage || "No se pudo sincronizar el usuario estudiante con Google Workspace.";
+        console.error("Workspace sync failed in createNewUser:", workspaceError);
+        throw new https.HttpsError("failed-precondition", safeMessage);
+      }
     }
 
     return {

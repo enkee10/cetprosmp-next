@@ -4,7 +4,7 @@ const WORKSPACE_SYNC_ENABLED = String(process.env.WORKSPACE_SYNC_ENABLED || "").
 const WORKSPACE_SUBJECT_EMAIL = String(process.env.WORKSPACE_SUBJECT_EMAIL || "").trim();
 const WORKSPACE_PRIMARY_DOMAIN = String(process.env.WORKSPACE_PRIMARY_DOMAIN || "").trim();
 const WORKSPACE_STUDENT_ORG_UNIT_PATH =
-  String(process.env.WORKSPACE_STUDENT_ORG_UNIT_PATH || "/Estudiantes-2026-2").trim();
+  String(process.env.WORKSPACE_STUDENT_ORG_UNIT_PATH || "/Estudiantes/Estudiantes-2026-2").trim();
 const WORKSPACE_STUDENT_PERMISSION_IDS = String(process.env.WORKSPACE_STUDENT_PERMISSION_IDS || "")
   .split(",")
   .map((value) => Number(value.trim()))
@@ -14,6 +14,7 @@ const WORKSPACE_REQUIRE_STUDENT_PERMISSION_MATCH =
 
 export type WorkspaceUserContext = {
   email: string;
+  password?: string | null;
   username: string;
   apellidoPaterno: string | null;
   apellidoMaterno: string | null;
@@ -87,6 +88,7 @@ function buildWorkspacePayload(user: WorkspaceUserContext): admin_directory_v1.S
 
   return compactUndefined({
     primaryEmail: user.email.toLowerCase(),
+    password: user.password || undefined,
     name: {
       givenName: resolveWorkspaceGivenName(user),
       familyName: resolveWorkspaceFamilyName(user),

@@ -1,76 +1,76 @@
-I0528 17:20:49.713926   12380 load.go:31] Reloading schema and connectors...
-I0528 17:20:49.779059   12380 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 9421] UpdateResources(): done
-Main schema: sources: schema\schema.gql [8872B] 
-Connector "default": sources: example\mutations.gql [0B] example\queries.gql [1108B] 
-I0528 17:20:49.818707   12380 codegen.go:101] [connector "default" javascriptSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
-I0528 17:20:49.829172   12380 codegen.go:101] [connector "default" adminSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
-I0528 17:20:49.829172   12380 codegen.go:101] [connector "default" adminSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
-I0528 17:20:49.829172   12380 collector.go:107] schema extensions wrote into "C:\\_desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
-Generated sources: main\mutation.gql [88387B] main\input.gql [280983B] main\relation.gql [160059B] prelude.gql [84995B] main\query.gql [32981B] 
-I0528 17:20:49.850741   12380 collector.go:107] connector "default" javascriptSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
-Generated sources: index.cjs.js [3807B] react\index.d.ts [2255B] react\esm\package.json [17B] react\index.cjs.js [2024B] index.d.ts [7280B] esm\index.esm.js [3419B] package.json [853B] react\esm\index.esm.js [1910B] .guides/setup.md [1682B] react\package.json [460B] react\README.md [27276B] .guides/usage.md [2513B] README.md [23586B] .guides/config.json [236B] esm\package.json [17B] 
-I0528 17:20:49.858339   12380 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
-I0528 17:20:49.863510   12380 collector.go:107] connector "default" adminSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+I0529 13:00:28.894363   10332 load.go:31] Reloading schema and connectors...
+I0529 13:00:28.955424   10332 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service c272] UpdateResources(): done
+Main schema: sources: schema\schema.gql [8574B] 
+Connector "default": sources: example\queries.gql [1123B] example\mutations.gql [0B] 
+I0529 13:00:29.027549   10332 codegen.go:101] [connector "default" javascriptSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+I0529 13:00:29.045886   10332 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+I0529 13:00:29.051386   10332 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+I0529 13:00:29.073341   10332 collector.go:107] schema extensions wrote into "D:\\_Desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
+Generated sources: prelude.gql [84995B] main\input.gql [280983B] main\relation.gql [160059B] main\query.gql [32981B] main\mutation.gql [88387B] 
+I0529 13:00:29.079561   10332 collector.go:107] connector "default" javascriptSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+Generated sources: .guides/config.json [236B] esm\index.esm.js [3419B] index.cjs.js [3807B] package.json [853B] react\README.md [27276B] .guides/setup.md [1682B] .guides/usage.md [2513B] index.d.ts [7280B] esm\package.json [17B] react\index.d.ts [2255B] react\package.json [460B] react\index.cjs.js [2024B] react\esm\index.esm.js [1910B] README.md [23586B] react\esm\package.json [17B] 
+I0529 13:00:29.086127   10332 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
+I0529 13:00:29.088609   10332 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+Generated sources: index.cjs.js [1907B] package.json [632B] index.d.ts [6732B] esm\index.esm.js [1694B] esm\package.json [17B] 
+I0529 13:00:29.285799   10332 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0529 13:00:29.292030   10332 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
 Generated sources: index.d.ts [6732B] esm\index.esm.js [1694B] esm\package.json [17B] index.cjs.js [1907B] package.json [632B] 
-I0528 17:20:49.866542   12380 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
-I0528 17:20:49.872838   12380 collector.go:107] connector "default" adminSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
-Generated sources: index.d.ts [6732B] esm\index.esm.js [1694B] esm\package.json [17B] index.cjs.js [1907B] package.json [632B] 
-I0528 17:20:49.874141   12380 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
-I0528 17:20:49.874141   12380 load.go:109] Finished reloading
-I0528 17:20:49.875737   12380 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399
-I0528 17:20:49.876484   12380 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399
-I0528 17:20:52.735518   12380 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] UpdateResources(): done
-Main schema: sources: schema\schema.gql [8872B] 
-Connector "default": sources: example\mutations.gql [0B] example\queries.gql [1108B] 
-I0528 17:20:52.751619   12380 configure_emulator.go:21] ConfigureEmulator successed
+I0529 13:00:29.293029   10332 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0529 13:00:29.293029   10332 load.go:109] Finished reloading
+I0529 13:00:29.293607   10332 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399
+I0529 13:00:29.294107   10332 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399
+I0529 13:00:32.425444   10332 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] UpdateResources(): done
+Main schema: sources: schema\schema.gql [8574B] 
+Connector "default": sources: example\mutations.gql [0B] example\queries.gql [1123B] 
+I0529 13:00:32.458558   10332 configure_emulator.go:21] ConfigureEmulator successed
 Request: service_id:  "cetprosmp-2026-service"
-connection_string:  "postgres://127.0.0.1:5432/cetprosmp-db?sslmode=disable"
+connection_string:  "postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable"
 database:  "cetprosmp-db"
 
 Response: 
-I0528 17:22:52.830673   12380 execute.go:57] Database ping is quick (likely cached), took 625.5µs
-I0528 17:22:52.838132   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query ListUsers: succeeded. Connector: default
-I0528 17:22:52.915945   12380 execute.go:57] Database ping is quick (likely cached), took 814.9µs
-I0528 17:22:52.917386   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query ListUsers: succeeded. Connector: default
-I0528 17:22:59.107666   12380 cel.go:45] @auth(expr) is granted
-I0528 17:22:59.108779   12380 execute.go:57] Database ping is quick (likely cached), took 1.113ms
-I0528 17:22:59.111243   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ExecuteQuery query ListPermisos: succeeded. Connector: default
-I0528 17:22:59.111749   12380 cel.go:45] @auth(expr) is granted
-I0528 17:22:59.112945   12380 execute.go:57] Database ping is quick (likely cached), took 558.1µs
-I0528 17:22:59.114260   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ExecuteQuery query ListPermisos: succeeded. Connector: default
-I0528 17:25:49.210757   12380 execute.go:57] Database ping is quick (likely cached), took 565.2µs
-I0528 17:25:49.213903   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetPermisoById: succeeded. Connector: default
-I0528 17:25:49.249715   12380 execute.go:57] Database ping is quick (likely cached), took 622.2µs
-I0528 17:25:49.251272   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:49.405347   12380 execute.go:57] Database ping is quick (likely cached), took 597.8µs
-I0528 17:25:49.407627   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:49.567166   12380 execute.go:57] Database ping is quick (likely cached), took 0s
-I0528 17:25:49.569998   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:49.723087   12380 execute.go:57] Database ping is quick (likely cached), took 529.5µs
-I0528 17:25:49.724692   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:49.889748   12380 execute.go:57] Database ping is quick (likely cached), took 540.1µs
-I0528 17:25:49.891309   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:50.054950   12380 execute.go:57] Database ping is quick (likely cached), took 543.3µs
-I0528 17:25:50.058149   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:50.224572   12380 execute.go:57] Database ping is quick (likely cached), took 839.4µs
-I0528 17:25:50.225754   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:50.387844   12380 execute.go:57] Database ping is quick (likely cached), took 575.2µs
-I0528 17:25:50.390015   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:50.555463   12380 execute.go:57] Database ping is quick (likely cached), took 538.8µs
-I0528 17:25:50.557162   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:50.719556   12380 execute.go:57] Database ping is quick (likely cached), took 505.6µs
-I0528 17:25:50.720901   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:50.887217   12380 execute.go:57] Database ping is quick (likely cached), took 540.9µs
-I0528 17:25:50.890616   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:51.050720   12380 execute.go:57] Database ping is quick (likely cached), took 813.8µs
-I0528 17:25:51.052756   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:51.200727   12380 execute.go:57] Database ping is quick (likely cached), took 979.5µs
-I0528 17:25:51.202453   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:51.227645   12380 execute.go:57] Database ping is quick (likely cached), took 552.7µs
-I0528 17:25:51.246949   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ExecuteGraphql mutation : succeeded. 
-I0528 17:25:51.249092   12380 execute.go:57] Database ping is quick (likely cached), took 616.8µs
-I0528 17:25:51.251256   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query GetUserByDocumentId: succeeded. Connector: default
-I0528 17:25:51.258075   12380 execute.go:57] Database ping is quick (likely cached), took 1.2708ms
-I0528 17:25:51.262515   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ExecuteGraphql mutation : succeeded. 
-I0528 17:25:53.364677   12380 execute.go:57] Database ping is quick (likely cached), took 1.2445ms
-I0528 17:25:53.368717   12380 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 511a] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0529 13:02:15.109240   10332 execute.go:57] Database ping is quick (likely cached), took 1.0006ms
+I0529 13:02:15.119096   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0529 13:02:15.128095   10332 execute.go:57] Database ping is quick (likely cached), took 499.7µs
+I0529 13:02:15.130595   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0529 13:04:32.873332   10332 execute.go:57] Database ping is quick (likely cached), took 2.9356ms
+I0529 13:04:32.882688   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:32.901126   10332 execute.go:57] Database ping is quick (likely cached), took 761.2µs
+I0529 13:04:32.902412   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0529 13:04:34.860727   10332 execute.go:57] Database ping is quick (likely cached), took 1.0289ms
+I0529 13:04:34.862280   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:38.003339   10332 execute.go:57] Database ping is quick (likely cached), took 847.8µs
+I0529 13:04:38.004853   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:38.005884   10332 execute.go:57] Database ping is quick (likely cached), took 527.7µs
+I0529 13:04:38.007321   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:38.022788   10332 execute.go:57] Database ping is quick (likely cached), took 573.3µs
+I0529 13:04:38.024397   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0529 13:04:42.958010   10332 execute.go:57] Database ping is quick (likely cached), took 3.3404ms
+I0529 13:04:42.960814   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:42.961828   10332 execute.go:57] Database ping is quick (likely cached), took 1.0145ms
+I0529 13:04:42.965726   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:42.971448   10332 execute.go:57] Database ping is quick (likely cached), took 525.6µs
+I0529 13:04:42.973231   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0529 13:04:50.601093   10332 execute.go:57] Database ping is quick (likely cached), took 4.1221ms
+I0529 13:04:50.603934   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:50.604605   10332 execute.go:57] Database ping is quick (likely cached), took 138.6µs
+I0529 13:04:50.605898   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:50.621238   10332 execute.go:57] Database ping is quick (likely cached), took 0s
+I0529 13:04:50.622801   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0529 13:04:54.028684   10332 execute.go:57] Database ping is quick (likely cached), took 3.0284ms
+I0529 13:04:54.031304   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:54.032558   10332 execute.go:57] Database ping is quick (likely cached), took 628.6µs
+I0529 13:04:54.034599   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:54.047943   10332 execute.go:57] Database ping is quick (likely cached), took 1.0465ms
+I0529 13:04:54.048972   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0529 13:04:58.369695   10332 execute.go:57] Database ping is quick (likely cached), took 2.5954ms
+I0529 13:04:58.371360   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:58.372836   10332 execute.go:57] Database ping is quick (likely cached), took 1.4765ms
+I0529 13:04:58.376761   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:04:58.388705   10332 execute.go:57] Database ping is quick (likely cached), took 826.3µs
+I0529 13:04:58.390448   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ImpersonateQuery query ListUsers: succeeded. Connector: default
+I0529 13:05:03.336350   10332 execute.go:57] Database ping is quick (likely cached), took 894.5µs
+I0529 13:05:03.341094   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:05:03.345142   10332 execute.go:57] Database ping is quick (likely cached), took 1.6339ms
+I0529 13:05:03.346601   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ExecuteGraphql mutation : succeeded. 
+I0529 13:05:03.352155   10332 execute.go:57] Database ping is quick (likely cached), took 499.8µs
+I0529 13:05:03.353438   10332 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 30a7] ImpersonateQuery query ListUsers: succeeded. Connector: default

@@ -1,0 +1,32 @@
+---
+kind: dns#resourceRecordSet
+name: cetprosmp.edu.pe.
+rrdatas:
+- 199.36.158.100
+ttl: 300
+type: A
+---
+kind: dns#resourceRecordSet
+name: cetprosmp.edu.pe.
+rrdatas:
+- 1 aspmx.l.google.com.
+- 5 alt1.aspmx.l.google.com.
+- 5 alt2.aspmx.l.google.com.
+- 10 alt3.aspmx.l.google.com.
+- 10 alt4.aspmx.l.google.com.
+ttl: 60
+type: MX
+---
+kind: dns#resourceRecordSet
+name: cetprosmp.edu.pe.
+rrdatas:
+- '"hosting-site=cetprosmp-2026"'
+ttl: 300
+type: TXT
+---
+kind: dns#resourceRecordSet
+name: _acme-challenge.cetprosmp.edu.pe.
+rrdatas:
+- '"clr9U6lWlFYZGY_eb08Q03L0JWMQXtezbv2rtc8lVBo"'
+ttl: 300
+type: TXT

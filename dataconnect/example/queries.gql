@@ -1,13 +1,13 @@
-query ListPermisos @auth(expr: "has(auth.token.level) && auth.token.level >= 600") {
-  permisos(limit: 500) {
+query ListRoles @auth(expr: "has(auth.token.level) && auth.token.level >= 600") {
+  roles: rols(limit: 500) {
     id
     titulo
     scala
   }
 }
 
-query GetPermisoById($id: Int!) @auth(expr: "has(auth.token.level) && auth.token.level >= 600") {
-  permiso(id: $id) {
+query GetRoleById($id: Int!) @auth(expr: "has(auth.token.level) && auth.token.level >= 600") {
+  role: rol(id: $id) {
     id
     titulo
     scala
@@ -35,7 +35,7 @@ query ListUsers @auth(expr: "has(auth.token.level) && auth.token.level >= 600") 
     estadoCivil
     instruccion
     fechaNacimiento
-    permisoId
+    rolId
   }
 }
 

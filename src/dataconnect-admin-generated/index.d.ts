@@ -38,15 +38,15 @@ export interface Familia_Key {
   __typename?: 'Familia_Key';
 }
 
-export interface GetPermisoByIdData {
-  permiso?: {
+export interface GetRoleByIdData {
+  role?: {
     id: number;
     titulo?: string | null;
     scala?: number | null;
-  } & Permiso_Key;
+  } & Rol_Key;
 }
 
-export interface GetPermisoByIdVariables {
+export interface GetRoleByIdVariables {
   id: number;
 }
 
@@ -75,12 +75,12 @@ export interface ListActEconomicasData {
   } & ActEconomica_Key)[];
 }
 
-export interface ListPermisosData {
-  permisos: ({
+export interface ListRolesData {
+  roles: ({
     id: number;
     titulo?: string | null;
     scala?: number | null;
-  } & Permiso_Key)[];
+  } & Rol_Key)[];
 }
 
 export interface ListUsersData {
@@ -104,7 +104,7 @@ export interface ListUsersData {
     estadoCivil?: string | null;
     instruccion?: string | null;
     fechaNacimiento?: TimestampString | null;
-    permisoId?: number | null;
+    rolId?: number | null;
   } & User_Key)[];
 }
 
@@ -152,11 +152,6 @@ export interface Paquete_Key {
   __typename?: 'Paquete_Key';
 }
 
-export interface Permiso_Key {
-  id: number;
-  __typename?: 'Permiso_Key';
-}
-
 export interface PersonalEspecialidad_Key {
   personalId: number;
   especialidadId: number;
@@ -176,6 +171,11 @@ export interface PublicacionVideo_Key {
 export interface Publicacion_Key {
   id: number;
   __typename?: 'Publicacion_Key';
+}
+
+export interface Rol_Key {
+  id: number;
+  __typename?: 'Rol_Key';
 }
 
 export interface Sector_Key {
@@ -198,15 +198,15 @@ export interface VideoYoutube_Key {
   __typename?: 'VideoYoutube_Key';
 }
 
-/** Generated Node Admin SDK operation action function for the 'ListPermisos' Query. Allow users to execute without passing in DataConnect. */
-export function listPermisos(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListPermisosData>>;
-/** Generated Node Admin SDK operation action function for the 'ListPermisos' Query. Allow users to pass in custom DataConnect instances. */
-export function listPermisos(options?: OperationOptions): Promise<ExecuteOperationResponse<ListPermisosData>>;
+/** Generated Node Admin SDK operation action function for the 'ListRoles' Query. Allow users to execute without passing in DataConnect. */
+export function listRoles(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListRolesData>>;
+/** Generated Node Admin SDK operation action function for the 'ListRoles' Query. Allow users to pass in custom DataConnect instances. */
+export function listRoles(options?: OperationOptions): Promise<ExecuteOperationResponse<ListRolesData>>;
 
-/** Generated Node Admin SDK operation action function for the 'GetPermisoById' Query. Allow users to execute without passing in DataConnect. */
-export function getPermisoById(dc: DataConnect, vars: GetPermisoByIdVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetPermisoByIdData>>;
-/** Generated Node Admin SDK operation action function for the 'GetPermisoById' Query. Allow users to pass in custom DataConnect instances. */
-export function getPermisoById(vars: GetPermisoByIdVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetPermisoByIdData>>;
+/** Generated Node Admin SDK operation action function for the 'GetRoleById' Query. Allow users to execute without passing in DataConnect. */
+export function getRoleById(dc: DataConnect, vars: GetRoleByIdVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetRoleByIdData>>;
+/** Generated Node Admin SDK operation action function for the 'GetRoleById' Query. Allow users to pass in custom DataConnect instances. */
+export function getRoleById(vars: GetRoleByIdVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetRoleByIdData>>;
 
 /** Generated Node Admin SDK operation action function for the 'ListUsers' Query. Allow users to execute without passing in DataConnect. */
 export function listUsers(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListUsersData>>;

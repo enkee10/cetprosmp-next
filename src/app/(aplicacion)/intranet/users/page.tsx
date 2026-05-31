@@ -21,6 +21,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import UserForm from '@/components/intranet/users/UserForm';
+import Modal1 from '@/components/Modal1';
 import { useAuth } from '@/context/AuthContext';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 
@@ -33,7 +34,7 @@ interface User {
   apellidoPaterno: string;
   apellidoMaterno: string;
   celular: string;
-  permisoId?: number | null;
+  rolId?: number | null;
   blocked?: boolean;
   bloqueado?: boolean;
   avatar?: string;
@@ -55,7 +56,7 @@ const getCallableErrorMessage = (error: unknown, fallback: string) => {
   const message = (error as { message?: string } | null)?.message;
 
   if (code === 'functions/permission-denied') {
-    return 'No tienes permisos suficientes para administrar usuarios. Si te acaban de asignar el rol, cierra sesion e ingresa otra vez.';
+    return 'No tienes acceso suficiente para administrar usuarios. Si te acaban de asignar el rol, cierra sesion e ingresa otra vez.';
   }
 
   if (code === 'functions/internal') {
@@ -88,6 +89,7 @@ const UsersPage = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [userFormResetKey, setUserFormResetKey] = useState(0);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuUser, setMenuUser] = useState<User | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
@@ -100,7 +102,7 @@ const UsersPage = () => {
       username: true,
       email: true,
       celular: true,
-      permisoId: true,
+      rolId: true,
       bloqueado: true,
       actions: true,
     });
@@ -126,14 +128,14 @@ const UsersPage = () => {
       try {
         const result = await listUsers();
         const normalizedUsers: User[] = (result.data.users || []).map((row) => {
-          const permisoRaw = row.permisoId;
-          const permisoParsed =
-            typeof permisoRaw === 'string' ? Number(permisoRaw) : Number(permisoRaw ?? NaN);
+          const roleRaw = row.rolId;
+          const roleParsed =
+            typeof roleRaw === 'string' ? Number(roleRaw) : Number(roleRaw ?? NaN);
           return {
             ...(row as unknown as User),
             blocked: Boolean(row.blocked),
             bloqueado: Boolean(row.bloqueado ?? row.blocked),
-            permisoId: Number.isFinite(permisoParsed) ? permisoParsed : null,
+            rolId: Number.isFinite(roleParsed) ? roleParsed : null,
           };
         });
         setUsers(normalizedUsers);
@@ -147,7 +149,7 @@ const UsersPage = () => {
         console.error('Error fetching users: ', error);
         if (isPermissionDeniedDataConnectError(error)) {
           setErrorMessage(
-            'No tienes permisos para listar usuarios (se requiere claim level >= 600). Cierra sesion e inicia nuevamente para refrescar claims.',
+            'No tienes acceso para listar usuarios (se requiere claim level >= 600). Cierra sesion e inicia nuevamente para refrescar claims.',
           );
         } else {
           setErrorMessage('No se pudo cargar la lista de usuarios desde Data Connect.');
@@ -176,7 +178,12 @@ const UsersPage = () => {
     setMenuUser(null);
   };
 
-  const handleDeleteUser = async (documentId: string) => {
+  const handleDismissUserModal = () => {
+    setFormOpen(false);
+  };
+
+  const handleDeleteUser = async (targetUser: Pick<User, 'documentId' | 'email'>) => {
+    const { documentId, email } = targetUser;
     if (!documentId) {
       setErrorMessage('No se puede eliminar: el usuario no tiene documentId.');
       return;
@@ -187,7 +194,7 @@ const UsersPage = () => {
     ) {
       try {
         const deleteUser = httpsCallable(functions, 'deleteUser');
-        await deleteUser({ uid: documentId });
+        await deleteUser({ uid: documentId, email });
         setMenuAnchorEl(null);
         setMenuUser(null);
         fetchUsers();
@@ -209,16 +216,17 @@ const UsersPage = () => {
 
         await updateUserProfile({
           documentId: selectedUser.documentId,
+          previousEmail: selectedUser.email,
           ...dataToUpdate,
         });
 
-        const currentPermiso = selectedUser.permisoId ? String(selectedUser.permisoId) : '';
-        const nextPermiso = dataToUpdate.permisoId ? String(dataToUpdate.permisoId) : '';
-        if (nextPermiso && nextPermiso !== currentPermiso) {
+        const currentRole = selectedUser.rolId ? String(selectedUser.rolId) : '';
+        const nextRole = dataToUpdate.rolId ? String(dataToUpdate.rolId) : '';
+        if (nextRole && nextRole !== currentRole) {
           const setUserRole = httpsCallable(functions, 'setUserRole');
           await setUserRole({
             uid: selectedUser.documentId,
-            roleId: dataToUpdate.permisoId,
+            roleId: dataToUpdate.rolId,
           });
         }
       } else {
@@ -232,6 +240,7 @@ const UsersPage = () => {
       await fetchUsers();
       setFormOpen(false);
       setSelectedUser(null);
+      setUserFormResetKey((prev) => prev + 1);
     } catch (error) {
       console.error('Error saving user: ', error);
       setErrorMessage(getCallableErrorMessage(error, 'No se pudo guardar el usuario.'));
@@ -274,13 +283,13 @@ const UsersPage = () => {
     { field: 'email', headerName: 'Correo', flex: 1.2, minWidth: 150 },
     { field: 'celular', headerName: 'Celular', flex: 0.7, minWidth: 90 },
     {
-      field: 'permisoId',
-      headerName: 'Permiso',
+      field: 'rolId',
+      headerName: 'Rol',
       flex: 0.6,
       minWidth: 80,
       renderCell: (params) => {
         const row = params.row as User;
-        return typeof row.permisoId === 'number' ? String(row.permisoId) : 'Sin permiso';
+        return typeof row.rolId === 'number' ? String(row.rolId) : 'Sin rol';
       },
     },
     {
@@ -408,24 +417,27 @@ const UsersPage = () => {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            if (menuUser) handleDeleteUser(menuUser.documentId);
+            if (menuUser) handleDeleteUser({ documentId: menuUser.documentId, email: menuUser.email });
           }}
         >
           Eliminar
         </MenuItem>
       </Menu>
 
-      {formOpen && (
+      <Modal1
+        open={formOpen}
+        onClose={handleDismissUserModal}
+        title={selectedUser ? 'Editar Usuario' : 'Agregar Usuario'}
+      >
         <UserForm
-          key={selectedUser ? selectedUser.id : 'new-user'}
-          open={formOpen}
-          onClose={() => setFormOpen(false)}
+          key={`${selectedUser ? selectedUser.id : 'new-user'}-${userFormResetKey}`}
+          onCancel={handleDismissUserModal}
           onSubmit={handleFormSubmit}
           initialData={
             selectedUser ? (selectedUser as unknown as Record<string, unknown>) : undefined
           }
         />
-      )}
+      </Modal1>
     </IntranetListLayout>
   );
 };

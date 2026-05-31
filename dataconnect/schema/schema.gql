@@ -27,11 +27,11 @@ type User @table(name: "users") {
   celular: String
   avatar: String
 
-  permiso: Permiso @ref(fields: "permisoId", references: "id")
-  permisoId: Int @col(name: "permiso_id")
+  rol: Rol @ref(fields: "rolId", references: "id")
+  rolId: Int @col(name: "rol_id")
 }
 
-type Permiso @table(name: "permisos") {
+type Rol @table(name: "roles") {
   id: Int! @col(dataType: "serial")
   titulo: String
   scala: Int

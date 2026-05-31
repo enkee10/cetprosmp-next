@@ -9,7 +9,7 @@ if (!getApps().length) {
 }
 
 export const authAdmin = getAuth(app);
-export const DEFAULT_PERMISO_ID = 1;
+export const DEFAULT_ROLE_ID = 1;
 export const DEFAULT_LEVEL = 0;
 const SUPERADMIN_EMAIL = "enkee03@cetprosmp.edu.pe";
 const SUPERADMIN_ROLE = "600";
@@ -21,5 +21,5 @@ export function getInitialClaimsByEmail(email: string | null | undefined): { rol
     return { role: SUPERADMIN_ROLE, level: SUPERADMIN_LEVEL };
   }
 
-  return { role: String(DEFAULT_PERMISO_ID), level: DEFAULT_LEVEL };
+  return { role: String(DEFAULT_ROLE_ID), level: DEFAULT_LEVEL };
 }

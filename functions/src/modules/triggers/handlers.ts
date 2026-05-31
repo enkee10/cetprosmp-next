@@ -1,6 +1,6 @@
 import { auth } from "firebase-functions/v1";
 import { buildUserDataFromInput, separarNombreCompleto } from "../core/userMappers.js";
-import { authAdmin, DEFAULT_PERMISO_ID, getInitialClaimsByEmail } from "../core/authCore.js";
+import { authAdmin, DEFAULT_ROLE_ID, getInitialClaimsByEmail } from "../core/authCore.js";
 import { deleteDataConnectUserByDocumentId, upsertDataConnectUserByDocumentId } from "../core/dataConnectCore.js";
 
 export const assignDefaultRole = auth.user().onCreate(async (user) => {
@@ -30,7 +30,7 @@ export const assignDefaultRole = auth.user().onCreate(async (user) => {
         instruccion: null,
         direccion: null,
         distrito: null,
-        permisoId: DEFAULT_PERMISO_ID,
+        rolId: DEFAULT_ROLE_ID,
       },
       {
         documentId: user.uid,
@@ -39,7 +39,7 @@ export const assignDefaultRole = auth.user().onCreate(async (user) => {
         displayName: user.displayName || username,
         photoURL: user.photoURL || null,
         provider: user.providerData?.[0]?.providerId ?? null,
-        permisoId: DEFAULT_PERMISO_ID,
+        rolId: DEFAULT_ROLE_ID,
       },
     );
 

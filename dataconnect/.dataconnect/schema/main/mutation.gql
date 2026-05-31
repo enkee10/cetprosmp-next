@@ -135,15 +135,6 @@ extend type Mutation {
     data: PaqueteGrupo_Data!
   ): PaqueteGrupo_KeyOutput! @fdc_generated(from: "PaqueteGrupo", purpose: INSERT_SINGLE)
   """
-  ✨ Insert a single `Permiso` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  permiso_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: Permiso_Data!
-  ): Permiso_KeyOutput! @fdc_generated(from: "Permiso", purpose: INSERT_SINGLE)
-  """
   ✨ Insert a single `Personal` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   personal_insert(
@@ -179,6 +170,15 @@ extend type Mutation {
     """
     data: PublicacionVideo_Data!
   ): PublicacionVideo_KeyOutput! @fdc_generated(from: "PublicacionVideo", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Rol` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  rol_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Rol_Data!
+  ): Rol_KeyOutput! @fdc_generated(from: "Rol", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `Sector` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -351,15 +351,6 @@ extend type Mutation {
     data: [PaqueteGrupo_Data!]!
   ): [PaqueteGrupo_KeyOutput!]! @fdc_generated(from: "PaqueteGrupo", purpose: INSERT_MULTIPLE)
   """
-  ✨ Insert `Permiso` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  permiso_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [Permiso_Data!]!
-  ): [Permiso_KeyOutput!]! @fdc_generated(from: "Permiso", purpose: INSERT_MULTIPLE)
-  """
   ✨ Insert `Personal` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   personal_insertMany(
@@ -395,6 +386,15 @@ extend type Mutation {
     """
     data: [PublicacionVideo_Data!]!
   ): [PublicacionVideo_KeyOutput!]! @fdc_generated(from: "PublicacionVideo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Rol` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  rol_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Rol_Data!]!
+  ): [Rol_KeyOutput!]! @fdc_generated(from: "Rol", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Sector` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -567,15 +567,6 @@ extend type Mutation {
     data: PaqueteGrupo_Data!
   ): PaqueteGrupo_KeyOutput! @fdc_generated(from: "PaqueteGrupo", purpose: UPSERT_SINGLE)
   """
-  ✨ Insert or update a single `Permiso` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Permiso`.
-  """
-  permiso_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: Permiso_Data!
-  ): Permiso_KeyOutput! @fdc_generated(from: "Permiso", purpose: UPSERT_SINGLE)
-  """
   ✨ Insert or update a single `Personal` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Personal`.
   """
   personal_upsert(
@@ -611,6 +602,15 @@ extend type Mutation {
     """
     data: PublicacionVideo_Data!
   ): PublicacionVideo_KeyOutput! @fdc_generated(from: "PublicacionVideo", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Rol` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Rol`.
+  """
+  rol_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Rol_Data!
+  ): Rol_KeyOutput! @fdc_generated(from: "Rol", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `Sector` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Sector`.
   """
@@ -783,15 +783,6 @@ extend type Mutation {
     data: [PaqueteGrupo_Data!]!
   ): [PaqueteGrupo_KeyOutput!]! @fdc_generated(from: "PaqueteGrupo", purpose: UPSERT_MULTIPLE)
   """
-  ✨ Insert or update `Permiso` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Permiso`.
-  """
-  permiso_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [Permiso_Data!]!
-  ): [Permiso_KeyOutput!]! @fdc_generated(from: "Permiso", purpose: UPSERT_MULTIPLE)
-  """
   ✨ Insert or update `Personal` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Personal`.
   """
   personal_upsertMany(
@@ -827,6 +818,15 @@ extend type Mutation {
     """
     data: [PublicacionVideo_Data!]!
   ): [PublicacionVideo_KeyOutput!]! @fdc_generated(from: "PublicacionVideo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Rol` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Rol`.
+  """
+  rol_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Rol_Data!]!
+  ): [Rol_KeyOutput!]! @fdc_generated(from: "Rol", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Sector` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Sector`.
   """
@@ -1259,35 +1259,6 @@ extend type Mutation {
     data: PaqueteGrupo_Data!
   ): PaqueteGrupo_KeyOutput @fdc_generated(from: "PaqueteGrupo", purpose: UPDATE_SINGLE)
   """
-  ✨ Update a single `Permiso` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Permiso` or `null` if not found.
-  """
-  permiso_update(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: Permiso_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: Permiso_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: Permiso_Data!
-  ): Permiso_KeyOutput @fdc_generated(from: "Permiso", purpose: UPDATE_SINGLE)
-  """
   ✨ Update a single `Personal` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Personal` or `null` if not found.
   """
   personal_update(
@@ -1393,6 +1364,35 @@ extend type Mutation {
     """
     data: PublicacionVideo_Data!
   ): PublicacionVideo_KeyOutput @fdc_generated(from: "PublicacionVideo", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Rol` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Rol` or `null` if not found.
+  """
+  rol_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Rol_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Rol_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Rol_Data!
+  ): Rol_KeyOutput @fdc_generated(from: "Rol", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Sector` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Sector` or `null` if not found.
   """
@@ -1795,25 +1795,6 @@ extend type Mutation {
     data: PaqueteGrupo_Data!
   ): Int! @fdc_generated(from: "PaqueteGrupo", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Update `Permiso` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  permiso_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: Permiso_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: Permiso_Data!
-  ): Int! @fdc_generated(from: "Permiso", purpose: UPDATE_MULTIPLE)
-  """
   ✨ Update `Personal` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   personal_updateMany(
@@ -1889,6 +1870,25 @@ extend type Mutation {
     """
     data: PublicacionVideo_Data!
   ): Int! @fdc_generated(from: "PublicacionVideo", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Rol` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  rol_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Rol_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Rol_Data!
+  ): Int! @fdc_generated(from: "Rol", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Sector` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -2286,30 +2286,6 @@ extend type Mutation {
     first: PaqueteGrupo_FirstRow
   ): PaqueteGrupo_KeyOutput @fdc_generated(from: "PaqueteGrupo", purpose: DELETE_SINGLE)
   """
-  ✨ Delete a single `Permiso` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  permiso_delete(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: Permiso_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: Permiso_FirstRow
-  ): Permiso_KeyOutput @fdc_generated(from: "Permiso", purpose: DELETE_SINGLE)
-  """
   ✨ Delete a single `Personal` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   personal_delete(
@@ -2395,6 +2371,30 @@ extend type Mutation {
     """
     first: PublicacionVideo_FirstRow
   ): PublicacionVideo_KeyOutput @fdc_generated(from: "PublicacionVideo", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Rol` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  rol_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Rol_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Rol_FirstRow
+  ): Rol_KeyOutput @fdc_generated(from: "Rol", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `Sector` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -2702,20 +2702,6 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "PaqueteGrupo", purpose: DELETE_MULTIPLE)
   """
-  ✨ Delete `Permiso` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  permiso_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: Permiso_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "Permiso", purpose: DELETE_MULTIPLE)
-  """
   ✨ Delete `Personal` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   personal_deleteMany(
@@ -2771,6 +2757,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "PublicacionVideo", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Rol` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  rol_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Rol_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Rol", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Sector` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

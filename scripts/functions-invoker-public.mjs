@@ -5,9 +5,9 @@ const region = "us-central1";
 
 const callables = [
   "listUsers",
-  "listPermisos",
-  "getPermiso",
-  "createOrUpdatePermiso",
+  "listRoles",
+  "getRole",
+  "createOrUpdateRole",
   "createNewUser",
   "updateUserProfile",
   "setUserRole",

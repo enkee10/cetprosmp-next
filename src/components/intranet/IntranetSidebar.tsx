@@ -37,7 +37,7 @@ const collections = [
   { name: 'Sectores', path: '/intranet/sectores', icon: <FactoryIcon /> },
   { name: 'Semestres', path: '/intranet/semestres', icon: <DateRangeIcon /> },
   { name: 'Usuarios', path: '/intranet/users', icon: <PeopleIcon /> },
-  { name: 'Permisos', path: '/intranet/permisos', icon: <LockPersonIcon /> },
+  { name: 'Roles', path: '/intranet/roles', icon: <LockPersonIcon /> },
 ];
 
 export default function IntranetSidebar() {

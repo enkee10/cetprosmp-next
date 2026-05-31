@@ -320,30 +320,6 @@ extend type Query {
     first: PaqueteGrupo_FirstRow
   ): PaqueteGrupo @fdc_generated(from: "PaqueteGrupo", purpose: QUERY_SINGLE)
   """
-  ✨ Look up a single `Permiso` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
-  """
-  permiso(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: Permiso_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: Permiso_FirstRow
-  ): Permiso @fdc_generated(from: "Permiso", purpose: QUERY_SINGLE)
-  """
   ✨ Look up a single `Personal` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   personal(
@@ -429,6 +405,30 @@ extend type Query {
     """
     first: PublicacionVideo_FirstRow
   ): PublicacionVideo @fdc_generated(from: "PublicacionVideo", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Rol` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  rol(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Rol_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Rol_FirstRow
+  ): Rol @fdc_generated(from: "Rol", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `Sector` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -1036,40 +1036,6 @@ extend type Query {
     having: PaqueteGrupo_Having
   ): [PaqueteGrupo!]! @fdc_generated(from: "PaqueteGrupo", purpose: QUERY_MULTIPLE)
   """
-  ✨ List `Permiso` objects in the table and return selected fields, optionally filtered by `where` conditions
-  """
-  permisos(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: Permiso_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [Permiso_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: Permiso_Having
-  ): [Permiso!]! @fdc_generated(from: "Permiso", purpose: QUERY_MULTIPLE)
-  """
   ✨ List `Personal` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   personals(
@@ -1205,6 +1171,40 @@ extend type Query {
     """
     having: PublicacionVideo_Having
   ): [PublicacionVideo!]! @fdc_generated(from: "PublicacionVideo", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Rol` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  rols(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Rol_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Rol_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Rol_Having
+  ): [Rol!]! @fdc_generated(from: "Rol", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Sector` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

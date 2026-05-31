@@ -2995,133 +2995,6 @@ extend type PaqueteGrupo {
   """
   _id: ID! @fdc_generated(from: "PaqueteGrupo.paqueteId,grupoId", purpose: ENTITY_ID)
 }
-extend type Permiso {
-  """
-  ✨ List `User` objects in a one-to-many relationship (where `User`.`permiso` is this object).
-  """
-  users_on_permiso(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: User_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [User_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: User_Having
-  ): [User!]! @fdc_generated(from: "User.permiso", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
-  """
-  Implicit metadata field that cannot be written. It provides extra information about query results.
-  """
-  _metadata: _Metadata @fdc_generated(from: "Permiso", purpose: METADATA_FIELD)
-  """
-  ✨ Count the number of rows in the `Permiso` table.
-  """
-  _count: Int! @fdc_generated(from: "Permiso.", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `Permiso` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  id_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Permiso.id", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `Permiso` table where the `scala` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  scala_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Permiso.scala", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `Permiso` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  titulo_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Permiso.titulo", purpose: QUERY_COUNT)
-  """
-  ✨ Sum the `id` field in the `Permiso` table.
-  """
-  id_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "Permiso.id", purpose: QUERY_SUM)
-  """
-  ✨ Sum the `scala` field in the `Permiso` table.
-  """
-  scala_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "Permiso.scala", purpose: QUERY_SUM)
-  """
-  ✨ Average the `id` field in the `Permiso` table.
-  """
-  id_avg(
-    """
-    Set to true to average the distinct values.
-    """
-    distinct: Boolean = false
-  ): Float @fdc_generated(from: "Permiso.id", purpose: QUERY_AVG)
-  """
-  ✨ Average the `scala` field in the `Permiso` table.
-  """
-  scala_avg(
-    """
-    Set to true to average the distinct values.
-    """
-    distinct: Boolean = false
-  ): Float @fdc_generated(from: "Permiso.scala", purpose: QUERY_AVG)
-  """
-  ✨ Minimum of the `id` field in the `Permiso` table.
-  """
-  id_min: Int @fdc_generated(from: "Permiso.id", purpose: QUERY_MIN)
-  """
-  ✨ Minimum of the `scala` field in the `Permiso` table.
-  """
-  scala_min: Int @fdc_generated(from: "Permiso.scala", purpose: QUERY_MIN)
-  """
-  ✨ Maximum of the `id` field in the `Permiso` table.
-  """
-  id_max: Int @fdc_generated(from: "Permiso.id", purpose: QUERY_MAX)
-  """
-  ✨ Maximum of the `scala` field in the `Permiso` table.
-  """
-  scala_max: Int @fdc_generated(from: "Permiso.scala", purpose: QUERY_MAX)
-  """
-  A generated field that is used for caching results in SDKs.
-  """
-  _id: ID! @fdc_generated(from: "Permiso.id", purpose: ENTITY_ID)
-}
 extend type Personal {
   """
   ✨ List `Grupo` objects in a one-to-many relationship (where `Grupo`.`personal` is this object).
@@ -3951,6 +3824,133 @@ extend type PublicacionVideo {
   """
   _id: ID! @fdc_generated(from: "PublicacionVideo.id", purpose: ENTITY_ID)
 }
+extend type Rol {
+  """
+  ✨ List `User` objects in a one-to-many relationship (where `User`.`rol` is this object).
+  """
+  users_on_rol(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: User_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [User_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: User_Having
+  ): [User!]! @fdc_generated(from: "User.rol", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Rol", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Rol` table.
+  """
+  _count: Int! @fdc_generated(from: "Rol.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Rol` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Rol.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Rol` table where the `scala` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  scala_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Rol.scala", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Rol` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Rol.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Rol` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Rol.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `scala` field in the `Rol` table.
+  """
+  scala_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Rol.scala", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Rol` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Rol.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `scala` field in the `Rol` table.
+  """
+  scala_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Rol.scala", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `Rol` table.
+  """
+  id_min: Int @fdc_generated(from: "Rol.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `scala` field in the `Rol` table.
+  """
+  scala_min: Int @fdc_generated(from: "Rol.scala", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `Rol` table.
+  """
+  id_max: Int @fdc_generated(from: "Rol.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `scala` field in the `Rol` table.
+  """
+  scala_max: Int @fdc_generated(from: "Rol.scala", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Rol.id", purpose: ENTITY_ID)
+}
 extend type Sector {
   """
   ✨ List `Familia` objects in a one-to-many relationship (where `Familia`.`sector` is this object).
@@ -4532,15 +4532,6 @@ extend type User {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "User.nombre", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `User` table where the `permisoId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  permisoId_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "User.permisoId", purpose: QUERY_COUNT)
-  """
   ✨ Count the number of rows in the `User` table where the `provider` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   provider_count(
@@ -4549,6 +4540,15 @@ extend type User {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "User.provider", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `rolId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  rolId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.rolId", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `User` table where the `sexo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -4595,14 +4595,14 @@ extend type User {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "User.id", purpose: QUERY_SUM)
   """
-  ✨ Sum the `permisoId` field in the `User` table.
+  ✨ Sum the `rolId` field in the `User` table.
   """
-  permisoId_sum(
+  rolId_sum(
     """
     Set to true to sum the distinct values.
     """
     distinct: Boolean = false
-  ): Int @fdc_generated(from: "User.permisoId", purpose: QUERY_SUM)
+  ): Int @fdc_generated(from: "User.rolId", purpose: QUERY_SUM)
   """
   ✨ Average the `id` field in the `User` table.
   """
@@ -4613,14 +4613,14 @@ extend type User {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "User.id", purpose: QUERY_AVG)
   """
-  ✨ Average the `permisoId` field in the `User` table.
+  ✨ Average the `rolId` field in the `User` table.
   """
-  permisoId_avg(
+  rolId_avg(
     """
     Set to true to average the distinct values.
     """
     distinct: Boolean = false
-  ): Float @fdc_generated(from: "User.permisoId", purpose: QUERY_AVG)
+  ): Float @fdc_generated(from: "User.rolId", purpose: QUERY_AVG)
   """
   ✨ Minimum of the `fechaNacimiento` field in the `User` table.
   """
@@ -4630,9 +4630,9 @@ extend type User {
   """
   id_min: Int @fdc_generated(from: "User.id", purpose: QUERY_MIN)
   """
-  ✨ Minimum of the `permisoId` field in the `User` table.
+  ✨ Minimum of the `rolId` field in the `User` table.
   """
-  permisoId_min: Int @fdc_generated(from: "User.permisoId", purpose: QUERY_MIN)
+  rolId_min: Int @fdc_generated(from: "User.rolId", purpose: QUERY_MIN)
   """
   ✨ Maximum of the `fechaNacimiento` field in the `User` table.
   """
@@ -4642,9 +4642,9 @@ extend type User {
   """
   id_max: Int @fdc_generated(from: "User.id", purpose: QUERY_MAX)
   """
-  ✨ Maximum of the `permisoId` field in the `User` table.
+  ✨ Maximum of the `rolId` field in the `User` table.
   """
-  permisoId_max: Int @fdc_generated(from: "User.permisoId", purpose: QUERY_MAX)
+  rolId_max: Int @fdc_generated(from: "User.rolId", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """

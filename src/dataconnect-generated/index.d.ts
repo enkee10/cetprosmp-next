@@ -41,15 +41,15 @@ export interface Familia_Key {
   __typename?: 'Familia_Key';
 }
 
-export interface GetPermisoByIdData {
-  permiso?: {
+export interface GetRoleByIdData {
+  role?: {
     id: number;
     titulo?: string | null;
     scala?: number | null;
-  } & Permiso_Key;
+  } & Rol_Key;
 }
 
-export interface GetPermisoByIdVariables {
+export interface GetRoleByIdVariables {
   id: number;
 }
 
@@ -78,12 +78,12 @@ export interface ListActEconomicasData {
   } & ActEconomica_Key)[];
 }
 
-export interface ListPermisosData {
-  permisos: ({
+export interface ListRolesData {
+  roles: ({
     id: number;
     titulo?: string | null;
     scala?: number | null;
-  } & Permiso_Key)[];
+  } & Rol_Key)[];
 }
 
 export interface ListUsersData {
@@ -107,7 +107,7 @@ export interface ListUsersData {
     estadoCivil?: string | null;
     instruccion?: string | null;
     fechaNacimiento?: TimestampString | null;
-    permisoId?: number | null;
+    rolId?: number | null;
   } & User_Key)[];
 }
 
@@ -155,11 +155,6 @@ export interface Paquete_Key {
   __typename?: 'Paquete_Key';
 }
 
-export interface Permiso_Key {
-  id: number;
-  __typename?: 'Permiso_Key';
-}
-
 export interface PersonalEspecialidad_Key {
   personalId: number;
   especialidadId: number;
@@ -179,6 +174,11 @@ export interface PublicacionVideo_Key {
 export interface Publicacion_Key {
   id: number;
   __typename?: 'Publicacion_Key';
+}
+
+export interface Rol_Key {
+  id: number;
+  __typename?: 'Rol_Key';
 }
 
 export interface Sector_Key {
@@ -201,29 +201,29 @@ export interface VideoYoutube_Key {
   __typename?: 'VideoYoutube_Key';
 }
 
-interface ListPermisosRef {
+interface ListRolesRef {
   /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListPermisosData, undefined>;
+  (): QueryRef<ListRolesData, undefined>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListPermisosData, undefined>;
+  (dc: DataConnect): QueryRef<ListRolesData, undefined>;
   operationName: string;
 }
-export const listPermisosRef: ListPermisosRef;
+export const listRolesRef: ListRolesRef;
 
-export function listPermisos(options?: ExecuteQueryOptions): QueryPromise<ListPermisosData, undefined>;
-export function listPermisos(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListPermisosData, undefined>;
+export function listRoles(options?: ExecuteQueryOptions): QueryPromise<ListRolesData, undefined>;
+export function listRoles(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListRolesData, undefined>;
 
-interface GetPermisoByIdRef {
+interface GetRoleByIdRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: GetPermisoByIdVariables): QueryRef<GetPermisoByIdData, GetPermisoByIdVariables>;
+  (vars: GetRoleByIdVariables): QueryRef<GetRoleByIdData, GetRoleByIdVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetPermisoByIdVariables): QueryRef<GetPermisoByIdData, GetPermisoByIdVariables>;
+  (dc: DataConnect, vars: GetRoleByIdVariables): QueryRef<GetRoleByIdData, GetRoleByIdVariables>;
   operationName: string;
 }
-export const getPermisoByIdRef: GetPermisoByIdRef;
+export const getRoleByIdRef: GetRoleByIdRef;
 
-export function getPermisoById(vars: GetPermisoByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPermisoByIdData, GetPermisoByIdVariables>;
-export function getPermisoById(dc: DataConnect, vars: GetPermisoByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPermisoByIdData, GetPermisoByIdVariables>;
+export function getRoleById(vars: GetRoleByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
+export function getRoleById(dc: DataConnect, vars: GetRoleByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
 
 interface ListUsersRef {
   /* Allow users to create refs without passing in DataConnect */

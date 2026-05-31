@@ -2,7 +2,7 @@ import { initializeApp, getApps, App } from "firebase-admin/app";
 import { getDataConnect } from "firebase-admin/data-connect";
 import {
   connectorConfig,
-  getPermisoById as dcGetPermisoById,
+  getRoleById as dcGetRoleById,
   getUserByDocumentId as dcGetUserByDocumentId,
 } from "@dataconnect/admin-generated";
 import {
@@ -10,7 +10,7 @@ import {
   INSERT_USER_MUTATION,
   UPDATE_USER_MUTATION,
 } from "../../dataconnectOperations.js";
-import { DataConnectPermiso, DataConnectUserInput } from "./types.js";
+import { DataConnectRole, DataConnectUserInput } from "./types.js";
 import { getIdFromKeyOutput } from "./userMappers.js";
 
 let app: App;
@@ -40,9 +40,9 @@ export async function waitForDataConnectUserIdByDocumentId(
   return null;
 }
 
-export async function getPermisoById(permisoId: number): Promise<DataConnectPermiso | null> {
-  const response = await dcGetPermisoById(dataConnect, { id: permisoId });
-  return response.data.permiso ?? null;
+export async function getRoleById(roleId: number): Promise<DataConnectRole | null> {
+  const response = await dcGetRoleById(dataConnect, { id: roleId });
+  return response.data.role ?? null;
 }
 
 export async function upsertDataConnectUserByDocumentId(documentId: string, data: DataConnectUserInput): Promise<number> {

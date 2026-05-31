@@ -7,19 +7,19 @@ const connectorConfig = {
 };
 exports.connectorConfig = connectorConfig;
 
-function listPermisos(dcOrOptions, options) {
+function listRoles(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
   dcInstance.useGen(true);
-  return dcInstance.executeQuery('ListPermisos', undefined, inputOpts);
+  return dcInstance.executeQuery('ListRoles', undefined, inputOpts);
 }
-exports.listPermisos = listPermisos;
+exports.listRoles = listRoles;
 
-function getPermisoById(dcOrVarsOrOptions, varsOrOptions, options) {
+function getRoleById(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetPermisoById', inputVars, inputOpts);
+  return dcInstance.executeQuery('GetRoleById', inputVars, inputOpts);
 }
-exports.getPermisoById = getPermisoById;
+exports.getRoleById = getRoleById;
 
 function listUsers(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);

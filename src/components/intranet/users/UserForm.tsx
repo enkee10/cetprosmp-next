@@ -3,12 +3,12 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm, Controller, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { TextField, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Avatar, CircularProgress, Typography, IconButton, InputAdornment } from '@mui/material';
+import { TextField, Button, Box, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Avatar, CircularProgress, Typography, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { getAuth } from 'firebase/auth';
 import { app, storage } from '@/lib/firebase';
 import { getClientDataConnect } from '@/lib/dataconnect';
-import { listPermisos as dcListPermisos } from '@dataconnect/generated';
+import { listRoles as dcListRoles } from '@dataconnect/generated';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { generateUsername } from './userForm_utilities';
 
@@ -49,7 +49,7 @@ const createValidationSchema = (isCreating: boolean) => yup.object().shape({
   estado_civil: yup.string().oneOf(['Soltero', 'Casado(a)', 'Viudo(a)', 'Divorciado(a)']).required(),
   direccion: yup.string().nullable(),
   distrito: yup.string().nullable(),
-  permisoId: yup.string().required('El permiso es requerido'),
+  rolId: yup.string().required('El rol es requerido'),
   avatar: yup.string().url('Debe ser una URL válida').nullable(),
   bloqueado: yup.boolean(),
 });
@@ -71,26 +71,25 @@ interface UserFormValues {
   estado_civil: 'Soltero' | 'Casado(a)' | 'Viudo(a)' | 'Divorciado(a)';
   direccion: string | null | undefined;
   distrito: string | null | undefined;
-  permisoId: string;
+  rolId: string;
   avatar: string | null | undefined;
   bloqueado: boolean | undefined;
 }
 
 interface UserFormProps {
-  open: boolean;
-  onClose: () => void;
+  onCancel?: () => void;
   onSubmit: (data: UserFormValues) => void;
   initialData?: Record<string, unknown>;
 }
 
-interface Permiso {
+interface Role {
   id: number;
   titulo?: string | null;
   scala?: number | null;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ open, onClose, onSubmit, initialData }) => {
-  const [permisos, setPermisos] = useState<Permiso[]>([]);
+const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) => {
+  const [roles, setRoles] = useState<Role[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -120,7 +119,7 @@ const UserForm: React.FC<UserFormProps> = ({ open, onClose, onSubmit, initialDat
       estado_civil: 'Soltero',
       direccion: '',
       distrito: '',
-      permisoId: '',
+      rolId: '',
       avatar: '',
       bloqueado: false,
     },
@@ -134,26 +133,26 @@ const UserForm: React.FC<UserFormProps> = ({ open, onClose, onSubmit, initialDat
   }, [nombre, apellido_paterno, setValue]);
 
   useEffect(() => {
-    const fetchPermisos = async () => {
+    const fetchRoles = async () => {
       try {
         if (auth.currentUser) {
           await auth.currentUser.getIdToken(true);
         }
-        const result = await dcListPermisos(dataConnect);
-        setPermisos(
-          (result.data.permisos || []).map((permiso) => ({
-            id: permiso.id,
-            titulo: permiso.titulo ?? null,
-            scala: permiso.scala ?? null,
+        const result = await dcListRoles(dataConnect);
+        setRoles(
+          (result.data.roles || []).map((role) => ({
+            id: role.id,
+            titulo: role.titulo ?? null,
+            scala: role.scala ?? null,
           })),
         );
       } catch (error) {
-        console.error('Error fetching permisos: ', error);
-        setPermisos([]);
+        console.error('Error fetching roles: ', error);
+        setRoles([]);
       }
     };
 
-    fetchPermisos();
+    fetchRoles();
   }, [auth, dataConnect]);
 
   const avatarUrl = watch('avatar');
@@ -182,7 +181,7 @@ const UserForm: React.FC<UserFormProps> = ({ open, onClose, onSubmit, initialDat
       const parsedError = error as { code?: string; message?: string };
       console.error('Error uploading file:', error);
       if (parsedError.code === 'storage/unauthorized') {
-        setUploadError('Error: No tienes permiso para subir archivos.');
+        setUploadError('Error: No tienes acceso para subir archivos.');
       } else {
         setUploadError(`Ocurrió un error al subir la imagen: ${parsedError.message || 'desconocido'}`);
       }
@@ -192,8 +191,6 @@ const UserForm: React.FC<UserFormProps> = ({ open, onClose, onSubmit, initialDat
   };
 
   useEffect(() => {
-    if (!open) return;
-
     const asString = (value: unknown): string => (typeof value === 'string' ? value : '');
     const asSexo = (value: unknown): 'F' | 'M' => (value === 'M' ? 'M' : 'F');
     const asTipoDocumento = (value: unknown): 'DNI' | 'CE' => (value === 'CE' ? 'CE' : 'DNI');
@@ -228,29 +225,46 @@ const UserForm: React.FC<UserFormProps> = ({ open, onClose, onSubmit, initialDat
       estado_civil: asEstadoCivil(initialData?.estado_civil ?? initialData?.estadoCivil),
       direccion: asString(initialData?.direccion),
       distrito: asString(initialData?.distrito),
-      permisoId: initialData?.permisoId != null ? String(initialData.permisoId) : (permisos[0]?.id ? String(permisos[0].id) : ''),
+      rolId:
+        initialData?.rolId != null
+          ? String(initialData.rolId)
+          : (roles[0]?.id ? String(roles[0].id) : ''),
       avatar: asString(initialData?.avatar),
       bloqueado: asBoolean(initialData?.bloqueado ?? initialData?.blocked),
     };
 
     reset(defaultValues);
     setUploadError(null);
-  }, [open, initialData, reset, permisos]);
+  }, [initialData, reset, roles]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      apellidoPaternoRef.current?.focus();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      disableEnforceFocus
-      maxWidth="md"
-      fullWidth
-      TransitionProps={{ onEntered: () => apellidoPaternoRef.current?.focus() }}
+    <Box
+      sx={{
+        width: '100%',
+      }}
     >
-      <DialogTitle>{isCreating ? 'Agregar Usuario' : 'Editar Usuario'}</DialogTitle>
-      <DialogContent>
-        <form id="user-form" onSubmit={handleSubmit(onSubmit)}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, mt: 2 }}>
-            <Box sx={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 1 }}>
+      <form id="user-form" onSubmit={handleSubmit(onSubmit)}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: 'minmax(0, 1fr)',
+              sm: 'repeat(2, minmax(260px, 260px))',
+              md: 'repeat(2, minmax(320px, 320px))',
+            },
+            gap: 2,
+            mt: 1,
+            width: '100%',
+          }}
+        >
+            <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' }, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 1 }}>
               <Avatar src={avatarUrl || undefined} sx={{ width: 100, height: 100 }} />
               <input type="file" accept="image/*" style={{ display: 'none' }} ref={avatarInputRef} onChange={(e) => handleFileChange(e, 'avatar')} />
               <Button sx={{ mt: 1 }} variant="outlined" onClick={() => avatarInputRef.current?.click()} disabled={isUploading} tabIndex={23}>
@@ -355,13 +369,13 @@ const UserForm: React.FC<UserFormProps> = ({ open, onClose, onSubmit, initialDat
 
             <Controller name="direccion" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 16 }} label="Dirección" error={!!errors.direccion} helperText={errors.direccion?.message} fullWidth />} />
             <Controller name="distrito" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 17 }} label="Distrito" error={!!errors.distrito} helperText={errors.distrito?.message} fullWidth />} />
-            <Controller name="permisoId" control={control} render={({ field }) => (
-              <FormControl fullWidth error={!!errors.permisoId}>
-                <InputLabel>Permiso</InputLabel>
-                <Select {...field} label="Permiso" inputProps={{ tabIndex: 18 }}>
-                  {permisos.map((permiso) => (
-                    <MenuItem key={permiso.id} value={String(permiso.id)}>
-                      {permiso.titulo || `Permiso ${permiso.id}`}
+            <Controller name="rolId" control={control} render={({ field }) => (
+              <FormControl fullWidth error={!!errors.rolId}>
+                <InputLabel>Rol</InputLabel>
+                <Select {...field} label="Rol" inputProps={{ tabIndex: 18 }}>
+                  {roles.map((role) => (
+                    <MenuItem key={role.id} value={String(role.id)}>
+                      {role.titulo || `Rol ${role.id}`}
                     </MenuItem>
                   ))}
                 </Select>
@@ -378,16 +392,19 @@ const UserForm: React.FC<UserFormProps> = ({ open, onClose, onSubmit, initialDat
                 />
               )}
             />
-          </Box>
-        </form>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} tabIndex={22}>Cancelar</Button>
+        </Box>
+      </form>
+      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
+        {onCancel && (
+          <Button onClick={onCancel} tabIndex={22}>
+            Cancelar
+          </Button>
+        )}
         <Button type="submit" form="user-form" variant="contained" disabled={isUploading} tabIndex={21}>
           {isCreating ? 'Crear' : 'Guardar Cambios'}
         </Button>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </Box>
   );
 };
 

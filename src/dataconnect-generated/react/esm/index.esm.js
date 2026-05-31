@@ -1,17 +1,17 @@
-import { listPermisosRef, getPermisoByIdRef, listUsersRef, getUserByDocumentIdRef, listActEconomicasRef, connectorConfig } from '../../esm/index.esm.js';
+import { listRolesRef, getRoleByIdRef, listUsersRef, getUserByDocumentIdRef, listActEconomicasRef, connectorConfig } from '../../esm/index.esm.js';
 import { CallerSdkTypeEnum } from 'firebase/data-connect';
 import { useDataConnectQuery, validateReactArgs } from '@tanstack-query-firebase/react/data-connect';
 
 
-export function useListPermisos(dcOrOptions, options) {
+export function useListRoles(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
-  const ref = listPermisosRef(dcInstance);
+  const ref = listRolesRef(dcInstance);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 
-export function useGetPermisoById(dcOrVars, varsOrOptions, options) {
+export function useGetRoleById(dcOrVars, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
-  const ref = getPermisoByIdRef(dcInstance, inputVars);
+  const ref = getRoleByIdRef(dcInstance, inputVars);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 

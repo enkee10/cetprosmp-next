@@ -1,4 +1,4 @@
-export interface DataConnectPermiso {
+export interface DataConnectRole {
   id: number;
   titulo?: string | null;
   scala?: number | null;
@@ -26,10 +26,10 @@ export interface DataConnectUserInput {
   telefono?: string | null;
   celular?: string | null;
   avatar?: string | null;
-  permisoId?: number | null;
+  rolId?: number | null;
 }
 
-export interface DataConnectPermisoInput {
+export interface DataConnectRoleInput {
   titulo?: string | null;
   scala?: number | null;
 }

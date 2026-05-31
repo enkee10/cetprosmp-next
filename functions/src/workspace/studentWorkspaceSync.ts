@@ -1,16 +1,25 @@
 import { google, admin_directory_v1 } from "googleapis";
+import { randomBytes } from "node:crypto";
 
 const WORKSPACE_SYNC_ENABLED = String(process.env.WORKSPACE_SYNC_ENABLED || "").trim().toLowerCase() === "true";
 const WORKSPACE_SUBJECT_EMAIL = String(process.env.WORKSPACE_SUBJECT_EMAIL || "").trim();
 const WORKSPACE_PRIMARY_DOMAIN = String(process.env.WORKSPACE_PRIMARY_DOMAIN || "").trim();
 const WORKSPACE_STUDENT_ORG_UNIT_PATH =
   String(process.env.WORKSPACE_STUDENT_ORG_UNIT_PATH || "/Estudiantes/Estudiantes-2026-2").trim();
-const WORKSPACE_STUDENT_PERMISSION_IDS = String(process.env.WORKSPACE_STUDENT_PERMISSION_IDS || "")
+const WORKSPACE_STUDENT_ROLE_IDS = String(
+  process.env.WORKSPACE_STUDENT_ROLE_IDS
+  || process.env.WORKSPACE_STUDENT_PERMISSION_IDS
+  || "",
+)
   .split(",")
   .map((value) => Number(value.trim()))
   .filter((value) => Number.isFinite(value) && value > 0);
-const WORKSPACE_REQUIRE_STUDENT_PERMISSION_MATCH =
-  String(process.env.WORKSPACE_REQUIRE_STUDENT_PERMISSION_MATCH || "false").trim().toLowerCase() === "true";
+const WORKSPACE_REQUIRE_STUDENT_ROLE_MATCH =
+  String(
+    process.env.WORKSPACE_REQUIRE_STUDENT_ROLE_MATCH
+    || process.env.WORKSPACE_REQUIRE_STUDENT_PERMISSION_MATCH
+    || "false",
+  ).trim().toLowerCase() === "true";
 
 export type WorkspaceUserContext = {
   email: string;
@@ -25,6 +34,19 @@ export type WorkspaceUserContext = {
   celular: string | null;
   dni: string | null;
   blocked: boolean;
+};
+
+type WorkspaceSyncOptions = {
+  previousEmail?: string | null;
+};
+
+type WorkspaceDirectoryClient = {
+  directory: admin_directory_v1.Admin;
+};
+
+type WorkspaceErrorMeta = {
+  status: number;
+  reason: string;
 };
 
 function compactUndefined<T extends object>(obj: T): T {
@@ -102,21 +124,62 @@ function buildWorkspacePayload(user: WorkspaceUserContext): admin_directory_v1.S
   });
 }
 
-export function shouldSyncStudentWorkspace(permisoId: number, permisoTitulo: string | null | undefined): boolean {
-  const shouldSyncById =
-    WORKSPACE_STUDENT_PERMISSION_IDS.length > 0 && WORKSPACE_STUDENT_PERMISSION_IDS.includes(permisoId);
-  const title = String(permisoTitulo || "").trim().toLowerCase();
-  const shouldSyncByTitle = title.includes("estudiante") || title.includes("alumno");
-  return WORKSPACE_REQUIRE_STUDENT_PERMISSION_MATCH ? shouldSyncById : (shouldSyncById || shouldSyncByTitle);
+function generateWorkspacePassword(length = 16): string {
+  const lowercase = "abcdefghijkmnopqrstuvwxyz";
+  const uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const digits = "23456789";
+  const symbols = "!@#$%&*_-";
+  const all = `${lowercase}${uppercase}${digits}${symbols}`;
+
+  const pick = (chars: string): string => chars[randomBytes(1)[0] % chars.length];
+  const base = [pick(lowercase), pick(uppercase), pick(digits), pick(symbols)];
+
+  while (base.length < length) {
+    base.push(pick(all));
+  }
+
+  for (let i = base.length - 1; i > 0; i -= 1) {
+    const j = randomBytes(1)[0] % (i + 1);
+    [base[i], base[j]] = [base[j], base[i]];
+  }
+
+  return base.join("");
 }
 
-export async function syncStudentToWorkspace(context: WorkspaceUserContext): Promise<void> {
-  if (!WORKSPACE_SYNC_ENABLED) return;
+function getWorkspaceErrorMeta(error: unknown): WorkspaceErrorMeta {
+  const err = error as {
+    code?: number;
+    status?: number;
+    message?: string;
+    errors?: unknown;
+    response?: {
+      status?: number;
+      data?: unknown;
+    };
+  };
+
+  const status =
+    Number(err?.code)
+    || Number(err?.status)
+    || Number(err?.response?.status)
+    || 0;
+
+  const reason = JSON.stringify({
+    message: String(err?.message || ""),
+    errors: err?.errors || "",
+    responseData: err?.response?.data || "",
+  }).toLowerCase();
+
+  return { status, reason };
+}
+
+function getWorkspaceDirectoryClient(): WorkspaceDirectoryClient {
   if (!WORKSPACE_SUBJECT_EMAIL || !WORKSPACE_PRIMARY_DOMAIN) {
     throw new Error(
       "Faltan variables WORKSPACE_SUBJECT_EMAIL o WORKSPACE_PRIMARY_DOMAIN para sincronizar Workspace.",
     );
   }
+
   const clientEmail = String(process.env.GOOGLE_CLIENT_EMAIL || "").trim();
   const privateKey = String(process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
   if (!clientEmail || !privateKey) {
@@ -131,24 +194,119 @@ export async function syncStudentToWorkspace(context: WorkspaceUserContext): Pro
   });
 
   const directory = google.admin({ version: "directory_v1", auth: jwtClient });
+  return { directory };
+}
+
+export function shouldSyncStudentWorkspace(roleId: number, roleTitle: string | null | undefined): boolean {
+  const shouldSyncById =
+    WORKSPACE_STUDENT_ROLE_IDS.length > 0 && WORKSPACE_STUDENT_ROLE_IDS.includes(roleId);
+  const title = String(roleTitle || "").trim().toLowerCase();
+  const shouldSyncByTitle = title.includes("estudiante") || title.includes("alumno");
+  return WORKSPACE_REQUIRE_STUDENT_ROLE_MATCH ? shouldSyncById : (shouldSyncById || shouldSyncByTitle);
+}
+
+export async function syncStudentToWorkspace(
+  context: WorkspaceUserContext,
+  options?: WorkspaceSyncOptions,
+): Promise<void> {
+  if (!WORKSPACE_SYNC_ENABLED) return;
+  const { directory } = getWorkspaceDirectoryClient();
   const payload = buildWorkspacePayload(context);
+  const hasProvidedPassword = typeof payload.password === "string" && payload.password.trim().length > 0;
+  const insertPayload: admin_directory_v1.Schema$User = hasProvidedPassword
+    ? payload
+    : { ...payload, password: generateWorkspacePassword() };
+  const previousEmail = String(options?.previousEmail || "").trim().toLowerCase();
+  const currentEmail = context.email.trim().toLowerCase();
+  const shouldRenamePrimaryEmail = Boolean(previousEmail) && previousEmail !== currentEmail;
 
   try {
+    if (shouldRenamePrimaryEmail) {
+      await directory.users.update({
+        userKey: previousEmail,
+        requestBody: payload,
+      });
+      return;
+    }
+
     await directory.users.insert({
-      requestBody: payload,
+      requestBody: insertPayload,
     });
   } catch (error: unknown) {
-    const status = (error as { code?: number })?.code;
-    const reason = JSON.stringify((error as { errors?: unknown }).errors || "");
-    const alreadyExists = status === 409 || reason.includes("duplicate") || reason.includes("Entity already exists");
+    const { status, reason } = getWorkspaceErrorMeta(error);
+    const alreadyExists =
+      status === 409
+      || reason.includes("duplicate")
+      || reason.includes("entity already exists")
+      || reason.includes("already exists");
+    const notFound =
+      status === 404
+      || reason.includes("notfound")
+      || reason.includes("resource not found");
+
+    if (shouldRenamePrimaryEmail) {
+      if (alreadyExists) {
+        throw new Error(
+          `No se pudo cambiar el correo en Workspace: '${currentEmail}' ya existe en otra cuenta.`,
+        );
+      }
+
+      if (notFound) {
+        // Si no existe con el correo anterior, intentamos como flujo normal.
+        await directory.users.update({
+          userKey: currentEmail,
+          requestBody: payload,
+        }).catch(async (updateError: unknown) => {
+          const { status: updateStatus, reason: updateReason } = getWorkspaceErrorMeta(updateError);
+          const updateNotFound =
+            updateStatus === 404
+            || updateReason.includes("notfound")
+            || updateReason.includes("resource not found");
+          if (!updateNotFound) throw updateError;
+          await directory.users.insert({ requestBody: insertPayload });
+        });
+        return;
+      }
+    }
 
     if (!alreadyExists) {
-      throw error;
+      try {
+        await directory.users.update({
+          userKey: context.email.toLowerCase(),
+          requestBody: payload,
+        });
+        return;
+      } catch {
+        throw error;
+      }
     }
 
     await directory.users.update({
       userKey: context.email.toLowerCase(),
       requestBody: payload,
     });
+  }
+}
+
+export async function deleteStudentFromWorkspace(email: string): Promise<void> {
+  if (!WORKSPACE_SYNC_ENABLED) return;
+
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!normalizedEmail) return;
+
+  const { directory } = getWorkspaceDirectoryClient();
+
+  try {
+    await directory.users.delete({
+      userKey: normalizedEmail,
+    });
+  } catch (error: unknown) {
+    const { status, reason } = getWorkspaceErrorMeta(error);
+    const userNotFound =
+      status === 404
+      || reason.includes("notfound")
+      || reason.includes("resource not found");
+    if (userNotFound) return;
+    throw error;
   }
 }

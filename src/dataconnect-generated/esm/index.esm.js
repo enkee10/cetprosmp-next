@@ -10,30 +10,30 @@ export const dataConnectSettings = {
     cacheProvider: makeMemoryCacheProvider()
   }
 };
-export const listPermisosRef = (dc) => {
+export const listRolesRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'ListPermisos');
+  return queryRef(dcInstance, 'ListRoles');
 }
-listPermisosRef.operationName = 'ListPermisos';
+listRolesRef.operationName = 'ListRoles';
 
-export function listPermisos(dcOrOptions, options) {
+export function listRoles(dcOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
-  return executeQuery(listPermisosRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+  return executeQuery(listRolesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
-export const getPermisoByIdRef = (dcOrVars, vars) => {
+export const getRoleByIdRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'GetPermisoById', inputVars);
+  return queryRef(dcInstance, 'GetRoleById', inputVars);
 }
-getPermisoByIdRef.operationName = 'GetPermisoById';
+getRoleByIdRef.operationName = 'GetRoleById';
 
-export function getPermisoById(dcOrVars, varsOrOptions, options) {
+export function getRoleById(dcOrVars, varsOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
-  return executeQuery(getPermisoByIdRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+  return executeQuery(getRoleByIdRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const listUsersRef = (dc) => {

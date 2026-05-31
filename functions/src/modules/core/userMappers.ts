@@ -1,4 +1,4 @@
-import { DataConnectPermisoInput, DataConnectUserInput } from "./types.js";
+import { DataConnectRoleInput, DataConnectUserInput } from "./types.js";
 
 export function separarNombreCompleto(displayName: string | null) {
   const texto = (displayName || "").trim().replace(/\s+/g, " ");
@@ -108,7 +108,7 @@ export function buildUserDataFromInput(
     displayName?: string;
     photoURL?: string | null;
     provider?: string | null;
-    permisoId?: number | null;
+    rolId?: number | null;
   },
 ): DataConnectUserInput {
   const apellidoPaterno = asNullableString(input.apellido_paterno ?? input.apellidoPaterno) ?? null;
@@ -138,14 +138,14 @@ export function buildUserDataFromInput(
     telefono: asNullableString(input.telefono),
     celular: asNullableString(input.celular),
     avatar: asNullableString(input.avatar ?? input.foto) ?? asNullableString(defaults?.photoURL) ?? null,
-    permisoId: toNumberOrNull(input.permisoId) ?? defaults?.permisoId ?? null,
+    rolId: toNumberOrNull(input.rolId) ?? defaults?.rolId ?? null,
   };
 
   if (!payload.username) payload.username = asNullableString(defaults?.displayName) ?? null;
   return compactUndefined(payload);
 }
 
-export function buildPermisoDataFromInput(input: Record<string, unknown>): DataConnectPermisoInput {
+export function buildRoleDataFromInput(input: Record<string, unknown>): DataConnectRoleInput {
   return compactUndefined({
     titulo: asNullableString(input.titulo),
     scala: toNumberOrNull(input.scala),

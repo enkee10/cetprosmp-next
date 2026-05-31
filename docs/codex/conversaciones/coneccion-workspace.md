@@ -17,7 +17,7 @@ Limpié un archivo temporal que se había generado durante el refactor.
 Verificación:
 
 npm run build en functions pasó correctamente.
-Si quieres, siguiente paso te lo dejo aún más ordenado por dominios (users, roles/permisos, workspace) con un modules/index.ts central para escalar mejor.
+Si quieres, siguiente paso te lo dejo aún más ordenado por dominios (users, roles, workspace) con un modules/index.ts central para escalar mejor.
 
 
 Se editaron 2 archivos
@@ -40,7 +40,7 @@ Totalmente de acuerdo, vamos por muy buen camino con esa estructura.
 Si te parece, en el siguiente paso lo dejo así:
 
 modules/users/ para altas, edición, borrado y perfil.
-modules/permisos/ para roles y niveles.
+modules/roles/ para roles y niveles.
 modules/triggers/ para onCreate y onDelete.
 workspace/ para sincronizaciones externas.
 index.ts solo exportando handlers.
@@ -63,7 +63,7 @@ Estructura nueva:
 Core compartido: userCore.ts
 Triggers: handlers.ts
 Usuarios/Auth: handlers.ts
-Permisos/Roles: handlers.ts
+Roles: handlers.ts
 Agregador de módulos: index.ts
 Entrada principal: index.ts
 También eliminé el archivo monolítico anterior:
@@ -152,7 +152,7 @@ userMappers.ts
 authCore.ts
 dataConnectCore.ts
 types.ts
-permisos/handlers.ts y triggers/handlers.ts también quedaron con imports directos por dominio.
+roles/handlers.ts y triggers/handlers.ts también quedaron con imports directos por dominio.
 
 Eliminé userCore.ts porque ya no tenía uso.
 

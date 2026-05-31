@@ -1,17 +1,17 @@
-const { listPermisosRef, getPermisoByIdRef, listUsersRef, getUserByDocumentIdRef, listActEconomicasRef, connectorConfig } = require('../index.cjs.js');
+const { listRolesRef, getRoleByIdRef, listUsersRef, getUserByDocumentIdRef, listActEconomicasRef, connectorConfig } = require('../index.cjs.js');
 const { CallerSdkTypeEnum } = require('firebase/data-connect');
 const { useDataConnectQuery, validateReactArgs } = require('@tanstack-query-firebase/react/data-connect');
 
 
-exports.useListPermisos = function useListPermisos(dcOrOptions, options) {
+exports.useListRoles = function useListRoles(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
-  const ref = listPermisosRef(dcInstance);
+  const ref = listRolesRef(dcInstance);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 
-exports.useGetPermisoById = function useGetPermisoById(dcOrVars, varsOrOptions, options) {
+exports.useGetRoleById = function useGetRoleById(dcOrVars, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
-  const ref = getPermisoByIdRef(dcInstance, inputVars);
+  const ref = getRoleByIdRef(dcInstance, inputVars);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 

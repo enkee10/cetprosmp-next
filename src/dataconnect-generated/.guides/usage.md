@@ -12,12 +12,12 @@ For each operation, there is a wrapper hook that can be used to call the operati
 
 Here are all of the hooks that get generated:
 ```ts
-import { useListPermisos, useGetPermisoById, useListUsers, useGetUserByDocumentId, useListActEconomicas } from '@dataconnect/generated/react';
+import { useListRoles, useGetRoleById, useListUsers, useGetUserByDocumentId, useListActEconomicas } from '@dataconnect/generated/react';
 // The types of these hooks are available in react/index.d.ts
 
-const { data, isPending, isSuccess, isError, error } = useListPermisos();
+const { data, isPending, isSuccess, isError, error } = useListRoles();
 
-const { data, isPending, isSuccess, isError, error } = useGetPermisoById(getPermisoByIdVars);
+const { data, isPending, isSuccess, isError, error } = useGetRoleById(getRoleByIdVars);
 
 const { data, isPending, isSuccess, isError, error } = useListUsers();
 
@@ -62,14 +62,14 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { listPermisos, getPermisoById, listUsers, getUserByDocumentId, listActEconomicas } from '@dataconnect/generated';
+import { listRoles, getRoleById, listUsers, getUserByDocumentId, listActEconomicas } from '@dataconnect/generated';
 
 
-// Operation ListPermisos: 
-const { data } = await ListPermisos(dataConnect);
+// Operation ListRoles: 
+const { data } = await ListRoles(dataConnect);
 
-// Operation GetPermisoById:  For variables, look at type GetPermisoByIdVars in ../index.d.ts
-const { data } = await GetPermisoById(dataConnect, getPermisoByIdVars);
+// Operation GetRoleById:  For variables, look at type GetRoleByIdVars in ../index.d.ts
+const { data } = await GetRoleById(dataConnect, getRoleByIdVars);
 
 // Operation ListUsers: 
 const { data } = await ListUsers(dataConnect);

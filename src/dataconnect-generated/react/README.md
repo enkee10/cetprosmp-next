@@ -17,8 +17,8 @@ You can also follow the instructions from the [Data Connect documentation](https
 - [**Accessing the connector**](#accessing-the-connector)
   - [*Connecting to the local Emulator*](#connecting-to-the-local-emulator)
 - [**Queries**](#queries)
-  - [*ListPermisos*](#listpermisos)
-  - [*GetPermisoById*](#getpermisobyid)
+  - [*ListRoles*](#listroles)
+  - [*GetRoleById*](#getrolebyid)
   - [*ListUsers*](#listusers)
   - [*GetUserByDocumentId*](#getuserbydocumentid)
   - [*ListActEconomicas*](#listacteconomicas)
@@ -114,61 +114,61 @@ Here's a general overview of how to use the generated Query hooks in your code:
 
 Below are examples of how to use the `default` connector's generated Query hook functions to execute each Query. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#operations-react-angular).
 
-## ListPermisos
-You can execute the `ListPermisos` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+## ListRoles
+You can execute the `ListRoles` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
 ```javascript
-useListPermisos(dc: DataConnect, options?: useDataConnectQueryOptions<ListPermisosData>): UseDataConnectQueryResult<ListPermisosData, undefined>;
+useListRoles(dc: DataConnect, options?: useDataConnectQueryOptions<ListRolesData>): UseDataConnectQueryResult<ListRolesData, undefined>;
 ```
 You can also pass in a `DataConnect` instance to the Query hook function.
 ```javascript
-useListPermisos(options?: useDataConnectQueryOptions<ListPermisosData>): UseDataConnectQueryResult<ListPermisosData, undefined>;
+useListRoles(options?: useDataConnectQueryOptions<ListRolesData>): UseDataConnectQueryResult<ListRolesData, undefined>;
 ```
 
 ### Variables
-The `ListPermisos` Query has no variables.
+The `ListRoles` Query has no variables.
 ### Return Type
-Recall that calling the `ListPermisos` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+Recall that calling the `ListRoles` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
 
 To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
 
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListPermisos` Query is of type `ListPermisosData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListRoles` Query is of type `ListRolesData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
-export interface ListPermisosData {
-  permisos: ({
+export interface ListRolesData {
+  roles: ({
     id: number;
     titulo?: string | null;
     scala?: number | null;
-  } & Permiso_Key)[];
+  } & Rol_Key)[];
 }
 ```
 
 To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
 
-### Using `ListPermisos`'s Query hook function
+### Using `ListRoles`'s Query hook function
 
 ```javascript
 import { getDataConnect } from 'firebase/data-connect';
 import { connectorConfig } from '@dataconnect/generated';
-import { useListPermisos } from '@dataconnect/generated/react'
+import { useListRoles } from '@dataconnect/generated/react'
 
-export default function ListPermisosComponent() {
+export default function ListRolesComponent() {
   // You don't have to do anything to "execute" the Query.
   // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useListPermisos();
+  const query = useListRoles();
 
   // You can also pass in a `DataConnect` instance to the Query hook function.
   const dataConnect = getDataConnect(connectorConfig);
-  const query = useListPermisos(dataConnect);
+  const query = useListRoles(dataConnect);
 
   // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
   const options = { staleTime: 5 * 1000 };
-  const query = useListPermisos(options);
+  const query = useListRoles(options);
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
-  const query = useListPermisos(dataConnect, options);
+  const query = useListRoles(dataConnect, options);
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -181,80 +181,80 @@ export default function ListPermisosComponent() {
 
   // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
   if (query.isSuccess) {
-    console.log(query.data.permisos);
+    console.log(query.data.roles);
   }
   return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
 }
 ```
 
-## GetPermisoById
-You can execute the `GetPermisoById` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+## GetRoleById
+You can execute the `GetRoleById` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
 ```javascript
-useGetPermisoById(dc: DataConnect, vars: GetPermisoByIdVariables, options?: useDataConnectQueryOptions<GetPermisoByIdData>): UseDataConnectQueryResult<GetPermisoByIdData, GetPermisoByIdVariables>;
+useGetRoleById(dc: DataConnect, vars: GetRoleByIdVariables, options?: useDataConnectQueryOptions<GetRoleByIdData>): UseDataConnectQueryResult<GetRoleByIdData, GetRoleByIdVariables>;
 ```
 You can also pass in a `DataConnect` instance to the Query hook function.
 ```javascript
-useGetPermisoById(vars: GetPermisoByIdVariables, options?: useDataConnectQueryOptions<GetPermisoByIdData>): UseDataConnectQueryResult<GetPermisoByIdData, GetPermisoByIdVariables>;
+useGetRoleById(vars: GetRoleByIdVariables, options?: useDataConnectQueryOptions<GetRoleByIdData>): UseDataConnectQueryResult<GetRoleByIdData, GetRoleByIdVariables>;
 ```
 
 ### Variables
-The `GetPermisoById` Query requires an argument of type `GetPermisoByIdVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+The `GetRoleById` Query requires an argument of type `GetRoleByIdVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
-export interface GetPermisoByIdVariables {
+export interface GetRoleByIdVariables {
   id: number;
 }
 ```
 ### Return Type
-Recall that calling the `GetPermisoById` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+Recall that calling the `GetRoleById` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
 
 To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
 
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `GetPermisoById` Query is of type `GetPermisoByIdData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `GetRoleById` Query is of type `GetRoleByIdData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
-export interface GetPermisoByIdData {
-  permiso?: {
+export interface GetRoleByIdData {
+  role?: {
     id: number;
     titulo?: string | null;
     scala?: number | null;
-  } & Permiso_Key;
+  } & Rol_Key;
 }
 ```
 
 To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
 
-### Using `GetPermisoById`'s Query hook function
+### Using `GetRoleById`'s Query hook function
 
 ```javascript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, GetPermisoByIdVariables } from '@dataconnect/generated';
-import { useGetPermisoById } from '@dataconnect/generated/react'
+import { connectorConfig, GetRoleByIdVariables } from '@dataconnect/generated';
+import { useGetRoleById } from '@dataconnect/generated/react'
 
-export default function GetPermisoByIdComponent() {
-  // The `useGetPermisoById` Query hook requires an argument of type `GetPermisoByIdVariables`:
-  const getPermisoByIdVars: GetPermisoByIdVariables = {
+export default function GetRoleByIdComponent() {
+  // The `useGetRoleById` Query hook requires an argument of type `GetRoleByIdVariables`:
+  const getRoleByIdVars: GetRoleByIdVariables = {
     id: ..., 
   };
 
   // You don't have to do anything to "execute" the Query.
   // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useGetPermisoById(getPermisoByIdVars);
+  const query = useGetRoleById(getRoleByIdVars);
   // Variables can be defined inline as well.
-  const query = useGetPermisoById({ id: ..., });
+  const query = useGetRoleById({ id: ..., });
 
   // You can also pass in a `DataConnect` instance to the Query hook function.
   const dataConnect = getDataConnect(connectorConfig);
-  const query = useGetPermisoById(dataConnect, getPermisoByIdVars);
+  const query = useGetRoleById(dataConnect, getRoleByIdVars);
 
   // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
   const options = { staleTime: 5 * 1000 };
-  const query = useGetPermisoById(getPermisoByIdVars, options);
+  const query = useGetRoleById(getRoleByIdVars, options);
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
-  const query = useGetPermisoById(dataConnect, getPermisoByIdVars, options);
+  const query = useGetRoleById(dataConnect, getRoleByIdVars, options);
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -267,7 +267,7 @@ export default function GetPermisoByIdComponent() {
 
   // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
   if (query.isSuccess) {
-    console.log(query.data.permiso);
+    console.log(query.data.role);
   }
   return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -314,7 +314,7 @@ export interface ListUsersData {
     estadoCivil?: string | null;
     instruccion?: string | null;
     fechaNacimiento?: TimestampString | null;
-    permisoId?: number | null;
+    rolId?: number | null;
   } & User_Key)[];
 }
 ```

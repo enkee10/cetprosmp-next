@@ -10,8 +10,8 @@ This README will guide you through the process of using the generated JavaScript
 - [**Accessing the connector**](#accessing-the-connector)
   - [*Connecting to the local Emulator*](#connecting-to-the-local-emulator)
 - [**Queries**](#queries)
-  - [*ListPermisos*](#listpermisos)
-  - [*GetPermisoById*](#getpermisobyid)
+  - [*ListRoles*](#listroles)
+  - [*GetRoleById*](#getrolebyid)
   - [*ListUsers*](#listusers)
   - [*GetUserByDocumentId*](#getuserbydocumentid)
   - [*ListActEconomicas*](#listacteconomicas)
@@ -62,211 +62,211 @@ The following is true for both the action shortcut function and the `QueryRef` f
 
 Below are examples of how to use the `default` connector's generated functions to execute each query. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#using-queries).
 
-## ListPermisos
-You can execute the `ListPermisos` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+## ListRoles
+You can execute the `ListRoles` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-listPermisos(options?: ExecuteQueryOptions): QueryPromise<ListPermisosData, undefined>;
+listRoles(options?: ExecuteQueryOptions): QueryPromise<ListRolesData, undefined>;
 
-interface ListPermisosRef {
+interface ListRolesRef {
   ...
   /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListPermisosData, undefined>;
+  (): QueryRef<ListRolesData, undefined>;
 }
-export const listPermisosRef: ListPermisosRef;
+export const listRolesRef: ListRolesRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-listPermisos(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListPermisosData, undefined>;
+listRoles(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListRolesData, undefined>;
 
-interface ListPermisosRef {
+interface ListRolesRef {
   ...
-  (dc: DataConnect): QueryRef<ListPermisosData, undefined>;
+  (dc: DataConnect): QueryRef<ListRolesData, undefined>;
 }
-export const listPermisosRef: ListPermisosRef;
+export const listRolesRef: ListRolesRef;
 ```
 
-If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listPermisosRef:
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listRolesRef:
 ```typescript
-const name = listPermisosRef.operationName;
+const name = listRolesRef.operationName;
 console.log(name);
 ```
 
 ### Variables
-The `ListPermisos` query has no variables.
+The `ListRoles` query has no variables.
 ### Return Type
-Recall that executing the `ListPermisos` query returns a `QueryPromise` that resolves to an object with a `data` property.
+Recall that executing the `ListRoles` query returns a `QueryPromise` that resolves to an object with a `data` property.
 
-The `data` property is an object of type `ListPermisosData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+The `data` property is an object of type `ListRolesData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
-export interface ListPermisosData {
-  permisos: ({
+export interface ListRolesData {
+  roles: ({
     id: number;
     titulo?: string | null;
     scala?: number | null;
-  } & Permiso_Key)[];
+  } & Rol_Key)[];
 }
 ```
-### Using `ListPermisos`'s action shortcut function
+### Using `ListRoles`'s action shortcut function
 
 ```typescript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, listPermisos } from '@dataconnect/generated';
+import { connectorConfig, listRoles } from '@dataconnect/generated';
 
 
-// Call the `listPermisos()` function to execute the query.
+// Call the `listRoles()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await listPermisos();
+const { data } = await listRoles();
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
-const { data } = await listPermisos(dataConnect);
+const { data } = await listRoles(dataConnect);
 
-console.log(data.permisos);
+console.log(data.roles);
 
 // Or, you can use the `Promise` API.
-listPermisos().then((response) => {
+listRoles().then((response) => {
   const data = response.data;
-  console.log(data.permisos);
+  console.log(data.roles);
 });
 ```
 
-### Using `ListPermisos`'s `QueryRef` function
+### Using `ListRoles`'s `QueryRef` function
 
 ```typescript
 import { getDataConnect, executeQuery } from 'firebase/data-connect';
-import { connectorConfig, listPermisosRef } from '@dataconnect/generated';
+import { connectorConfig, listRolesRef } from '@dataconnect/generated';
 
 
-// Call the `listPermisosRef()` function to get a reference to the query.
-const ref = listPermisosRef();
+// Call the `listRolesRef()` function to get a reference to the query.
+const ref = listRolesRef();
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
-const ref = listPermisosRef(dataConnect);
+const ref = listRolesRef(dataConnect);
 
 // Call `executeQuery()` on the reference to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeQuery(ref);
 
-console.log(data.permisos);
+console.log(data.roles);
 
 // Or, you can use the `Promise` API.
 executeQuery(ref).then((response) => {
   const data = response.data;
-  console.log(data.permisos);
+  console.log(data.roles);
 });
 ```
 
-## GetPermisoById
-You can execute the `GetPermisoById` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+## GetRoleById
+You can execute the `GetRoleById` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-getPermisoById(vars: GetPermisoByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPermisoByIdData, GetPermisoByIdVariables>;
+getRoleById(vars: GetRoleByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
 
-interface GetPermisoByIdRef {
+interface GetRoleByIdRef {
   ...
   /* Allow users to create refs without passing in DataConnect */
-  (vars: GetPermisoByIdVariables): QueryRef<GetPermisoByIdData, GetPermisoByIdVariables>;
+  (vars: GetRoleByIdVariables): QueryRef<GetRoleByIdData, GetRoleByIdVariables>;
 }
-export const getPermisoByIdRef: GetPermisoByIdRef;
+export const getRoleByIdRef: GetRoleByIdRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-getPermisoById(dc: DataConnect, vars: GetPermisoByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPermisoByIdData, GetPermisoByIdVariables>;
+getRoleById(dc: DataConnect, vars: GetRoleByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
 
-interface GetPermisoByIdRef {
+interface GetRoleByIdRef {
   ...
-  (dc: DataConnect, vars: GetPermisoByIdVariables): QueryRef<GetPermisoByIdData, GetPermisoByIdVariables>;
+  (dc: DataConnect, vars: GetRoleByIdVariables): QueryRef<GetRoleByIdData, GetRoleByIdVariables>;
 }
-export const getPermisoByIdRef: GetPermisoByIdRef;
+export const getRoleByIdRef: GetRoleByIdRef;
 ```
 
-If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getPermisoByIdRef:
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getRoleByIdRef:
 ```typescript
-const name = getPermisoByIdRef.operationName;
+const name = getRoleByIdRef.operationName;
 console.log(name);
 ```
 
 ### Variables
-The `GetPermisoById` query requires an argument of type `GetPermisoByIdVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+The `GetRoleById` query requires an argument of type `GetRoleByIdVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 
 ```typescript
-export interface GetPermisoByIdVariables {
+export interface GetRoleByIdVariables {
   id: number;
 }
 ```
 ### Return Type
-Recall that executing the `GetPermisoById` query returns a `QueryPromise` that resolves to an object with a `data` property.
+Recall that executing the `GetRoleById` query returns a `QueryPromise` that resolves to an object with a `data` property.
 
-The `data` property is an object of type `GetPermisoByIdData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+The `data` property is an object of type `GetRoleByIdData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
-export interface GetPermisoByIdData {
-  permiso?: {
+export interface GetRoleByIdData {
+  role?: {
     id: number;
     titulo?: string | null;
     scala?: number | null;
-  } & Permiso_Key;
+  } & Rol_Key;
 }
 ```
-### Using `GetPermisoById`'s action shortcut function
+### Using `GetRoleById`'s action shortcut function
 
 ```typescript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, getPermisoById, GetPermisoByIdVariables } from '@dataconnect/generated';
+import { connectorConfig, getRoleById, GetRoleByIdVariables } from '@dataconnect/generated';
 
-// The `GetPermisoById` query requires an argument of type `GetPermisoByIdVariables`:
-const getPermisoByIdVars: GetPermisoByIdVariables = {
+// The `GetRoleById` query requires an argument of type `GetRoleByIdVariables`:
+const getRoleByIdVars: GetRoleByIdVariables = {
   id: ..., 
 };
 
-// Call the `getPermisoById()` function to execute the query.
+// Call the `getRoleById()` function to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await getPermisoById(getPermisoByIdVars);
+const { data } = await getRoleById(getRoleByIdVars);
 // Variables can be defined inline as well.
-const { data } = await getPermisoById({ id: ..., });
+const { data } = await getRoleById({ id: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
-const { data } = await getPermisoById(dataConnect, getPermisoByIdVars);
+const { data } = await getRoleById(dataConnect, getRoleByIdVars);
 
-console.log(data.permiso);
+console.log(data.role);
 
 // Or, you can use the `Promise` API.
-getPermisoById(getPermisoByIdVars).then((response) => {
+getRoleById(getRoleByIdVars).then((response) => {
   const data = response.data;
-  console.log(data.permiso);
+  console.log(data.role);
 });
 ```
 
-### Using `GetPermisoById`'s `QueryRef` function
+### Using `GetRoleById`'s `QueryRef` function
 
 ```typescript
 import { getDataConnect, executeQuery } from 'firebase/data-connect';
-import { connectorConfig, getPermisoByIdRef, GetPermisoByIdVariables } from '@dataconnect/generated';
+import { connectorConfig, getRoleByIdRef, GetRoleByIdVariables } from '@dataconnect/generated';
 
-// The `GetPermisoById` query requires an argument of type `GetPermisoByIdVariables`:
-const getPermisoByIdVars: GetPermisoByIdVariables = {
+// The `GetRoleById` query requires an argument of type `GetRoleByIdVariables`:
+const getRoleByIdVars: GetRoleByIdVariables = {
   id: ..., 
 };
 
-// Call the `getPermisoByIdRef()` function to get a reference to the query.
-const ref = getPermisoByIdRef(getPermisoByIdVars);
+// Call the `getRoleByIdRef()` function to get a reference to the query.
+const ref = getRoleByIdRef(getRoleByIdVars);
 // Variables can be defined inline as well.
-const ref = getPermisoByIdRef({ id: ..., });
+const ref = getRoleByIdRef({ id: ..., });
 
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
-const ref = getPermisoByIdRef(dataConnect, getPermisoByIdVars);
+const ref = getRoleByIdRef(dataConnect, getRoleByIdVars);
 
 // Call `executeQuery()` on the reference to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeQuery(ref);
 
-console.log(data.permiso);
+console.log(data.role);
 
 // Or, you can use the `Promise` API.
 executeQuery(ref).then((response) => {
   const data = response.data;
-  console.log(data.permiso);
+  console.log(data.role);
 });
 ```
 
@@ -327,7 +327,7 @@ export interface ListUsersData {
     estadoCivil?: string | null;
     instruccion?: string | null;
     fechaNacimiento?: TimestampString | null;
-    permisoId?: number | null;
+    rolId?: number | null;
   } & User_Key)[];
 }
 ```

@@ -52,6 +52,10 @@ const createValidationSchema = (isCreating: boolean) => yup.object().shape({
   rolId: yup.string().required('El rol es requerido'),
   avatar: yup.string().url('Debe ser una URL válida').nullable(),
   bloqueado: yup.boolean(),
+  correo_institucional: yup.string().nullable(),
+  fecha_creacion: yup.string().nullable(),
+  fecha_modificacion: yup.string().nullable(),
+  email_creador: yup.string().nullable(),
 });
 
 interface UserFormValues {
@@ -74,6 +78,10 @@ interface UserFormValues {
   rolId: string;
   avatar: string | null | undefined;
   bloqueado: boolean | undefined;
+  correo_institucional: string | null | undefined;
+  fecha_creacion: string | null | undefined;
+  fecha_modificacion: string | null | undefined;
+  email_creador: string | null | undefined;
 }
 
 interface UserFormProps {
@@ -87,6 +95,44 @@ interface Role {
   titulo?: string | null;
   scala?: number | null;
 }
+
+const EXCLUDED_ROLE_IDS = new Set<number>([1, 2]);
+const INSTITUTIONAL_DOMAIN = 'cetprosmp.edu.pe';
+
+const normalizeAliasToken = (value: string | null | undefined): string =>
+  String(value || '')
+    .replace(/[ñÑ]/g, 'n')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+
+const computeInstitutionalEmail = (params: {
+  rolId: string | null | undefined;
+  dni: string | null | undefined;
+  nombre: string | null | undefined;
+  apellidoPaterno: string | null | undefined;
+  apellidoMaterno: string | null | undefined;
+}): string => {
+  const roleId = Number(params.rolId || 0);
+  if (!Number.isFinite(roleId) || roleId <= 0) return '';
+
+  if (roleId >= 1 && roleId <= 3) {
+    const normalizedDni = String(params.dni || '').trim().replace(/\D+/g, '');
+    return /^\d{8}$/.test(normalizedDni) ? `${normalizedDni}@${INSTITUTIONAL_DOMAIN}` : '';
+  }
+
+  if (roleId >= 4 && roleId <= 9) {
+    const firstNameInitial = normalizeAliasToken(params.nombre).slice(0, 1);
+    const lastName = normalizeAliasToken(params.apellidoPaterno);
+    const secondLastNameInitial = normalizeAliasToken(params.apellidoMaterno).slice(0, 1);
+    if (!firstNameInitial || !lastName || !secondLastNameInitial) return '';
+    const alias = `${firstNameInitial}${lastName}${secondLastNameInitial}`;
+    return `${alias}@${INSTITUTIONAL_DOMAIN}`;
+  }
+
+  return '';
+};
 
 const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) => {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -122,15 +168,36 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
       rolId: '',
       avatar: '',
       bloqueado: false,
+      correo_institucional: '',
+      fecha_creacion: '',
+      fecha_modificacion: '',
+      email_creador: '',
     },
   });
 
   const nombre = watch('nombre');
   const apellido_paterno = watch('apellido_paterno');
+  const apellido_materno = watch('apellido_materno');
+  const dni = watch('dni');
+  const rolId = watch('rolId');
 
   useEffect(() => {
     generateUsername(nombre, apellido_paterno, setValue);
   }, [nombre, apellido_paterno, setValue]);
+
+  useEffect(() => {
+    const institutionalEmail = computeInstitutionalEmail({
+      rolId,
+      dni,
+      nombre,
+      apellidoPaterno: apellido_paterno,
+      apellidoMaterno: apellido_materno,
+    });
+    setValue('correo_institucional', institutionalEmail, {
+      shouldDirty: false,
+      shouldValidate: false,
+    });
+  }, [rolId, dni, nombre, apellido_paterno, apellido_materno, setValue]);
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -140,11 +207,13 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
         }
         const result = await dcListRoles(dataConnect);
         setRoles(
-          (result.data.roles || []).map((role) => ({
-            id: role.id,
-            titulo: role.titulo ?? null,
-            scala: role.scala ?? null,
-          })),
+          (result.data.roles || [])
+            .filter((role) => !EXCLUDED_ROLE_IDS.has(Number(role.id)))
+            .map((role) => ({
+              id: role.id,
+              titulo: role.titulo ?? null,
+              scala: role.scala ?? null,
+            })),
         );
       } catch (error) {
         console.error('Error fetching roles: ', error);
@@ -231,11 +300,33 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
           : (roles[0]?.id ? String(roles[0].id) : ''),
       avatar: asString(initialData?.avatar),
       bloqueado: asBoolean(initialData?.bloqueado ?? initialData?.blocked),
+      correo_institucional: asString(initialData?.correo_institucional ?? initialData?.correoInstitucional),
+      fecha_creacion: asString(initialData?.fecha_creacion ?? initialData?.fechaCreacion),
+      fecha_modificacion: asString(initialData?.fecha_modificacion ?? initialData?.fechaModificacion),
+      email_creador: asString(initialData?.email_creador ?? initialData?.emailCreador),
     };
 
     reset(defaultValues);
+    const institutionalFromDefaults = computeInstitutionalEmail({
+      rolId: defaultValues.rolId,
+      dni: defaultValues.dni,
+      nombre: defaultValues.nombre,
+      apellidoPaterno: defaultValues.apellido_paterno,
+      apellidoMaterno: defaultValues.apellido_materno,
+    });
+    setValue('correo_institucional', institutionalFromDefaults, {
+      shouldDirty: false,
+      shouldValidate: false,
+    });
+    if (!initialData) {
+      const nowIso = new Date().toISOString();
+      const creatorEmail = auth.currentUser?.email || '';
+      setValue('fecha_creacion', nowIso, { shouldDirty: false, shouldValidate: false });
+      setValue('fecha_modificacion', nowIso, { shouldDirty: false, shouldValidate: false });
+      setValue('email_creador', creatorEmail, { shouldDirty: false, shouldValidate: false });
+    }
     setUploadError(null);
-  }, [initialData, reset, roles]);
+  }, [auth.currentUser?.email, initialData, reset, roles, setValue]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -373,6 +464,11 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
               <FormControl fullWidth error={!!errors.rolId}>
                 <InputLabel>Rol</InputLabel>
                 <Select {...field} label="Rol" inputProps={{ tabIndex: 18 }}>
+                  {field.value && !roles.some((role) => String(role.id) === String(field.value)) && (
+                    <MenuItem value={field.value} disabled>
+                      Rol actual no disponible en este formulario
+                    </MenuItem>
+                  )}
                   {roles.map((role) => (
                     <MenuItem key={role.id} value={String(role.id)}>
                       {role.titulo || `Rol ${role.id}`}
@@ -389,6 +485,60 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
                 <FormControlLabel
                   control={<Switch {...field} checked={field.value} inputProps={{ tabIndex: 20 }} />}
                   label="Bloqueado"
+                />
+              )}
+            />
+
+            <Controller
+              name="correo_institucional"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Correo Institucional"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' } }}
+                />
+              )}
+            />
+            <Controller
+              name="fecha_creacion"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Fecha Creacion"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                  InputLabelProps={{ shrink: true }}
+                />
+              )}
+            />
+            <Controller
+              name="fecha_modificacion"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Fecha Modificacion"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                  InputLabelProps={{ shrink: true }}
+                />
+              )}
+            />
+            <Controller
+              name="email_creador"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Email Creador"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                  InputLabelProps={{ shrink: true }}
                 />
               )}
             />

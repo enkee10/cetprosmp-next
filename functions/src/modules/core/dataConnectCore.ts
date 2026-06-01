@@ -67,6 +67,26 @@ export async function upsertDataConnectUserByDocumentId(documentId: string, data
   return createdId;
 }
 
+export async function insertDataConnectUserByDocumentId(documentId: string, data: DataConnectUserInput): Promise<number | null> {
+  try {
+    const created = await dataConnect.executeGraphql<{ user_insert: unknown }, { data: DataConnectUserInput }>(
+      INSERT_USER_MUTATION,
+      { variables: { data: { ...data, documentId } } },
+    );
+    const createdId = getIdFromKeyOutput(created.data.user_insert);
+    if (!createdId) throw new Error("No se pudo crear el usuario en Data Connect.");
+    return createdId;
+  } catch (error: unknown) {
+    const message = String((error as { message?: string } | null)?.message || "").toLowerCase();
+    const isDuplicate =
+      message.includes("unique")
+      || message.includes("duplicate key")
+      || message.includes("already exists");
+    if (isDuplicate) return null;
+    throw error;
+  }
+}
+
 export async function deleteDataConnectUserByDocumentId(documentId: string): Promise<number> {
   const deleted = await dataConnect.executeGraphql<{ user_deleteMany: number }, { documentId: string }>(
     DELETE_USER_BY_DOCUMENT_ID_MUTATION,

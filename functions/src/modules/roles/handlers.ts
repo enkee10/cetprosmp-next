@@ -1,5 +1,5 @@
 import { https } from "firebase-functions/v1";
-import { listRoles as dcListRoles } from "@dataconnect/admin-generated";
+import { listRoles as dcListRoles, listUsers as dcListUsers } from "@dataconnect/admin-generated";
 import {
   buildRoleDataFromInput,
   getIdFromKeyOutput,
@@ -110,9 +110,35 @@ export const setUserRole = https.onCall(async (data, context) => {
 
     const existingId = await findDataConnectUserIdByDocumentId(uid);
     if (existingId) {
+      const usersResponse = await dcListUsers(dataConnect);
+      const existingUser = (usersResponse.data.users || []).find((user) => String(user.documentId || "") === String(uid));
+      const mergedUserData: DataConnectUserInput = existingUser
+        ? {
+          documentId: existingUser.documentId ?? null,
+          username: existingUser.username ?? null,
+          email: existingUser.email ?? null,
+          blocked: existingUser.blocked ?? undefined,
+          avatar: existingUser.avatar ?? null,
+          nombre: existingUser.nombre ?? null,
+          apellidoPaterno: existingUser.apellidoPaterno ?? null,
+          apellidoMaterno: existingUser.apellidoMaterno ?? null,
+          celular: existingUser.celular ?? null,
+          telefono: existingUser.telefono ?? null,
+          direccion: existingUser.direccion ?? null,
+          distrito: existingUser.distrito ?? null,
+          tipoDocumento: existingUser.tipoDocumento ?? null,
+          dni: existingUser.dni ?? null,
+          sexo: existingUser.sexo ?? null,
+          estadoCivil: existingUser.estadoCivil ?? null,
+          instruccion: existingUser.instruccion ?? null,
+          fechaNacimiento: existingUser.fechaNacimiento ?? null,
+          rolId: roleNumberId,
+        }
+        : { rolId: roleNumberId };
+
       await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
         UPDATE_USER_MUTATION,
-        { variables: { id: existingId, data: { rolId: roleNumberId } } },
+        { variables: { id: existingId, data: mergedUserData } },
       );
     }
 

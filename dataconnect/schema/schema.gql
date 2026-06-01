@@ -25,6 +25,10 @@ type User @table(name: "users") {
   distrito: String
   telefono: String
   celular: String
+  correoInstitucional: String @col(name: "correo_institucional")
+  fechaCreacion: Timestamp @col(name: "fecha_creacion")
+  fechaModificacion: Timestamp @col(name: "fecha_modificacion")
+  emailCreador: String @col(name: "email_creador")
   avatar: String
 
   rol: Rol @ref(fields: "rolId", references: "id")

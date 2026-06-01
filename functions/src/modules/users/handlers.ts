@@ -3,6 +3,9 @@ import { listUsers as dcListUsers } from "@dataconnect/admin-generated";
 import { UPDATE_USER_MUTATION } from "../../dataconnectOperations.js";
 import {
   deleteStudentFromWorkspace,
+  resolveStudentWorkspacePrimaryEmail,
+  resolveWorkspacePrimaryEmail,
+  syncWorkspaceRoleGroups,
   shouldSyncStudentWorkspace,
   syncStudentToWorkspace,
 } from "../../workspace/studentWorkspaceSync.js";
@@ -22,6 +25,97 @@ import {
   upsertDataConnectUserByDocumentId,
 } from "../core/dataConnectCore.js";
 import { DataConnectUserInput } from "../core/types.js";
+
+function normalizeDniForLookup(value: unknown): string {
+  return String(value || "").trim().replace(/\D+/g, "");
+}
+
+type DniMatchedUser = {
+  id: number;
+  documentId?: string | null;
+  email?: string | null;
+  apellidoMaterno?: string | null;
+  celular?: string | null;
+  dni?: string | null;
+  rolId?: number | null;
+};
+
+const LIST_USERS_QUERY = `
+  query ListUsersManual {
+    users(limit: 500) {
+      id
+      documentId
+      username
+      email
+      blocked
+      avatar
+      nombre
+      apellidoPaterno
+      apellidoMaterno
+      celular
+      telefono
+      direccion
+      distrito
+      tipoDocumento
+      dni
+      sexo
+      estadoCivil
+      instruccion
+      fechaNacimiento
+      correoInstitucional
+      fechaCreacion
+      fechaModificacion
+      emailCreador
+      rolId
+    }
+  }
+`;
+
+function resolveRoleGroup(roleId: number | null | undefined): "A" | "B" | "OTHER" {
+  const value = Number(roleId ?? 0);
+  if (value >= 1 && value <= 3) return "A";
+  if (value >= 4 && value <= 9) return "B";
+  return "OTHER";
+}
+
+async function findDataConnectUsersByDni(dni: string): Promise<DniMatchedUser[]> {
+  const normalized = normalizeDniForLookup(dni);
+  if (!normalized) return [];
+
+  const response = await dcListUsers(dataConnect);
+  const users = response.data.users || [];
+  const matches: DniMatchedUser[] = users
+    .filter((user) => normalizeDniForLookup(user.dni) === normalized)
+    .map((found) => ({
+      id: found.id,
+      documentId: found.documentId ?? null,
+      email: found.email ?? null,
+      apellidoMaterno: found.apellidoMaterno ?? null,
+      celular: found.celular ?? null,
+      dni: found.dni ?? null,
+      rolId: found.rolId ?? null,
+    }))
+    .sort((a, b) => Number(b.id ?? 0) - Number(a.id ?? 0));
+
+  return matches;
+}
+
+function mergeCriticalUserFields<T extends DataConnectUserInput>(
+  payload: T,
+  existing?: {
+    apellidoMaterno?: string | null;
+    celular?: string | null;
+    dni?: string | null;
+  } | null,
+): T {
+  if (!existing) return payload;
+  return {
+    ...payload,
+    apellidoMaterno: payload.apellidoMaterno ?? existing.apellidoMaterno ?? null,
+    celular: payload.celular ?? existing.celular ?? null,
+    dni: payload.dni ?? existing.dni ?? null,
+  };
+}
 
 export const registerUser = https.onCall(async (data) => {
   const { username, email, password } = data;
@@ -65,7 +159,9 @@ export const listUsers = https.onCall(async (_data, context) => {
   }
 
   try {
-    const response = await dcListUsers(dataConnect);
+    const response = await dataConnect.executeGraphql<{
+      users: Array<Record<string, unknown>>;
+    }, Record<string, never>>(LIST_USERS_QUERY);
     const users = (response.data.users ?? []).map((user) => ({
       ...user,
       bloqueado: Boolean(user.blocked),
@@ -92,6 +188,13 @@ export const createNewUser = https.onCall(async (data, context) => {
   if (!email || !password || !username || !roleId) {
     throw new https.HttpsError("invalid-argument", "Email, password, username, and roleId are required.");
   }
+  const authPrimaryEmail = asNullableString(data?.correo_institucional ?? data?.correoInstitucional);
+  if (!authPrimaryEmail) {
+    throw new https.HttpsError(
+      "invalid-argument",
+      "correo_institucional es requerido para crear/actualizar la cuenta principal.",
+    );
+  }
 
   const roleNumberId = toNumber(roleId, -1);
   if (roleNumberId <= 0) {
@@ -106,34 +209,115 @@ export const createNewUser = https.onCall(async (data, context) => {
 
     const permissionLevel = toNumber(level, role.scala ?? DEFAULT_LEVEL);
     const blockedForAuth = Boolean(otherData?.bloqueado ?? otherData?.blocked ?? false);
+    const usersWithSameDni = await findDataConnectUsersByDni(otherData?.dni);
+    const newRoleGroup = resolveRoleGroup(roleNumberId);
+    const userWithSameDni = newRoleGroup === "OTHER"
+      ? null
+      : usersWithSameDni.find((user) => resolveRoleGroup(user.rolId) === newRoleGroup) ?? null;
+    const existingDocumentIdByDni = asNullableString(userWithSameDni?.documentId);
+    const shouldUpdateExistingByDni = Boolean(userWithSameDni);
+    const isCrossGroupWithSameDni =
+      newRoleGroup !== "OTHER" && usersWithSameDni.length > 0 && !shouldUpdateExistingByDni;
+    const splitName = separarNombreCompleto(username);
     let userRecord: Awaited<ReturnType<typeof authAdmin.getUser>>;
     let existedInAuth = false;
 
-    try {
-      const created = await authAdmin.createUser({
-        email,
-        password,
-        displayName: username,
-        emailVerified: true,
-        disabled: blockedForAuth,
-      });
-      await authAdmin.updateUser(created.uid, { emailVerified: true });
-      userRecord = await authAdmin.getUser(created.uid);
-    } catch (authError: unknown) {
-      const authCode = (authError as { code?: string } | null)?.code;
-      if (authCode !== "auth/email-already-exists") {
-        throw authError;
-      }
+    if (shouldUpdateExistingByDni) {
+      const authUserByEmail = await authAdmin
+        .getUserByEmail(authPrimaryEmail)
+        .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
+      let targetUid = existingDocumentIdByDni;
 
-      existedInAuth = true;
-      const existingAuthUser = await authAdmin.getUserByEmail(email);
-      await authAdmin.updateUser(existingAuthUser.uid, {
-        displayName: username,
-        password,
-        emailVerified: true,
-        disabled: blockedForAuth,
-      });
-      userRecord = await authAdmin.getUser(existingAuthUser.uid);
+      if (targetUid) {
+        if (authUserByEmail && authUserByEmail.uid !== targetUid) {
+          throw new https.HttpsError("already-exists", "El correo institucional pertenece a otro usuario.");
+        }
+
+        const authUserByUid = await authAdmin
+          .getUser(targetUid)
+          .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
+
+        if (!authUserByUid) {
+          const created = await authAdmin.createUser({
+            uid: targetUid,
+            email: authPrimaryEmail,
+            password,
+            displayName: username,
+            emailVerified: true,
+            disabled: blockedForAuth,
+          });
+          await authAdmin.updateUser(created.uid, { emailVerified: true });
+          userRecord = await authAdmin.getUser(created.uid);
+          existedInAuth = false;
+        } else {
+          await authAdmin.updateUser(targetUid, {
+            email: authPrimaryEmail,
+            password,
+            displayName: username,
+            emailVerified: true,
+            disabled: blockedForAuth,
+          });
+          userRecord = await authAdmin.getUser(targetUid);
+          existedInAuth = true;
+        }
+      } else if (authUserByEmail) {
+        targetUid = authUserByEmail.uid;
+        await authAdmin.updateUser(targetUid, {
+          email: authPrimaryEmail,
+          password,
+          displayName: username,
+          emailVerified: true,
+          disabled: blockedForAuth,
+        });
+        userRecord = await authAdmin.getUser(targetUid);
+        existedInAuth = true;
+      } else {
+        const created = await authAdmin.createUser({
+          email: authPrimaryEmail,
+          password,
+          displayName: username,
+          emailVerified: true,
+          disabled: blockedForAuth,
+        });
+        await authAdmin.updateUser(created.uid, { emailVerified: true });
+        userRecord = await authAdmin.getUser(created.uid);
+        targetUid = created.uid;
+        existedInAuth = false;
+      }
+    } else {
+      try {
+        const created = await authAdmin.createUser({
+          email: authPrimaryEmail,
+          password,
+          displayName: username,
+          emailVerified: true,
+          disabled: blockedForAuth,
+        });
+        await authAdmin.updateUser(created.uid, { emailVerified: true });
+        userRecord = await authAdmin.getUser(created.uid);
+      } catch (authError: unknown) {
+        const authCode = (authError as { code?: string } | null)?.code;
+        if (authCode !== "auth/email-already-exists") {
+          throw authError;
+        }
+
+        if (isCrossGroupWithSameDni) {
+          throw new https.HttpsError(
+            "already-exists",
+            "El correo institucional ya existe. Para crear nueva cuenta por cambio de grupo, corrige correo institucional.",
+          );
+        }
+
+        existedInAuth = true;
+        const existingAuthUser = await authAdmin.getUserByEmail(authPrimaryEmail);
+        await authAdmin.updateUser(existingAuthUser.uid, {
+          displayName: username,
+          password,
+          emailVerified: true,
+          disabled: blockedForAuth,
+        });
+        userRecord = await authAdmin.getUser(existingAuthUser.uid);
+      }
     }
 
     const createdAuthUser = userRecord;
@@ -142,7 +326,7 @@ export const createNewUser = https.onCall(async (data, context) => {
     }
     await authAdmin.setCustomUserClaims(createdAuthUser.uid, { role: String(roleNumberId), level: permissionLevel });
 
-    const { nombre, apellido_paterno, apellido_materno } = separarNombreCompleto(username);
+    const { nombre, apellido_paterno, apellido_materno } = splitName;
     const profileData = buildUserDataFromInput(
       {
         username,
@@ -167,24 +351,78 @@ export const createNewUser = https.onCall(async (data, context) => {
       },
     );
 
-    const dataConnectId = await upsertDataConnectUserByDocumentId(createdAuthUser.uid, profileData);
+    const profileDataForPersist = mergeCriticalUserFields(
+      profileData,
+      shouldUpdateExistingByDni ? userWithSameDni : null,
+    );
+    if (!profileDataForPersist.apellidoMaterno || !profileDataForPersist.celular || !profileDataForPersist.dni) {
+      console.warn("createNewUser payload has empty critical fields", {
+        apellidoMaterno: profileDataForPersist.apellidoMaterno ?? null,
+        celular: profileDataForPersist.celular ?? null,
+        dni: profileDataForPersist.dni ?? null,
+        receivedKeys: Object.keys(data || {}),
+      });
+    }
+
+    const dataConnectId = shouldUpdateExistingByDni && userWithSameDni
+      ? (getIdFromKeyOutput(
+        (await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
+          UPDATE_USER_MUTATION,
+          { variables: { id: userWithSameDni.id, data: { ...profileDataForPersist, documentId: createdAuthUser.uid } } },
+        )).data.user_update,
+      ) ?? userWithSameDni.id)
+      : await upsertDataConnectUserByDocumentId(createdAuthUser.uid, profileDataForPersist);
 
     const shouldSyncStudent = shouldSyncStudentWorkspace(roleNumberId, role?.titulo);
+    const workspacePrimaryEmail = resolveWorkspacePrimaryEmail({
+      roleId: roleNumberId,
+      roleTitle: role?.titulo ?? null,
+      nombre: profileData.nombre ?? null,
+      apellidoPaterno: profileData.apellidoPaterno ?? null,
+      apellidoMaterno: profileData.apellidoMaterno ?? null,
+      dni: profileDataForPersist.dni ?? null,
+      email: profileData.email ?? email ?? null,
+      institutionalEmail: profileDataForPersist.correoInstitucional ?? authPrimaryEmail ?? null,
+    });
+    const nowIso = new Date().toISOString();
+    const fechaCreacionForWorkspace = asNullableString(data?.fecha_creacion ?? data?.fechaCreacion) ?? nowIso;
+    const fechaModificacionForWorkspace =
+      asNullableString(data?.fecha_modificacion ?? data?.fechaModificacion)
+      ?? fechaCreacionForWorkspace;
     if (shouldSyncStudent) {
+      if (!workspacePrimaryEmail) {
+        throw new https.HttpsError(
+          "failed-precondition",
+          "No se pudo resolver el correo principal de Workspace. Verifica que el DNI sea valido.",
+        );
+      }
+
       try {
         await syncStudentToWorkspace({
-          email,
+          email: workspacePrimaryEmail,
+          institutionalEmail: profileDataForPersist.correoInstitucional ?? authPrimaryEmail ?? null,
+          formEmail: profileDataForPersist.email ?? email ?? null,
+          avatar: profileDataForPersist.avatar ?? null,
           password,
           username,
-          apellidoPaterno: profileData.apellidoPaterno ?? null,
-          apellidoMaterno: profileData.apellidoMaterno ?? null,
-          nombre: profileData.nombre ?? null,
-          direccion: profileData.direccion ?? null,
-          distrito: profileData.distrito ?? null,
-          telefono: profileData.telefono ?? null,
-          celular: profileData.celular ?? null,
-          dni: profileData.dni ?? null,
-          blocked: Boolean(profileData.blocked),
+          roleId: roleNumberId,
+          roleTitle: role?.titulo ?? null,
+          fechaCreacion: fechaCreacionForWorkspace,
+          fechaModificacion: fechaModificacionForWorkspace,
+          apellidoPaterno: profileDataForPersist.apellidoPaterno ?? null,
+          apellidoMaterno: profileDataForPersist.apellidoMaterno ?? null,
+          nombre: profileDataForPersist.nombre ?? null,
+          direccion: profileDataForPersist.direccion ?? null,
+          distrito: profileDataForPersist.distrito ?? null,
+          telefono: profileDataForPersist.telefono ?? null,
+          celular: profileDataForPersist.celular ?? null,
+          dni: profileDataForPersist.dni ?? null,
+          tipoDocumento: profileDataForPersist.tipoDocumento ?? null,
+          sexo: profileDataForPersist.sexo ?? null,
+          fechaNacimiento: profileDataForPersist.fechaNacimiento ?? null,
+          instruccion: profileDataForPersist.instruccion ?? null,
+          estadoCivil: profileDataForPersist.estadoCivil ?? null,
+          blocked: Boolean(profileDataForPersist.blocked),
         });
       } catch (workspaceError: unknown) {
         const rawMessage = String((workspaceError as { message?: string } | null)?.message || "");
@@ -195,14 +433,18 @@ export const createNewUser = https.onCall(async (data, context) => {
     }
 
     return {
-      result: existedInAuth
-        ? `Successfully updated existing user ${createdAuthUser.uid} with role ${roleNumberId}.`
-        : `Successfully created user ${createdAuthUser.uid} with role ${roleNumberId}.`,
+      result: shouldUpdateExistingByDni
+        ? `Successfully updated user ${createdAuthUser.uid} by existing DNI.`
+        : existedInAuth
+          ? `Successfully updated existing user ${createdAuthUser.uid} with role ${roleNumberId}.`
+          : `Successfully created user ${createdAuthUser.uid} with role ${roleNumberId}.`,
       uid: createdAuthUser.uid,
       emailVerified: createdAuthUser.emailVerified,
       dataConnectId,
       workspaceSynced: shouldSyncStudent,
+      workspacePrimaryEmail: shouldSyncStudent ? workspacePrimaryEmail : null,
       authAlreadyExisted: existedInAuth,
+      updatedByExistingDni: shouldUpdateExistingByDni,
     };
   } catch (error: unknown) {
     if (error instanceof https.HttpsError) throw error;
@@ -211,6 +453,12 @@ export const createNewUser = https.onCall(async (data, context) => {
     const message = String((error as { message?: string } | null)?.message || "");
     if (err.code === "auth/email-already-exists") {
       throw new https.HttpsError("already-exists", "A user with this email address already exists.");
+    }
+    if (message.toLowerCase().includes("unique") && message.toLowerCase().includes("dni")) {
+      throw new https.HttpsError("already-exists", "El numero de documento ya existe en otro usuario.");
+    }
+    if (message.toLowerCase().includes("duplicate key") && message.toLowerCase().includes("dni")) {
+      throw new https.HttpsError("already-exists", "El numero de documento ya existe en otro usuario.");
     }
     if (message.includes("fechaNacimiento is invalid Timestamp")) {
       throw new https.HttpsError("invalid-argument", "La fecha de nacimiento no es valida. Usa el formato YYYY-MM-DD.");
@@ -233,27 +481,70 @@ export const updateUserProfile = https.onCall(async (data, context) => {
 
   try {
     const previousEmailFromRequest = asNullableString(data?.previousEmail);
+    const previousInstitutionalFromRequest = asNullableString(
+      data?.previousCorreoInstitucional ?? data?.previous_cuenta_institucional,
+    );
+    const previousDniFromRequest = asNullableString(data?.previousDni);
     const existingId = await findDataConnectUserIdByDocumentId(documentId);
     if (!existingId) {
       throw new https.HttpsError("not-found", `No Data Connect user was found for documentId '${documentId}'.`);
     }
 
     const payload = buildUserDataFromInput(data as Record<string, unknown>, { documentId });
+    if (!payload.apellidoMaterno || !payload.celular || !payload.dni) {
+      console.warn("updateUserProfile payload has empty critical fields", {
+        apellidoMaterno: payload.apellidoMaterno ?? null,
+        celular: payload.celular ?? null,
+        dni: payload.dni ?? null,
+        receivedKeys: Object.keys(data || {}),
+      });
+    }
     const updated = await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
       UPDATE_USER_MUTATION,
       { variables: { id: existingId, data: payload } },
     );
 
     const roleNumberId = toNumber(payload.rolId, -1);
+    const previousRoleNumberId = toNumber(data?.previousRolId, -1);
     const role = roleNumberId > 0 ? await getRoleById(roleNumberId) : null;
     const shouldSyncStudent = role ? shouldSyncStudentWorkspace(roleNumberId, role.titulo) : false;
+    const previousRoleTitle = asNullableString(data?.previousRoleTitle);
+    const shouldSyncPreviousRole =
+      previousRoleNumberId > 0
+      && shouldSyncStudentWorkspace(previousRoleNumberId, previousRoleTitle);
+    const nowIso = new Date().toISOString();
+    const fechaCreacionForWorkspace =
+      asNullableString(data?.fecha_creacion ?? data?.fechaCreacion)
+      ?? nowIso;
+    const fechaModificacionForWorkspace =
+      asNullableString(data?.fecha_modificacion ?? data?.fechaModificacion)
+      ?? fechaCreacionForWorkspace;
     if (shouldSyncStudent) {
       const authUser = await authAdmin
         .getUser(documentId)
         .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
 
-      const previousEmail = previousEmailFromRequest ?? authUser?.email ?? null;
-      const workspaceEmail = payload.email ?? previousEmail ?? null;
+      const previousWorkspaceEmail =
+        resolveWorkspacePrimaryEmail({
+          roleId: previousRoleNumberId > 0 ? previousRoleNumberId : roleNumberId,
+          roleTitle: previousRoleTitle ?? role?.titulo ?? null,
+          nombre: asNullableString(data?.previousNombre) ?? payload.nombre ?? null,
+          apellidoPaterno: asNullableString(data?.previousApellidoPaterno) ?? payload.apellidoPaterno ?? null,
+          apellidoMaterno: asNullableString(data?.previousApellidoMaterno) ?? payload.apellidoMaterno ?? null,
+          dni: previousDniFromRequest ?? null,
+          email: previousEmailFromRequest ?? authUser?.email ?? null,
+          institutionalEmail: previousInstitutionalFromRequest ?? null,
+        });
+      const workspaceEmail = resolveWorkspacePrimaryEmail({
+        roleId: roleNumberId,
+        roleTitle: role?.titulo ?? null,
+        nombre: payload.nombre ?? null,
+        apellidoPaterno: payload.apellidoPaterno ?? null,
+        apellidoMaterno: payload.apellidoMaterno ?? null,
+        dni: payload.dni ?? null,
+        email: payload.email ?? previousEmailFromRequest ?? authUser?.email ?? null,
+        institutionalEmail: payload.correoInstitucional ?? null,
+      });
       const workspaceUsername = payload.username ?? authUser?.displayName ?? payload.nombre ?? "Estudiante";
 
       if (!workspaceEmail) {
@@ -263,7 +554,14 @@ export const updateUserProfile = https.onCall(async (data, context) => {
       try {
         await syncStudentToWorkspace({
           email: workspaceEmail,
+          institutionalEmail: payload.correoInstitucional ?? null,
+          formEmail: payload.email ?? previousEmailFromRequest ?? authUser?.email ?? null,
+          avatar: payload.avatar ?? null,
           username: workspaceUsername,
+          roleId: roleNumberId,
+          roleTitle: role?.titulo ?? null,
+          fechaCreacion: fechaCreacionForWorkspace,
+          fechaModificacion: fechaModificacionForWorkspace,
           apellidoPaterno: payload.apellidoPaterno ?? null,
           apellidoMaterno: payload.apellidoMaterno ?? null,
           nombre: payload.nombre ?? null,
@@ -272,13 +570,46 @@ export const updateUserProfile = https.onCall(async (data, context) => {
           telefono: payload.telefono ?? null,
           celular: payload.celular ?? null,
           dni: payload.dni ?? null,
+          tipoDocumento: payload.tipoDocumento ?? null,
+          sexo: payload.sexo ?? null,
+          fechaNacimiento: payload.fechaNacimiento ?? null,
+          instruccion: payload.instruccion ?? null,
+          estadoCivil: payload.estadoCivil ?? null,
           blocked: Boolean(payload.blocked),
-        }, { previousEmail });
+        }, { previousEmail: previousWorkspaceEmail });
       } catch (workspaceError: unknown) {
         const rawMessage = String((workspaceError as { message?: string } | null)?.message || "");
         const safeMessage = rawMessage || "No se pudo sincronizar los cambios del usuario con Google Workspace.";
         console.error("Workspace sync failed in updateUserProfile:", workspaceError);
         throw new https.HttpsError("failed-precondition", safeMessage);
+      }
+    } else if (shouldSyncPreviousRole) {
+      const fallbackWorkspaceEmail =
+        previousInstitutionalFromRequest
+        ?? previousEmailFromRequest
+        ?? payload.correoInstitucional
+        ?? payload.email
+        ?? null;
+      const previousWorkspaceEmail = resolveWorkspacePrimaryEmail({
+        roleId: previousRoleNumberId,
+        roleTitle: previousRoleTitle,
+        nombre: asNullableString(data?.previousNombre) ?? payload.nombre ?? null,
+        apellidoPaterno: asNullableString(data?.previousApellidoPaterno) ?? payload.apellidoPaterno ?? null,
+        apellidoMaterno: asNullableString(data?.previousApellidoMaterno) ?? payload.apellidoMaterno ?? null,
+        dni: previousDniFromRequest ?? payload.dni ?? null,
+        email: fallbackWorkspaceEmail,
+        institutionalEmail: previousInstitutionalFromRequest ?? payload.correoInstitucional ?? null,
+      });
+
+      if (previousWorkspaceEmail) {
+        try {
+          await syncWorkspaceRoleGroups(previousWorkspaceEmail, roleNumberId > 0 ? roleNumberId : null);
+        } catch (workspaceGroupError: unknown) {
+          const rawMessage = String((workspaceGroupError as { message?: string } | null)?.message || "");
+          const safeMessage = rawMessage || "No se pudo sincronizar los grupos de Workspace para el usuario.";
+          console.error("Workspace group sync failed in updateUserProfile:", workspaceGroupError);
+          throw new https.HttpsError("failed-precondition", safeMessage);
+        }
       }
     }
 
@@ -286,6 +617,12 @@ export const updateUserProfile = https.onCall(async (data, context) => {
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     const message = String((error as { message?: string } | null)?.message || "");
+    if (message.toLowerCase().includes("unique") && message.toLowerCase().includes("dni")) {
+      throw new https.HttpsError("already-exists", "El numero de documento ya existe en otro usuario.");
+    }
+    if (message.toLowerCase().includes("duplicate key") && message.toLowerCase().includes("dni")) {
+      throw new https.HttpsError("already-exists", "El numero de documento ya existe en otro usuario.");
+    }
     if (message.includes("fechaNacimiento is invalid Timestamp")) {
       throw new https.HttpsError("invalid-argument", "La fecha de nacimiento no es valida. Usa el formato YYYY-MM-DD.");
     }
@@ -306,21 +643,43 @@ export const deleteUser = https.onCall(async (data, context) => {
   }
 
   try {
-    let workspaceEmail = asNullableString(data?.email);
     const authUserBeforeDelete = await authAdmin
       .getUser(uid)
       .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
-    if (authUserBeforeDelete?.email) {
-      workspaceEmail = authUserBeforeDelete.email;
-    }
-    if (workspaceEmail) {
+
+    const rolIdForWorkspace = toNumber(data?.rolId, -1);
+    const workspaceEmailByRole = resolveWorkspacePrimaryEmail({
+      roleId: rolIdForWorkspace > 0 ? rolIdForWorkspace : null,
+      roleTitle: asNullableString(data?.roleTitle ?? data?.rolTitulo) ?? null,
+      nombre: asNullableString(data?.nombre) ?? null,
+      apellidoPaterno: asNullableString(data?.apellidoPaterno) ?? null,
+      apellidoMaterno: asNullableString(data?.apellidoMaterno) ?? null,
+      dni: asNullableString(data?.dni) ?? null,
+      email: asNullableString(data?.email) ?? authUserBeforeDelete?.email ?? null,
+      institutionalEmail: asNullableString(data?.correo_institucional ?? data?.correoInstitucional) ?? null,
+    });
+
+    const workspaceCandidates = Array.from(
+      new Set(
+        [
+          workspaceEmailByRole,
+          resolveStudentWorkspacePrimaryEmail(asNullableString(data?.dni) ?? null, null),
+          resolveStudentWorkspacePrimaryEmail(null, authUserBeforeDelete?.email ?? null),
+          resolveStudentWorkspacePrimaryEmail(null, asNullableString(data?.email) ?? null),
+        ]
+          .map((value) => String(value || "").trim().toLowerCase())
+          .filter((value) => value.length > 0),
+      ),
+    );
+
+    for (const workspaceEmail of workspaceCandidates) {
       try {
         await deleteStudentFromWorkspace(workspaceEmail);
       } catch (workspaceError: unknown) {
-        const rawMessage = String((workspaceError as { message?: string } | null)?.message || "");
-        const safeMessage = rawMessage || "No se pudo eliminar el usuario de Google Workspace.";
-        console.error("Workspace delete failed in deleteUser:", workspaceError);
-        throw new https.HttpsError("failed-precondition", safeMessage);
+        console.warn(
+          `Workspace delete skipped for '${workspaceEmail}' in deleteUser. Main deletion will continue.`,
+          workspaceError,
+        );
       }
     }
 

@@ -113,6 +113,10 @@ export function buildUserDataFromInput(
 ): DataConnectUserInput {
   const apellidoPaterno = asNullableString(input.apellido_paterno ?? input.apellidoPaterno) ?? null;
   const apellidoMaterno = asNullableString(input.apellido_materno ?? input.apellidoMaterno) ?? null;
+  const dni =
+    asNullableString(input.dni ?? input.numero_documento ?? input.numeroDocumento ?? input.nroDocumento) ?? null;
+  const celular =
+    asNullableString(input.celular ?? input.telefono_celular ?? input.telefonoCelular ?? input.movil) ?? null;
   const nombre = asNullableString(input.nombre) ?? null;
   const apellidos = [apellidoPaterno, apellidoMaterno].filter(Boolean).join(" ") || null;
 
@@ -123,7 +127,7 @@ export function buildUserDataFromInput(
     provider: asNullableString(input.provider) ?? asNullableString(defaults?.provider) ?? null,
     confirmed: toBoolean(input.confirmed),
     blocked: toBoolean(input.bloqueado ?? input.blocked),
-    dni: asNullableString(input.dni),
+    dni,
     tipoDocumento: asNullableString(input.tipo_documento ?? input.tipoDocumento),
     nombre,
     apellidos,
@@ -136,7 +140,11 @@ export function buildUserDataFromInput(
     direccion: asNullableString(input.direccion),
     distrito: asNullableString(input.distrito),
     telefono: asNullableString(input.telefono),
-    celular: asNullableString(input.celular),
+    celular,
+    correoInstitucional: asNullableString(input.correo_institucional ?? input.correoInstitucional),
+    fechaCreacion: asNullableTimestamp(input.fecha_creacion ?? input.fechaCreacion),
+    fechaModificacion: asNullableTimestamp(input.fecha_modificacion ?? input.fechaModificacion),
+    emailCreador: asNullableString(input.email_creador ?? input.emailCreador),
     avatar: asNullableString(input.avatar ?? input.foto) ?? asNullableString(defaults?.photoURL) ?? null,
     rolId: toNumberOrNull(input.rolId) ?? defaults?.rolId ?? null,
   };

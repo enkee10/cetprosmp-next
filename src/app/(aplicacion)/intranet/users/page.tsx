@@ -47,6 +47,14 @@ interface User {
   fechaNacimiento?: string;
   telefono?: string;
   sexo?: string;
+  correoInstitucional?: string;
+  correo_institucional?: string;
+  fechaCreacion?: string;
+  fechaModificacion?: string;
+  emailCreador?: string;
+  fecha_creacion?: string;
+  fecha_modificacion?: string;
+  email_creador?: string;
 }
 
 type UserFormSubmitData = Parameters<React.ComponentProps<typeof UserForm>['onSubmit']>[0];
@@ -182,8 +190,23 @@ const UsersPage = () => {
     setFormOpen(false);
   };
 
-  const handleDeleteUser = async (targetUser: Pick<User, 'documentId' | 'email'>) => {
-    const { documentId, email } = targetUser;
+  const handleDeleteUser = async (
+    targetUser: Pick<
+      User,
+      'documentId' | 'email' | 'dni' | 'rolId' | 'nombre' | 'apellidoPaterno' | 'apellidoMaterno' | 'correoInstitucional' | 'correo_institucional'
+    >,
+  ) => {
+    const {
+      documentId,
+      email,
+      dni,
+      rolId,
+      nombre,
+      apellidoPaterno,
+      apellidoMaterno,
+      correoInstitucional,
+      correo_institucional,
+    } = targetUser;
     if (!documentId) {
       setErrorMessage('No se puede eliminar: el usuario no tiene documentId.');
       return;
@@ -194,7 +217,16 @@ const UsersPage = () => {
     ) {
       try {
         const deleteUser = httpsCallable(functions, 'deleteUser');
-        await deleteUser({ uid: documentId, email });
+        await deleteUser({
+          uid: documentId,
+          email,
+          dni,
+          rolId,
+          nombre,
+          apellidoPaterno,
+          apellidoMaterno,
+          correo_institucional: correo_institucional ?? correoInstitucional ?? null,
+        });
         setMenuAnchorEl(null);
         setMenuUser(null);
         fetchUsers();
@@ -217,6 +249,13 @@ const UsersPage = () => {
         await updateUserProfile({
           documentId: selectedUser.documentId,
           previousEmail: selectedUser.email,
+          previousCorreoInstitucional:
+            selectedUser.correo_institucional ?? selectedUser.correoInstitucional ?? null,
+          previousDni: selectedUser.dni,
+          previousRolId: selectedUser.rolId,
+          previousNombre: selectedUser.nombre,
+          previousApellidoPaterno: selectedUser.apellidoPaterno,
+          previousApellidoMaterno: selectedUser.apellidoMaterno,
           ...dataToUpdate,
         });
 
@@ -417,7 +456,19 @@ const UsersPage = () => {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            if (menuUser) handleDeleteUser({ documentId: menuUser.documentId, email: menuUser.email });
+            if (menuUser) {
+              handleDeleteUser({
+                documentId: menuUser.documentId,
+                email: menuUser.email,
+                dni: menuUser.dni,
+                rolId: menuUser.rolId,
+                nombre: menuUser.nombre,
+                apellidoPaterno: menuUser.apellidoPaterno,
+                apellidoMaterno: menuUser.apellidoMaterno,
+                correoInstitucional: menuUser.correoInstitucional,
+                correo_institucional: menuUser.correo_institucional,
+              });
+            }
           }}
         >
           Eliminar

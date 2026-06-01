@@ -12,7 +12,6 @@ import {
 import {
   PointerEvent as ReactPointerEvent,
   ReactNode,
-  WheelEvent as ReactWheelEvent,
   useEffect,
   useRef,
   useState,
@@ -40,6 +39,7 @@ export default function Modal1({
     originY: number;
   } | null>(null);
   const prevBodyUserSelectRef = useRef<string>('');
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -100,27 +100,36 @@ export default function Modal1({
     setIsDragging(true);
   };
 
-  const handleContentWheelCapture = (event: ReactWheelEvent<HTMLDivElement>) => {
-    const container = event.currentTarget;
-    const { scrollTop, scrollHeight, clientHeight } = container;
+  useEffect(() => {
+    const container = contentRef.current;
+    if (!container) return;
 
-    // Si no hay overflow, bloqueamos para que no “caiga” al scroll de fondo.
-    if (scrollHeight <= clientHeight) {
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
+    const handleWheel = (event: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
 
-    const atTop = scrollTop <= 0;
-    const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
-    const scrollingUp = event.deltaY < 0;
-    const scrollingDown = event.deltaY > 0;
+      // Si no hay overflow, bloqueamos para que no “caiga” al scroll de fondo.
+      if (scrollHeight <= clientHeight) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
 
-    if ((atTop && scrollingUp) || (atBottom && scrollingDown)) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  };
+      const atTop = scrollTop <= 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+      const scrollingUp = event.deltaY < 0;
+      const scrollingDown = event.deltaY > 0;
+
+      if ((atTop && scrollingUp) || (atBottom && scrollingDown)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [open]);
 
   return (
     <Dialog
@@ -172,7 +181,7 @@ export default function Modal1({
         </Box>
       </DialogTitle>
       <DialogContent
-        onWheelCapture={handleContentWheelCapture}
+        ref={contentRef}
         sx={{
           p: 2,
           overflowY: 'auto',

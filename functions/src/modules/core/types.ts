@@ -25,6 +25,10 @@ export interface DataConnectUserInput {
   distrito?: string | null;
   telefono?: string | null;
   celular?: string | null;
+  correoInstitucional?: string | null;
+  fechaCreacion?: string | null;
+  fechaModificacion?: string | null;
+  emailCreador?: string | null;
   avatar?: string | null;
   rolId?: number | null;
 }

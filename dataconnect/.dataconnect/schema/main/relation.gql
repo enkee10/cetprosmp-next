@@ -4442,6 +4442,15 @@ extend type User {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "User.confirmed", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `User` table where the `correoInstitucional` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  correoInstitucional_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.correoInstitucional", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `User` table where the `direccion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   direccion_count(
@@ -4478,6 +4487,15 @@ extend type User {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "User.documentId", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `User` table where the `emailCreador` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  emailCreador_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.emailCreador", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `User` table where the `email` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   email_count(
@@ -4495,6 +4513,24 @@ extend type User {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "User.estadoCivil", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `fechaCreacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaCreacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.fechaCreacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `fechaModificacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaModificacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.fechaModificacion", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `User` table where the `fechaNacimiento` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -4622,6 +4658,14 @@ extend type User {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "User.rolId", purpose: QUERY_AVG)
   """
+  ✨ Minimum of the `fechaCreacion` field in the `User` table.
+  """
+  fechaCreacion_min: Timestamp @fdc_generated(from: "User.fechaCreacion", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaModificacion` field in the `User` table.
+  """
+  fechaModificacion_min: Timestamp @fdc_generated(from: "User.fechaModificacion", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `fechaNacimiento` field in the `User` table.
   """
   fechaNacimiento_min: Timestamp @fdc_generated(from: "User.fechaNacimiento", purpose: QUERY_MIN)
@@ -4633,6 +4677,14 @@ extend type User {
   ✨ Minimum of the `rolId` field in the `User` table.
   """
   rolId_min: Int @fdc_generated(from: "User.rolId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `fechaCreacion` field in the `User` table.
+  """
+  fechaCreacion_max: Timestamp @fdc_generated(from: "User.fechaCreacion", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaModificacion` field in the `User` table.
+  """
+  fechaModificacion_max: Timestamp @fdc_generated(from: "User.fechaModificacion", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `fechaNacimiento` field in the `User` table.
   """

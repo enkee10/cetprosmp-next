@@ -1,4 +1,4 @@
-Jun 01, 2026 8:02:18 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+Jun 01, 2026 1:06:41 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
 INFO: Started WebSocket server on ws://127.0.0.1:9150
 
 API endpoint: http://127.0.0.1:8080
@@ -16,11 +16,11 @@ If you are running a Firestore in Datastore Mode project, run:
 Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
 Dev App Server is now running.
 
-Jun 01, 2026 8:07:25 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Jun 01, 2026 1:22:06 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected non-HTTP/2 connection.
-Jun 01, 2026 8:07:25 AM io.grpc.netty.TcpMetrics loadEpollInfo
+Jun 01, 2026 1:22:06 PM io.grpc.netty.TcpMetrics loadEpollInfo
 INFO: Epoll available during static init of TcpMetrics:false
-Jun 01, 2026 8:07:25 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Jun 01, 2026 1:22:06 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
-Jun 01, 2026 8:07:26 AM com.google.cloud.datastore.emulator.impl.firestore.CloudFirestoreV1 exportData
-INFO: Exporting emulator data to firebase-export-17803192454456pyuRz/firestore_export
+Jun 01, 2026 1:22:07 PM com.google.cloud.datastore.emulator.impl.firestore.CloudFirestoreV1 exportData
+INFO: Exporting emulator data to firebase-export-1780338126375LLvimi/firestore_export

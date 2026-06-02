@@ -1,40 +1,30 @@
-I0601 13:06:46.303885   15476 load.go:31] Reloading schema and connectors...
-I0601 13:06:46.370695   15476 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 1c2a] UpdateResources(): done
-Main schema: sources: schema\schema.gql [9085B] 
-Connector "default": sources: example\mutations.gql [0B] example\queries.gql [1118B] 
-I0601 13:06:46.414140   15476 codegen.go:101] [connector "default" javascriptSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
-I0601 13:06:46.423536   15476 codegen.go:101] [connector "default" adminSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
-I0601 13:06:46.426189   15476 codegen.go:101] [connector "default" adminSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
-I0601 13:06:46.430198   15476 collector.go:107] schema extensions wrote into "C:\\_desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
-Generated sources: prelude.gql [84995B] main\input.gql [285556B] main\relation.gql [162150B] main\query.gql [32929B] main\mutation.gql [88207B] 
-I0601 13:06:46.440357   15476 collector.go:107] connector "default" javascriptSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
-Generated sources: esm\package.json [17B] react\README.md [27072B] .guides/usage.md [2474B] react\index.d.ts [2198B] .guides/setup.md [1682B] index.d.ts [7167B] esm\index.esm.js [3383B] index.cjs.js [3753B] README.md [23265B] react\esm\package.json [17B] react\esm\index.esm.js [1892B] .guides/config.json [236B] package.json [853B] react\package.json [460B] react\index.cjs.js [2000B] 
-I0601 13:06:46.442432   15476 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
-I0601 13:06:46.450634   15476 collector.go:107] connector "default" adminSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
-Generated sources: index.d.ts [6655B] esm\index.esm.js [1682B] esm\package.json [17B] index.cjs.js [1883B] package.json [632B] 
-I0601 13:06:46.453142   15476 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
-I0601 13:06:46.458767   15476 collector.go:107] connector "default" adminSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
-Generated sources: index.d.ts [6655B] esm\index.esm.js [1682B] esm\package.json [17B] index.cjs.js [1883B] package.json [632B] 
-I0601 13:06:46.459777   15476 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
-I0601 13:06:46.459777   15476 load.go:109] Finished reloading
-I0601 13:06:46.468377   15476 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399
-I0601 13:06:46.469383   15476 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399
-I0601 13:06:49.466397   15476 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service f9bd] UpdateResources(): done
+I0602 17:19:44.237154    2880 load.go:31] Reloading schema and connectors...
+I0602 17:19:44.307686    2880 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 977c] UpdateResources(): done
 Main schema: sources: schema\schema.gql [9085B] 
 Connector "default": sources: example\queries.gql [1118B] example\mutations.gql [0B] 
-I0601 13:06:49.486913   15476 configure_emulator.go:21] ConfigureEmulator successed
+I0602 17:19:44.353597    2880 codegen.go:101] [connector "default" javascriptSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+I0602 17:19:44.364033    2880 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+I0602 17:19:44.367012    2880 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+I0602 17:19:44.370982    2880 collector.go:107] schema extensions wrote into "D:\\_Desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
+Generated sources: prelude.gql [84995B] main\input.gql [285556B] main\relation.gql [162150B] main\query.gql [32929B] main\mutation.gql [88207B] 
+I0602 17:19:44.377437    2880 collector.go:107] connector "default" javascriptSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+Generated sources: react\esm\package.json [17B] .guides/setup.md [1682B] esm\index.esm.js [3383B] esm\package.json [17B] index.cjs.js [3753B] react\esm\index.esm.js [1892B] README.md [23265B] react\index.d.ts [2198B] react\index.cjs.js [2000B] react\README.md [27072B] .guides/usage.md [2474B] .guides/config.json [236B] index.d.ts [7167B] package.json [853B] react\package.json [460B] 
+I0602 17:19:44.381410    2880 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
+I0602 17:19:44.384887    2880 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+Generated sources: esm\package.json [17B] index.cjs.js [1883B] package.json [632B] index.d.ts [6655B] esm\index.esm.js [1682B] 
+I0602 17:19:44.386377    2880 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0602 17:19:44.389853    2880 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+Generated sources: index.d.ts [6655B] esm\index.esm.js [1682B] esm\package.json [17B] index.cjs.js [1883B] package.json [632B] 
+I0602 17:19:44.390350    2880 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0602 17:19:44.390350    2880 load.go:109] Finished reloading
+I0602 17:19:44.391343    2880 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399
+I0602 17:19:44.391840    2880 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399
+I0602 17:19:47.673207    2880 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 977c] UpdateResources(): done
+Main schema: sources: schema\schema.gql [9085B] 
+Connector "default": sources: example\mutations.gql [0B] example\queries.gql [1118B] 
+I0602 17:19:47.695559    2880 configure_emulator.go:21] ConfigureEmulator successed
 Request: service_id:  "cetprosmp-2026-service"
 connection_string:  "postgres://127.0.0.1:5432/cetprosmp-db?sslmode=disable"
 database:  "cetprosmp-db"
 
 Response: 
-I0601 13:07:49.302550   15476 cel.go:45] @auth(expr) is granted
-I0601 13:07:49.304835   15476 execute.go:57] Database ping is quick (likely cached), took 1.7156ms
-I0601 13:07:49.314869   15476 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service f9bd] ExecuteQuery query ListRoles: succeeded. Connector: default
-I0601 13:07:49.314869   15476 cel.go:45] @auth(expr) is granted
-I0601 13:07:49.315398   15476 execute.go:57] Database ping is quick (likely cached), took 529.8µs
-I0601 13:07:49.316523   15476 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service f9bd] ExecuteQuery query ListRoles: succeeded. Connector: default
-I0601 13:07:55.050009   15476 execute.go:57] Database ping is quick (likely cached), took 555.8µs
-I0601 13:07:55.054549   15476 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service f9bd] ImpersonateQuery query ListUsers: succeeded. Connector: default
-I0601 13:07:55.055686   15476 execute.go:57] Database ping is quick (likely cached), took 1.1371ms
-I0601 13:07:55.057751   15476 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service f9bd] ImpersonateQuery query ListUsers: succeeded. Connector: default

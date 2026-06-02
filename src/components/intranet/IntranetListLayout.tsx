@@ -4,22 +4,12 @@ import React from 'react';
 import {
   Alert,
   Box,
-  Button,
-  Checkbox,
-  ListItemText,
-  Menu,
-  MenuItem,
   Typography,
 } from '@mui/material';
-import ViewColumnOutlinedIcon from '@mui/icons-material/ViewColumnOutlined';
 import type { AlertColor } from '@mui/material';
-
-interface ColumnToggleItem {
-  field: string;
-  label: string;
-  checked: boolean;
-  disabled?: boolean;
-}
+import ColumnVisibilityControl, {
+  type ColumnToggleItem,
+} from '@/components/intranet/ColumnVisibilityControl';
 
 interface IntranetListLayoutProps {
   message?: string | null;
@@ -42,9 +32,6 @@ const IntranetListLayout: React.FC<IntranetListLayoutProps> = ({
   columnToggleLabel = 'Campos',
   children,
 }) => {
-  const [columnsAnchorEl, setColumnsAnchorEl] = React.useState<HTMLElement | null>(null);
-  const columnsMenuOpen = Boolean(columnsAnchorEl);
-
   return (
     <Box
       sx={{
@@ -81,42 +68,12 @@ const IntranetListLayout: React.FC<IntranetListLayoutProps> = ({
         >
           <Box sx={{ minWidth: 0, flex: '1 1 auto' }}>{commands}</Box>
 
-          {columnToggleItems && columnToggleItems.length > 0 ? (
-            <>
-              <Button
-                variant="outlined"
-                startIcon={<ViewColumnOutlinedIcon />}
-                onClick={(event) => setColumnsAnchorEl(event.currentTarget)}
-              >
-                {columnToggleLabel}
-              </Button>
-              <Menu
-                anchorEl={columnsAnchorEl}
-                open={columnsMenuOpen}
-                disableScrollLock
-                onClose={() => setColumnsAnchorEl(null)}
-              >
-                {columnToggleItems.map((item) => (
-                  <MenuItem
-                    key={item.field}
-                    dense
-                    disabled={item.disabled}
-                    onClick={() => {
-                      if (!item.disabled && onToggleColumn) {
-                        onToggleColumn(item.field, !item.checked);
-                      }
-                    }}
-                  >
-                    <Checkbox
-                      size="small"
-                      checked={item.checked}
-                      disabled={item.disabled}
-                    />
-                    <ListItemText primary={item.label} />
-                  </MenuItem>
-                ))}
-              </Menu>
-            </>
+          {columnToggleItems ? (
+            <ColumnVisibilityControl
+              items={columnToggleItems}
+              label={columnToggleLabel}
+              onToggleColumn={onToggleColumn}
+            />
           ) : null}
         </Box>
       </Box>

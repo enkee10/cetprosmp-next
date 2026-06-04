@@ -4,5 +4,6 @@ export {
   listRoles,
   getRole,
   createOrUpdateRole,
+  refreshMyClaims,
   setUserRole,
 } from "./roles/handlers.js";

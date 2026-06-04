@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Avatar,
   Box,
@@ -90,6 +90,40 @@ const isDeadlineExceededError = (error: unknown) => {
   return code.includes('deadline-exceeded') || message.includes('deadline-exceeded');
 };
 
+const isStudentToTeacherOrHigherTransition = (
+  previousRoleId: number | string | null | undefined,
+  nextRoleId: number | string | null | undefined,
+) => {
+  const previous = Number(previousRoleId ?? 0);
+  const next = Number(nextRoleId ?? 0);
+  return previous >= 1 && previous <= 3 && next >= 4 && next <= 8;
+};
+
+const isTeacherOrStaffToStudentTransition = (
+  previousRoleId: number | string | null | undefined,
+  nextRoleId: number | string | null | undefined,
+) => {
+  const previous = Number(previousRoleId ?? 0);
+  const next = Number(nextRoleId ?? 0);
+  return previous >= 4 && previous <= 8 && next >= 1 && next <= 3;
+};
+
+const BLOCKED_ROLE_CHANGE_MESSAGES = new Set([
+  'No se puede cambiar de rol a docente o superior.',
+  'No es posible cambiar a este tipo de rol.',
+]);
+
+const formatDateAsDayMonthYear = (value: unknown) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  const datePart = raw.split('T')[0];
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+  if (!match) return raw;
+
+  return `${match[3]}/${match[2]}/${match[1]}`;
+};
+
 const UsersPage = () => {
   const { user, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
@@ -98,6 +132,7 @@ const UsersPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userFormResetKey, setUserFormResetKey] = useState(0);
+  const errorMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuUser, setMenuUser] = useState<User | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
@@ -108,7 +143,15 @@ const UsersPage = () => {
     useState<GridColumnVisibilityModel>({
       avatar: true,
       username: true,
-      email: true,
+      correoInstitucional: true,
+      email: false,
+      sexo: false,
+      fechaNacimiento: false,
+      dni: false,
+      estadoCivil: false,
+      instruccion: false,
+      direccion: false,
+      distrito: false,
       celular: true,
       rolId: true,
       bloqueado: true,
@@ -174,6 +217,25 @@ const UsersPage = () => {
     fetchUsers();
   }, [authLoading, fetchUsers]);
 
+  useEffect(() => {
+    return () => {
+      if (errorMessageTimerRef.current) {
+        clearTimeout(errorMessageTimerRef.current);
+      }
+    };
+  }, []);
+
+  const showTemporaryErrorMessage = useCallback((message: string) => {
+    if (errorMessageTimerRef.current) {
+      clearTimeout(errorMessageTimerRef.current);
+    }
+    setErrorMessage(message);
+    errorMessageTimerRef.current = setTimeout(() => {
+      setErrorMessage(null);
+      errorMessageTimerRef.current = null;
+    }, 5000);
+  }, []);
+
   const handleAddUser = () => {
     setSelectedUser(null);
     setFormOpen(true);
@@ -189,6 +251,13 @@ const UsersPage = () => {
   const handleDismissUserModal = () => {
     setFormOpen(false);
   };
+
+  const closeUserFormAfterBlockedRoleChange = useCallback((message: string) => {
+    setFormOpen(false);
+    setSelectedUser(null);
+    setUserFormResetKey((prev) => prev + 1);
+    showTemporaryErrorMessage(message);
+  }, [showTemporaryErrorMessage]);
 
   const handleDeleteUser = async (
     targetUser: Pick<
@@ -246,6 +315,15 @@ const UsersPage = () => {
         const dataToUpdate = { ...data };
         delete (dataToUpdate as { password?: unknown }).password;
 
+        if (isStudentToTeacherOrHigherTransition(selectedUser.rolId, dataToUpdate.rolId)) {
+          closeUserFormAfterBlockedRoleChange('No se puede cambiar de rol a docente o superior.');
+          return;
+        }
+        if (isTeacherOrStaffToStudentTransition(selectedUser.rolId, dataToUpdate.rolId)) {
+          closeUserFormAfterBlockedRoleChange('No es posible cambiar a este tipo de rol.');
+          return;
+        }
+
         await updateUserProfile({
           documentId: selectedUser.documentId,
           previousEmail: selectedUser.email,
@@ -282,103 +360,133 @@ const UsersPage = () => {
       setUserFormResetKey((prev) => prev + 1);
     } catch (error) {
       console.error('Error saving user: ', error);
-      setErrorMessage(getCallableErrorMessage(error, 'No se pudo guardar el usuario.'));
+      const parsedMessage = getCallableErrorMessage(error, 'No se pudo guardar el usuario.');
+      if (BLOCKED_ROLE_CHANGE_MESSAGES.has(parsedMessage)) {
+        closeUserFormAfterBlockedRoleChange(parsedMessage);
+      } else {
+        setErrorMessage(parsedMessage);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const columns: GridColDef[] = [
-    {
-      field: 'avatar',
-      headerName: 'Foto',
-      width: 70,
-      //minWidth: 70,
-      //maxWidth: 70,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => {
-        const { avatar, nombre, apellidoPaterno } = params.row as User;
-        return (
-          <Box
-            sx={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
+  const columns = useMemo<GridColDef[]>(
+    () => [
+      {
+        field: 'avatar',
+        headerName: 'Avatar',
+        width: 70,
+        sortable: false,
+        filterable: false,
+        renderCell: (params) => {
+          const { avatar, nombre, apellidoPaterno } = params.row as User;
+          return (
+            <Box
+              sx={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+              }}
+            >
+              <Avatar src={avatar || undefined}>
+                {!avatar && nombre && apellidoPaterno
+                  ? `${nombre[0]}${apellidoPaterno[0]}`.toUpperCase()
+                  : null}
+              </Avatar>
+            </Box>
+          );
+        },
+      },
+      { field: 'username', headerName: 'Username', flex: 1, minWidth: 120 },
+      {
+        field: 'correoInstitucional',
+        headerName: 'Correo Institucional',
+        flex: 1.35,
+        minWidth: 190,
+        renderCell: (params) => {
+          const row = params.row as User;
+          return row.correoInstitucional ?? row.correo_institucional ?? '';
+        },
+      },
+      { field: 'email', headerName: 'Correo', flex: 1.2, minWidth: 150 },
+      { field: 'celular', headerName: 'Celular', flex: 0.7, minWidth: 95 },
+      { field: 'sexo', headerName: 'Sexo', width: 80 },
+      {
+        field: 'fechaNacimiento',
+        headerName: 'Fech. Nac.',
+        flex: 0.75,
+        minWidth: 110,
+        renderCell: (params) => formatDateAsDayMonthYear(params.value),
+      },
+      { field: 'dni', headerName: 'N° de documento', flex: 0.8, minWidth: 135 },
+      { field: 'estadoCivil', headerName: 'Estado Civil', flex: 0.8, minWidth: 125 },
+      { field: 'instruccion', headerName: 'Instrucción', flex: 0.8, minWidth: 120 },
+      { field: 'direccion', headerName: 'Direccion', flex: 1.1, minWidth: 150 },
+      { field: 'distrito', headerName: 'Distrito', flex: 0.8, minWidth: 120 },
+      {
+        field: 'rolId',
+        headerName: 'Rol',
+        flex: 0.6,
+        minWidth: 80,
+        renderCell: (params) => {
+          const row = params.row as User;
+          return typeof row.rolId === 'number' ? String(row.rolId) : 'Sin rol';
+        },
+      },
+      {
+        field: 'bloqueado',
+        headerName: 'Estado',
+        flex: 0.7,
+        minWidth: 90,
+        renderCell: (params) =>
+          params.value ? (
+            <Chip label="Bloqueado" color="error" size="small" />
+          ) : (
+            <Chip label="Activo" color="success" size="small" />
+          ),
+      },
+      {
+        field: 'actions',
+        headerName: '...',
+        align: 'center',
+        headerAlign: 'center',
+        width: 56,
+        minWidth: 56,
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => (
+          <IconButton
+            size="small"
+            aria-label="Opciones"
+            onClick={(event) => {
+              setMenuAnchorEl(event.currentTarget);
+              setMenuUser(params.row as User);
             }}
           >
-            <Avatar src={avatar || undefined}>
-              {!avatar && nombre && apellidoPaterno
-                ? `${nombre[0]}${apellidoPaterno[0]}`.toUpperCase()
-                : null}
-            </Avatar>
-          </Box>
-        );
-      },
-    },
-    { field: 'username', headerName: 'Username', flex: 1, minWidth: 110 },
-    { field: 'email', headerName: 'Correo', flex: 1.2, minWidth: 150 },
-    { field: 'celular', headerName: 'Celular', flex: 0.7, minWidth: 90 },
-    {
-      field: 'rolId',
-      headerName: 'Rol',
-      flex: 0.6,
-      minWidth: 80,
-      renderCell: (params) => {
-        const row = params.row as User;
-        return typeof row.rolId === 'number' ? String(row.rolId) : 'Sin rol';
-      },
-    },
-    {
-      field: 'bloqueado',
-      headerName: 'Estado',
-      flex: 0.7,
-      minWidth: 90,
-      renderCell: (params) =>
-        params.value ? (
-          <Chip label="Bloqueado" color="error" size="small" />
-        ) : (
-          <Chip label="Activo" color="success" size="small" />
+            <MoreHorizIcon />
+          </IconButton>
         ),
-    },
-    {
-      field: 'actions',
-      headerName: '...',
-      align: 'center',
-      headerAlign: 'center',
-      width: 56,
-      minWidth: 56,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      renderCell: (params) => (
-        <IconButton
-          size="small"
-          aria-label="Opciones"
-          onClick={(event) => {
-            setMenuAnchorEl(event.currentTarget);
-            setMenuUser(params.row as User);
-          }}
-        >
-          <MoreHorizIcon />
-        </IconButton>
-      ),
-    },
-  ];
+      },
+    ],
+    [],
+  );
 
   const columnToggleItems = useMemo(
     () =>
-      columns.map((column) => ({
-        field: column.field,
-        label:
-          typeof column.headerName === 'string' && column.headerName.trim().length > 0
-            ? column.headerName
-            : column.field,
-        checked: columnVisibilityModel[column.field] !== false,
-        disabled: column.field === 'actions',
-      })),
+      columns
+        .filter((column) => column.field !== 'actions')
+        .map((column) => ({
+          field: column.field,
+          label:
+            typeof column.headerName === 'string' && column.headerName.trim().length > 0
+              ? column.headerName
+              : column.field,
+          checked: columnVisibilityModel[column.field] !== false,
+        })),
     [columnVisibilityModel, columns],
   );
 

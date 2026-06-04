@@ -49,12 +49,18 @@ const ColumnVisibilityControl: React.FC<ColumnVisibilityControlProps> = ({
         open={open}
         disableScrollLock
         onClose={() => setAnchorEl(null)}
+        slotProps={{
+          paper: {
+            sx: { mt: 0.75 },
+          },
+        }}
       >
         {items.map((item) => (
           <MenuItem
             key={item.field}
             dense
             disabled={item.disabled}
+            sx={{ minHeight: 30, py: 0.25, pr: 1.5 }}
             onClick={() => {
               if (!item.disabled && onToggleColumn) {
                 onToggleColumn(item.field, !item.checked);
@@ -65,8 +71,13 @@ const ColumnVisibilityControl: React.FC<ColumnVisibilityControlProps> = ({
               size="small"
               checked={item.checked}
               disabled={item.disabled}
+              sx={{ p: 0.5, mr: 0.75 }}
             />
-            <ListItemText primary={item.label} />
+            <ListItemText
+              primary={item.label}
+              primaryTypographyProps={{ variant: 'body2' }}
+              sx={{ my: 0 }}
+            />
           </MenuItem>
         ))}
       </Menu>

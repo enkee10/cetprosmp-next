@@ -27,7 +27,7 @@ const getFirebaseAuthMessage = (error: unknown, fallbackMessage: string) => { //
     case "auth/wrong-password": // + contempla cuando la contrasena ingresada no coincide con la cuenta
       return "La contrasena ingresada no es correcta."; // + informa que la contrasena escrita no coincide con la almacenada
     case "auth/user-disabled": // + contempla cuando la cuenta fue deshabilitada por administracion
-      return "Tu cuenta ha sido deshabilitada. Contacta con administracion."; // + informa que la cuenta existe pero no puede iniciar sesion
+      return "Tu cuenta se encuentra suspendida. Comunícate con la administración del CETPRO para más información."; // + informa que la cuenta existe pero no puede iniciar sesion
     case "auth/too-many-requests": // + contempla bloqueos temporales por demasiados intentos fallidos
       return "Demasiados intentos. Intenta nuevamente en unos minutos."; // + informa que debe esperar antes de volver a intentar
     case "auth/network-request-failed": // + contempla problemas de conectividad al comunicarse con Firebase
@@ -244,7 +244,7 @@ export default function User() { // define el componente del usuario mostrado en
       setEmail(registerEmail.trim()); // deja precargado el correo registrado para facilitar el siguiente ingreso
       setPassword(""); // limpia la contrasena del login por seguridad despues del registro
       setLoginModalOpen(true); // abre el modal login para que el usuario vea el mensaje de verificacion
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (shouldLogAuthError(error)) { // + evita registrar en consola los errores esperados que ya se mostraran al usuario en el modal
         console.error("Error during register from modal:", error); // + registra solo errores inesperados del registro para depuracion real
       }

@@ -134,6 +134,21 @@ const computeInstitutionalEmail = (params: {
   return '';
 };
 
+const formatDateTimeForDisplay = (value: unknown): string => {
+  if (!value) return '';
+  const raw = String(value).trim();
+  if (!raw) return '';
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return raw;
+
+  const pad = (number: number) => String(number).padStart(2, '0');
+  return [
+    `${pad(parsed.getDate())}/${pad(parsed.getMonth() + 1)}/${parsed.getFullYear()}`,
+    `${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`,
+  ].join(' ');
+};
+
 const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -145,8 +160,9 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const apellidoPaternoRef = useRef<HTMLInputElement>(null);
+  const lastAutoInstitutionalEmailRef = useRef('');
 
-  const { handleSubmit, control, formState: { errors }, reset, watch, setValue } = useForm<UserFormValues>({
+  const { handleSubmit, control, formState: { errors }, reset, watch, setValue, getValues } = useForm<UserFormValues>({
     resolver: yupResolver(createValidationSchema(isCreating)) as Resolver<UserFormValues>,
     defaultValues: {
       apellido_paterno: '',
@@ -193,11 +209,19 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
       apellidoPaterno: apellido_paterno,
       apellidoMaterno: apellido_materno,
     });
-    setValue('correo_institucional', institutionalEmail, {
-      shouldDirty: false,
-      shouldValidate: false,
-    });
-  }, [rolId, dni, nombre, apellido_paterno, apellido_materno, setValue]);
+    const currentInstitutionalEmail = String(getValues('correo_institucional') || '').trim();
+    const shouldApplyAutoEmail =
+      !currentInstitutionalEmail
+      || currentInstitutionalEmail === lastAutoInstitutionalEmailRef.current;
+
+    if (shouldApplyAutoEmail) {
+      setValue('correo_institucional', institutionalEmail, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
+    }
+    lastAutoInstitutionalEmailRef.current = institutionalEmail;
+  }, [rolId, dni, nombre, apellido_paterno, apellido_materno, getValues, setValue]);
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -239,6 +263,19 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
     const storageRef = ref(storage, `usuarios/${Date.now()}_${file.name}`);
 
     try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        setUploadError('Error: Debes iniciar sesión para subir archivos.');
+        return;
+      }
+
+      const tokenResult = await currentUser.getIdTokenResult(true);
+      const level = Number(tokenResult.claims.level ?? 0);
+      if (!Number.isFinite(level) || level < 400) {
+        setUploadError('Error: Tu sesión no tiene nivel suficiente para subir archivos. Cierra sesión e ingresa nuevamente.');
+        return;
+      }
+
       const snapshot = await uploadBytes(storageRef, file, { contentType: file.type });
       const downloadURL = await getDownloadURL(snapshot.ref);
 
@@ -314,10 +351,13 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
       apellidoPaterno: defaultValues.apellido_paterno,
       apellidoMaterno: defaultValues.apellido_materno,
     });
-    setValue('correo_institucional', institutionalFromDefaults, {
-      shouldDirty: false,
-      shouldValidate: false,
-    });
+    lastAutoInstitutionalEmailRef.current = institutionalFromDefaults;
+    if (!defaultValues.correo_institucional) {
+      setValue('correo_institucional', institutionalFromDefaults, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
+    }
     if (!initialData) {
       const nowIso = new Date().toISOString();
       const creatorEmail = auth.currentUser?.email || '';
@@ -497,7 +537,6 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
                   {...field}
                   label="Correo Institucional"
                   fullWidth
-                  InputProps={{ readOnly: true }}
                   InputLabelProps={{ shrink: true }}
                   sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' } }}
                 />
@@ -509,9 +548,11 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
               render={({ field }) => (
                 <TextField
                   {...field}
+                  value={formatDateTimeForDisplay(field.value)}
                   label="Fecha Creacion"
                   fullWidth
                   InputProps={{ readOnly: true }}
+                  inputProps={{ readOnly: true, tabIndex: -1 }}
                   InputLabelProps={{ shrink: true }}
                 />
               )}
@@ -522,9 +563,11 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
               render={({ field }) => (
                 <TextField
                   {...field}
+                  value={formatDateTimeForDisplay(field.value)}
                   label="Fecha Modificacion"
                   fullWidth
                   InputProps={{ readOnly: true }}
+                  inputProps={{ readOnly: true, tabIndex: -1 }}
                   InputLabelProps={{ shrink: true }}
                 />
               )}
@@ -538,6 +581,7 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
                   label="Email Creador"
                   fullWidth
                   InputProps={{ readOnly: true }}
+                  inputProps={{ readOnly: true, tabIndex: -1 }}
                   InputLabelProps={{ shrink: true }}
                 />
               )}

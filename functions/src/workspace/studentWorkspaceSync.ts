@@ -736,17 +736,20 @@ export async function syncStudentToWorkspace(
     throw new Error("No se pudo resolver el correo principal de Workspace para sincronizar al usuario.");
   }
   const shouldRenamePrimaryEmail = Boolean(previousEmail) && previousEmail !== currentEmail;
+  let effectiveUserKeyForPhoto = currentEmail;
 
   try {
     if (shouldRenamePrimaryEmail) {
-      await directory.users.update({
+      const response = await directory.users.update({
         userKey: previousEmail,
         requestBody: payload,
       });
+      effectiveUserKeyForPhoto = response.data.id || response.data.primaryEmail || currentEmail;
     } else {
-      await directory.users.insert({
+      const response = await directory.users.insert({
         requestBody: insertPayload,
       });
+      effectiveUserKeyForPhoto = response.data.id || response.data.primaryEmail || currentEmail;
     }
   } catch (error: unknown) {
     const { status, reason } = getWorkspaceErrorMeta(error);
@@ -769,7 +772,7 @@ export async function syncStudentToWorkspace(
 
       if (notFound) {
         // Si no existe con el correo anterior, intentamos como flujo normal.
-        await directory.users.update({
+        const response = await directory.users.update({
           userKey: currentEmail,
           requestBody: payload,
         }).catch(async (updateError: unknown) => {
@@ -779,33 +782,36 @@ export async function syncStudentToWorkspace(
             || updateReason.includes("notfound")
             || updateReason.includes("resource not found");
           if (!updateNotFound) throw updateError;
-          await directory.users.insert({ requestBody: insertPayload });
+          return directory.users.insert({ requestBody: insertPayload });
         });
-        await syncWorkspaceAvatar(directory, currentEmail, context.avatar ?? null);
+        effectiveUserKeyForPhoto = response.data.id || response.data.primaryEmail || currentEmail;
+        await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar ?? null);
         return;
       }
     }
 
     if (!alreadyExists) {
       try {
-        await directory.users.update({
+        const response = await directory.users.update({
           userKey: currentEmail,
           requestBody: payload,
         });
-        await syncWorkspaceAvatar(directory, currentEmail, context.avatar ?? null);
+        effectiveUserKeyForPhoto = response.data.id || response.data.primaryEmail || currentEmail;
+        await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar ?? null);
         return;
       } catch {
         throw error;
       }
     }
 
-    await directory.users.update({
+    const response = await directory.users.update({
       userKey: currentEmail,
       requestBody: payload,
     });
+    effectiveUserKeyForPhoto = response.data.id || response.data.primaryEmail || currentEmail;
   }
 
-  await syncWorkspaceAvatar(directory, currentEmail, context.avatar ?? null);
+  await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar ?? null);
   await syncWorkspaceRoleGroupsInternal(directory, currentEmail, context.roleId ?? null);
 }
 

@@ -5,6 +5,7 @@ export {
   listRoles,
   getRole,
   createOrUpdateRole,
+  refreshMyClaims,
   listUsers,
   createNewUser,
   updateUserProfile,

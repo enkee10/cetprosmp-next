@@ -6,10 +6,25 @@ import {
   toNumber,
   toNumberOrNull,
 } from "../core/userMappers.js";
-import { authAdmin, DEFAULT_LEVEL } from "../core/authCore.js";
+import {
+  authAdmin,
+  DEFAULT_LEVEL,
+  getInitialClaimsByEmail,
+  isSuperAdminEmail,
+  resolveInitialRoleIdByEmail,
+} from "../core/authCore.js";
 import { dataConnect, findDataConnectUserIdByDocumentId, getRoleById } from "../core/dataConnectCore.js";
 import { DataConnectRoleInput, DataConnectUserInput } from "../core/types.js";
 import { INSERT_ROLE_MUTATION, UPDATE_ROLE_MUTATION, UPDATE_USER_MUTATION } from "../../dataconnectOperations.js";
+
+const GET_USER_ROLE_BY_DOCUMENT_ID_QUERY = `
+  query GetUserRoleByDocumentIdManual($documentId: String!) {
+    users(where: { documentId: { eq: $documentId } }, limit: 1) {
+      id
+      rolId
+    }
+  }
+`;
 
 export const listRoles = https.onCall(async (_data, context) => {
   const requesterLevel = context.auth?.token?.level ?? 0;
@@ -79,6 +94,46 @@ export const createOrUpdateRole = https.onCall(async (data, context) => {
   } catch (error) {
     console.error("Error in createOrUpdateRole:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while saving role.");
+  }
+});
+
+export const refreshMyClaims = https.onCall(async (_data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new https.HttpsError("unauthenticated", "Debes iniciar sesion para refrescar tus permisos.");
+  }
+
+  try {
+    const authUser = await authAdmin.getUser(uid);
+    const email = authUser.email ?? null;
+    const fallbackClaims = getInitialClaimsByEmail(email);
+
+    let roleNumberId = Number(fallbackClaims.role);
+    if (!isSuperAdminEmail(email)) {
+      const response = await dataConnect.executeGraphql<{
+        users: Array<{ id: number; rolId?: number | null }>;
+      }, { documentId: string }>(
+        GET_USER_ROLE_BY_DOCUMENT_ID_QUERY,
+        { variables: { documentId: uid } },
+      );
+      roleNumberId = response.data.users?.[0]?.rolId ?? resolveInitialRoleIdByEmail(email);
+    }
+
+    const role = Number.isFinite(roleNumberId) && roleNumberId > 0
+      ? await getRoleById(roleNumberId)
+      : null;
+    const nextClaims = isSuperAdminEmail(email)
+      ? fallbackClaims
+      : {
+        role: String(roleNumberId),
+        level: role?.scala ?? DEFAULT_LEVEL,
+      };
+
+    await authAdmin.setCustomUserClaims(uid, nextClaims);
+    return nextClaims;
+  } catch (error) {
+    console.error("Error in refreshMyClaims:", error);
+    throw new https.HttpsError("internal", "No se pudieron refrescar tus permisos.");
   }
 });
 

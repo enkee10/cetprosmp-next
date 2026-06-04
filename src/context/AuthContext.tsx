@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'; // importa las utilidades base de React para el contexto de autenticacion
 import { GoogleAuthProvider, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut, User as FirebaseUser } from 'firebase/auth'; // + importa tambien la utilidad para enviar correos de restablecimiento de contrasena
-import { app, auth } from '@/lib/firebase'; // importa la app web y el servicio cliente de auth
-import { getFunctions, httpsCallable } from 'firebase/functions'; // importa las utilidades para llamar la function de registro publico
+import { auth, functions } from '@/lib/firebase'; // importa servicios cliente de Firebase ya configurados
+import { httpsCallable } from 'firebase/functions'; // importa las utilidades para llamar la function de registro publico
 import { Box, CircularProgress } from '@mui/material'; // importa los componentes visuales del estado de carga global
 import { useRouter } from 'next/navigation'; // importa la navegacion del App Router para redirigir tras autenticar
 
@@ -45,7 +45,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => { // escucha cambios de sesion del usuario autenticado
             setLoading(true); // activa el estado de carga mientras se resuelve el nuevo estado de sesion
             if (firebaseUser) { // verifica si existe un usuario autenticado en Firebase
-                const token = await firebaseUser.getIdTokenResult(); // obtiene el token actual para leer claims personalizados
+                try {
+                    const refreshMyClaims = httpsCallable(functions, 'refreshMyClaims');
+                    await refreshMyClaims();
+                } catch (error) {
+                    if (!isExpectedAuthError(error)) {
+                        console.error('Error refreshing auth claims:', error);
+                    }
+                }
+
+                const token = await firebaseUser.getIdTokenResult(true); // obtiene el token actual para leer claims personalizados
                 const claims = token.claims; // extrae los claims del token para rol y nivel
                 const userData: UserData = { // construye el usuario con Auth y claims sin dependencia de Firestore
                     uid: firebaseUser.uid, // asegura que el uid venga siempre de Firebase Auth
@@ -110,7 +119,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
     const registerWithEmail = async (username: string, email: string, password: string) => { // define el flujo de registro publico con login automatico
         setLoading(true); // activa el estado de carga mientras se registra el nuevo usuario
         try {
-            const functions = getFunctions(app); // obtiene la instancia cliente de Cloud Functions para llamar el registro publico
             const registerUser = httpsCallable(functions, 'registerUser'); // prepara la callable que crea usuarios en Firebase Auth
             await registerUser({ username, email, password }); // solicita al backend crear el usuario con el nombre visible definido en el formulario
             const userCredential = await signInWithEmailAndPassword(auth, email, password); // inicia sesion temporalmente con la cuenta recien creada para poder enviar la verificacion

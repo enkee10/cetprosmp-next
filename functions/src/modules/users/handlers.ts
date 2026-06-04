@@ -1,5 +1,4 @@
 import { https } from "firebase-functions/v1";
-import { listUsers as dcListUsers } from "@dataconnect/admin-generated";
 import { UPDATE_USER_MUTATION } from "../../dataconnectOperations.js";
 import {
   deleteStudentFromWorkspace,
@@ -25,20 +24,6 @@ import {
   upsertDataConnectUserByDocumentId,
 } from "../core/dataConnectCore.js";
 import { DataConnectUserInput } from "../core/types.js";
-
-function normalizeDniForLookup(value: unknown): string {
-  return String(value || "").trim().replace(/\D+/g, "");
-}
-
-type DniMatchedUser = {
-  id: number;
-  documentId?: string | null;
-  email?: string | null;
-  apellidoMaterno?: string | null;
-  celular?: string | null;
-  dni?: string | null;
-  rolId?: number | null;
-};
 
 const LIST_USERS_QUERY = `
   query ListUsersManual {
@@ -71,50 +56,22 @@ const LIST_USERS_QUERY = `
   }
 `;
 
-function resolveRoleGroup(roleId: number | null | undefined): "A" | "B" | "OTHER" {
-  const value = Number(roleId ?? 0);
-  if (value >= 1 && value <= 3) return "A";
-  if (value >= 4 && value <= 9) return "B";
-  return "OTHER";
+function isStudentToTeacherOrHigherTransition(
+  previousRoleId: number | null | undefined,
+  nextRoleId: number | null | undefined,
+): boolean {
+  const previous = Number(previousRoleId ?? 0);
+  const next = Number(nextRoleId ?? 0);
+  return previous >= 1 && previous <= 3 && next >= 4 && next <= 8;
 }
 
-async function findDataConnectUsersByDni(dni: string): Promise<DniMatchedUser[]> {
-  const normalized = normalizeDniForLookup(dni);
-  if (!normalized) return [];
-
-  const response = await dcListUsers(dataConnect);
-  const users = response.data.users || [];
-  const matches: DniMatchedUser[] = users
-    .filter((user) => normalizeDniForLookup(user.dni) === normalized)
-    .map((found) => ({
-      id: found.id,
-      documentId: found.documentId ?? null,
-      email: found.email ?? null,
-      apellidoMaterno: found.apellidoMaterno ?? null,
-      celular: found.celular ?? null,
-      dni: found.dni ?? null,
-      rolId: found.rolId ?? null,
-    }))
-    .sort((a, b) => Number(b.id ?? 0) - Number(a.id ?? 0));
-
-  return matches;
-}
-
-function mergeCriticalUserFields<T extends DataConnectUserInput>(
-  payload: T,
-  existing?: {
-    apellidoMaterno?: string | null;
-    celular?: string | null;
-    dni?: string | null;
-  } | null,
-): T {
-  if (!existing) return payload;
-  return {
-    ...payload,
-    apellidoMaterno: payload.apellidoMaterno ?? existing.apellidoMaterno ?? null,
-    celular: payload.celular ?? existing.celular ?? null,
-    dni: payload.dni ?? existing.dni ?? null,
-  };
+function isTeacherOrStaffToStudentTransition(
+  previousRoleId: number | null | undefined,
+  nextRoleId: number | null | undefined,
+): boolean {
+  const previous = Number(previousRoleId ?? 0);
+  const next = Number(nextRoleId ?? 0);
+  return previous >= 4 && previous <= 8 && next >= 1 && next <= 3;
 }
 
 export const registerUser = https.onCall(async (data) => {
@@ -209,115 +166,39 @@ export const createNewUser = https.onCall(async (data, context) => {
 
     const permissionLevel = toNumber(level, role.scala ?? DEFAULT_LEVEL);
     const blockedForAuth = Boolean(otherData?.bloqueado ?? otherData?.blocked ?? false);
-    const usersWithSameDni = await findDataConnectUsersByDni(otherData?.dni);
-    const newRoleGroup = resolveRoleGroup(roleNumberId);
-    const userWithSameDni = newRoleGroup === "OTHER"
-      ? null
-      : usersWithSameDni.find((user) => resolveRoleGroup(user.rolId) === newRoleGroup) ?? null;
-    const existingDocumentIdByDni = asNullableString(userWithSameDni?.documentId);
-    const shouldUpdateExistingByDni = Boolean(userWithSameDni);
-    const isCrossGroupWithSameDni =
-      newRoleGroup !== "OTHER" && usersWithSameDni.length > 0 && !shouldUpdateExistingByDni;
+    const nowIso = new Date().toISOString();
+    const requesterEmail = asNullableString(context.auth?.token?.email);
+    const creatorEmail =
+      asNullableString(data?.email_creador ?? data?.emailCreador)
+      ?? requesterEmail
+      ?? null;
     const splitName = separarNombreCompleto(username);
     let userRecord: Awaited<ReturnType<typeof authAdmin.getUser>>;
     let existedInAuth = false;
 
-    if (shouldUpdateExistingByDni) {
-      const authUserByEmail = await authAdmin
-        .getUserByEmail(authPrimaryEmail)
-        .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
-      let targetUid = existingDocumentIdByDni;
+    const existingAuthUser = await authAdmin
+      .getUserByEmail(authPrimaryEmail)
+      .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
 
-      if (targetUid) {
-        if (authUserByEmail && authUserByEmail.uid !== targetUid) {
-          throw new https.HttpsError("already-exists", "El correo institucional pertenece a otro usuario.");
-        }
-
-        const authUserByUid = await authAdmin
-          .getUser(targetUid)
-          .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
-
-        if (!authUserByUid) {
-          const created = await authAdmin.createUser({
-            uid: targetUid,
-            email: authPrimaryEmail,
-            password,
-            displayName: username,
-            emailVerified: true,
-            disabled: blockedForAuth,
-          });
-          await authAdmin.updateUser(created.uid, { emailVerified: true });
-          userRecord = await authAdmin.getUser(created.uid);
-          existedInAuth = false;
-        } else {
-          await authAdmin.updateUser(targetUid, {
-            email: authPrimaryEmail,
-            password,
-            displayName: username,
-            emailVerified: true,
-            disabled: blockedForAuth,
-          });
-          userRecord = await authAdmin.getUser(targetUid);
-          existedInAuth = true;
-        }
-      } else if (authUserByEmail) {
-        targetUid = authUserByEmail.uid;
-        await authAdmin.updateUser(targetUid, {
-          email: authPrimaryEmail,
-          password,
-          displayName: username,
-          emailVerified: true,
-          disabled: blockedForAuth,
-        });
-        userRecord = await authAdmin.getUser(targetUid);
-        existedInAuth = true;
-      } else {
-        const created = await authAdmin.createUser({
-          email: authPrimaryEmail,
-          password,
-          displayName: username,
-          emailVerified: true,
-          disabled: blockedForAuth,
-        });
-        await authAdmin.updateUser(created.uid, { emailVerified: true });
-        userRecord = await authAdmin.getUser(created.uid);
-        targetUid = created.uid;
-        existedInAuth = false;
-      }
+    if (existingAuthUser) {
+      await authAdmin.updateUser(existingAuthUser.uid, {
+        displayName: username,
+        password,
+        emailVerified: true,
+        disabled: blockedForAuth,
+      });
+      userRecord = await authAdmin.getUser(existingAuthUser.uid);
+      existedInAuth = true;
     } else {
-      try {
-        const created = await authAdmin.createUser({
-          email: authPrimaryEmail,
-          password,
-          displayName: username,
-          emailVerified: true,
-          disabled: blockedForAuth,
-        });
-        await authAdmin.updateUser(created.uid, { emailVerified: true });
-        userRecord = await authAdmin.getUser(created.uid);
-      } catch (authError: unknown) {
-        const authCode = (authError as { code?: string } | null)?.code;
-        if (authCode !== "auth/email-already-exists") {
-          throw authError;
-        }
-
-        if (isCrossGroupWithSameDni) {
-          throw new https.HttpsError(
-            "already-exists",
-            "El correo institucional ya existe. Para crear nueva cuenta por cambio de grupo, corrige correo institucional.",
-          );
-        }
-
-        existedInAuth = true;
-        const existingAuthUser = await authAdmin.getUserByEmail(authPrimaryEmail);
-        await authAdmin.updateUser(existingAuthUser.uid, {
-          displayName: username,
-          password,
-          emailVerified: true,
-          disabled: blockedForAuth,
-        });
-        userRecord = await authAdmin.getUser(existingAuthUser.uid);
-      }
+      const created = await authAdmin.createUser({
+        email: authPrimaryEmail,
+        password,
+        displayName: username,
+        emailVerified: true,
+        disabled: blockedForAuth,
+      });
+      await authAdmin.updateUser(created.uid, { emailVerified: true });
+      userRecord = await authAdmin.getUser(created.uid);
     }
 
     const createdAuthUser = userRecord;
@@ -351,10 +232,11 @@ export const createNewUser = https.onCall(async (data, context) => {
       },
     );
 
-    const profileDataForPersist = mergeCriticalUserFields(
-      profileData,
-      shouldUpdateExistingByDni ? userWithSameDni : null,
-    );
+    const profileDataForPersist = profileData;
+    profileDataForPersist.fechaCreacion = profileDataForPersist.fechaCreacion ?? nowIso;
+    profileDataForPersist.fechaModificacion =
+      profileDataForPersist.fechaModificacion ?? profileDataForPersist.fechaCreacion ?? nowIso;
+    profileDataForPersist.emailCreador = profileDataForPersist.emailCreador ?? creatorEmail;
     if (!profileDataForPersist.apellidoMaterno || !profileDataForPersist.celular || !profileDataForPersist.dni) {
       console.warn("createNewUser payload has empty critical fields", {
         apellidoMaterno: profileDataForPersist.apellidoMaterno ?? null,
@@ -364,14 +246,7 @@ export const createNewUser = https.onCall(async (data, context) => {
       });
     }
 
-    const dataConnectId = shouldUpdateExistingByDni && userWithSameDni
-      ? (getIdFromKeyOutput(
-        (await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
-          UPDATE_USER_MUTATION,
-          { variables: { id: userWithSameDni.id, data: { ...profileDataForPersist, documentId: createdAuthUser.uid } } },
-        )).data.user_update,
-      ) ?? userWithSameDni.id)
-      : await upsertDataConnectUserByDocumentId(createdAuthUser.uid, profileDataForPersist);
+    const dataConnectId = await upsertDataConnectUserByDocumentId(createdAuthUser.uid, profileDataForPersist);
 
     const shouldSyncStudent = shouldSyncStudentWorkspace(roleNumberId, role?.titulo);
     const workspacePrimaryEmail = resolveWorkspacePrimaryEmail({
@@ -384,11 +259,8 @@ export const createNewUser = https.onCall(async (data, context) => {
       email: profileData.email ?? email ?? null,
       institutionalEmail: profileDataForPersist.correoInstitucional ?? authPrimaryEmail ?? null,
     });
-    const nowIso = new Date().toISOString();
-    const fechaCreacionForWorkspace = asNullableString(data?.fecha_creacion ?? data?.fechaCreacion) ?? nowIso;
-    const fechaModificacionForWorkspace =
-      asNullableString(data?.fecha_modificacion ?? data?.fechaModificacion)
-      ?? fechaCreacionForWorkspace;
+    const fechaCreacionForWorkspace = profileDataForPersist.fechaCreacion ?? nowIso;
+    const fechaModificacionForWorkspace = profileDataForPersist.fechaModificacion ?? fechaCreacionForWorkspace;
     if (shouldSyncStudent) {
       if (!workspacePrimaryEmail) {
         throw new https.HttpsError(
@@ -433,18 +305,15 @@ export const createNewUser = https.onCall(async (data, context) => {
     }
 
     return {
-      result: shouldUpdateExistingByDni
-        ? `Successfully updated user ${createdAuthUser.uid} by existing DNI.`
-        : existedInAuth
-          ? `Successfully updated existing user ${createdAuthUser.uid} with role ${roleNumberId}.`
-          : `Successfully created user ${createdAuthUser.uid} with role ${roleNumberId}.`,
+      result: existedInAuth
+        ? `Successfully updated existing user ${createdAuthUser.uid} with role ${roleNumberId}.`
+        : `Successfully created user ${createdAuthUser.uid} with role ${roleNumberId}.`,
       uid: createdAuthUser.uid,
       emailVerified: createdAuthUser.emailVerified,
       dataConnectId,
       workspaceSynced: shouldSyncStudent,
       workspacePrimaryEmail: shouldSyncStudent ? workspacePrimaryEmail : null,
       authAlreadyExisted: existedInAuth,
-      updatedByExistingDni: shouldUpdateExistingByDni,
     };
   } catch (error: unknown) {
     if (error instanceof https.HttpsError) throw error;
@@ -453,12 +322,6 @@ export const createNewUser = https.onCall(async (data, context) => {
     const message = String((error as { message?: string } | null)?.message || "");
     if (err.code === "auth/email-already-exists") {
       throw new https.HttpsError("already-exists", "A user with this email address already exists.");
-    }
-    if (message.toLowerCase().includes("unique") && message.toLowerCase().includes("dni")) {
-      throw new https.HttpsError("already-exists", "El numero de documento ya existe en otro usuario.");
-    }
-    if (message.toLowerCase().includes("duplicate key") && message.toLowerCase().includes("dni")) {
-      throw new https.HttpsError("already-exists", "El numero de documento ya existe en otro usuario.");
     }
     if (message.includes("fechaNacimiento is invalid Timestamp")) {
       throw new https.HttpsError("invalid-argument", "La fecha de nacimiento no es valida. Usa el formato YYYY-MM-DD.");
@@ -490,7 +353,9 @@ export const updateUserProfile = https.onCall(async (data, context) => {
       throw new https.HttpsError("not-found", `No Data Connect user was found for documentId '${documentId}'.`);
     }
 
+    const nowIso = new Date().toISOString();
     const payload = buildUserDataFromInput(data as Record<string, unknown>, { documentId });
+    payload.fechaModificacion = nowIso;
     if (!payload.apellidoMaterno || !payload.celular || !payload.dni) {
       console.warn("updateUserProfile payload has empty critical fields", {
         apellidoMaterno: payload.apellidoMaterno ?? null,
@@ -499,31 +364,70 @@ export const updateUserProfile = https.onCall(async (data, context) => {
         receivedKeys: Object.keys(data || {}),
       });
     }
+    const roleNumberId = toNumber(payload.rolId, -1);
+    const previousRoleNumberId = toNumber(data?.previousRolId, -1);
+    if (isStudentToTeacherOrHigherTransition(previousRoleNumberId, roleNumberId)) {
+      throw new https.HttpsError(
+        "failed-precondition",
+        "No se puede cambiar de rol a docente o superior.",
+      );
+    }
+    if (isTeacherOrStaffToStudentTransition(previousRoleNumberId, roleNumberId)) {
+      throw new https.HttpsError(
+        "failed-precondition",
+        "No es posible cambiar a este tipo de rol.",
+      );
+    }
+
+    const authUser = await authAdmin
+      .getUser(documentId)
+      .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
+    const nextAuthPrimaryEmail = asNullableString(payload.correoInstitucional);
+    if (authUser) {
+      const authUpdate: {
+        email?: string;
+        emailVerified?: boolean;
+        disabled: boolean;
+      } = {
+        disabled: Boolean(payload.blocked),
+      };
+
+      const currentAuthPrimaryEmail = String(authUser.email || "").trim().toLowerCase();
+      const normalizedNextAuthPrimaryEmail = nextAuthPrimaryEmail?.trim().toLowerCase() || "";
+
+      if (normalizedNextAuthPrimaryEmail && currentAuthPrimaryEmail !== normalizedNextAuthPrimaryEmail) {
+        const authUserByNewEmail = await authAdmin
+          .getUserByEmail(normalizedNextAuthPrimaryEmail)
+          .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
+
+        if (authUserByNewEmail && authUserByNewEmail.uid !== documentId) {
+          throw new https.HttpsError("already-exists", "El correo institucional pertenece a otro usuario.");
+        }
+
+        authUpdate.email = normalizedNextAuthPrimaryEmail;
+        authUpdate.emailVerified = true;
+      }
+
+      await authAdmin.updateUser(documentId, authUpdate);
+    }
+
     const updated = await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
       UPDATE_USER_MUTATION,
       { variables: { id: existingId, data: payload } },
     );
 
-    const roleNumberId = toNumber(payload.rolId, -1);
-    const previousRoleNumberId = toNumber(data?.previousRolId, -1);
     const role = roleNumberId > 0 ? await getRoleById(roleNumberId) : null;
     const shouldSyncStudent = role ? shouldSyncStudentWorkspace(roleNumberId, role.titulo) : false;
     const previousRoleTitle = asNullableString(data?.previousRoleTitle);
     const shouldSyncPreviousRole =
       previousRoleNumberId > 0
       && shouldSyncStudentWorkspace(previousRoleNumberId, previousRoleTitle);
-    const nowIso = new Date().toISOString();
     const fechaCreacionForWorkspace =
-      asNullableString(data?.fecha_creacion ?? data?.fechaCreacion)
+      payload.fechaCreacion
+      ?? asNullableString(data?.fecha_creacion ?? data?.fechaCreacion)
       ?? nowIso;
-    const fechaModificacionForWorkspace =
-      asNullableString(data?.fecha_modificacion ?? data?.fechaModificacion)
-      ?? fechaCreacionForWorkspace;
+    const fechaModificacionForWorkspace = payload.fechaModificacion ?? nowIso;
     if (shouldSyncStudent) {
-      const authUser = await authAdmin
-        .getUser(documentId)
-        .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
-
       const previousWorkspaceEmail =
         resolveWorkspacePrimaryEmail({
           roleId: previousRoleNumberId > 0 ? previousRoleNumberId : roleNumberId,
@@ -617,12 +521,6 @@ export const updateUserProfile = https.onCall(async (data, context) => {
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     const message = String((error as { message?: string } | null)?.message || "");
-    if (message.toLowerCase().includes("unique") && message.toLowerCase().includes("dni")) {
-      throw new https.HttpsError("already-exists", "El numero de documento ya existe en otro usuario.");
-    }
-    if (message.toLowerCase().includes("duplicate key") && message.toLowerCase().includes("dni")) {
-      throw new https.HttpsError("already-exists", "El numero de documento ya existe en otro usuario.");
-    }
     if (message.includes("fechaNacimiento is invalid Timestamp")) {
       throw new https.HttpsError("invalid-argument", "La fecha de nacimiento no es valida. Usa el formato YYYY-MM-DD.");
     }

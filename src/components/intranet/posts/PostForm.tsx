@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, Resolver, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -160,25 +160,10 @@ export default function PostForm({
   const slug = watch('slug');
   const imagenPortadaUrl = watch('imagenPortadaUrl');
 
-  useEffect(() => {
-    const nextAutoSlug = normalizeSlug(titulo || '');
-    const currentSlug = String(getValues('slug') || '');
-    const shouldApplyAutoSlug = !currentSlug || currentSlug === lastAutoSlugRef.current;
+  const getInitialFormValues = useCallback((): PostFormValues => {
+    if (!initialData) return defaultValues;
 
-    if (shouldApplyAutoSlug) {
-      setValue('slug', nextAutoSlug, { shouldValidate: true, shouldDirty: true });
-    }
-    lastAutoSlugRef.current = nextAutoSlug;
-  }, [getValues, setValue, titulo]);
-
-  useEffect(() => {
-    if (!initialData) {
-      reset(defaultValues);
-      lastAutoSlugRef.current = '';
-      return;
-    }
-
-    const nextValues: PostFormValues = {
+    return {
       titulo: asString(initialData.titulo),
       slug: asString(initialData.slug),
       tipo: ['noticia', 'evento', 'comunicado', 'curso'].includes(asString(initialData.tipo))
@@ -195,11 +180,25 @@ export default function PostForm({
       entidadId: asString(initialData.entidadId),
       fechaPublicacion: toDatetimeLocal(initialData.fechaPublicacion),
     };
+  }, [defaultValues, initialData]);
 
+  useEffect(() => {
+    const nextAutoSlug = normalizeSlug(titulo || '');
+    const currentSlug = String(getValues('slug') || '');
+    const shouldApplyAutoSlug = !currentSlug || currentSlug === lastAutoSlugRef.current;
+
+    if (shouldApplyAutoSlug) {
+      setValue('slug', nextAutoSlug, { shouldValidate: true, shouldDirty: true });
+    }
+    lastAutoSlugRef.current = nextAutoSlug;
+  }, [getValues, setValue, titulo]);
+
+  useEffect(() => {
+    const nextValues = getInitialFormValues();
     reset(nextValues);
     lastAutoSlugRef.current = nextValues.slug;
     setUploadError(null);
-  }, [defaultValues, initialData, reset]);
+  }, [getInitialFormValues, reset]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -257,6 +256,17 @@ export default function PostForm({
           ? toIsoOrNull(data.fechaPublicacion) || new Date().toISOString()
           : toIsoOrNull(data.fechaPublicacion),
     });
+
+  const handleCancelClick = () => {
+    const nextValues = getInitialFormValues();
+    reset(nextValues);
+    lastAutoSlugRef.current = nextValues.slug;
+    setUploadError(null);
+    if (coverInputRef.current) {
+      coverInputRef.current.value = '';
+    }
+    onCancel?.();
+  };
 
   return (
     <Box sx={{ width: '100%', position: 'relative' }} aria-busy={isSubmitting}>
@@ -459,7 +469,7 @@ export default function PostForm({
       </form>
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
         {onCancel ? (
-          <Button onClick={onCancel} disabled={isSubmitting}>
+          <Button onClick={handleCancelClick} disabled={isSubmitting}>
             Cancelar
           </Button>
         ) : null}

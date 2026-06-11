@@ -117,6 +117,7 @@ const getSelectedImage = (editor: { selection: { getNode: () => Element }; dom: 
 };
 
 const postEditorContentStyle =
+  'html, body { overscroll-behavior: contain; } ' +
   'body { font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 1.65; } ' +
   'img { max-width: 100%; height: auto; } iframe { max-width: 100%; } ' +
   'img.post-img-center { display: block; float: none; margin-left: auto; margin-right: auto; } ' +
@@ -261,7 +262,7 @@ export default function PostTinyMceEditor({
             toolbar:
               'undo redo | blocks fontfamily fontsize | bold italic underline forecolor backcolor | ' +
               'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | ' +
-              'link image media table imagemargins | removeformat code preview wideedit',
+              'link image media table | removeformat code preview wideedit',
             menu: {
               view: {
                 title: 'Ver',
@@ -363,7 +364,7 @@ export default function PostTinyMceEditor({
                               toolbar:
                                 'undo redo | blocks fontfamily fontsize | bold italic underline forecolor backcolor | ' +
                                 'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | ' +
-                                'link image media table imagemargins | removeformat code preview',
+                                'link image media table | removeformat code preview',
                               toolbar_mode: 'wrap',
                               quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote',
                               quickbars_insert_toolbar: 'quickimage quicktable media',

@@ -138,7 +138,10 @@ export default function Modal1({
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick') return;
+        onClose();
+      }}
       keepMounted
       fullWidth={false}
       maxWidth={false}

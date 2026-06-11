@@ -157,6 +157,13 @@ export default function PostsPage() {
     setFormOpen(false);
   };
 
+  const handleCancelPostModal = () => {
+    if (formSubmitting) return;
+    setFormOpen(false);
+    setSelectedPost(null);
+    setPostFormResetKey((prev) => prev + 1);
+  };
+
   const handleDeletePost = async (row: Post) => {
     if (!window.confirm('Estas seguro de eliminar este post? Esta accion es irreversible.')) {
       return;
@@ -394,7 +401,7 @@ export default function PostsPage() {
       >
         <PostForm
           key={`${selectedPost ? selectedPost.id : 'new-post'}-${postFormResetKey}`}
-          onCancel={handleDismissPostModal}
+          onCancel={handleCancelPostModal}
           onSubmit={handleFormSubmit}
           isSubmitting={formSubmitting}
           submittingMessage={selectedPost ? 'Guardando cambios...' : 'Creando post...'}

@@ -83,6 +83,17 @@ iframe {
   min-width: 0;
 }
 
+.tox-tinymce-aux,
+.tox-tinymce-aux .tox-dialog-wrap,
+.tox-tinymce-aux .tox-dialog,
+.tox-tinymce-aux .tox-dialog__body,
+.tox-tinymce-aux .tox-dialog__body-content,
+.tox-tinymce-aux .tox-custom-editor,
+.tox-tinymce-aux .tox-edit-area,
+.tox-tinymce-aux .tox-edit-area__iframe {
+  overscroll-behavior: contain;
+}
+
 .tox-tinymce-aux .tox-dialog--width-lg {
   height: calc(100dvh - 100px) !important;
   max-height: calc(100dvh - 100px) !important;

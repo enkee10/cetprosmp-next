@@ -3455,6 +3455,205 @@ extend type PersonalEspecialidad {
   """
   _id: ID! @fdc_generated(from: "PersonalEspecialidad.personalId,especialidadId", purpose: ENTITY_ID)
 }
+extend type Post {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Post", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Post` table.
+  """
+  _count: Int! @fdc_generated(from: "Post.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `comentariosActivos` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  comentariosActivos_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.comentariosActivos", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `contenido` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  contenido_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.contenido", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `creadoPorUid` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  creadoPorUid_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.creadoPorUid", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `entidadId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  entidadId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.entidadId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `entidadTipo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  entidadTipo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.entidadTipo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `estado` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  estado_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.estado", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `fechaActualizacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaActualizacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.fechaActualizacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `fechaCreacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaCreacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.fechaCreacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `fechaPublicacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaPublicacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.fechaPublicacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `imagenPortadaUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  imagenPortadaUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.imagenPortadaUrl", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `resumen` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  resumen_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.resumen", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `slug` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  slug_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.slug", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `tipo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tipo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.tipo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Post` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Post.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Post` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Post.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Post` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Post.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `fechaActualizacion` field in the `Post` table.
+  """
+  fechaActualizacion_min: Timestamp @fdc_generated(from: "Post.fechaActualizacion", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaCreacion` field in the `Post` table.
+  """
+  fechaCreacion_min: Timestamp @fdc_generated(from: "Post.fechaCreacion", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaPublicacion` field in the `Post` table.
+  """
+  fechaPublicacion_min: Timestamp @fdc_generated(from: "Post.fechaPublicacion", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `Post` table.
+  """
+  id_min: Int @fdc_generated(from: "Post.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `fechaActualizacion` field in the `Post` table.
+  """
+  fechaActualizacion_max: Timestamp @fdc_generated(from: "Post.fechaActualizacion", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaCreacion` field in the `Post` table.
+  """
+  fechaCreacion_max: Timestamp @fdc_generated(from: "Post.fechaCreacion", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaPublicacion` field in the `Post` table.
+  """
+  fechaPublicacion_max: Timestamp @fdc_generated(from: "Post.fechaPublicacion", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `Post` table.
+  """
+  id_max: Int @fdc_generated(from: "Post.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Post.id", purpose: ENTITY_ID)
+}
 extend type Publicacion {
   """
   ✨ List `PublicacionVideo` objects in a one-to-many relationship (where `PublicacionVideo`.`publicacion` is this object).

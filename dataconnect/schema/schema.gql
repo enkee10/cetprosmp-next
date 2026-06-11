@@ -253,6 +253,24 @@ type Publicacion @table(name: "publicaciones") {
   contenido2: String @col(name: "contenido_2")
 }
 
+type Post @table(name: "posts") @unique(fields: ["slug"]) @index(fields: ["tipo", "estado"]) {
+  id: Int! @col(dataType: "serial")
+  titulo: String! @col(dataType: "varchar(220)")
+  slug: String! @col(dataType: "varchar(260)")
+  tipo: String! @col(dataType: "varchar(40)")
+  contenido: String @col(dataType: "text")
+  resumen: String @col(dataType: "text")
+  imagenPortadaUrl: String @col(name: "imagen_portada_url", dataType: "text")
+  estado: String! @col(dataType: "varchar(40)") @default(value: "borrador")
+  comentariosActivos: Boolean! @col(name: "comentarios_activos") @default(value: true)
+  entidadTipo: String @col(name: "entidad_tipo", dataType: "varchar(80)")
+  entidadId: String @col(name: "entidad_id", dataType: "varchar(120)")
+  creadoPorUid: String @col(name: "creado_por_uid", dataType: "varchar(128)")
+  fechaCreacion: Timestamp @col(name: "fecha_creacion") @default(expr: "request.time")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion") @default(expr: "request.time")
+  fechaPublicacion: Timestamp @col(name: "fecha_publicacion")
+}
+
 type VideoYoutube @table(name: "videos_youtube") {
   id: Int! @col(dataType: "serial")
   url: String

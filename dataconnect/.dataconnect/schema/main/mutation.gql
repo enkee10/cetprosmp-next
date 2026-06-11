@@ -153,6 +153,15 @@ extend type Mutation {
     data: PersonalEspecialidad_Data!
   ): PersonalEspecialidad_KeyOutput! @fdc_generated(from: "PersonalEspecialidad", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Post` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  post_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Post_Data!
+  ): Post_KeyOutput! @fdc_generated(from: "Post", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Publicacion` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   publicacion_insert(
@@ -368,6 +377,15 @@ extend type Mutation {
     """
     data: [PersonalEspecialidad_Data!]!
   ): [PersonalEspecialidad_KeyOutput!]! @fdc_generated(from: "PersonalEspecialidad", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Post` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  post_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Post_Data!]!
+  ): [Post_KeyOutput!]! @fdc_generated(from: "Post", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Publicacion` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -585,6 +603,15 @@ extend type Mutation {
     data: PersonalEspecialidad_Data!
   ): PersonalEspecialidad_KeyOutput! @fdc_generated(from: "PersonalEspecialidad", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Post` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Post`.
+  """
+  post_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Post_Data!
+  ): Post_KeyOutput! @fdc_generated(from: "Post", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Publicacion` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Publicacion`.
   """
   publicacion_upsert(
@@ -800,6 +827,15 @@ extend type Mutation {
     """
     data: [PersonalEspecialidad_Data!]!
   ): [PersonalEspecialidad_KeyOutput!]! @fdc_generated(from: "PersonalEspecialidad", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Post` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Post`.
+  """
+  post_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Post_Data!]!
+  ): [Post_KeyOutput!]! @fdc_generated(from: "Post", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Publicacion` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Publicacion`.
   """
@@ -1306,6 +1342,35 @@ extend type Mutation {
     """
     data: PersonalEspecialidad_Data!
   ): PersonalEspecialidad_KeyOutput @fdc_generated(from: "PersonalEspecialidad", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Post` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Post` or `null` if not found.
+  """
+  post_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Post_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Post_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Post_Data!
+  ): Post_KeyOutput @fdc_generated(from: "Post", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Publicacion` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Publicacion` or `null` if not found.
   """
@@ -1833,6 +1898,25 @@ extend type Mutation {
     data: PersonalEspecialidad_Data!
   ): Int! @fdc_generated(from: "PersonalEspecialidad", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Post` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  post_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Post_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Post_Data!
+  ): Int! @fdc_generated(from: "Post", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Publicacion` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   publicacion_updateMany(
@@ -2324,6 +2408,30 @@ extend type Mutation {
     first: PersonalEspecialidad_FirstRow
   ): PersonalEspecialidad_KeyOutput @fdc_generated(from: "PersonalEspecialidad", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `Post` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  post_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Post_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Post_FirstRow
+  ): Post_KeyOutput @fdc_generated(from: "Post", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Publicacion` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   publicacion_delete(
@@ -2729,6 +2837,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "PersonalEspecialidad", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Post` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  post_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Post_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Post", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Publicacion` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

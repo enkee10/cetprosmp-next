@@ -1,4 +1,4 @@
-import { ConnectorConfig, DataConnect, QueryRef, QueryPromise, ExecuteQueryOptions, DataConnectSettings } from 'firebase/data-connect';
+import { ConnectorConfig, DataConnect, QueryRef, QueryPromise, ExecuteQueryOptions, MutationRef, MutationPromise, DataConnectSettings } from 'firebase/data-connect';
 
 export const connectorConfig: ConnectorConfig;
 export const dataConnectSettings: DataConnectSettings;
@@ -26,9 +26,35 @@ export interface Carrera_Key {
   __typename?: 'Carrera_Key';
 }
 
+export interface CreatePostData {
+  post_insert: Post_Key;
+}
+
+export interface CreatePostVariables {
+  titulo: string;
+  slug: string;
+  tipo: string;
+  contenido?: string | null;
+  resumen?: string | null;
+  imagenPortadaUrl?: string | null;
+  estado: string;
+  comentariosActivos: boolean;
+  entidadTipo?: string | null;
+  entidadId?: string | null;
+  fechaPublicacion?: TimestampString | null;
+}
+
 export interface DatoGeneral_Key {
   id: number;
   __typename?: 'DatoGeneral_Key';
+}
+
+export interface DeletePostData {
+  post_delete?: Post_Key | null;
+}
+
+export interface DeletePostVariables {
+  id: number;
 }
 
 export interface Especialidad_Key {
@@ -39,6 +65,30 @@ export interface Especialidad_Key {
 export interface Familia_Key {
   id: number;
   __typename?: 'Familia_Key';
+}
+
+export interface GetPostByIdData {
+  post?: {
+    id: number;
+    titulo: string;
+    slug: string;
+    tipo: string;
+    contenido?: string | null;
+    resumen?: string | null;
+    imagenPortadaUrl?: string | null;
+    estado: string;
+    comentariosActivos: boolean;
+    entidadTipo?: string | null;
+    entidadId?: string | null;
+    creadoPorUid?: string | null;
+    fechaCreacion?: TimestampString | null;
+    fechaActualizacion?: TimestampString | null;
+    fechaPublicacion?: TimestampString | null;
+  } & Post_Key;
+}
+
+export interface GetPostByIdVariables {
+  id: number;
 }
 
 export interface GetRoleByIdData {
@@ -76,6 +126,26 @@ export interface ListActEconomicasData {
     familiaId?: number | null;
     especialidadId?: number | null;
   } & ActEconomica_Key)[];
+}
+
+export interface ListPostsData {
+  posts: ({
+    id: number;
+    titulo: string;
+    slug: string;
+    tipo: string;
+    contenido?: string | null;
+    resumen?: string | null;
+    imagenPortadaUrl?: string | null;
+    estado: string;
+    comentariosActivos: boolean;
+    entidadTipo?: string | null;
+    entidadId?: string | null;
+    creadoPorUid?: string | null;
+    fechaCreacion?: TimestampString | null;
+    fechaActualizacion?: TimestampString | null;
+    fechaPublicacion?: TimestampString | null;
+  } & Post_Key)[];
 }
 
 export interface ListRolesData {
@@ -166,6 +236,11 @@ export interface Personal_Key {
   __typename?: 'Personal_Key';
 }
 
+export interface Post_Key {
+  id: number;
+  __typename?: 'Post_Key';
+}
+
 export interface PublicacionVideo_Key {
   id: number;
   __typename?: 'PublicacionVideo_Key';
@@ -191,6 +266,25 @@ export interface Semestre_Key {
   __typename?: 'Semestre_Key';
 }
 
+export interface UpdatePostData {
+  post_update?: Post_Key | null;
+}
+
+export interface UpdatePostVariables {
+  id: number;
+  titulo: string;
+  slug: string;
+  tipo: string;
+  contenido?: string | null;
+  resumen?: string | null;
+  imagenPortadaUrl?: string | null;
+  estado: string;
+  comentariosActivos: boolean;
+  entidadTipo?: string | null;
+  entidadId?: string | null;
+  fechaPublicacion?: TimestampString | null;
+}
+
 export interface User_Key {
   id: number;
   __typename?: 'User_Key';
@@ -200,6 +294,42 @@ export interface VideoYoutube_Key {
   id: number;
   __typename?: 'VideoYoutube_Key';
 }
+
+interface CreatePostRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreatePostVariables): MutationRef<CreatePostData, CreatePostVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreatePostVariables): MutationRef<CreatePostData, CreatePostVariables>;
+  operationName: string;
+}
+export const createPostRef: CreatePostRef;
+
+export function createPost(vars: CreatePostVariables): MutationPromise<CreatePostData, CreatePostVariables>;
+export function createPost(dc: DataConnect, vars: CreatePostVariables): MutationPromise<CreatePostData, CreatePostVariables>;
+
+interface UpdatePostRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdatePostVariables): MutationRef<UpdatePostData, UpdatePostVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdatePostVariables): MutationRef<UpdatePostData, UpdatePostVariables>;
+  operationName: string;
+}
+export const updatePostRef: UpdatePostRef;
+
+export function updatePost(vars: UpdatePostVariables): MutationPromise<UpdatePostData, UpdatePostVariables>;
+export function updatePost(dc: DataConnect, vars: UpdatePostVariables): MutationPromise<UpdatePostData, UpdatePostVariables>;
+
+interface DeletePostRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeletePostVariables): MutationRef<DeletePostData, DeletePostVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeletePostVariables): MutationRef<DeletePostData, DeletePostVariables>;
+  operationName: string;
+}
+export const deletePostRef: DeletePostRef;
+
+export function deletePost(vars: DeletePostVariables): MutationPromise<DeletePostData, DeletePostVariables>;
+export function deletePost(dc: DataConnect, vars: DeletePostVariables): MutationPromise<DeletePostData, DeletePostVariables>;
 
 interface ListRolesRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -260,4 +390,28 @@ export const listActEconomicasRef: ListActEconomicasRef;
 
 export function listActEconomicas(options?: ExecuteQueryOptions): QueryPromise<ListActEconomicasData, undefined>;
 export function listActEconomicas(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListActEconomicasData, undefined>;
+
+interface ListPostsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListPostsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListPostsData, undefined>;
+  operationName: string;
+}
+export const listPostsRef: ListPostsRef;
+
+export function listPosts(options?: ExecuteQueryOptions): QueryPromise<ListPostsData, undefined>;
+export function listPosts(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListPostsData, undefined>;
+
+interface GetPostByIdRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPostByIdVariables): QueryRef<GetPostByIdData, GetPostByIdVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetPostByIdVariables): QueryRef<GetPostByIdData, GetPostByIdVariables>;
+  operationName: string;
+}
+export const getPostByIdRef: GetPostByIdRef;
+
+export function getPostById(vars: GetPostByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
+export function getPostById(dc: DataConnect, vars: GetPostByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
 

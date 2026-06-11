@@ -1,0 +1,67 @@
+mutation CreatePost(
+  $titulo: String!
+  $slug: String!
+  $tipo: String!
+  $contenido: String
+  $resumen: String
+  $imagenPortadaUrl: String
+  $estado: String!
+  $comentariosActivos: Boolean!
+  $entidadTipo: String
+  $entidadId: String
+  $fechaPublicacion: Timestamp
+) @auth(expr: "has(auth.token.level) && auth.token.level >= 300") {
+  post_insert(data: {
+    titulo: $titulo
+    slug: $slug
+    tipo: $tipo
+    contenido: $contenido
+    resumen: $resumen
+    imagenPortadaUrl: $imagenPortadaUrl
+    estado: $estado
+    comentariosActivos: $comentariosActivos
+    entidadTipo: $entidadTipo
+    entidadId: $entidadId
+    creadoPorUid_expr: "auth.uid"
+    fechaCreacion_expr: "request.time"
+    fechaActualizacion_expr: "request.time"
+    fechaPublicacion: $fechaPublicacion
+  })
+}
+
+mutation UpdatePost(
+  $id: Int!
+  $titulo: String!
+  $slug: String!
+  $tipo: String!
+  $contenido: String
+  $resumen: String
+  $imagenPortadaUrl: String
+  $estado: String!
+  $comentariosActivos: Boolean!
+  $entidadTipo: String
+  $entidadId: String
+  $fechaPublicacion: Timestamp
+) @auth(expr: "has(auth.token.level) && auth.token.level >= 300") {
+  post_update(
+    id: $id
+    data: {
+      titulo: $titulo
+      slug: $slug
+      tipo: $tipo
+      contenido: $contenido
+      resumen: $resumen
+      imagenPortadaUrl: $imagenPortadaUrl
+      estado: $estado
+      comentariosActivos: $comentariosActivos
+      entidadTipo: $entidadTipo
+      entidadId: $entidadId
+      fechaActualizacion_expr: "request.time"
+      fechaPublicacion: $fechaPublicacion
+    }
+  )
+}
+
+mutation DeletePost($id: Int!) @auth(expr: "has(auth.token.level) && auth.token.level >= 300") {
+  post_delete(id: $id)
+}

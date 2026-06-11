@@ -130,6 +130,7 @@ const UsersPage = () => {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [formSubmitting, setFormSubmitting] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userFormResetKey, setUserFormResetKey] = useState(0);
   const errorMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -249,6 +250,7 @@ const UsersPage = () => {
   };
 
   const handleDismissUserModal = () => {
+    if (formSubmitting) return;
     setFormOpen(false);
   };
 
@@ -308,6 +310,7 @@ const UsersPage = () => {
 
   const handleFormSubmit = async (data: UserFormSubmitData) => {
     setLoading(true);
+    setFormSubmitting(true);
     setErrorMessage(null);
     try {
       if (selectedUser) {
@@ -367,6 +370,7 @@ const UsersPage = () => {
         setErrorMessage(parsedMessage);
       }
     } finally {
+      setFormSubmitting(false);
       setLoading(false);
     }
   };
@@ -592,6 +596,8 @@ const UsersPage = () => {
           key={`${selectedUser ? selectedUser.id : 'new-user'}-${userFormResetKey}`}
           onCancel={handleDismissUserModal}
           onSubmit={handleFormSubmit}
+          isSubmitting={formSubmitting}
+          submittingMessage={selectedUser ? 'Guardando cambios...' : 'Creando usuario...'}
           initialData={
             selectedUser ? (selectedUser as unknown as Record<string, unknown>) : undefined
           }

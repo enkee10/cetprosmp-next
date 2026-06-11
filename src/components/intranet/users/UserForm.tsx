@@ -10,6 +10,7 @@ import { app, storage } from '@/lib/firebase';
 import { getClientDataConnect } from '@/lib/dataconnect';
 import { listRoles as dcListRoles } from '@dataconnect/generated';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import { generateUsername } from './userForm_utilities';
 
 const createValidationSchema = (isCreating: boolean) => yup.object().shape({
@@ -86,8 +87,10 @@ interface UserFormValues {
 
 interface UserFormProps {
   onCancel?: () => void;
-  onSubmit: (data: UserFormValues) => void;
+  onSubmit: (data: UserFormValues) => void | Promise<void>;
   initialData?: Record<string, unknown>;
+  isSubmitting?: boolean;
+  submittingMessage?: string;
 }
 
 interface Role {
@@ -149,7 +152,13 @@ const formatDateTimeForDisplay = (value: unknown): string => {
   ].join(' ');
 };
 
-const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) => {
+const UserForm: React.FC<UserFormProps> = ({
+  onCancel,
+  onSubmit,
+  initialData,
+  isSubmitting = false,
+  submittingMessage,
+}) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -379,7 +388,9 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
     <Box
       sx={{
         width: '100%',
+        position: 'relative',
       }}
+      aria-busy={isSubmitting}
     >
       <form id="user-form" onSubmit={handleSubmit(onSubmit)}>
         <Box
@@ -590,17 +601,21 @@ const UserForm: React.FC<UserFormProps> = ({ onCancel, onSubmit, initialData }) 
       </form>
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
         {onCancel && (
-          <Button onClick={onCancel} tabIndex={22}>
+          <Button onClick={onCancel} disabled={isSubmitting} tabIndex={22}>
             Cancelar
           </Button>
         )}
-        <Button type="submit" form="user-form" variant="contained" disabled={isUploading} tabIndex={21}>
+        <Button type="submit" form="user-form" variant="contained" disabled={isUploading || isSubmitting} tabIndex={21}>
           {isCreating ? 'Crear' : 'Guardar Cambios'}
         </Button>
       </Box>
+      <FormLoadingOverlay
+        open={isSubmitting}
+        message={submittingMessage || (isCreating ? 'Creando usuario...' : 'Guardando cambios...')}
+        //variant="fullscreen"
+      />
     </Box>
   );
 };
 
 export default UserForm;
-

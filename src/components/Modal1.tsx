@@ -22,6 +22,8 @@ interface Modal1Props {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  disableAutoFocus?: boolean;
+  disableEnforceFocus?: boolean;
 }
 
 export default function Modal1({
@@ -29,6 +31,8 @@ export default function Modal1({
   onClose,
   title,
   children,
+  disableAutoFocus = false,
+  disableEnforceFocus = false,
 }: Modal1Props) {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -140,6 +144,8 @@ export default function Modal1({
       maxWidth={false}
       scroll="paper"
       disableScrollLock
+      disableAutoFocus={disableAutoFocus}
+      disableEnforceFocus={disableEnforceFocus}
       sx={{
         '& .MuiDialog-container': {
           alignItems: { xs: 'stretch', sm: 'center' },

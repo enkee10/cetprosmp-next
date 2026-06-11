@@ -12,14 +12,8 @@
 - Ya se está revisando la estructura SQL.
 - Ya se esta usando los emuladores de firebase sin problemas.
 - Se implementó sincronización de avatar entre la app y Google Workspace (crear/editar usuario).
-- Se implementó sincronización automática de membresías a grupos de Workspace según rol:
-  - profesores_clase@cetprosmp.edu.pe (roles 4, 6, 7, 8)
-  - trabajadores-cetprosmp@cetprosmp.edu.pe (roles 4 al 8)
-  - administracion@cetprosmp.edu.pe (roles 5 al 8)
-- Se validó que al cambiar a roles fuera de esos rangos, el usuario se retira de los grupos correspondientes.
 - Se identificó requisito de permisos/scopes en Domain-Wide Delegation para grupos:
   - https://www.googleapis.com/auth/admin.directory.group.member
 
 ## Pendientes generales
-- Terminar interfaces de listas referente a los formularios y modales.
-- implementar la coneccion total con workspace de google.
+

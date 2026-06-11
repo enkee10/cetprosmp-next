@@ -33,6 +33,7 @@ const collections = [
   { name: 'Módulos', path: '/intranet/modulos', icon: <ViewModuleIcon /> },
   { name: 'Paquetes', path: '/intranet/paquetes', icon: <Inventory2Icon /> },
   { name: 'Personales', path: '/intranet/personales', icon: <BadgeIcon /> },
+  { name: 'Posts', path: '/intranet/post', icon: <ArticleIcon /> },
   { name: 'Publicaciones', path: '/intranet/publicaciones', icon: <ArticleIcon /> },
   { name: 'Sectores', path: '/intranet/sectores', icon: <FactoryIcon /> },
   { name: 'Semestres', path: '/intranet/semestres', icon: <DateRangeIcon /> },

@@ -54,3 +54,43 @@ query ListActEconomicas @auth(expr: "has(auth.token.level) && auth.token.level >
     especialidadId
   }
 }
+
+query ListPosts @auth(expr: "has(auth.token.level) && auth.token.level >= 300") {
+  posts(limit: 500, orderBy: [{ fechaCreacion: DESC }]) {
+    id
+    titulo
+    slug
+    tipo
+    contenido
+    resumen
+    imagenPortadaUrl
+    estado
+    comentariosActivos
+    entidadTipo
+    entidadId
+    creadoPorUid
+    fechaCreacion
+    fechaActualizacion
+    fechaPublicacion
+  }
+}
+
+query GetPostById($id: Int!) @auth(expr: "has(auth.token.level) && auth.token.level >= 300") {
+  post(id: $id) {
+    id
+    titulo
+    slug
+    tipo
+    contenido
+    resumen
+    imagenPortadaUrl
+    estado
+    comentariosActivos
+    entidadTipo
+    entidadId
+    creadoPorUid
+    fechaCreacion
+    fechaActualizacion
+    fechaPublicacion
+  }
+}

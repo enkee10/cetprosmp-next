@@ -15,7 +15,12 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListUsers*](#listusers)
   - [*GetUserByDocumentId*](#getuserbydocumentid)
   - [*ListActEconomicas*](#listacteconomicas)
+  - [*ListPosts*](#listposts)
+  - [*GetPostById*](#getpostbyid)
 - [**Mutations**](#mutations)
+  - [*CreatePost*](#createpost)
+  - [*UpdatePost*](#updatepost)
+  - [*DeletePost*](#deletepost)
 
 # Accessing the connector
 A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `default`. You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
@@ -590,9 +595,640 @@ executeQuery(ref).then((response) => {
 });
 ```
 
+## ListPosts
+You can execute the `ListPosts` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listPosts(options?: ExecuteQueryOptions): QueryPromise<ListPostsData, undefined>;
+
+interface ListPostsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListPostsData, undefined>;
+}
+export const listPostsRef: ListPostsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listPosts(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListPostsData, undefined>;
+
+interface ListPostsRef {
+  ...
+  (dc: DataConnect): QueryRef<ListPostsData, undefined>;
+}
+export const listPostsRef: ListPostsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listPostsRef:
+```typescript
+const name = listPostsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListPosts` query has no variables.
+### Return Type
+Recall that executing the `ListPosts` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListPostsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListPostsData {
+  posts: ({
+    id: number;
+    titulo: string;
+    slug: string;
+    tipo: string;
+    contenido?: string | null;
+    resumen?: string | null;
+    imagenPortadaUrl?: string | null;
+    estado: string;
+    comentariosActivos: boolean;
+    entidadTipo?: string | null;
+    entidadId?: string | null;
+    creadoPorUid?: string | null;
+    fechaCreacion?: TimestampString | null;
+    fechaActualizacion?: TimestampString | null;
+    fechaPublicacion?: TimestampString | null;
+  } & Post_Key)[];
+}
+```
+### Using `ListPosts`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listPosts } from '@dataconnect/generated';
+
+
+// Call the `listPosts()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listPosts();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listPosts(dataConnect);
+
+console.log(data.posts);
+
+// Or, you can use the `Promise` API.
+listPosts().then((response) => {
+  const data = response.data;
+  console.log(data.posts);
+});
+```
+
+### Using `ListPosts`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listPostsRef } from '@dataconnect/generated';
+
+
+// Call the `listPostsRef()` function to get a reference to the query.
+const ref = listPostsRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listPostsRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.posts);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.posts);
+});
+```
+
+## GetPostById
+You can execute the `GetPostById` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getPostById(vars: GetPostByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
+
+interface GetPostByIdRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPostByIdVariables): QueryRef<GetPostByIdData, GetPostByIdVariables>;
+}
+export const getPostByIdRef: GetPostByIdRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getPostById(dc: DataConnect, vars: GetPostByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
+
+interface GetPostByIdRef {
+  ...
+  (dc: DataConnect, vars: GetPostByIdVariables): QueryRef<GetPostByIdData, GetPostByIdVariables>;
+}
+export const getPostByIdRef: GetPostByIdRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getPostByIdRef:
+```typescript
+const name = getPostByIdRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetPostById` query requires an argument of type `GetPostByIdVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetPostByIdVariables {
+  id: number;
+}
+```
+### Return Type
+Recall that executing the `GetPostById` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetPostByIdData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetPostByIdData {
+  post?: {
+    id: number;
+    titulo: string;
+    slug: string;
+    tipo: string;
+    contenido?: string | null;
+    resumen?: string | null;
+    imagenPortadaUrl?: string | null;
+    estado: string;
+    comentariosActivos: boolean;
+    entidadTipo?: string | null;
+    entidadId?: string | null;
+    creadoPorUid?: string | null;
+    fechaCreacion?: TimestampString | null;
+    fechaActualizacion?: TimestampString | null;
+    fechaPublicacion?: TimestampString | null;
+  } & Post_Key;
+}
+```
+### Using `GetPostById`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getPostById, GetPostByIdVariables } from '@dataconnect/generated';
+
+// The `GetPostById` query requires an argument of type `GetPostByIdVariables`:
+const getPostByIdVars: GetPostByIdVariables = {
+  id: ..., 
+};
+
+// Call the `getPostById()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getPostById(getPostByIdVars);
+// Variables can be defined inline as well.
+const { data } = await getPostById({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getPostById(dataConnect, getPostByIdVars);
+
+console.log(data.post);
+
+// Or, you can use the `Promise` API.
+getPostById(getPostByIdVars).then((response) => {
+  const data = response.data;
+  console.log(data.post);
+});
+```
+
+### Using `GetPostById`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getPostByIdRef, GetPostByIdVariables } from '@dataconnect/generated';
+
+// The `GetPostById` query requires an argument of type `GetPostByIdVariables`:
+const getPostByIdVars: GetPostByIdVariables = {
+  id: ..., 
+};
+
+// Call the `getPostByIdRef()` function to get a reference to the query.
+const ref = getPostByIdRef(getPostByIdVars);
+// Variables can be defined inline as well.
+const ref = getPostByIdRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getPostByIdRef(dataConnect, getPostByIdVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.post);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.post);
+});
+```
+
 # Mutations
 
-No mutations were generated for the `default` connector.
+There are two ways to execute a Data Connect Mutation using the generated Web SDK:
+- Using a Mutation Reference function, which returns a `MutationRef`
+  - The `MutationRef` can be used as an argument to `executeMutation()`, which will execute the Mutation and return a `MutationPromise`
+- Using an action shortcut function, which returns a `MutationPromise`
+  - Calling the action shortcut function will execute the Mutation and return a `MutationPromise`
 
-If you want to learn more about how to use mutations in Data Connect, you can follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#using-mutations).
+The following is true for both the action shortcut function and the `MutationRef` function:
+- The `MutationPromise` returned will resolve to the result of the Mutation once it has finished executing
+- If the Mutation accepts arguments, both the action shortcut function and the `MutationRef` function accept a single argument: an object that contains all the required variables (and the optional variables) for the Mutation
+- Both functions can be called with or without passing in a `DataConnect` instance as an argument. If no `DataConnect` argument is passed in, then the generated SDK will call `getDataConnect(connectorConfig)` behind the scenes for you.
+
+Below are examples of how to use the `default` connector's generated functions to execute each mutation. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#using-mutations).
+
+## CreatePost
+You can execute the `CreatePost` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+createPost(vars: CreatePostVariables): MutationPromise<CreatePostData, CreatePostVariables>;
+
+interface CreatePostRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreatePostVariables): MutationRef<CreatePostData, CreatePostVariables>;
+}
+export const createPostRef: CreatePostRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createPost(dc: DataConnect, vars: CreatePostVariables): MutationPromise<CreatePostData, CreatePostVariables>;
+
+interface CreatePostRef {
+  ...
+  (dc: DataConnect, vars: CreatePostVariables): MutationRef<CreatePostData, CreatePostVariables>;
+}
+export const createPostRef: CreatePostRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createPostRef:
+```typescript
+const name = createPostRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreatePost` mutation requires an argument of type `CreatePostVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreatePostVariables {
+  titulo: string;
+  slug: string;
+  tipo: string;
+  contenido?: string | null;
+  resumen?: string | null;
+  imagenPortadaUrl?: string | null;
+  estado: string;
+  comentariosActivos: boolean;
+  entidadTipo?: string | null;
+  entidadId?: string | null;
+  fechaPublicacion?: TimestampString | null;
+}
+```
+### Return Type
+Recall that executing the `CreatePost` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreatePostData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreatePostData {
+  post_insert: Post_Key;
+}
+```
+### Using `CreatePost`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createPost, CreatePostVariables } from '@dataconnect/generated';
+
+// The `CreatePost` mutation requires an argument of type `CreatePostVariables`:
+const createPostVars: CreatePostVariables = {
+  titulo: ..., 
+  slug: ..., 
+  tipo: ..., 
+  contenido: ..., // optional
+  resumen: ..., // optional
+  imagenPortadaUrl: ..., // optional
+  estado: ..., 
+  comentariosActivos: ..., 
+  entidadTipo: ..., // optional
+  entidadId: ..., // optional
+  fechaPublicacion: ..., // optional
+};
+
+// Call the `createPost()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createPost(createPostVars);
+// Variables can be defined inline as well.
+const { data } = await createPost({ titulo: ..., slug: ..., tipo: ..., contenido: ..., resumen: ..., imagenPortadaUrl: ..., estado: ..., comentariosActivos: ..., entidadTipo: ..., entidadId: ..., fechaPublicacion: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createPost(dataConnect, createPostVars);
+
+console.log(data.post_insert);
+
+// Or, you can use the `Promise` API.
+createPost(createPostVars).then((response) => {
+  const data = response.data;
+  console.log(data.post_insert);
+});
+```
+
+### Using `CreatePost`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createPostRef, CreatePostVariables } from '@dataconnect/generated';
+
+// The `CreatePost` mutation requires an argument of type `CreatePostVariables`:
+const createPostVars: CreatePostVariables = {
+  titulo: ..., 
+  slug: ..., 
+  tipo: ..., 
+  contenido: ..., // optional
+  resumen: ..., // optional
+  imagenPortadaUrl: ..., // optional
+  estado: ..., 
+  comentariosActivos: ..., 
+  entidadTipo: ..., // optional
+  entidadId: ..., // optional
+  fechaPublicacion: ..., // optional
+};
+
+// Call the `createPostRef()` function to get a reference to the mutation.
+const ref = createPostRef(createPostVars);
+// Variables can be defined inline as well.
+const ref = createPostRef({ titulo: ..., slug: ..., tipo: ..., contenido: ..., resumen: ..., imagenPortadaUrl: ..., estado: ..., comentariosActivos: ..., entidadTipo: ..., entidadId: ..., fechaPublicacion: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createPostRef(dataConnect, createPostVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.post_insert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.post_insert);
+});
+```
+
+## UpdatePost
+You can execute the `UpdatePost` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+updatePost(vars: UpdatePostVariables): MutationPromise<UpdatePostData, UpdatePostVariables>;
+
+interface UpdatePostRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdatePostVariables): MutationRef<UpdatePostData, UpdatePostVariables>;
+}
+export const updatePostRef: UpdatePostRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updatePost(dc: DataConnect, vars: UpdatePostVariables): MutationPromise<UpdatePostData, UpdatePostVariables>;
+
+interface UpdatePostRef {
+  ...
+  (dc: DataConnect, vars: UpdatePostVariables): MutationRef<UpdatePostData, UpdatePostVariables>;
+}
+export const updatePostRef: UpdatePostRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updatePostRef:
+```typescript
+const name = updatePostRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdatePost` mutation requires an argument of type `UpdatePostVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdatePostVariables {
+  id: number;
+  titulo: string;
+  slug: string;
+  tipo: string;
+  contenido?: string | null;
+  resumen?: string | null;
+  imagenPortadaUrl?: string | null;
+  estado: string;
+  comentariosActivos: boolean;
+  entidadTipo?: string | null;
+  entidadId?: string | null;
+  fechaPublicacion?: TimestampString | null;
+}
+```
+### Return Type
+Recall that executing the `UpdatePost` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdatePostData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdatePostData {
+  post_update?: Post_Key | null;
+}
+```
+### Using `UpdatePost`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updatePost, UpdatePostVariables } from '@dataconnect/generated';
+
+// The `UpdatePost` mutation requires an argument of type `UpdatePostVariables`:
+const updatePostVars: UpdatePostVariables = {
+  id: ..., 
+  titulo: ..., 
+  slug: ..., 
+  tipo: ..., 
+  contenido: ..., // optional
+  resumen: ..., // optional
+  imagenPortadaUrl: ..., // optional
+  estado: ..., 
+  comentariosActivos: ..., 
+  entidadTipo: ..., // optional
+  entidadId: ..., // optional
+  fechaPublicacion: ..., // optional
+};
+
+// Call the `updatePost()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updatePost(updatePostVars);
+// Variables can be defined inline as well.
+const { data } = await updatePost({ id: ..., titulo: ..., slug: ..., tipo: ..., contenido: ..., resumen: ..., imagenPortadaUrl: ..., estado: ..., comentariosActivos: ..., entidadTipo: ..., entidadId: ..., fechaPublicacion: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updatePost(dataConnect, updatePostVars);
+
+console.log(data.post_update);
+
+// Or, you can use the `Promise` API.
+updatePost(updatePostVars).then((response) => {
+  const data = response.data;
+  console.log(data.post_update);
+});
+```
+
+### Using `UpdatePost`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updatePostRef, UpdatePostVariables } from '@dataconnect/generated';
+
+// The `UpdatePost` mutation requires an argument of type `UpdatePostVariables`:
+const updatePostVars: UpdatePostVariables = {
+  id: ..., 
+  titulo: ..., 
+  slug: ..., 
+  tipo: ..., 
+  contenido: ..., // optional
+  resumen: ..., // optional
+  imagenPortadaUrl: ..., // optional
+  estado: ..., 
+  comentariosActivos: ..., 
+  entidadTipo: ..., // optional
+  entidadId: ..., // optional
+  fechaPublicacion: ..., // optional
+};
+
+// Call the `updatePostRef()` function to get a reference to the mutation.
+const ref = updatePostRef(updatePostVars);
+// Variables can be defined inline as well.
+const ref = updatePostRef({ id: ..., titulo: ..., slug: ..., tipo: ..., contenido: ..., resumen: ..., imagenPortadaUrl: ..., estado: ..., comentariosActivos: ..., entidadTipo: ..., entidadId: ..., fechaPublicacion: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updatePostRef(dataConnect, updatePostVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.post_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.post_update);
+});
+```
+
+## DeletePost
+You can execute the `DeletePost` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deletePost(vars: DeletePostVariables): MutationPromise<DeletePostData, DeletePostVariables>;
+
+interface DeletePostRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeletePostVariables): MutationRef<DeletePostData, DeletePostVariables>;
+}
+export const deletePostRef: DeletePostRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deletePost(dc: DataConnect, vars: DeletePostVariables): MutationPromise<DeletePostData, DeletePostVariables>;
+
+interface DeletePostRef {
+  ...
+  (dc: DataConnect, vars: DeletePostVariables): MutationRef<DeletePostData, DeletePostVariables>;
+}
+export const deletePostRef: DeletePostRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deletePostRef:
+```typescript
+const name = deletePostRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeletePost` mutation requires an argument of type `DeletePostVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeletePostVariables {
+  id: number;
+}
+```
+### Return Type
+Recall that executing the `DeletePost` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeletePostData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeletePostData {
+  post_delete?: Post_Key | null;
+}
+```
+### Using `DeletePost`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deletePost, DeletePostVariables } from '@dataconnect/generated';
+
+// The `DeletePost` mutation requires an argument of type `DeletePostVariables`:
+const deletePostVars: DeletePostVariables = {
+  id: ..., 
+};
+
+// Call the `deletePost()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deletePost(deletePostVars);
+// Variables can be defined inline as well.
+const { data } = await deletePost({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deletePost(dataConnect, deletePostVars);
+
+console.log(data.post_delete);
+
+// Or, you can use the `Promise` API.
+deletePost(deletePostVars).then((response) => {
+  const data = response.data;
+  console.log(data.post_delete);
+});
+```
+
+### Using `DeletePost`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deletePostRef, DeletePostVariables } from '@dataconnect/generated';
+
+// The `DeletePost` mutation requires an argument of type `DeletePostVariables`:
+const deletePostVars: DeletePostVariables = {
+  id: ..., 
+};
+
+// Call the `deletePostRef()` function to get a reference to the mutation.
+const ref = deletePostRef(deletePostVars);
+// Variables can be defined inline as well.
+const ref = deletePostRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deletePostRef(dataConnect, deletePostVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.post_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.post_delete);
+});
+```
 

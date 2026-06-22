@@ -1,14 +1,13 @@
 ﻿'use client'
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm, Controller, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { TextField, Button, Box, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Avatar, CircularProgress, Typography, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { getAuth } from 'firebase/auth';
-import { app, storage } from '@/lib/firebase';
-import { getClientDataConnect } from '@/lib/dataconnect';
-import { listRoles as dcListRoles } from '@dataconnect/generated';
+import { app, functions, storage } from '@/lib/firebase';
+import { httpsCallable } from 'firebase/functions';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import { generateUsername } from './userForm_utilities';
@@ -165,7 +164,6 @@ const UserForm: React.FC<UserFormProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const isCreating = !initialData;
   const auth = getAuth(app);
-  const dataConnect = useMemo(() => getClientDataConnect(app), []);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const apellidoPaternoRef = useRef<HTMLInputElement>(null);
@@ -235,10 +233,8 @@ const UserForm: React.FC<UserFormProps> = ({
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        if (auth.currentUser) {
-          await auth.currentUser.getIdToken(true);
-        }
-        const result = await dcListRoles(dataConnect);
+        const listRoles = httpsCallable<undefined, { roles?: Role[] }>(functions, 'listRoles');
+        const result = await listRoles();
         setRoles(
           (result.data.roles || [])
             .filter((role) => !EXCLUDED_ROLE_IDS.has(Number(role.id)))
@@ -255,7 +251,7 @@ const UserForm: React.FC<UserFormProps> = ({
     };
 
     fetchRoles();
-  }, [auth, dataConnect]);
+  }, []);
 
   const avatarUrl = watch('avatar');
 

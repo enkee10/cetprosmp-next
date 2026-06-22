@@ -192,48 +192,6 @@ extend type Query {
     first: Matricula_FirstRow
   ): Matricula @fdc_generated(from: "Matricula", purpose: QUERY_SINGLE)
   """
-  ✨ Look up a single `MatriculaGrupo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
-  """
-  matriculaGrupo(
-    """
-    The key used to identify the object.
-    """
-    key: MatriculaGrupo_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: MatriculaGrupo_FirstRow
-  ): MatriculaGrupo @fdc_generated(from: "MatriculaGrupo", purpose: QUERY_SINGLE)
-  """
-  ✨ Look up a single `MatriculaPaquete` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
-  """
-  matriculaPaquete(
-    """
-    The key used to identify the object.
-    """
-    key: MatriculaPaquete_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: MatriculaPaquete_FirstRow
-  ): MatriculaPaquete @fdc_generated(from: "MatriculaPaquete", purpose: QUERY_SINGLE)
-  """
-  ✨ Look up a single `MatriculaUser` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
-  """
-  matriculaUser(
-    """
-    The key used to identify the object.
-    """
-    key: MatriculaUser_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: MatriculaUser_FirstRow
-  ): MatriculaUser @fdc_generated(from: "MatriculaUser", purpose: QUERY_SINGLE)
-  """
   ✨ Look up a single `Modulo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   modulo(
@@ -306,20 +264,6 @@ extend type Query {
     first: Paquete_FirstRow
   ): Paquete @fdc_generated(from: "Paquete", purpose: QUERY_SINGLE)
   """
-  ✨ Look up a single `PaqueteGrupo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
-  """
-  paqueteGrupo(
-    """
-    The key used to identify the object.
-    """
-    key: PaqueteGrupo_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: PaqueteGrupo_FirstRow
-  ): PaqueteGrupo @fdc_generated(from: "PaqueteGrupo", purpose: QUERY_SINGLE)
-  """
   ✨ Look up a single `Personal` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   personal(
@@ -357,6 +301,30 @@ extend type Query {
     """
     first: PersonalEspecialidad_FirstRow
   ): PersonalEspecialidad @fdc_generated(from: "PersonalEspecialidad", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Plan` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  plan(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Plan_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Plan_FirstRow
+  ): Plan @fdc_generated(from: "Plan", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `Post` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -822,108 +790,6 @@ extend type Query {
     having: Matricula_Having
   ): [Matricula!]! @fdc_generated(from: "Matricula", purpose: QUERY_MULTIPLE)
   """
-  ✨ List `MatriculaGrupo` objects in the table and return selected fields, optionally filtered by `where` conditions
-  """
-  matriculaGrupos(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: MatriculaGrupo_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [MatriculaGrupo_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: MatriculaGrupo_Having
-  ): [MatriculaGrupo!]! @fdc_generated(from: "MatriculaGrupo", purpose: QUERY_MULTIPLE)
-  """
-  ✨ List `MatriculaPaquete` objects in the table and return selected fields, optionally filtered by `where` conditions
-  """
-  matriculaPaquetes(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: MatriculaPaquete_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [MatriculaPaquete_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: MatriculaPaquete_Having
-  ): [MatriculaPaquete!]! @fdc_generated(from: "MatriculaPaquete", purpose: QUERY_MULTIPLE)
-  """
-  ✨ List `MatriculaUser` objects in the table and return selected fields, optionally filtered by `where` conditions
-  """
-  matriculaUsers(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: MatriculaUser_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [MatriculaUser_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: MatriculaUser_Having
-  ): [MatriculaUser!]! @fdc_generated(from: "MatriculaUser", purpose: QUERY_MULTIPLE)
-  """
   ✨ List `Modulo` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   modulos(
@@ -1026,40 +892,6 @@ extend type Query {
     having: Paquete_Having
   ): [Paquete!]! @fdc_generated(from: "Paquete", purpose: QUERY_MULTIPLE)
   """
-  ✨ List `PaqueteGrupo` objects in the table and return selected fields, optionally filtered by `where` conditions
-  """
-  paqueteGrupos(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: PaqueteGrupo_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [PaqueteGrupo_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: PaqueteGrupo_Having
-  ): [PaqueteGrupo!]! @fdc_generated(from: "PaqueteGrupo", purpose: QUERY_MULTIPLE)
-  """
   ✨ List `Personal` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   personals(
@@ -1127,6 +959,40 @@ extend type Query {
     """
     having: PersonalEspecialidad_Having
   ): [PersonalEspecialidad!]! @fdc_generated(from: "PersonalEspecialidad", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Plan` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  planes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Plan_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Plan_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Plan_Having
+  ): [Plan!]! @fdc_generated(from: "Plan", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Post` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

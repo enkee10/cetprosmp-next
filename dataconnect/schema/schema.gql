@@ -82,11 +82,23 @@ type ActEconomica @table(name: "act_economicas") {
   especialidadId: Int @col(name: "especialidad_id")
 }
 
-type Carrera @table(name: "carreras") {
+type Carrera @table(name: "carreras", singular: "carrera", plural: "carreras") {
   id: Int! @col(dataType: "serial")
-  titulo: String
+  nombre: String
   codigo: String
   descripcion: String
+  tipo: String
+  estado: String
+  creadoEn: Timestamp @col(name: "creado_en")
+  actualizadoEn: Timestamp @col(name: "actualizado_en")
+
+  actEconomica: ActEconomica @ref(fields: "actEconomicaId", references: "id")
+  actEconomicaId: Int @col(name: "act_economica_id")
+}
+
+type Plan @table(name: "planes", singular: "plan", plural: "planes") {
+  id: Int! @col(dataType: "serial")
+  version: String
   duracion: String
   creditos: Int
   nivel: String
@@ -94,8 +106,8 @@ type Carrera @table(name: "carreras") {
   slug: String
   descripcion2: String @col(name: "descripcion_2")
 
-  actEconomica: ActEconomica @ref(fields: "actEconomicaId", references: "id")
-  actEconomicaId: Int @col(name: "act_economica_id")
+  carrera: Carrera @ref(fields: "carreraId", references: "id")
+  carreraId: Int @col(name: "carrera_id")
 }
 
 type Modulo @table(name: "modulos") {
@@ -111,8 +123,8 @@ type Modulo @table(name: "modulos") {
   slug: String
   descripcion2: String @col(name: "descripcion_2")
 
-  carrera: Carrera @ref(fields: "carreraId", references: "id")
-  carreraId: Int @col(name: "carrera_id")
+  plan: Plan @ref(fields: "planId", references: "id")
+  planId: Int @col(name: "plan_id")
 }
 
 type Personal @table(name: "personales") {
@@ -175,11 +187,15 @@ type Grupo @table(name: "grupos") {
   modulo: Modulo @ref(fields: "moduloId", references: "id")
   moduloId: Int @col(name: "modulo_id")
 
-  calendario: Calendario @ref(fields: "calendarioId", references: "id")
-  calendarioId: Int @col(name: "calendario_id")
+  semestre: Semestre @ref(fields: "semestreId", references: "id")
+  semestreId: Int @col(name: "semestre_id")
 
   personal: Personal @ref(fields: "personalId", references: "id")
   personalId: Int @col(name: "personal_id")
+
+  paquete: Paquete @ref(fields: "paqueteId", references: "id")
+  paqueteId: Int @col(name: "paquete_id")
+  grupoOrd: Int @col(name: "grupo_ord")
 }
 
 type Paquete @table(name: "paquetes") {
@@ -189,53 +205,20 @@ type Paquete @table(name: "paquetes") {
   archivado: Boolean
 }
 
-type PaqueteGrupo @table(name: "paquete_grupos", key: ["paquete", "grupo"]) {
-  id: Int! @col(dataType: "serial")
-
-  paquete: Paquete! @ref(fields: "paqueteId", references: "id")
-  paqueteId: Int! @col(name: "paquete_id")
-
-  grupo: Grupo! @ref(fields: "grupoId", references: "id")
-  grupoId: Int! @col(name: "grupo_id")
-
-  grupoOrd: Int @col(name: "grupo_ord")
-}
-
 type Matricula @table(name: "matriculas") {
   id: Int! @col(dataType: "serial")
   recibo: String
   fecha: Timestamp
   archivado: Boolean
-}
 
-type MatriculaUser @table(name: "matricula_users", key: ["matricula", "user"]) {
-  id: Int! @col(dataType: "serial")
+  grupo: Grupo @ref(fields: "grupoId", references: "id")
+  grupoId: Int @col(name: "grupo_id")
 
-  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
-  matriculaId: Int! @col(name: "matricula_id")
+  paquete: Paquete @ref(fields: "paqueteId", references: "id")
+  paqueteId: Int @col(name: "paquete_id")
 
-  user: User! @ref(fields: "userId", references: "id")
-  userId: Int! @col(name: "user_id")
-}
-
-type MatriculaGrupo @table(name: "matricula_grupos", key: ["matricula", "grupo"]) {
-  id: Int! @col(dataType: "serial")
-
-  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
-  matriculaId: Int! @col(name: "matricula_id")
-
-  grupo: Grupo! @ref(fields: "grupoId", references: "id")
-  grupoId: Int! @col(name: "grupo_id")
-}
-
-type MatriculaPaquete @table(name: "matricula_paquetes", key: ["matricula", "paquete"]) {
-  id: Int! @col(dataType: "serial")
-
-  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
-  matriculaId: Int! @col(name: "matricula_id")
-
-  paquete: Paquete! @ref(fields: "paqueteId", references: "id")
-  paqueteId: Int! @col(name: "paquete_id")
+  user: User @ref(fields: "userId", references: "id")
+  userId: Int @col(name: "user_id")
 }
 
 type Publicacion @table(name: "publicaciones") {

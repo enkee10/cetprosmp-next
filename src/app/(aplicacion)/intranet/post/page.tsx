@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Box,
   Button,
   Chip,
   IconButton,
@@ -11,7 +10,6 @@ import {
   Stack,
 } from '@mui/material';
 import {
-  DataGrid,
   GridColDef,
   GridColumnVisibilityModel,
   GridPaginationModel,
@@ -29,6 +27,7 @@ import {
 import { app } from '@/lib/firebase';
 import { getClientDataConnect } from '@/lib/dataconnect';
 import { useAuth } from '@/context/AuthContext';
+import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
 import PostForm, { type PostFormValues } from '@/components/intranet/posts/PostForm';
@@ -80,15 +79,16 @@ export default function PostsPage() {
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
+      id: true,
       titulo: true,
-      slug: true,
       tipo: true,
+      fechaActualizacion: true,
       estado: true,
       comentariosActivos: true,
+      slug: false,
       entidadTipo: false,
       entidadId: false,
-      fechaPublicacion: true,
-      fechaActualizacion: true,
+      fechaPublicacion: false,
       creadoPorUid: false,
       actions: true,
     });
@@ -220,8 +220,8 @@ export default function PostsPage() {
 
   const columns = useMemo<GridColDef[]>(
     () => [
+      { field: 'id', headerName: 'ID', width: 42, minWidth: 42, maxWidth: 42 },
       { field: 'titulo', headerName: 'Titulo', flex: 1.4, minWidth: 190 },
-      { field: 'slug', headerName: 'Slug', flex: 1.1, minWidth: 160 },
       {
         field: 'tipo',
         headerName: 'Tipo',
@@ -230,10 +230,17 @@ export default function PostsPage() {
         renderCell: (params) => String(params.value || '').toUpperCase(),
       },
       {
+        field: 'fechaActualizacion',
+        headerName: 'Actualizacion',
+        flex: 0.9,
+        minWidth: 145,
+        renderCell: (params) => formatDate(params.value),
+      },
+      {
         field: 'estado',
         headerName: 'Estado',
         flex: 0.7,
-        minWidth: 110,
+        minWidth: 90,
         renderCell: (params) => {
           const estado = String(params.value || '');
           const color = estado === 'publicado' ? 'success' : estado === 'archivado' ? 'default' : 'warning';
@@ -244,7 +251,7 @@ export default function PostsPage() {
         field: 'comentariosActivos',
         headerName: 'Comentarios',
         flex: 0.7,
-        minWidth: 120,
+        minWidth: 90,
         renderCell: (params) =>
           params.value ? (
             <Chip label="Activos" color="success" size="small" />
@@ -252,18 +259,12 @@ export default function PostsPage() {
             <Chip label="Inactivos" color="default" size="small" />
           ),
       },
+      { field: 'slug', headerName: 'Slug', flex: 1.1, minWidth: 160 },
       { field: 'entidadTipo', headerName: 'Entidad tipo', flex: 0.8, minWidth: 120 },
       { field: 'entidadId', headerName: 'Entidad ID', flex: 0.7, minWidth: 110 },
       {
         field: 'fechaPublicacion',
         headerName: 'Publicacion',
-        flex: 0.9,
-        minWidth: 145,
-        renderCell: (params) => formatDate(params.value),
-      },
-      {
-        field: 'fechaActualizacion',
-        headerName: 'Actualizacion',
         flex: 0.9,
         minWidth: 145,
         renderCell: (params) => formatDate(params.value),
@@ -332,40 +333,16 @@ export default function PostsPage() {
       }
       columnToggleLabel="Campos"
     >
-      <Box sx={{ width: '100%', minWidth: 0 }}>
-        <DataGrid
-          rows={posts}
-          columns={columns}
-          disableColumnSelector
-          columnVisibilityModel={columnVisibilityModel}
-          onColumnVisibilityModelChange={setColumnVisibilityModel}
-          loading={loading}
-          getRowId={(row) => row.id}
-          autoHeight
-          disableRowSelectionOnClick
-          pageSizeOptions={[15, 30, 50, 100]}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          sx={{
-            border: 0,
-            width: '100%',
-            minWidth: 0,
-            '& .MuiDataGrid-columnHeaders': { borderTop: 0 },
-            '& .MuiDataGrid-cell': { alignItems: 'center' },
-            '& .MuiDataGrid-main': {
-              overflowX: 'auto',
-            },
-            '& .MuiDataGrid-columnHeaderTitle': {
-              whiteSpace: 'nowrap',
-            },
-            '& .MuiDataGrid-cellContent': {
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
-          }}
-        />
-      </Box>
+      <IntranetDataGrid
+        rows={posts}
+        columns={columns}
+        columnVisibilityModel={columnVisibilityModel}
+        onColumnVisibilityModelChange={setColumnVisibilityModel}
+        loading={loading}
+        getRowId={(row) => row.id}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+      />
 
       <Menu
         anchorEl={menuAnchorEl}

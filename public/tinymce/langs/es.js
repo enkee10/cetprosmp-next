@@ -58,7 +58,7 @@ tinymce.addI18n("es", {
     "Characters": "Caracteres",
     "Characters (no spaces)": "Caracteres (sin espacios)",
     "Circle": "C\xedrculo",
-    "Class": "Clase",
+    "Class": "Ajuste",
     "Clear formatting": "Limpiar formato",
     "Close": "Cerrar",
     "Code": "C\xf3digo",

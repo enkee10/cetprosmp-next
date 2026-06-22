@@ -1,15 +1,17 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Box, FormHelperText } from '@mui/material';
 import { Editor } from '@tinymce/tinymce-react';
 import { getAuth } from 'firebase/auth';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { app, storage } from '@/lib/firebase';
+import { buildPostStorageFilePath } from '@/lib/postStoragePath';
 
 interface PostTinyMceEditorProps {
   value: string;
   onChange: (value: string) => void;
+  postSlug?: string | null;
   disabled?: boolean;
   error?: boolean;
   helperText?: string;
@@ -17,6 +19,7 @@ interface PostTinyMceEditorProps {
 
 const TINYMCE_SCRIPT_SRC = '/tinymce/tinymce.min.js';
 const IMAGE_MAX_BYTES = 8 * 1024 * 1024;
+const VIDEO_MAX_BYTES = 80 * 1024 * 1024;
 
 type TinyMceBlobInfo = {
   blob: () => Blob;
@@ -27,6 +30,10 @@ type TinyMceProgressFn = (percent: number) => void;
 type TinyMceFilePickerCallback = (value: string, meta?: Record<string, unknown>) => void;
 type TinyMceFilePickerMeta = {
   filetype?: string;
+};
+
+type PostStorageTarget = {
+  slug?: string | null;
 };
 
 type TinyMceImageStyleEditor = {
@@ -40,11 +47,6 @@ type TinyMceImageStyleEditor = {
   nodeChanged: () => void;
   selection: { getNode: () => Element };
   setDirty?: (state: boolean) => void;
-};
-
-const buildStorageFileName = (fileName: string) => {
-  const safeName = fileName.replace(/[^a-zA-Z0-9._-]+/g, '-');
-  return `posts/contenido/${Date.now()}_${safeName}`;
 };
 
 const requireUploaderUser = async () => {
@@ -62,16 +64,27 @@ const requireUploaderUser = async () => {
   return currentUser;
 };
 
-const uploadPostImage = async (file: Blob, fileName: string, progress?: TinyMceProgressFn) => {
-  if (file.size > IMAGE_MAX_BYTES) {
-    throw new Error('La imagen no debe superar 8 MB.');
+const uploadPostAsset = async (
+  file: Blob,
+  fileName: string,
+  post: PostStorageTarget,
+  progress?: TinyMceProgressFn,
+) => {
+  const isVideo = file.type.startsWith('video/');
+  const maxBytes = isVideo ? VIDEO_MAX_BYTES : IMAGE_MAX_BYTES;
+  const maxMb = isVideo ? 80 : 8;
+
+  if (file.size > maxBytes) {
+    throw new Error(`El archivo no debe superar ${maxMb} MB.`);
   }
 
   await requireUploaderUser();
   progress?.(10);
 
-  const storageRef = ref(storage, buildStorageFileName(fileName));
-  const snapshot = await uploadBytes(storageRef, file, { contentType: file.type || 'image/jpeg' });
+  const storageRef = ref(storage, buildPostStorageFilePath(post, fileName));
+  const snapshot = await uploadBytes(storageRef, file, {
+    contentType: file.type || (isVideo ? 'video/mp4' : 'image/jpeg'),
+  });
   progress?.(85);
 
   const downloadUrl = await getDownloadURL(snapshot.ref);
@@ -120,6 +133,7 @@ const postEditorContentStyle =
   'html, body { overscroll-behavior: contain; } ' +
   'body { font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 1.65; } ' +
   'img { max-width: 100%; height: auto; } iframe { max-width: 100%; } ' +
+  'table { border-collapse: collapse; max-width: 100%; } td, th { min-width: 24px; } ' +
   'img.post-img-center { display: block; float: none; margin-left: auto; margin-right: auto; } ' +
   'img.post-img-left { float: left; margin-right: 18px; } ' +
   'img.post-img-right { float: right; margin-left: 18px; } ' +
@@ -127,6 +141,21 @@ const postEditorContentStyle =
   'img.post-img-margin-sm { margin-top: 8px; margin-bottom: 8px; } ' +
   'img.post-img-margin-md { margin-top: 14px; margin-bottom: 14px; } ' +
   'img.post-img-margin-lg { margin-top: 24px; margin-bottom: 24px; }';
+
+const postEditorTableToolbar =
+  'tableprops tablecellprops tablerowprops tabledelete | ' +
+  'tableinsertrowbefore tableinsertrowafter tabledeleterow | ' +
+  'tableinsertcolbefore tableinsertcolafter tabledeletecol';
+
+const postEditorTableOptions = {
+  table_toolbar: postEditorTableToolbar,
+  table_sizing_mode: 'fixed',
+  table_style_by_css: true,
+  table_advtab: true,
+  table_cell_advtab: true,
+  table_row_advtab: true,
+  table_appearance_options: true,
+};
 
 const applyImageStyle = (editor: TinyMceImageStyleEditor, className: string) => {
   const image = getSelectedImage(editor);
@@ -154,17 +183,26 @@ const applyImageStyle = (editor: TinyMceImageStyleEditor, className: string) => 
 export default function PostTinyMceEditor({
   value,
   onChange,
+  postSlug,
   disabled = false,
   error = false,
   helperText,
 }: PostTinyMceEditorProps) {
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const postStorageTarget = useMemo(
+    () => ({
+      slug: postSlug,
+    }),
+    [postSlug],
+  );
+  const postStorageTargetRef = useRef<PostStorageTarget>(postStorageTarget);
+  postStorageTargetRef.current = postStorageTarget;
 
   const handleImageUpload = useCallback(async (blobInfo: TinyMceBlobInfo, progress: TinyMceProgressFn) => {
     setUploadError(null);
 
     try {
-      return await uploadPostImage(blobInfo.blob(), blobInfo.filename(), progress);
+      return await uploadPostAsset(blobInfo.blob(), blobInfo.filename(), postStorageTargetRef.current, progress);
     } catch (uploadError: unknown) {
       const message = (uploadError as { message?: string } | null)?.message || 'No se pudo subir la imagen.';
       setUploadError(message);
@@ -175,10 +213,25 @@ export default function PostTinyMceEditor({
   const handleFilePicker = useCallback(
     (callback: TinyMceFilePickerCallback, _value: string, meta: TinyMceFilePickerMeta) => {
       if (meta.filetype === 'media') {
-        const url = window.prompt('Pega el enlace de YouTube o video');
-        if (!url?.trim()) return;
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'video/*';
 
-        callback(getYouTubeEmbedUrl(url), { source2: '', poster: '' });
+        input.onchange = async () => {
+          const file = input.files?.[0];
+          if (!file) return;
+
+          setUploadError(null);
+          try {
+            const downloadUrl = await uploadPostAsset(file, file.name, postStorageTargetRef.current);
+            callback(downloadUrl, { source2: '', poster: '' });
+          } catch (uploadError: unknown) {
+            const message = (uploadError as { message?: string } | null)?.message || 'No se pudo subir el video.';
+            setUploadError(message);
+          }
+        };
+
+        input.click();
         return;
       }
 
@@ -194,7 +247,7 @@ export default function PostTinyMceEditor({
 
         setUploadError(null);
         try {
-          const downloadUrl = await uploadPostImage(file, file.name);
+          const downloadUrl = await uploadPostAsset(file, file.name, postStorageTargetRef.current);
           callback(downloadUrl, { alt: file.name });
         } catch (uploadError: unknown) {
           const message = (uploadError as { message?: string } | null)?.message || 'No se pudo subir la imagen.';
@@ -262,7 +315,7 @@ export default function PostTinyMceEditor({
             toolbar:
               'undo redo | blocks fontfamily fontsize | bold italic underline forecolor backcolor | ' +
               'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | ' +
-              'link image media table | removeformat code preview wideedit',
+              'link image media table tablecellprops tableprops | removeformat code preview wideedit',
             menu: {
               view: {
                 title: 'Ver',
@@ -271,6 +324,7 @@ export default function PostTinyMceEditor({
             },
             quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote',
             quickbars_insert_toolbar: 'quickimage quicktable media',
+            ...postEditorTableOptions,
             file_picker_types: 'file image media',
             file_picker_callback: handleFilePicker,
             images_upload_handler: handleImageUpload,
@@ -281,14 +335,7 @@ export default function PostTinyMceEditor({
             image_title: true,
             image_dimensions: true,
             image_uploadtab: true,
-            image_class_list: [
-              { title: 'Sin estilo', value: '' },
-              { title: 'Centrada - sin margen', value: 'post-img-center post-img-margin-none' },
-              { title: 'Centrada - margen medio', value: 'post-img-center post-img-margin-md' },
-              { title: 'Izquierda - margen medio', value: 'post-img-left post-img-margin-md' },
-              { title: 'Derecha - margen medio', value: 'post-img-right post-img-margin-md' },
-              { title: 'Margen grande', value: 'post-img-center post-img-margin-lg' },
-            ],
+            image_class_list: [{ title: 'Sin ajuste', value: '' }],
             media_live_embeds: true,
             media_alt_source: true,
             media_poster: true,
@@ -313,7 +360,7 @@ export default function PostTinyMceEditor({
             branding: false,
             promotion: false,
             browser_spellcheck: true,
-            contextmenu: 'link image media table',
+            contextmenu: 'link | postimage postmedia posttable | table',
             setup: (editor) => {
               const openWideEditor = () => {
                 let wideEditorLatestContent = editor.getContent();
@@ -364,10 +411,11 @@ export default function PostTinyMceEditor({
                               toolbar:
                                 'undo redo | blocks fontfamily fontsize | bold italic underline forecolor backcolor | ' +
                                 'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | ' +
-                                'link image media table | removeformat code preview',
+                                'link image media table tablecellprops tableprops | removeformat code preview',
                               toolbar_mode: 'wrap',
                               quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote',
                               quickbars_insert_toolbar: 'quickimage quicktable media',
+                              ...postEditorTableOptions,
                               file_picker_types: 'file image media',
                               file_picker_callback: handleFilePicker,
                               images_upload_handler: handleImageUpload,
@@ -378,14 +426,7 @@ export default function PostTinyMceEditor({
                               image_title: true,
                               image_dimensions: true,
                               image_uploadtab: true,
-                              image_class_list: [
-                                { title: 'Sin estilo', value: '' },
-                                { title: 'Centrada - sin margen', value: 'post-img-center post-img-margin-none' },
-                                { title: 'Centrada - margen medio', value: 'post-img-center post-img-margin-md' },
-                                { title: 'Izquierda - margen medio', value: 'post-img-left post-img-margin-md' },
-                                { title: 'Derecha - margen medio', value: 'post-img-right post-img-margin-md' },
-                                { title: 'Margen grande', value: 'post-img-center post-img-margin-lg' },
-                              ],
+                              image_class_list: [{ title: 'Sin ajuste', value: '' }],
                               media_live_embeds: true,
                               media_alt_source: true,
                               media_poster: true,
@@ -410,7 +451,7 @@ export default function PostTinyMceEditor({
                               branding: false,
                               promotion: false,
                               browser_spellcheck: true,
-                              contextmenu: 'link image media table',
+                              contextmenu: 'link | postimage postmedia posttable | table',
                               setup: (wideEditor) => {
                                 const rememberWideContent = () => {
                                   wideEditorLatestContent = wideEditor.getContent();
@@ -421,6 +462,42 @@ export default function PostTinyMceEditor({
                                     wideEditorLatestContent = nextContent;
                                   }
                                 };
+
+                                wideEditor.ui.registry.addMenuItem('postimage', {
+                                  text: 'Imagen...',
+                                  icon: 'image',
+                                  onAction: () => wideEditor.execCommand('mceImage'),
+                                  onSetup: (api) => {
+                                    const toggle = () => api.setEnabled(wideEditor.selection.isEditable());
+                                    wideEditor.on('NodeChange', toggle);
+                                    toggle();
+                                    return () => wideEditor.off('NodeChange', toggle);
+                                  },
+                                });
+
+                                wideEditor.ui.registry.addMenuItem('postmedia', {
+                                  text: 'Medios...',
+                                  icon: 'embed',
+                                  onAction: () => wideEditor.execCommand('mceMedia'),
+                                  onSetup: (api) => {
+                                    const toggle = () => api.setEnabled(wideEditor.selection.isEditable());
+                                    wideEditor.on('NodeChange', toggle);
+                                    toggle();
+                                    return () => wideEditor.off('NodeChange', toggle);
+                                  },
+                                });
+
+                                wideEditor.ui.registry.addMenuItem('posttable', {
+                                  text: 'Tabla...',
+                                  icon: 'table',
+                                  onAction: () => wideEditor.execCommand('mceInsertTableDialog'),
+                                  onSetup: (api) => {
+                                    const toggle = () => api.setEnabled(wideEditor.selection.isEditable());
+                                    wideEditor.on('NodeChange', toggle);
+                                    toggle();
+                                    return () => wideEditor.off('NodeChange', toggle);
+                                  },
+                                });
 
                                 wideEditor.ui.registry.addMenuButton('imagemargins', {
                                   text: 'Imagen',
@@ -502,6 +579,42 @@ export default function PostTinyMceEditor({
                   },
                 });
               };
+
+              editor.ui.registry.addMenuItem('postimage', {
+                text: 'Imagen...',
+                icon: 'image',
+                onAction: () => editor.execCommand('mceImage'),
+                onSetup: (api) => {
+                  const toggle = () => api.setEnabled(editor.selection.isEditable());
+                  editor.on('NodeChange', toggle);
+                  toggle();
+                  return () => editor.off('NodeChange', toggle);
+                },
+              });
+
+              editor.ui.registry.addMenuItem('postmedia', {
+                text: 'Medios...',
+                icon: 'embed',
+                onAction: () => editor.execCommand('mceMedia'),
+                onSetup: (api) => {
+                  const toggle = () => api.setEnabled(editor.selection.isEditable());
+                  editor.on('NodeChange', toggle);
+                  toggle();
+                  return () => editor.off('NodeChange', toggle);
+                },
+              });
+
+              editor.ui.registry.addMenuItem('posttable', {
+                text: 'Tabla...',
+                icon: 'table',
+                onAction: () => editor.execCommand('mceInsertTableDialog'),
+                onSetup: (api) => {
+                  const toggle = () => api.setEnabled(editor.selection.isEditable());
+                  editor.on('NodeChange', toggle);
+                  toggle();
+                  return () => editor.off('NodeChange', toggle);
+                },
+              });
 
               editor.ui.registry.addButton('wideedit', {
                 icon: 'fullscreen',

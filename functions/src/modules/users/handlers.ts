@@ -56,6 +56,57 @@ const LIST_USERS_QUERY = `
   }
 `;
 
+const isTransientDataConnectSqlError = (error: unknown): boolean => {
+  const message = [
+    String((error as { message?: string } | null)?.message || ""),
+    String((error as { stack?: string } | null)?.stack || ""),
+    String(error || ""),
+  ].join("\n");
+
+  return (
+    message.includes("unexpected message 'E'; expected ReadyForQuery")
+    || message.includes("Failed to prepare SQL statement")
+    || message.includes("Cannot prepare SQL statement")
+    || message.includes("code = FailedPrecondition")
+  );
+};
+
+const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+let listUsersQueryQueue: Promise<unknown> = Promise.resolve();
+
+async function executeListUsersQuery(): Promise<Array<Record<string, unknown>>> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await dataConnect.executeGraphql<{
+        users: Array<Record<string, unknown>>;
+      }, Record<string, never>>(LIST_USERS_QUERY);
+
+      return response.data.users ?? [];
+    } catch (error) {
+      lastError = error;
+      if (!isTransientDataConnectSqlError(error) || attempt >= 2) {
+        throw error;
+      }
+
+      console.warn(`Transient Data Connect listUsers failure, retrying attempt ${attempt + 2}.`, error);
+      await wait(200 * (attempt + 1));
+    }
+  }
+
+  throw lastError;
+}
+
+async function executeListUsersQuerySerialized(): Promise<Array<Record<string, unknown>>> {
+  const runAfterPrevious = listUsersQueryQueue.catch(() => undefined);
+  const current = runAfterPrevious.then(() => executeListUsersQuery());
+
+  listUsersQueryQueue = current.catch(() => undefined);
+  return current;
+}
+
 function isStudentToTeacherOrHigherTransition(
   previousRoleId: number | null | undefined,
   nextRoleId: number | null | undefined,
@@ -116,10 +167,7 @@ export const listUsers = https.onCall(async (_data, context) => {
   }
 
   try {
-    const response = await dataConnect.executeGraphql<{
-      users: Array<Record<string, unknown>>;
-    }, Record<string, never>>(LIST_USERS_QUERY);
-    const users = (response.data.users ?? []).map((user) => ({
+    const users = (await executeListUsersQuerySerialized()).map((user) => ({
       ...user,
       bloqueado: Boolean(user.blocked),
       rolId: user.rolId ? String(user.rolId) : "",

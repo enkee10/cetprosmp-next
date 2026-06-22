@@ -12,7 +12,6 @@ import {
   Stack,
 } from '@mui/material';
 import {
-  DataGrid,
   GridColDef,
   GridColumnVisibilityModel,
   GridPaginationModel,
@@ -20,6 +19,7 @@ import {
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
+import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import UserForm from '@/components/intranet/users/UserForm';
 import Modal1 from '@/components/Modal1';
 import { useAuth } from '@/context/AuthContext';
@@ -134,6 +134,7 @@ const UsersPage = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userFormResetKey, setUserFormResetKey] = useState(0);
   const errorMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchUsersInFlightRef = useRef<Promise<void> | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuUser, setMenuUser] = useState<User | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
@@ -169,46 +170,64 @@ const UsersPage = () => {
 
   const fetchUsers = useCallback(
     async (attempt = 0) => {
-      if (!user) {
-        setUsers([]);
-        setLoading(false);
-        return;
+      if (attempt === 0 && fetchUsersInFlightRef.current) {
+        return fetchUsersInFlightRef.current;
       }
 
-      setLoading(true);
-      setErrorMessage(null);
-      try {
-        const result = await listUsers();
-        const normalizedUsers: User[] = (result.data.users || []).map((row) => {
-          const roleRaw = row.rolId;
-          const roleParsed =
-            typeof roleRaw === 'string' ? Number(roleRaw) : Number(roleRaw ?? NaN);
-          return {
-            ...(row as unknown as User),
-            blocked: Boolean(row.blocked),
-            bloqueado: Boolean(row.bloqueado ?? row.blocked),
-            rolId: Number.isFinite(roleParsed) ? roleParsed : null,
-          };
-        });
-        setUsers(normalizedUsers);
-      } catch (error) {
-        if (isDeadlineExceededError(error) && attempt < 1) {
-          await new Promise((resolve) => setTimeout(resolve, 900));
-          await fetchUsers(attempt + 1);
+      const run = async () => {
+        if (!user) {
+          setUsers([]);
+          setLoading(false);
           return;
         }
 
-        console.error('Error fetching users: ', error);
-        if (isPermissionDeniedDataConnectError(error)) {
-          setErrorMessage(
-            'No tienes acceso para listar usuarios (se requiere claim level >= 600). Cierra sesion e inicia nuevamente para refrescar claims.',
-          );
-        } else {
-          setErrorMessage('No se pudo cargar la lista de usuarios desde Data Connect.');
+        setLoading(true);
+        setErrorMessage(null);
+        try {
+          const result = await listUsers();
+          const normalizedUsers: User[] = (result.data.users || []).map((row) => {
+            const roleRaw = row.rolId;
+            const roleParsed =
+              typeof roleRaw === 'string' ? Number(roleRaw) : Number(roleRaw ?? NaN);
+            return {
+              ...(row as unknown as User),
+              blocked: Boolean(row.blocked),
+              bloqueado: Boolean(row.bloqueado ?? row.blocked),
+              rolId: Number.isFinite(roleParsed) ? roleParsed : null,
+            };
+          });
+          setUsers(normalizedUsers);
+        } catch (error) {
+          if (isDeadlineExceededError(error) && attempt < 1) {
+            await new Promise((resolve) => setTimeout(resolve, 900));
+            await fetchUsers(attempt + 1);
+            return;
+          }
+
+          console.error('Error fetching users: ', error);
+          if (isPermissionDeniedDataConnectError(error)) {
+            setErrorMessage(
+              'No tienes acceso para listar usuarios (se requiere claim level >= 600). Cierra sesion e inicia nuevamente para refrescar claims.',
+            );
+          } else {
+            setErrorMessage('No se pudo cargar la lista de usuarios desde Data Connect.');
+          }
+        } finally {
+          setLoading(false);
         }
-      } finally {
-        setLoading(false);
+      };
+
+      const promise = run();
+      if (attempt === 0) {
+        fetchUsersInFlightRef.current = promise;
+        promise.finally(() => {
+          if (fetchUsersInFlightRef.current === promise) {
+            fetchUsersInFlightRef.current = null;
+          }
+        });
       }
+
+      return promise;
     },
     [listUsers, user],
   );
@@ -380,11 +399,13 @@ const UsersPage = () => {
       {
         field: 'avatar',
         headerName: 'Avatar',
-        width: 70,
+        width: 60,
         sortable: false,
         filterable: false,
         renderCell: (params) => {
           const { avatar, nombre, apellidoPaterno } = params.row as User;
+          const initials =
+            nombre && apellidoPaterno ? `${nombre[0]}${apellidoPaterno[0]}`.toUpperCase() : null;
           return (
             <Box
               sx={{
@@ -395,21 +416,17 @@ const UsersPage = () => {
                 justifyContent: 'flex-start',
               }}
             >
-              <Avatar src={avatar || undefined}>
-                {!avatar && nombre && apellidoPaterno
-                  ? `${nombre[0]}${apellidoPaterno[0]}`.toUpperCase()
-                  : null}
-              </Avatar>
+              <Avatar src={avatar || undefined}>{initials}</Avatar>
             </Box>
           );
         },
       },
-      { field: 'username', headerName: 'Username', flex: 1, minWidth: 120 },
+      { field: 'username', headerName: 'Username', flex: 1, minWidth: 150 },
       {
         field: 'correoInstitucional',
         headerName: 'Correo Institucional',
         flex: 1.35,
-        minWidth: 190,
+        minWidth: 150,
         renderCell: (params) => {
           const row = params.row as User;
           return row.correoInstitucional ?? row.correo_institucional ?? '';
@@ -422,7 +439,7 @@ const UsersPage = () => {
         field: 'fechaNacimiento',
         headerName: 'Fech. Nac.',
         flex: 0.75,
-        minWidth: 110,
+        minWidth: 100,
         renderCell: (params) => formatDateAsDayMonthYear(params.value),
       },
       { field: 'dni', headerName: 'N° de documento', flex: 0.8, minWidth: 135 },
@@ -433,8 +450,10 @@ const UsersPage = () => {
       {
         field: 'rolId',
         headerName: 'Rol',
-        flex: 0.6,
-        minWidth: 80,
+        align: 'center',
+        headerAlign: 'center',
+        width: 60,
+        minWidth: 60,
         renderCell: (params) => {
           const row = params.row as User;
           return typeof row.rolId === 'number' ? String(row.rolId) : 'Sin rol';
@@ -515,40 +534,16 @@ const UsersPage = () => {
       }
       columnToggleLabel="Campos"
     >
-      <Box sx={{ width: '100%', minWidth: 0 }}>
-        <DataGrid
-          rows={users}
-          columns={columns}
-          disableColumnSelector
-          columnVisibilityModel={columnVisibilityModel}
-          onColumnVisibilityModelChange={setColumnVisibilityModel}
-          loading={loading}
-          getRowId={(row) => row.id}
-          autoHeight
-          disableRowSelectionOnClick
-          pageSizeOptions={[15, 30, 50, 100]}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          sx={{
-            border: 0,
-            width: '100%',
-            minWidth: 0,
-            '& .MuiDataGrid-columnHeaders': { borderTop: 0 },
-            '& .MuiDataGrid-cell': { alignItems: 'center' },
-            '& .MuiDataGrid-main': {
-              overflowX: 'auto',
-            },
-            '& .MuiDataGrid-columnHeaderTitle': {
-              whiteSpace: 'nowrap',
-            },
-            '& .MuiDataGrid-cellContent': {
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
-          }}
-        />
-      </Box>
+      <IntranetDataGrid
+        rows={users}
+        columns={columns}
+        columnVisibilityModel={columnVisibilityModel}
+        onColumnVisibilityModelChange={setColumnVisibilityModel}
+        loading={loading}
+        getRowId={(row) => row.id}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+      />
 
       <Menu
         anchorEl={menuAnchorEl}
@@ -592,16 +587,18 @@ const UsersPage = () => {
         onClose={handleDismissUserModal}
         title={selectedUser ? 'Editar Usuario' : 'Agregar Usuario'}
       >
-        <UserForm
-          key={`${selectedUser ? selectedUser.id : 'new-user'}-${userFormResetKey}`}
-          onCancel={handleDismissUserModal}
-          onSubmit={handleFormSubmit}
-          isSubmitting={formSubmitting}
-          submittingMessage={selectedUser ? 'Guardando cambios...' : 'Creando usuario...'}
-          initialData={
-            selectedUser ? (selectedUser as unknown as Record<string, unknown>) : undefined
-          }
-        />
+        {formOpen ? (
+          <UserForm
+            key={`${selectedUser ? selectedUser.id : 'new-user'}-${userFormResetKey}`}
+            onCancel={handleDismissUserModal}
+            onSubmit={handleFormSubmit}
+            isSubmitting={formSubmitting}
+            submittingMessage={selectedUser ? 'Guardando cambios...' : 'Creando usuario...'}
+            initialData={
+              selectedUser ? (selectedUser as unknown as Record<string, unknown>) : undefined
+            }
+          />
+        ) : null}
       </Modal1>
     </IntranetListLayout>
   );

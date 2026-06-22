@@ -21,6 +21,7 @@ import {
 import { getAuth } from 'firebase/auth';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { app, storage } from '@/lib/firebase';
+import { buildPostStorageFilePath } from '@/lib/postStoragePath';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import PostTinyMceEditor from './PostTinyMceEditor';
 
@@ -159,6 +160,16 @@ export default function PostForm({
   const titulo = watch('titulo');
   const slug = watch('slug');
   const imagenPortadaUrl = watch('imagenPortadaUrl');
+  const initialSlug = normalizeSlug(asString(initialData?.slug));
+  const currentSlug = normalizeSlug(asString(slug));
+  const storageSlug = initialSlug || currentSlug;
+  const hasStorageSlug = Boolean(storageSlug);
+  const postStorageTarget = useMemo(
+    () => ({
+      slug: storageSlug,
+    }),
+    [storageSlug],
+  );
 
   const getInitialFormValues = useCallback((): PostFormValues => {
     if (!initialData) return defaultValues;
@@ -215,6 +226,11 @@ export default function PostForm({
     setIsUploading(true);
 
     try {
+      if (!hasStorageSlug) {
+        setUploadError('Completa el slug antes de subir archivos.');
+        return;
+      }
+
       const currentUser = auth.currentUser;
       if (!currentUser) {
         setUploadError('Debes iniciar sesion para subir imagenes.');
@@ -228,8 +244,7 @@ export default function PostForm({
         return;
       }
 
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
-      const storageRef = ref(storage, `posts/${Date.now()}_${safeName}`);
+      const storageRef = ref(storage, buildPostStorageFilePath(postStorageTarget, file.name));
       const snapshot = await uploadBytes(storageRef, file, { contentType: file.type });
       const downloadUrl = await getDownloadURL(snapshot.ref);
       setValue('imagenPortadaUrl', downloadUrl, { shouldDirty: true, shouldValidate: true });
@@ -371,9 +386,14 @@ export default function PostForm({
                 <PostTinyMceEditor
                   value={field.value || ''}
                   onChange={field.onChange}
-                  disabled={isSubmitting}
+                  postSlug={storageSlug}
+                  disabled={isSubmitting || !hasStorageSlug}
                   error={!!errors.contenido}
-                  helperText={errors.contenido?.message}
+                  helperText={
+                    !hasStorageSlug
+                      ? 'Completa el slug antes de editar el contenido.'
+                      : errors.contenido?.message
+                  }
                 />
               )}
             />
@@ -417,10 +437,18 @@ export default function PostForm({
                 style={{ display: 'none' }}
                 onChange={handleCoverChange}
               />
-              <Button variant="outlined" onClick={() => coverInputRef.current?.click()} disabled={isUploading}>
+              <Button
+                variant="outlined"
+                onClick={() => coverInputRef.current?.click()}
+                disabled={isUploading || !hasStorageSlug}
+              >
                 {isUploading ? <CircularProgress size={22} /> : 'Subir portada'}
               </Button>
-              {uploadError ? (
+              {!hasStorageSlug ? (
+                <Typography variant="caption" color="text.secondary">
+                  Completa el slug para subir archivos.
+                </Typography>
+              ) : uploadError ? (
                 <Typography variant="caption" color="error">
                   {uploadError}
                 </Typography>

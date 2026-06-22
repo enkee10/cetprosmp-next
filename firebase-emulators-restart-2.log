@@ -1,0 +1,325 @@
+
+> mi-frontend@0.1.0 emulators:safe
+> set "JAVA_HOME=C:\Tools\jdk-21"&& set "PATH=C:\Tools\jdk-21\bin;%PATH%"&& npx -y firebase-tools@latest emulators:start --only auth,functions,firestore,storage,dataconnect --project cetprosmp-2026 --import=./exportedData --export-on-exit=./exportedData
+
+[2026-06-21T13:48:39.262Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[2026-06-21T13:48:39.263Z] > authorizing via signed-in user (enkee03@cetprosmp.edu.pe)
+[2026-06-21T13:48:39.314Z] openjdk version "21.0.11" 2026-04-21 LTS
+OpenJDK Runtime Environment Microsoft-13877171 (build 21.0.11+10-LTS)
+
+[2026-06-21T13:48:39.317Z] OpenJDK 64-Bit Server VM Microsoft-13877171 (build 21.0.11+10-LTS, mixed mode, sharing)
+
+[2026-06-21T13:48:39.321Z] Parsed Java major version: 21
+i  emulators: Starting emulators: auth, functions, firestore, storage, dataconnect {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: auth, functions, firestore, storage, dataconnect"}}
+[2026-06-21T13:48:39.332Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-06-21T13:48:39.332Z] [auth] Authentication Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-06-21T13:48:39.332Z] [firestore] Firestore Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-06-21T13:48:39.333Z] [firestore.websocket] websocket server for firestore only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-06-21T13:48:39.333Z] [storage] Storage Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+!  dataconnect: postgres server for dataconnect unable to start on port 5432, starting on 5433 instead. {"metadata":{"emulator":{"name":"dataconnect"},"message":"postgres server for dataconnect unable to start on port 5432, starting on 5433 instead."}}
+[2026-06-21T13:48:39.333Z] [dataconnect.postgres] postgres server for dataconnect only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-06-21T13:48:39.334Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}],"dataconnect":[{"address":"127.0.0.1","family":"IPv4","port":9399},{"address":"::1","family":"IPv6","port":9399}],"dataconnect.postgres":[{"address":"127.0.0.1","family":"IPv4","port":5433}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[2026-06-21T13:48:39.338Z] Write emulator hub locator at C:\Users\Enrique\AppData\Local\Temp\hub-cetprosmp-2026.json
+[2026-06-21T13:48:39.346Z] Checked if tokens are valid: true, expires at: 1782052567239
+[2026-06-21T13:48:39.346Z] Checked if tokens are valid: true, expires at: 1782052567239
+[2026-06-21T13:48:39.347Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026 [none]
+[2026-06-21T13:48:39.776Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026 200
+[2026-06-21T13:48:39.776Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026 {"projectId":"cetprosmp-2026","projectNumber":"242152120618","displayName":"cetprosmp","name":"projects/cetprosmp-2026","resources":{"hostingSite":"cetprosmp-2026"},"state":"ACTIVE","etag":"1_c5d0d42c-4f39-4704-bfe7-a42c7b2a55f1"}
+[2026-06-21T13:48:39.779Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-06-21T13:48:39.780Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-06-21T13:48:39.780Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-06-21T13:48:39.780Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}],"dataconnect":[{"address":"127.0.0.1","family":"IPv4","port":9399},{"address":"::1","family":"IPv6","port":9399}],"dataconnect.postgres":[{"address":"127.0.0.1","family":"IPv4","port":5433}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+!  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, database, hosting, pubsub {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, database, hosting, pubsub\u001b[22m"}}
+!  functions: Application Default Credentials detected. Non-emulated services will access production using these credentials. Be careful! {"metadata":{"emulator":{"name":"functions"},"message":"Application Default Credentials detected. Non-emulated services will access production using these credentials. Be careful!"}}
+[2026-06-21T13:48:40.899Z] Checked if tokens are valid: true, expires at: 1782052567239
+[2026-06-21T13:48:40.899Z] Checked if tokens are valid: true, expires at: 1782052567239
+[2026-06-21T13:48:40.899Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026/adminSdkConfig [none]
+[2026-06-21T13:48:41.341Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026/adminSdkConfig 200
+[2026-06-21T13:48:41.342Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026/adminSdkConfig {"projectId":"cetprosmp-2026","storageBucket":"cetprosmp-2026.firebasestorage.app"}
+i  firestore: Importing data from D:\_Desarrollo\cetprosmp-next\exportedData\firestore_export\firestore_export.overall_export_metadata {"metadata":{"emulator":{"name":"firestore"},"message":"Importing data from D:\\_Desarrollo\\cetprosmp-next\\exportedData\\firestore_export\\firestore_export.overall_export_metadata"}}
+[2026-06-21T13:48:41.362Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: auto_download"}}
+[2026-06-21T13:48:41.362Z] Ignoring unsupported arg: single_project_mode_error {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: single_project_mode_error"}}
+[2026-06-21T13:48:41.362Z] Starting Firestore Emulator with command {"binary":"java","args":["-Dgoogle.cloud_firestore.debug_log_level=FINE","-Duser.language=en","-jar","C:\\Users\\Enrique\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.21.0.jar","--host","127.0.0.1","--port",8080,"--websocket_port",9150,"--database-edition","standard","--project_id","cetprosmp-2026","--seed_from_export","D:\\_Desarrollo\\cetprosmp-next\\exportedData\\firestore_export\\firestore_export.overall_export_metadata","--rules","D:\\_Desarrollo\\cetprosmp-next\\firestore.rules","--single_project_mode",true,"--functions_emulator","127.0.0.1:5001"],"optionalArgs":["port","webchannel_port","host","rules","websocket_port","database-edition","functions_emulator","seed_from_export","project_id","single_project_mode"],"joinArgs":false,"shell":false,"port":8080} {"metadata":{"emulator":{"name":"firestore"},"message":"Starting Firestore Emulator with command {\"binary\":\"java\",\"args\":[\"-Dgoogle.cloud_firestore.debug_log_level=FINE\",\"-Duser.language=en\",\"-jar\",\"C:\\\\Users\\\\Enrique\\\\.cache\\\\firebase\\\\emulators\\\\cloud-firestore-emulator-v1.21.0.jar\",\"--host\",\"127.0.0.1\",\"--port\",8080,\"--websocket_port\",9150,\"--database-edition\",\"standard\",\"--project_id\",\"cetprosmp-2026\",\"--seed_from_export\",\"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\exportedData\\\\firestore_export\\\\firestore_export.overall_export_metadata\",\"--rules\",\"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\firestore.rules\",\"--single_project_mode\",true,\"--functions_emulator\",\"127.0.0.1:5001\"],\"optionalArgs\":[\"port\",\"webchannel_port\",\"host\",\"rules\",\"websocket_port\",\"database-edition\",\"functions_emulator\",\"seed_from_export\",\"project_id\",\"single_project_mode\"],\"joinArgs\":false,\"shell\":false,\"port\":8080}"}}
+i  firestore: Firestore Emulator logging to firestore-debug.log {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator logging to \u001b[1mfirestore-debug.log\u001b[22m"}}
+[2026-06-21T13:48:42.498Z] Jun 21, 2026 8:48:42 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://127.0.0.1:9150
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jun 21, 2026 8:48:42 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start\r\nINFO: Started WebSocket server on ws://127.0.0.1:9150\r\n"}}
+[2026-06-21T13:48:42.535Z] 
+API endpoint: http:// {"metadata":{"emulator":{"name":"firestore"},"message":"\nAPI endpoint: http://"}}
+[2026-06-21T13:48:42.536Z] 127.0.0.1:8080
+Database Edition: STANDARD
+Database Mode: CLOUD_FIRESTORE
+
+If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+
+If you are running a Firestore in Datastore Mode project, run:
+
+   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080
+
+Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
+Dev App Server is now running.
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"127.0.0.1:8080\nDatabase Edition: STANDARD\nDatabase Mode: CLOUD_FIRESTORE\n\nIf you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:\r\n\n   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080\n\nIf you are running a Firestore in Datastore Mode project, run:\r\n\n   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080\n\nNote: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.\r\nDev App Server is now running.\n\r\n"}}
++  firestore: Firestore Emulator was started in standard edition. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator was started in standard edition."}}
++  firestore: Firestore Emulator UI websocket is running on 9150. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator UI websocket is running on 9150."}}
+i  auth: Importing config from D:\_Desarrollo\cetprosmp-next\exportedData\auth_export\config.json {"metadata":{"emulator":{"name":"auth"},"message":"Importing config from D:\\_Desarrollo\\cetprosmp-next\\exportedData\\auth_export\\config.json"}}
+i  auth: Importing accounts from D:\_Desarrollo\cetprosmp-next\exportedData\auth_export\accounts.json {"metadata":{"emulator":{"name":"auth"},"message":"Importing accounts from D:\\_Desarrollo\\cetprosmp-next\\exportedData\\auth_export\\accounts.json"}}
+i  dataconnect: Importing data from D:\_Desarrollo\cetprosmp-next\exportedData\dataconnect_export {"metadata":{"emulator":{"name":"dataconnect"},"message":"Importing data from D:\\_Desarrollo\\cetprosmp-next\\exportedData\\dataconnect_export"}}
+[2026-06-21T13:48:49.003Z] defaultcredentials: writing to file C:\Users\Enrique\AppData\Roaming\firebase\enkee03_cetprosmp_edu.pe_application_default_credentials.json
+[2026-06-21T13:48:49.225Z] I0621 08:48:49.142250   26504 control.go:94] [/emulator/cetprosmp-2026-service fd24] UpdateResources(): done
+Main schema: sources: schema\schema.gql [10157B] 
+Connector "default": sources: example\mutations.gql [1673B] example\queries.gql [1811B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0621 08:48:49.142250   26504 control.go:94] [/emulator/cetprosmp-2026-service fd24] UpdateResources(): done\nMain schema: sources: schema\\schema.gql [10157B] \nConnector \"default\": sources: example\\mutations.gql [1673B] example\\queries.gql [1811B] \n"}}
+[2026-06-21T13:48:49.225Z] defaultcredentials: writing to file C:\Users\Enrique\AppData\Roaming\firebase\enkee03_cetprosmp_edu.pe_application_default_credentials.json
+[2026-06-21T13:48:49.228Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"dataconnect"},"message":"Ignoring unsupported arg: auto_download"}}
+[2026-06-21T13:48:49.229Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"dataconnect"},"message":"Ignoring unsupported arg: port"}}
+[2026-06-21T13:48:49.229Z] Starting SQL Connect Emulator with command {"binary":"C:\\Users\\Enrique\\.cache\\firebase\\emulators\\dataconnect-emulator-3.4.12.exe","args":["--logtostderr","-v=2","dev","--listen=127.0.0.1:9399,[::1]:9399","--config_dir=D:\\_Desarrollo\\cetprosmp-next\\dataconnect","--enable_output_schema_extensions=true","--enable_output_generated_sdk=true"],"optionalArgs":["listen","config_dir","enable_output_schema_extensions","enable_output_generated_sdk"],"joinArgs":true,"shell":false,"port":9399} {"metadata":{"emulator":{"name":"dataconnect"},"message":"Starting SQL Connect Emulator with command {\"binary\":\"C:\\\\Users\\\\Enrique\\\\.cache\\\\firebase\\\\emulators\\\\dataconnect-emulator-3.4.12.exe\",\"args\":[\"--logtostderr\",\"-v=2\",\"dev\",\"--listen=127.0.0.1:9399,[::1]:9399\",\"--config_dir=D:\\\\_Desarrollo\\\\cetprosmp-next\\\\dataconnect\",\"--enable_output_schema_extensions=true\",\"--enable_output_generated_sdk=true\"],\"optionalArgs\":[\"listen\",\"config_dir\",\"enable_output_schema_extensions\",\"enable_output_generated_sdk\"],\"joinArgs\":true,\"shell\":false,\"port\":9399}"}}
+i  dataconnect: SQL Connect Emulator logging to dataconnect-debug.log {"metadata":{"emulator":{"name":"dataconnect"},"message":"SQL Connect Emulator logging to \u001b[1mdataconnect-debug.log\u001b[22m"}}
+i  dataconnect: Started up Postgres server, listening on {"address":"127.0.0.1","family":"IPv4","port":5433} {"metadata":{"emulator":{"name":"dataconnect"},"message":"Started up Postgres server, listening on {\"address\":\"127.0.0.1\",\"family\":\"IPv4\",\"port\":5433}"}}
+[2026-06-21T13:48:49.265Z] [SQL Connect] Connecting to postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable}...
+[2026-06-21T13:48:49.266Z] >>> [apiv2][query] POST http://127.0.0.1:9399/emulator/configure [none]
+[2026-06-21T13:48:49.266Z] >>> [apiv2][body] POST http://127.0.0.1:9399/emulator/configure {"connectionString":"postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable","database":"cetprosmp-db","serviceId":"cetprosmp-2026-service"}
+[2026-06-21T13:48:49.270Z] *** [apiv2] error from fetch(http://127.0.0.1:9399/emulator/configure, {"headers":{},"method":"POST","body":"{\"connectionString\":\"postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable\",\"database\":\"cetprosmp-db\",\"serviceId\":\"cetprosmp-2026-service\"}"}): FetchError: request to http://127.0.0.1:9399/emulator/configure failed, reason: connect ECONNREFUSED 127.0.0.1:9399
+[2026-06-21T13:48:49.271Z] [SQL Connect] Retrying connectToPostgress call (1 of 3 attempts): SQL Connect emulator: FirebaseError: Failed to make request to http://127.0.0.1:9399/emulator/configure
+[2026-06-21T13:48:49.272Z] I0621 08:48:49.254606   22544 load.go:31] Reloading schema and connectors...
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0621 08:48:49.254606   22544 load.go:31] Reloading schema and connectors...\n"}}
+[2026-06-21T13:48:49.474Z] I0621 08:48:49.475424   22544 control.go:94] [/emulator/cetprosmp-2026-service badd] UpdateResources(): done
+Main schema: sources: schema\schema.gql [10157B] 
+Connector "default": sources: example\mutations.gql [1673B] example\queries.gql [1811B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0621 08:48:49.475424   22544 control.go:94] [/emulator/cetprosmp-2026-service badd] UpdateResources(): done\nMain schema: sources: schema\\schema.gql [10157B] \nConnector \"default\": sources: example\\mutations.gql [1673B] example\\queries.gql [1811B] \n"}}
+[2026-06-21T13:48:49.635Z] I0621 08:48:49.635668   22544 codegen.go:79] [connector "default" javascriptSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0621 08:48:49.635668   22544 codegen.go:79] [connector \"default\" javascriptSdk] Generating sources into \"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\src\\\\dataconnect-generated\"\n"}}
+[2026-06-21T13:48:49.646Z] I0621 08:48:49.647241   22544 collector.go:107] schema extensions wrote into "D:\\_Desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
+Generated sources: prelude.gql [73219B] main\input.gql [290315B] main\relation.gql [170187B] main\query.gql [34221B] main\mutation.gql [91550B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0621 08:48:49.647241   22544 collector.go:107] schema extensions wrote into \"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\dataconnect\\\\.dataconnect\\\\schema\"\nGenerated sources: prelude.gql [73219B] main\\input.gql [290315B] main\\relation.gql [170187B] main\\query.gql [34221B] main\\mutation.gql [91550B] \n"}}
+[2026-06-21T13:48:49.650Z] I0621 08:48:49.651241   22544 collector.go:107] connector "default" javascriptSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+Generated sources: react\package.json [460B] esm\package.json [17B] react\esm\package.json [17B] react\esm\index.esm.js [3611B] react\README.md [52811B] .guides/setup.md [1682B] esm\index.esm.js [3927B] index.cjs.js [4482B] react\index.cjs.js [3804B] .guides/usage.md [3712B] package.json [863B] react\index.d.ts [4313B] .guides/config.json [236B] index.d.ts [11951B] README.md [46789B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0621 08:48:49.651241   22544 collector.go:107] connector \"default\" javascriptSdk wrote into \"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\src\\\\dataconnect-generated\"\nGenerated sources: react\\package.json [460B] esm\\package.json [17B] react\\esm\\package.json [17B] react\\esm\\index.esm.js [3611B] react\\README.md [52811B] .guides/setup.md [1682B] esm\\index.esm.js [3927B] index.cjs.js [4482B] react\\index.cjs.js [3804B] .guides/usage.md [3712B] package.json [863B] react\\index.d.ts [4313B] .guides/config.json [236B] index.d.ts [11951B] README.md [46789B] \n"}}
+[2026-06-21T13:48:49.676Z] I0621 08:48:49.676481   22544 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
+I0621 08:48:49.676481   22544 load.go:109] Finished reloading
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0621 08:48:49.676481   22544 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation\nI0621 08:48:49.676481   22544 load.go:109] Finished reloading\n"}}
+[2026-06-21T13:48:49.676Z] I0621 08:48:49.677863   22544 dev.go:105] Listening on address (HTTP + gRPC): 127.0.0.1:9399
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0621 08:48:49.677863   22544 dev.go:105] Listening on address (HTTP + gRPC): 127.0.0.1:9399\n"}}
+[2026-06-21T13:48:49.677Z] I0621 08:48:49.677930   22544 dev.go:105] Listening on address (HTTP + gRPC): [::1]:9399
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0621 08:48:49.677930   22544 dev.go:105] Listening on address (HTTP + gRPC): [::1]:9399\n"}}
+[2026-06-21T13:48:51.285Z] [SQL Connect] Connecting to postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable}...
+[2026-06-21T13:48:51.286Z] >>> [apiv2][query] POST http://127.0.0.1:9399/emulator/configure [none]
+[2026-06-21T13:48:51.286Z] >>> [apiv2][body] POST http://127.0.0.1:9399/emulator/configure {"connectionString":"postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable","database":"cetprosmp-db","serviceId":"cetprosmp-2026-service"}
+[2026-06-21T13:48:51.304Z] Importing from D:\_Desarrollo\cetprosmp-next\exportedData\dataconnect_export\postgres.tar.gz
+[2026-06-21T13:48:52.362Z] I0621 08:48:52.363307   22544 migrate.go:24] Running migration SQL:
+Step 1: CREATE TABLE "public"."planes" ("id" serial NOT NULL, "act_economica_id" integer NULL, "codigo" text NULL, "creditos" integer NULL, "descripcion" text NULL, "descripcion_2" text NULL, "duracion" text NULL, "nivel" text NULL, "slug" text NULL, "titulo" text NULL, "titulo_comercial" text NULL, "version" text NULL, PRIMARY KEY ("id"), CONSTRAINT "planes_act_economica_id_fkey" FOREIGN KEY ("act_economica_id") REFERENCES "public"."act_economicas" ("id") ON DELETE SET NULL)
+Step 2: CREATE INDEX "planes_actEconomicaId_idx" ON "public"."planes" ("act_economica_id")
+Step 3: ALTER TABLE "public"."modulos" DROP COLUMN "carrera_id", ADD COLUMN "plan_id" integer NULL, ADD CONSTRAINT "modulos_plan_id_fkey" FOREIGN KEY ("plan_id") REFERENCES "public"."planes" ("id") ON DELETE SET NULL
+Step 4: CREATE INDEX "modulos_planId_idx" ON "public"."modulos" ("plan_id")
+Step 5: DROP TABLE "public"."carreras"
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0621 08:48:52.363307   22544 migrate.go:24] Running migration SQL:\nStep 1: CREATE TABLE \"public\".\"planes\" (\"id\" serial NOT NULL, \"act_economica_id\" integer NULL, \"codigo\" text NULL, \"creditos\" integer NULL, \"descripcion\" text NULL, \"descripcion_2\" text NULL, \"duracion\" text NULL, \"nivel\" text NULL, \"slug\" text NULL, \"titulo\" text NULL, \"titulo_comercial\" text NULL, \"version\" text NULL, PRIMARY KEY (\"id\"), CONSTRAINT \"planes_act_economica_id_fkey\" FOREIGN KEY (\"act_economica_id\") REFERENCES \"public\".\"act_economicas\" (\"id\") ON DELETE SET NULL)\nStep 2: CREATE INDEX \"planes_actEconomicaId_idx\" ON \"public\".\"planes\" (\"act_economica_id\")\nStep 3: ALTER TABLE \"public\".\"modulos\" DROP COLUMN \"carrera_id\", ADD COLUMN \"plan_id\" integer NULL, ADD CONSTRAINT \"modulos_plan_id_fkey\" FOREIGN KEY (\"plan_id\") REFERENCES \"public\".\"planes\" (\"id\") ON DELETE SET NULL\nStep 4: CREATE INDEX \"modulos_planId_idx\" ON \"public\".\"modulos\" (\"plan_id\")\nStep 5: DROP TABLE \"public\".\"carreras\"\n"}}
+[2026-06-21T13:48:52.648Z] I0621 08:48:52.649068   22544 control.go:94] [/emulator/cetprosmp-2026-service 861d] UpdateResources(): done
+Main schema: sources: schema\schema.gql [10157B] 
+Connector "default": sources: example\queries.gql [1811B] example\mutations.gql [1673B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0621 08:48:52.649068   22544 control.go:94] [/emulator/cetprosmp-2026-service 861d] UpdateResources(): done\nMain schema: sources: schema\\schema.gql [10157B] \nConnector \"default\": sources: example\\queries.gql [1811B] example\\mutations.gql [1673B] \n"}}
+[2026-06-21T13:48:52.704Z] <<< [apiv2][status] POST http://127.0.0.1:9399/emulator/configure 200
+[2026-06-21T13:48:52.705Z] <<< [apiv2][body] POST http://127.0.0.1:9399/emulator/configure {}
+[2026-06-21T13:48:52.705Z] [SQL Connect] Successfully connected to postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable}
+[2026-06-21T13:48:52.708Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"storage"},"message":"Ignoring unsupported arg: port"}}
+[2026-06-21T13:48:53.362Z] Temp file directory for storage emulator: C:\Users\Enrique\AppData\Local\Temp/firebase/storage/blobs {"metadata":{"emulator":{"name":"storage"},"message":"Temp file directory for storage emulator: C:\\Users\\Enrique\\AppData\\Local\\Temp/firebase/storage/blobs"}}
+i  functions: Watching "D:\_Desarrollo\cetprosmp-next\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"D:\\_Desarrollo\\cetprosmp-next\\functions\" for Cloud Functions..."}}
+[2026-06-21T13:48:53.406Z] Validating nodejs source
+[2026-06-21T13:48:54.098Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "set ESLINT_USE_FLAT_CONFIG=false&& eslint .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "npm run build && firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@dataconnect/admin-generated": "file:src/dataconnect-admin-generated",
+    "firebase-admin": "^13.10.0",
+    "firebase-functions": "^7.2.5",
+    "googleapis": "^142.0.0",
+    "mi-frontend": "file:.."
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[2026-06-21T13:48:54.098Z] Building nodejs source
+[2026-06-21T13:48:54.098Z] Failed to find version of module node: reached end of search path D:\_Desarrollo\cetprosmp-next\functions\node_modules
++  functions: Using node@22 from host. 
+i  functions: Loaded environment variables from .env.local. 
+[2026-06-21T13:48:54.102Z] Could not find functions.yaml. Must use http discovery
+[2026-06-21T13:48:54.107Z] Found firebase-functions binary at 'D:\_Desarrollo\cetprosmp-next\functions\node_modules\.bin\firebase-functions'
+Serving at port 8363
+
+[2026-06-21T13:48:55.705Z] Got response from /__/functions.yaml {"endpoints":{"assignDefaultRole":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"eventTrigger":{"eventType":"providers/firebase.auth/eventTypes/user.create","eventFilters":{"resource":"projects/cetprosmp-2026"},"retry":false},"labels":{},"entryPoint":"assignDefaultRole"},"syncDataConnectUserOnAuthDelete":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"eventTrigger":{"eventType":"providers/firebase.auth/eventTypes/user.delete","eventFilters":{"resource":"projects/cetprosmp-2026"},"retry":false},"labels":{},"entryPoint":"syncDataConnectUserOnAuthDelete"},"registerUser":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"registerUser"},"listRoles":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"listRoles"},"getRole":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"getRole"},"createOrUpdateRole":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"createOrUpdateRole"},"refreshMyClaims":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"refreshMyClaims"},"listUsers":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"listUsers"},"createNewUser":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"createNewUser"},"updateUserProfile":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"updateUserProfile"},"setUserRole":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"setUserRole"},"deleteUser":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"deleteUser"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
++  functions: Loaded functions definitions from source: assignDefaultRole, syncDataConnectUserOnAuthDelete, registerUser, listRoles, getRole, createOrUpdateRole, refreshMyClaims, listUsers, createNewUser, updateUserProfile, setUserRole, deleteUser. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: assignDefaultRole, syncDataConnectUserOnAuthDelete, registerUser, listRoles, getRole, createOrUpdateRole, refreshMyClaims, listUsers, createNewUser, updateUserProfile, setUserRole, deleteUser."}}
+[2026-06-21T13:48:59.769Z] addAuthTrigger {"eventTrigger":{"eventType":"providers/firebase.auth/eventTypes/user.create","resource":"projects/cetprosmp-2026"}}
++  functions[us-central1-assignDefaultRole]: auth function initialized. {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mauth\u001b[22m function initialized."}}
+[2026-06-21T13:48:59.770Z] addAuthTrigger {"eventTrigger":{"eventType":"providers/firebase.auth/eventTypes/user.delete","resource":"projects/cetprosmp-2026"}}
++  functions[us-central1-syncDataConnectUserOnAuthDelete]: auth function initialized. {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mauth\u001b[22m function initialized."}}
++  functions[us-central1-registerUser]: http function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/registerUser). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/registerUser)."}}
++  functions[us-central1-listRoles]: http function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/listRoles). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/listRoles)."}}
++  functions[us-central1-getRole]: http function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/getRole). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/getRole)."}}
++  functions[us-central1-createOrUpdateRole]: http function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/createOrUpdateRole). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/createOrUpdateRole)."}}
++  functions[us-central1-refreshMyClaims]: http function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/refreshMyClaims). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/refreshMyClaims)."}}
++  functions[us-central1-listUsers]: http function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/listUsers). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/listUsers)."}}
++  functions[us-central1-createNewUser]: http function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/createNewUser). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/createNewUser)."}}
++  functions[us-central1-updateUserProfile]: http function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/updateUserProfile). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/updateUserProfile)."}}
++  functions[us-central1-setUserRole]: http function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/setUserRole). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/setUserRole)."}}
++  functions[us-central1-deleteUser]: http function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/deleteUser). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/cetprosmp-2026/us-central1/deleteUser)."}}
+[2026-06-21T13:48:59.774Z] >>> [apiv2][query] GET http://127.0.0.1:9399/emulator/info [none]
+[2026-06-21T13:48:59.777Z] <<< [apiv2][status] GET http://127.0.0.1:9399/emulator/info 200
+[2026-06-21T13:48:59.777Z] <<< [apiv2][body] GET http://127.0.0.1:9399/emulator/info {"version":"","services":[{"serviceId":"cetprosmp-2026-service","connectionString":"dbname='cetprosmp-db' host='127.0.0.1' port='5433' sslmode='disable' dbname='cetprosmp-db'"}]}
+
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────────┬────────────────┬─────────────────────────────────┐
+│ Emulator       │ Host:Port      │ View in Emulator UI             │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Authentication │ 127.0.0.1:9099 │ http://127.0.0.1:4000/auth      │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Functions      │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Firestore      │ 127.0.0.1:8080 │ http://127.0.0.1:4000/firestore │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Storage        │ 127.0.0.1:9199 │ http://127.0.0.1:4000/storage   │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ SQL Connect    │ 127.0.0.1:9399 │ n/a                             │
+└────────────────┴────────────────┴─────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[2026-06-21T13:49:19.772Z] Postgres client disconnected
+[2026-06-21T13:49:42.441Z] Postgres client disconnected
+[2026-06-21T13:49:51.961Z] Postgres client disconnected
+i  emulators: Clearing data from SQL Connect data sources. 
+[2026-06-21T14:42:32.320Z] File D:\_Desarrollo\cetprosmp-next\functions\src\dataconnect-admin-generated\esm\package.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated\\esm\\package.json changed, reloading triggers"}}
+[2026-06-21T14:42:32.322Z] File D:\_Desarrollo\cetprosmp-next\functions\src\dataconnect-admin-generated\index.cjs.js changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated\\index.cjs.js changed, reloading triggers"}}
+[2026-06-21T14:42:32.324Z] File D:\_Desarrollo\cetprosmp-next\functions\src\dataconnect-admin-generated\esm\index.esm.js changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated\\esm\\index.esm.js changed, reloading triggers"}}
+[2026-06-21T14:42:32.325Z] File D:\_Desarrollo\cetprosmp-next\functions\src\dataconnect-admin-generated\package.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated\\package.json changed, reloading triggers"}}
+[2026-06-21T14:42:32.325Z] File D:\_Desarrollo\cetprosmp-next\functions\src\dataconnect-admin-generated\index.d.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated\\index.d.ts changed, reloading triggers"}}
+[2026-06-21T14:42:33.351Z] Validating nodejs source
+[2026-06-21T14:42:34.987Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "set ESLINT_USE_FLAT_CONFIG=false&& eslint .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "npm run build && firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@dataconnect/admin-generated": "file:src/dataconnect-admin-generated",
+    "firebase-admin": "^13.10.0",
+    "firebase-functions": "^7.2.5",
+    "googleapis": "^142.0.0",
+    "mi-frontend": "file:.."
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[2026-06-21T14:42:34.987Z] Building nodejs source
+[2026-06-21T14:42:34.988Z] Failed to find version of module node: reached end of search path D:\_Desarrollo\cetprosmp-next\functions\node_modules
++  functions: Using node@22 from host. 
+i  functions: Loaded environment variables from .env.local. 
+[2026-06-21T14:42:34.991Z] Could not find functions.yaml. Must use http discovery
+[2026-06-21T14:42:35.003Z] Found firebase-functions binary at 'D:\_Desarrollo\cetprosmp-next\functions\node_modules\.bin\firebase-functions'
+Serving at port 8634
+
+[2026-06-21T14:42:38.269Z] Got response from /__/functions.yaml {"endpoints":{"assignDefaultRole":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"eventTrigger":{"eventType":"providers/firebase.auth/eventTypes/user.create","eventFilters":{"resource":"projects/cetprosmp-2026"},"retry":false},"labels":{},"entryPoint":"assignDefaultRole"},"syncDataConnectUserOnAuthDelete":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"eventTrigger":{"eventType":"providers/firebase.auth/eventTypes/user.delete","eventFilters":{"resource":"projects/cetprosmp-2026"},"retry":false},"labels":{},"entryPoint":"syncDataConnectUserOnAuthDelete"},"registerUser":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"registerUser"},"listRoles":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"listRoles"},"getRole":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"getRole"},"createOrUpdateRole":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"createOrUpdateRole"},"refreshMyClaims":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"refreshMyClaims"},"listUsers":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"listUsers"},"createNewUser":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"createNewUser"},"updateUserProfile":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"updateUserProfile"},"setUserRole":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"setUserRole"},"deleteUser":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"deleteUser"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
++  functions: Loaded functions definitions from source: assignDefaultRole, syncDataConnectUserOnAuthDelete, registerUser, listRoles, getRole, createOrUpdateRole, refreshMyClaims, listUsers, createNewUser, updateUserProfile, setUserRole, deleteUser. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: assignDefaultRole, syncDataConnectUserOnAuthDelete, registerUser, listRoles, getRole, createOrUpdateRole, refreshMyClaims, listUsers, createNewUser, updateUserProfile, setUserRole, deleteUser."}}
+[2026-06-21T14:47:11.666Z] File D:\_Desarrollo\cetprosmp-next\functions\src\dataconnect-admin-generated\index.cjs.js changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated\\index.cjs.js changed, reloading triggers"}}
+[2026-06-21T14:47:11.668Z] File D:\_Desarrollo\cetprosmp-next\functions\src\dataconnect-admin-generated\package.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated\\package.json changed, reloading triggers"}}
+[2026-06-21T14:47:11.670Z] File D:\_Desarrollo\cetprosmp-next\functions\src\dataconnect-admin-generated\index.d.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated\\index.d.ts changed, reloading triggers"}}
+[2026-06-21T14:47:11.672Z] File D:\_Desarrollo\cetprosmp-next\functions\src\dataconnect-admin-generated\esm\index.esm.js changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated\\esm\\index.esm.js changed, reloading triggers"}}
+[2026-06-21T14:47:11.674Z] File D:\_Desarrollo\cetprosmp-next\functions\src\dataconnect-admin-generated\esm\package.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated\\esm\\package.json changed, reloading triggers"}}
+[2026-06-21T14:47:12.690Z] Validating nodejs source
+[2026-06-21T14:47:14.369Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "set ESLINT_USE_FLAT_CONFIG=false&& eslint .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "npm run build && firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@dataconnect/admin-generated": "file:src/dataconnect-admin-generated",
+    "firebase-admin": "^13.10.0",
+    "firebase-functions": "^7.2.5",
+    "googleapis": "^142.0.0",
+    "mi-frontend": "file:.."
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[2026-06-21T14:47:14.369Z] Building nodejs source
+[2026-06-21T14:47:14.370Z] Failed to find version of module node: reached end of search path D:\_Desarrollo\cetprosmp-next\functions\node_modules
++  functions: Using node@22 from host. 
+i  functions: Loaded environment variables from .env.local. 
+[2026-06-21T14:47:14.373Z] Could not find functions.yaml. Must use http discovery
+[2026-06-21T14:47:14.384Z] Found firebase-functions binary at 'D:\_Desarrollo\cetprosmp-next\functions\node_modules\.bin\firebase-functions'
+Serving at port 8812
+
+[2026-06-21T14:47:17.973Z] Got response from /__/functions.yaml {"endpoints":{"assignDefaultRole":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"eventTrigger":{"eventType":"providers/firebase.auth/eventTypes/user.create","eventFilters":{"resource":"projects/cetprosmp-2026"},"retry":false},"labels":{},"entryPoint":"assignDefaultRole"},"syncDataConnectUserOnAuthDelete":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"eventTrigger":{"eventType":"providers/firebase.auth/eventTypes/user.delete","eventFilters":{"resource":"projects/cetprosmp-2026"},"retry":false},"labels":{},"entryPoint":"syncDataConnectUserOnAuthDelete"},"registerUser":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"registerUser"},"listRoles":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"listRoles"},"getRole":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"getRole"},"createOrUpdateRole":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"createOrUpdateRole"},"refreshMyClaims":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"refreshMyClaims"},"listUsers":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"listUsers"},"createNewUser":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"createNewUser"},"updateUserProfile":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"updateUserProfile"},"setUserRole":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"setUserRole"},"deleteUser":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"deleteUser"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
++  functions: Loaded functions definitions from source: assignDefaultRole, syncDataConnectUserOnAuthDelete, registerUser, listRoles, getRole, createOrUpdateRole, refreshMyClaims, listUsers, createNewUser, updateUserProfile, setUserRole, deleteUser. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: assignDefaultRole, syncDataConnectUserOnAuthDelete, registerUser, listRoles, getRole, createOrUpdateRole, refreshMyClaims, listUsers, createNewUser, updateUserProfile, setUserRole, deleteUser."}}
+!  firestore: Fatal error occurred: 
+   Firestore Emulator has exited with code: 4294967295, 
+   stopping all running emulators {"metadata":{"emulator":{"name":"firestore"},"message":"Fatal error occurred: \n   Firestore Emulator has exited with code: 4294967295, \n   stopping all running emulators"}}
+i  ui: Stopping Emulator UI {"metadata":{"emulator":{"name":"ui"},"message":"Stopping Emulator UI"}}
+i  functions: Stopping Functions Emulator {"metadata":{"emulator":{"name":"functions"},"message":"Stopping Functions Emulator"}}
+i  firestore: Stopping Firestore Emulator {"metadata":{"emulator":{"name":"firestore"},"message":"Stopping Firestore Emulator"}}
+i  auth: Stopping Authentication Emulator {"metadata":{"emulator":{"name":"auth"},"message":"Stopping Authentication Emulator"}}
+i  storage: Stopping Storage Emulator {"metadata":{"emulator":{"name":"storage"},"message":"Stopping Storage Emulator"}}
+[2026-06-21T14:50:14.712Z] Stopping rules runtime. {"metadata":{"emulator":{"name":"storage"},"message":"Stopping rules runtime."}}
+i  eventarc: Stopping Eventarc Emulator {"metadata":{"emulator":{"name":"eventarc"},"message":"Stopping Eventarc Emulator"}}
+i  dataconnect: Stopping SQL Connect Emulator {"metadata":{"emulator":{"name":"dataconnect"},"message":"Stopping SQL Connect Emulator"}}

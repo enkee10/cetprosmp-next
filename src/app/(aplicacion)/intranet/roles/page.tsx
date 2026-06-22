@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Box,
   Button,
   IconButton,
   Menu,
@@ -10,7 +9,6 @@ import {
   Stack,
 } from '@mui/material';
 import {
-  DataGrid,
   GridColDef,
   GridColumnVisibilityModel,
   GridPaginationModel,
@@ -19,6 +17,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
+import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
 import { RoleForm } from '@/components/intranet/roles/RoleForm';
@@ -105,45 +104,48 @@ export default function RolesPage() {
     setMenuRoleId(null);
   }, []);
 
-  const columns: GridColDef[] = [
-    {
-      field: 'titulo',
-      headerName: 'Titulo',
-      flex: 1.2,
-      minWidth: 170,
-      valueGetter: (_value, row: Role) => row.titulo || '',
-    },
-    {
-      field: 'scala',
-      headerName: 'Nivel (Scala)',
-      flex: 0.8,
-      minWidth: 120,
-      valueGetter: (_value, row: Role) => (row.scala != null ? row.scala : ''),
-    },
-    {
-      field: 'actions',
-      headerName: '...',
-      align: 'center',
-      headerAlign: 'center',
-      width: 56,
-      minWidth: 56,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      renderCell: (params) => (
-        <IconButton
-          size="small"
-          aria-label="Opciones"
-          onClick={(event) => {
-            setMenuAnchorEl(event.currentTarget);
-            setMenuRoleId(String((params.row as Role).id));
-          }}
-        >
-          <MoreHorizIcon />
-        </IconButton>
-      ),
-    },
-  ];
+  const columns = useMemo<GridColDef[]>(
+    () => [
+      {
+        field: 'titulo',
+        headerName: 'Titulo',
+        flex: 1.2,
+        minWidth: 170,
+        valueGetter: (_value, row: Role) => row.titulo || '',
+      },
+      {
+        field: 'scala',
+        headerName: 'Nivel (Scala)',
+        flex: 0.8,
+        minWidth: 120,
+        valueGetter: (_value, row: Role) => (row.scala != null ? row.scala : ''),
+      },
+      {
+        field: 'actions',
+        headerName: '...',
+        align: 'center',
+        headerAlign: 'center',
+        width: 56,
+        minWidth: 56,
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => (
+          <IconButton
+            size="small"
+            aria-label="Opciones"
+            onClick={(event) => {
+              setMenuAnchorEl(event.currentTarget);
+              setMenuRoleId(String((params.row as Role).id));
+            }}
+          >
+            <MoreHorizIcon />
+          </IconButton>
+        ),
+      },
+    ],
+    [],
+  );
 
   const columnToggleItems = useMemo(
     () =>
@@ -180,40 +182,16 @@ export default function RolesPage() {
       }
       columnToggleLabel="Campos"
     >
-      <Box sx={{ width: '100%', minWidth: 0 }}>
-        <DataGrid
-          rows={roles}
-          columns={columns}
-          disableColumnSelector
-          columnVisibilityModel={columnVisibilityModel}
-          onColumnVisibilityModelChange={setColumnVisibilityModel}
-          loading={loading}
-          getRowId={(row) => row.id}
-          autoHeight
-          disableRowSelectionOnClick
-          pageSizeOptions={[15, 30, 50, 100]}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          sx={{
-            border: 0,
-            width: '100%',
-            minWidth: 0,
-            '& .MuiDataGrid-columnHeaders': { borderTop: 0 },
-            '& .MuiDataGrid-cell': { alignItems: 'center' },
-            '& .MuiDataGrid-main': {
-              overflowX: 'auto',
-            },
-            '& .MuiDataGrid-columnHeaderTitle': {
-              whiteSpace: 'nowrap',
-            },
-            '& .MuiDataGrid-cellContent': {
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
-          }}
-        />
-      </Box>
+      <IntranetDataGrid
+        rows={roles}
+        columns={columns}
+        columnVisibilityModel={columnVisibilityModel}
+        onColumnVisibilityModelChange={setColumnVisibilityModel}
+        loading={loading}
+        getRowId={(row) => row.id}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+      />
 
       <Menu
         anchorEl={menuAnchorEl}

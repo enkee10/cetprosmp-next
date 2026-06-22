@@ -5,8 +5,8 @@
 //   node scripts/gql-to-mermaid.cjs dataconnect/schema.gql docs/schema-diagram.md
 //   node scripts/gql-to-mermaid.cjs --watch
 
-const fs = require("fs");
-const path = require("path");
+const fs = process.getBuiltinModule("fs");
+const path = process.getBuiltinModule("path");
 
 const args = process.argv.slice(2);
 const isWatchMode = args.includes("--watch");
@@ -22,21 +22,6 @@ const possibleInputs = [
 const inputPath = possibleInputs.find((file) => fs.existsSync(file));
 
 const outputPath = cleanArgs[1] || "docs/schema-diagram.md";
-
-const SCALAR_TYPES = new Set([
-  "ID",
-  "UUID",
-  "String",
-  "Int",
-  "Float",
-  "Boolean",
-  "Date",
-  "Timestamp",
-  "DateTime",
-  "Any",
-  "JSON",
-  "Vector",
-]);
 
 function ensureDir(filePath) {
   const dir = path.dirname(filePath);
@@ -70,20 +55,6 @@ function toEntityName(name) {
 
 function cleanFieldType(rawType) {
   return normalizeType(rawType).replace(/[^a-zA-Z0-9_]/g, "_");
-}
-
-function singularize(name) {
-  const lower = name.toLowerCase();
-
-  if (lower.endsWith("es")) {
-    return lower.slice(0, -2);
-  }
-
-  if (lower.endsWith("s")) {
-    return lower.slice(0, -1);
-  }
-
-  return lower;
 }
 
 function extractTypes(schemaText) {
@@ -220,7 +191,7 @@ function generateMermaidInit() {
     "themeVariables": {
       "fontFamily": "Segoe UI Light, Calibri Light, Segoe UI, Arial, sans-serif",
       "fontSize": "10px",
-      "primaryTextColor": "#FFFFFF",
+      "primaryTextColor": "#111827",
       "primaryBorderColor": "#AAAAAA",
       "lineColor": "#FFFF00"
     },
@@ -230,7 +201,7 @@ function generateMermaidInit() {
       "minEntityHeight": 40,
       "entityPadding": 2
     },
-    "themeCSS": ".er.entityBox, .er.attributeBoxOdd, .er.attributeBoxEven { stroke-width: 0.7px; } .er.entityLabel, .er.relationshipLabel, .er.attributeBoxOdd, .er.attributeBoxEven, text { font-weight: 100 !important; } .er.relationshipLine { stroke-width: 0.7px; }"
+    "themeCSS": ".er.entityBox, .er.attributeBoxOdd, .er.attributeBoxEven { fill: transparent !important; stroke-width: 0.7px; } .er.entityLabel, .er.relationshipLabel, .er.attributeBoxOdd, .er.attributeBoxEven, text { fill: #111827 !important; color: #111827 !important; font-weight: 100 !important; } .er.relationshipLine { stroke-width: 0.7px; }"
   }
 }%%`;
 }

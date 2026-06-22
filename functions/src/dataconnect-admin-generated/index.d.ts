@@ -273,6 +273,21 @@ export interface VideoYoutube_Key {
   __typename?: 'VideoYoutube_Key';
 }
 
+/** Generated Node Admin SDK operation action function for the 'CreatePost' Mutation. Allow users to execute without passing in DataConnect. */
+export function createPost(dc: DataConnect, vars: CreatePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreatePostData>>;
+/** Generated Node Admin SDK operation action function for the 'CreatePost' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createPost(vars: CreatePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreatePostData>>;
+
+/** Generated Node Admin SDK operation action function for the 'UpdatePost' Mutation. Allow users to execute without passing in DataConnect. */
+export function updatePost(dc: DataConnect, vars: UpdatePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdatePostData>>;
+/** Generated Node Admin SDK operation action function for the 'UpdatePost' Mutation. Allow users to pass in custom DataConnect instances. */
+export function updatePost(vars: UpdatePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdatePostData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeletePost' Mutation. Allow users to execute without passing in DataConnect. */
+export function deletePost(dc: DataConnect, vars: DeletePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeletePostData>>;
+/** Generated Node Admin SDK operation action function for the 'DeletePost' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deletePost(vars: DeletePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeletePostData>>;
+
 /** Generated Node Admin SDK operation action function for the 'ListRoles' Query. Allow users to execute without passing in DataConnect. */
 export function listRoles(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListRolesData>>;
 /** Generated Node Admin SDK operation action function for the 'ListRoles' Query. Allow users to pass in custom DataConnect instances. */
@@ -307,19 +322,4 @@ export function listPosts(options?: OperationOptions): Promise<ExecuteOperationR
 export function getPostById(dc: DataConnect, vars: GetPostByIdVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetPostByIdData>>;
 /** Generated Node Admin SDK operation action function for the 'GetPostById' Query. Allow users to pass in custom DataConnect instances. */
 export function getPostById(vars: GetPostByIdVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetPostByIdData>>;
-
-/** Generated Node Admin SDK operation action function for the 'CreatePost' Mutation. Allow users to execute without passing in DataConnect. */
-export function createPost(dc: DataConnect, vars: CreatePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreatePostData>>;
-/** Generated Node Admin SDK operation action function for the 'CreatePost' Mutation. Allow users to pass in custom DataConnect instances. */
-export function createPost(vars: CreatePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreatePostData>>;
-
-/** Generated Node Admin SDK operation action function for the 'UpdatePost' Mutation. Allow users to execute without passing in DataConnect. */
-export function updatePost(dc: DataConnect, vars: UpdatePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdatePostData>>;
-/** Generated Node Admin SDK operation action function for the 'UpdatePost' Mutation. Allow users to pass in custom DataConnect instances. */
-export function updatePost(vars: UpdatePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdatePostData>>;
-
-/** Generated Node Admin SDK operation action function for the 'DeletePost' Mutation. Allow users to execute without passing in DataConnect. */
-export function deletePost(dc: DataConnect, vars: DeletePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeletePostData>>;
-/** Generated Node Admin SDK operation action function for the 'DeletePost' Mutation. Allow users to pass in custom DataConnect instances. */
-export function deletePost(vars: DeletePostVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeletePostData>>;
 

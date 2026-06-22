@@ -1,32 +1,30 @@
-I0622 07:29:19.715748   14000 load.go:31] Reloading schema and connectors...
-I0622 07:29:19.836125   14000 control.go:94] [/emulator/cetprosmp-2026-service c686] UpdateResources(): done
-Main schema: sources: schema\schema.gql [9470B] 
-Connector "default": sources: example\mutations.gql [1673B] example\queries.gql [1811B] 
-I0622 07:29:19.939521   14000 codegen.go:79] [connector "default" javascriptSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
-I0622 07:29:19.953051   14000 collector.go:107] schema extensions wrote into "D:\\_Desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
-Generated sources: prelude.gql [73219B] main\input.gql [269802B] main\relation.gql [152759B] main\query.gql [30471B] main\mutation.gql [80912B] 
-I0622 07:29:19.956055   14000 collector.go:107] connector "default" javascriptSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
-Generated sources: package.json [863B] react\index.cjs.js [3804B] react\README.md [52811B] index.d.ts [11552B] esm\package.json [17B] .guides/usage.md [3712B] .guides/setup.md [1682B] esm\index.esm.js [3927B] react\index.d.ts [4313B] react\package.json [460B] react\esm\package.json [17B] react\esm\index.esm.js [3611B] .guides/config.json [236B] index.cjs.js [4482B] README.md [46789B] 
-I0622 07:29:19.963075   14000 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
-I0622 07:29:19.970130   14000 load.go:109] Finished reloading
-I0622 07:29:20.015741   14000 dev.go:105] Listening on address (HTTP + gRPC): 127.0.0.1:9399
-I0622 07:29:20.018261   14000 dev.go:105] Listening on address (HTTP + gRPC): [::1]:9399
-I0622 07:29:22.864753   14000 migrate.go:24] Running migration SQL:
-Step 1: ALTER TABLE "public"."grupos" DROP COLUMN "calendario_id", ADD COLUMN "semestre_id" integer NULL, ADD CONSTRAINT "grupos_semestre_id_fkey" FOREIGN KEY ("semestre_id") REFERENCES "public"."semestres" ("id") ON DELETE SET NULL
-Step 2: CREATE INDEX "grupos_semestreId_idx" ON "public"."grupos" ("semestre_id")
-Step 3: ALTER TABLE "public"."matriculas" ADD COLUMN "paquete_id" integer NULL, ADD COLUMN "user_id" integer NULL, ADD CONSTRAINT "matriculas_paquete_id_fkey" FOREIGN KEY ("paquete_id") REFERENCES "public"."paquetes" ("id") ON DELETE SET NULL, ADD CONSTRAINT "matriculas_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE SET NULL
-Step 4: CREATE INDEX "matriculas_paqueteId_idx" ON "public"."matriculas" ("paquete_id")
-Step 5: CREATE INDEX "matriculas_userId_idx" ON "public"."matriculas" ("user_id")
-Step 6: DROP TABLE "public"."matricula_paquetes"
-Step 7: DROP TABLE "public"."matricula_users"
-I0622 07:29:23.111900   14000 control.go:94] [/emulator/cetprosmp-2026-service 8a4f] UpdateResources(): done
-Main schema: sources: schema\schema.gql [9470B] 
-Connector "default": sources: example\mutations.gql [1673B] example\queries.gql [1811B] 
-I0622 07:29:49.566358   14000 prepare.go:158] [operation "GetRoleById" attempt 1] preparePlan succeeded
-I0622 07:29:49.566877   14000 prepare.go:145] [operation "GetRoleById" attempt 1] DBStats beforePrepare: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}, afterPrepare: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:1, Idle:0, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}
-I0622 07:29:49.567697   14000 executor.go:89] [operation "GetRoleById" attempt 1] DBStats beforeRun: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}, afterRun: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}
-I0622 07:29:49.567697   14000 engine.go:171] [/emulator/cetprosmp-2026-service 8a4f] ImpersonateQuery GetRoleById: succeeded. Connector: default
-I0622 07:30:01.691283   14000 prepare.go:158] [operation "ListUsersManual" attempt 1] preparePlan succeeded
-I0622 07:30:01.691283   14000 prepare.go:145] [operation "ListUsersManual" attempt 1] DBStats beforePrepare: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}, afterPrepare: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}
-I0622 07:30:01.698303   14000 executor.go:89] [operation "ListUsersManual" attempt 1] DBStats beforeRun: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}, afterRun: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}
-I0622 07:30:01.698303   14000 engine.go:171] [/emulator/cetprosmp-2026-service 8a4f] ExecuteGraphql : succeeded. 
+I0622 15:02:40.959185    8800 load.go:31] Reloading schema and connectors...
+I0622 15:02:41.030690    8800 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a432] UpdateResources(): done
+Main schema: sources: schema\schema.gql [9590B] 
+Connector "default": sources: example\mutations.gql [1740B] example\queries.gql [1877B] 
+I0622 15:02:41.085218    8800 codegen.go:101] [connector "default" javascriptSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+I0622 15:02:41.099676    8800 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+I0622 15:02:41.103709    8800 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+I0622 15:02:41.108177    8800 collector.go:107] schema extensions wrote into "D:\\_Desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
+Generated sources: main\mutation.gql [80912B] prelude.gql [84995B] main\input.gql [281639B] main\relation.gql [152759B] main\query.gql [30471B] 
+I0622 15:02:41.113678    8800 collector.go:107] connector "default" javascriptSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+Generated sources: index.d.ts [12075B] index.cjs.js [6705B] .guides/usage.md [3712B] .guides/config.json [236B] esm\package.json [17B] react\package.json [460B] react\esm\package.json [17B] react\index.cjs.js [3804B] react\esm\index.esm.js [3611B] .guides/setup.md [1682B] esm\index.esm.js [6095B] package.json [853B] README.md [47215B] react\index.d.ts [4313B] react\README.md [52811B] 
+I0622 15:02:41.114677    8800 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
+I0622 15:02:41.116677    8800 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+Generated sources: index.d.ts [11177B] esm\index.esm.js [3271B] esm\package.json [17B] index.cjs.js [3602B] package.json [632B] 
+I0622 15:02:41.118210    8800 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0622 15:02:41.120680    8800 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+Generated sources: index.d.ts [11177B] esm\index.esm.js [3271B] esm\package.json [17B] index.cjs.js [3602B] package.json [632B] 
+I0622 15:02:41.122177    8800 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0622 15:02:41.122177    8800 load.go:109] Finished reloading
+I0622 15:02:41.123229    8800 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399
+I0622 15:02:41.123678    8800 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399
+I0622 15:02:44.642560    8800 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 5114] UpdateResources(): done
+Main schema: sources: schema\schema.gql [9590B] 
+Connector "default": sources: example\mutations.gql [1740B] example\queries.gql [1877B] 
+I0622 15:02:44.667061    8800 configure_emulator.go:21] ConfigureEmulator successed
+Request: service_id:  "cetprosmp-2026-service"
+connection_string:  "postgres://127.0.0.1:5432/cetprosmp-db?sslmode=disable"
+database:  "cetprosmp-db"
+
+Response: 

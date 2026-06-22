@@ -70,7 +70,7 @@ Below are examples of how to use the `default` connector's generated functions t
 ## ListRoles
 You can execute the `ListRoles` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-listRoles(): QueryPromise<ListRolesData, undefined>;
+listRoles(options?: ExecuteQueryOptions): QueryPromise<ListRolesData, undefined>;
 
 interface ListRolesRef {
   ...
@@ -81,7 +81,7 @@ export const listRolesRef: ListRolesRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-listRoles(dc: DataConnect): QueryPromise<ListRolesData, undefined>;
+listRoles(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListRolesData, undefined>;
 
 interface ListRolesRef {
   ...
@@ -165,7 +165,7 @@ executeQuery(ref).then((response) => {
 ## GetRoleById
 You can execute the `GetRoleById` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-getRoleById(vars: GetRoleByIdVariables): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
+getRoleById(vars: GetRoleByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
 
 interface GetRoleByIdRef {
   ...
@@ -176,7 +176,7 @@ export const getRoleByIdRef: GetRoleByIdRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-getRoleById(dc: DataConnect, vars: GetRoleByIdVariables): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
+getRoleById(dc: DataConnect, vars: GetRoleByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
 
 interface GetRoleByIdRef {
   ...
@@ -278,7 +278,7 @@ executeQuery(ref).then((response) => {
 ## ListUsers
 You can execute the `ListUsers` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-listUsers(): QueryPromise<ListUsersData, undefined>;
+listUsers(options?: ExecuteQueryOptions): QueryPromise<ListUsersData, undefined>;
 
 interface ListUsersRef {
   ...
@@ -289,7 +289,7 @@ export const listUsersRef: ListUsersRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-listUsers(dc: DataConnect): QueryPromise<ListUsersData, undefined>;
+listUsers(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListUsersData, undefined>;
 
 interface ListUsersRef {
   ...
@@ -390,7 +390,7 @@ executeQuery(ref).then((response) => {
 ## GetUserByDocumentId
 You can execute the `GetUserByDocumentId` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-getUserByDocumentId(vars: GetUserByDocumentIdVariables): QueryPromise<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
+getUserByDocumentId(vars: GetUserByDocumentIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
 
 interface GetUserByDocumentIdRef {
   ...
@@ -401,7 +401,7 @@ export const getUserByDocumentIdRef: GetUserByDocumentIdRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-getUserByDocumentId(dc: DataConnect, vars: GetUserByDocumentIdVariables): QueryPromise<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
+getUserByDocumentId(dc: DataConnect, vars: GetUserByDocumentIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
 
 interface GetUserByDocumentIdRef {
   ...
@@ -501,7 +501,7 @@ executeQuery(ref).then((response) => {
 ## ListActEconomicas
 You can execute the `ListActEconomicas` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-listActEconomicas(): QueryPromise<ListActEconomicasData, undefined>;
+listActEconomicas(options?: ExecuteQueryOptions): QueryPromise<ListActEconomicasData, undefined>;
 
 interface ListActEconomicasRef {
   ...
@@ -512,7 +512,7 @@ export const listActEconomicasRef: ListActEconomicasRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-listActEconomicas(dc: DataConnect): QueryPromise<ListActEconomicasData, undefined>;
+listActEconomicas(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListActEconomicasData, undefined>;
 
 interface ListActEconomicasRef {
   ...
@@ -598,7 +598,7 @@ executeQuery(ref).then((response) => {
 ## ListPosts
 You can execute the `ListPosts` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-listPosts(): QueryPromise<ListPostsData, undefined>;
+listPosts(options?: ExecuteQueryOptions): QueryPromise<ListPostsData, undefined>;
 
 interface ListPostsRef {
   ...
@@ -609,7 +609,7 @@ export const listPostsRef: ListPostsRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-listPosts(dc: DataConnect): QueryPromise<ListPostsData, undefined>;
+listPosts(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListPostsData, undefined>;
 
 interface ListPostsRef {
   ...
@@ -705,7 +705,7 @@ executeQuery(ref).then((response) => {
 ## GetPostById
 You can execute the `GetPostById` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
-getPostById(vars: GetPostByIdVariables): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
+getPostById(vars: GetPostByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
 
 interface GetPostByIdRef {
   ...
@@ -716,7 +716,7 @@ export const getPostByIdRef: GetPostByIdRef;
 ```
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
 ```typescript
-getPostById(dc: DataConnect, vars: GetPostByIdVariables): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
+getPostById(dc: DataConnect, vars: GetPostByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
 
 interface GetPostByIdRef {
   ...

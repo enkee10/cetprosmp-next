@@ -5,7 +5,7 @@
     "themeVariables": {
       "fontFamily": "Segoe UI Light, Calibri Light, Segoe UI, Arial, sans-serif",
       "fontSize": "10px",
-      "primaryTextColor": "#FFFFFF",
+      "primaryTextColor": "#111827",
       "primaryBorderColor": "#AAAAAA",
       "lineColor": "#FFFF00"
     },
@@ -15,7 +15,7 @@
       "minEntityHeight": 40,
       "entityPadding": 2
     },
-    "themeCSS": ".er.entityBox, .er.attributeBoxOdd, .er.attributeBoxEven { stroke-width: 0.7px; } .er.entityLabel, .er.relationshipLabel, .er.attributeBoxOdd, .er.attributeBoxEven, text { font-weight: 100 !important; } .er.relationshipLine { stroke-width: 0.7px; }"
+    "themeCSS": ".er.entityBox, .er.attributeBoxOdd, .er.attributeBoxEven { fill: transparent !important; stroke-width: 0.7px; } .er.entityLabel, .er.relationshipLabel, .er.attributeBoxOdd, .er.attributeBoxEven, text { fill: #111827 !important; color: #111827 !important; font-weight: 100 !important; } .er.relationshipLine { stroke-width: 0.7px; }"
   }
 }%%
 

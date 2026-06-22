@@ -201,7 +201,7 @@ extend type ActEconomica {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "ActEconomica.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "ActEconomica.id", purpose: ENTITY_ID)
 }
 extend type Calendario {
   """
@@ -355,7 +355,7 @@ extend type Calendario {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Calendario.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Calendario.id", purpose: ENTITY_ID)
 }
 extend type Carrera {
   """
@@ -552,7 +552,7 @@ extend type Carrera {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Carrera.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Carrera.id", purpose: ENTITY_ID)
 }
 extend type DatoGeneral {
   """
@@ -718,7 +718,7 @@ extend type DatoGeneral {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "DatoGeneral.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "DatoGeneral.id", purpose: ENTITY_ID)
 }
 extend type Especialidad {
   """
@@ -949,7 +949,7 @@ extend type Especialidad {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Especialidad.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Especialidad.id", purpose: ENTITY_ID)
 }
 extend type Familia {
   """
@@ -1085,7 +1085,7 @@ extend type Familia {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Familia.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Familia.id", purpose: ENTITY_ID)
 }
 extend type Grupo {
   """
@@ -1379,7 +1379,7 @@ extend type Grupo {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Grupo.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Grupo.id", purpose: ENTITY_ID)
 }
 extend type Matricula {
   """
@@ -1568,7 +1568,7 @@ extend type Matricula {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Matricula.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Matricula.id", purpose: ENTITY_ID)
 }
 extend type Modulo {
   """
@@ -1914,7 +1914,7 @@ extend type Modulo {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Modulo.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Modulo.id", purpose: ENTITY_ID)
 }
 extend type ModuloVideo {
   """
@@ -2077,7 +2077,7 @@ extend type ModuloVideo {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "ModuloVideo.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "ModuloVideo.id", purpose: ENTITY_ID)
 }
 extend type Paquete {
   """
@@ -2221,7 +2221,7 @@ extend type Paquete {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Paquete.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Paquete.id", purpose: ENTITY_ID)
 }
 extend type Personal {
   """
@@ -2527,7 +2527,7 @@ extend type Personal {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Personal.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Personal.id", purpose: ENTITY_ID)
 }
 extend type PersonalEspecialidad {
   """
@@ -2681,7 +2681,7 @@ extend type PersonalEspecialidad {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "PersonalEspecialidad.personalId,especialidadId", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "PersonalEspecialidad.personalId,especialidadId", purpose: ENTITY_ID)
 }
 extend type Plan {
   """
@@ -2888,7 +2888,7 @@ extend type Plan {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Plan.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Plan.id", purpose: ENTITY_ID)
 }
 extend type Post {
   """
@@ -3087,7 +3087,7 @@ extend type Post {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Post.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Post.id", purpose: ENTITY_ID)
 }
 extend type Publicacion {
   """
@@ -3293,7 +3293,7 @@ extend type Publicacion {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Publicacion.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Publicacion.id", purpose: ENTITY_ID)
 }
 extend type PublicacionVideo {
   """
@@ -3456,7 +3456,7 @@ extend type PublicacionVideo {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "PublicacionVideo.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "PublicacionVideo.id", purpose: ENTITY_ID)
 }
 extend type Rol {
   """
@@ -3583,7 +3583,7 @@ extend type Rol {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Rol.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Rol.id", purpose: ENTITY_ID)
 }
 extend type Sector {
   """
@@ -3684,7 +3684,7 @@ extend type Sector {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Sector.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Sector.id", purpose: ENTITY_ID)
 }
 extend type Semestre {
   """
@@ -3933,7 +3933,7 @@ extend type Semestre {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Semestre.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "Semestre.id", purpose: ENTITY_ID)
 }
 extend type User {
   """
@@ -4334,7 +4334,7 @@ extend type User {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "User.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "User.id", purpose: ENTITY_ID)
 }
 extend type VideoYoutube {
   """
@@ -4460,5 +4460,5 @@ extend type VideoYoutube {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "VideoYoutube.id", purpose: GLOBAL_ID)
+  _id: ID! @fdc_generated(from: "VideoYoutube.id", purpose: ENTITY_ID)
 }

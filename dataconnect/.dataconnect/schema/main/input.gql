@@ -141,11 +141,11 @@ input ActEconomica_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `ActEconomica`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `ActEconomica`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ActEconomica`.`especialidadId` of type `Int`
   """
@@ -153,11 +153,11 @@ input ActEconomica_Data {
   """
   ✨ `_expr` server value variant of `especialidadId` (✨ Generated from Field `ActEconomica`.`especialidadId` of type `Int`)
   """
-  especialidadId_expr: Int_Expr
+  especialidadId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `especialidadId` (✨ Generated from Field `ActEconomica`.`especialidadId` of type `Int`)
   """
-  especialidadId_update: [Int_Update!]
+  especialidadId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ActEconomica`.`familiaId` of type `Int`
   """
@@ -165,19 +165,19 @@ input ActEconomica_Data {
   """
   ✨ `_expr` server value variant of `familiaId` (✨ Generated from Field `ActEconomica`.`familiaId` of type `Int`)
   """
-  familiaId_expr: Int_Expr
+  familiaId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `familiaId` (✨ Generated from Field `ActEconomica`.`familiaId` of type `Int`)
   """
-  familiaId_update: [Int_Update!]
+  familiaId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ActEconomica`.`especialidad` of type `Especialidad`
   """
-  especialidad: Especialidad_Key
+  especialidad: Especialidad_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ActEconomica`.`familia` of type `Familia`
   """
-  familia: Familia_Key
+  familia: Familia_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ActEconomica`.`descripcion` of type `String`
   """
@@ -185,7 +185,7 @@ input ActEconomica_Data {
   """
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `ActEconomica`.`descripcion` of type `String`)
   """
-  descripcion_expr: String_Expr
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ActEconomica`.`titulo` of type `String`
   """
@@ -193,7 +193,15 @@ input ActEconomica_Data {
   """
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `ActEconomica`.`titulo` of type `String`)
   """
-  titulo_expr: String_Expr
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ActEconomica`.`carreras_on_actEconomica` of type `[Carrera!]!`
+  """
+  carreras_on_actEconomica: [Carrera_Data!]
+  """
+  ✨ Generated from Field `ActEconomica`.`especialidads_on_actEconomica` of type `[Especialidad!]!`
+  """
+  especialidads_on_actEconomica: [Especialidad_Data!]
 }
 """
 ✨ Generated filter input type for table 'ActEconomica'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -365,7 +373,7 @@ input ActEconomica_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `ActEconomica`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'ActEconomica'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -496,11 +504,11 @@ input Calendario_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Calendario`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Calendario`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Calendario`.`semestreId` of type `Int`
   """
@@ -508,15 +516,15 @@ input Calendario_Data {
   """
   ✨ `_expr` server value variant of `semestreId` (✨ Generated from Field `Calendario`.`semestreId` of type `Int`)
   """
-  semestreId_expr: Int_Expr
+  semestreId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `semestreId` (✨ Generated from Field `Calendario`.`semestreId` of type `Int`)
   """
-  semestreId_update: [Int_Update!]
+  semestreId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Calendario`.`semestre` of type `Semestre`
   """
-  semestre: Semestre_Key
+  semestre: Semestre_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Calendario`.`archivado` of type `Boolean`
   """
@@ -524,7 +532,7 @@ input Calendario_Data {
   """
   ✨ `_expr` server value variant of `archivado` (✨ Generated from Field `Calendario`.`archivado` of type `Boolean`)
   """
-  archivado_expr: Boolean_Expr
+  archivado_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Calendario`.`descripcion` of type `String`
   """
@@ -532,7 +540,7 @@ input Calendario_Data {
   """
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Calendario`.`descripcion` of type `String`)
   """
-  descripcion_expr: String_Expr
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Calendario`.`fechaFin` of type `Timestamp`
   """
@@ -540,15 +548,15 @@ input Calendario_Data {
   """
   ✨ `_expr` server value variant of `fechaFin` (✨ Generated from Field `Calendario`.`fechaFin` of type `Timestamp`)
   """
-  fechaFin_expr: Timestamp_Expr
+  fechaFin_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fechaFin` (✨ Generated from Field `Calendario`.`fechaFin` of type `Timestamp`)
   """
-  fechaFin_time: Timestamp_Relative
+  fechaFin_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fechaFin` (✨ Generated from Field `Calendario`.`fechaFin` of type `Timestamp`)
   """
-  fechaFin_update: [Timestamp_Update!]
+  fechaFin_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Calendario`.`fechaIni` of type `Timestamp`
   """
@@ -556,15 +564,15 @@ input Calendario_Data {
   """
   ✨ `_expr` server value variant of `fechaIni` (✨ Generated from Field `Calendario`.`fechaIni` of type `Timestamp`)
   """
-  fechaIni_expr: Timestamp_Expr
+  fechaIni_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fechaIni` (✨ Generated from Field `Calendario`.`fechaIni` of type `Timestamp`)
   """
-  fechaIni_time: Timestamp_Relative
+  fechaIni_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fechaIni` (✨ Generated from Field `Calendario`.`fechaIni` of type `Timestamp`)
   """
-  fechaIni_update: [Timestamp_Update!]
+  fechaIni_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Calendario`.`tipo` of type `String`
   """
@@ -572,7 +580,7 @@ input Calendario_Data {
   """
   ✨ `_expr` server value variant of `tipo` (✨ Generated from Field `Calendario`.`tipo` of type `String`)
   """
-  tipo_expr: String_Expr
+  tipo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Calendario`.`titulo` of type `String`
   """
@@ -580,7 +588,7 @@ input Calendario_Data {
   """
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Calendario`.`titulo` of type `String`)
   """
-  titulo_expr: String_Expr
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated filter input type for table 'Calendario'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -764,7 +772,7 @@ input Calendario_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Calendario`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Calendario'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -915,11 +923,11 @@ input Carrera_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Carrera`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Carrera`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`actEconomicaId` of type `Int`
   """
@@ -927,15 +935,15 @@ input Carrera_Data {
   """
   ✨ `_expr` server value variant of `actEconomicaId` (✨ Generated from Field `Carrera`.`actEconomicaId` of type `Int`)
   """
-  actEconomicaId_expr: Int_Expr
+  actEconomicaId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `actEconomicaId` (✨ Generated from Field `Carrera`.`actEconomicaId` of type `Int`)
   """
-  actEconomicaId_update: [Int_Update!]
+  actEconomicaId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`actEconomica` of type `ActEconomica`
   """
-  actEconomica: ActEconomica_Key
+  actEconomica: ActEconomica_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`actualizadoEn` of type `Timestamp`
   """
@@ -943,15 +951,15 @@ input Carrera_Data {
   """
   ✨ `_expr` server value variant of `actualizadoEn` (✨ Generated from Field `Carrera`.`actualizadoEn` of type `Timestamp`)
   """
-  actualizadoEn_expr: Timestamp_Expr
+  actualizadoEn_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `actualizadoEn` (✨ Generated from Field `Carrera`.`actualizadoEn` of type `Timestamp`)
   """
-  actualizadoEn_time: Timestamp_Relative
+  actualizadoEn_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `actualizadoEn` (✨ Generated from Field `Carrera`.`actualizadoEn` of type `Timestamp`)
   """
-  actualizadoEn_update: [Timestamp_Update!]
+  actualizadoEn_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`codigo` of type `String`
   """
@@ -959,7 +967,7 @@ input Carrera_Data {
   """
   ✨ `_expr` server value variant of `codigo` (✨ Generated from Field `Carrera`.`codigo` of type `String`)
   """
-  codigo_expr: String_Expr
+  codigo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`creadoEn` of type `Timestamp`
   """
@@ -967,15 +975,15 @@ input Carrera_Data {
   """
   ✨ `_expr` server value variant of `creadoEn` (✨ Generated from Field `Carrera`.`creadoEn` of type `Timestamp`)
   """
-  creadoEn_expr: Timestamp_Expr
+  creadoEn_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `creadoEn` (✨ Generated from Field `Carrera`.`creadoEn` of type `Timestamp`)
   """
-  creadoEn_time: Timestamp_Relative
+  creadoEn_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `creadoEn` (✨ Generated from Field `Carrera`.`creadoEn` of type `Timestamp`)
   """
-  creadoEn_update: [Timestamp_Update!]
+  creadoEn_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`descripcion` of type `String`
   """
@@ -983,7 +991,7 @@ input Carrera_Data {
   """
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Carrera`.`descripcion` of type `String`)
   """
-  descripcion_expr: String_Expr
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`estado` of type `String`
   """
@@ -991,7 +999,7 @@ input Carrera_Data {
   """
   ✨ `_expr` server value variant of `estado` (✨ Generated from Field `Carrera`.`estado` of type `String`)
   """
-  estado_expr: String_Expr
+  estado_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`nombre` of type `String`
   """
@@ -999,7 +1007,7 @@ input Carrera_Data {
   """
   ✨ `_expr` server value variant of `nombre` (✨ Generated from Field `Carrera`.`nombre` of type `String`)
   """
-  nombre_expr: String_Expr
+  nombre_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`tipo` of type `String`
   """
@@ -1007,7 +1015,11 @@ input Carrera_Data {
   """
   ✨ `_expr` server value variant of `tipo` (✨ Generated from Field `Carrera`.`tipo` of type `String`)
   """
-  tipo_expr: String_Expr
+  tipo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Carrera`.`planes_on_carrera` of type `[Plan!]!`
+  """
+  planes_on_carrera: [Plan_Data!]
 }
 """
 ✨ Generated filter input type for table 'Carrera'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -1203,7 +1215,7 @@ input Carrera_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Carrera`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Carrera'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -1362,11 +1374,11 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `DatoGeneral`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `DatoGeneral`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`correo` of type `String`
   """
@@ -1374,7 +1386,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `correo` (✨ Generated from Field `DatoGeneral`.`correo` of type `String`)
   """
-  correo_expr: String_Expr
+  correo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`direccion` of type `String`
   """
@@ -1382,7 +1394,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `direccion` (✨ Generated from Field `DatoGeneral`.`direccion` of type `String`)
   """
-  direccion_expr: String_Expr
+  direccion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`facebook` of type `String`
   """
@@ -1390,7 +1402,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `facebook` (✨ Generated from Field `DatoGeneral`.`facebook` of type `String`)
   """
-  facebook_expr: String_Expr
+  facebook_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`instagram` of type `String`
   """
@@ -1398,7 +1410,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `instagram` (✨ Generated from Field `DatoGeneral`.`instagram` of type `String`)
   """
-  instagram_expr: String_Expr
+  instagram_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`nombreInstitucion` of type `String`
   """
@@ -1406,7 +1418,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `nombreInstitucion` (✨ Generated from Field `DatoGeneral`.`nombreInstitucion` of type `String`)
   """
-  nombreInstitucion_expr: String_Expr
+  nombreInstitucion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`paginaWeb` of type `String`
   """
@@ -1414,7 +1426,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `paginaWeb` (✨ Generated from Field `DatoGeneral`.`paginaWeb` of type `String`)
   """
-  paginaWeb_expr: String_Expr
+  paginaWeb_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`rd` of type `String`
   """
@@ -1422,7 +1434,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `rd` (✨ Generated from Field `DatoGeneral`.`rd` of type `String`)
   """
-  rd_expr: String_Expr
+  rd_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`ruc` of type `String`
   """
@@ -1430,7 +1442,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `ruc` (✨ Generated from Field `DatoGeneral`.`ruc` of type `String`)
   """
-  ruc_expr: String_Expr
+  ruc_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`telefono1` of type `String`
   """
@@ -1438,7 +1450,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `telefono1` (✨ Generated from Field `DatoGeneral`.`telefono1` of type `String`)
   """
-  telefono1_expr: String_Expr
+  telefono1_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`telefono2` of type `String`
   """
@@ -1446,7 +1458,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `telefono2` (✨ Generated from Field `DatoGeneral`.`telefono2` of type `String`)
   """
-  telefono2_expr: String_Expr
+  telefono2_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`tiktok` of type `String`
   """
@@ -1454,7 +1466,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `tiktok` (✨ Generated from Field `DatoGeneral`.`tiktok` of type `String`)
   """
-  tiktok_expr: String_Expr
+  tiktok_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`twitter` of type `String`
   """
@@ -1462,7 +1474,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `twitter` (✨ Generated from Field `DatoGeneral`.`twitter` of type `String`)
   """
-  twitter_expr: String_Expr
+  twitter_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`youtube` of type `String`
   """
@@ -1470,7 +1482,7 @@ input DatoGeneral_Data {
   """
   ✨ `_expr` server value variant of `youtube` (✨ Generated from Field `DatoGeneral`.`youtube` of type `String`)
   """
-  youtube_expr: String_Expr
+  youtube_expr: String_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated filter input type for table 'DatoGeneral'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -1666,7 +1678,7 @@ input DatoGeneral_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `DatoGeneral`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'DatoGeneral'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -1829,11 +1841,11 @@ input Especialidad_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Especialidad`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Especialidad`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Especialidad`.`actEconomicaId` of type `Int`
   """
@@ -1841,15 +1853,15 @@ input Especialidad_Data {
   """
   ✨ `_expr` server value variant of `actEconomicaId` (✨ Generated from Field `Especialidad`.`actEconomicaId` of type `Int`)
   """
-  actEconomicaId_expr: Int_Expr
+  actEconomicaId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `actEconomicaId` (✨ Generated from Field `Especialidad`.`actEconomicaId` of type `Int`)
   """
-  actEconomicaId_update: [Int_Update!]
+  actEconomicaId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Especialidad`.`actEconomica` of type `ActEconomica`
   """
-  actEconomica: ActEconomica_Key
+  actEconomica: ActEconomica_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Especialidad`.`descripcion` of type `String`
   """
@@ -1857,7 +1869,7 @@ input Especialidad_Data {
   """
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Especialidad`.`descripcion` of type `String`)
   """
-  descripcion_expr: String_Expr
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Especialidad`.`descripcion2` of type `String`
   """
@@ -1865,7 +1877,7 @@ input Especialidad_Data {
   """
   ✨ `_expr` server value variant of `descripcion2` (✨ Generated from Field `Especialidad`.`descripcion2` of type `String`)
   """
-  descripcion2_expr: String_Expr
+  descripcion2_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Especialidad`.`slug` of type `String`
   """
@@ -1873,7 +1885,7 @@ input Especialidad_Data {
   """
   ✨ `_expr` server value variant of `slug` (✨ Generated from Field `Especialidad`.`slug` of type `String`)
   """
-  slug_expr: String_Expr
+  slug_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Especialidad`.`titulo` of type `String`
   """
@@ -1881,7 +1893,7 @@ input Especialidad_Data {
   """
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Especialidad`.`titulo` of type `String`)
   """
-  titulo_expr: String_Expr
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Especialidad`.`tituloComercial` of type `String`
   """
@@ -1889,7 +1901,15 @@ input Especialidad_Data {
   """
   ✨ `_expr` server value variant of `tituloComercial` (✨ Generated from Field `Especialidad`.`tituloComercial` of type `String`)
   """
-  tituloComercial_expr: String_Expr
+  tituloComercial_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Especialidad`.`actEconomicas_on_especialidad` of type `[ActEconomica!]!`
+  """
+  actEconomicas_on_especialidad: [ActEconomica_Data!]
+  """
+  ✨ Generated from Field `Especialidad`.`personalEspecialidads_on_especialidad` of type `[PersonalEspecialidad!]!`
+  """
+  personalEspecialidads_on_especialidad: [PersonalEspecialidad_Data!]
 }
 """
 ✨ Generated filter input type for table 'Especialidad'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -2061,7 +2081,7 @@ input Especialidad_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Especialidad`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Especialidad'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -2188,11 +2208,11 @@ input Familia_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Familia`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Familia`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Familia`.`sectorId` of type `Int`
   """
@@ -2200,15 +2220,15 @@ input Familia_Data {
   """
   ✨ `_expr` server value variant of `sectorId` (✨ Generated from Field `Familia`.`sectorId` of type `Int`)
   """
-  sectorId_expr: Int_Expr
+  sectorId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `sectorId` (✨ Generated from Field `Familia`.`sectorId` of type `Int`)
   """
-  sectorId_update: [Int_Update!]
+  sectorId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Familia`.`sector` of type `Sector`
   """
-  sector: Sector_Key
+  sector: Sector_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Familia`.`descripcion` of type `String`
   """
@@ -2216,7 +2236,7 @@ input Familia_Data {
   """
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Familia`.`descripcion` of type `String`)
   """
-  descripcion_expr: String_Expr
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Familia`.`titulo` of type `String`
   """
@@ -2224,7 +2244,11 @@ input Familia_Data {
   """
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Familia`.`titulo` of type `String`)
   """
-  titulo_expr: String_Expr
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Familia`.`actEconomicas_on_familia` of type `[ActEconomica!]!`
+  """
+  actEconomicas_on_familia: [ActEconomica_Data!]
 }
 """
 ✨ Generated filter input type for table 'Familia'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -2364,7 +2388,7 @@ input Familia_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Familia`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Familia'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -2467,11 +2491,11 @@ input Grupo_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Grupo`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Grupo`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`moduloId` of type `Int`
   """
@@ -2479,11 +2503,11 @@ input Grupo_Data {
   """
   ✨ `_expr` server value variant of `moduloId` (✨ Generated from Field `Grupo`.`moduloId` of type `Int`)
   """
-  moduloId_expr: Int_Expr
+  moduloId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `moduloId` (✨ Generated from Field `Grupo`.`moduloId` of type `Int`)
   """
-  moduloId_update: [Int_Update!]
+  moduloId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`paqueteId` of type `Int`
   """
@@ -2491,11 +2515,11 @@ input Grupo_Data {
   """
   ✨ `_expr` server value variant of `paqueteId` (✨ Generated from Field `Grupo`.`paqueteId` of type `Int`)
   """
-  paqueteId_expr: Int_Expr
+  paqueteId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `paqueteId` (✨ Generated from Field `Grupo`.`paqueteId` of type `Int`)
   """
-  paqueteId_update: [Int_Update!]
+  paqueteId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`personalId` of type `Int`
   """
@@ -2503,11 +2527,11 @@ input Grupo_Data {
   """
   ✨ `_expr` server value variant of `personalId` (✨ Generated from Field `Grupo`.`personalId` of type `Int`)
   """
-  personalId_expr: Int_Expr
+  personalId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `personalId` (✨ Generated from Field `Grupo`.`personalId` of type `Int`)
   """
-  personalId_update: [Int_Update!]
+  personalId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`semestreId` of type `Int`
   """
@@ -2515,27 +2539,27 @@ input Grupo_Data {
   """
   ✨ `_expr` server value variant of `semestreId` (✨ Generated from Field `Grupo`.`semestreId` of type `Int`)
   """
-  semestreId_expr: Int_Expr
+  semestreId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `semestreId` (✨ Generated from Field `Grupo`.`semestreId` of type `Int`)
   """
-  semestreId_update: [Int_Update!]
+  semestreId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`modulo` of type `Modulo`
   """
-  modulo: Modulo_Key
+  modulo: Modulo_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`paquete` of type `Paquete`
   """
-  paquete: Paquete_Key
+  paquete: Paquete_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`personal` of type `Personal`
   """
-  personal: Personal_Key
+  personal: Personal_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`semestre` of type `Semestre`
   """
-  semestre: Semestre_Key
+  semestre: Semestre_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`archivado` of type `Boolean`
   """
@@ -2543,7 +2567,7 @@ input Grupo_Data {
   """
   ✨ `_expr` server value variant of `archivado` (✨ Generated from Field `Grupo`.`archivado` of type `Boolean`)
   """
-  archivado_expr: Boolean_Expr
+  archivado_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`descripcion` of type `String`
   """
@@ -2551,7 +2575,7 @@ input Grupo_Data {
   """
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Grupo`.`descripcion` of type `String`)
   """
-  descripcion_expr: String_Expr
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`grupoOrd` of type `Int`
   """
@@ -2559,11 +2583,11 @@ input Grupo_Data {
   """
   ✨ `_expr` server value variant of `grupoOrd` (✨ Generated from Field `Grupo`.`grupoOrd` of type `Int`)
   """
-  grupoOrd_expr: Int_Expr
+  grupoOrd_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `grupoOrd` (✨ Generated from Field `Grupo`.`grupoOrd` of type `Int`)
   """
-  grupoOrd_update: [Int_Update!]
+  grupoOrd_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`nombreDisplay` of type `String`
   """
@@ -2571,7 +2595,7 @@ input Grupo_Data {
   """
   ✨ `_expr` server value variant of `nombreDisplay` (✨ Generated from Field `Grupo`.`nombreDisplay` of type `String`)
   """
-  nombreDisplay_expr: String_Expr
+  nombreDisplay_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Grupo`.`turno` of type `String`
   """
@@ -2579,7 +2603,11 @@ input Grupo_Data {
   """
   ✨ `_expr` server value variant of `turno` (✨ Generated from Field `Grupo`.`turno` of type `String`)
   """
-  turno_expr: String_Expr
+  turno_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Grupo`.`matriculas_on_grupo` of type `[Matricula!]!`
+  """
+  matriculas_on_grupo: [Matricula_Data!]
 }
 """
 ✨ Generated filter input type for table 'Grupo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -2843,7 +2871,7 @@ input Grupo_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Grupo`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Grupo'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -3070,11 +3098,11 @@ input Matricula_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Matricula`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Matricula`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Matricula`.`grupoId` of type `Int`
   """
@@ -3082,11 +3110,11 @@ input Matricula_Data {
   """
   ✨ `_expr` server value variant of `grupoId` (✨ Generated from Field `Matricula`.`grupoId` of type `Int`)
   """
-  grupoId_expr: Int_Expr
+  grupoId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `grupoId` (✨ Generated from Field `Matricula`.`grupoId` of type `Int`)
   """
-  grupoId_update: [Int_Update!]
+  grupoId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Matricula`.`paqueteId` of type `Int`
   """
@@ -3094,11 +3122,11 @@ input Matricula_Data {
   """
   ✨ `_expr` server value variant of `paqueteId` (✨ Generated from Field `Matricula`.`paqueteId` of type `Int`)
   """
-  paqueteId_expr: Int_Expr
+  paqueteId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `paqueteId` (✨ Generated from Field `Matricula`.`paqueteId` of type `Int`)
   """
-  paqueteId_update: [Int_Update!]
+  paqueteId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Matricula`.`userId` of type `Int`
   """
@@ -3106,23 +3134,23 @@ input Matricula_Data {
   """
   ✨ `_expr` server value variant of `userId` (✨ Generated from Field `Matricula`.`userId` of type `Int`)
   """
-  userId_expr: Int_Expr
+  userId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `userId` (✨ Generated from Field `Matricula`.`userId` of type `Int`)
   """
-  userId_update: [Int_Update!]
+  userId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Matricula`.`grupo` of type `Grupo`
   """
-  grupo: Grupo_Key
+  grupo: Grupo_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Matricula`.`paquete` of type `Paquete`
   """
-  paquete: Paquete_Key
+  paquete: Paquete_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Matricula`.`user` of type `User`
   """
-  user: User_Key
+  user: User_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Matricula`.`archivado` of type `Boolean`
   """
@@ -3130,7 +3158,7 @@ input Matricula_Data {
   """
   ✨ `_expr` server value variant of `archivado` (✨ Generated from Field `Matricula`.`archivado` of type `Boolean`)
   """
-  archivado_expr: Boolean_Expr
+  archivado_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Matricula`.`fecha` of type `Timestamp`
   """
@@ -3138,15 +3166,15 @@ input Matricula_Data {
   """
   ✨ `_expr` server value variant of `fecha` (✨ Generated from Field `Matricula`.`fecha` of type `Timestamp`)
   """
-  fecha_expr: Timestamp_Expr
+  fecha_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fecha` (✨ Generated from Field `Matricula`.`fecha` of type `Timestamp`)
   """
-  fecha_time: Timestamp_Relative
+  fecha_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fecha` (✨ Generated from Field `Matricula`.`fecha` of type `Timestamp`)
   """
-  fecha_update: [Timestamp_Update!]
+  fecha_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Matricula`.`recibo` of type `String`
   """
@@ -3154,7 +3182,7 @@ input Matricula_Data {
   """
   ✨ `_expr` server value variant of `recibo` (✨ Generated from Field `Matricula`.`recibo` of type `String`)
   """
-  recibo_expr: String_Expr
+  recibo_expr: String_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated filter input type for table 'Matricula'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -3362,7 +3390,7 @@ input Matricula_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Matricula`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Matricula'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -3537,11 +3565,11 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Modulo`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Modulo`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`planId` of type `Int`
   """
@@ -3549,15 +3577,15 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `planId` (✨ Generated from Field `Modulo`.`planId` of type `Int`)
   """
-  planId_expr: Int_Expr
+  planId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `planId` (✨ Generated from Field `Modulo`.`planId` of type `Int`)
   """
-  planId_update: [Int_Update!]
+  planId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`plan` of type `Plan`
   """
-  plan: Plan_Key
+  plan: Plan_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`activo` of type `Boolean`
   """
@@ -3565,7 +3593,7 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `activo` (✨ Generated from Field `Modulo`.`activo` of type `Boolean`)
   """
-  activo_expr: Boolean_Expr
+  activo_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`creditos` of type `Int`
   """
@@ -3573,11 +3601,11 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `creditos` (✨ Generated from Field `Modulo`.`creditos` of type `Int`)
   """
-  creditos_expr: Int_Expr
+  creditos_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `creditos` (✨ Generated from Field `Modulo`.`creditos` of type `Int`)
   """
-  creditos_update: [Int_Update!]
+  creditos_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`descripcion` of type `String`
   """
@@ -3585,7 +3613,7 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Modulo`.`descripcion` of type `String`)
   """
-  descripcion_expr: String_Expr
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`descripcion2` of type `String`
   """
@@ -3593,7 +3621,7 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `descripcion2` (✨ Generated from Field `Modulo`.`descripcion2` of type `String`)
   """
-  descripcion2_expr: String_Expr
+  descripcion2_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`horas` of type `Int`
   """
@@ -3601,11 +3629,11 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `horas` (✨ Generated from Field `Modulo`.`horas` of type `Int`)
   """
-  horas_expr: Int_Expr
+  horas_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `horas` (✨ Generated from Field `Modulo`.`horas` of type `Int`)
   """
-  horas_update: [Int_Update!]
+  horas_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`metas` of type `Int`
   """
@@ -3613,11 +3641,11 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `metas` (✨ Generated from Field `Modulo`.`metas` of type `Int`)
   """
-  metas_expr: Int_Expr
+  metas_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `metas` (✨ Generated from Field `Modulo`.`metas` of type `Int`)
   """
-  metas_update: [Int_Update!]
+  metas_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`orden` of type `Int`
   """
@@ -3625,11 +3653,11 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `orden` (✨ Generated from Field `Modulo`.`orden` of type `Int`)
   """
-  orden_expr: Int_Expr
+  orden_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `orden` (✨ Generated from Field `Modulo`.`orden` of type `Int`)
   """
-  orden_update: [Int_Update!]
+  orden_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`slug` of type `String`
   """
@@ -3637,7 +3665,7 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `slug` (✨ Generated from Field `Modulo`.`slug` of type `String`)
   """
-  slug_expr: String_Expr
+  slug_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`titulo` of type `String`
   """
@@ -3645,7 +3673,7 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Modulo`.`titulo` of type `String`)
   """
-  titulo_expr: String_Expr
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`tituloComercial` of type `String`
   """
@@ -3653,7 +3681,15 @@ input Modulo_Data {
   """
   ✨ `_expr` server value variant of `tituloComercial` (✨ Generated from Field `Modulo`.`tituloComercial` of type `String`)
   """
-  tituloComercial_expr: String_Expr
+  tituloComercial_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Modulo`.`grupos_on_modulo` of type `[Grupo!]!`
+  """
+  grupos_on_modulo: [Grupo_Data!]
+  """
+  ✨ Generated from Field `Modulo`.`moduloVideos_on_modulo` of type `[ModuloVideo!]!`
+  """
+  moduloVideos_on_modulo: [ModuloVideo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Modulo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -3925,7 +3961,7 @@ input Modulo_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Modulo`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Modulo'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -4156,11 +4192,11 @@ input ModuloVideo_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `ModuloVideo`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `ModuloVideo`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ModuloVideo`.`moduloId` of type `Int`
   """
@@ -4168,11 +4204,11 @@ input ModuloVideo_Data {
   """
   ✨ `_expr` server value variant of `moduloId` (✨ Generated from Field `ModuloVideo`.`moduloId` of type `Int`)
   """
-  moduloId_expr: Int_Expr
+  moduloId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `moduloId` (✨ Generated from Field `ModuloVideo`.`moduloId` of type `Int`)
   """
-  moduloId_update: [Int_Update!]
+  moduloId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ModuloVideo`.`videoId` of type `Int`
   """
@@ -4180,19 +4216,19 @@ input ModuloVideo_Data {
   """
   ✨ `_expr` server value variant of `videoId` (✨ Generated from Field `ModuloVideo`.`videoId` of type `Int`)
   """
-  videoId_expr: Int_Expr
+  videoId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `videoId` (✨ Generated from Field `ModuloVideo`.`videoId` of type `Int`)
   """
-  videoId_update: [Int_Update!]
+  videoId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ModuloVideo`.`modulo` of type `Modulo`
   """
-  modulo: Modulo_Key
+  modulo: Modulo_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ModuloVideo`.`video` of type `VideoYoutube`
   """
-  video: VideoYoutube_Key
+  video: VideoYoutube_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ModuloVideo`.`field` of type `String`
   """
@@ -4200,7 +4236,7 @@ input ModuloVideo_Data {
   """
   ✨ `_expr` server value variant of `field` (✨ Generated from Field `ModuloVideo`.`field` of type `String`)
   """
-  field_expr: String_Expr
+  field_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ModuloVideo`.`orden` of type `Int`
   """
@@ -4208,11 +4244,11 @@ input ModuloVideo_Data {
   """
   ✨ `_expr` server value variant of `orden` (✨ Generated from Field `ModuloVideo`.`orden` of type `Int`)
   """
-  orden_expr: Int_Expr
+  orden_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `orden` (✨ Generated from Field `ModuloVideo`.`orden` of type `Int`)
   """
-  orden_update: [Int_Update!]
+  orden_update: [Int_Update!] @fdc_forbiddenInVariables
 }
 """
 ✨ Generated filter input type for table 'ModuloVideo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -4392,7 +4428,7 @@ input ModuloVideo_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `ModuloVideo`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'ModuloVideo'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -4539,11 +4575,11 @@ input Paquete_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Paquete`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Paquete`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Paquete`.`archivado` of type `Boolean`
   """
@@ -4551,7 +4587,7 @@ input Paquete_Data {
   """
   ✨ `_expr` server value variant of `archivado` (✨ Generated from Field `Paquete`.`archivado` of type `Boolean`)
   """
-  archivado_expr: Boolean_Expr
+  archivado_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Paquete`.`descripcion` of type `String`
   """
@@ -4559,7 +4595,7 @@ input Paquete_Data {
   """
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Paquete`.`descripcion` of type `String`)
   """
-  descripcion_expr: String_Expr
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Paquete`.`titulo` of type `String`
   """
@@ -4567,7 +4603,15 @@ input Paquete_Data {
   """
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Paquete`.`titulo` of type `String`)
   """
-  titulo_expr: String_Expr
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Paquete`.`grupos_on_paquete` of type `[Grupo!]!`
+  """
+  grupos_on_paquete: [Grupo_Data!]
+  """
+  ✨ Generated from Field `Paquete`.`matriculas_on_paquete` of type `[Matricula!]!`
+  """
+  matriculas_on_paquete: [Matricula_Data!]
 }
 """
 ✨ Generated filter input type for table 'Paquete'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -4691,7 +4735,7 @@ input Paquete_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Paquete`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Paquete'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -4774,11 +4818,11 @@ input Personal_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Personal`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Personal`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Personal`.`userId` of type `Int`
   """
@@ -4786,15 +4830,15 @@ input Personal_Data {
   """
   ✨ `_expr` server value variant of `userId` (✨ Generated from Field `Personal`.`userId` of type `Int`)
   """
-  userId_expr: Int_Expr
+  userId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `userId` (✨ Generated from Field `Personal`.`userId` of type `Int`)
   """
-  userId_update: [Int_Update!]
+  userId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Personal`.`user` of type `User`
   """
-  user: User_Key
+  user: User_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Personal`.`displayName` of type `String`
   """
@@ -4802,7 +4846,7 @@ input Personal_Data {
   """
   ✨ `_expr` server value variant of `displayName` (✨ Generated from Field `Personal`.`displayName` of type `String`)
   """
-  displayName_expr: String_Expr
+  displayName_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Personal`.`memo` of type `String`
   """
@@ -4810,7 +4854,27 @@ input Personal_Data {
   """
   ✨ `_expr` server value variant of `memo` (✨ Generated from Field `Personal`.`memo` of type `String`)
   """
-  memo_expr: String_Expr
+  memo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Personal`.`grupos_on_personal` of type `[Grupo!]!`
+  """
+  grupos_on_personal: [Grupo_Data!]
+  """
+  ✨ Generated from Field `Personal`.`personalEspecialidads_on_personal` of type `[PersonalEspecialidad!]!`
+  """
+  personalEspecialidads_on_personal: [PersonalEspecialidad_Data!]
+  """
+  ✨ Generated from Field `Personal`.`semestres_on_coordinador1` of type `[Semestre!]!`
+  """
+  semestres_on_coordinador1: [Semestre_Data!]
+  """
+  ✨ Generated from Field `Personal`.`semestres_on_coordinador2` of type `[Semestre!]!`
+  """
+  semestres_on_coordinador2: [Semestre_Data!]
+  """
+  ✨ Generated from Field `Personal`.`semestres_on_director` of type `[Semestre!]!`
+  """
+  semestres_on_director: [Semestre_Data!]
 }
 """
 ✨ Generated filter input type for table 'Personal'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -4970,7 +5034,7 @@ input Personal_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Personal`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Personal'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -5073,11 +5137,11 @@ input PersonalEspecialidad_Data {
   """
   ✨ `_expr` server value variant of `personalId` (✨ Generated from Field `PersonalEspecialidad`.`personalId` of type `Int!`)
   """
-  personalId_expr: Int_Expr
+  personalId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `personalId` (✨ Generated from Field `PersonalEspecialidad`.`personalId` of type `Int!`)
   """
-  personalId_update: [Int_Update!]
+  personalId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PersonalEspecialidad`.`especialidadId` of type `Int!`
   """
@@ -5085,19 +5149,19 @@ input PersonalEspecialidad_Data {
   """
   ✨ `_expr` server value variant of `especialidadId` (✨ Generated from Field `PersonalEspecialidad`.`especialidadId` of type `Int!`)
   """
-  especialidadId_expr: Int_Expr
+  especialidadId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `especialidadId` (✨ Generated from Field `PersonalEspecialidad`.`especialidadId` of type `Int!`)
   """
-  especialidadId_update: [Int_Update!]
+  especialidadId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PersonalEspecialidad`.`especialidad` of type `Especialidad!`
   """
-  especialidad: Especialidad_Key
+  especialidad: Especialidad_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PersonalEspecialidad`.`personal` of type `Personal!`
   """
-  personal: Personal_Key
+  personal: Personal_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PersonalEspecialidad`.`id` of type `Int!`
   """
@@ -5105,11 +5169,11 @@ input PersonalEspecialidad_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `PersonalEspecialidad`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `PersonalEspecialidad`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PersonalEspecialidad`.`orden` of type `Int`
   """
@@ -5117,11 +5181,11 @@ input PersonalEspecialidad_Data {
   """
   ✨ `_expr` server value variant of `orden` (✨ Generated from Field `PersonalEspecialidad`.`orden` of type `Int`)
   """
-  orden_expr: Int_Expr
+  orden_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `orden` (✨ Generated from Field `PersonalEspecialidad`.`orden` of type `Int`)
   """
-  orden_update: [Int_Update!]
+  orden_update: [Int_Update!] @fdc_forbiddenInVariables
 }
 """
 ✨ Generated filter input type for table 'PersonalEspecialidad'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -5293,7 +5357,7 @@ input PersonalEspecialidad_Key {
   """
   ✨ `_expr` server value variant of `personalId` (✨ Generated from Field `PersonalEspecialidad`.`personalId` of type `Int!`)
   """
-  personalId_expr: Int_Expr
+  personalId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PersonalEspecialidad`.`especialidadId` of type `Int!`
   """
@@ -5301,7 +5365,7 @@ input PersonalEspecialidad_Key {
   """
   ✨ `_expr` server value variant of `especialidadId` (✨ Generated from Field `PersonalEspecialidad`.`especialidadId` of type `Int!`)
   """
-  especialidadId_expr: Int_Expr
+  especialidadId_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'PersonalEspecialidad'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -5440,11 +5504,11 @@ input Plan_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Plan`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Plan`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`carreraId` of type `Int`
   """
@@ -5452,15 +5516,15 @@ input Plan_Data {
   """
   ✨ `_expr` server value variant of `carreraId` (✨ Generated from Field `Plan`.`carreraId` of type `Int`)
   """
-  carreraId_expr: Int_Expr
+  carreraId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `carreraId` (✨ Generated from Field `Plan`.`carreraId` of type `Int`)
   """
-  carreraId_update: [Int_Update!]
+  carreraId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`carrera` of type `Carrera`
   """
-  carrera: Carrera_Key
+  carrera: Carrera_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`creditos` of type `Int`
   """
@@ -5468,11 +5532,11 @@ input Plan_Data {
   """
   ✨ `_expr` server value variant of `creditos` (✨ Generated from Field `Plan`.`creditos` of type `Int`)
   """
-  creditos_expr: Int_Expr
+  creditos_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `creditos` (✨ Generated from Field `Plan`.`creditos` of type `Int`)
   """
-  creditos_update: [Int_Update!]
+  creditos_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`descripcion2` of type `String`
   """
@@ -5480,7 +5544,7 @@ input Plan_Data {
   """
   ✨ `_expr` server value variant of `descripcion2` (✨ Generated from Field `Plan`.`descripcion2` of type `String`)
   """
-  descripcion2_expr: String_Expr
+  descripcion2_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`duracion` of type `String`
   """
@@ -5488,7 +5552,7 @@ input Plan_Data {
   """
   ✨ `_expr` server value variant of `duracion` (✨ Generated from Field `Plan`.`duracion` of type `String`)
   """
-  duracion_expr: String_Expr
+  duracion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`nivel` of type `String`
   """
@@ -5496,7 +5560,7 @@ input Plan_Data {
   """
   ✨ `_expr` server value variant of `nivel` (✨ Generated from Field `Plan`.`nivel` of type `String`)
   """
-  nivel_expr: String_Expr
+  nivel_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`slug` of type `String`
   """
@@ -5504,7 +5568,7 @@ input Plan_Data {
   """
   ✨ `_expr` server value variant of `slug` (✨ Generated from Field `Plan`.`slug` of type `String`)
   """
-  slug_expr: String_Expr
+  slug_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`tituloComercial` of type `String`
   """
@@ -5512,7 +5576,7 @@ input Plan_Data {
   """
   ✨ `_expr` server value variant of `tituloComercial` (✨ Generated from Field `Plan`.`tituloComercial` of type `String`)
   """
-  tituloComercial_expr: String_Expr
+  tituloComercial_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`version` of type `String`
   """
@@ -5520,7 +5584,11 @@ input Plan_Data {
   """
   ✨ `_expr` server value variant of `version` (✨ Generated from Field `Plan`.`version` of type `String`)
   """
-  version_expr: String_Expr
+  version_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Plan`.`modulos_on_plan` of type `[Modulo!]!`
+  """
+  modulos_on_plan: [Modulo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Plan'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -5716,7 +5784,7 @@ input Plan_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Plan`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Plan'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -5875,11 +5943,11 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Post`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Post`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`comentariosActivos` of type `Boolean!`
   """
@@ -5887,7 +5955,7 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `comentariosActivos` (✨ Generated from Field `Post`.`comentariosActivos` of type `Boolean!`)
   """
-  comentariosActivos_expr: Boolean_Expr
+  comentariosActivos_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`contenido` of type `String`
   """
@@ -5895,7 +5963,7 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `contenido` (✨ Generated from Field `Post`.`contenido` of type `String`)
   """
-  contenido_expr: String_Expr
+  contenido_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`creadoPorUid` of type `String`
   """
@@ -5903,7 +5971,7 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `creadoPorUid` (✨ Generated from Field `Post`.`creadoPorUid` of type `String`)
   """
-  creadoPorUid_expr: String_Expr
+  creadoPorUid_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`entidadId` of type `String`
   """
@@ -5911,7 +5979,7 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `entidadId` (✨ Generated from Field `Post`.`entidadId` of type `String`)
   """
-  entidadId_expr: String_Expr
+  entidadId_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`entidadTipo` of type `String`
   """
@@ -5919,7 +5987,7 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `entidadTipo` (✨ Generated from Field `Post`.`entidadTipo` of type `String`)
   """
-  entidadTipo_expr: String_Expr
+  entidadTipo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`estado` of type `String!`
   """
@@ -5927,7 +5995,7 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `estado` (✨ Generated from Field `Post`.`estado` of type `String!`)
   """
-  estado_expr: String_Expr
+  estado_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`fechaActualizacion` of type `Timestamp`
   """
@@ -5935,15 +6003,15 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `fechaActualizacion` (✨ Generated from Field `Post`.`fechaActualizacion` of type `Timestamp`)
   """
-  fechaActualizacion_expr: Timestamp_Expr
+  fechaActualizacion_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fechaActualizacion` (✨ Generated from Field `Post`.`fechaActualizacion` of type `Timestamp`)
   """
-  fechaActualizacion_time: Timestamp_Relative
+  fechaActualizacion_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fechaActualizacion` (✨ Generated from Field `Post`.`fechaActualizacion` of type `Timestamp`)
   """
-  fechaActualizacion_update: [Timestamp_Update!]
+  fechaActualizacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`fechaCreacion` of type `Timestamp`
   """
@@ -5951,15 +6019,15 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `fechaCreacion` (✨ Generated from Field `Post`.`fechaCreacion` of type `Timestamp`)
   """
-  fechaCreacion_expr: Timestamp_Expr
+  fechaCreacion_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fechaCreacion` (✨ Generated from Field `Post`.`fechaCreacion` of type `Timestamp`)
   """
-  fechaCreacion_time: Timestamp_Relative
+  fechaCreacion_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fechaCreacion` (✨ Generated from Field `Post`.`fechaCreacion` of type `Timestamp`)
   """
-  fechaCreacion_update: [Timestamp_Update!]
+  fechaCreacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`fechaPublicacion` of type `Timestamp`
   """
@@ -5967,15 +6035,15 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `fechaPublicacion` (✨ Generated from Field `Post`.`fechaPublicacion` of type `Timestamp`)
   """
-  fechaPublicacion_expr: Timestamp_Expr
+  fechaPublicacion_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fechaPublicacion` (✨ Generated from Field `Post`.`fechaPublicacion` of type `Timestamp`)
   """
-  fechaPublicacion_time: Timestamp_Relative
+  fechaPublicacion_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fechaPublicacion` (✨ Generated from Field `Post`.`fechaPublicacion` of type `Timestamp`)
   """
-  fechaPublicacion_update: [Timestamp_Update!]
+  fechaPublicacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`imagenPortadaUrl` of type `String`
   """
@@ -5983,7 +6051,7 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `imagenPortadaUrl` (✨ Generated from Field `Post`.`imagenPortadaUrl` of type `String`)
   """
-  imagenPortadaUrl_expr: String_Expr
+  imagenPortadaUrl_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`resumen` of type `String`
   """
@@ -5991,7 +6059,7 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `resumen` (✨ Generated from Field `Post`.`resumen` of type `String`)
   """
-  resumen_expr: String_Expr
+  resumen_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`slug` of type `String!`
   """
@@ -5999,7 +6067,7 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `slug` (✨ Generated from Field `Post`.`slug` of type `String!`)
   """
-  slug_expr: String_Expr
+  slug_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`tipo` of type `String!`
   """
@@ -6007,7 +6075,7 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `tipo` (✨ Generated from Field `Post`.`tipo` of type `String!`)
   """
-  tipo_expr: String_Expr
+  tipo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Post`.`titulo` of type `String!`
   """
@@ -6015,7 +6083,7 @@ input Post_Data {
   """
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Post`.`titulo` of type `String!`)
   """
-  titulo_expr: String_Expr
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated filter input type for table 'Post'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -6243,7 +6311,7 @@ input Post_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Post`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Post'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -6438,11 +6506,11 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Publicacion`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Publicacion`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Publicacion`.`contenido1` of type `String`
   """
@@ -6450,7 +6518,7 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `contenido1` (✨ Generated from Field `Publicacion`.`contenido1` of type `String`)
   """
-  contenido1_expr: String_Expr
+  contenido1_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Publicacion`.`contenido2` of type `String`
   """
@@ -6458,7 +6526,7 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `contenido2` (✨ Generated from Field `Publicacion`.`contenido2` of type `String`)
   """
-  contenido2_expr: String_Expr
+  contenido2_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Publicacion`.`descripcionCorta` of type `String`
   """
@@ -6466,7 +6534,7 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `descripcionCorta` (✨ Generated from Field `Publicacion`.`descripcionCorta` of type `String`)
   """
-  descripcionCorta_expr: String_Expr
+  descripcionCorta_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Publicacion`.`destacado` of type `Boolean`
   """
@@ -6474,7 +6542,7 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `destacado` (✨ Generated from Field `Publicacion`.`destacado` of type `Boolean`)
   """
-  destacado_expr: Boolean_Expr
+  destacado_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Publicacion`.`fechaEventoFin` of type `Timestamp`
   """
@@ -6482,15 +6550,15 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `fechaEventoFin` (✨ Generated from Field `Publicacion`.`fechaEventoFin` of type `Timestamp`)
   """
-  fechaEventoFin_expr: Timestamp_Expr
+  fechaEventoFin_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fechaEventoFin` (✨ Generated from Field `Publicacion`.`fechaEventoFin` of type `Timestamp`)
   """
-  fechaEventoFin_time: Timestamp_Relative
+  fechaEventoFin_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fechaEventoFin` (✨ Generated from Field `Publicacion`.`fechaEventoFin` of type `Timestamp`)
   """
-  fechaEventoFin_update: [Timestamp_Update!]
+  fechaEventoFin_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Publicacion`.`fechaEventoInicio` of type `Timestamp`
   """
@@ -6498,15 +6566,15 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `fechaEventoInicio` (✨ Generated from Field `Publicacion`.`fechaEventoInicio` of type `Timestamp`)
   """
-  fechaEventoInicio_expr: Timestamp_Expr
+  fechaEventoInicio_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fechaEventoInicio` (✨ Generated from Field `Publicacion`.`fechaEventoInicio` of type `Timestamp`)
   """
-  fechaEventoInicio_time: Timestamp_Relative
+  fechaEventoInicio_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fechaEventoInicio` (✨ Generated from Field `Publicacion`.`fechaEventoInicio` of type `Timestamp`)
   """
-  fechaEventoInicio_update: [Timestamp_Update!]
+  fechaEventoInicio_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Publicacion`.`fechaPublicacion` of type `Timestamp`
   """
@@ -6514,15 +6582,15 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `fechaPublicacion` (✨ Generated from Field `Publicacion`.`fechaPublicacion` of type `Timestamp`)
   """
-  fechaPublicacion_expr: Timestamp_Expr
+  fechaPublicacion_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fechaPublicacion` (✨ Generated from Field `Publicacion`.`fechaPublicacion` of type `Timestamp`)
   """
-  fechaPublicacion_time: Timestamp_Relative
+  fechaPublicacion_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fechaPublicacion` (✨ Generated from Field `Publicacion`.`fechaPublicacion` of type `Timestamp`)
   """
-  fechaPublicacion_update: [Timestamp_Update!]
+  fechaPublicacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Publicacion`.`slug` of type `String`
   """
@@ -6530,7 +6598,7 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `slug` (✨ Generated from Field `Publicacion`.`slug` of type `String`)
   """
-  slug_expr: String_Expr
+  slug_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Publicacion`.`tipo` of type `String`
   """
@@ -6538,7 +6606,7 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `tipo` (✨ Generated from Field `Publicacion`.`tipo` of type `String`)
   """
-  tipo_expr: String_Expr
+  tipo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Publicacion`.`titulo` of type `String`
   """
@@ -6546,7 +6614,7 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Publicacion`.`titulo` of type `String`)
   """
-  titulo_expr: String_Expr
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Publicacion`.`ubicacion` of type `String`
   """
@@ -6554,7 +6622,11 @@ input Publicacion_Data {
   """
   ✨ `_expr` server value variant of `ubicacion` (✨ Generated from Field `Publicacion`.`ubicacion` of type `String`)
   """
-  ubicacion_expr: String_Expr
+  ubicacion_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Publicacion`.`publicacionVideos_on_publicacion` of type `[PublicacionVideo!]!`
+  """
+  publicacionVideos_on_publicacion: [PublicacionVideo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Publicacion'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -6762,7 +6834,7 @@ input Publicacion_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Publicacion`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Publicacion'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -6933,11 +7005,11 @@ input PublicacionVideo_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `PublicacionVideo`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `PublicacionVideo`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PublicacionVideo`.`publicacionId` of type `Int`
   """
@@ -6945,11 +7017,11 @@ input PublicacionVideo_Data {
   """
   ✨ `_expr` server value variant of `publicacionId` (✨ Generated from Field `PublicacionVideo`.`publicacionId` of type `Int`)
   """
-  publicacionId_expr: Int_Expr
+  publicacionId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `publicacionId` (✨ Generated from Field `PublicacionVideo`.`publicacionId` of type `Int`)
   """
-  publicacionId_update: [Int_Update!]
+  publicacionId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PublicacionVideo`.`videoId` of type `Int`
   """
@@ -6957,19 +7029,19 @@ input PublicacionVideo_Data {
   """
   ✨ `_expr` server value variant of `videoId` (✨ Generated from Field `PublicacionVideo`.`videoId` of type `Int`)
   """
-  videoId_expr: Int_Expr
+  videoId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `videoId` (✨ Generated from Field `PublicacionVideo`.`videoId` of type `Int`)
   """
-  videoId_update: [Int_Update!]
+  videoId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PublicacionVideo`.`publicacion` of type `Publicacion`
   """
-  publicacion: Publicacion_Key
+  publicacion: Publicacion_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PublicacionVideo`.`video` of type `VideoYoutube`
   """
-  video: VideoYoutube_Key
+  video: VideoYoutube_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PublicacionVideo`.`field` of type `String`
   """
@@ -6977,7 +7049,7 @@ input PublicacionVideo_Data {
   """
   ✨ `_expr` server value variant of `field` (✨ Generated from Field `PublicacionVideo`.`field` of type `String`)
   """
-  field_expr: String_Expr
+  field_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `PublicacionVideo`.`orden` of type `Int`
   """
@@ -6985,11 +7057,11 @@ input PublicacionVideo_Data {
   """
   ✨ `_expr` server value variant of `orden` (✨ Generated from Field `PublicacionVideo`.`orden` of type `Int`)
   """
-  orden_expr: Int_Expr
+  orden_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `orden` (✨ Generated from Field `PublicacionVideo`.`orden` of type `Int`)
   """
-  orden_update: [Int_Update!]
+  orden_update: [Int_Update!] @fdc_forbiddenInVariables
 }
 """
 ✨ Generated filter input type for table 'PublicacionVideo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -7169,7 +7241,7 @@ input PublicacionVideo_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `PublicacionVideo`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'PublicacionVideo'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -7316,11 +7388,11 @@ input Rol_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Rol`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Rol`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Rol`.`scala` of type `Int`
   """
@@ -7328,11 +7400,11 @@ input Rol_Data {
   """
   ✨ `_expr` server value variant of `scala` (✨ Generated from Field `Rol`.`scala` of type `Int`)
   """
-  scala_expr: Int_Expr
+  scala_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `scala` (✨ Generated from Field `Rol`.`scala` of type `Int`)
   """
-  scala_update: [Int_Update!]
+  scala_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Rol`.`titulo` of type `String`
   """
@@ -7340,7 +7412,11 @@ input Rol_Data {
   """
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Rol`.`titulo` of type `String`)
   """
-  titulo_expr: String_Expr
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Rol`.`users_on_rol` of type `[User!]!`
+  """
+  users_on_rol: [User_Data!]
 }
 """
 ✨ Generated filter input type for table 'Rol'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -7468,7 +7544,7 @@ input Rol_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Rol`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Rol'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -7559,11 +7635,11 @@ input Sector_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Sector`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Sector`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Sector`.`descripcion` of type `String`
   """
@@ -7571,7 +7647,7 @@ input Sector_Data {
   """
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Sector`.`descripcion` of type `String`)
   """
-  descripcion_expr: String_Expr
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Sector`.`titulo` of type `String`
   """
@@ -7579,7 +7655,11 @@ input Sector_Data {
   """
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Sector`.`titulo` of type `String`)
   """
-  titulo_expr: String_Expr
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Sector`.`familias_on_sector` of type `[Familia!]!`
+  """
+  familias_on_sector: [Familia_Data!]
 }
 """
 ✨ Generated filter input type for table 'Sector'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -7691,7 +7771,7 @@ input Sector_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Sector`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Sector'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -7766,11 +7846,11 @@ input Semestre_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Semestre`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `Semestre`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Semestre`.`coordinador1Id` of type `Int`
   """
@@ -7778,11 +7858,11 @@ input Semestre_Data {
   """
   ✨ `_expr` server value variant of `coordinador1Id` (✨ Generated from Field `Semestre`.`coordinador1Id` of type `Int`)
   """
-  coordinador1Id_expr: Int_Expr
+  coordinador1Id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `coordinador1Id` (✨ Generated from Field `Semestre`.`coordinador1Id` of type `Int`)
   """
-  coordinador1Id_update: [Int_Update!]
+  coordinador1Id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Semestre`.`coordinador2Id` of type `Int`
   """
@@ -7790,11 +7870,11 @@ input Semestre_Data {
   """
   ✨ `_expr` server value variant of `coordinador2Id` (✨ Generated from Field `Semestre`.`coordinador2Id` of type `Int`)
   """
-  coordinador2Id_expr: Int_Expr
+  coordinador2Id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `coordinador2Id` (✨ Generated from Field `Semestre`.`coordinador2Id` of type `Int`)
   """
-  coordinador2Id_update: [Int_Update!]
+  coordinador2Id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Semestre`.`directorId` of type `Int`
   """
@@ -7802,23 +7882,23 @@ input Semestre_Data {
   """
   ✨ `_expr` server value variant of `directorId` (✨ Generated from Field `Semestre`.`directorId` of type `Int`)
   """
-  directorId_expr: Int_Expr
+  directorId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `directorId` (✨ Generated from Field `Semestre`.`directorId` of type `Int`)
   """
-  directorId_update: [Int_Update!]
+  directorId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Semestre`.`coordinador1` of type `Personal`
   """
-  coordinador1: Personal_Key
+  coordinador1: Personal_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Semestre`.`coordinador2` of type `Personal`
   """
-  coordinador2: Personal_Key
+  coordinador2: Personal_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Semestre`.`director` of type `Personal`
   """
-  director: Personal_Key
+  director: Personal_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Semestre`.`archivado` of type `Boolean`
   """
@@ -7826,7 +7906,7 @@ input Semestre_Data {
   """
   ✨ `_expr` server value variant of `archivado` (✨ Generated from Field `Semestre`.`archivado` of type `Boolean`)
   """
-  archivado_expr: Boolean_Expr
+  archivado_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Semestre`.`descripcion` of type `String`
   """
@@ -7834,7 +7914,7 @@ input Semestre_Data {
   """
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Semestre`.`descripcion` of type `String`)
   """
-  descripcion_expr: String_Expr
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Semestre`.`titulo` of type `String`
   """
@@ -7842,7 +7922,15 @@ input Semestre_Data {
   """
   ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Semestre`.`titulo` of type `String`)
   """
-  titulo_expr: String_Expr
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Semestre`.`calendarios_on_semestre` of type `[Calendario!]!`
+  """
+  calendarios_on_semestre: [Calendario_Data!]
+  """
+  ✨ Generated from Field `Semestre`.`grupos_on_semestre` of type `[Grupo!]!`
+  """
+  grupos_on_semestre: [Grupo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Semestre'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -8050,7 +8138,7 @@ input Semestre_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `Semestre`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'Semestre'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -8217,11 +8305,11 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `User`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `User`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`rolId` of type `Int`
   """
@@ -8229,15 +8317,15 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `rolId` (✨ Generated from Field `User`.`rolId` of type `Int`)
   """
-  rolId_expr: Int_Expr
+  rolId_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `rolId` (✨ Generated from Field `User`.`rolId` of type `Int`)
   """
-  rolId_update: [Int_Update!]
+  rolId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`rol` of type `Rol`
   """
-  rol: Rol_Key
+  rol: Rol_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`apellidoMaterno` of type `String`
   """
@@ -8245,7 +8333,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `apellidoMaterno` (✨ Generated from Field `User`.`apellidoMaterno` of type `String`)
   """
-  apellidoMaterno_expr: String_Expr
+  apellidoMaterno_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`apellidoPaterno` of type `String`
   """
@@ -8253,7 +8341,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `apellidoPaterno` (✨ Generated from Field `User`.`apellidoPaterno` of type `String`)
   """
-  apellidoPaterno_expr: String_Expr
+  apellidoPaterno_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`apellidos` of type `String`
   """
@@ -8261,7 +8349,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `apellidos` (✨ Generated from Field `User`.`apellidos` of type `String`)
   """
-  apellidos_expr: String_Expr
+  apellidos_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`avatar` of type `String`
   """
@@ -8269,7 +8357,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `avatar` (✨ Generated from Field `User`.`avatar` of type `String`)
   """
-  avatar_expr: String_Expr
+  avatar_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`blocked` of type `Boolean`
   """
@@ -8277,7 +8365,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `blocked` (✨ Generated from Field `User`.`blocked` of type `Boolean`)
   """
-  blocked_expr: Boolean_Expr
+  blocked_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`celular` of type `String`
   """
@@ -8285,7 +8373,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `celular` (✨ Generated from Field `User`.`celular` of type `String`)
   """
-  celular_expr: String_Expr
+  celular_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`confirmed` of type `Boolean`
   """
@@ -8293,7 +8381,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `confirmed` (✨ Generated from Field `User`.`confirmed` of type `Boolean`)
   """
-  confirmed_expr: Boolean_Expr
+  confirmed_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`correoInstitucional` of type `String`
   """
@@ -8301,7 +8389,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `correoInstitucional` (✨ Generated from Field `User`.`correoInstitucional` of type `String`)
   """
-  correoInstitucional_expr: String_Expr
+  correoInstitucional_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`direccion` of type `String`
   """
@@ -8309,7 +8397,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `direccion` (✨ Generated from Field `User`.`direccion` of type `String`)
   """
-  direccion_expr: String_Expr
+  direccion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`distrito` of type `String`
   """
@@ -8317,7 +8405,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `distrito` (✨ Generated from Field `User`.`distrito` of type `String`)
   """
-  distrito_expr: String_Expr
+  distrito_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`dni` of type `String`
   """
@@ -8325,7 +8413,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `dni` (✨ Generated from Field `User`.`dni` of type `String`)
   """
-  dni_expr: String_Expr
+  dni_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`documentId` of type `String`
   """
@@ -8333,7 +8421,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `documentId` (✨ Generated from Field `User`.`documentId` of type `String`)
   """
-  documentId_expr: String_Expr
+  documentId_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`email` of type `String`
   """
@@ -8341,7 +8429,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `email` (✨ Generated from Field `User`.`email` of type `String`)
   """
-  email_expr: String_Expr
+  email_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`emailCreador` of type `String`
   """
@@ -8349,7 +8437,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `emailCreador` (✨ Generated from Field `User`.`emailCreador` of type `String`)
   """
-  emailCreador_expr: String_Expr
+  emailCreador_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`estadoCivil` of type `String`
   """
@@ -8357,7 +8445,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `estadoCivil` (✨ Generated from Field `User`.`estadoCivil` of type `String`)
   """
-  estadoCivil_expr: String_Expr
+  estadoCivil_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`fechaCreacion` of type `Timestamp`
   """
@@ -8365,15 +8453,15 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `fechaCreacion` (✨ Generated from Field `User`.`fechaCreacion` of type `Timestamp`)
   """
-  fechaCreacion_expr: Timestamp_Expr
+  fechaCreacion_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fechaCreacion` (✨ Generated from Field `User`.`fechaCreacion` of type `Timestamp`)
   """
-  fechaCreacion_time: Timestamp_Relative
+  fechaCreacion_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fechaCreacion` (✨ Generated from Field `User`.`fechaCreacion` of type `Timestamp`)
   """
-  fechaCreacion_update: [Timestamp_Update!]
+  fechaCreacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`fechaModificacion` of type `Timestamp`
   """
@@ -8381,15 +8469,15 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `fechaModificacion` (✨ Generated from Field `User`.`fechaModificacion` of type `Timestamp`)
   """
-  fechaModificacion_expr: Timestamp_Expr
+  fechaModificacion_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fechaModificacion` (✨ Generated from Field `User`.`fechaModificacion` of type `Timestamp`)
   """
-  fechaModificacion_time: Timestamp_Relative
+  fechaModificacion_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fechaModificacion` (✨ Generated from Field `User`.`fechaModificacion` of type `Timestamp`)
   """
-  fechaModificacion_update: [Timestamp_Update!]
+  fechaModificacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`fechaNacimiento` of type `Timestamp`
   """
@@ -8397,15 +8485,15 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `fechaNacimiento` (✨ Generated from Field `User`.`fechaNacimiento` of type `Timestamp`)
   """
-  fechaNacimiento_expr: Timestamp_Expr
+  fechaNacimiento_expr: Timestamp_Expr @fdc_forbiddenInVariables
   """
   ✨ `_time` server value variant of `fechaNacimiento` (✨ Generated from Field `User`.`fechaNacimiento` of type `Timestamp`)
   """
-  fechaNacimiento_time: Timestamp_Relative
+  fechaNacimiento_time: Timestamp_Relative @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `fechaNacimiento` (✨ Generated from Field `User`.`fechaNacimiento` of type `Timestamp`)
   """
-  fechaNacimiento_update: [Timestamp_Update!]
+  fechaNacimiento_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`instruccion` of type `String`
   """
@@ -8413,7 +8501,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `instruccion` (✨ Generated from Field `User`.`instruccion` of type `String`)
   """
-  instruccion_expr: String_Expr
+  instruccion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`nombre` of type `String`
   """
@@ -8421,7 +8509,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `nombre` (✨ Generated from Field `User`.`nombre` of type `String`)
   """
-  nombre_expr: String_Expr
+  nombre_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`provider` of type `String`
   """
@@ -8429,7 +8517,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `provider` (✨ Generated from Field `User`.`provider` of type `String`)
   """
-  provider_expr: String_Expr
+  provider_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`sexo` of type `String`
   """
@@ -8437,7 +8525,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `sexo` (✨ Generated from Field `User`.`sexo` of type `String`)
   """
-  sexo_expr: String_Expr
+  sexo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`telefono` of type `String`
   """
@@ -8445,7 +8533,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `telefono` (✨ Generated from Field `User`.`telefono` of type `String`)
   """
-  telefono_expr: String_Expr
+  telefono_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`tipoDocumento` of type `String`
   """
@@ -8453,7 +8541,7 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `tipoDocumento` (✨ Generated from Field `User`.`tipoDocumento` of type `String`)
   """
-  tipoDocumento_expr: String_Expr
+  tipoDocumento_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`username` of type `String`
   """
@@ -8461,7 +8549,15 @@ input User_Data {
   """
   ✨ `_expr` server value variant of `username` (✨ Generated from Field `User`.`username` of type `String`)
   """
-  username_expr: String_Expr
+  username_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `User`.`matriculas_on_user` of type `[Matricula!]!`
+  """
+  matriculas_on_user: [Matricula_Data!]
+  """
+  ✨ Generated from Field `User`.`personals_on_user` of type `[Personal!]!`
+  """
+  personals_on_user: [Personal_Data!]
 }
 """
 ✨ Generated filter input type for table 'User'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -8813,7 +8909,7 @@ input User_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `User`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'User'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
@@ -9124,11 +9220,11 @@ input VideoYoutube_Data {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `VideoYoutube`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
   """
   ✨ `_update` server value variant of `id` (✨ Generated from Field `VideoYoutube`.`id` of type `Int!`)
   """
-  id_update: [Int_Update!]
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `VideoYoutube`.`url` of type `String`
   """
@@ -9136,7 +9232,15 @@ input VideoYoutube_Data {
   """
   ✨ `_expr` server value variant of `url` (✨ Generated from Field `VideoYoutube`.`url` of type `String`)
   """
-  url_expr: String_Expr
+  url_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `VideoYoutube`.`moduloVideos_on_video` of type `[ModuloVideo!]!`
+  """
+  moduloVideos_on_video: [ModuloVideo_Data!]
+  """
+  ✨ Generated from Field `VideoYoutube`.`publicacionVideos_on_video` of type `[PublicacionVideo!]!`
+  """
+  publicacionVideos_on_video: [PublicacionVideo_Data!]
 }
 """
 ✨ Generated filter input type for table 'VideoYoutube'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -9244,7 +9348,7 @@ input VideoYoutube_Key {
   """
   ✨ `_expr` server value variant of `id` (✨ Generated from Field `VideoYoutube`.`id` of type `Int!`)
   """
-  id_expr: Int_Expr
+  id_expr: Int_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated list filter input type for table 'VideoYoutube'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.

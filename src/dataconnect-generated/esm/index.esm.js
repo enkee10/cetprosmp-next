@@ -1,11 +1,15 @@
-import { queryRef, executeQuery, mutationRef, executeMutation, validateArgs } from 'firebase/data-connect';
+import { queryRef, executeQuery, validateArgsWithOptions, mutationRef, executeMutation, validateArgs, makeMemoryCacheProvider } from 'firebase/data-connect';
 
 export const connectorConfig = {
   connector: 'default',
   service: 'cetprosmp-2026-service',
   location: 'us-central1'
 };
-
+export const dataConnectSettings = {
+  cacheSettings: {
+    cacheProvider: makeMemoryCacheProvider()
+  }
+};
 export const createPostRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -14,7 +18,8 @@ export const createPostRef = (dcOrVars, vars) => {
 createPostRef.operationName = 'CreatePost';
 
 export function createPost(dcOrVars, vars) {
-  return executeMutation(createPostRef(dcOrVars, vars));
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createPostRef(dcInstance, inputVars));
 }
 
 export const updatePostRef = (dcOrVars, vars) => {
@@ -25,7 +30,8 @@ export const updatePostRef = (dcOrVars, vars) => {
 updatePostRef.operationName = 'UpdatePost';
 
 export function updatePost(dcOrVars, vars) {
-  return executeMutation(updatePostRef(dcOrVars, vars));
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updatePostRef(dcInstance, inputVars));
 }
 
 export const deletePostRef = (dcOrVars, vars) => {
@@ -36,7 +42,8 @@ export const deletePostRef = (dcOrVars, vars) => {
 deletePostRef.operationName = 'DeletePost';
 
 export function deletePost(dcOrVars, vars) {
-  return executeMutation(deletePostRef(dcOrVars, vars));
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deletePostRef(dcInstance, inputVars));
 }
 
 export const listRolesRef = (dc) => {
@@ -46,8 +53,10 @@ export const listRolesRef = (dc) => {
 }
 listRolesRef.operationName = 'ListRoles';
 
-export function listRoles(dc) {
-  return executeQuery(listRolesRef(dc));
+export function listRoles(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listRolesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const getRoleByIdRef = (dcOrVars, vars) => {
@@ -57,8 +66,10 @@ export const getRoleByIdRef = (dcOrVars, vars) => {
 }
 getRoleByIdRef.operationName = 'GetRoleById';
 
-export function getRoleById(dcOrVars, vars) {
-  return executeQuery(getRoleByIdRef(dcOrVars, vars));
+export function getRoleById(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getRoleByIdRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const listUsersRef = (dc) => {
@@ -68,8 +79,10 @@ export const listUsersRef = (dc) => {
 }
 listUsersRef.operationName = 'ListUsers';
 
-export function listUsers(dc) {
-  return executeQuery(listUsersRef(dc));
+export function listUsers(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listUsersRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const getUserByDocumentIdRef = (dcOrVars, vars) => {
@@ -79,8 +92,10 @@ export const getUserByDocumentIdRef = (dcOrVars, vars) => {
 }
 getUserByDocumentIdRef.operationName = 'GetUserByDocumentId';
 
-export function getUserByDocumentId(dcOrVars, vars) {
-  return executeQuery(getUserByDocumentIdRef(dcOrVars, vars));
+export function getUserByDocumentId(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getUserByDocumentIdRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const listActEconomicasRef = (dc) => {
@@ -90,8 +105,10 @@ export const listActEconomicasRef = (dc) => {
 }
 listActEconomicasRef.operationName = 'ListActEconomicas';
 
-export function listActEconomicas(dc) {
-  return executeQuery(listActEconomicasRef(dc));
+export function listActEconomicas(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listActEconomicasRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const listPostsRef = (dc) => {
@@ -101,8 +118,10 @@ export const listPostsRef = (dc) => {
 }
 listPostsRef.operationName = 'ListPosts';
 
-export function listPosts(dc) {
-  return executeQuery(listPostsRef(dc));
+export function listPosts(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listPostsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const getPostByIdRef = (dcOrVars, vars) => {
@@ -112,7 +131,9 @@ export const getPostByIdRef = (dcOrVars, vars) => {
 }
 getPostByIdRef.operationName = 'GetPostById';
 
-export function getPostById(dcOrVars, vars) {
-  return executeQuery(getPostByIdRef(dcOrVars, vars));
+export function getPostById(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getPostByIdRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 

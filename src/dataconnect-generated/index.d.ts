@@ -1,6 +1,7 @@
-import { ConnectorConfig, DataConnect, QueryRef, QueryPromise, MutationRef, MutationPromise } from 'firebase/data-connect';
+import { ConnectorConfig, DataConnect, QueryRef, QueryPromise, ExecuteQueryOptions, MutationRef, MutationPromise, DataConnectSettings } from 'firebase/data-connect';
 
 export const connectorConfig: ConnectorConfig;
+export const dataConnectSettings: DataConnectSettings;
 
 export type TimestampString = string;
 export type UUIDString = string;
@@ -320,8 +321,8 @@ interface ListRolesRef {
 }
 export const listRolesRef: ListRolesRef;
 
-export function listRoles(): QueryPromise<ListRolesData, undefined>;
-export function listRoles(dc: DataConnect): QueryPromise<ListRolesData, undefined>;
+export function listRoles(options?: ExecuteQueryOptions): QueryPromise<ListRolesData, undefined>;
+export function listRoles(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListRolesData, undefined>;
 
 interface GetRoleByIdRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -332,8 +333,8 @@ interface GetRoleByIdRef {
 }
 export const getRoleByIdRef: GetRoleByIdRef;
 
-export function getRoleById(vars: GetRoleByIdVariables): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
-export function getRoleById(dc: DataConnect, vars: GetRoleByIdVariables): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
+export function getRoleById(vars: GetRoleByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
+export function getRoleById(dc: DataConnect, vars: GetRoleByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetRoleByIdData, GetRoleByIdVariables>;
 
 interface ListUsersRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -344,8 +345,8 @@ interface ListUsersRef {
 }
 export const listUsersRef: ListUsersRef;
 
-export function listUsers(): QueryPromise<ListUsersData, undefined>;
-export function listUsers(dc: DataConnect): QueryPromise<ListUsersData, undefined>;
+export function listUsers(options?: ExecuteQueryOptions): QueryPromise<ListUsersData, undefined>;
+export function listUsers(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListUsersData, undefined>;
 
 interface GetUserByDocumentIdRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -356,8 +357,8 @@ interface GetUserByDocumentIdRef {
 }
 export const getUserByDocumentIdRef: GetUserByDocumentIdRef;
 
-export function getUserByDocumentId(vars: GetUserByDocumentIdVariables): QueryPromise<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
-export function getUserByDocumentId(dc: DataConnect, vars: GetUserByDocumentIdVariables): QueryPromise<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
+export function getUserByDocumentId(vars: GetUserByDocumentIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
+export function getUserByDocumentId(dc: DataConnect, vars: GetUserByDocumentIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByDocumentIdData, GetUserByDocumentIdVariables>;
 
 interface ListActEconomicasRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -368,8 +369,8 @@ interface ListActEconomicasRef {
 }
 export const listActEconomicasRef: ListActEconomicasRef;
 
-export function listActEconomicas(): QueryPromise<ListActEconomicasData, undefined>;
-export function listActEconomicas(dc: DataConnect): QueryPromise<ListActEconomicasData, undefined>;
+export function listActEconomicas(options?: ExecuteQueryOptions): QueryPromise<ListActEconomicasData, undefined>;
+export function listActEconomicas(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListActEconomicasData, undefined>;
 
 interface ListPostsRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -380,8 +381,8 @@ interface ListPostsRef {
 }
 export const listPostsRef: ListPostsRef;
 
-export function listPosts(): QueryPromise<ListPostsData, undefined>;
-export function listPosts(dc: DataConnect): QueryPromise<ListPostsData, undefined>;
+export function listPosts(options?: ExecuteQueryOptions): QueryPromise<ListPostsData, undefined>;
+export function listPosts(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListPostsData, undefined>;
 
 interface GetPostByIdRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -392,6 +393,6 @@ interface GetPostByIdRef {
 }
 export const getPostByIdRef: GetPostByIdRef;
 
-export function getPostById(vars: GetPostByIdVariables): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
-export function getPostById(dc: DataConnect, vars: GetPostByIdVariables): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
+export function getPostById(vars: GetPostByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
+export function getPostById(dc: DataConnect, vars: GetPostByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetPostByIdData, GetPostByIdVariables>;
 

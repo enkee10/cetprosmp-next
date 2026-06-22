@@ -7,3 +7,8 @@ export {
   refreshMyClaims,
   setUserRole,
 } from "./roles/handlers.js";
+export {
+  listSectors,
+  getSector,
+  createOrUpdateSector,
+} from "./sectors/handlers.js";

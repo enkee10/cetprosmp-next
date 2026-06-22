@@ -10,6 +10,18 @@ export const UPDATE_ROLE_MUTATION = `
   }
 `;
 
+export const INSERT_SECTOR_MUTATION = `
+  mutation InsertSector($data: Sector_Data! @allow(fields: "titulo descripcion")) {
+    sector_insert(data: $data)
+  }
+`;
+
+export const UPDATE_SECTOR_MUTATION = `
+  mutation UpdateSector($id: Int!, $data: Sector_Data! @allow(fields: "titulo descripcion")) {
+    sector_update(id: $id, data: $data)
+  }
+`;
+
 export const INSERT_USER_MUTATION = `
   mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
     user_insert(data: $data)

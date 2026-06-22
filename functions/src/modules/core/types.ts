@@ -37,3 +37,14 @@ export interface DataConnectRoleInput {
   titulo?: string | null;
   scala?: number | null;
 }
+
+export interface DataConnectSector {
+  id: number;
+  titulo?: string | null;
+  descripcion?: string | null;
+}
+
+export interface DataConnectSectorInput {
+  titulo?: string | null;
+  descripcion?: string | null;
+}

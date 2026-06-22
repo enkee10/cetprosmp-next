@@ -11,4 +11,7 @@ export {
   updateUserProfile,
   setUserRole,
   deleteUser,
+  listSectors,
+  getSector,
+  createOrUpdateSector,
 } from "./modules/index.js";

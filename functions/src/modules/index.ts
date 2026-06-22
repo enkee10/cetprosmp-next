@@ -11,4 +11,5 @@ export {
   listSectors,
   getSector,
   createOrUpdateSector,
+  deleteSector,
 } from "./sectors/handlers.js";

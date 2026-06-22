@@ -7,7 +7,11 @@ import {
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { DataConnectSector, DataConnectSectorInput } from "../core/types.js";
-import { INSERT_SECTOR_MUTATION, UPDATE_SECTOR_MUTATION } from "../../dataconnectOperations.js";
+import {
+  DELETE_SECTOR_MUTATION,
+  INSERT_SECTOR_MUTATION,
+  UPDATE_SECTOR_MUTATION,
+} from "../../dataconnectOperations.js";
 
 const LIST_SECTORS_QUERY = `
   query ListSectorsManual {
@@ -112,5 +116,29 @@ export const createOrUpdateSector = https.onCall(async (data, context) => {
   } catch (error) {
     console.error("Error in createOrUpdateSector:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while saving sector.");
+  }
+});
+
+export const deleteSector = https.onCall(async (data, context) => {
+  const requesterLevel = context.auth?.token?.level ?? 0;
+  if (requesterLevel < 600) {
+    throw new https.HttpsError("permission-denied", "You do not have permission to delete sectors.");
+  }
+
+  const sectorId = toNumber(data?.id, -1);
+  if (sectorId <= 0) {
+    throw new https.HttpsError("invalid-argument", "id is required.");
+  }
+
+  try {
+    const deleted = await dataConnect.executeGraphql<{ sector_delete: unknown }, { id: number }>(
+      DELETE_SECTOR_MUTATION,
+      { variables: { id: sectorId } },
+    );
+
+    return { id: getIdFromKeyOutput(deleted.data.sector_delete) ?? sectorId };
+  } catch (error) {
+    console.error("Error in deleteSector:", error);
+    throw new https.HttpsError("internal", "An unexpected error occurred while deleting sector.");
   }
 });

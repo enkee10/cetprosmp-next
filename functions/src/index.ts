@@ -14,4 +14,5 @@ export {
   listSectors,
   getSector,
   createOrUpdateSector,
+  deleteSector,
 } from "./modules/index.js";

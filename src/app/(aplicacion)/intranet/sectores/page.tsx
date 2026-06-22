@@ -104,6 +104,40 @@ export default function SectoresPage() {
     setMenuSectorId(null);
   }, []);
 
+  const handleDeleteSector = useCallback(async (id: string) => {
+    const sector = sectors.find((item) => String(item.id) === id);
+    const sectorTitle = sector?.titulo ? ` "${sector.titulo}"` : '';
+
+    if (!window.confirm(`Estas seguro de eliminar el sector${sectorTitle}? Esta accion es irreversible.`)) {
+      return;
+    }
+
+    try {
+      const deleteSector = httpsCallable<{ id: number }, { id: number | null }>(
+        functions,
+        'deleteSector',
+      );
+      await deleteSector({ id: Number(id) });
+      setMenuAnchorEl(null);
+      setMenuSectorId(null);
+      void fetchSectors();
+      setTimeout(() => {
+        void fetchSectors();
+      }, 400);
+    } catch (err) {
+      console.error('Error deleting sector: ', err);
+      const code = (err as { code?: string } | null)?.code || '';
+      const message = (err as { message?: string } | null)?.message || '';
+      if (code === 'functions/permission-denied') {
+        setError('No tienes acceso para eliminar sectores (requiere level >= 600).');
+      } else if (message) {
+        setError(`No se pudo eliminar el sector: ${message}`);
+      } else {
+        setError('No se pudo eliminar el sector en Data Connect.');
+      }
+    }
+  }, [fetchSectors, functions, sectors]);
+
   const columns = useMemo<GridColDef[]>(
     () => [
       {
@@ -208,6 +242,13 @@ export default function SectoresPage() {
           }}
         >
           Editar
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (menuSectorId) void handleDeleteSector(menuSectorId);
+          }}
+        >
+          Eliminar
         </MenuItem>
       </Menu>
 

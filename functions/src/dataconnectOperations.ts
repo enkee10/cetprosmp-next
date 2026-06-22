@@ -22,6 +22,12 @@ export const UPDATE_SECTOR_MUTATION = `
   }
 `;
 
+export const DELETE_SECTOR_MUTATION = `
+  mutation DeleteSector($id: Int!) {
+    sector_delete(id: $id)
+  }
+`;
+
 export const INSERT_USER_MUTATION = `
   mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
     user_insert(data: $data)

@@ -1,7 +1,10 @@
 import {
   DataConnectActEconomicaInput,
+  DataConnectCarreraInput,
   DataConnectEspecialidadInput,
   DataConnectFamiliaInput,
+  DataConnectModuloInput,
+  DataConnectPlanInput,
   DataConnectRoleInput,
   DataConnectSectorInput,
   DataConnectUserInput,
@@ -199,5 +202,47 @@ export function buildEspecialidadDataFromInput(input: Record<string, unknown>): 
     descripcion2: asNullableString(input.descripcion2),
     slug: asNullableString(input.slug),
     actEconomicaId: toNumberOrNull(input.actEconomicaId),
+  });
+}
+
+export function buildCarreraDataFromInput(input: Record<string, unknown>): DataConnectCarreraInput {
+  return compactUndefined({
+    nombre: asNullableString(input.nombre),
+    codigo: asNullableString(input.codigo),
+    descripcion: asNullableString(input.descripcion),
+    tipo: asNullableString(input.tipo),
+    estado: asNullableString(input.estado),
+    creadoEn: asNullableTimestamp(input.creadoEn),
+    actualizadoEn: asNullableTimestamp(input.actualizadoEn),
+    actEconomicaId: toNumberOrNull(input.actEconomicaId),
+  });
+}
+
+export function buildPlanDataFromInput(input: Record<string, unknown>): DataConnectPlanInput {
+  return compactUndefined({
+    version: asNullableString(input.version),
+    duracion: asNullableString(input.duracion),
+    creditos: toNumberOrNull(input.creditos),
+    nivel: asNullableString(input.nivel),
+    tituloComercial: asNullableString(input.tituloComercial),
+    slug: asNullableString(input.slug),
+    descripcion2: asNullableString(input.descripcion2),
+    carreraId: toNumberOrNull(input.carreraId),
+  });
+}
+
+export function buildModuloDataFromInput(input: Record<string, unknown>): DataConnectModuloInput {
+  return compactUndefined({
+    titulo: asNullableString(input.titulo),
+    tituloComercial: asNullableString(input.tituloComercial),
+    orden: toNumberOrNull(input.orden),
+    descripcion: asNullableString(input.descripcion),
+    horas: toNumberOrNull(input.horas),
+    creditos: toNumberOrNull(input.creditos),
+    metas: toNumberOrNull(input.metas),
+    activo: toBoolean(input.activo),
+    slug: asNullableString(input.slug),
+    descripcion2: asNullableString(input.descripcion2),
+    planId: toNumberOrNull(input.planId),
   });
 }

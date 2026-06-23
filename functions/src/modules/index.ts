@@ -31,3 +31,21 @@ export {
   createOrUpdateEspecialidad,
   deleteEspecialidad,
 } from "./especialidades/handlers.js";
+export {
+  listCarreras,
+  getCarrera,
+  createOrUpdateCarrera,
+  deleteCarrera,
+} from "./carreras/handlers.js";
+export {
+  listPlanes,
+  getPlan,
+  createOrUpdatePlan,
+  deletePlan,
+} from "./planes/handlers.js";
+export {
+  listModulos,
+  getModulo,
+  createOrUpdateModulo,
+  deleteModulo,
+} from "./modulos/handlers.js";

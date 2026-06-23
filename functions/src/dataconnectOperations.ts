@@ -82,6 +82,60 @@ export const DELETE_ESPECIALIDAD_MUTATION = `
   }
 `;
 
+export const INSERT_CARRERA_MUTATION = `
+  mutation InsertCarrera($data: Carrera_Data! @allow(fields: "nombre codigo descripcion tipo estado creadoEn actualizadoEn actEconomicaId")) {
+    carrera_insert(data: $data)
+  }
+`;
+
+export const UPDATE_CARRERA_MUTATION = `
+  mutation UpdateCarrera($id: Int!, $data: Carrera_Data! @allow(fields: "nombre codigo descripcion tipo estado creadoEn actualizadoEn actEconomicaId")) {
+    carrera_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_CARRERA_MUTATION = `
+  mutation DeleteCarrera($id: Int!) {
+    carrera_delete(id: $id)
+  }
+`;
+
+export const INSERT_PLAN_MUTATION = `
+  mutation InsertPlan($data: Plan_Data! @allow(fields: "version duracion creditos nivel tituloComercial slug descripcion2 carreraId")) {
+    plan_insert(data: $data)
+  }
+`;
+
+export const UPDATE_PLAN_MUTATION = `
+  mutation UpdatePlan($id: Int!, $data: Plan_Data! @allow(fields: "version duracion creditos nivel tituloComercial slug descripcion2 carreraId")) {
+    plan_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_PLAN_MUTATION = `
+  mutation DeletePlan($id: Int!) {
+    plan_delete(id: $id)
+  }
+`;
+
+export const INSERT_MODULO_MUTATION = `
+  mutation InsertModulo($data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos metas activo slug descripcion2 planId")) {
+    modulo_insert(data: $data)
+  }
+`;
+
+export const UPDATE_MODULO_MUTATION = `
+  mutation UpdateModulo($id: Int!, $data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos metas activo slug descripcion2 planId")) {
+    modulo_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_MODULO_MUTATION = `
+  mutation DeleteModulo($id: Int!) {
+    modulo_delete(id: $id)
+  }
+`;
+
 export const INSERT_USER_MUTATION = `
   mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
     user_insert(data: $data)

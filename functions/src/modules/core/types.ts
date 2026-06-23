@@ -95,3 +95,78 @@ export interface DataConnectEspecialidadInput {
   slug?: string | null;
   actEconomicaId?: number | null;
 }
+
+export interface DataConnectCarrera {
+  id: number;
+  nombre?: string | null;
+  codigo?: string | null;
+  descripcion?: string | null;
+  tipo?: string | null;
+  estado?: string | null;
+  creadoEn?: string | null;
+  actualizadoEn?: string | null;
+  actEconomicaId?: number | null;
+}
+
+export interface DataConnectCarreraInput {
+  nombre?: string | null;
+  codigo?: string | null;
+  descripcion?: string | null;
+  tipo?: string | null;
+  estado?: string | null;
+  creadoEn?: string | null;
+  actualizadoEn?: string | null;
+  actEconomicaId?: number | null;
+}
+
+export interface DataConnectPlan {
+  id: number;
+  version?: string | null;
+  duracion?: string | null;
+  creditos?: number | null;
+  nivel?: string | null;
+  tituloComercial?: string | null;
+  slug?: string | null;
+  descripcion2?: string | null;
+  carreraId?: number | null;
+}
+
+export interface DataConnectPlanInput {
+  version?: string | null;
+  duracion?: string | null;
+  creditos?: number | null;
+  nivel?: string | null;
+  tituloComercial?: string | null;
+  slug?: string | null;
+  descripcion2?: string | null;
+  carreraId?: number | null;
+}
+
+export interface DataConnectModulo {
+  id: number;
+  titulo?: string | null;
+  tituloComercial?: string | null;
+  orden?: number | null;
+  descripcion?: string | null;
+  horas?: number | null;
+  creditos?: number | null;
+  metas?: number | null;
+  activo?: boolean | null;
+  slug?: string | null;
+  descripcion2?: string | null;
+  planId?: number | null;
+}
+
+export interface DataConnectModuloInput {
+  titulo?: string | null;
+  tituloComercial?: string | null;
+  orden?: number | null;
+  descripcion?: string | null;
+  horas?: number | null;
+  creditos?: number | null;
+  metas?: number | null;
+  activo?: boolean;
+  slug?: string | null;
+  descripcion2?: string | null;
+  planId?: number | null;
+}

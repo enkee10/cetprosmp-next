@@ -20,6 +20,7 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import ArticleIcon from '@mui/icons-material/Article';
 import FactoryIcon from '@mui/icons-material/Factory';
 import DateRangeIcon from '@mui/icons-material/DateRange';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 const collections = [
   { name: 'Actividades Económicas', path: '/intranet/act-economicas', icon: <AccountBalanceIcon /> },
@@ -32,6 +33,7 @@ const collections = [
   { name: 'Matrículas', path: '/intranet/matriculas', icon: <HowToRegIcon /> },
   { name: 'Módulos', path: '/intranet/modulos', icon: <ViewModuleIcon /> },
   { name: 'Paquetes', path: '/intranet/paquetes', icon: <Inventory2Icon /> },
+  { name: 'Planes', path: '/intranet/planes', icon: <AssignmentIcon /> },
   { name: 'Personales', path: '/intranet/personales', icon: <BadgeIcon /> },
   { name: 'Posts', path: '/intranet/post', icon: <ArticleIcon /> },
   { name: 'Publicaciones', path: '/intranet/publicaciones', icon: <ArticleIcon /> },

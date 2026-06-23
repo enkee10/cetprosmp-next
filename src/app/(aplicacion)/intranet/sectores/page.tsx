@@ -205,9 +205,6 @@ export default function SectoresPage() {
           <Button variant="outlined" onClick={handleCreateSector}>
             Crear Sector
           </Button>
-          <Button variant="outlined" disabled>
-            Otros...
-          </Button>
         </Stack>
       }
       columnToggleItems={columnToggleItems}

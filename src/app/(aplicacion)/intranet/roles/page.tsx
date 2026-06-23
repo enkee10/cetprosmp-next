@@ -171,9 +171,6 @@ export default function RolesPage() {
           <Button variant="outlined" onClick={handleCreateRole}>
             Crear Rol
           </Button>
-          <Button variant="outlined" disabled>
-            Otros...
-          </Button>
         </Stack>
       }
       columnToggleItems={columnToggleItems}

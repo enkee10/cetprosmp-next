@@ -523,9 +523,6 @@ const UsersPage = () => {
           <Button variant="outlined" onClick={handleAddUser}>
             Agregar
           </Button>
-          <Button variant="outlined" disabled>
-            Otros...
-          </Button>
         </Stack>
       }
       columnToggleItems={columnToggleItems}

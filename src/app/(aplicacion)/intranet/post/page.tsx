@@ -322,9 +322,6 @@ export default function PostsPage() {
           <Button variant="outlined" onClick={handleAddPost}>
             Agregar
           </Button>
-          <Button variant="outlined" disabled>
-            Otros...
-          </Button>
         </Stack>
       }
       columnToggleItems={columnToggleItems}

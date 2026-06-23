@@ -1,5 +1,14 @@
 extend type Mutation {
   """
+  ✨ Insert a single `Accion` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  accion_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Accion_Data!
+  ): Accion_KeyOutput! @fdc_generated(from: "Accion", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `ActEconomica` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   actEconomica_insert(
@@ -9,6 +18,51 @@ extend type Mutation {
     data: ActEconomica_Data!
   ): ActEconomica_KeyOutput! @fdc_generated(from: "ActEconomica", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Actividad` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  actividad_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Actividad_Data!
+  ): Actividad_KeyOutput! @fdc_generated(from: "Actividad", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Aprendizaje` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  aprendizaje_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Aprendizaje_Data!
+  ): Aprendizaje_KeyOutput! @fdc_generated(from: "Aprendizaje", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Asistencia` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  asistencia_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Asistencia_Data!
+  ): Asistencia_KeyOutput! @fdc_generated(from: "Asistencia", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `AspectoEvaluacion` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  aspectoEvaluacion_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: AspectoEvaluacion_Data!
+  ): AspectoEvaluacion_KeyOutput! @fdc_generated(from: "AspectoEvaluacion", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `AspectoEvaluacionEstudiante` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  aspectoEvaluacionEstudiante_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: AspectoEvaluacionEstudiante_Data!
+  ): AspectoEvaluacionEstudiante_KeyOutput! @fdc_generated(from: "AspectoEvaluacionEstudiante", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Calendario` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   calendario_insert(
@@ -17,6 +71,24 @@ extend type Mutation {
     """
     data: Calendario_Data!
   ): Calendario_KeyOutput! @fdc_generated(from: "Calendario", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `CapacidadTerminal` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  capacidadTerminal_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: CapacidadTerminal_Data!
+  ): CapacidadTerminal_KeyOutput! @fdc_generated(from: "CapacidadTerminal", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `CapacidadTerminalEstudiante` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  capacidadTerminalEstudiante_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: CapacidadTerminalEstudiante_Data!
+  ): CapacidadTerminalEstudiante_KeyOutput! @fdc_generated(from: "CapacidadTerminalEstudiante", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `Carrera` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -36,6 +108,15 @@ extend type Mutation {
     data: DatoGeneral_Data!
   ): DatoGeneral_KeyOutput! @fdc_generated(from: "DatoGeneral", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `EjeTransversal` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  ejeTransversal_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: EjeTransversal_Data!
+  ): EjeTransversal_KeyOutput! @fdc_generated(from: "EjeTransversal", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Especialidad` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   especialidad_insert(
@@ -44,6 +125,60 @@ extend type Mutation {
     """
     data: Especialidad_Data!
   ): Especialidad_KeyOutput! @fdc_generated(from: "Especialidad", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Evaluacion` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  evaluacion_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Evaluacion_Data!
+  ): Evaluacion_KeyOutput! @fdc_generated(from: "Evaluacion", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `EvaluacionEstudiante` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  evaluacionEstudiante_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: EvaluacionEstudiante_Data!
+  ): EvaluacionEstudiante_KeyOutput! @fdc_generated(from: "EvaluacionEstudiante", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Evento` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  evento_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Evento_Data!
+  ): Evento_KeyOutput! @fdc_generated(from: "Evento", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `EventoOcurrencia` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  eventoOcurrencia_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: EventoOcurrencia_Data!
+  ): EventoOcurrencia_KeyOutput! @fdc_generated(from: "EventoOcurrencia", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `EventoRecurrencia` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  eventoRecurrencia_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: EventoRecurrencia_Data!
+  ): EventoRecurrencia_KeyOutput! @fdc_generated(from: "EventoRecurrencia", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `EventoRelacion` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  eventoRelacion_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: EventoRelacion_Data!
+  ): EventoRelacion_KeyOutput! @fdc_generated(from: "EventoRelacion", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `Familia` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -54,6 +189,42 @@ extend type Mutation {
     data: Familia_Data!
   ): Familia_KeyOutput! @fdc_generated(from: "Familia", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Fase` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  fase_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Fase_Data!
+  ): Fase_KeyOutput! @fdc_generated(from: "Fase", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `FaseMetodo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  faseMetodo_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: FaseMetodo_Data!
+  ): FaseMetodo_KeyOutput! @fdc_generated(from: "FaseMetodo", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `FaseRecurso` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  faseRecurso_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: FaseRecurso_Data!
+  ): FaseRecurso_KeyOutput! @fdc_generated(from: "FaseRecurso", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `FaseTecnica` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  faseTecnica_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: FaseTecnica_Data!
+  ): FaseTecnica_KeyOutput! @fdc_generated(from: "FaseTecnica", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Grupo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   grupo_insert(
@@ -62,6 +233,24 @@ extend type Mutation {
     """
     data: Grupo_Data!
   ): Grupo_KeyOutput! @fdc_generated(from: "Grupo", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `IndicadorCapacidad` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  indicadorCapacidad_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: IndicadorCapacidad_Data!
+  ): IndicadorCapacidad_KeyOutput! @fdc_generated(from: "IndicadorCapacidad", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `IndicadorCapacidadEstudiante` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  indicadorCapacidadEstudiante_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: IndicadorCapacidadEstudiante_Data!
+  ): IndicadorCapacidadEstudiante_KeyOutput! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `Matricula` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -72,6 +261,15 @@ extend type Mutation {
     data: Matricula_Data!
   ): Matricula_KeyOutput! @fdc_generated(from: "Matricula", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Metodo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  metodo_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Metodo_Data!
+  ): Metodo_KeyOutput! @fdc_generated(from: "Metodo", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Modulo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   modulo_insert(
@@ -80,6 +278,15 @@ extend type Mutation {
     """
     data: Modulo_Data!
   ): Modulo_KeyOutput! @fdc_generated(from: "Modulo", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ModuloEstudiante` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  moduloEstudiante_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ModuloEstudiante_Data!
+  ): ModuloEstudiante_KeyOutput! @fdc_generated(from: "ModuloEstudiante", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `ModuloVideo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -153,6 +360,24 @@ extend type Mutation {
     data: PublicacionVideo_Data!
   ): PublicacionVideo_KeyOutput! @fdc_generated(from: "PublicacionVideo", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Recordatorio` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  recordatorio_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Recordatorio_Data!
+  ): Recordatorio_KeyOutput! @fdc_generated(from: "Recordatorio", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Recurso` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  recurso_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Recurso_Data!
+  ): Recurso_KeyOutput! @fdc_generated(from: "Recurso", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Rol` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   rol_insert(
@@ -180,6 +405,42 @@ extend type Mutation {
     data: Semestre_Data!
   ): Semestre_KeyOutput! @fdc_generated(from: "Semestre", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Tecnica` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  tecnica_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Tecnica_Data!
+  ): Tecnica_KeyOutput! @fdc_generated(from: "Tecnica", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Turno` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  turno_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Turno_Data!
+  ): Turno_KeyOutput! @fdc_generated(from: "Turno", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `UnidadDidactica` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  unidadDidactica_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: UnidadDidactica_Data!
+  ): UnidadDidactica_KeyOutput! @fdc_generated(from: "UnidadDidactica", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `UnidadDidacticaEstudiante` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  unidadDidacticaEstudiante_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: UnidadDidacticaEstudiante_Data!
+  ): UnidadDidacticaEstudiante_KeyOutput! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `User` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   user_insert(
@@ -188,6 +449,15 @@ extend type Mutation {
     """
     data: User_Data!
   ): User_KeyOutput! @fdc_generated(from: "User", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ValorInstitucional` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  valorInstitucional_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ValorInstitucional_Data!
+  ): ValorInstitucional_KeyOutput! @fdc_generated(from: "ValorInstitucional", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `VideoYoutube` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -198,6 +468,15 @@ extend type Mutation {
     data: VideoYoutube_Data!
   ): VideoYoutube_KeyOutput! @fdc_generated(from: "VideoYoutube", purpose: INSERT_SINGLE)
   """
+  ✨ Insert `Accion` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  accion_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Accion_Data!]!
+  ): [Accion_KeyOutput!]! @fdc_generated(from: "Accion", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `ActEconomica` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   actEconomica_insertMany(
@@ -207,6 +486,51 @@ extend type Mutation {
     data: [ActEconomica_Data!]!
   ): [ActEconomica_KeyOutput!]! @fdc_generated(from: "ActEconomica", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `Actividad` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  actividad_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Actividad_Data!]!
+  ): [Actividad_KeyOutput!]! @fdc_generated(from: "Actividad", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Aprendizaje` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  aprendizaje_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Aprendizaje_Data!]!
+  ): [Aprendizaje_KeyOutput!]! @fdc_generated(from: "Aprendizaje", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Asistencia` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  asistencia_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Asistencia_Data!]!
+  ): [Asistencia_KeyOutput!]! @fdc_generated(from: "Asistencia", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `AspectoEvaluacion` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  aspectoEvaluacion_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [AspectoEvaluacion_Data!]!
+  ): [AspectoEvaluacion_KeyOutput!]! @fdc_generated(from: "AspectoEvaluacion", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `AspectoEvaluacionEstudiante` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  aspectoEvaluacionEstudiante_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [AspectoEvaluacionEstudiante_Data!]!
+  ): [AspectoEvaluacionEstudiante_KeyOutput!]! @fdc_generated(from: "AspectoEvaluacionEstudiante", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Calendario` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   calendario_insertMany(
@@ -215,6 +539,24 @@ extend type Mutation {
     """
     data: [Calendario_Data!]!
   ): [Calendario_KeyOutput!]! @fdc_generated(from: "Calendario", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `CapacidadTerminal` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  capacidadTerminal_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [CapacidadTerminal_Data!]!
+  ): [CapacidadTerminal_KeyOutput!]! @fdc_generated(from: "CapacidadTerminal", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `CapacidadTerminalEstudiante` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  capacidadTerminalEstudiante_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [CapacidadTerminalEstudiante_Data!]!
+  ): [CapacidadTerminalEstudiante_KeyOutput!]! @fdc_generated(from: "CapacidadTerminalEstudiante", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Carrera` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -234,6 +576,15 @@ extend type Mutation {
     data: [DatoGeneral_Data!]!
   ): [DatoGeneral_KeyOutput!]! @fdc_generated(from: "DatoGeneral", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `EjeTransversal` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  ejeTransversal_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [EjeTransversal_Data!]!
+  ): [EjeTransversal_KeyOutput!]! @fdc_generated(from: "EjeTransversal", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Especialidad` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   especialidad_insertMany(
@@ -242,6 +593,60 @@ extend type Mutation {
     """
     data: [Especialidad_Data!]!
   ): [Especialidad_KeyOutput!]! @fdc_generated(from: "Especialidad", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Evaluacion` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  evaluacion_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Evaluacion_Data!]!
+  ): [Evaluacion_KeyOutput!]! @fdc_generated(from: "Evaluacion", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `EvaluacionEstudiante` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  evaluacionEstudiante_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [EvaluacionEstudiante_Data!]!
+  ): [EvaluacionEstudiante_KeyOutput!]! @fdc_generated(from: "EvaluacionEstudiante", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Evento` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  evento_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Evento_Data!]!
+  ): [Evento_KeyOutput!]! @fdc_generated(from: "Evento", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `EventoOcurrencia` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  eventoOcurrencia_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [EventoOcurrencia_Data!]!
+  ): [EventoOcurrencia_KeyOutput!]! @fdc_generated(from: "EventoOcurrencia", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `EventoRecurrencia` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  eventoRecurrencia_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [EventoRecurrencia_Data!]!
+  ): [EventoRecurrencia_KeyOutput!]! @fdc_generated(from: "EventoRecurrencia", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `EventoRelacion` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  eventoRelacion_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [EventoRelacion_Data!]!
+  ): [EventoRelacion_KeyOutput!]! @fdc_generated(from: "EventoRelacion", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Familia` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -252,6 +657,42 @@ extend type Mutation {
     data: [Familia_Data!]!
   ): [Familia_KeyOutput!]! @fdc_generated(from: "Familia", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `Fase` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  fase_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Fase_Data!]!
+  ): [Fase_KeyOutput!]! @fdc_generated(from: "Fase", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `FaseMetodo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  faseMetodo_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [FaseMetodo_Data!]!
+  ): [FaseMetodo_KeyOutput!]! @fdc_generated(from: "FaseMetodo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `FaseRecurso` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  faseRecurso_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [FaseRecurso_Data!]!
+  ): [FaseRecurso_KeyOutput!]! @fdc_generated(from: "FaseRecurso", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `FaseTecnica` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  faseTecnica_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [FaseTecnica_Data!]!
+  ): [FaseTecnica_KeyOutput!]! @fdc_generated(from: "FaseTecnica", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Grupo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   grupo_insertMany(
@@ -260,6 +701,24 @@ extend type Mutation {
     """
     data: [Grupo_Data!]!
   ): [Grupo_KeyOutput!]! @fdc_generated(from: "Grupo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `IndicadorCapacidad` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  indicadorCapacidad_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [IndicadorCapacidad_Data!]!
+  ): [IndicadorCapacidad_KeyOutput!]! @fdc_generated(from: "IndicadorCapacidad", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `IndicadorCapacidadEstudiante` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  indicadorCapacidadEstudiante_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [IndicadorCapacidadEstudiante_Data!]!
+  ): [IndicadorCapacidadEstudiante_KeyOutput!]! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Matricula` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -270,6 +729,15 @@ extend type Mutation {
     data: [Matricula_Data!]!
   ): [Matricula_KeyOutput!]! @fdc_generated(from: "Matricula", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `Metodo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  metodo_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Metodo_Data!]!
+  ): [Metodo_KeyOutput!]! @fdc_generated(from: "Metodo", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Modulo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   modulo_insertMany(
@@ -278,6 +746,15 @@ extend type Mutation {
     """
     data: [Modulo_Data!]!
   ): [Modulo_KeyOutput!]! @fdc_generated(from: "Modulo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ModuloEstudiante` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  moduloEstudiante_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ModuloEstudiante_Data!]!
+  ): [ModuloEstudiante_KeyOutput!]! @fdc_generated(from: "ModuloEstudiante", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `ModuloVideo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -351,6 +828,24 @@ extend type Mutation {
     data: [PublicacionVideo_Data!]!
   ): [PublicacionVideo_KeyOutput!]! @fdc_generated(from: "PublicacionVideo", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `Recordatorio` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  recordatorio_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Recordatorio_Data!]!
+  ): [Recordatorio_KeyOutput!]! @fdc_generated(from: "Recordatorio", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Recurso` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  recurso_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Recurso_Data!]!
+  ): [Recurso_KeyOutput!]! @fdc_generated(from: "Recurso", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Rol` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   rol_insertMany(
@@ -378,6 +873,42 @@ extend type Mutation {
     data: [Semestre_Data!]!
   ): [Semestre_KeyOutput!]! @fdc_generated(from: "Semestre", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `Tecnica` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  tecnica_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Tecnica_Data!]!
+  ): [Tecnica_KeyOutput!]! @fdc_generated(from: "Tecnica", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Turno` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  turno_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Turno_Data!]!
+  ): [Turno_KeyOutput!]! @fdc_generated(from: "Turno", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `UnidadDidactica` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  unidadDidactica_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [UnidadDidactica_Data!]!
+  ): [UnidadDidactica_KeyOutput!]! @fdc_generated(from: "UnidadDidactica", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `UnidadDidacticaEstudiante` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  unidadDidacticaEstudiante_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [UnidadDidacticaEstudiante_Data!]!
+  ): [UnidadDidacticaEstudiante_KeyOutput!]! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `User` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   user_insertMany(
@@ -386,6 +917,15 @@ extend type Mutation {
     """
     data: [User_Data!]!
   ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ValorInstitucional` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  valorInstitucional_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ValorInstitucional_Data!]!
+  ): [ValorInstitucional_KeyOutput!]! @fdc_generated(from: "ValorInstitucional", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `VideoYoutube` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -396,6 +936,15 @@ extend type Mutation {
     data: [VideoYoutube_Data!]!
   ): [VideoYoutube_KeyOutput!]! @fdc_generated(from: "VideoYoutube", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert or update a single `Accion` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Accion`.
+  """
+  accion_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Accion_Data!
+  ): Accion_KeyOutput! @fdc_generated(from: "Accion", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `ActEconomica` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActEconomica`.
   """
   actEconomica_upsert(
@@ -405,6 +954,51 @@ extend type Mutation {
     data: ActEconomica_Data!
   ): ActEconomica_KeyOutput! @fdc_generated(from: "ActEconomica", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Actividad` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Actividad`.
+  """
+  actividad_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Actividad_Data!
+  ): Actividad_KeyOutput! @fdc_generated(from: "Actividad", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Aprendizaje` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Aprendizaje`.
+  """
+  aprendizaje_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Aprendizaje_Data!
+  ): Aprendizaje_KeyOutput! @fdc_generated(from: "Aprendizaje", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Asistencia` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Asistencia`.
+  """
+  asistencia_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Asistencia_Data!
+  ): Asistencia_KeyOutput! @fdc_generated(from: "Asistencia", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `AspectoEvaluacion` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `AspectoEvaluacion`.
+  """
+  aspectoEvaluacion_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: AspectoEvaluacion_Data!
+  ): AspectoEvaluacion_KeyOutput! @fdc_generated(from: "AspectoEvaluacion", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `AspectoEvaluacionEstudiante` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `AspectoEvaluacionEstudiante`.
+  """
+  aspectoEvaluacionEstudiante_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: AspectoEvaluacionEstudiante_Data!
+  ): AspectoEvaluacionEstudiante_KeyOutput! @fdc_generated(from: "AspectoEvaluacionEstudiante", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Calendario` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Calendario`.
   """
   calendario_upsert(
@@ -413,6 +1007,24 @@ extend type Mutation {
     """
     data: Calendario_Data!
   ): Calendario_KeyOutput! @fdc_generated(from: "Calendario", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `CapacidadTerminal` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CapacidadTerminal`.
+  """
+  capacidadTerminal_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: CapacidadTerminal_Data!
+  ): CapacidadTerminal_KeyOutput! @fdc_generated(from: "CapacidadTerminal", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `CapacidadTerminalEstudiante` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CapacidadTerminalEstudiante`.
+  """
+  capacidadTerminalEstudiante_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: CapacidadTerminalEstudiante_Data!
+  ): CapacidadTerminalEstudiante_KeyOutput! @fdc_generated(from: "CapacidadTerminalEstudiante", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `Carrera` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Carrera`.
   """
@@ -432,6 +1044,15 @@ extend type Mutation {
     data: DatoGeneral_Data!
   ): DatoGeneral_KeyOutput! @fdc_generated(from: "DatoGeneral", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `EjeTransversal` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EjeTransversal`.
+  """
+  ejeTransversal_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: EjeTransversal_Data!
+  ): EjeTransversal_KeyOutput! @fdc_generated(from: "EjeTransversal", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Especialidad` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Especialidad`.
   """
   especialidad_upsert(
@@ -440,6 +1061,60 @@ extend type Mutation {
     """
     data: Especialidad_Data!
   ): Especialidad_KeyOutput! @fdc_generated(from: "Especialidad", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Evaluacion` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Evaluacion`.
+  """
+  evaluacion_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Evaluacion_Data!
+  ): Evaluacion_KeyOutput! @fdc_generated(from: "Evaluacion", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `EvaluacionEstudiante` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EvaluacionEstudiante`.
+  """
+  evaluacionEstudiante_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: EvaluacionEstudiante_Data!
+  ): EvaluacionEstudiante_KeyOutput! @fdc_generated(from: "EvaluacionEstudiante", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Evento` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Evento`.
+  """
+  evento_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Evento_Data!
+  ): Evento_KeyOutput! @fdc_generated(from: "Evento", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `EventoOcurrencia` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EventoOcurrencia`.
+  """
+  eventoOcurrencia_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: EventoOcurrencia_Data!
+  ): EventoOcurrencia_KeyOutput! @fdc_generated(from: "EventoOcurrencia", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `EventoRecurrencia` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EventoRecurrencia`.
+  """
+  eventoRecurrencia_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: EventoRecurrencia_Data!
+  ): EventoRecurrencia_KeyOutput! @fdc_generated(from: "EventoRecurrencia", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `EventoRelacion` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EventoRelacion`.
+  """
+  eventoRelacion_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: EventoRelacion_Data!
+  ): EventoRelacion_KeyOutput! @fdc_generated(from: "EventoRelacion", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `Familia` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Familia`.
   """
@@ -450,6 +1125,42 @@ extend type Mutation {
     data: Familia_Data!
   ): Familia_KeyOutput! @fdc_generated(from: "Familia", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Fase` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Fase`.
+  """
+  fase_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Fase_Data!
+  ): Fase_KeyOutput! @fdc_generated(from: "Fase", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `FaseMetodo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FaseMetodo`.
+  """
+  faseMetodo_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: FaseMetodo_Data!
+  ): FaseMetodo_KeyOutput! @fdc_generated(from: "FaseMetodo", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `FaseRecurso` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FaseRecurso`.
+  """
+  faseRecurso_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: FaseRecurso_Data!
+  ): FaseRecurso_KeyOutput! @fdc_generated(from: "FaseRecurso", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `FaseTecnica` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FaseTecnica`.
+  """
+  faseTecnica_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: FaseTecnica_Data!
+  ): FaseTecnica_KeyOutput! @fdc_generated(from: "FaseTecnica", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Grupo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Grupo`.
   """
   grupo_upsert(
@@ -458,6 +1169,24 @@ extend type Mutation {
     """
     data: Grupo_Data!
   ): Grupo_KeyOutput! @fdc_generated(from: "Grupo", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `IndicadorCapacidad` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `IndicadorCapacidad`.
+  """
+  indicadorCapacidad_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: IndicadorCapacidad_Data!
+  ): IndicadorCapacidad_KeyOutput! @fdc_generated(from: "IndicadorCapacidad", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `IndicadorCapacidadEstudiante` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `IndicadorCapacidadEstudiante`.
+  """
+  indicadorCapacidadEstudiante_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: IndicadorCapacidadEstudiante_Data!
+  ): IndicadorCapacidadEstudiante_KeyOutput! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `Matricula` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Matricula`.
   """
@@ -468,6 +1197,15 @@ extend type Mutation {
     data: Matricula_Data!
   ): Matricula_KeyOutput! @fdc_generated(from: "Matricula", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Metodo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Metodo`.
+  """
+  metodo_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Metodo_Data!
+  ): Metodo_KeyOutput! @fdc_generated(from: "Metodo", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Modulo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Modulo`.
   """
   modulo_upsert(
@@ -476,6 +1214,15 @@ extend type Mutation {
     """
     data: Modulo_Data!
   ): Modulo_KeyOutput! @fdc_generated(from: "Modulo", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ModuloEstudiante` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ModuloEstudiante`.
+  """
+  moduloEstudiante_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ModuloEstudiante_Data!
+  ): ModuloEstudiante_KeyOutput! @fdc_generated(from: "ModuloEstudiante", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `ModuloVideo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ModuloVideo`.
   """
@@ -549,6 +1296,24 @@ extend type Mutation {
     data: PublicacionVideo_Data!
   ): PublicacionVideo_KeyOutput! @fdc_generated(from: "PublicacionVideo", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Recordatorio` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Recordatorio`.
+  """
+  recordatorio_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Recordatorio_Data!
+  ): Recordatorio_KeyOutput! @fdc_generated(from: "Recordatorio", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Recurso` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Recurso`.
+  """
+  recurso_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Recurso_Data!
+  ): Recurso_KeyOutput! @fdc_generated(from: "Recurso", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Rol` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Rol`.
   """
   rol_upsert(
@@ -576,6 +1341,42 @@ extend type Mutation {
     data: Semestre_Data!
   ): Semestre_KeyOutput! @fdc_generated(from: "Semestre", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Tecnica` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Tecnica`.
+  """
+  tecnica_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Tecnica_Data!
+  ): Tecnica_KeyOutput! @fdc_generated(from: "Tecnica", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Turno` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Turno`.
+  """
+  turno_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Turno_Data!
+  ): Turno_KeyOutput! @fdc_generated(from: "Turno", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `UnidadDidactica` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UnidadDidactica`.
+  """
+  unidadDidactica_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: UnidadDidactica_Data!
+  ): UnidadDidactica_KeyOutput! @fdc_generated(from: "UnidadDidactica", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `UnidadDidacticaEstudiante` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UnidadDidacticaEstudiante`.
+  """
+  unidadDidacticaEstudiante_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: UnidadDidacticaEstudiante_Data!
+  ): UnidadDidacticaEstudiante_KeyOutput! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `User` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
   """
   user_upsert(
@@ -584,6 +1385,15 @@ extend type Mutation {
     """
     data: User_Data!
   ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ValorInstitucional` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ValorInstitucional`.
+  """
+  valorInstitucional_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ValorInstitucional_Data!
+  ): ValorInstitucional_KeyOutput! @fdc_generated(from: "ValorInstitucional", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `VideoYoutube` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `VideoYoutube`.
   """
@@ -594,6 +1404,15 @@ extend type Mutation {
     data: VideoYoutube_Data!
   ): VideoYoutube_KeyOutput! @fdc_generated(from: "VideoYoutube", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update `Accion` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Accion`.
+  """
+  accion_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Accion_Data!]!
+  ): [Accion_KeyOutput!]! @fdc_generated(from: "Accion", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `ActEconomica` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActEconomica`.
   """
   actEconomica_upsertMany(
@@ -603,6 +1422,51 @@ extend type Mutation {
     data: [ActEconomica_Data!]!
   ): [ActEconomica_KeyOutput!]! @fdc_generated(from: "ActEconomica", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `Actividad` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Actividad`.
+  """
+  actividad_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Actividad_Data!]!
+  ): [Actividad_KeyOutput!]! @fdc_generated(from: "Actividad", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Aprendizaje` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Aprendizaje`.
+  """
+  aprendizaje_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Aprendizaje_Data!]!
+  ): [Aprendizaje_KeyOutput!]! @fdc_generated(from: "Aprendizaje", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Asistencia` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Asistencia`.
+  """
+  asistencia_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Asistencia_Data!]!
+  ): [Asistencia_KeyOutput!]! @fdc_generated(from: "Asistencia", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `AspectoEvaluacion` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `AspectoEvaluacion`.
+  """
+  aspectoEvaluacion_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [AspectoEvaluacion_Data!]!
+  ): [AspectoEvaluacion_KeyOutput!]! @fdc_generated(from: "AspectoEvaluacion", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `AspectoEvaluacionEstudiante` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `AspectoEvaluacionEstudiante`.
+  """
+  aspectoEvaluacionEstudiante_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [AspectoEvaluacionEstudiante_Data!]!
+  ): [AspectoEvaluacionEstudiante_KeyOutput!]! @fdc_generated(from: "AspectoEvaluacionEstudiante", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Calendario` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Calendario`.
   """
   calendario_upsertMany(
@@ -611,6 +1475,24 @@ extend type Mutation {
     """
     data: [Calendario_Data!]!
   ): [Calendario_KeyOutput!]! @fdc_generated(from: "Calendario", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `CapacidadTerminal` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CapacidadTerminal`.
+  """
+  capacidadTerminal_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [CapacidadTerminal_Data!]!
+  ): [CapacidadTerminal_KeyOutput!]! @fdc_generated(from: "CapacidadTerminal", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `CapacidadTerminalEstudiante` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CapacidadTerminalEstudiante`.
+  """
+  capacidadTerminalEstudiante_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [CapacidadTerminalEstudiante_Data!]!
+  ): [CapacidadTerminalEstudiante_KeyOutput!]! @fdc_generated(from: "CapacidadTerminalEstudiante", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Carrera` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Carrera`.
   """
@@ -630,6 +1512,15 @@ extend type Mutation {
     data: [DatoGeneral_Data!]!
   ): [DatoGeneral_KeyOutput!]! @fdc_generated(from: "DatoGeneral", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `EjeTransversal` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EjeTransversal`.
+  """
+  ejeTransversal_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [EjeTransversal_Data!]!
+  ): [EjeTransversal_KeyOutput!]! @fdc_generated(from: "EjeTransversal", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Especialidad` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Especialidad`.
   """
   especialidad_upsertMany(
@@ -638,6 +1529,60 @@ extend type Mutation {
     """
     data: [Especialidad_Data!]!
   ): [Especialidad_KeyOutput!]! @fdc_generated(from: "Especialidad", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Evaluacion` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Evaluacion`.
+  """
+  evaluacion_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Evaluacion_Data!]!
+  ): [Evaluacion_KeyOutput!]! @fdc_generated(from: "Evaluacion", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `EvaluacionEstudiante` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EvaluacionEstudiante`.
+  """
+  evaluacionEstudiante_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [EvaluacionEstudiante_Data!]!
+  ): [EvaluacionEstudiante_KeyOutput!]! @fdc_generated(from: "EvaluacionEstudiante", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Evento` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Evento`.
+  """
+  evento_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Evento_Data!]!
+  ): [Evento_KeyOutput!]! @fdc_generated(from: "Evento", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `EventoOcurrencia` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EventoOcurrencia`.
+  """
+  eventoOcurrencia_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [EventoOcurrencia_Data!]!
+  ): [EventoOcurrencia_KeyOutput!]! @fdc_generated(from: "EventoOcurrencia", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `EventoRecurrencia` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EventoRecurrencia`.
+  """
+  eventoRecurrencia_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [EventoRecurrencia_Data!]!
+  ): [EventoRecurrencia_KeyOutput!]! @fdc_generated(from: "EventoRecurrencia", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `EventoRelacion` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EventoRelacion`.
+  """
+  eventoRelacion_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [EventoRelacion_Data!]!
+  ): [EventoRelacion_KeyOutput!]! @fdc_generated(from: "EventoRelacion", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Familia` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Familia`.
   """
@@ -648,6 +1593,42 @@ extend type Mutation {
     data: [Familia_Data!]!
   ): [Familia_KeyOutput!]! @fdc_generated(from: "Familia", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `Fase` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Fase`.
+  """
+  fase_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Fase_Data!]!
+  ): [Fase_KeyOutput!]! @fdc_generated(from: "Fase", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `FaseMetodo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FaseMetodo`.
+  """
+  faseMetodo_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [FaseMetodo_Data!]!
+  ): [FaseMetodo_KeyOutput!]! @fdc_generated(from: "FaseMetodo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `FaseRecurso` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FaseRecurso`.
+  """
+  faseRecurso_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [FaseRecurso_Data!]!
+  ): [FaseRecurso_KeyOutput!]! @fdc_generated(from: "FaseRecurso", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `FaseTecnica` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FaseTecnica`.
+  """
+  faseTecnica_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [FaseTecnica_Data!]!
+  ): [FaseTecnica_KeyOutput!]! @fdc_generated(from: "FaseTecnica", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Grupo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Grupo`.
   """
   grupo_upsertMany(
@@ -656,6 +1637,24 @@ extend type Mutation {
     """
     data: [Grupo_Data!]!
   ): [Grupo_KeyOutput!]! @fdc_generated(from: "Grupo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `IndicadorCapacidad` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `IndicadorCapacidad`.
+  """
+  indicadorCapacidad_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [IndicadorCapacidad_Data!]!
+  ): [IndicadorCapacidad_KeyOutput!]! @fdc_generated(from: "IndicadorCapacidad", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `IndicadorCapacidadEstudiante` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `IndicadorCapacidadEstudiante`.
+  """
+  indicadorCapacidadEstudiante_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [IndicadorCapacidadEstudiante_Data!]!
+  ): [IndicadorCapacidadEstudiante_KeyOutput!]! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Matricula` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Matricula`.
   """
@@ -666,6 +1665,15 @@ extend type Mutation {
     data: [Matricula_Data!]!
   ): [Matricula_KeyOutput!]! @fdc_generated(from: "Matricula", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `Metodo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Metodo`.
+  """
+  metodo_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Metodo_Data!]!
+  ): [Metodo_KeyOutput!]! @fdc_generated(from: "Metodo", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Modulo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Modulo`.
   """
   modulo_upsertMany(
@@ -674,6 +1682,15 @@ extend type Mutation {
     """
     data: [Modulo_Data!]!
   ): [Modulo_KeyOutput!]! @fdc_generated(from: "Modulo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ModuloEstudiante` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ModuloEstudiante`.
+  """
+  moduloEstudiante_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ModuloEstudiante_Data!]!
+  ): [ModuloEstudiante_KeyOutput!]! @fdc_generated(from: "ModuloEstudiante", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `ModuloVideo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ModuloVideo`.
   """
@@ -747,6 +1764,24 @@ extend type Mutation {
     data: [PublicacionVideo_Data!]!
   ): [PublicacionVideo_KeyOutput!]! @fdc_generated(from: "PublicacionVideo", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `Recordatorio` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Recordatorio`.
+  """
+  recordatorio_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Recordatorio_Data!]!
+  ): [Recordatorio_KeyOutput!]! @fdc_generated(from: "Recordatorio", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Recurso` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Recurso`.
+  """
+  recurso_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Recurso_Data!]!
+  ): [Recurso_KeyOutput!]! @fdc_generated(from: "Recurso", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Rol` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Rol`.
   """
   rol_upsertMany(
@@ -774,6 +1809,42 @@ extend type Mutation {
     data: [Semestre_Data!]!
   ): [Semestre_KeyOutput!]! @fdc_generated(from: "Semestre", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `Tecnica` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Tecnica`.
+  """
+  tecnica_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Tecnica_Data!]!
+  ): [Tecnica_KeyOutput!]! @fdc_generated(from: "Tecnica", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Turno` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Turno`.
+  """
+  turno_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Turno_Data!]!
+  ): [Turno_KeyOutput!]! @fdc_generated(from: "Turno", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `UnidadDidactica` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UnidadDidactica`.
+  """
+  unidadDidactica_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [UnidadDidactica_Data!]!
+  ): [UnidadDidactica_KeyOutput!]! @fdc_generated(from: "UnidadDidactica", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `UnidadDidacticaEstudiante` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UnidadDidacticaEstudiante`.
+  """
+  unidadDidacticaEstudiante_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [UnidadDidacticaEstudiante_Data!]!
+  ): [UnidadDidacticaEstudiante_KeyOutput!]! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `User` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
   """
   user_upsertMany(
@@ -783,6 +1854,15 @@ extend type Mutation {
     data: [User_Data!]!
   ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `ValorInstitucional` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ValorInstitucional`.
+  """
+  valorInstitucional_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ValorInstitucional_Data!]!
+  ): [ValorInstitucional_KeyOutput!]! @fdc_generated(from: "ValorInstitucional", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `VideoYoutube` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `VideoYoutube`.
   """
   videoYoutube_upsertMany(
@@ -791,6 +1871,35 @@ extend type Mutation {
     """
     data: [VideoYoutube_Data!]!
   ): [VideoYoutube_KeyOutput!]! @fdc_generated(from: "VideoYoutube", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Update a single `Accion` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Accion` or `null` if not found.
+  """
+  accion_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Accion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Accion_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Accion_Data!
+  ): Accion_KeyOutput @fdc_generated(from: "Accion", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `ActEconomica` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ActEconomica` or `null` if not found.
   """
@@ -821,6 +1930,151 @@ extend type Mutation {
     data: ActEconomica_Data!
   ): ActEconomica_KeyOutput @fdc_generated(from: "ActEconomica", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `Actividad` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Actividad` or `null` if not found.
+  """
+  actividad_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Actividad_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Actividad_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Actividad_Data!
+  ): Actividad_KeyOutput @fdc_generated(from: "Actividad", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Aprendizaje` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Aprendizaje` or `null` if not found.
+  """
+  aprendizaje_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Aprendizaje_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Aprendizaje_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Aprendizaje_Data!
+  ): Aprendizaje_KeyOutput @fdc_generated(from: "Aprendizaje", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Asistencia` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Asistencia` or `null` if not found.
+  """
+  asistencia_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Asistencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Asistencia_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Asistencia_Data!
+  ): Asistencia_KeyOutput @fdc_generated(from: "Asistencia", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `AspectoEvaluacion` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `AspectoEvaluacion` or `null` if not found.
+  """
+  aspectoEvaluacion_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: AspectoEvaluacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: AspectoEvaluacion_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: AspectoEvaluacion_Data!
+  ): AspectoEvaluacion_KeyOutput @fdc_generated(from: "AspectoEvaluacion", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `AspectoEvaluacionEstudiante` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `AspectoEvaluacionEstudiante` or `null` if not found.
+  """
+  aspectoEvaluacionEstudiante_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: AspectoEvaluacionEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: AspectoEvaluacionEstudiante_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: AspectoEvaluacionEstudiante_Data!
+  ): AspectoEvaluacionEstudiante_KeyOutput @fdc_generated(from: "AspectoEvaluacionEstudiante", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Calendario` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Calendario` or `null` if not found.
   """
   calendario_update(
@@ -849,6 +2103,64 @@ extend type Mutation {
     """
     data: Calendario_Data!
   ): Calendario_KeyOutput @fdc_generated(from: "Calendario", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `CapacidadTerminal` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `CapacidadTerminal` or `null` if not found.
+  """
+  capacidadTerminal_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CapacidadTerminal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CapacidadTerminal_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: CapacidadTerminal_Data!
+  ): CapacidadTerminal_KeyOutput @fdc_generated(from: "CapacidadTerminal", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `CapacidadTerminalEstudiante` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `CapacidadTerminalEstudiante` or `null` if not found.
+  """
+  capacidadTerminalEstudiante_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CapacidadTerminalEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CapacidadTerminalEstudiante_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: CapacidadTerminalEstudiante_Data!
+  ): CapacidadTerminalEstudiante_KeyOutput @fdc_generated(from: "CapacidadTerminalEstudiante", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Carrera` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Carrera` or `null` if not found.
   """
@@ -908,6 +2220,35 @@ extend type Mutation {
     data: DatoGeneral_Data!
   ): DatoGeneral_KeyOutput @fdc_generated(from: "DatoGeneral", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `EjeTransversal` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `EjeTransversal` or `null` if not found.
+  """
+  ejeTransversal_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EjeTransversal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EjeTransversal_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: EjeTransversal_Data!
+  ): EjeTransversal_KeyOutput @fdc_generated(from: "EjeTransversal", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Especialidad` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Especialidad` or `null` if not found.
   """
   especialidad_update(
@@ -936,6 +2277,180 @@ extend type Mutation {
     """
     data: Especialidad_Data!
   ): Especialidad_KeyOutput @fdc_generated(from: "Especialidad", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Evaluacion` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Evaluacion` or `null` if not found.
+  """
+  evaluacion_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Evaluacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Evaluacion_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Evaluacion_Data!
+  ): Evaluacion_KeyOutput @fdc_generated(from: "Evaluacion", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `EvaluacionEstudiante` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `EvaluacionEstudiante` or `null` if not found.
+  """
+  evaluacionEstudiante_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EvaluacionEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EvaluacionEstudiante_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: EvaluacionEstudiante_Data!
+  ): EvaluacionEstudiante_KeyOutput @fdc_generated(from: "EvaluacionEstudiante", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Evento` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Evento` or `null` if not found.
+  """
+  evento_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Evento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Evento_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Evento_Data!
+  ): Evento_KeyOutput @fdc_generated(from: "Evento", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `EventoOcurrencia` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `EventoOcurrencia` or `null` if not found.
+  """
+  eventoOcurrencia_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EventoOcurrencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EventoOcurrencia_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: EventoOcurrencia_Data!
+  ): EventoOcurrencia_KeyOutput @fdc_generated(from: "EventoOcurrencia", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `EventoRecurrencia` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `EventoRecurrencia` or `null` if not found.
+  """
+  eventoRecurrencia_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EventoRecurrencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EventoRecurrencia_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: EventoRecurrencia_Data!
+  ): EventoRecurrencia_KeyOutput @fdc_generated(from: "EventoRecurrencia", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `EventoRelacion` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `EventoRelacion` or `null` if not found.
+  """
+  eventoRelacion_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EventoRelacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EventoRelacion_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: EventoRelacion_Data!
+  ): EventoRelacion_KeyOutput @fdc_generated(from: "EventoRelacion", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Familia` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Familia` or `null` if not found.
   """
@@ -966,6 +2481,122 @@ extend type Mutation {
     data: Familia_Data!
   ): Familia_KeyOutput @fdc_generated(from: "Familia", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `Fase` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Fase` or `null` if not found.
+  """
+  fase_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Fase_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Fase_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Fase_Data!
+  ): Fase_KeyOutput @fdc_generated(from: "Fase", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `FaseMetodo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `FaseMetodo` or `null` if not found.
+  """
+  faseMetodo_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: FaseMetodo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FaseMetodo_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: FaseMetodo_Data!
+  ): FaseMetodo_KeyOutput @fdc_generated(from: "FaseMetodo", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `FaseRecurso` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `FaseRecurso` or `null` if not found.
+  """
+  faseRecurso_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: FaseRecurso_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FaseRecurso_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: FaseRecurso_Data!
+  ): FaseRecurso_KeyOutput @fdc_generated(from: "FaseRecurso", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `FaseTecnica` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `FaseTecnica` or `null` if not found.
+  """
+  faseTecnica_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: FaseTecnica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FaseTecnica_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: FaseTecnica_Data!
+  ): FaseTecnica_KeyOutput @fdc_generated(from: "FaseTecnica", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Grupo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Grupo` or `null` if not found.
   """
   grupo_update(
@@ -994,6 +2625,64 @@ extend type Mutation {
     """
     data: Grupo_Data!
   ): Grupo_KeyOutput @fdc_generated(from: "Grupo", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `IndicadorCapacidad` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `IndicadorCapacidad` or `null` if not found.
+  """
+  indicadorCapacidad_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: IndicadorCapacidad_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: IndicadorCapacidad_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: IndicadorCapacidad_Data!
+  ): IndicadorCapacidad_KeyOutput @fdc_generated(from: "IndicadorCapacidad", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `IndicadorCapacidadEstudiante` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `IndicadorCapacidadEstudiante` or `null` if not found.
+  """
+  indicadorCapacidadEstudiante_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: IndicadorCapacidadEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: IndicadorCapacidadEstudiante_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: IndicadorCapacidadEstudiante_Data!
+  ): IndicadorCapacidadEstudiante_KeyOutput @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Matricula` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Matricula` or `null` if not found.
   """
@@ -1024,6 +2713,35 @@ extend type Mutation {
     data: Matricula_Data!
   ): Matricula_KeyOutput @fdc_generated(from: "Matricula", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `Metodo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Metodo` or `null` if not found.
+  """
+  metodo_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Metodo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Metodo_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Metodo_Data!
+  ): Metodo_KeyOutput @fdc_generated(from: "Metodo", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Modulo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Modulo` or `null` if not found.
   """
   modulo_update(
@@ -1052,6 +2770,35 @@ extend type Mutation {
     """
     data: Modulo_Data!
   ): Modulo_KeyOutput @fdc_generated(from: "Modulo", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ModuloEstudiante` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ModuloEstudiante` or `null` if not found.
+  """
+  moduloEstudiante_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ModuloEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ModuloEstudiante_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ModuloEstudiante_Data!
+  ): ModuloEstudiante_KeyOutput @fdc_generated(from: "ModuloEstudiante", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `ModuloVideo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ModuloVideo` or `null` if not found.
   """
@@ -1275,6 +3022,64 @@ extend type Mutation {
     data: PublicacionVideo_Data!
   ): PublicacionVideo_KeyOutput @fdc_generated(from: "PublicacionVideo", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `Recordatorio` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Recordatorio` or `null` if not found.
+  """
+  recordatorio_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Recordatorio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Recordatorio_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Recordatorio_Data!
+  ): Recordatorio_KeyOutput @fdc_generated(from: "Recordatorio", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Recurso` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Recurso` or `null` if not found.
+  """
+  recurso_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Recurso_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Recurso_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Recurso_Data!
+  ): Recurso_KeyOutput @fdc_generated(from: "Recurso", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Rol` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Rol` or `null` if not found.
   """
   rol_update(
@@ -1362,6 +3167,122 @@ extend type Mutation {
     data: Semestre_Data!
   ): Semestre_KeyOutput @fdc_generated(from: "Semestre", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `Tecnica` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Tecnica` or `null` if not found.
+  """
+  tecnica_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Tecnica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Tecnica_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Tecnica_Data!
+  ): Tecnica_KeyOutput @fdc_generated(from: "Tecnica", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Turno` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Turno` or `null` if not found.
+  """
+  turno_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Turno_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Turno_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Turno_Data!
+  ): Turno_KeyOutput @fdc_generated(from: "Turno", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `UnidadDidactica` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `UnidadDidactica` or `null` if not found.
+  """
+  unidadDidactica_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: UnidadDidactica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UnidadDidactica_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: UnidadDidactica_Data!
+  ): UnidadDidactica_KeyOutput @fdc_generated(from: "UnidadDidactica", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `UnidadDidacticaEstudiante` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `UnidadDidacticaEstudiante` or `null` if not found.
+  """
+  unidadDidacticaEstudiante_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: UnidadDidacticaEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UnidadDidacticaEstudiante_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: UnidadDidacticaEstudiante_Data!
+  ): UnidadDidacticaEstudiante_KeyOutput @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `User` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `User` or `null` if not found.
   """
   user_update(
@@ -1390,6 +3311,35 @@ extend type Mutation {
     """
     data: User_Data!
   ): User_KeyOutput @fdc_generated(from: "User", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ValorInstitucional` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ValorInstitucional` or `null` if not found.
+  """
+  valorInstitucional_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ValorInstitucional_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ValorInstitucional_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ValorInstitucional_Data!
+  ): ValorInstitucional_KeyOutput @fdc_generated(from: "ValorInstitucional", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `VideoYoutube` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `VideoYoutube` or `null` if not found.
   """
@@ -1420,6 +3370,25 @@ extend type Mutation {
     data: VideoYoutube_Data!
   ): VideoYoutube_KeyOutput @fdc_generated(from: "VideoYoutube", purpose: UPDATE_SINGLE)
   """
+  ✨ Update `Accion` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  accion_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Accion_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Accion_Data!
+  ): Int! @fdc_generated(from: "Accion", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `ActEconomica` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   actEconomica_updateMany(
@@ -1439,6 +3408,101 @@ extend type Mutation {
     data: ActEconomica_Data!
   ): Int! @fdc_generated(from: "ActEconomica", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Actividad` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  actividad_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Actividad_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Actividad_Data!
+  ): Int! @fdc_generated(from: "Actividad", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Aprendizaje` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  aprendizaje_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Aprendizaje_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Aprendizaje_Data!
+  ): Int! @fdc_generated(from: "Aprendizaje", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Asistencia` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  asistencia_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Asistencia_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Asistencia_Data!
+  ): Int! @fdc_generated(from: "Asistencia", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `AspectoEvaluacion` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  aspectoEvaluacion_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: AspectoEvaluacion_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: AspectoEvaluacion_Data!
+  ): Int! @fdc_generated(from: "AspectoEvaluacion", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `AspectoEvaluacionEstudiante` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  aspectoEvaluacionEstudiante_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: AspectoEvaluacionEstudiante_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: AspectoEvaluacionEstudiante_Data!
+  ): Int! @fdc_generated(from: "AspectoEvaluacionEstudiante", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Calendario` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   calendario_updateMany(
@@ -1457,6 +3521,44 @@ extend type Mutation {
     """
     data: Calendario_Data!
   ): Int! @fdc_generated(from: "Calendario", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `CapacidadTerminal` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  capacidadTerminal_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: CapacidadTerminal_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: CapacidadTerminal_Data!
+  ): Int! @fdc_generated(from: "CapacidadTerminal", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `CapacidadTerminalEstudiante` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  capacidadTerminalEstudiante_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: CapacidadTerminalEstudiante_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: CapacidadTerminalEstudiante_Data!
+  ): Int! @fdc_generated(from: "CapacidadTerminalEstudiante", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Carrera` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -1496,6 +3598,25 @@ extend type Mutation {
     data: DatoGeneral_Data!
   ): Int! @fdc_generated(from: "DatoGeneral", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `EjeTransversal` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  ejeTransversal_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: EjeTransversal_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: EjeTransversal_Data!
+  ): Int! @fdc_generated(from: "EjeTransversal", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Especialidad` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   especialidad_updateMany(
@@ -1514,6 +3635,120 @@ extend type Mutation {
     """
     data: Especialidad_Data!
   ): Int! @fdc_generated(from: "Especialidad", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Evaluacion` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  evaluacion_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Evaluacion_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Evaluacion_Data!
+  ): Int! @fdc_generated(from: "Evaluacion", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `EvaluacionEstudiante` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  evaluacionEstudiante_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: EvaluacionEstudiante_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: EvaluacionEstudiante_Data!
+  ): Int! @fdc_generated(from: "EvaluacionEstudiante", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Evento` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  evento_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Evento_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Evento_Data!
+  ): Int! @fdc_generated(from: "Evento", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `EventoOcurrencia` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  eventoOcurrencia_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: EventoOcurrencia_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: EventoOcurrencia_Data!
+  ): Int! @fdc_generated(from: "EventoOcurrencia", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `EventoRecurrencia` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  eventoRecurrencia_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: EventoRecurrencia_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: EventoRecurrencia_Data!
+  ): Int! @fdc_generated(from: "EventoRecurrencia", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `EventoRelacion` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  eventoRelacion_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: EventoRelacion_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: EventoRelacion_Data!
+  ): Int! @fdc_generated(from: "EventoRelacion", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Familia` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -1534,6 +3769,82 @@ extend type Mutation {
     data: Familia_Data!
   ): Int! @fdc_generated(from: "Familia", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Fase` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  fase_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Fase_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Fase_Data!
+  ): Int! @fdc_generated(from: "Fase", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `FaseMetodo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  faseMetodo_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: FaseMetodo_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: FaseMetodo_Data!
+  ): Int! @fdc_generated(from: "FaseMetodo", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `FaseRecurso` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  faseRecurso_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: FaseRecurso_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: FaseRecurso_Data!
+  ): Int! @fdc_generated(from: "FaseRecurso", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `FaseTecnica` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  faseTecnica_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: FaseTecnica_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: FaseTecnica_Data!
+  ): Int! @fdc_generated(from: "FaseTecnica", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Grupo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   grupo_updateMany(
@@ -1552,6 +3863,44 @@ extend type Mutation {
     """
     data: Grupo_Data!
   ): Int! @fdc_generated(from: "Grupo", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `IndicadorCapacidad` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  indicadorCapacidad_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: IndicadorCapacidad_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: IndicadorCapacidad_Data!
+  ): Int! @fdc_generated(from: "IndicadorCapacidad", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `IndicadorCapacidadEstudiante` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  indicadorCapacidadEstudiante_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: IndicadorCapacidadEstudiante_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: IndicadorCapacidadEstudiante_Data!
+  ): Int! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Matricula` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -1572,6 +3921,25 @@ extend type Mutation {
     data: Matricula_Data!
   ): Int! @fdc_generated(from: "Matricula", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Metodo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  metodo_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Metodo_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Metodo_Data!
+  ): Int! @fdc_generated(from: "Metodo", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Modulo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   modulo_updateMany(
@@ -1590,6 +3958,25 @@ extend type Mutation {
     """
     data: Modulo_Data!
   ): Int! @fdc_generated(from: "Modulo", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ModuloEstudiante` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  moduloEstudiante_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ModuloEstudiante_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ModuloEstudiante_Data!
+  ): Int! @fdc_generated(from: "ModuloEstudiante", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `ModuloVideo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -1743,6 +4130,44 @@ extend type Mutation {
     data: PublicacionVideo_Data!
   ): Int! @fdc_generated(from: "PublicacionVideo", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Recordatorio` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  recordatorio_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Recordatorio_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Recordatorio_Data!
+  ): Int! @fdc_generated(from: "Recordatorio", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Recurso` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  recurso_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Recurso_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Recurso_Data!
+  ): Int! @fdc_generated(from: "Recurso", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Rol` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   rol_updateMany(
@@ -1800,6 +4225,82 @@ extend type Mutation {
     data: Semestre_Data!
   ): Int! @fdc_generated(from: "Semestre", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Tecnica` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  tecnica_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Tecnica_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Tecnica_Data!
+  ): Int! @fdc_generated(from: "Tecnica", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Turno` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  turno_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Turno_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Turno_Data!
+  ): Int! @fdc_generated(from: "Turno", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `UnidadDidactica` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  unidadDidactica_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: UnidadDidactica_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: UnidadDidactica_Data!
+  ): Int! @fdc_generated(from: "UnidadDidactica", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `UnidadDidacticaEstudiante` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  unidadDidacticaEstudiante_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: UnidadDidacticaEstudiante_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: UnidadDidacticaEstudiante_Data!
+  ): Int! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `User` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   user_updateMany(
@@ -1819,6 +4320,25 @@ extend type Mutation {
     data: User_Data!
   ): Int! @fdc_generated(from: "User", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `ValorInstitucional` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  valorInstitucional_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ValorInstitucional_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ValorInstitucional_Data!
+  ): Int! @fdc_generated(from: "ValorInstitucional", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `VideoYoutube` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   videoYoutube_updateMany(
@@ -1837,6 +4357,30 @@ extend type Mutation {
     """
     data: VideoYoutube_Data!
   ): Int! @fdc_generated(from: "VideoYoutube", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Delete a single `Accion` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  accion_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Accion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Accion_FirstRow
+  ): Accion_KeyOutput @fdc_generated(from: "Accion", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `ActEconomica` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -1862,6 +4406,126 @@ extend type Mutation {
     first: ActEconomica_FirstRow
   ): ActEconomica_KeyOutput @fdc_generated(from: "ActEconomica", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `Actividad` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  actividad_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Actividad_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Actividad_FirstRow
+  ): Actividad_KeyOutput @fdc_generated(from: "Actividad", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Aprendizaje` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  aprendizaje_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Aprendizaje_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Aprendizaje_FirstRow
+  ): Aprendizaje_KeyOutput @fdc_generated(from: "Aprendizaje", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Asistencia` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  asistencia_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Asistencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Asistencia_FirstRow
+  ): Asistencia_KeyOutput @fdc_generated(from: "Asistencia", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `AspectoEvaluacion` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  aspectoEvaluacion_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: AspectoEvaluacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: AspectoEvaluacion_FirstRow
+  ): AspectoEvaluacion_KeyOutput @fdc_generated(from: "AspectoEvaluacion", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `AspectoEvaluacionEstudiante` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  aspectoEvaluacionEstudiante_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: AspectoEvaluacionEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: AspectoEvaluacionEstudiante_FirstRow
+  ): AspectoEvaluacionEstudiante_KeyOutput @fdc_generated(from: "AspectoEvaluacionEstudiante", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Calendario` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   calendario_delete(
@@ -1885,6 +4549,54 @@ extend type Mutation {
     """
     first: Calendario_FirstRow
   ): Calendario_KeyOutput @fdc_generated(from: "Calendario", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `CapacidadTerminal` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  capacidadTerminal_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CapacidadTerminal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CapacidadTerminal_FirstRow
+  ): CapacidadTerminal_KeyOutput @fdc_generated(from: "CapacidadTerminal", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `CapacidadTerminalEstudiante` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  capacidadTerminalEstudiante_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CapacidadTerminalEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CapacidadTerminalEstudiante_FirstRow
+  ): CapacidadTerminalEstudiante_KeyOutput @fdc_generated(from: "CapacidadTerminalEstudiante", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `Carrera` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -1934,6 +4646,30 @@ extend type Mutation {
     first: DatoGeneral_FirstRow
   ): DatoGeneral_KeyOutput @fdc_generated(from: "DatoGeneral", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `EjeTransversal` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  ejeTransversal_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EjeTransversal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EjeTransversal_FirstRow
+  ): EjeTransversal_KeyOutput @fdc_generated(from: "EjeTransversal", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Especialidad` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   especialidad_delete(
@@ -1957,6 +4693,150 @@ extend type Mutation {
     """
     first: Especialidad_FirstRow
   ): Especialidad_KeyOutput @fdc_generated(from: "Especialidad", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Evaluacion` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  evaluacion_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Evaluacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Evaluacion_FirstRow
+  ): Evaluacion_KeyOutput @fdc_generated(from: "Evaluacion", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `EvaluacionEstudiante` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  evaluacionEstudiante_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EvaluacionEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EvaluacionEstudiante_FirstRow
+  ): EvaluacionEstudiante_KeyOutput @fdc_generated(from: "EvaluacionEstudiante", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Evento` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  evento_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Evento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Evento_FirstRow
+  ): Evento_KeyOutput @fdc_generated(from: "Evento", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `EventoOcurrencia` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  eventoOcurrencia_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EventoOcurrencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EventoOcurrencia_FirstRow
+  ): EventoOcurrencia_KeyOutput @fdc_generated(from: "EventoOcurrencia", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `EventoRecurrencia` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  eventoRecurrencia_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EventoRecurrencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EventoRecurrencia_FirstRow
+  ): EventoRecurrencia_KeyOutput @fdc_generated(from: "EventoRecurrencia", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `EventoRelacion` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  eventoRelacion_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EventoRelacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EventoRelacion_FirstRow
+  ): EventoRelacion_KeyOutput @fdc_generated(from: "EventoRelacion", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `Familia` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -1982,6 +4862,102 @@ extend type Mutation {
     first: Familia_FirstRow
   ): Familia_KeyOutput @fdc_generated(from: "Familia", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `Fase` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  fase_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Fase_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Fase_FirstRow
+  ): Fase_KeyOutput @fdc_generated(from: "Fase", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `FaseMetodo` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  faseMetodo_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: FaseMetodo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FaseMetodo_FirstRow
+  ): FaseMetodo_KeyOutput @fdc_generated(from: "FaseMetodo", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `FaseRecurso` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  faseRecurso_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: FaseRecurso_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FaseRecurso_FirstRow
+  ): FaseRecurso_KeyOutput @fdc_generated(from: "FaseRecurso", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `FaseTecnica` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  faseTecnica_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: FaseTecnica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FaseTecnica_FirstRow
+  ): FaseTecnica_KeyOutput @fdc_generated(from: "FaseTecnica", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Grupo` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   grupo_delete(
@@ -2005,6 +4981,54 @@ extend type Mutation {
     """
     first: Grupo_FirstRow
   ): Grupo_KeyOutput @fdc_generated(from: "Grupo", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `IndicadorCapacidad` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  indicadorCapacidad_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: IndicadorCapacidad_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: IndicadorCapacidad_FirstRow
+  ): IndicadorCapacidad_KeyOutput @fdc_generated(from: "IndicadorCapacidad", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `IndicadorCapacidadEstudiante` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  indicadorCapacidadEstudiante_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: IndicadorCapacidadEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: IndicadorCapacidadEstudiante_FirstRow
+  ): IndicadorCapacidadEstudiante_KeyOutput @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `Matricula` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -2030,6 +5054,30 @@ extend type Mutation {
     first: Matricula_FirstRow
   ): Matricula_KeyOutput @fdc_generated(from: "Matricula", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `Metodo` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  metodo_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Metodo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Metodo_FirstRow
+  ): Metodo_KeyOutput @fdc_generated(from: "Metodo", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Modulo` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   modulo_delete(
@@ -2053,6 +5101,30 @@ extend type Mutation {
     """
     first: Modulo_FirstRow
   ): Modulo_KeyOutput @fdc_generated(from: "Modulo", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ModuloEstudiante` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  moduloEstudiante_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ModuloEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ModuloEstudiante_FirstRow
+  ): ModuloEstudiante_KeyOutput @fdc_generated(from: "ModuloEstudiante", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `ModuloVideo` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -2236,6 +5308,54 @@ extend type Mutation {
     first: PublicacionVideo_FirstRow
   ): PublicacionVideo_KeyOutput @fdc_generated(from: "PublicacionVideo", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `Recordatorio` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  recordatorio_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Recordatorio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Recordatorio_FirstRow
+  ): Recordatorio_KeyOutput @fdc_generated(from: "Recordatorio", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Recurso` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  recurso_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Recurso_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Recurso_FirstRow
+  ): Recurso_KeyOutput @fdc_generated(from: "Recurso", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Rol` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   rol_delete(
@@ -2308,6 +5428,102 @@ extend type Mutation {
     first: Semestre_FirstRow
   ): Semestre_KeyOutput @fdc_generated(from: "Semestre", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `Tecnica` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  tecnica_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Tecnica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Tecnica_FirstRow
+  ): Tecnica_KeyOutput @fdc_generated(from: "Tecnica", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Turno` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  turno_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Turno_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Turno_FirstRow
+  ): Turno_KeyOutput @fdc_generated(from: "Turno", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `UnidadDidactica` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  unidadDidactica_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: UnidadDidactica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UnidadDidactica_FirstRow
+  ): UnidadDidactica_KeyOutput @fdc_generated(from: "UnidadDidactica", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `UnidadDidacticaEstudiante` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  unidadDidacticaEstudiante_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: UnidadDidacticaEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UnidadDidacticaEstudiante_FirstRow
+  ): UnidadDidacticaEstudiante_KeyOutput @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `User` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   user_delete(
@@ -2331,6 +5547,30 @@ extend type Mutation {
     """
     first: User_FirstRow
   ): User_KeyOutput @fdc_generated(from: "User", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ValorInstitucional` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  valorInstitucional_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ValorInstitucional_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ValorInstitucional_FirstRow
+  ): ValorInstitucional_KeyOutput @fdc_generated(from: "ValorInstitucional", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `VideoYoutube` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -2356,6 +5596,20 @@ extend type Mutation {
     first: VideoYoutube_FirstRow
   ): VideoYoutube_KeyOutput @fdc_generated(from: "VideoYoutube", purpose: DELETE_SINGLE)
   """
+  ✨ Delete `Accion` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  accion_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Accion_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Accion", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `ActEconomica` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   actEconomica_deleteMany(
@@ -2370,6 +5624,76 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "ActEconomica", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `Actividad` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  actividad_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Actividad_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Actividad", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Aprendizaje` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  aprendizaje_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Aprendizaje_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Aprendizaje", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Asistencia` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  asistencia_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Asistencia_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Asistencia", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `AspectoEvaluacion` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  aspectoEvaluacion_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: AspectoEvaluacion_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "AspectoEvaluacion", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `AspectoEvaluacionEstudiante` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  aspectoEvaluacionEstudiante_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: AspectoEvaluacionEstudiante_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "AspectoEvaluacionEstudiante", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Calendario` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   calendario_deleteMany(
@@ -2383,6 +5707,34 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Calendario", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `CapacidadTerminal` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  capacidadTerminal_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: CapacidadTerminal_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "CapacidadTerminal", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `CapacidadTerminalEstudiante` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  capacidadTerminalEstudiante_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: CapacidadTerminalEstudiante_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "CapacidadTerminalEstudiante", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Carrera` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
@@ -2412,6 +5764,20 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "DatoGeneral", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `EjeTransversal` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  ejeTransversal_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: EjeTransversal_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "EjeTransversal", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Especialidad` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   especialidad_deleteMany(
@@ -2425,6 +5791,90 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Especialidad", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Evaluacion` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  evaluacion_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Evaluacion_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Evaluacion", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `EvaluacionEstudiante` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  evaluacionEstudiante_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: EvaluacionEstudiante_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "EvaluacionEstudiante", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Evento` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  evento_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Evento_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Evento", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `EventoOcurrencia` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  eventoOcurrencia_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: EventoOcurrencia_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "EventoOcurrencia", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `EventoRecurrencia` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  eventoRecurrencia_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: EventoRecurrencia_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "EventoRecurrencia", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `EventoRelacion` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  eventoRelacion_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: EventoRelacion_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "EventoRelacion", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Familia` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
@@ -2440,6 +5890,62 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "Familia", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `Fase` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  fase_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Fase_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Fase", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `FaseMetodo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  faseMetodo_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: FaseMetodo_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "FaseMetodo", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `FaseRecurso` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  faseRecurso_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: FaseRecurso_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "FaseRecurso", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `FaseTecnica` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  faseTecnica_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: FaseTecnica_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "FaseTecnica", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Grupo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   grupo_deleteMany(
@@ -2453,6 +5959,34 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Grupo", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `IndicadorCapacidad` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  indicadorCapacidad_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: IndicadorCapacidad_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "IndicadorCapacidad", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `IndicadorCapacidadEstudiante` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  indicadorCapacidadEstudiante_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: IndicadorCapacidadEstudiante_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Matricula` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
@@ -2468,6 +6002,20 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "Matricula", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `Metodo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  metodo_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Metodo_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Metodo", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Modulo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   modulo_deleteMany(
@@ -2481,6 +6029,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Modulo", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ModuloEstudiante` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  moduloEstudiante_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ModuloEstudiante_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ModuloEstudiante", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `ModuloVideo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
@@ -2594,6 +6156,34 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "PublicacionVideo", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `Recordatorio` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  recordatorio_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Recordatorio_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Recordatorio", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Recurso` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  recurso_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Recurso_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Recurso", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Rol` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   rol_deleteMany(
@@ -2636,6 +6226,62 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "Semestre", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `Tecnica` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  tecnica_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Tecnica_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Tecnica", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Turno` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  turno_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Turno_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Turno", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `UnidadDidactica` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  unidadDidactica_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: UnidadDidactica_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "UnidadDidactica", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `UnidadDidacticaEstudiante` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  unidadDidacticaEstudiante_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: UnidadDidacticaEstudiante_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `User` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   user_deleteMany(
@@ -2649,6 +6295,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "User", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ValorInstitucional` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  valorInstitucional_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ValorInstitucional_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ValorInstitucional", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `VideoYoutube` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

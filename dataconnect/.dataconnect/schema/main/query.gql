@@ -1,5 +1,29 @@
 extend type Query {
   """
+  ✨ Look up a single `Accion` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  accion(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Accion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Accion_FirstRow
+  ): Accion @fdc_generated(from: "Accion", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `ActEconomica` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   actEconomica(
@@ -24,6 +48,126 @@ extend type Query {
     first: ActEconomica_FirstRow
   ): ActEconomica @fdc_generated(from: "ActEconomica", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `Actividad` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  actividad(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Actividad_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Actividad_FirstRow
+  ): Actividad @fdc_generated(from: "Actividad", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Aprendizaje` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  aprendizaje(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Aprendizaje_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Aprendizaje_FirstRow
+  ): Aprendizaje @fdc_generated(from: "Aprendizaje", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Asistencia` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  asistencia(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Asistencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Asistencia_FirstRow
+  ): Asistencia @fdc_generated(from: "Asistencia", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `AspectoEvaluacion` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  aspectoEvaluacion(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: AspectoEvaluacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: AspectoEvaluacion_FirstRow
+  ): AspectoEvaluacion @fdc_generated(from: "AspectoEvaluacion", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `AspectoEvaluacionEstudiante` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  aspectoEvaluacionEstudiante(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: AspectoEvaluacionEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: AspectoEvaluacionEstudiante_FirstRow
+  ): AspectoEvaluacionEstudiante @fdc_generated(from: "AspectoEvaluacionEstudiante", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Calendario` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   calendario(
@@ -47,6 +191,54 @@ extend type Query {
     """
     first: Calendario_FirstRow
   ): Calendario @fdc_generated(from: "Calendario", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `CapacidadTerminal` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  capacidadTerminal(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CapacidadTerminal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CapacidadTerminal_FirstRow
+  ): CapacidadTerminal @fdc_generated(from: "CapacidadTerminal", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `CapacidadTerminalEstudiante` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  capacidadTerminalEstudiante(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CapacidadTerminalEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CapacidadTerminalEstudiante_FirstRow
+  ): CapacidadTerminalEstudiante @fdc_generated(from: "CapacidadTerminalEstudiante", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `Carrera` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -96,6 +288,30 @@ extend type Query {
     first: DatoGeneral_FirstRow
   ): DatoGeneral @fdc_generated(from: "DatoGeneral", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `EjeTransversal` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  ejeTransversal(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EjeTransversal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EjeTransversal_FirstRow
+  ): EjeTransversal @fdc_generated(from: "EjeTransversal", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Especialidad` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   especialidad(
@@ -119,6 +335,150 @@ extend type Query {
     """
     first: Especialidad_FirstRow
   ): Especialidad @fdc_generated(from: "Especialidad", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Evaluacion` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  evaluacion(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Evaluacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Evaluacion_FirstRow
+  ): Evaluacion @fdc_generated(from: "Evaluacion", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `EvaluacionEstudiante` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  evaluacionEstudiante(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EvaluacionEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EvaluacionEstudiante_FirstRow
+  ): EvaluacionEstudiante @fdc_generated(from: "EvaluacionEstudiante", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Evento` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  evento(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Evento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Evento_FirstRow
+  ): Evento @fdc_generated(from: "Evento", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `EventoOcurrencia` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  eventoOcurrencia(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EventoOcurrencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EventoOcurrencia_FirstRow
+  ): EventoOcurrencia @fdc_generated(from: "EventoOcurrencia", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `EventoRecurrencia` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  eventoRecurrencia(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EventoRecurrencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EventoRecurrencia_FirstRow
+  ): EventoRecurrencia @fdc_generated(from: "EventoRecurrencia", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `EventoRelacion` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  eventoRelacion(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EventoRelacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EventoRelacion_FirstRow
+  ): EventoRelacion @fdc_generated(from: "EventoRelacion", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `Familia` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -144,6 +504,102 @@ extend type Query {
     first: Familia_FirstRow
   ): Familia @fdc_generated(from: "Familia", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `Fase` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  fase(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Fase_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Fase_FirstRow
+  ): Fase @fdc_generated(from: "Fase", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `FaseMetodo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  faseMetodo(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: FaseMetodo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FaseMetodo_FirstRow
+  ): FaseMetodo @fdc_generated(from: "FaseMetodo", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `FaseRecurso` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  faseRecurso(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: FaseRecurso_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FaseRecurso_FirstRow
+  ): FaseRecurso @fdc_generated(from: "FaseRecurso", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `FaseTecnica` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  faseTecnica(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: FaseTecnica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FaseTecnica_FirstRow
+  ): FaseTecnica @fdc_generated(from: "FaseTecnica", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Grupo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   grupo(
@@ -167,6 +623,54 @@ extend type Query {
     """
     first: Grupo_FirstRow
   ): Grupo @fdc_generated(from: "Grupo", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `IndicadorCapacidad` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  indicadorCapacidad(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: IndicadorCapacidad_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: IndicadorCapacidad_FirstRow
+  ): IndicadorCapacidad @fdc_generated(from: "IndicadorCapacidad", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `IndicadorCapacidadEstudiante` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  indicadorCapacidadEstudiante(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: IndicadorCapacidadEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: IndicadorCapacidadEstudiante_FirstRow
+  ): IndicadorCapacidadEstudiante @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `Matricula` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -192,6 +696,30 @@ extend type Query {
     first: Matricula_FirstRow
   ): Matricula @fdc_generated(from: "Matricula", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `Metodo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  metodo(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Metodo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Metodo_FirstRow
+  ): Metodo @fdc_generated(from: "Metodo", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Modulo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   modulo(
@@ -215,6 +743,30 @@ extend type Query {
     """
     first: Modulo_FirstRow
   ): Modulo @fdc_generated(from: "Modulo", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ModuloEstudiante` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  moduloEstudiante(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ModuloEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ModuloEstudiante_FirstRow
+  ): ModuloEstudiante @fdc_generated(from: "ModuloEstudiante", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `ModuloVideo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -398,6 +950,54 @@ extend type Query {
     first: PublicacionVideo_FirstRow
   ): PublicacionVideo @fdc_generated(from: "PublicacionVideo", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `Recordatorio` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  recordatorio(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Recordatorio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Recordatorio_FirstRow
+  ): Recordatorio @fdc_generated(from: "Recordatorio", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Recurso` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  recurso(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Recurso_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Recurso_FirstRow
+  ): Recurso @fdc_generated(from: "Recurso", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Rol` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   rol(
@@ -470,6 +1070,102 @@ extend type Query {
     first: Semestre_FirstRow
   ): Semestre @fdc_generated(from: "Semestre", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `Tecnica` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  tecnica(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Tecnica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Tecnica_FirstRow
+  ): Tecnica @fdc_generated(from: "Tecnica", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Turno` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  turno(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Turno_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Turno_FirstRow
+  ): Turno @fdc_generated(from: "Turno", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `UnidadDidactica` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  unidadDidactica(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: UnidadDidactica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UnidadDidactica_FirstRow
+  ): UnidadDidactica @fdc_generated(from: "UnidadDidactica", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `UnidadDidacticaEstudiante` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  unidadDidacticaEstudiante(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: UnidadDidacticaEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UnidadDidacticaEstudiante_FirstRow
+  ): UnidadDidacticaEstudiante @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `User` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   user(
@@ -494,6 +1190,30 @@ extend type Query {
     first: User_FirstRow
   ): User @fdc_generated(from: "User", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `ValorInstitucional` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  valorInstitucional(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ValorInstitucional_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ValorInstitucional_FirstRow
+  ): ValorInstitucional @fdc_generated(from: "ValorInstitucional", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `VideoYoutube` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   videoYoutube(
@@ -517,6 +1237,40 @@ extend type Query {
     """
     first: VideoYoutube_FirstRow
   ): VideoYoutube @fdc_generated(from: "VideoYoutube", purpose: QUERY_SINGLE)
+  """
+  ✨ List `Accion` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  accions(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Accion_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Accion_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Accion_Having
+  ): [Accion!]! @fdc_generated(from: "Accion", purpose: QUERY_MULTIPLE)
   """
   ✨ List `ActEconomica` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -552,6 +1306,176 @@ extend type Query {
     having: ActEconomica_Having
   ): [ActEconomica!]! @fdc_generated(from: "ActEconomica", purpose: QUERY_MULTIPLE)
   """
+  ✨ List `Actividad` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  actividads(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Actividad_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Actividad_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Actividad_Having
+  ): [Actividad!]! @fdc_generated(from: "Actividad", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Aprendizaje` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  aprendizajes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Aprendizaje_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Aprendizaje_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Aprendizaje_Having
+  ): [Aprendizaje!]! @fdc_generated(from: "Aprendizaje", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Asistencia` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  asistencias(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Asistencia_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Asistencia_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Asistencia_Having
+  ): [Asistencia!]! @fdc_generated(from: "Asistencia", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `AspectoEvaluacion` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  aspectosEvaluacion(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: AspectoEvaluacion_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [AspectoEvaluacion_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: AspectoEvaluacion_Having
+  ): [AspectoEvaluacion!]! @fdc_generated(from: "AspectoEvaluacion", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `AspectoEvaluacionEstudiante` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  aspectosEvaluacionEstudiantes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: AspectoEvaluacionEstudiante_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [AspectoEvaluacionEstudiante_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: AspectoEvaluacionEstudiante_Having
+  ): [AspectoEvaluacionEstudiante!]! @fdc_generated(from: "AspectoEvaluacionEstudiante", purpose: QUERY_MULTIPLE)
+  """
   ✨ List `Calendario` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   calendarios(
@@ -585,6 +1509,74 @@ extend type Query {
     """
     having: Calendario_Having
   ): [Calendario!]! @fdc_generated(from: "Calendario", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `CapacidadTerminal` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  capacidadesTerminales(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: CapacidadTerminal_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [CapacidadTerminal_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: CapacidadTerminal_Having
+  ): [CapacidadTerminal!]! @fdc_generated(from: "CapacidadTerminal", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `CapacidadTerminalEstudiante` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  capacidadesTerminalesEstudiantes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: CapacidadTerminalEstudiante_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [CapacidadTerminalEstudiante_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: CapacidadTerminalEstudiante_Having
+  ): [CapacidadTerminalEstudiante!]! @fdc_generated(from: "CapacidadTerminalEstudiante", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Carrera` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -654,6 +1646,40 @@ extend type Query {
     having: DatoGeneral_Having
   ): [DatoGeneral!]! @fdc_generated(from: "DatoGeneral", purpose: QUERY_MULTIPLE)
   """
+  ✨ List `EjeTransversal` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  ejesTransversales(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EjeTransversal_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EjeTransversal_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EjeTransversal_Having
+  ): [EjeTransversal!]! @fdc_generated(from: "EjeTransversal", purpose: QUERY_MULTIPLE)
+  """
   ✨ List `Especialidad` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   especialidads(
@@ -687,6 +1713,210 @@ extend type Query {
     """
     having: Especialidad_Having
   ): [Especialidad!]! @fdc_generated(from: "Especialidad", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Evaluacion` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  evaluacions(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Evaluacion_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Evaluacion_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Evaluacion_Having
+  ): [Evaluacion!]! @fdc_generated(from: "Evaluacion", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `EvaluacionEstudiante` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  evaluacionesEstudiantes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EvaluacionEstudiante_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EvaluacionEstudiante_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EvaluacionEstudiante_Having
+  ): [EvaluacionEstudiante!]! @fdc_generated(from: "EvaluacionEstudiante", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Evento` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  eventos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Evento_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Evento_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Evento_Having
+  ): [Evento!]! @fdc_generated(from: "Evento", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `EventoOcurrencia` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  eventoOcurrencias(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EventoOcurrencia_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EventoOcurrencia_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EventoOcurrencia_Having
+  ): [EventoOcurrencia!]! @fdc_generated(from: "EventoOcurrencia", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `EventoRecurrencia` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  eventoRecurrencias(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EventoRecurrencia_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EventoRecurrencia_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EventoRecurrencia_Having
+  ): [EventoRecurrencia!]! @fdc_generated(from: "EventoRecurrencia", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `EventoRelacion` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  eventoRelaciones(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EventoRelacion_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EventoRelacion_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EventoRelacion_Having
+  ): [EventoRelacion!]! @fdc_generated(from: "EventoRelacion", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Familia` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -722,6 +1952,142 @@ extend type Query {
     having: Familia_Having
   ): [Familia!]! @fdc_generated(from: "Familia", purpose: QUERY_MULTIPLE)
   """
+  ✨ List `Fase` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  fases(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Fase_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Fase_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Fase_Having
+  ): [Fase!]! @fdc_generated(from: "Fase", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `FaseMetodo` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  fasesMetodos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: FaseMetodo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [FaseMetodo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: FaseMetodo_Having
+  ): [FaseMetodo!]! @fdc_generated(from: "FaseMetodo", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `FaseRecurso` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  fasesRecursos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: FaseRecurso_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [FaseRecurso_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: FaseRecurso_Having
+  ): [FaseRecurso!]! @fdc_generated(from: "FaseRecurso", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `FaseTecnica` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  fasesTecnicas(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: FaseTecnica_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [FaseTecnica_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: FaseTecnica_Having
+  ): [FaseTecnica!]! @fdc_generated(from: "FaseTecnica", purpose: QUERY_MULTIPLE)
+  """
   ✨ List `Grupo` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   grupos(
@@ -755,6 +2121,74 @@ extend type Query {
     """
     having: Grupo_Having
   ): [Grupo!]! @fdc_generated(from: "Grupo", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `IndicadorCapacidad` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  indicadoresCapacidad(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: IndicadorCapacidad_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [IndicadorCapacidad_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: IndicadorCapacidad_Having
+  ): [IndicadorCapacidad!]! @fdc_generated(from: "IndicadorCapacidad", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `IndicadorCapacidadEstudiante` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  indicadoresCapacidadEstudiantes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: IndicadorCapacidadEstudiante_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [IndicadorCapacidadEstudiante_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: IndicadorCapacidadEstudiante_Having
+  ): [IndicadorCapacidadEstudiante!]! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Matricula` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -790,6 +2224,40 @@ extend type Query {
     having: Matricula_Having
   ): [Matricula!]! @fdc_generated(from: "Matricula", purpose: QUERY_MULTIPLE)
   """
+  ✨ List `Metodo` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  metodos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Metodo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Metodo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Metodo_Having
+  ): [Metodo!]! @fdc_generated(from: "Metodo", purpose: QUERY_MULTIPLE)
+  """
   ✨ List `Modulo` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   modulos(
@@ -823,6 +2291,40 @@ extend type Query {
     """
     having: Modulo_Having
   ): [Modulo!]! @fdc_generated(from: "Modulo", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ModuloEstudiante` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  modulosEstudiantes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ModuloEstudiante_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ModuloEstudiante_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ModuloEstudiante_Having
+  ): [ModuloEstudiante!]! @fdc_generated(from: "ModuloEstudiante", purpose: QUERY_MULTIPLE)
   """
   ✨ List `ModuloVideo` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -1096,6 +2598,74 @@ extend type Query {
     having: PublicacionVideo_Having
   ): [PublicacionVideo!]! @fdc_generated(from: "PublicacionVideo", purpose: QUERY_MULTIPLE)
   """
+  ✨ List `Recordatorio` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  recordatorios(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Recordatorio_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Recordatorio_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Recordatorio_Having
+  ): [Recordatorio!]! @fdc_generated(from: "Recordatorio", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Recurso` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  recursos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Recurso_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Recurso_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Recurso_Having
+  ): [Recurso!]! @fdc_generated(from: "Recurso", purpose: QUERY_MULTIPLE)
+  """
   ✨ List `Rol` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   rols(
@@ -1198,6 +2768,142 @@ extend type Query {
     having: Semestre_Having
   ): [Semestre!]! @fdc_generated(from: "Semestre", purpose: QUERY_MULTIPLE)
   """
+  ✨ List `Tecnica` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  tecnicas(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Tecnica_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Tecnica_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Tecnica_Having
+  ): [Tecnica!]! @fdc_generated(from: "Tecnica", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Turno` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  turnos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Turno_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Turno_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Turno_Having
+  ): [Turno!]! @fdc_generated(from: "Turno", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `UnidadDidactica` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  unidadesDidacticas(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: UnidadDidactica_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [UnidadDidactica_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: UnidadDidactica_Having
+  ): [UnidadDidactica!]! @fdc_generated(from: "UnidadDidactica", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `UnidadDidacticaEstudiante` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  unidadesDidacticasEstudiantes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: UnidadDidacticaEstudiante_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [UnidadDidacticaEstudiante_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: UnidadDidacticaEstudiante_Having
+  ): [UnidadDidacticaEstudiante!]! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: QUERY_MULTIPLE)
+  """
   ✨ List `User` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   users(
@@ -1231,6 +2937,40 @@ extend type Query {
     """
     having: User_Having
   ): [User!]! @fdc_generated(from: "User", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ValorInstitucional` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  valoresInstitucionales(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ValorInstitucional_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ValorInstitucional_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ValorInstitucional_Having
+  ): [ValorInstitucional!]! @fdc_generated(from: "ValorInstitucional", purpose: QUERY_MULTIPLE)
   """
   ✨ List `VideoYoutube` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

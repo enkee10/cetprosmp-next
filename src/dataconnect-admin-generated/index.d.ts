@@ -8,14 +8,54 @@ export type Int64String = string;
 export type DateString = string;
 
 
+export interface Accion_Key {
+  id: number;
+  __typename?: 'Accion_Key';
+}
+
 export interface ActEconomica_Key {
   id: number;
   __typename?: 'ActEconomica_Key';
 }
 
+export interface Actividad_Key {
+  id: number;
+  __typename?: 'Actividad_Key';
+}
+
+export interface Aprendizaje_Key {
+  id: number;
+  __typename?: 'Aprendizaje_Key';
+}
+
+export interface Asistencia_Key {
+  id: number;
+  __typename?: 'Asistencia_Key';
+}
+
+export interface AspectoEvaluacionEstudiante_Key {
+  id: number;
+  __typename?: 'AspectoEvaluacionEstudiante_Key';
+}
+
+export interface AspectoEvaluacion_Key {
+  id: number;
+  __typename?: 'AspectoEvaluacion_Key';
+}
+
 export interface Calendario_Key {
   id: number;
   __typename?: 'Calendario_Key';
+}
+
+export interface CapacidadTerminalEstudiante_Key {
+  id: number;
+  __typename?: 'CapacidadTerminalEstudiante_Key';
+}
+
+export interface CapacidadTerminal_Key {
+  id: number;
+  __typename?: 'CapacidadTerminal_Key';
 }
 
 export interface Carrera_Key {
@@ -54,14 +94,69 @@ export interface DeletePostVariables {
   id: number;
 }
 
+export interface EjeTransversal_Key {
+  id: number;
+  __typename?: 'EjeTransversal_Key';
+}
+
 export interface Especialidad_Key {
   id: number;
   __typename?: 'Especialidad_Key';
 }
 
+export interface EvaluacionEstudiante_Key {
+  id: number;
+  __typename?: 'EvaluacionEstudiante_Key';
+}
+
+export interface Evaluacion_Key {
+  id: number;
+  __typename?: 'Evaluacion_Key';
+}
+
+export interface EventoOcurrencia_Key {
+  id: number;
+  __typename?: 'EventoOcurrencia_Key';
+}
+
+export interface EventoRecurrencia_Key {
+  id: number;
+  __typename?: 'EventoRecurrencia_Key';
+}
+
+export interface EventoRelacion_Key {
+  id: number;
+  __typename?: 'EventoRelacion_Key';
+}
+
+export interface Evento_Key {
+  id: number;
+  __typename?: 'Evento_Key';
+}
+
 export interface Familia_Key {
   id: number;
   __typename?: 'Familia_Key';
+}
+
+export interface FaseMetodo_Key {
+  id: number;
+  __typename?: 'FaseMetodo_Key';
+}
+
+export interface FaseRecurso_Key {
+  id: number;
+  __typename?: 'FaseRecurso_Key';
+}
+
+export interface FaseTecnica_Key {
+  id: number;
+  __typename?: 'FaseTecnica_Key';
+}
+
+export interface Fase_Key {
+  id: number;
+  __typename?: 'Fase_Key';
 }
 
 export interface GetPostByIdData {
@@ -113,6 +208,16 @@ export interface GetUserByDocumentIdVariables {
 export interface Grupo_Key {
   id: number;
   __typename?: 'Grupo_Key';
+}
+
+export interface IndicadorCapacidadEstudiante_Key {
+  id: number;
+  __typename?: 'IndicadorCapacidadEstudiante_Key';
+}
+
+export interface IndicadorCapacidad_Key {
+  id: number;
+  __typename?: 'IndicadorCapacidad_Key';
 }
 
 export interface ListActEconomicasData {
@@ -183,6 +288,16 @@ export interface Matricula_Key {
   __typename?: 'Matricula_Key';
 }
 
+export interface Metodo_Key {
+  id: number;
+  __typename?: 'Metodo_Key';
+}
+
+export interface ModuloEstudiante_Key {
+  id: number;
+  __typename?: 'ModuloEstudiante_Key';
+}
+
 export interface ModuloVideo_Key {
   id: number;
   __typename?: 'ModuloVideo_Key';
@@ -229,6 +344,16 @@ export interface Publicacion_Key {
   __typename?: 'Publicacion_Key';
 }
 
+export interface Recordatorio_Key {
+  id: number;
+  __typename?: 'Recordatorio_Key';
+}
+
+export interface Recurso_Key {
+  id: number;
+  __typename?: 'Recurso_Key';
+}
+
 export interface Rol_Key {
   id: number;
   __typename?: 'Rol_Key';
@@ -242,6 +367,26 @@ export interface Sector_Key {
 export interface Semestre_Key {
   id: number;
   __typename?: 'Semestre_Key';
+}
+
+export interface Tecnica_Key {
+  id: number;
+  __typename?: 'Tecnica_Key';
+}
+
+export interface Turno_Key {
+  id: number;
+  __typename?: 'Turno_Key';
+}
+
+export interface UnidadDidacticaEstudiante_Key {
+  id: number;
+  __typename?: 'UnidadDidacticaEstudiante_Key';
+}
+
+export interface UnidadDidactica_Key {
+  id: number;
+  __typename?: 'UnidadDidactica_Key';
 }
 
 export interface UpdatePostData {
@@ -266,6 +411,11 @@ export interface UpdatePostVariables {
 export interface User_Key {
   id: number;
   __typename?: 'User_Key';
+}
+
+export interface ValorInstitucional_Key {
+  id: number;
+  __typename?: 'ValorInstitucional_Key';
 }
 
 export interface VideoYoutube_Key {

@@ -128,6 +128,170 @@ erDiagram
         Int planId FK
     }
 
+    UNIDAD_DIDACTICA {
+        Int id PK
+        String nombre
+        Int duracion
+        Int creditos
+        String sigla
+        Int moduloId FK
+    }
+
+    CAPACIDAD_TERMINAL {
+        Int id PK
+        String descripcion
+        String sigla
+        Int unidadDidacticaId FK
+    }
+
+    INDICADOR_CAPACIDAD {
+        Int id PK
+        String descripcion
+        String sigla
+        Int capacidadTerminalId FK
+    }
+
+    APRENDIZAJE {
+        Int id PK
+        String descripcion
+        String sigla
+        Int indicadorCapacidadId FK
+    }
+
+    EJE_TRANSVERSAL {
+        Int id PK
+        String nombre
+        String descripcion
+    }
+
+    VALOR_INSTITUCIONAL {
+        Int id PK
+        String nombre
+        String descripcion
+    }
+
+    ACTIVIDAD {
+        Int id PK
+        String nombre
+        String descripcion
+        String proposito
+        String ambiente
+        Int duracion
+        Timestamp fecha
+        String bibliografia
+        Int aprendizajeId FK
+        Int ejeTransversalId FK
+        Int valorInstitucionalId FK
+    }
+
+    FASE {
+        Int id PK
+        String nombre
+        String descripcion
+        String metodologia
+        Int duracion
+        Int actividadId FK
+        Int accionId FK
+    }
+
+    ACCION {
+        Int id PK
+        String descripcion
+    }
+
+    METODO {
+        Int id PK
+        String nombre
+        String descripcion
+    }
+
+    TECNICA {
+        Int id PK
+        String nombre
+        String descripcion
+    }
+
+    RECURSO {
+        Int id PK
+        String nombre
+        String descripcion
+    }
+
+    FASE_METODO {
+        Int id PK
+        Int faseId FK
+        Int metodoId FK
+    }
+
+    FASE_TECNICA {
+        Int id PK
+        Int faseId FK
+        Int tecnicaId FK
+    }
+
+    FASE_RECURSO {
+        Int id PK
+        Int faseId FK
+        Int recursoId FK
+    }
+
+    EVALUACION {
+        Int id PK
+        String instrumento
+        Int actividadId FK
+        Int indicadorCapacidadId FK
+        Int metodoId FK
+        Int tecnicaId FK
+    }
+
+    ASPECTO_EVALUACION {
+        Int id PK
+        String descripcion
+        Int evaluacionId FK
+    }
+
+    MODULO_ESTUDIANTE {
+        Int id PK
+        Float promedio
+        Int matriculaId FK
+        Int moduloId FK
+    }
+
+    UNIDAD_DIDACTICA_ESTUDIANTE {
+        Int id PK
+        Float promedio
+        Int matriculaId FK
+        Int unidadDidacticaId FK
+    }
+
+    CAPACIDAD_TERMINAL_ESTUDIANTE {
+        Int id PK
+        Float promedio
+        Int matriculaId FK
+        Int capacidadTerminalId FK
+    }
+
+    INDICADOR_CAPACIDAD_ESTUDIANTE {
+        Int id PK
+        Float promedio
+        Int matriculaId FK
+        Int indicadorCapacidadId FK
+    }
+
+    EVALUACION_ESTUDIANTE {
+        Int id PK
+        Float nota
+        Int matriculaId FK
+        Int evaluacionId FK
+    }
+
+    ASPECTO_EVALUACION_ESTUDIANTE {
+        Int id PK
+        Float puntaje
+        Int evaluacionEstudianteId FK
+        Int aspectoEvaluacionId FK
+    }
+
     PERSONAL {
         Int id PK
         String displayName
@@ -159,21 +323,110 @@ erDiagram
         Timestamp fechaIni
         Timestamp fechaFin
         String tipo
+        String color
+        Boolean activo
         Boolean archivado
+        Timestamp fechaCreacion
+        Timestamp fechaActualizacion
         Int semestreId FK
+    }
+
+    TURNO {
+        Int id PK
+        String nombre
+        Timestamp horaInicio
+        Timestamp horaFin
+        String estado
+        Timestamp fechaCreacion
+        Timestamp fechaActualizacion
     }
 
     GRUPO {
         Int id PK
-        String turno
+        String turnoNombre
         String descripcion
         String nombreDisplay
+        String estado
         Boolean archivado
+        Timestamp fechaCreacion
+        Timestamp fechaActualizacion
         Int moduloId FK
         Int semestreId FK
         Int personalId FK
         Int paqueteId FK
+        Int turnoId FK
         Int grupoOrd
+    }
+
+    EVENTO {
+        Int id PK
+        String titulo
+        String descripcion
+        String tipoEvento
+        Timestamp fechaInicio
+        Timestamp fechaFin
+        Boolean todoElDia
+        String ubicacion
+        String color
+        String estado
+        Timestamp fechaCreacion
+        Timestamp fechaActualizacion
+        Int calendarioId FK
+        Int grupoId FK
+    }
+
+    EVENTO_RECURRENCIA {
+        Int id PK
+        String frecuencia
+        Int intervalo
+        String diasSemana
+        Int diaMes
+        Int semanaMes
+        Timestamp fechaInicio
+        Timestamp fechaFin
+        Int cantidadOcurrencias
+        String reglaEspecial
+        Boolean activo
+        Timestamp fechaCreacion
+        Timestamp fechaActualizacion
+        Int eventoId FK
+    }
+
+    EVENTO_OCURRENCIA {
+        Int id PK
+        Timestamp fechaInicio
+        Timestamp fechaFin
+        Int numeroOcurrencia
+        String tipoOcurrencia
+        String estado
+        String observacion
+        Timestamp fechaCreacion
+        Timestamp fechaActualizacion
+        Int eventoId FK
+        Int recurrenciaId FK
+        Int grupoId FK
+    }
+
+    EVENTO_RELACION {
+        Int id PK
+        String entidadTipo
+        Int entidadId FK
+        Timestamp fechaCreacion
+        Timestamp fechaActualizacion
+        Int eventoId FK
+    }
+
+    RECORDATORIO {
+        Int id PK
+        String tipoRecordatorio
+        Int minutosAntes
+        String medio
+        Boolean enviado
+        Timestamp fechaEnvio
+        Timestamp fechaCreacion
+        Timestamp fechaActualizacion
+        Int eventoId FK
+        Int eventoOcurrenciaId FK
     }
 
     PAQUETE {
@@ -191,6 +444,18 @@ erDiagram
         Int grupoId FK
         Int paqueteId FK
         Int userId FK
+    }
+
+    ASISTENCIA {
+        Int id PK
+        String estadoAsistencia
+        String observacion
+        Timestamp registradoAt
+        Timestamp fechaCreacion
+        Timestamp fechaActualizacion
+        Int eventoOcurrenciaId FK
+        Int matriculaId FK
+        Int registradoPorId FK
     }
 
     PUBLICACION {
@@ -271,6 +536,38 @@ erDiagram
     ACT_ECONOMICA ||--o{ CARRERA : actEconomica
     CARRERA ||--o{ PLAN : carrera
     PLAN ||--o{ MODULO : plan
+    MODULO ||--o{ UNIDAD_DIDACTICA : modulo
+    UNIDAD_DIDACTICA ||--o{ CAPACIDAD_TERMINAL : unidadDidactica
+    CAPACIDAD_TERMINAL ||--o{ INDICADOR_CAPACIDAD : capacidadTerminal
+    INDICADOR_CAPACIDAD ||--o{ APRENDIZAJE : indicadorCapacidad
+    APRENDIZAJE ||--o{ ACTIVIDAD : aprendizaje
+    EJE_TRANSVERSAL ||--o{ ACTIVIDAD : ejeTransversal
+    VALOR_INSTITUCIONAL ||--o{ ACTIVIDAD : valorInstitucional
+    ACTIVIDAD ||--o{ FASE : actividad
+    ACCION ||--o{ FASE : accion
+    FASE ||--o{ FASE_METODO : fase
+    METODO ||--o{ FASE_METODO : metodo
+    FASE ||--o{ FASE_TECNICA : fase
+    TECNICA ||--o{ FASE_TECNICA : tecnica
+    FASE ||--o{ FASE_RECURSO : fase
+    RECURSO ||--o{ FASE_RECURSO : recurso
+    ACTIVIDAD ||--o{ EVALUACION : actividad
+    INDICADOR_CAPACIDAD ||--o{ EVALUACION : indicadorCapacidad
+    METODO ||--o{ EVALUACION : metodo
+    TECNICA ||--o{ EVALUACION : tecnica
+    EVALUACION ||--o{ ASPECTO_EVALUACION : evaluacion
+    MATRICULA ||--o{ MODULO_ESTUDIANTE : matricula
+    MODULO ||--o{ MODULO_ESTUDIANTE : modulo
+    MATRICULA ||--o{ UNIDAD_DIDACTICA_ESTUDIANTE : matricula
+    UNIDAD_DIDACTICA ||--o{ UNIDAD_DIDACTICA_ESTUDIANTE : unidadDidactica
+    MATRICULA ||--o{ CAPACIDAD_TERMINAL_ESTUDIANTE : matricula
+    CAPACIDAD_TERMINAL ||--o{ CAPACIDAD_TERMINAL_ESTUDIANTE : capacidadTerminal
+    MATRICULA ||--o{ INDICADOR_CAPACIDAD_ESTUDIANTE : matricula
+    INDICADOR_CAPACIDAD ||--o{ INDICADOR_CAPACIDAD_ESTUDIANTE : indicadorCapacidad
+    MATRICULA ||--o{ EVALUACION_ESTUDIANTE : matricula
+    EVALUACION ||--o{ EVALUACION_ESTUDIANTE : evaluacion
+    EVALUACION_ESTUDIANTE ||--o{ ASPECTO_EVALUACION_ESTUDIANTE : evaluacionEstudiante
+    ASPECTO_EVALUACION ||--o{ ASPECTO_EVALUACION_ESTUDIANTE : aspectoEvaluacion
     USER ||--o{ PERSONAL : user
     PERSONAL ||--o{ PERSONAL_ESPECIALIDAD : personal
     ESPECIALIDAD ||--o{ PERSONAL_ESPECIALIDAD : especialidad
@@ -280,9 +577,22 @@ erDiagram
     SEMESTRE ||--o{ GRUPO : semestre
     PERSONAL ||--o{ GRUPO : personal
     PAQUETE ||--o{ GRUPO : paquete
+    TURNO ||--o{ GRUPO : turno
+    CALENDARIO ||--o{ EVENTO : calendario
+    GRUPO ||--o{ EVENTO : grupo
+    EVENTO ||--o{ EVENTO_RECURRENCIA : evento
+    EVENTO ||--o{ EVENTO_OCURRENCIA : evento
+    EVENTO_RECURRENCIA ||--o{ EVENTO_OCURRENCIA : recurrencia
+    GRUPO ||--o{ EVENTO_OCURRENCIA : grupo
+    EVENTO ||--o{ EVENTO_RELACION : evento
+    EVENTO ||--o{ RECORDATORIO : evento
+    EVENTO_OCURRENCIA ||--o{ RECORDATORIO : eventoOcurrencia
     GRUPO ||--o{ MATRICULA : grupo
     PAQUETE ||--o{ MATRICULA : paquete
     USER ||--o{ MATRICULA : user
+    EVENTO_OCURRENCIA ||--o{ ASISTENCIA : eventoOcurrencia
+    MATRICULA ||--o{ ASISTENCIA : matricula
+    USER ||--o{ ASISTENCIA : registradoPor
     MODULO ||--o{ MODULO_VIDEO : modulo
     VIDEO_YOUTUBE ||--o{ MODULO_VIDEO : video
     PUBLICACION ||--o{ PUBLICACION_VIDEO : publicacion

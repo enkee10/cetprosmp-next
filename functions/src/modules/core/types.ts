@@ -63,3 +63,35 @@ export interface DataConnectActEconomicaInput {
   familiaId?: number | null;
   especialidadId?: number | null;
 }
+
+export interface DataConnectFamilia {
+  id: number;
+  titulo?: string | null;
+  descripcion?: string | null;
+  sectorId?: number | null;
+}
+
+export interface DataConnectFamiliaInput {
+  titulo?: string | null;
+  descripcion?: string | null;
+  sectorId?: number | null;
+}
+
+export interface DataConnectEspecialidad {
+  id: number;
+  titulo?: string | null;
+  tituloComercial?: string | null;
+  descripcion?: string | null;
+  descripcion2?: string | null;
+  slug?: string | null;
+  actEconomicaId?: number | null;
+}
+
+export interface DataConnectEspecialidadInput {
+  titulo?: string | null;
+  tituloComercial?: string | null;
+  descripcion?: string | null;
+  descripcion2?: string | null;
+  slug?: string | null;
+  actEconomicaId?: number | null;
+}

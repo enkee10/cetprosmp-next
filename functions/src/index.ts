@@ -19,4 +19,12 @@ export {
   getActEconomica,
   createOrUpdateActEconomica,
   deleteActEconomica,
+  listFamilias,
+  getFamilia,
+  createOrUpdateFamilia,
+  deleteFamilia,
+  listEspecialidades,
+  getEspecialidad,
+  createOrUpdateEspecialidad,
+  deleteEspecialidad,
 } from "./modules/index.js";

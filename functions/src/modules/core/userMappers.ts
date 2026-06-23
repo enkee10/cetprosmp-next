@@ -1,5 +1,7 @@
 import {
   DataConnectActEconomicaInput,
+  DataConnectEspecialidadInput,
+  DataConnectFamiliaInput,
   DataConnectRoleInput,
   DataConnectSectorInput,
   DataConnectUserInput,
@@ -178,5 +180,24 @@ export function buildActEconomicaDataFromInput(input: Record<string, unknown>): 
     descripcion: asNullableString(input.descripcion),
     familiaId: toNumberOrNull(input.familiaId),
     especialidadId: toNumberOrNull(input.especialidadId),
+  });
+}
+
+export function buildFamiliaDataFromInput(input: Record<string, unknown>): DataConnectFamiliaInput {
+  return compactUndefined({
+    titulo: asNullableString(input.titulo),
+    descripcion: asNullableString(input.descripcion),
+    sectorId: toNumberOrNull(input.sectorId),
+  });
+}
+
+export function buildEspecialidadDataFromInput(input: Record<string, unknown>): DataConnectEspecialidadInput {
+  return compactUndefined({
+    titulo: asNullableString(input.titulo),
+    tituloComercial: asNullableString(input.tituloComercial),
+    descripcion: asNullableString(input.descripcion),
+    descripcion2: asNullableString(input.descripcion2),
+    slug: asNullableString(input.slug),
+    actEconomicaId: toNumberOrNull(input.actEconomicaId),
   });
 }

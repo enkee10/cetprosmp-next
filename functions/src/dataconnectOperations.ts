@@ -46,6 +46,42 @@ export const DELETE_ACT_ECONOMICA_MUTATION = `
   }
 `;
 
+export const INSERT_FAMILIA_MUTATION = `
+  mutation InsertFamilia($data: Familia_Data! @allow(fields: "titulo descripcion sectorId")) {
+    familia_insert(data: $data)
+  }
+`;
+
+export const UPDATE_FAMILIA_MUTATION = `
+  mutation UpdateFamilia($id: Int!, $data: Familia_Data! @allow(fields: "titulo descripcion sectorId")) {
+    familia_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_FAMILIA_MUTATION = `
+  mutation DeleteFamilia($id: Int!) {
+    familia_delete(id: $id)
+  }
+`;
+
+export const INSERT_ESPECIALIDAD_MUTATION = `
+  mutation InsertEspecialidad($data: Especialidad_Data! @allow(fields: "titulo tituloComercial descripcion descripcion2 slug actEconomicaId")) {
+    especialidad_insert(data: $data)
+  }
+`;
+
+export const UPDATE_ESPECIALIDAD_MUTATION = `
+  mutation UpdateEspecialidad($id: Int!, $data: Especialidad_Data! @allow(fields: "titulo tituloComercial descripcion descripcion2 slug actEconomicaId")) {
+    especialidad_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_ESPECIALIDAD_MUTATION = `
+  mutation DeleteEspecialidad($id: Int!) {
+    especialidad_delete(id: $id)
+  }
+`;
+
 export const INSERT_USER_MUTATION = `
   mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
     user_insert(data: $data)

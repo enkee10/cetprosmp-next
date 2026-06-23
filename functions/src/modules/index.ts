@@ -19,3 +19,15 @@ export {
   createOrUpdateActEconomica,
   deleteActEconomica,
 } from "./act-economicas/handlers.js";
+export {
+  listFamilias,
+  getFamilia,
+  createOrUpdateFamilia,
+  deleteFamilia,
+} from "./familias/handlers.js";
+export {
+  listEspecialidades,
+  getEspecialidad,
+  createOrUpdateEspecialidad,
+  deleteEspecialidad,
+} from "./especialidades/handlers.js";

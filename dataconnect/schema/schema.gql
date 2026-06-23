@@ -127,6 +127,234 @@ type Modulo @table(name: "modulos") {
   planId: Int @col(name: "plan_id")
 }
 
+type UnidadDidactica @table(name: "unidades_didacticas", singular: "unidadDidactica", plural: "unidadesDidacticas") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+  duracion: Int
+  creditos: Int
+  sigla: String
+
+  modulo: Modulo! @ref(fields: "moduloId", references: "id")
+  moduloId: Int! @col(name: "modulo_id")
+}
+
+type CapacidadTerminal @table(name: "capacidades_terminales", singular: "capacidadTerminal", plural: "capacidadesTerminales") {
+  id: Int! @col(dataType: "serial")
+  descripcion: String
+  sigla: String
+
+  unidadDidactica: UnidadDidactica! @ref(fields: "unidadDidacticaId", references: "id")
+  unidadDidacticaId: Int! @col(name: "unidad_didactica_id")
+}
+
+type IndicadorCapacidad @table(name: "indicadores_capacidad", singular: "indicadorCapacidad", plural: "indicadoresCapacidad") {
+  id: Int! @col(dataType: "serial")
+  descripcion: String
+  sigla: String
+
+  capacidadTerminal: CapacidadTerminal! @ref(fields: "capacidadTerminalId", references: "id")
+  capacidadTerminalId: Int! @col(name: "capacidad_terminal_id")
+}
+
+type Aprendizaje @table(name: "aprendizajes") {
+  id: Int! @col(dataType: "serial")
+  descripcion: String
+  sigla: String
+
+  indicadorCapacidad: IndicadorCapacidad! @ref(fields: "indicadorCapacidadId", references: "id")
+  indicadorCapacidadId: Int! @col(name: "indicador_capacidad_id")
+}
+
+type EjeTransversal @table(name: "ejes_transversales", singular: "ejeTransversal", plural: "ejesTransversales") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+  descripcion: String
+}
+
+type ValorInstitucional @table(name: "valores_institucionales", singular: "valorInstitucional", plural: "valoresInstitucionales") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+  descripcion: String
+}
+
+type Actividad @table(name: "actividades") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+  descripcion: String
+  proposito: String
+  ambiente: String
+  duracion: Int
+  fecha: Timestamp
+  bibliografia: String
+
+  aprendizaje: Aprendizaje! @ref(fields: "aprendizajeId", references: "id")
+  aprendizajeId: Int! @col(name: "aprendizaje_id")
+
+  ejeTransversal: EjeTransversal @ref(fields: "ejeTransversalId", references: "id")
+  ejeTransversalId: Int @col(name: "eje_transversal_id")
+
+  valorInstitucional: ValorInstitucional @ref(fields: "valorInstitucionalId", references: "id")
+  valorInstitucionalId: Int @col(name: "valor_institucional_id")
+}
+
+type Fase @table(name: "fases") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+  descripcion: String
+  metodologia: String
+  duracion: Int
+
+  actividad: Actividad! @ref(fields: "actividadId", references: "id")
+  actividadId: Int! @col(name: "actividad_id")
+
+  accion: Accion @ref(fields: "accionId", references: "id")
+  accionId: Int @col(name: "accion_id")
+}
+
+type Accion @table(name: "acciones") {
+  id: Int! @col(dataType: "serial")
+  descripcion: String
+}
+
+type Metodo @table(name: "metodos") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+  descripcion: String
+}
+
+type Tecnica @table(name: "tecnicas") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+  descripcion: String
+}
+
+type Recurso @table(name: "recursos") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+  descripcion: String
+}
+
+type FaseMetodo @table(name: "fases_metodos", singular: "faseMetodo", plural: "fasesMetodos") @unique(fields: ["fase", "metodo"]) {
+  id: Int! @col(dataType: "serial")
+
+  fase: Fase! @ref(fields: "faseId", references: "id")
+  faseId: Int! @col(name: "fase_id")
+
+  metodo: Metodo! @ref(fields: "metodoId", references: "id")
+  metodoId: Int! @col(name: "metodo_id")
+}
+
+type FaseTecnica @table(name: "fases_tecnicas", singular: "faseTecnica", plural: "fasesTecnicas") @unique(fields: ["fase", "tecnica"]) {
+  id: Int! @col(dataType: "serial")
+
+  fase: Fase! @ref(fields: "faseId", references: "id")
+  faseId: Int! @col(name: "fase_id")
+
+  tecnica: Tecnica! @ref(fields: "tecnicaId", references: "id")
+  tecnicaId: Int! @col(name: "tecnica_id")
+}
+
+type FaseRecurso @table(name: "fases_recursos", singular: "faseRecurso", plural: "fasesRecursos") @unique(fields: ["fase", "recurso"]) {
+  id: Int! @col(dataType: "serial")
+
+  fase: Fase! @ref(fields: "faseId", references: "id")
+  faseId: Int! @col(name: "fase_id")
+
+  recurso: Recurso! @ref(fields: "recursoId", references: "id")
+  recursoId: Int! @col(name: "recurso_id")
+}
+
+type Evaluacion @table(name: "evaluaciones") {
+  id: Int! @col(dataType: "serial")
+  instrumento: String
+
+  actividad: Actividad! @ref(fields: "actividadId", references: "id")
+  actividadId: Int! @col(name: "actividad_id")
+
+  indicadorCapacidad: IndicadorCapacidad! @ref(fields: "indicadorCapacidadId", references: "id")
+  indicadorCapacidadId: Int! @col(name: "indicador_capacidad_id")
+
+  metodo: Metodo @ref(fields: "metodoId", references: "id")
+  metodoId: Int @col(name: "metodo_id")
+
+  tecnica: Tecnica @ref(fields: "tecnicaId", references: "id")
+  tecnicaId: Int @col(name: "tecnica_id")
+}
+
+type AspectoEvaluacion @table(name: "aspectos_evaluacion", singular: "aspectoEvaluacion", plural: "aspectosEvaluacion") {
+  id: Int! @col(dataType: "serial")
+  descripcion: String
+
+  evaluacion: Evaluacion! @ref(fields: "evaluacionId", references: "id")
+  evaluacionId: Int! @col(name: "evaluacion_id")
+}
+
+type ModuloEstudiante @table(name: "modulos_estudiantes", singular: "moduloEstudiante", plural: "modulosEstudiantes") @unique(fields: ["matricula", "modulo"]) {
+  id: Int! @col(dataType: "serial")
+  promedio: Float
+
+  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
+  matriculaId: Int! @col(name: "matricula_id")
+
+  modulo: Modulo! @ref(fields: "moduloId", references: "id")
+  moduloId: Int! @col(name: "modulo_id")
+}
+
+type UnidadDidacticaEstudiante @table(name: "unidades_didacticas_estudiantes", singular: "unidadDidacticaEstudiante", plural: "unidadesDidacticasEstudiantes") @unique(fields: ["matricula", "unidadDidactica"]) {
+  id: Int! @col(dataType: "serial")
+  promedio: Float
+
+  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
+  matriculaId: Int! @col(name: "matricula_id")
+
+  unidadDidactica: UnidadDidactica! @ref(fields: "unidadDidacticaId", references: "id")
+  unidadDidacticaId: Int! @col(name: "unidad_didactica_id")
+}
+
+type CapacidadTerminalEstudiante @table(name: "capacidades_terminales_estudiantes", singular: "capacidadTerminalEstudiante", plural: "capacidadesTerminalesEstudiantes") @unique(fields: ["matricula", "capacidadTerminal"]) {
+  id: Int! @col(dataType: "serial")
+  promedio: Float
+
+  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
+  matriculaId: Int! @col(name: "matricula_id")
+
+  capacidadTerminal: CapacidadTerminal! @ref(fields: "capacidadTerminalId", references: "id")
+  capacidadTerminalId: Int! @col(name: "capacidad_terminal_id")
+}
+
+type IndicadorCapacidadEstudiante @table(name: "indicadores_capacidad_estudiantes", singular: "indicadorCapacidadEstudiante", plural: "indicadoresCapacidadEstudiantes") @unique(fields: ["matricula", "indicadorCapacidad"]) {
+  id: Int! @col(dataType: "serial")
+  promedio: Float
+
+  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
+  matriculaId: Int! @col(name: "matricula_id")
+
+  indicadorCapacidad: IndicadorCapacidad! @ref(fields: "indicadorCapacidadId", references: "id")
+  indicadorCapacidadId: Int! @col(name: "indicador_capacidad_id")
+}
+
+type EvaluacionEstudiante @table(name: "evaluaciones_estudiantes", singular: "evaluacionEstudiante", plural: "evaluacionesEstudiantes") @unique(fields: ["matricula", "evaluacion"]) {
+  id: Int! @col(dataType: "serial")
+  nota: Float
+
+  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
+  matriculaId: Int! @col(name: "matricula_id")
+
+  evaluacion: Evaluacion! @ref(fields: "evaluacionId", references: "id")
+  evaluacionId: Int! @col(name: "evaluacion_id")
+}
+
+type AspectoEvaluacionEstudiante @table(name: "aspectos_evaluacion_estudiantes", singular: "aspectoEvaluacionEstudiante", plural: "aspectosEvaluacionEstudiantes") @unique(fields: ["evaluacionEstudiante", "aspectoEvaluacion"]) {
+  id: Int! @col(dataType: "serial")
+  puntaje: Float
+
+  evaluacionEstudiante: EvaluacionEstudiante! @ref(fields: "evaluacionEstudianteId", references: "id")
+  evaluacionEstudianteId: Int! @col(name: "evaluacion_estudiante_id")
+
+  aspectoEvaluacion: AspectoEvaluacion! @ref(fields: "aspectoEvaluacionId", references: "id")
+  aspectoEvaluacionId: Int! @col(name: "aspecto_evaluacion_id")
+}
+
 type Personal @table(name: "personales") {
   id: Int! @col(dataType: "serial")
   displayName: String @col(name: "display_name")

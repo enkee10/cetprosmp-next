@@ -1,4 +1,9 @@
-import { DataConnectRoleInput, DataConnectSectorInput, DataConnectUserInput } from "./types.js";
+import {
+  DataConnectActEconomicaInput,
+  DataConnectRoleInput,
+  DataConnectSectorInput,
+  DataConnectUserInput,
+} from "./types.js";
 
 export function separarNombreCompleto(displayName: string | null) {
   const texto = (displayName || "").trim().replace(/\s+/g, " ");
@@ -164,5 +169,14 @@ export function buildSectorDataFromInput(input: Record<string, unknown>): DataCo
   return compactUndefined({
     titulo: asNullableString(input.titulo),
     descripcion: asNullableString(input.descripcion),
+  });
+}
+
+export function buildActEconomicaDataFromInput(input: Record<string, unknown>): DataConnectActEconomicaInput {
+  return compactUndefined({
+    titulo: asNullableString(input.titulo),
+    descripcion: asNullableString(input.descripcion),
+    familiaId: toNumberOrNull(input.familiaId),
+    especialidadId: toNumberOrNull(input.especialidadId),
   });
 }

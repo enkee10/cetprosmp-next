@@ -13,3 +13,9 @@ export {
   createOrUpdateSector,
   deleteSector,
 } from "./sectors/handlers.js";
+export {
+  listActEconomicas,
+  getActEconomica,
+  createOrUpdateActEconomica,
+  deleteActEconomica,
+} from "./act-economicas/handlers.js";

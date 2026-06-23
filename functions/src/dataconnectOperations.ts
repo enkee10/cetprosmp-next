@@ -28,6 +28,24 @@ export const DELETE_SECTOR_MUTATION = `
   }
 `;
 
+export const INSERT_ACT_ECONOMICA_MUTATION = `
+  mutation InsertActEconomica($data: ActEconomica_Data! @allow(fields: "titulo descripcion familiaId especialidadId")) {
+    actEconomica_insert(data: $data)
+  }
+`;
+
+export const UPDATE_ACT_ECONOMICA_MUTATION = `
+  mutation UpdateActEconomica($id: Int!, $data: ActEconomica_Data! @allow(fields: "titulo descripcion familiaId especialidadId")) {
+    actEconomica_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_ACT_ECONOMICA_MUTATION = `
+  mutation DeleteActEconomica($id: Int!) {
+    actEconomica_delete(id: $id)
+  }
+`;
+
 export const INSERT_USER_MUTATION = `
   mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
     user_insert(data: $data)

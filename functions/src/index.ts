@@ -15,4 +15,8 @@ export {
   getSector,
   createOrUpdateSector,
   deleteSector,
+  listActEconomicas,
+  getActEconomica,
+  createOrUpdateActEconomica,
+  deleteActEconomica,
 } from "./modules/index.js";

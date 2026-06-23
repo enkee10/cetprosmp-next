@@ -48,3 +48,18 @@ export interface DataConnectSectorInput {
   titulo?: string | null;
   descripcion?: string | null;
 }
+
+export interface DataConnectActEconomica {
+  id: number;
+  titulo?: string | null;
+  descripcion?: string | null;
+  familiaId?: number | null;
+  especialidadId?: number | null;
+}
+
+export interface DataConnectActEconomicaInput {
+  titulo?: string | null;
+  descripcion?: string | null;
+  familiaId?: number | null;
+  especialidadId?: number | null;
+}

@@ -1,12 +1,26 @@
-﻿'use client';
+'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Alert, Box, Container, Typography } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Stack,
+} from '@mui/material';
+import {
+  GridColDef,
+  GridColumnVisibilityModel,
+  GridPaginationModel,
+} from '@mui/x-data-grid';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
-import { getClientDataConnect } from '@/lib/dataconnect';
-import { listActEconomicas as dcListActEconomicas } from '@dataconnect/generated';
-import { CustomTable } from '@/components/CustomTable';
+import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
+import IntranetListLayout from '@/components/intranet/IntranetListLayout';
+import Modal1 from '@/components/Modal1';
+import { ActEconomicaForm } from '@/components/intranet/act-economicas/ActEconomicaForm';
 
 interface ActEconomica {
   id: number;
@@ -16,61 +30,256 @@ interface ActEconomica {
   especialidadId: number | null;
 }
 
-export default function ActEconomicaPage() {
-  const [items, setItems] = useState<ActEconomica[]>([]);
+export default function ActEconomicasPage() {
+  const [actEconomicas, setActEconomicas] = useState<ActEconomica[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openActEconomicaModal, setOpenActEconomicaModal] = useState(false);
+  const [editingActEconomicaId, setEditingActEconomicaId] = useState<string | null>(null);
+  const [actEconomicaFormResetKey, setActEconomicaFormResetKey] = useState(0);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [menuActEconomicaId, setMenuActEconomicaId] = useState<string | null>(null);
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+    page: 0,
+    pageSize: 15,
+  });
+  const [columnVisibilityModel, setColumnVisibilityModel] =
+    useState<GridColumnVisibilityModel>({
+      titulo: true,
+      descripcion: true,
+      familiaId: true,
+      especialidadId: true,
+      actions: true,
+    });
+
   const auth = getAuth(app);
-  const dataConnect = useMemo(() => getClientDataConnect(app), []);
+  const functions = useMemo(() => getFunctions(app), []);
+
+  const fetchActEconomicas = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (auth.currentUser) {
+        await auth.currentUser.getIdToken(true);
+      }
+      const listActEconomicas = httpsCallable<undefined, { actEconomicas?: ActEconomica[] }>(
+        functions,
+        'listActEconomicas',
+      );
+      const result = await listActEconomicas();
+      setActEconomicas(result.data.actEconomicas || []);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching act economicas: ', err);
+      setError(
+        'No se pudieron cargar las actividades economicas. Verifica que tu usuario tenga claim level >= 600 y vuelve a iniciar sesion.',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [auth, functions]);
 
   useEffect(() => {
-    const fetchActEconomicas = async () => {
-      try {
-        if (auth.currentUser) {
-          await auth.currentUser.getIdToken(true);
-        }
+    void fetchActEconomicas();
+  }, [fetchActEconomicas]);
 
-        const result = await dcListActEconomicas(dataConnect);
-        const normalizedItems: ActEconomica[] = (result.data.actEconomicas ?? []).map((item) => ({
-          id: item.id,
-          titulo: item.titulo ?? null,
-          descripcion: item.descripcion ?? null,
-          familiaId: item.familiaId ?? null,
-          especialidadId: item.especialidadId ?? null,
-        }));
-        setItems(normalizedItems);
-      } catch (err) {
-        console.error('Error fetching act economicas: ', err);
-        setError('No se pudo cargar ActEconomica. Verifica claims (level >= 600), queries desplegadas y conexion de Data Connect.');
+  const handleDismissActEconomicaModal = useCallback(() => {
+    setOpenActEconomicaModal(false);
+  }, []);
+
+  const handleActEconomicaSaved = useCallback(() => {
+    setOpenActEconomicaModal(false);
+    setEditingActEconomicaId(null);
+    setActEconomicaFormResetKey((prev) => prev + 1);
+    void fetchActEconomicas();
+    setTimeout(() => {
+      void fetchActEconomicas();
+    }, 400);
+  }, [fetchActEconomicas]);
+
+  const handleCreateActEconomica = useCallback(() => {
+    setEditingActEconomicaId(null);
+    setOpenActEconomicaModal(true);
+  }, []);
+
+  const handleEditActEconomica = useCallback((id: string) => {
+    setEditingActEconomicaId(id);
+    setOpenActEconomicaModal(true);
+    setMenuAnchorEl(null);
+    setMenuActEconomicaId(null);
+  }, []);
+
+  const handleDeleteActEconomica = useCallback(async (id: string) => {
+    const actEconomica = actEconomicas.find((item) => String(item.id) === id);
+    const actEconomicaTitle = actEconomica?.titulo ? ` "${actEconomica.titulo}"` : '';
+
+    if (!window.confirm(`Estas seguro de eliminar la actividad economica${actEconomicaTitle}? Esta accion es irreversible.`)) {
+      return;
+    }
+
+    try {
+      const deleteActEconomica = httpsCallable<{ id: number }, { id: number | null }>(
+        functions,
+        'deleteActEconomica',
+      );
+      await deleteActEconomica({ id: Number(id) });
+      setMenuAnchorEl(null);
+      setMenuActEconomicaId(null);
+      void fetchActEconomicas();
+      setTimeout(() => {
+        void fetchActEconomicas();
+      }, 400);
+    } catch (err) {
+      console.error('Error deleting act economica: ', err);
+      const code = (err as { code?: string } | null)?.code || '';
+      const message = (err as { message?: string } | null)?.message || '';
+      if (code === 'functions/permission-denied') {
+        setError('No tienes acceso para eliminar actividades economicas (requiere level >= 600).');
+      } else if (message) {
+        setError(`No se pudo eliminar la actividad economica: ${message}`);
+      } else {
+        setError('No se pudo eliminar la actividad economica en Data Connect.');
       }
-    };
+    }
+  }, [actEconomicas, fetchActEconomicas, functions]);
 
-    fetchActEconomicas();
-  }, [auth, dataConnect]);
+  const columns = useMemo<GridColDef[]>(
+    () => [
+      {
+        field: 'titulo',
+        headerName: 'Titulo',
+        flex: 1,
+        minWidth: 170,
+        valueGetter: (_value, row: ActEconomica) => row.titulo || '',
+      },
+      {
+        field: 'descripcion',
+        headerName: 'Descripcion',
+        flex: 1.5,
+        minWidth: 240,
+        valueGetter: (_value, row: ActEconomica) => row.descripcion || '',
+      },
+      {
+        field: 'familiaId',
+        headerName: 'Familia ID',
+        flex: 0.65,
+        minWidth: 110,
+        valueGetter: (_value, row: ActEconomica) => (row.familiaId != null ? row.familiaId : ''),
+      },
+      {
+        field: 'especialidadId',
+        headerName: 'Especialidad ID',
+        flex: 0.8,
+        minWidth: 130,
+        valueGetter: (_value, row: ActEconomica) => (row.especialidadId != null ? row.especialidadId : ''),
+      },
+      {
+        field: 'actions',
+        headerName: '...',
+        align: 'center',
+        headerAlign: 'center',
+        width: 56,
+        minWidth: 56,
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => (
+          <IconButton
+            size="small"
+            aria-label="Opciones"
+            onClick={(event) => {
+              setMenuAnchorEl(event.currentTarget);
+              setMenuActEconomicaId(String((params.row as ActEconomica).id));
+            }}
+          >
+            <MoreHorizIcon />
+          </IconButton>
+        ),
+      },
+    ],
+    [],
+  );
 
-  const columns = [
-    { id: 'id', label: 'ID', minWidth: 70 },
-    { id: 'titulo', label: 'Titulo', minWidth: 180 },
-    { id: 'familiaId', label: 'Familia ID', minWidth: 100 },
-  ];
+  const columnToggleItems = useMemo(
+    () =>
+      columns.map((column) => ({
+        field: column.field,
+        label:
+          typeof column.headerName === 'string' && column.headerName.trim().length > 0
+            ? column.headerName
+            : column.field,
+        checked: columnVisibilityModel[column.field] !== false,
+        disabled: column.field === 'actions',
+      })),
+    [columnVisibilityModel, columns],
+  );
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Actividades Economicas
-        </Typography>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      </Box>
-
-      <CustomTable
+    <IntranetListLayout
+      message={error}
+      messageSeverity="error"
+      title="Gestion de Actividades Economicas"
+      commands={
+        <Stack direction="row" spacing={1.5}>
+          <Button variant="outlined" onClick={handleCreateActEconomica}>
+            Crear Actividad Economica
+          </Button>
+        </Stack>
+      }
+      columnToggleItems={columnToggleItems}
+      onToggleColumn={(field, checked) =>
+        setColumnVisibilityModel((prev) => ({ ...prev, [field]: checked }))
+      }
+      columnToggleLabel="Campos"
+    >
+      <IntranetDataGrid
+        rows={actEconomicas}
         columns={columns}
-        data={items.map((item) => ({
-          ...item,
-          id: String(item.id),
-          titulo: item.titulo ?? '-',
-          familiaId: item.familiaId ?? '-',
-        }))}
+        columnVisibilityModel={columnVisibilityModel}
+        onColumnVisibilityModelChange={setColumnVisibilityModel}
+        loading={loading}
+        getRowId={(row) => row.id}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
       />
-    </Container>
+
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        disableScrollLock
+        onClose={() => {
+          setMenuAnchorEl(null);
+          setMenuActEconomicaId(null);
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            if (menuActEconomicaId) handleEditActEconomica(menuActEconomicaId);
+          }}
+        >
+          Editar
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (menuActEconomicaId) void handleDeleteActEconomica(menuActEconomicaId);
+          }}
+        >
+          Eliminar
+        </MenuItem>
+      </Menu>
+
+      <Modal1
+        open={openActEconomicaModal}
+        onClose={handleDismissActEconomicaModal}
+        title={editingActEconomicaId ? 'Editar Actividad Economica' : 'Crear Actividad Economica'}
+      >
+        <ActEconomicaForm
+          key={`${editingActEconomicaId ?? 'new-act-economica'}-${actEconomicaFormResetKey}`}
+          asModal
+          actEconomicaId={editingActEconomicaId ?? undefined}
+          onCancel={handleDismissActEconomicaModal}
+          onSaved={handleActEconomicaSaved}
+        />
+      </Modal1>
+    </IntranetListLayout>
   );
 }

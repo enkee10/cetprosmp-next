@@ -399,18 +399,35 @@ type Calendario @table(name: "calendarios") {
   fechaIni: Timestamp @col(name: "fecha_ini")
   fechaFin: Timestamp @col(name: "fecha_fin")
   tipo: String
+  color: String
+  activo: Boolean
   archivado: Boolean
+  fechaCreacion: Timestamp @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
 
   semestre: Semestre @ref(fields: "semestreId", references: "id")
   semestreId: Int @col(name: "semestre_id")
 }
 
+type Turno @table(name: "turnos") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+  horaInicio: Timestamp @col(name: "hora_inicio")
+  horaFin: Timestamp @col(name: "hora_fin")
+  estado: String
+  fechaCreacion: Timestamp @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
+}
+
 type Grupo @table(name: "grupos") {
   id: Int! @col(dataType: "serial")
-  turno: String
+  turnoNombre: String @col(name: "turno")
   descripcion: String
   nombreDisplay: String @col(name: "nombre_display")
+  estado: String
   archivado: Boolean
+  fechaCreacion: Timestamp @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
 
   modulo: Modulo @ref(fields: "moduloId", references: "id")
   moduloId: Int @col(name: "modulo_id")
@@ -423,7 +440,100 @@ type Grupo @table(name: "grupos") {
 
   paquete: Paquete @ref(fields: "paqueteId", references: "id")
   paqueteId: Int @col(name: "paquete_id")
+
+  turno: Turno @ref(fields: "turnoId", references: "id")
+  turnoId: Int @col(name: "turno_id")
+
   grupoOrd: Int @col(name: "grupo_ord")
+}
+
+type Evento @table(name: "eventos") {
+  id: Int! @col(dataType: "serial")
+  titulo: String
+  descripcion: String
+  tipoEvento: String @col(name: "tipo_evento")
+  fechaInicio: Timestamp @col(name: "fecha_inicio")
+  fechaFin: Timestamp @col(name: "fecha_fin")
+  todoElDia: Boolean @col(name: "todo_el_dia")
+  ubicacion: String
+  color: String
+  estado: String
+  fechaCreacion: Timestamp @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
+
+  calendario: Calendario! @ref(fields: "calendarioId", references: "id")
+  calendarioId: Int! @col(name: "calendario_id")
+
+  grupo: Grupo @ref(fields: "grupoId", references: "id")
+  grupoId: Int @col(name: "grupo_id")
+}
+
+type EventoRecurrencia @table(name: "evento_recurrencias", singular: "eventoRecurrencia", plural: "eventoRecurrencias") {
+  id: Int! @col(dataType: "serial")
+  frecuencia: String
+  intervalo: Int
+  diasSemana: String @col(name: "dias_semana")
+  diaMes: Int @col(name: "dia_mes")
+  semanaMes: Int @col(name: "semana_mes")
+  fechaInicio: Timestamp @col(name: "fecha_inicio")
+  fechaFin: Timestamp @col(name: "fecha_fin")
+  cantidadOcurrencias: Int @col(name: "cantidad_ocurrencias")
+  reglaEspecial: String @col(name: "regla_especial")
+  activo: Boolean
+  fechaCreacion: Timestamp @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
+
+  evento: Evento! @ref(fields: "eventoId", references: "id")
+  eventoId: Int! @col(name: "evento_id")
+}
+
+type EventoOcurrencia @table(name: "evento_ocurrencias", singular: "eventoOcurrencia", plural: "eventoOcurrencias") {
+  id: Int! @col(dataType: "serial")
+  fechaInicio: Timestamp @col(name: "fecha_inicio")
+  fechaFin: Timestamp @col(name: "fecha_fin")
+  numeroOcurrencia: Int @col(name: "numero_ocurrencia")
+  tipoOcurrencia: String @col(name: "tipo_ocurrencia")
+  estado: String
+  observacion: String
+  fechaCreacion: Timestamp @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
+
+  evento: Evento! @ref(fields: "eventoId", references: "id")
+  eventoId: Int! @col(name: "evento_id")
+
+  recurrencia: EventoRecurrencia @ref(fields: "recurrenciaId", references: "id")
+  recurrenciaId: Int @col(name: "recurrencia_id")
+
+  grupo: Grupo @ref(fields: "grupoId", references: "id")
+  grupoId: Int @col(name: "grupo_id")
+}
+
+type EventoRelacion @table(name: "evento_relaciones", singular: "eventoRelacion", plural: "eventoRelaciones") {
+  id: Int! @col(dataType: "serial")
+  entidadTipo: String @col(name: "entidad_tipo")
+  entidadId: Int @col(name: "entidad_id")
+  fechaCreacion: Timestamp @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
+
+  evento: Evento! @ref(fields: "eventoId", references: "id")
+  eventoId: Int! @col(name: "evento_id")
+}
+
+type Recordatorio @table(name: "recordatorios") {
+  id: Int! @col(dataType: "serial")
+  tipoRecordatorio: String @col(name: "tipo_recordatorio")
+  minutosAntes: Int @col(name: "minutos_antes")
+  medio: String
+  enviado: Boolean
+  fechaEnvio: Timestamp @col(name: "fecha_envio")
+  fechaCreacion: Timestamp @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
+
+  evento: Evento @ref(fields: "eventoId", references: "id")
+  eventoId: Int @col(name: "evento_id")
+
+  eventoOcurrencia: EventoOcurrencia @ref(fields: "eventoOcurrenciaId", references: "id")
+  eventoOcurrenciaId: Int @col(name: "evento_ocurrencia_id")
 }
 
 type Paquete @table(name: "paquetes") {
@@ -447,6 +557,24 @@ type Matricula @table(name: "matriculas") {
 
   user: User @ref(fields: "userId", references: "id")
   userId: Int @col(name: "user_id")
+}
+
+type Asistencia @table(name: "asistencias") @unique(fields: ["eventoOcurrencia", "matricula"]) {
+  id: Int! @col(dataType: "serial")
+  estadoAsistencia: String @col(name: "estado_asistencia")
+  observacion: String
+  registradoAt: Timestamp @col(name: "registrado_at")
+  fechaCreacion: Timestamp @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
+
+  eventoOcurrencia: EventoOcurrencia! @ref(fields: "eventoOcurrenciaId", references: "id")
+  eventoOcurrenciaId: Int! @col(name: "evento_ocurrencia_id")
+
+  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
+  matriculaId: Int! @col(name: "matricula_id")
+
+  registradoPor: User @ref(fields: "registradoPorId", references: "id")
+  registradoPorId: Int @col(name: "registrado_por_id")
 }
 
 type Publicacion @table(name: "publicaciones") {

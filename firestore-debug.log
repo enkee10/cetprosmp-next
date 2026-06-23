@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-Jun 22, 2026 3:02:30 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
-=======
-Jun 23, 2026 1:48:21 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
->>>>>>> 83c2a31 (interfaces de tabla 1)
+Jun 23, 2026 5:41:42 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
 INFO: Started WebSocket server on ws://127.0.0.1:9150
 
 API endpoint: http://127.0.0.1:8080
@@ -20,22 +16,11 @@ If you are running a Firestore in Datastore Mode project, run:
 Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
 Dev App Server is now running.
 
-<<<<<<< HEAD
-Jun 22, 2026 3:29:36 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Jun 23, 2026 5:52:59 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected non-HTTP/2 connection.
-Jun 22, 2026 3:29:37 PM io.grpc.netty.TcpMetrics loadEpollInfo
+Jun 23, 2026 5:52:59 PM io.grpc.netty.TcpMetrics loadEpollInfo
 INFO: Epoll available during static init of TcpMetrics:false
-Jun 22, 2026 3:29:37 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Jun 23, 2026 5:52:59 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
-Jun 22, 2026 3:29:40 PM com.google.cloud.datastore.emulator.impl.firestore.CloudFirestoreV1 exportData
-INFO: Exporting emulator data to firebase-export-1782160176941Ro4tWv/firestore_export
-=======
-Jun 23, 2026 3:27:15 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
-INFO: Detected non-HTTP/2 connection.
-Jun 23, 2026 3:27:15 PM io.grpc.netty.TcpMetrics loadEpollInfo
-INFO: Epoll available during static init of TcpMetrics:false
-Jun 23, 2026 3:27:15 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
-INFO: Detected HTTP/2 connection.
-Jun 23, 2026 3:27:16 PM com.google.cloud.datastore.emulator.impl.firestore.CloudFirestoreV1 exportData
-INFO: Exporting emulator data to firebase-export-1782246435795vgBh1n/firestore_export
->>>>>>> 83c2a31 (interfaces de tabla 1)
+Jun 23, 2026 5:53:00 PM com.google.cloud.datastore.emulator.impl.firestore.CloudFirestoreV1 exportData
+INFO: Exporting emulator data to firebase-export-1782255178969wY2Aii/firestore_export

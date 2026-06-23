@@ -191,9 +191,25 @@ function generateMermaidInit() {
     "themeVariables": {
       "fontFamily": "Segoe UI Light, Calibri Light, Segoe UI, Arial, sans-serif",
       "fontSize": "10px",
+      "darkMode": false,
+      "background": "#ffffff",
+      "mainBkg": "#ffffff",
+      "secondBkg": "#ffffff",
+      "tertiaryColor": "#ffffff",
+      "primaryColor": "#ffffff",
+      "secondaryColor": "#ffffff",
       "primaryTextColor": "#111827",
+      "secondaryTextColor": "#111827",
+      "tertiaryTextColor": "#111827",
+      "textColor": "#111827",
       "primaryBorderColor": "#AAAAAA",
-      "lineColor": "#FFFF00"
+      "lineColor": "#FFFF00",
+      "entityBkg": "#ffffff",
+      "entityBorder": "#AAAAAA",
+      "attributeBackgroundColorOdd": "#ffffff",
+      "attributeBackgroundColorEven": "#ffffff",
+      "relationshipLabelBackground": "#ffffff",
+      "relationshipLabelColor": "#111827"
     },
     "er": {
       "layoutDirection": "LR",
@@ -201,7 +217,7 @@ function generateMermaidInit() {
       "minEntityHeight": 40,
       "entityPadding": 2
     },
-    "themeCSS": ".er.entityBox, .er.attributeBoxOdd, .er.attributeBoxEven { fill: transparent !important; stroke-width: 0.7px; } .er.entityLabel, .er.relationshipLabel, .er.attributeBoxOdd, .er.attributeBoxEven, text { fill: #111827 !important; color: #111827 !important; font-weight: 100 !important; } .er.relationshipLine { stroke-width: 0.7px; }"
+    "themeCSS": "svg, .mermaid, .er { background: #ffffff !important; } .er.entityBox, .er.attributeBoxOdd, .er.attributeBoxEven, .er .entityBox, .er .attributeBoxOdd, .er .attributeBoxEven, .entityBox, .attributeBoxOdd, .attributeBoxEven { fill: #ffffff !important; stroke: #AAAAAA !important; stroke-width: 0.7px; } .er.entityLabel, .er.relationshipLabel, .er.attributeLabel, .er.attributeLabelOdd, .er.attributeLabelEven, .er .entityLabel, .er .relationshipLabel, .er .attributeLabel, .er .attributeLabelOdd, .er .attributeLabelEven, .entityLabel, .relationshipLabel, .attributeLabel, .attributeLabelOdd, .attributeLabelEven, text { fill: #111827 !important; color: #111827 !important; font-weight: 100 !important; } .er.relationshipLine, .er .relationshipLine, .relationshipLine { stroke: #FFFF00 !important; stroke-width: 0.7px; }"
   }
 }%%`;
 }

@@ -1,12 +1,17 @@
 import {
   DataConnectActEconomicaInput,
+  DataConnectActividadInput,
+  DataConnectAprendizajeInput,
+  DataConnectCapacidadTerminalInput,
   DataConnectCarreraInput,
   DataConnectEspecialidadInput,
   DataConnectFamiliaInput,
+  DataConnectIndicadorCapacidadInput,
   DataConnectModuloInput,
   DataConnectPlanInput,
   DataConnectRoleInput,
   DataConnectSectorInput,
+  DataConnectUnidadDidacticaInput,
   DataConnectUserInput,
 } from "./types.js";
 
@@ -244,5 +249,54 @@ export function buildModuloDataFromInput(input: Record<string, unknown>): DataCo
     slug: asNullableString(input.slug),
     descripcion2: asNullableString(input.descripcion2),
     planId: toNumberOrNull(input.planId),
+  });
+}
+
+export function buildUnidadDidacticaDataFromInput(input: Record<string, unknown>): DataConnectUnidadDidacticaInput {
+  return compactUndefined({
+    nombre: asNullableString(input.nombre),
+    duracion: toNumberOrNull(input.duracion),
+    creditos: toNumberOrNull(input.creditos),
+    sigla: asNullableString(input.sigla),
+    moduloId: toNumberOrNull(input.moduloId),
+  });
+}
+
+export function buildCapacidadTerminalDataFromInput(input: Record<string, unknown>): DataConnectCapacidadTerminalInput {
+  return compactUndefined({
+    descripcion: asNullableString(input.descripcion),
+    sigla: asNullableString(input.sigla),
+    unidadDidacticaId: toNumberOrNull(input.unidadDidacticaId),
+  });
+}
+
+export function buildIndicadorCapacidadDataFromInput(input: Record<string, unknown>): DataConnectIndicadorCapacidadInput {
+  return compactUndefined({
+    descripcion: asNullableString(input.descripcion),
+    sigla: asNullableString(input.sigla),
+    capacidadTerminalId: toNumberOrNull(input.capacidadTerminalId),
+  });
+}
+
+export function buildAprendizajeDataFromInput(input: Record<string, unknown>): DataConnectAprendizajeInput {
+  return compactUndefined({
+    descripcion: asNullableString(input.descripcion),
+    sigla: asNullableString(input.sigla),
+    indicadorCapacidadId: toNumberOrNull(input.indicadorCapacidadId),
+  });
+}
+
+export function buildActividadDataFromInput(input: Record<string, unknown>): DataConnectActividadInput {
+  return compactUndefined({
+    nombre: asNullableString(input.nombre),
+    descripcion: asNullableString(input.descripcion),
+    proposito: asNullableString(input.proposito),
+    ambiente: asNullableString(input.ambiente),
+    duracion: toNumberOrNull(input.duracion),
+    fecha: asNullableTimestamp(input.fecha),
+    bibliografia: asNullableString(input.bibliografia),
+    aprendizajeId: toNumberOrNull(input.aprendizajeId),
+    ejeTransversalId: toNumberOrNull(input.ejeTransversalId),
+    valorInstitucionalId: toNumberOrNull(input.valorInstitucionalId),
   });
 }

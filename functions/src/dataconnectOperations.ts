@@ -136,6 +136,96 @@ export const DELETE_MODULO_MUTATION = `
   }
 `;
 
+export const INSERT_UNIDAD_DIDACTICA_MUTATION = `
+  mutation InsertUnidadDidactica($data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla moduloId")) {
+    unidadDidactica_insert(data: $data)
+  }
+`;
+
+export const UPDATE_UNIDAD_DIDACTICA_MUTATION = `
+  mutation UpdateUnidadDidactica($id: Int!, $data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla moduloId")) {
+    unidadDidactica_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_UNIDAD_DIDACTICA_MUTATION = `
+  mutation DeleteUnidadDidactica($id: Int!) {
+    unidadDidactica_delete(id: $id)
+  }
+`;
+
+export const INSERT_CAPACIDAD_TERMINAL_MUTATION = `
+  mutation InsertCapacidadTerminal($data: CapacidadTerminal_Data! @allow(fields: "descripcion sigla unidadDidacticaId")) {
+    capacidadTerminal_insert(data: $data)
+  }
+`;
+
+export const UPDATE_CAPACIDAD_TERMINAL_MUTATION = `
+  mutation UpdateCapacidadTerminal($id: Int!, $data: CapacidadTerminal_Data! @allow(fields: "descripcion sigla unidadDidacticaId")) {
+    capacidadTerminal_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_CAPACIDAD_TERMINAL_MUTATION = `
+  mutation DeleteCapacidadTerminal($id: Int!) {
+    capacidadTerminal_delete(id: $id)
+  }
+`;
+
+export const INSERT_INDICADOR_CAPACIDAD_MUTATION = `
+  mutation InsertIndicadorCapacidad($data: IndicadorCapacidad_Data! @allow(fields: "descripcion sigla capacidadTerminalId")) {
+    indicadorCapacidad_insert(data: $data)
+  }
+`;
+
+export const UPDATE_INDICADOR_CAPACIDAD_MUTATION = `
+  mutation UpdateIndicadorCapacidad($id: Int!, $data: IndicadorCapacidad_Data! @allow(fields: "descripcion sigla capacidadTerminalId")) {
+    indicadorCapacidad_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_INDICADOR_CAPACIDAD_MUTATION = `
+  mutation DeleteIndicadorCapacidad($id: Int!) {
+    indicadorCapacidad_delete(id: $id)
+  }
+`;
+
+export const INSERT_APRENDIZAJE_MUTATION = `
+  mutation InsertAprendizaje($data: Aprendizaje_Data! @allow(fields: "descripcion sigla indicadorCapacidadId")) {
+    aprendizaje_insert(data: $data)
+  }
+`;
+
+export const UPDATE_APRENDIZAJE_MUTATION = `
+  mutation UpdateAprendizaje($id: Int!, $data: Aprendizaje_Data! @allow(fields: "descripcion sigla indicadorCapacidadId")) {
+    aprendizaje_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_APRENDIZAJE_MUTATION = `
+  mutation DeleteAprendizaje($id: Int!) {
+    aprendizaje_delete(id: $id)
+  }
+`;
+
+export const INSERT_ACTIVIDAD_MUTATION = `
+  mutation InsertActividad($data: Actividad_Data! @allow(fields: "nombre descripcion proposito ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId")) {
+    actividad_insert(data: $data)
+  }
+`;
+
+export const UPDATE_ACTIVIDAD_MUTATION = `
+  mutation UpdateActividad($id: Int!, $data: Actividad_Data! @allow(fields: "nombre descripcion proposito ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId")) {
+    actividad_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_ACTIVIDAD_MUTATION = `
+  mutation DeleteActividad($id: Int!) {
+    actividad_delete(id: $id)
+  }
+`;
+
 export const INSERT_USER_MUTATION = `
   mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
     user_insert(data: $data)

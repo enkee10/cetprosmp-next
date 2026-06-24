@@ -170,3 +170,86 @@ export interface DataConnectModuloInput {
   descripcion2?: string | null;
   planId?: number | null;
 }
+
+export interface DataConnectUnidadDidactica {
+  id: number;
+  nombre?: string | null;
+  duracion?: number | null;
+  creditos?: number | null;
+  sigla?: string | null;
+  moduloId?: number | null;
+}
+
+export interface DataConnectUnidadDidacticaInput {
+  nombre?: string | null;
+  duracion?: number | null;
+  creditos?: number | null;
+  sigla?: string | null;
+  moduloId?: number | null;
+}
+
+export interface DataConnectCapacidadTerminal {
+  id: number;
+  descripcion?: string | null;
+  sigla?: string | null;
+  unidadDidacticaId?: number | null;
+}
+
+export interface DataConnectCapacidadTerminalInput {
+  descripcion?: string | null;
+  sigla?: string | null;
+  unidadDidacticaId?: number | null;
+}
+
+export interface DataConnectIndicadorCapacidad {
+  id: number;
+  descripcion?: string | null;
+  sigla?: string | null;
+  capacidadTerminalId?: number | null;
+}
+
+export interface DataConnectIndicadorCapacidadInput {
+  descripcion?: string | null;
+  sigla?: string | null;
+  capacidadTerminalId?: number | null;
+}
+
+export interface DataConnectAprendizaje {
+  id: number;
+  descripcion?: string | null;
+  sigla?: string | null;
+  indicadorCapacidadId?: number | null;
+}
+
+export interface DataConnectAprendizajeInput {
+  descripcion?: string | null;
+  sigla?: string | null;
+  indicadorCapacidadId?: number | null;
+}
+
+export interface DataConnectActividad {
+  id: number;
+  nombre?: string | null;
+  descripcion?: string | null;
+  proposito?: string | null;
+  ambiente?: string | null;
+  duracion?: number | null;
+  fecha?: string | null;
+  bibliografia?: string | null;
+  aprendizajeId?: number | null;
+  ejeTransversalId?: number | null;
+  valorInstitucionalId?: number | null;
+}
+
+export interface DataConnectActividadInput {
+  nombre?: string | null;
+  descripcion?: string | null;
+  proposito?: string | null;
+  ambiente?: string | null;
+  duracion?: number | null;
+  fecha?: string | null;
+  bibliografia?: string | null;
+  aprendizajeId?: number | null;
+  ejeTransversalId?: number | null;
+  valorInstitucionalId?: number | null;
+}

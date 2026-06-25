@@ -20,11 +20,12 @@ const LIST_CARRERAS_QUERY = `
       nombre
       codigo
       descripcion
-      tipo
-      estado
+      nivel
+      imagenPortadaUrl
       creadoEn
       actualizadoEn
       actEconomicaId
+      tipoCarreraId
     }
   }
 `;
@@ -36,11 +37,12 @@ const GET_CARRERA_QUERY = `
       nombre
       codigo
       descripcion
-      tipo
-      estado
+      nivel
+      imagenPortadaUrl
       creadoEn
       actualizadoEn
       actEconomicaId
+      tipoCarreraId
     }
   }
 `;

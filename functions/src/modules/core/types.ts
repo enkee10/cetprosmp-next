@@ -42,17 +42,20 @@ export interface DataConnectSector {
   id: number;
   titulo?: string | null;
   descripcion?: string | null;
+  imagenPortadaUrl?: string | null;
 }
 
 export interface DataConnectSectorInput {
   titulo?: string | null;
   descripcion?: string | null;
+  imagenPortadaUrl?: string | null;
 }
 
 export interface DataConnectActEconomica {
   id: number;
   titulo?: string | null;
   descripcion?: string | null;
+  imagenPortadaUrl?: string | null;
   familiaId?: number | null;
   especialidadId?: number | null;
 }
@@ -60,6 +63,7 @@ export interface DataConnectActEconomica {
 export interface DataConnectActEconomicaInput {
   titulo?: string | null;
   descripcion?: string | null;
+  imagenPortadaUrl?: string | null;
   familiaId?: number | null;
   especialidadId?: number | null;
 }
@@ -68,12 +72,14 @@ export interface DataConnectFamilia {
   id: number;
   titulo?: string | null;
   descripcion?: string | null;
+  imagenPortadaUrl?: string | null;
   sectorId?: number | null;
 }
 
 export interface DataConnectFamiliaInput {
   titulo?: string | null;
   descripcion?: string | null;
+  imagenPortadaUrl?: string | null;
   sectorId?: number | null;
 }
 
@@ -84,6 +90,7 @@ export interface DataConnectEspecialidad {
   descripcion?: string | null;
   descripcion2?: string | null;
   slug?: string | null;
+  imagenPortadaUrl?: string | null;
   actEconomicaId?: number | null;
 }
 
@@ -93,7 +100,17 @@ export interface DataConnectEspecialidadInput {
   descripcion?: string | null;
   descripcion2?: string | null;
   slug?: string | null;
+  imagenPortadaUrl?: string | null;
   actEconomicaId?: number | null;
+}
+
+export interface DataConnectTipoCarrera {
+  id: number;
+  nombre?: string | null;
+}
+
+export interface DataConnectTipoCarreraInput {
+  nombre?: string | null;
 }
 
 export interface DataConnectCarrera {
@@ -101,45 +118,66 @@ export interface DataConnectCarrera {
   nombre?: string | null;
   codigo?: string | null;
   descripcion?: string | null;
-  tipo?: string | null;
-  estado?: string | null;
+  nivel?: string | null;
+  imagenPortadaUrl?: string | null;
   creadoEn?: string | null;
   actualizadoEn?: string | null;
   actEconomicaId?: number | null;
+  tipoCarreraId?: number | null;
 }
 
 export interface DataConnectCarreraInput {
   nombre?: string | null;
   codigo?: string | null;
   descripcion?: string | null;
-  tipo?: string | null;
-  estado?: string | null;
+  nivel?: string | null;
+  imagenPortadaUrl?: string | null;
   creadoEn?: string | null;
   actualizadoEn?: string | null;
   actEconomicaId?: number | null;
+  tipoCarreraId?: number | null;
 }
 
 export interface DataConnectPlan {
   id: number;
-  version?: string | null;
   duracion?: string | null;
   creditos?: number | null;
-  nivel?: string | null;
   tituloComercial?: string | null;
   slug?: string | null;
   descripcion2?: string | null;
+  imagenPortadaUrl?: string | null;
+  planEstudio?: string | null;
+  periodoCaducidad?: string | null;
+  resolucionTipo?: string | null;
+  nro?: string | null;
+  anio?: number | null;
+  genera?: string | null;
   carreraId?: number | null;
+  periodoVigenciaId?: number | null;
 }
 
 export interface DataConnectPlanInput {
-  version?: string | null;
   duracion?: string | null;
   creditos?: number | null;
-  nivel?: string | null;
   tituloComercial?: string | null;
   slug?: string | null;
   descripcion2?: string | null;
+  imagenPortadaUrl?: string | null;
+  planEstudio?: string | null;
+  periodoCaducidad?: string | null;
+  resolucionTipo?: string | null;
+  nro?: string | null;
+  anio?: number | null;
+  genera?: string | null;
   carreraId?: number | null;
+  periodoVigenciaId?: number | null;
+}
+
+export interface DataConnectSemestre {
+  id: number;
+  titulo?: string | null;
+  descripcion?: string | null;
+  archivado?: boolean | null;
 }
 
 export interface DataConnectModulo {

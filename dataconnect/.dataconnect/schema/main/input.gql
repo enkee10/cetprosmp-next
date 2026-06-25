@@ -275,6 +275,12 @@ It has the same format as `Tecnica_Key`, but is only used as mutation return val
 """
 scalar Tecnica_KeyOutput
 """
+✨ `TipoCarrera_KeyOutput` returns the primary key fields of table type `TipoCarrera`.
+
+It has the same format as `TipoCarrera_Key`, but is only used as mutation return value.
+"""
+scalar TipoCarrera_KeyOutput
+"""
 ✨ `Turno_KeyOutput` returns the primary key fields of table type `Turno`.
 
 It has the same format as `Turno_Key`, but is only used as mutation return value.
@@ -554,6 +560,14 @@ input ActEconomica_Data {
   """
   descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `ActEconomica`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: String
+  """
+  ✨ `_expr` server value variant of `imagenPortadaUrl` (✨ Generated from Field `ActEconomica`.`imagenPortadaUrl` of type `String`)
+  """
+  imagenPortadaUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `ActEconomica`.`titulo` of type `String`
   """
   titulo: String
@@ -610,6 +624,10 @@ input ActEconomica_Filter {
   ✨ Generated from Field `ActEconomica`.`descripcion` of type `String`
   """
   descripcion: String_Filter
+  """
+  ✨ Generated from Field `ActEconomica`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: String_Filter
   """
   ✨ Generated from Field `ActEconomica`.`titulo` of type `String`
   """
@@ -676,6 +694,10 @@ input ActEconomica_Having {
   ✨ Generated from Field `ActEconomica`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
+  """
+  ✨ Generated from Field `ActEconomica`.`imagenPortadaUrl_count` of type `Int!`
+  """
+  imagenPortadaUrl_count: Int_Filter
   """
   ✨ Generated from Field `ActEconomica`.`titulo_count` of type `Int!`
   """
@@ -784,6 +806,10 @@ input ActEconomica_Order {
   """
   descripcion: OrderDirection
   """
+  ✨ Generated from Field `ActEconomica`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: OrderDirection
+  """
   ✨ Generated from Field `ActEconomica`.`titulo` of type `String`
   """
   titulo: OrderDirection
@@ -807,6 +833,10 @@ input ActEconomica_Order {
   ✨ Generated from Field `ActEconomica`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
+  """
+  ✨ Generated from Field `ActEconomica`.`imagenPortadaUrl_count` of type `Int!`
+  """
+  imagenPortadaUrl_count: OrderDirection
   """
   ✨ Generated from Field `ActEconomica`.`titulo_count` of type `Int!`
   """
@@ -4189,9 +4219,25 @@ input Carrera_Data {
   """
   actEconomicaId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Carrera`.`tipoCarreraId` of type `Int`
+  """
+  tipoCarreraId: Int
+  """
+  ✨ `_expr` server value variant of `tipoCarreraId` (✨ Generated from Field `Carrera`.`tipoCarreraId` of type `Int`)
+  """
+  tipoCarreraId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `tipoCarreraId` (✨ Generated from Field `Carrera`.`tipoCarreraId` of type `Int`)
+  """
+  tipoCarreraId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Carrera`.`actEconomica` of type `ActEconomica`
   """
   actEconomica: ActEconomica_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Carrera`.`tipoCarrera` of type `TipoCarrera`
+  """
+  tipoCarrera: TipoCarrera_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`actualizadoEn` of type `Timestamp`
   """
@@ -4241,13 +4287,21 @@ input Carrera_Data {
   """
   descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
-  ✨ Generated from Field `Carrera`.`estado` of type `String`
+  ✨ Generated from Field `Carrera`.`imagenPortadaUrl` of type `String`
   """
-  estado: String
+  imagenPortadaUrl: String
   """
-  ✨ `_expr` server value variant of `estado` (✨ Generated from Field `Carrera`.`estado` of type `String`)
+  ✨ `_expr` server value variant of `imagenPortadaUrl` (✨ Generated from Field `Carrera`.`imagenPortadaUrl` of type `String`)
   """
-  estado_expr: String_Expr @fdc_forbiddenInVariables
+  imagenPortadaUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Carrera`.`nivel` of type `String`
+  """
+  nivel: String
+  """
+  ✨ `_expr` server value variant of `nivel` (✨ Generated from Field `Carrera`.`nivel` of type `String`)
+  """
+  nivel_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`nombre` of type `String`
   """
@@ -4256,14 +4310,6 @@ input Carrera_Data {
   ✨ `_expr` server value variant of `nombre` (✨ Generated from Field `Carrera`.`nombre` of type `String`)
   """
   nombre_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `Carrera`.`tipo` of type `String`
-  """
-  tipo: String
-  """
-  ✨ `_expr` server value variant of `tipo` (✨ Generated from Field `Carrera`.`tipo` of type `String`)
-  """
-  tipo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`planes_on_carrera` of type `[Plan!]!`
   """
@@ -4294,9 +4340,17 @@ input Carrera_Filter {
   """
   actEconomicaId: Int_Filter
   """
+  ✨ Generated from Field `Carrera`.`tipoCarreraId` of type `Int`
+  """
+  tipoCarreraId: Int_Filter
+  """
   ✨ Generated from Field `Carrera`.`actEconomica` of type `ActEconomica`
   """
   actEconomica: ActEconomica_Filter
+  """
+  ✨ Generated from Field `Carrera`.`tipoCarrera` of type `TipoCarrera`
+  """
+  tipoCarrera: TipoCarrera_Filter
   """
   ✨ Generated from Field `Carrera`.`actualizadoEn` of type `Timestamp`
   """
@@ -4314,17 +4368,17 @@ input Carrera_Filter {
   """
   descripcion: String_Filter
   """
-  ✨ Generated from Field `Carrera`.`estado` of type `String`
+  ✨ Generated from Field `Carrera`.`imagenPortadaUrl` of type `String`
   """
-  estado: String_Filter
+  imagenPortadaUrl: String_Filter
+  """
+  ✨ Generated from Field `Carrera`.`nivel` of type `String`
+  """
+  nivel: String_Filter
   """
   ✨ Generated from Field `Carrera`.`nombre` of type `String`
   """
   nombre: String_Filter
-  """
-  ✨ Generated from Field `Carrera`.`tipo` of type `String`
-  """
-  tipo: String_Filter
   """
   ✨ Generated from Field `Carrera`.`planes_on_carrera` of type `[Plan!]!`
   """
@@ -4388,21 +4442,25 @@ input Carrera_Having {
   """
   descripcion_count: Int_Filter
   """
-  ✨ Generated from Field `Carrera`.`estado_count` of type `Int!`
-  """
-  estado_count: Int_Filter
-  """
   ✨ Generated from Field `Carrera`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
+  """
+  ✨ Generated from Field `Carrera`.`imagenPortadaUrl_count` of type `Int!`
+  """
+  imagenPortadaUrl_count: Int_Filter
+  """
+  ✨ Generated from Field `Carrera`.`nivel_count` of type `Int!`
+  """
+  nivel_count: Int_Filter
   """
   ✨ Generated from Field `Carrera`.`nombre_count` of type `Int!`
   """
   nombre_count: Int_Filter
   """
-  ✨ Generated from Field `Carrera`.`tipo_count` of type `Int!`
+  ✨ Generated from Field `Carrera`.`tipoCarreraId_count` of type `Int!`
   """
-  tipo_count: Int_Filter
+  tipoCarreraId_count: Int_Filter
   """
   ✨ Generated from Field `Carrera`.`actEconomicaId_sum` of type `Int`
   """
@@ -4412,6 +4470,10 @@ input Carrera_Having {
   """
   id_sum: Int_Filter
   """
+  ✨ Generated from Field `Carrera`.`tipoCarreraId_sum` of type `Int`
+  """
+  tipoCarreraId_sum: Int_Filter
+  """
   ✨ Generated from Field `Carrera`.`actEconomicaId_avg` of type `Float`
   """
   actEconomicaId_avg: Float_Filter
@@ -4419,6 +4481,10 @@ input Carrera_Having {
   ✨ Generated from Field `Carrera`.`id_avg` of type `Float`
   """
   id_avg: Float_Filter
+  """
+  ✨ Generated from Field `Carrera`.`tipoCarreraId_avg` of type `Float`
+  """
+  tipoCarreraId_avg: Float_Filter
   """
   ✨ Generated from Field `Carrera`.`actEconomicaId_min` of type `Int`
   """
@@ -4436,6 +4502,10 @@ input Carrera_Having {
   """
   id_min: Int_Filter
   """
+  ✨ Generated from Field `Carrera`.`tipoCarreraId_min` of type `Int`
+  """
+  tipoCarreraId_min: Int_Filter
+  """
   ✨ Generated from Field `Carrera`.`actEconomicaId_max` of type `Int`
   """
   actEconomicaId_max: Int_Filter
@@ -4451,6 +4521,10 @@ input Carrera_Having {
   ✨ Generated from Field `Carrera`.`id_max` of type `Int`
   """
   id_max: Int_Filter
+  """
+  ✨ Generated from Field `Carrera`.`tipoCarreraId_max` of type `Int`
+  """
+  tipoCarreraId_max: Int_Filter
 }
 """
 ✨ Generated key input type for table 'Carrera'. It represents the primary key fields used to uniquely identify a row in the table.
@@ -4491,9 +4565,17 @@ input Carrera_Order {
   """
   actEconomicaId: OrderDirection
   """
+  ✨ Generated from Field `Carrera`.`tipoCarreraId` of type `Int`
+  """
+  tipoCarreraId: OrderDirection
+  """
   ✨ Generated from Field `Carrera`.`actEconomica` of type `ActEconomica`
   """
   actEconomica: ActEconomica_Order
+  """
+  ✨ Generated from Field `Carrera`.`tipoCarrera` of type `TipoCarrera`
+  """
+  tipoCarrera: TipoCarrera_Order
   """
   ✨ Generated from Field `Carrera`.`actualizadoEn` of type `Timestamp`
   """
@@ -4511,17 +4593,17 @@ input Carrera_Order {
   """
   descripcion: OrderDirection
   """
-  ✨ Generated from Field `Carrera`.`estado` of type `String`
+  ✨ Generated from Field `Carrera`.`imagenPortadaUrl` of type `String`
   """
-  estado: OrderDirection
+  imagenPortadaUrl: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`nivel` of type `String`
+  """
+  nivel: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`nombre` of type `String`
   """
   nombre: OrderDirection
-  """
-  ✨ Generated from Field `Carrera`.`tipo` of type `String`
-  """
-  tipo: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`_count` of type `Int!`
   """
@@ -4547,21 +4629,25 @@ input Carrera_Order {
   """
   descripcion_count: OrderDirection
   """
-  ✨ Generated from Field `Carrera`.`estado_count` of type `Int!`
-  """
-  estado_count: OrderDirection
-  """
   ✨ Generated from Field `Carrera`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`imagenPortadaUrl_count` of type `Int!`
+  """
+  imagenPortadaUrl_count: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`nivel_count` of type `Int!`
+  """
+  nivel_count: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`nombre_count` of type `Int!`
   """
   nombre_count: OrderDirection
   """
-  ✨ Generated from Field `Carrera`.`tipo_count` of type `Int!`
+  ✨ Generated from Field `Carrera`.`tipoCarreraId_count` of type `Int!`
   """
-  tipo_count: OrderDirection
+  tipoCarreraId_count: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`actEconomicaId_sum` of type `Int`
   """
@@ -4571,6 +4657,10 @@ input Carrera_Order {
   """
   id_sum: OrderDirection
   """
+  ✨ Generated from Field `Carrera`.`tipoCarreraId_sum` of type `Int`
+  """
+  tipoCarreraId_sum: OrderDirection
+  """
   ✨ Generated from Field `Carrera`.`actEconomicaId_avg` of type `Float`
   """
   actEconomicaId_avg: OrderDirection
@@ -4578,6 +4668,10 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`id_avg` of type `Float`
   """
   id_avg: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`tipoCarreraId_avg` of type `Float`
+  """
+  tipoCarreraId_avg: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`actEconomicaId_min` of type `Int`
   """
@@ -4595,6 +4689,10 @@ input Carrera_Order {
   """
   id_min: OrderDirection
   """
+  ✨ Generated from Field `Carrera`.`tipoCarreraId_min` of type `Int`
+  """
+  tipoCarreraId_min: OrderDirection
+  """
   ✨ Generated from Field `Carrera`.`actEconomicaId_max` of type `Int`
   """
   actEconomicaId_max: OrderDirection
@@ -4610,6 +4708,10 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`id_max` of type `Int`
   """
   id_max: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`tipoCarreraId_max` of type `Int`
+  """
+  tipoCarreraId_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'DatoGeneral'. It includes all necessary fields for creating or upserting rows into table.
@@ -5338,6 +5440,14 @@ input Especialidad_Data {
   """
   descripcion2_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Especialidad`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: String
+  """
+  ✨ `_expr` server value variant of `imagenPortadaUrl` (✨ Generated from Field `Especialidad`.`imagenPortadaUrl` of type `String`)
+  """
+  imagenPortadaUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Especialidad`.`slug` of type `String`
   """
   slug: String
@@ -5406,6 +5516,10 @@ input Especialidad_Filter {
   ✨ Generated from Field `Especialidad`.`descripcion2` of type `String`
   """
   descripcion2: String_Filter
+  """
+  ✨ Generated from Field `Especialidad`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: String_Filter
   """
   ✨ Generated from Field `Especialidad`.`slug` of type `String`
   """
@@ -5484,6 +5598,10 @@ input Especialidad_Having {
   ✨ Generated from Field `Especialidad`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
+  """
+  ✨ Generated from Field `Especialidad`.`imagenPortadaUrl_count` of type `Int!`
+  """
+  imagenPortadaUrl_count: Int_Filter
   """
   ✨ Generated from Field `Especialidad`.`slug_count` of type `Int!`
   """
@@ -5580,6 +5698,10 @@ input Especialidad_Order {
   """
   descripcion2: OrderDirection
   """
+  ✨ Generated from Field `Especialidad`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: OrderDirection
+  """
   ✨ Generated from Field `Especialidad`.`slug` of type `String`
   """
   slug: OrderDirection
@@ -5611,6 +5733,10 @@ input Especialidad_Order {
   ✨ Generated from Field `Especialidad`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
+  """
+  ✨ Generated from Field `Especialidad`.`imagenPortadaUrl_count` of type `Int!`
+  """
+  imagenPortadaUrl_count: OrderDirection
   """
   ✨ Generated from Field `Especialidad`.`slug_count` of type `Int!`
   """
@@ -9119,6 +9245,14 @@ input Familia_Data {
   """
   descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Familia`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: String
+  """
+  ✨ `_expr` server value variant of `imagenPortadaUrl` (✨ Generated from Field `Familia`.`imagenPortadaUrl` of type `String`)
+  """
+  imagenPortadaUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Familia`.`titulo` of type `String`
   """
   titulo: String
@@ -9163,6 +9297,10 @@ input Familia_Filter {
   ✨ Generated from Field `Familia`.`descripcion` of type `String`
   """
   descripcion: String_Filter
+  """
+  ✨ Generated from Field `Familia`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: String_Filter
   """
   ✨ Generated from Field `Familia`.`titulo` of type `String`
   """
@@ -9217,6 +9355,10 @@ input Familia_Having {
   ✨ Generated from Field `Familia`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
+  """
+  ✨ Generated from Field `Familia`.`imagenPortadaUrl_count` of type `Int!`
+  """
+  imagenPortadaUrl_count: Int_Filter
   """
   ✨ Generated from Field `Familia`.`sectorId_count` of type `Int!`
   """
@@ -9305,6 +9447,10 @@ input Familia_Order {
   """
   descripcion: OrderDirection
   """
+  ✨ Generated from Field `Familia`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: OrderDirection
+  """
   ✨ Generated from Field `Familia`.`titulo` of type `String`
   """
   titulo: OrderDirection
@@ -9320,6 +9466,10 @@ input Familia_Order {
   ✨ Generated from Field `Familia`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
+  """
+  ✨ Generated from Field `Familia`.`imagenPortadaUrl_count` of type `Int!`
+  """
+  imagenPortadaUrl_count: OrderDirection
   """
   ✨ Generated from Field `Familia`.`sectorId_count` of type `Int!`
   """
@@ -15263,9 +15413,37 @@ input Plan_Data {
   """
   carreraId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId` of type `Int`
+  """
+  periodoVigenciaId: Int
+  """
+  ✨ `_expr` server value variant of `periodoVigenciaId` (✨ Generated from Field `Plan`.`periodoVigenciaId` of type `Int`)
+  """
+  periodoVigenciaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `periodoVigenciaId` (✨ Generated from Field `Plan`.`periodoVigenciaId` of type `Int`)
+  """
+  periodoVigenciaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Plan`.`carrera` of type `Carrera`
   """
   carrera: Carrera_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Plan`.`periodoVigencia` of type `Semestre`
+  """
+  periodoVigencia: Semestre_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Plan`.`anio` of type `Int`
+  """
+  anio: Int
+  """
+  ✨ `_expr` server value variant of `anio` (✨ Generated from Field `Plan`.`anio` of type `Int`)
+  """
+  anio_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `anio` (✨ Generated from Field `Plan`.`anio` of type `Int`)
+  """
+  anio_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`creditos` of type `Int`
   """
@@ -15295,13 +15473,53 @@ input Plan_Data {
   """
   duracion_expr: String_Expr @fdc_forbiddenInVariables
   """
-  ✨ Generated from Field `Plan`.`nivel` of type `String`
+  ✨ Generated from Field `Plan`.`genera` of type `String`
   """
-  nivel: String
+  genera: String
   """
-  ✨ `_expr` server value variant of `nivel` (✨ Generated from Field `Plan`.`nivel` of type `String`)
+  ✨ `_expr` server value variant of `genera` (✨ Generated from Field `Plan`.`genera` of type `String`)
   """
-  nivel_expr: String_Expr @fdc_forbiddenInVariables
+  genera_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Plan`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: String
+  """
+  ✨ `_expr` server value variant of `imagenPortadaUrl` (✨ Generated from Field `Plan`.`imagenPortadaUrl` of type `String`)
+  """
+  imagenPortadaUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Plan`.`nro` of type `String`
+  """
+  nro: String
+  """
+  ✨ `_expr` server value variant of `nro` (✨ Generated from Field `Plan`.`nro` of type `String`)
+  """
+  nro_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Plan`.`periodoCaducidad` of type `String`
+  """
+  periodoCaducidad: String
+  """
+  ✨ `_expr` server value variant of `periodoCaducidad` (✨ Generated from Field `Plan`.`periodoCaducidad` of type `String`)
+  """
+  periodoCaducidad_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Plan`.`planEstudio` of type `String`
+  """
+  planEstudio: String
+  """
+  ✨ `_expr` server value variant of `planEstudio` (✨ Generated from Field `Plan`.`planEstudio` of type `String`)
+  """
+  planEstudio_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Plan`.`resolucionTipo` of type `String`
+  """
+  resolucionTipo: String
+  """
+  ✨ `_expr` server value variant of `resolucionTipo` (✨ Generated from Field `Plan`.`resolucionTipo` of type `String`)
+  """
+  resolucionTipo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`slug` of type `String`
   """
@@ -15318,14 +15536,6 @@ input Plan_Data {
   ✨ `_expr` server value variant of `tituloComercial` (✨ Generated from Field `Plan`.`tituloComercial` of type `String`)
   """
   tituloComercial_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `Plan`.`version` of type `String`
-  """
-  version: String
-  """
-  ✨ `_expr` server value variant of `version` (✨ Generated from Field `Plan`.`version` of type `String`)
-  """
-  version_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Plan`.`modulos_on_plan` of type `[Modulo!]!`
   """
@@ -15356,9 +15566,21 @@ input Plan_Filter {
   """
   carreraId: Int_Filter
   """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId` of type `Int`
+  """
+  periodoVigenciaId: Int_Filter
+  """
   ✨ Generated from Field `Plan`.`carrera` of type `Carrera`
   """
   carrera: Carrera_Filter
+  """
+  ✨ Generated from Field `Plan`.`periodoVigencia` of type `Semestre`
+  """
+  periodoVigencia: Semestre_Filter
+  """
+  ✨ Generated from Field `Plan`.`anio` of type `Int`
+  """
+  anio: Int_Filter
   """
   ✨ Generated from Field `Plan`.`creditos` of type `Int`
   """
@@ -15372,9 +15594,29 @@ input Plan_Filter {
   """
   duracion: String_Filter
   """
-  ✨ Generated from Field `Plan`.`nivel` of type `String`
+  ✨ Generated from Field `Plan`.`genera` of type `String`
   """
-  nivel: String_Filter
+  genera: String_Filter
+  """
+  ✨ Generated from Field `Plan`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: String_Filter
+  """
+  ✨ Generated from Field `Plan`.`nro` of type `String`
+  """
+  nro: String_Filter
+  """
+  ✨ Generated from Field `Plan`.`periodoCaducidad` of type `String`
+  """
+  periodoCaducidad: String_Filter
+  """
+  ✨ Generated from Field `Plan`.`planEstudio` of type `String`
+  """
+  planEstudio: String_Filter
+  """
+  ✨ Generated from Field `Plan`.`resolucionTipo` of type `String`
+  """
+  resolucionTipo: String_Filter
   """
   ✨ Generated from Field `Plan`.`slug` of type `String`
   """
@@ -15383,10 +15625,6 @@ input Plan_Filter {
   ✨ Generated from Field `Plan`.`tituloComercial` of type `String`
   """
   tituloComercial: String_Filter
-  """
-  ✨ Generated from Field `Plan`.`version` of type `String`
-  """
-  version: String_Filter
   """
   ✨ Generated from Field `Plan`.`modulos_on_plan` of type `[Modulo!]!`
   """
@@ -15430,6 +15668,10 @@ input Plan_Having {
   """
   _count: Int_Filter
   """
+  ✨ Generated from Field `Plan`.`anio_count` of type `Int!`
+  """
+  anio_count: Int_Filter
+  """
   ✨ Generated from Field `Plan`.`carreraId_count` of type `Int!`
   """
   carreraId_count: Int_Filter
@@ -15446,13 +15688,37 @@ input Plan_Having {
   """
   duracion_count: Int_Filter
   """
+  ✨ Generated from Field `Plan`.`genera_count` of type `Int!`
+  """
+  genera_count: Int_Filter
+  """
   ✨ Generated from Field `Plan`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
   """
-  ✨ Generated from Field `Plan`.`nivel_count` of type `Int!`
+  ✨ Generated from Field `Plan`.`imagenPortadaUrl_count` of type `Int!`
   """
-  nivel_count: Int_Filter
+  imagenPortadaUrl_count: Int_Filter
+  """
+  ✨ Generated from Field `Plan`.`nro_count` of type `Int!`
+  """
+  nro_count: Int_Filter
+  """
+  ✨ Generated from Field `Plan`.`periodoCaducidad_count` of type `Int!`
+  """
+  periodoCaducidad_count: Int_Filter
+  """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId_count` of type `Int!`
+  """
+  periodoVigenciaId_count: Int_Filter
+  """
+  ✨ Generated from Field `Plan`.`planEstudio_count` of type `Int!`
+  """
+  planEstudio_count: Int_Filter
+  """
+  ✨ Generated from Field `Plan`.`resolucionTipo_count` of type `Int!`
+  """
+  resolucionTipo_count: Int_Filter
   """
   ✨ Generated from Field `Plan`.`slug_count` of type `Int!`
   """
@@ -15462,9 +15728,9 @@ input Plan_Having {
   """
   tituloComercial_count: Int_Filter
   """
-  ✨ Generated from Field `Plan`.`version_count` of type `Int!`
+  ✨ Generated from Field `Plan`.`anio_sum` of type `Int`
   """
-  version_count: Int_Filter
+  anio_sum: Int_Filter
   """
   ✨ Generated from Field `Plan`.`carreraId_sum` of type `Int`
   """
@@ -15478,6 +15744,14 @@ input Plan_Having {
   """
   id_sum: Int_Filter
   """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId_sum` of type `Int`
+  """
+  periodoVigenciaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `Plan`.`anio_avg` of type `Float`
+  """
+  anio_avg: Float_Filter
+  """
   ✨ Generated from Field `Plan`.`carreraId_avg` of type `Float`
   """
   carreraId_avg: Float_Filter
@@ -15489,6 +15763,14 @@ input Plan_Having {
   ✨ Generated from Field `Plan`.`id_avg` of type `Float`
   """
   id_avg: Float_Filter
+  """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId_avg` of type `Float`
+  """
+  periodoVigenciaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Plan`.`anio_min` of type `Int`
+  """
+  anio_min: Int_Filter
   """
   ✨ Generated from Field `Plan`.`carreraId_min` of type `Int`
   """
@@ -15502,6 +15784,14 @@ input Plan_Having {
   """
   id_min: Int_Filter
   """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId_min` of type `Int`
+  """
+  periodoVigenciaId_min: Int_Filter
+  """
+  ✨ Generated from Field `Plan`.`anio_max` of type `Int`
+  """
+  anio_max: Int_Filter
+  """
   ✨ Generated from Field `Plan`.`carreraId_max` of type `Int`
   """
   carreraId_max: Int_Filter
@@ -15513,6 +15803,10 @@ input Plan_Having {
   ✨ Generated from Field `Plan`.`id_max` of type `Int`
   """
   id_max: Int_Filter
+  """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId_max` of type `Int`
+  """
+  periodoVigenciaId_max: Int_Filter
 }
 """
 ✨ Generated key input type for table 'Plan'. It represents the primary key fields used to uniquely identify a row in the table.
@@ -15553,9 +15847,21 @@ input Plan_Order {
   """
   carreraId: OrderDirection
   """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId` of type `Int`
+  """
+  periodoVigenciaId: OrderDirection
+  """
   ✨ Generated from Field `Plan`.`carrera` of type `Carrera`
   """
   carrera: Carrera_Order
+  """
+  ✨ Generated from Field `Plan`.`periodoVigencia` of type `Semestre`
+  """
+  periodoVigencia: Semestre_Order
+  """
+  ✨ Generated from Field `Plan`.`anio` of type `Int`
+  """
+  anio: OrderDirection
   """
   ✨ Generated from Field `Plan`.`creditos` of type `Int`
   """
@@ -15569,9 +15875,29 @@ input Plan_Order {
   """
   duracion: OrderDirection
   """
-  ✨ Generated from Field `Plan`.`nivel` of type `String`
+  ✨ Generated from Field `Plan`.`genera` of type `String`
   """
-  nivel: OrderDirection
+  genera: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`nro` of type `String`
+  """
+  nro: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`periodoCaducidad` of type `String`
+  """
+  periodoCaducidad: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`planEstudio` of type `String`
+  """
+  planEstudio: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`resolucionTipo` of type `String`
+  """
+  resolucionTipo: OrderDirection
   """
   ✨ Generated from Field `Plan`.`slug` of type `String`
   """
@@ -15581,13 +15907,13 @@ input Plan_Order {
   """
   tituloComercial: OrderDirection
   """
-  ✨ Generated from Field `Plan`.`version` of type `String`
-  """
-  version: OrderDirection
-  """
   ✨ Generated from Field `Plan`.`_count` of type `Int!`
   """
   _count: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`anio_count` of type `Int!`
+  """
+  anio_count: OrderDirection
   """
   ✨ Generated from Field `Plan`.`carreraId_count` of type `Int!`
   """
@@ -15605,13 +15931,37 @@ input Plan_Order {
   """
   duracion_count: OrderDirection
   """
+  ✨ Generated from Field `Plan`.`genera_count` of type `Int!`
+  """
+  genera_count: OrderDirection
+  """
   ✨ Generated from Field `Plan`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
   """
-  ✨ Generated from Field `Plan`.`nivel_count` of type `Int!`
+  ✨ Generated from Field `Plan`.`imagenPortadaUrl_count` of type `Int!`
   """
-  nivel_count: OrderDirection
+  imagenPortadaUrl_count: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`nro_count` of type `Int!`
+  """
+  nro_count: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`periodoCaducidad_count` of type `Int!`
+  """
+  periodoCaducidad_count: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId_count` of type `Int!`
+  """
+  periodoVigenciaId_count: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`planEstudio_count` of type `Int!`
+  """
+  planEstudio_count: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`resolucionTipo_count` of type `Int!`
+  """
+  resolucionTipo_count: OrderDirection
   """
   ✨ Generated from Field `Plan`.`slug_count` of type `Int!`
   """
@@ -15621,9 +15971,9 @@ input Plan_Order {
   """
   tituloComercial_count: OrderDirection
   """
-  ✨ Generated from Field `Plan`.`version_count` of type `Int!`
+  ✨ Generated from Field `Plan`.`anio_sum` of type `Int`
   """
-  version_count: OrderDirection
+  anio_sum: OrderDirection
   """
   ✨ Generated from Field `Plan`.`carreraId_sum` of type `Int`
   """
@@ -15637,6 +15987,14 @@ input Plan_Order {
   """
   id_sum: OrderDirection
   """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId_sum` of type `Int`
+  """
+  periodoVigenciaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`anio_avg` of type `Float`
+  """
+  anio_avg: OrderDirection
+  """
   ✨ Generated from Field `Plan`.`carreraId_avg` of type `Float`
   """
   carreraId_avg: OrderDirection
@@ -15648,6 +16006,14 @@ input Plan_Order {
   ✨ Generated from Field `Plan`.`id_avg` of type `Float`
   """
   id_avg: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId_avg` of type `Float`
+  """
+  periodoVigenciaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`anio_min` of type `Int`
+  """
+  anio_min: OrderDirection
   """
   ✨ Generated from Field `Plan`.`carreraId_min` of type `Int`
   """
@@ -15661,6 +16027,14 @@ input Plan_Order {
   """
   id_min: OrderDirection
   """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId_min` of type `Int`
+  """
+  periodoVigenciaId_min: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`anio_max` of type `Int`
+  """
+  anio_max: OrderDirection
+  """
   ✨ Generated from Field `Plan`.`carreraId_max` of type `Int`
   """
   carreraId_max: OrderDirection
@@ -15672,6 +16046,10 @@ input Plan_Order {
   ✨ Generated from Field `Plan`.`id_max` of type `Int`
   """
   id_max: OrderDirection
+  """
+  ✨ Generated from Field `Plan`.`periodoVigenciaId_max` of type `Int`
+  """
+  periodoVigenciaId_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'Post'. It includes all necessary fields for creating or upserting rows into table.
@@ -18176,6 +18554,14 @@ input Sector_Data {
   """
   descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Sector`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: String
+  """
+  ✨ `_expr` server value variant of `imagenPortadaUrl` (✨ Generated from Field `Sector`.`imagenPortadaUrl` of type `String`)
+  """
+  imagenPortadaUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Sector`.`titulo` of type `String`
   """
   titulo: String
@@ -18212,6 +18598,10 @@ input Sector_Filter {
   ✨ Generated from Field `Sector`.`descripcion` of type `String`
   """
   descripcion: String_Filter
+  """
+  ✨ Generated from Field `Sector`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: String_Filter
   """
   ✨ Generated from Field `Sector`.`titulo` of type `String`
   """
@@ -18266,6 +18656,10 @@ input Sector_Having {
   ✨ Generated from Field `Sector`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
+  """
+  ✨ Generated from Field `Sector`.`imagenPortadaUrl_count` of type `Int!`
+  """
+  imagenPortadaUrl_count: Int_Filter
   """
   ✨ Generated from Field `Sector`.`titulo_count` of type `Int!`
   """
@@ -18326,6 +18720,10 @@ input Sector_Order {
   """
   descripcion: OrderDirection
   """
+  ✨ Generated from Field `Sector`.`imagenPortadaUrl` of type `String`
+  """
+  imagenPortadaUrl: OrderDirection
+  """
   ✨ Generated from Field `Sector`.`titulo` of type `String`
   """
   titulo: OrderDirection
@@ -18341,6 +18739,10 @@ input Sector_Order {
   ✨ Generated from Field `Sector`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
+  """
+  ✨ Generated from Field `Sector`.`imagenPortadaUrl_count` of type `Int!`
+  """
+  imagenPortadaUrl_count: OrderDirection
   """
   ✨ Generated from Field `Sector`.`titulo_count` of type `Int!`
   """
@@ -18458,6 +18860,10 @@ input Semestre_Data {
   ✨ Generated from Field `Semestre`.`grupos_on_semestre` of type `[Grupo!]!`
   """
   grupos_on_semestre: [Grupo_Data!]
+  """
+  ✨ Generated from Field `Semestre`.`planes_on_periodoVigencia` of type `[Plan!]!`
+  """
+  planes_on_periodoVigencia: [Plan_Data!]
 }
 """
 ✨ Generated filter input type for table 'Semestre'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -18523,6 +18929,10 @@ input Semestre_Filter {
   ✨ Generated from Field `Semestre`.`grupos_on_semestre` of type `[Grupo!]!`
   """
   grupos_on_semestre: Grupo_ListFilter
+  """
+  ✨ Generated from Field `Semestre`.`planes_on_periodoVigencia` of type `[Plan!]!`
+  """
+  planes_on_periodoVigencia: Plan_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'Semestre'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -19037,6 +19447,193 @@ input Tecnica_Order {
   id_min: OrderDirection
   """
   ✨ Generated from Field `Tecnica`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'TipoCarrera'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input TipoCarrera_Data {
+  """
+  ✨ Generated from Field `TipoCarrera`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `TipoCarrera`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `TipoCarrera`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `TipoCarrera`.`nombre` of type `String`
+  """
+  nombre: String
+  """
+  ✨ `_expr` server value variant of `nombre` (✨ Generated from Field `TipoCarrera`.`nombre` of type `String`)
+  """
+  nombre_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `TipoCarrera`.`carreras_on_tipoCarrera` of type `[Carrera!]!`
+  """
+  carreras_on_tipoCarrera: [Carrera_Data!]
+}
+"""
+✨ Generated filter input type for table 'TipoCarrera'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input TipoCarrera_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [TipoCarrera_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: TipoCarrera_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [TipoCarrera_Filter!]
+  """
+  ✨ Generated from Field `TipoCarrera`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `TipoCarrera`.`nombre` of type `String`
+  """
+  nombre: String_Filter
+  """
+  ✨ Generated from Field `TipoCarrera`.`carreras_on_tipoCarrera` of type `[Carrera!]!`
+  """
+  carreras_on_tipoCarrera: Carrera_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'TipoCarrera'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input TipoCarrera_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [TipoCarrera_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: TipoCarrera_Filter
+}
+"""
+✨ Generated having input type for table 'TipoCarrera'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input TipoCarrera_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [TipoCarrera_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: TipoCarrera_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [TipoCarrera_Having!]
+  """
+  ✨ Generated from Field `TipoCarrera`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `TipoCarrera`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `TipoCarrera`.`nombre_count` of type `Int!`
+  """
+  nombre_count: Int_Filter
+  """
+  ✨ Generated from Field `TipoCarrera`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `TipoCarrera`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `TipoCarrera`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `TipoCarrera`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'TipoCarrera'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input TipoCarrera_Key {
+  """
+  ✨ Generated from Field `TipoCarrera`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `TipoCarrera`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'TipoCarrera'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input TipoCarrera_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: TipoCarrera_Filter
+}
+"""
+✨ Generated order input type for table 'TipoCarrera'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input TipoCarrera_Order {
+  """
+  ✨ Generated from Field `TipoCarrera`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `TipoCarrera`.`nombre` of type `String`
+  """
+  nombre: OrderDirection
+  """
+  ✨ Generated from Field `TipoCarrera`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `TipoCarrera`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `TipoCarrera`.`nombre_count` of type `Int!`
+  """
+  nombre_count: OrderDirection
+  """
+  ✨ Generated from Field `TipoCarrera`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `TipoCarrera`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `TipoCarrera`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `TipoCarrera`.`id_max` of type `Int`
   """
   id_max: OrderDirection
 }

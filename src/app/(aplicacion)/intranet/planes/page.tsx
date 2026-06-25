@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
+import { Avatar, Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
 import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
@@ -14,18 +14,48 @@ import { PlanForm } from '@/components/intranet/planes/PlanForm';
 
 interface Plan {
   id: number;
-  version: string | null;
   duracion: string | null;
   creditos: number | null;
-  nivel: string | null;
   tituloComercial: string | null;
   slug: string | null;
   descripcion2: string | null;
+  imagenPortadaUrl: string | null;
+  planEstudio: string | null;
+  periodoCaducidad: string | null;
+  resolucionTipo: string | null;
+  nro: string | null;
+  anio: number | null;
+  genera: string | null;
   carreraId: number | null;
+  periodoVigenciaId: number | null;
 }
+
+interface CarreraOption {
+  id: number;
+  nombre: string | null;
+}
+
+interface SemestreOption {
+  id: number;
+  titulo: string | null;
+  archivado: boolean | null;
+}
+
+const formatResolucion = (plan: Plan) =>
+  [
+    plan.resolucionTipo,
+    plan.nro,
+    plan.anio != null ? String(plan.anio) : '',
+    plan.genera,
+  ]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .join('_');
 
 export default function PlanesPage() {
   const [planes, setPlanes] = useState<Plan[]>([]);
+  const [carreras, setCarreras] = useState<CarreraOption[]>([]);
+  const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openPlanModal, setOpenPlanModal] = useState(false);
@@ -39,13 +69,17 @@ export default function PlanesPage() {
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
-      tituloComercial: true,
-      version: true,
-      nivel: true,
-      duracion: true,
+      rowNumber: true,
+      carreraTitulo: true,
+      planEstudio: true,
       creditos: true,
-      carreraId: true,
-      slug: true,
+      periodoVigenciaTitulo: false,
+      periodoCaducidad: false,
+      duracion: true,
+      resolucionTipo: true,
+      imagenPortada: false,
+      tituloComercial: false,
+      slug: false,
       descripcion2: false,
       actions: true,
     });
@@ -63,8 +97,41 @@ export default function PlanesPage() {
         functions,
         'listPlanes',
       );
-      const result = await listPlanes();
-      setPlanes(result.data.planes || []);
+      const listCarreras = httpsCallable<undefined, { carreras?: CarreraOption[] }>(
+        functions,
+        'listCarreras',
+      );
+      const listSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(
+        functions,
+        'listSemestres',
+      );
+      const [planesResult, carrerasResult, semestresResult] = await Promise.all([
+        listPlanes(),
+        listCarreras(),
+        listSemestres(),
+      ]);
+      const nextCarreras = carrerasResult.data.carreras || [];
+      const nextSemestres = semestresResult.data.semestres || [];
+      const nextCarreraTitleById = new Map(
+        nextCarreras.map((carrera) => [carrera.id, carrera.nombre || `Carrera ${carrera.id}`]),
+      );
+      const nextPlanes = (planesResult.data.planes || []).slice().sort((a, b) => {
+        const planEstudioCompare = String(b.planEstudio || '').localeCompare(
+          String(a.planEstudio || ''),
+          'es',
+          { numeric: true },
+        );
+        if (planEstudioCompare !== 0) return planEstudioCompare;
+        return String(a.carreraId != null ? nextCarreraTitleById.get(a.carreraId) || '' : '').localeCompare(
+          String(b.carreraId != null ? nextCarreraTitleById.get(b.carreraId) || '' : ''),
+          'es',
+          { numeric: true },
+        );
+      });
+
+      setPlanes(nextPlanes);
+      setCarreras(nextCarreras);
+      setSemestres(nextSemestres);
       setError(null);
     } catch (err) {
       console.error('Error fetching planes: ', err);
@@ -75,6 +142,16 @@ export default function PlanesPage() {
       setLoading(false);
     }
   }, [auth, functions]);
+
+  const carreraTitleById = useMemo(
+    () => new Map(carreras.map((carrera) => [carrera.id, carrera.nombre || `Carrera ${carrera.id}`])),
+    [carreras],
+  );
+
+  const semestreTitleById = useMemo(
+    () => new Map(semestres.map((semestre) => [semestre.id, semestre.titulo || `Semestre ${semestre.id}`])),
+    [semestres],
+  );
 
   useEffect(() => {
     void fetchPlanes();
@@ -108,7 +185,10 @@ export default function PlanesPage() {
 
   const handleDeletePlan = useCallback(async (id: string) => {
     const plan = planes.find((item) => String(item.id) === id);
-    const planTitle = plan?.tituloComercial || plan?.version;
+    const planTitle =
+      plan?.tituloComercial ||
+      plan?.planEstudio ||
+      (plan?.periodoVigenciaId != null ? semestreTitleById.get(plan.periodoVigenciaId) : undefined);
     const planLabel = planTitle ? ` "${planTitle}"` : '';
 
     if (!window.confirm(`Estas seguro de eliminar el plan${planLabel}? Esta accion es irreversible.`)) {
@@ -139,37 +219,37 @@ export default function PlanesPage() {
         setError('No se pudo eliminar el plan en Data Connect.');
       }
     }
-  }, [fetchPlanes, functions, planes]);
+  }, [fetchPlanes, functions, planes, semestreTitleById]);
 
   const columns = useMemo<GridColDef[]>(
     () => [
       {
-        field: 'tituloComercial',
-        headerName: 'Titulo Comercial',
-        flex: 1.2,
-        minWidth: 190,
-        valueGetter: (_value, row: Plan) => row.tituloComercial || '',
+        field: 'rowNumber',
+        headerName: '#',
+        width: 56,
+        minWidth: 56,
+        maxWidth: 56,
+        align: 'center',
+        headerAlign: 'center',
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
       {
-        field: 'version',
-        headerName: 'Version',
-        flex: 0.75,
-        minWidth: 115,
-        valueGetter: (_value, row: Plan) => row.version || '',
+        field: 'carreraTitulo',
+        headerName: 'Carrera',
+        flex: 1.25,
+        minWidth: 210,
+        valueGetter: (_value, row: Plan) =>
+          row.carreraId != null ? carreraTitleById.get(row.carreraId) || `Carrera ${row.carreraId}` : '',
       },
       {
-        field: 'nivel',
-        headerName: 'Nivel',
-        flex: 0.8,
-        minWidth: 120,
-        valueGetter: (_value, row: Plan) => row.nivel || '',
-      },
-      {
-        field: 'duracion',
-        headerName: 'Duracion',
-        flex: 0.8,
-        minWidth: 120,
-        valueGetter: (_value, row: Plan) => row.duracion || '',
+        field: 'planEstudio',
+        headerName: 'Plan Estudio',
+        flex: 0.9,
+        minWidth: 150,
+        valueGetter: (_value, row: Plan) => row.planEstudio || '',
       },
       {
         field: 'creditos',
@@ -179,11 +259,84 @@ export default function PlanesPage() {
         valueGetter: (_value, row: Plan) => (row.creditos != null ? row.creditos : ''),
       },
       {
-        field: 'carreraId',
-        headerName: 'Carrera ID',
-        flex: 0.75,
+        field: 'periodoCaducidad',
+        headerName: 'Caducado',
+        flex: 0.8,
+        minWidth: 125,
+        valueGetter: (_value, row: Plan) => row.periodoCaducidad || '',
+      },
+      {
+        field: 'duracion',
+        headerName: 'Duracion',
+        flex: 0.8,
         minWidth: 120,
-        valueGetter: (_value, row: Plan) => (row.carreraId != null ? row.carreraId : ''),
+        valueGetter: (_value, row: Plan) => row.duracion || '',
+      },
+      {
+        field: 'resolucionTipo',
+        headerName: 'Resolucion',
+        flex: 1,
+        minWidth: 180,
+        valueGetter: (_value, row: Plan) => formatResolucion(row),
+      },
+      {
+        field: 'imagenPortada',
+        headerName: 'Portada',
+        width: 60,
+        minWidth: 60,
+        maxWidth: 60,
+        align: 'center',
+        headerAlign: 'center',
+        cellClassName: 'cover-cell',
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => {
+          const row = params.row as Plan;
+          const label =
+            row.tituloComercial ||
+            row.planEstudio ||
+            (row.periodoVigenciaId != null ? semestreTitleById.get(row.periodoVigenciaId) : undefined) ||
+            'Plan';
+          return (
+            <Stack
+              sx={{
+                width: 60,
+                height: 52,
+                px: '10px',
+                boxSizing: 'border-box',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Avatar
+                src={row.imagenPortadaUrl || undefined}
+                alt={label}
+                variant="rounded"
+                sx={{ width: 40, height: 40 }}
+              >
+                {label.trim().charAt(0).toUpperCase()}
+              </Avatar>
+            </Stack>
+          );
+        },
+      },
+      {
+        field: 'tituloComercial',
+        headerName: 'Titulo Comercial',
+        flex: 1.2,
+        minWidth: 190,
+        valueGetter: (_value, row: Plan) => row.tituloComercial || '',
+      },
+      {
+        field: 'periodoVigenciaTitulo',
+        headerName: 'Periodo Vigencia',
+        flex: 0.8,
+        minWidth: 150,
+        valueGetter: (_value, row: Plan) =>
+          row.periodoVigenciaId != null
+            ? semestreTitleById.get(row.periodoVigenciaId) || `Semestre ${row.periodoVigenciaId}`
+            : '',
       },
       {
         field: 'slug',
@@ -223,7 +376,7 @@ export default function PlanesPage() {
         ),
       },
     ],
-    [],
+    [carreraTitleById, semestreTitleById],
   );
 
   const columnToggleItems = useMemo(
@@ -264,6 +417,7 @@ export default function PlanesPage() {
         columnVisibilityModel={columnVisibilityModel}
         onColumnVisibilityModelChange={setColumnVisibilityModel}
         loading={loading}
+        sx={{ '& .cover-cell': { p: 0 } }}
         getRowId={(row) => row.id}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}

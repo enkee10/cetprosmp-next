@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
+import { Avatar, Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
 import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
@@ -16,11 +16,18 @@ interface Familia {
   id: number;
   titulo: string | null;
   descripcion: string | null;
+  imagenPortadaUrl: string | null;
   sectorId: number | null;
+}
+
+interface SectorOption {
+  id: number;
+  titulo: string | null;
 }
 
 export default function FamiliasPage() {
   const [familias, setFamilias] = useState<Familia[]>([]);
+  const [sectores, setSectores] = useState<SectorOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openFamiliaModal, setOpenFamiliaModal] = useState(false);
@@ -34,9 +41,10 @@ export default function FamiliasPage() {
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
+      portada: true,
       titulo: true,
-      descripcion: true,
-      sectorId: true,
+      descripcion: false,
+      sectorTitulo: true,
       actions: true,
     });
 
@@ -53,8 +61,16 @@ export default function FamiliasPage() {
         functions,
         'listFamilias',
       );
-      const result = await listFamilias();
-      setFamilias(result.data.familias || []);
+      const listSectors = httpsCallable<undefined, { sectors?: SectorOption[] }>(
+        functions,
+        'listSectors',
+      );
+      const [familiasResult, sectoresResult] = await Promise.all([
+        listFamilias(),
+        listSectors(),
+      ]);
+      setFamilias(familiasResult.data.familias || []);
+      setSectores(sectoresResult.data.sectors || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching familias: ', err);
@@ -65,6 +81,11 @@ export default function FamiliasPage() {
       setLoading(false);
     }
   }, [auth, functions]);
+
+  const sectorTitleById = useMemo(
+    () => new Map(sectores.map((sector) => [sector.id, sector.titulo || `Sector ${sector.id}`])),
+    [sectores],
+  );
 
   useEffect(() => {
     void fetchFamilias();
@@ -133,6 +154,43 @@ export default function FamiliasPage() {
   const columns = useMemo<GridColDef[]>(
     () => [
       {
+        field: 'portada',
+        headerName: 'Portada',
+        width: 60,
+        minWidth: 60,
+        maxWidth: 60,
+        align: 'center',
+        headerAlign: 'center',
+        cellClassName: 'cover-cell',
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => {
+          const row = params.row as Familia;
+          return (
+            <Stack
+              sx={{
+                width: 60,
+                height: 52,
+                px: '10px',
+                boxSizing: 'border-box',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Avatar
+                src={row.imagenPortadaUrl || undefined}
+                alt={row.titulo || 'Familia'}
+                variant="rounded"
+                sx={{ width: 40, height: 40 }}
+              >
+                {(row.titulo || 'F').trim().charAt(0).toUpperCase()}
+              </Avatar>
+            </Stack>
+          );
+        },
+      },
+      {
         field: 'titulo',
         headerName: 'Titulo',
         flex: 1,
@@ -147,11 +205,12 @@ export default function FamiliasPage() {
         valueGetter: (_value, row: Familia) => row.descripcion || '',
       },
       {
-        field: 'sectorId',
-        headerName: 'Sector ID',
-        flex: 0.65,
-        minWidth: 110,
-        valueGetter: (_value, row: Familia) => (row.sectorId != null ? row.sectorId : ''),
+        field: 'sectorTitulo',
+        headerName: 'Sector',
+        flex: 1,
+        minWidth: 160,
+        valueGetter: (_value, row: Familia) =>
+          row.sectorId != null ? sectorTitleById.get(row.sectorId) || `Sector ${row.sectorId}` : '',
       },
       {
         field: 'actions',
@@ -177,7 +236,7 @@ export default function FamiliasPage() {
         ),
       },
     ],
-    [],
+    [sectorTitleById],
   );
 
   const columnToggleItems = useMemo(
@@ -218,6 +277,7 @@ export default function FamiliasPage() {
         columnVisibilityModel={columnVisibilityModel}
         onColumnVisibilityModelChange={setColumnVisibilityModel}
         loading={loading}
+        sx={{ '& .cover-cell': { p: 0 } }}
         getRowId={(row) => row.id}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}

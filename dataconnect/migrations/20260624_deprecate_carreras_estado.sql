@@ -1,0 +1,2 @@
+-- Conservamos public.carreras.estado fisicamente para no perder data historica.
+-- El campo se retira del schema y de la app, pero no se dropea la columna.

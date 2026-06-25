@@ -22,6 +22,7 @@ const LIST_ESPECIALIDADES_QUERY = `
       descripcion
       descripcion2
       slug
+      imagenPortadaUrl
       actEconomicaId
     }
   }
@@ -36,6 +37,7 @@ const GET_ESPECIALIDAD_QUERY = `
       descripcion
       descripcion2
       slug
+      imagenPortadaUrl
       actEconomicaId
     }
   }

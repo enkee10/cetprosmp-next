@@ -2,9 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Alert, Box, Button, CircularProgress, Container, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
+import CoverImageField from '@/components/intranet/academico/CoverImageField';
 
 interface CarreraFormProps {
   carreraId?: string;
@@ -18,22 +31,65 @@ interface CarreraData {
   nombre: string | null;
   codigo: string | null;
   descripcion: string | null;
-  tipo: string | null;
-  estado: string | null;
+  nivel: string | null;
+  imagenPortadaUrl: string | null;
   actEconomicaId: number | null;
+  tipoCarreraId: number | null;
 }
+
+interface ActEconomicaOption {
+  id: number;
+  titulo: string | null;
+}
+
+interface TipoCarreraOption {
+  id: number;
+  nombre: string | null;
+}
+
+const NIVEL_OPTIONS = ['Auxiliar Técnico', 'Técnico', 'Profesional'];
 
 export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: CarreraFormProps) {
   const [nombre, setNombre] = useState('');
   const [codigo, setCodigo] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [tipo, setTipo] = useState('');
-  const [estado, setEstado] = useState('');
+  const [nivel, setNivel] = useState('');
+  const [imagenPortadaUrl, setImagenPortadaUrl] = useState('');
   const [actEconomicaId, setActEconomicaId] = useState('');
+  const [tipoCarreraId, setTipoCarreraId] = useState('');
+  const [actEconomicas, setActEconomicas] = useState<ActEconomicaOption[]>([]);
+  const [tiposCarrera, setTiposCarrera] = useState<TipoCarreraOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingCarrera, setLoadingCarrera] = useState(Boolean(carreraId));
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const functions = getFunctions(app);
+        const listActEconomicas = httpsCallable<undefined, { actEconomicas?: ActEconomicaOption[] }>(
+          functions,
+          'listActEconomicas',
+        );
+        const listTiposCarrera = httpsCallable<undefined, { tiposCarrera?: TipoCarreraOption[] }>(
+          functions,
+          'listTiposCarrera',
+        );
+        const [actEconomicasResult, tiposCarreraResult] = await Promise.all([
+          listActEconomicas(),
+          listTiposCarrera(),
+        ]);
+        setActEconomicas(actEconomicasResult.data.actEconomicas || []);
+        setTiposCarrera(tiposCarreraResult.data.tiposCarrera || []);
+      } catch (err) {
+        console.error('Error fetching carrera options: ', err);
+        setError('No se pudieron cargar las opciones relacionadas para el formulario.');
+      }
+    };
+
+    void fetchOptions();
+  }, []);
 
   useEffect(() => {
     const fetchCarrera = async () => {
@@ -50,9 +106,10 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
           setNombre(fetched.nombre || '');
           setCodigo(fetched.codigo || '');
           setDescripcion(fetched.descripcion || '');
-          setTipo(fetched.tipo || '');
-          setEstado(fetched.estado || '');
+          setNivel(fetched.nivel || '');
+          setImagenPortadaUrl(fetched.imagenPortadaUrl || '');
           setActEconomicaId(fetched.actEconomicaId != null ? String(fetched.actEconomicaId) : '');
+          setTipoCarreraId(fetched.tipoCarreraId != null ? String(fetched.tipoCarreraId) : '');
         }
       } catch (err) {
         console.error('Error fetching carrera: ', err);
@@ -78,9 +135,10 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
           nombre: string;
           codigo: string;
           descripcion: string;
-          tipo: string;
-          estado: string;
+          nivel?: string | null;
+          imagenPortadaUrl?: string | null;
           actEconomicaId?: number | null;
+          tipoCarreraId?: number | null;
         },
         { id: number | null }
       >(functions, 'createOrUpdateCarrera');
@@ -90,9 +148,10 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
         nombre,
         codigo,
         descripcion,
-        tipo,
-        estado,
+        nivel: nivel || null,
+        imagenPortadaUrl: imagenPortadaUrl.trim() || null,
         actEconomicaId: actEconomicaId ? Number(actEconomicaId) : null,
+        tipoCarreraId: tipoCarreraId ? Number(tipoCarreraId) : null,
       });
 
       if (onSaved) {
@@ -140,9 +199,72 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
       <form onSubmit={handleSubmit}>
         <TextField label="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} fullWidth margin="normal" required />
         <TextField label="Codigo" value={codigo} onChange={(e) => setCodigo(e.target.value)} fullWidth margin="normal" />
-        <TextField label="Tipo" value={tipo} onChange={(e) => setTipo(e.target.value)} fullWidth margin="normal" />
-        <TextField label="Estado" value={estado} onChange={(e) => setEstado(e.target.value)} fullWidth margin="normal" />
-        <TextField label="Actividad Economica ID" value={actEconomicaId} onChange={(e) => setActEconomicaId(e.target.value)} fullWidth margin="normal" type="number" />
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Nivel</InputLabel>
+          <Select
+            label="Nivel"
+            value={nivel}
+            onChange={(event) => setNivel(String(event.target.value))}
+          >
+            <MenuItem value="">Sin nivel</MenuItem>
+            {nivel && !NIVEL_OPTIONS.includes(nivel) ? (
+              <MenuItem value={nivel} disabled>
+                Nivel actual no disponible
+              </MenuItem>
+            ) : null}
+            {NIVEL_OPTIONS.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Tipo de Carrera</InputLabel>
+          <Select
+            label="Tipo de Carrera"
+            value={tipoCarreraId}
+            onChange={(event) => setTipoCarreraId(String(event.target.value))}
+          >
+            <MenuItem value="">Sin tipo</MenuItem>
+            {tipoCarreraId && !tiposCarrera.some((tipoCarrera) => String(tipoCarrera.id) === tipoCarreraId) ? (
+              <MenuItem value={tipoCarreraId} disabled>
+                Tipo actual no disponible
+              </MenuItem>
+            ) : null}
+            {tiposCarrera.map((tipoCarrera) => (
+              <MenuItem key={tipoCarrera.id} value={String(tipoCarrera.id)}>
+                {tipoCarrera.nombre || `Tipo ${tipoCarrera.id}`}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Actividad Economica</InputLabel>
+          <Select
+            label="Actividad Economica"
+            value={actEconomicaId}
+            onChange={(event) => setActEconomicaId(String(event.target.value))}
+          >
+            <MenuItem value="">Sin actividad economica</MenuItem>
+            {actEconomicaId && !actEconomicas.some((actEconomica) => String(actEconomica.id) === actEconomicaId) ? (
+              <MenuItem value={actEconomicaId} disabled>
+                Actividad economica actual no disponible
+              </MenuItem>
+            ) : null}
+            {actEconomicas.map((actEconomica) => (
+              <MenuItem key={actEconomica.id} value={String(actEconomica.id)}>
+                {actEconomica.titulo || `Actividad economica ${actEconomica.id}`}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <CoverImageField
+          value={imagenPortadaUrl}
+          onChange={setImagenPortadaUrl}
+          storageFolder="carreras"
+          disabled={loading}
+        />
         <TextField label="Descripcion" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} fullWidth margin="normal" minRows={3} multiline />
         <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
           <Button type="submit" variant="contained" color="primary" disabled={loading}>

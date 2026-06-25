@@ -19,6 +19,7 @@ const LIST_SECTORS_QUERY = `
       id
       titulo
       descripcion
+      imagenPortadaUrl
     }
   }
 `;
@@ -29,6 +30,7 @@ const GET_SECTOR_QUERY = `
       id
       titulo
       descripcion
+      imagenPortadaUrl
     }
   }
 `;

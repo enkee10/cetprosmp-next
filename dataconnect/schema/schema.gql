@@ -45,12 +45,14 @@ type Sector @table(name: "sectores") {
   id: Int! @col(dataType: "serial")
   titulo: String
   descripcion: String
+  imagenPortadaUrl: String @col(name: "imagen_portada_url", dataType: "text")
 }
 
 type Familia @table(name: "familias") {
   id: Int! @col(dataType: "serial")
   titulo: String
   descripcion: String
+  imagenPortadaUrl: String @col(name: "imagen_portada_url", dataType: "text")
 
   sector: Sector @ref(fields: "sectorId", references: "id")
   sectorId: Int @col(name: "sector_id")
@@ -63,6 +65,7 @@ type Especialidad @table(name: "especialidades") {
   descripcion: String
   descripcion2: String @col(name: "descripcion_2")
   slug: String
+  imagenPortadaUrl: String @col(name: "imagen_portada_url", dataType: "text")
 
   actEconomica: ActEconomica @ref(fields: "actEconomicaId", references: "id")
   actEconomicaId: Int @col(name: "act_economica_id")
@@ -72,6 +75,7 @@ type ActEconomica @table(name: "act_economicas") {
   id: Int! @col(dataType: "serial")
   titulo: String
   descripcion: String
+  imagenPortadaUrl: String @col(name: "imagen_portada_url", dataType: "text")
 
   familia: Familia @ref(fields: "familiaId", references: "id")
   familiaId: Int @col(name: "familia_id")
@@ -82,32 +86,48 @@ type ActEconomica @table(name: "act_economicas") {
   especialidadId: Int @col(name: "especialidad_id")
 }
 
+type TipoCarrera @table(name: "tipo_carreras", singular: "tipoCarrera", plural: "tipoCarreras") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+}
+
 type Carrera @table(name: "carreras", singular: "carrera", plural: "carreras") {
   id: Int! @col(dataType: "serial")
   nombre: String
   codigo: String
   descripcion: String
-  tipo: String
-  estado: String
+  nivel: String
+  imagenPortadaUrl: String @col(name: "imagen_portada_url", dataType: "text")
   creadoEn: Timestamp @col(name: "creado_en")
   actualizadoEn: Timestamp @col(name: "actualizado_en")
 
   actEconomica: ActEconomica @ref(fields: "actEconomicaId", references: "id")
   actEconomicaId: Int @col(name: "act_economica_id")
+
+  tipoCarrera: TipoCarrera @ref(fields: "tipoCarreraId", references: "id")
+  tipoCarreraId: Int @col(name: "tipo_carrera_id")
 }
 
 type Plan @table(name: "planes", singular: "plan", plural: "planes") {
   id: Int! @col(dataType: "serial")
-  version: String
   duracion: String
   creditos: Int
-  nivel: String
   tituloComercial: String @col(name: "titulo_comercial")
   slug: String
   descripcion2: String @col(name: "descripcion_2")
+  imagenPortadaUrl: String @col(name: "imagen_portada_url", dataType: "text")
+  planEstudio: String @col(name: "plan_estudio")
+  periodoCaducidad: String @col(name: "periodo_caducidad")
+  resolucionTipo: String @col(name: "resolucion_tipo")
+  nro: String
+  anio: Int @col(name: "anio")
+  genera: String
 
   carrera: Carrera @ref(fields: "carreraId", references: "id")
   carreraId: Int @col(name: "carrera_id")
+
+  periodoVigencia: Semestre @ref(fields: "periodoVigenciaId", references: "id")
+  periodoVigenciaId: Int @col(name: "periodo_vigencia_id")
 }
 
 type Modulo @table(name: "modulos") {

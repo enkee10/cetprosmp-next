@@ -78,12 +78,14 @@ erDiagram
         Int id PK
         String titulo
         String descripcion
+        String imagenPortadaUrl
     }
 
     FAMILIA {
         Int id PK
         String titulo
         String descripcion
+        String imagenPortadaUrl
         Int sectorId FK
     }
 
@@ -94,6 +96,7 @@ erDiagram
         String descripcion
         String descripcion2
         String slug
+        String imagenPortadaUrl
         Int actEconomicaId FK
     }
 
@@ -101,8 +104,14 @@ erDiagram
         Int id PK
         String titulo
         String descripcion
+        String imagenPortadaUrl
         Int familiaId FK
         Int especialidadId FK
+    }
+
+    TIPO_CARRERA {
+        Int id PK
+        String nombre
     }
 
     CARRERA {
@@ -110,23 +119,30 @@ erDiagram
         String nombre
         String codigo
         String descripcion
-        String tipo
-        String estado
+        String nivel
+        String imagenPortadaUrl
         Timestamp creadoEn
         Timestamp actualizadoEn
         Int actEconomicaId FK
+        Int tipoCarreraId FK
     }
 
     PLAN {
         Int id PK
-        String version
         String duracion
         Int creditos
-        String nivel
         String tituloComercial
         String slug
         String descripcion2
+        String imagenPortadaUrl
+        String planEstudio
+        String periodoCaducidad
+        String resolucionTipo
+        String nro
+        Int anio
+        String genera
         Int carreraId FK
+        Int periodoVigenciaId FK
     }
 
     MODULO {
@@ -550,7 +566,9 @@ erDiagram
     ACT_ECONOMICA ||--o{ ESPECIALIDAD : actEconomica
     FAMILIA ||--o{ ACT_ECONOMICA : familia
     ACT_ECONOMICA ||--o{ CARRERA : actEconomica
+    TIPO_CARRERA ||--o{ CARRERA : tipoCarrera
     CARRERA ||--o{ PLAN : carrera
+    SEMESTRE ||--o{ PLAN : periodoVigencia
     PLAN ||--o{ MODULO : plan
     MODULO ||--o{ UNIDAD_DIDACTICA : modulo
     UNIDAD_DIDACTICA ||--o{ CAPACIDAD_TERMINAL : unidadDidactica

@@ -377,6 +377,11 @@ export interface Tecnica_Key {
   __typename?: 'Tecnica_Key';
 }
 
+export interface TipoCarrera_Key {
+  id: number;
+  __typename?: 'TipoCarrera_Key';
+}
+
 export interface Turno_Key {
   id: number;
   __typename?: 'Turno_Key';

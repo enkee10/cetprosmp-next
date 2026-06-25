@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import { Alert, Box, Button, CircularProgress, Container, TextField, Typography } from '@mui/material';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
+import CoverImageField from '@/components/intranet/academico/CoverImageField';
 
 interface SectorFormProps {
   sector?: {
     id: string;
     titulo: string;
     descripcion: string;
+    imagenPortadaUrl?: string | null;
   } | null;
   sectorId?: string;
   asModal?: boolean;
@@ -22,11 +24,13 @@ interface SectorData {
   id: number;
   titulo: string | null;
   descripcion: string | null;
+  imagenPortadaUrl: string | null;
 }
 
 export function SectorForm({ sector, sectorId, asModal = false, onSaved, onCancel }: SectorFormProps) {
   const [titulo, setTitulo] = useState(sector ? sector.titulo : '');
   const [descripcion, setDescripcion] = useState(sector ? sector.descripcion : '');
+  const [imagenPortadaUrl, setImagenPortadaUrl] = useState(sector?.imagenPortadaUrl || '');
   const [loading, setLoading] = useState(false);
   const [loadingSector, setLoadingSector] = useState(Boolean(sectorId && !sector));
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +50,7 @@ export function SectorForm({ sector, sectorId, asModal = false, onSaved, onCance
         if (fetched) {
           setTitulo(fetched.titulo || '');
           setDescripcion(fetched.descripcion || '');
+          setImagenPortadaUrl(fetched.imagenPortadaUrl || '');
         }
       } catch (err) {
         console.error('Error fetching sector: ', err);
@@ -66,7 +71,7 @@ export function SectorForm({ sector, sectorId, asModal = false, onSaved, onCance
     try {
       const functions = getFunctions(app);
       const createOrUpdateSector = httpsCallable<
-        { id?: number; titulo: string; descripcion: string },
+        { id?: number; titulo: string; descripcion: string; imagenPortadaUrl?: string | null },
         { id: number | null }
       >(functions, 'createOrUpdateSector');
 
@@ -74,6 +79,7 @@ export function SectorForm({ sector, sectorId, asModal = false, onSaved, onCance
         id: sectorId ? Number(sectorId) : undefined,
         titulo,
         descripcion,
+        imagenPortadaUrl: imagenPortadaUrl.trim() || null,
       });
 
       if (onSaved) {
@@ -142,6 +148,12 @@ export function SectorForm({ sector, sectorId, asModal = false, onSaved, onCance
           margin="normal"
           minRows={3}
           multiline
+        />
+        <CoverImageField
+          value={imagenPortadaUrl}
+          onChange={setImagenPortadaUrl}
+          storageFolder="sectores"
+          disabled={loading}
         />
         <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
           <Button type="submit" variant="contained" color="primary" disabled={loading}>

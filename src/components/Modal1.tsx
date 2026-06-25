@@ -156,8 +156,8 @@ export default function Modal1({
           py: { xs: 1, sm: 2 },
         },
         '& .MuiDialog-paper': {
-          width: 'fit-content',
-          maxWidth: 'calc(100vw - 16px)',
+          width: { xs: 'calc(100vw - 16px)', sm: 'min(1000px, calc(100vw - 32px))' },
+          maxWidth: { xs: 'calc(100vw - 16px)', sm: 'min(1000px, calc(100vw - 32px))' },
           maxHeight: { xs: '100dvh', sm: 'calc(100dvh - 32px)' },
           transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`,
           transition: isDragging ? 'none' : undefined,
@@ -193,6 +193,8 @@ export default function Modal1({
         ref={contentRef}
         sx={{
           p: 2,
+          width: '100%',
+          boxSizing: 'border-box',
           overflowY: 'auto',
           overscrollBehavior: 'contain',
         }}

@@ -19,6 +19,7 @@ const LIST_FAMILIAS_QUERY = `
       id
       titulo
       descripcion
+      imagenPortadaUrl
       sectorId
     }
   }
@@ -30,6 +31,7 @@ const GET_FAMILIA_QUERY = `
       id
       titulo
       descripcion
+      imagenPortadaUrl
       sectorId
     }
   }

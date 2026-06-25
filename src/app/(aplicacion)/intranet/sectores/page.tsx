@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Avatar,
   Button,
   IconButton,
   Menu,
@@ -26,6 +27,7 @@ interface Sector {
   id: number;
   titulo: string | null;
   descripcion: string | null;
+  imagenPortadaUrl: string | null;
 }
 
 export default function SectoresPage() {
@@ -43,8 +45,9 @@ export default function SectoresPage() {
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
+      portada: true,
       titulo: true,
-      descripcion: true,
+      descripcion: false,
       actions: true,
     });
 
@@ -141,6 +144,43 @@ export default function SectoresPage() {
   const columns = useMemo<GridColDef[]>(
     () => [
       {
+        field: 'portada',
+        headerName: 'Portada',
+        width: 60,
+        minWidth: 60,
+        maxWidth: 60,
+        align: 'center',
+        headerAlign: 'center',
+        cellClassName: 'cover-cell',
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => {
+          const row = params.row as Sector;
+          return (
+            <Stack
+              sx={{
+                width: 60,
+                height: 52,
+                px: '10px',
+                boxSizing: 'border-box',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Avatar
+                src={row.imagenPortadaUrl || undefined}
+                alt={row.titulo || 'Sector'}
+                variant="rounded"
+                sx={{ width: 40, height: 40 }}
+              >
+                {(row.titulo || 'S').trim().charAt(0).toUpperCase()}
+              </Avatar>
+            </Stack>
+          );
+        },
+      },
+      {
         field: 'titulo',
         headerName: 'Titulo',
         flex: 1,
@@ -219,6 +259,7 @@ export default function SectoresPage() {
         columnVisibilityModel={columnVisibilityModel}
         onColumnVisibilityModelChange={setColumnVisibilityModel}
         loading={loading}
+        sx={{ '& .cover-cell': { p: 0 } }}
         getRowId={(row) => row.id}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}

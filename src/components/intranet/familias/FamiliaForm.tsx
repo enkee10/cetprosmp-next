@@ -2,15 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Alert, Box, Button, CircularProgress, Container, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
+import CoverImageField from '@/components/intranet/academico/CoverImageField';
 
 interface FamiliaFormProps {
   familia?: {
     id: string;
     titulo: string;
     descripcion: string;
+    imagenPortadaUrl?: string | null;
     sectorId: string;
   } | null;
   familiaId?: string;
@@ -23,17 +37,41 @@ interface FamiliaData {
   id: number;
   titulo: string | null;
   descripcion: string | null;
+  imagenPortadaUrl: string | null;
   sectorId: number | null;
+}
+
+interface SectorOption {
+  id: number;
+  titulo: string | null;
 }
 
 export function FamiliaForm({ familia, familiaId, asModal = false, onSaved, onCancel }: FamiliaFormProps) {
   const [titulo, setTitulo] = useState(familia ? familia.titulo : '');
   const [descripcion, setDescripcion] = useState(familia ? familia.descripcion : '');
+  const [imagenPortadaUrl, setImagenPortadaUrl] = useState(familia?.imagenPortadaUrl || '');
   const [sectorId, setSectorId] = useState(familia ? familia.sectorId : '');
+  const [sectores, setSectores] = useState<SectorOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingFamilia, setLoadingFamilia] = useState(Boolean(familiaId && !familia));
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchSectores = async () => {
+      try {
+        const functions = getFunctions(app);
+        const listSectors = httpsCallable<undefined, { sectors?: SectorOption[] }>(functions, 'listSectors');
+        const result = await listSectors();
+        setSectores(result.data.sectors || []);
+      } catch (err) {
+        console.error('Error fetching sectores: ', err);
+        setError('No se pudieron cargar los sectores para el selector.');
+      }
+    };
+
+    void fetchSectores();
+  }, []);
 
   useEffect(() => {
     const fetchFamilia = async () => {
@@ -49,6 +87,7 @@ export function FamiliaForm({ familia, familiaId, asModal = false, onSaved, onCa
         if (fetched) {
           setTitulo(fetched.titulo || '');
           setDescripcion(fetched.descripcion || '');
+          setImagenPortadaUrl(fetched.imagenPortadaUrl || '');
           setSectorId(fetched.sectorId != null ? String(fetched.sectorId) : '');
         }
       } catch (err) {
@@ -70,7 +109,7 @@ export function FamiliaForm({ familia, familiaId, asModal = false, onSaved, onCa
     try {
       const functions = getFunctions(app);
       const createOrUpdateFamilia = httpsCallable<
-        { id?: number; titulo: string; descripcion: string; sectorId?: number | null },
+        { id?: number; titulo: string; descripcion: string; imagenPortadaUrl?: string | null; sectorId?: number | null },
         { id: number | null }
       >(functions, 'createOrUpdateFamilia');
 
@@ -78,6 +117,7 @@ export function FamiliaForm({ familia, familiaId, asModal = false, onSaved, onCa
         id: familiaId ? Number(familiaId) : undefined,
         titulo,
         descripcion,
+        imagenPortadaUrl: imagenPortadaUrl.trim() || null,
         sectorId: sectorId ? Number(sectorId) : null,
       });
 
@@ -144,14 +184,32 @@ export function FamiliaForm({ familia, familiaId, asModal = false, onSaved, onCa
           minRows={3}
           multiline
         />
-        <TextField
-          label="Sector ID"
-          value={sectorId}
-          onChange={(e) => setSectorId(e.target.value)}
-          fullWidth
-          margin="normal"
-          type="number"
+        <CoverImageField
+          value={imagenPortadaUrl}
+          onChange={setImagenPortadaUrl}
+          storageFolder="familias"
+          disabled={loading}
         />
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Sector</InputLabel>
+          <Select
+            label="Sector"
+            value={sectorId}
+            onChange={(event) => setSectorId(String(event.target.value))}
+          >
+            <MenuItem value="">Sin sector</MenuItem>
+            {sectorId && !sectores.some((sector) => String(sector.id) === sectorId) ? (
+              <MenuItem value={sectorId} disabled>
+                Sector actual no disponible
+              </MenuItem>
+            ) : null}
+            {sectores.map((sector) => (
+              <MenuItem key={sector.id} value={String(sector.id)}>
+                {sector.titulo || `Sector ${sector.id}`}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
           <Button type="submit" variant="contained" color="primary" disabled={loading}>
             {loading ? <CircularProgress size={24} /> : (familiaId ? 'Actualizar' : 'Crear')}

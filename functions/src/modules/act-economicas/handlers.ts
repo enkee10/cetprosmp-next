@@ -19,6 +19,7 @@ const LIST_ACT_ECONOMICAS_QUERY = `
       id
       titulo
       descripcion
+      imagenPortadaUrl
       familiaId
       especialidadId
     }
@@ -31,6 +32,7 @@ const GET_ACT_ECONOMICA_QUERY = `
       id
       titulo
       descripcion
+      imagenPortadaUrl
       familiaId
       especialidadId
     }

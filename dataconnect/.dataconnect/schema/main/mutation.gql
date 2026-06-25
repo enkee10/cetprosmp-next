@@ -414,6 +414,15 @@ extend type Mutation {
     data: Tecnica_Data!
   ): Tecnica_KeyOutput! @fdc_generated(from: "Tecnica", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `TipoCarrera` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  tipoCarrera_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: TipoCarrera_Data!
+  ): TipoCarrera_KeyOutput! @fdc_generated(from: "TipoCarrera", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Turno` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   turno_insert(
@@ -881,6 +890,15 @@ extend type Mutation {
     """
     data: [Tecnica_Data!]!
   ): [Tecnica_KeyOutput!]! @fdc_generated(from: "Tecnica", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `TipoCarrera` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  tipoCarrera_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [TipoCarrera_Data!]!
+  ): [TipoCarrera_KeyOutput!]! @fdc_generated(from: "TipoCarrera", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Turno` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1350,6 +1368,15 @@ extend type Mutation {
     data: Tecnica_Data!
   ): Tecnica_KeyOutput! @fdc_generated(from: "Tecnica", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `TipoCarrera` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TipoCarrera`.
+  """
+  tipoCarrera_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: TipoCarrera_Data!
+  ): TipoCarrera_KeyOutput! @fdc_generated(from: "TipoCarrera", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Turno` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Turno`.
   """
   turno_upsert(
@@ -1817,6 +1844,15 @@ extend type Mutation {
     """
     data: [Tecnica_Data!]!
   ): [Tecnica_KeyOutput!]! @fdc_generated(from: "Tecnica", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `TipoCarrera` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TipoCarrera`.
+  """
+  tipoCarrera_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [TipoCarrera_Data!]!
+  ): [TipoCarrera_KeyOutput!]! @fdc_generated(from: "TipoCarrera", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Turno` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Turno`.
   """
@@ -3196,6 +3232,35 @@ extend type Mutation {
     data: Tecnica_Data!
   ): Tecnica_KeyOutput @fdc_generated(from: "Tecnica", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `TipoCarrera` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `TipoCarrera` or `null` if not found.
+  """
+  tipoCarrera_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: TipoCarrera_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TipoCarrera_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: TipoCarrera_Data!
+  ): TipoCarrera_KeyOutput @fdc_generated(from: "TipoCarrera", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Turno` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Turno` or `null` if not found.
   """
   turno_update(
@@ -4243,6 +4308,25 @@ extend type Mutation {
     """
     data: Tecnica_Data!
   ): Int! @fdc_generated(from: "Tecnica", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `TipoCarrera` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  tipoCarrera_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: TipoCarrera_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: TipoCarrera_Data!
+  ): Int! @fdc_generated(from: "TipoCarrera", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Turno` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -5452,6 +5536,30 @@ extend type Mutation {
     first: Tecnica_FirstRow
   ): Tecnica_KeyOutput @fdc_generated(from: "Tecnica", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `TipoCarrera` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  tipoCarrera_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: TipoCarrera_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TipoCarrera_FirstRow
+  ): TipoCarrera_KeyOutput @fdc_generated(from: "TipoCarrera", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Turno` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   turno_delete(
@@ -6239,6 +6347,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Tecnica", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `TipoCarrera` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  tipoCarrera_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: TipoCarrera_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "TipoCarrera", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Turno` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

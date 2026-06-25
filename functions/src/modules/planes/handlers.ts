@@ -17,14 +17,20 @@ const LIST_PLANES_QUERY = `
   query ListPlanesManual {
     planes(limit: 500) {
       id
-      version
       duracion
       creditos
-      nivel
       tituloComercial
       slug
       descripcion2
+      imagenPortadaUrl
+      planEstudio
+      periodoCaducidad
+      resolucionTipo
+      nro
+      anio
+      genera
       carreraId
+      periodoVigenciaId
     }
   }
 `;
@@ -33,14 +39,20 @@ const GET_PLAN_QUERY = `
   query GetPlanManual($id: Int!) {
     plan(id: $id) {
       id
-      version
       duracion
       creditos
-      nivel
       tituloComercial
       slug
       descripcion2
+      imagenPortadaUrl
+      planEstudio
+      periodoCaducidad
+      resolucionTipo
+      nro
+      anio
+      genera
       carreraId
+      periodoVigenciaId
     }
   }
 `;
@@ -57,7 +69,7 @@ export const listPlanes = https.onCall(async (_data, context) => {
     );
     const planes = (response.data.planes ?? [])
       .slice()
-      .sort((a, b) => String(a.tituloComercial ?? a.version ?? "").localeCompare(String(b.tituloComercial ?? b.version ?? ""), "es"));
+      .sort((a, b) => String(a.tituloComercial ?? "").localeCompare(String(b.tituloComercial ?? ""), "es"));
 
     return { planes };
   } catch (error) {
@@ -97,8 +109,8 @@ export const createOrUpdatePlan = https.onCall(async (data, context) => {
   }
 
   const payload = buildPlanDataFromInput(data as Record<string, unknown>);
-  if (!payload.version && !payload.tituloComercial) {
-    throw new https.HttpsError("invalid-argument", "version or tituloComercial is required.");
+  if (!payload.tituloComercial && !payload.periodoVigenciaId) {
+    throw new https.HttpsError("invalid-argument", "tituloComercial or periodoVigenciaId is required.");
   }
 
   const planId = toNumberOrNull(data?.id);

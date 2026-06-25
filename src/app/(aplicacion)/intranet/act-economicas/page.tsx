@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Avatar,
   Button,
   IconButton,
   Menu,
@@ -26,12 +27,25 @@ interface ActEconomica {
   id: number;
   titulo: string | null;
   descripcion: string | null;
+  imagenPortadaUrl: string | null;
   familiaId: number | null;
   especialidadId: number | null;
 }
 
+interface FamiliaOption {
+  id: number;
+  titulo: string | null;
+}
+
+interface EspecialidadOption {
+  id: number;
+  titulo: string | null;
+}
+
 export default function ActEconomicasPage() {
   const [actEconomicas, setActEconomicas] = useState<ActEconomica[]>([]);
+  const [familias, setFamilias] = useState<FamiliaOption[]>([]);
+  const [especialidades, setEspecialidades] = useState<EspecialidadOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openActEconomicaModal, setOpenActEconomicaModal] = useState(false);
@@ -45,10 +59,11 @@ export default function ActEconomicasPage() {
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
+      portada: true,
       titulo: true,
-      descripcion: true,
-      familiaId: true,
-      especialidadId: true,
+      descripcion: false,
+      familiaTitulo: true,
+      especialidadTitulo: true,
       actions: true,
     });
 
@@ -65,8 +80,22 @@ export default function ActEconomicasPage() {
         functions,
         'listActEconomicas',
       );
-      const result = await listActEconomicas();
-      setActEconomicas(result.data.actEconomicas || []);
+      const listFamilias = httpsCallable<undefined, { familias?: FamiliaOption[] }>(
+        functions,
+        'listFamilias',
+      );
+      const listEspecialidades = httpsCallable<undefined, { especialidades?: EspecialidadOption[] }>(
+        functions,
+        'listEspecialidades',
+      );
+      const [actEconomicasResult, familiasResult, especialidadesResult] = await Promise.all([
+        listActEconomicas(),
+        listFamilias(),
+        listEspecialidades(),
+      ]);
+      setActEconomicas(actEconomicasResult.data.actEconomicas || []);
+      setFamilias(familiasResult.data.familias || []);
+      setEspecialidades(especialidadesResult.data.especialidades || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching act economicas: ', err);
@@ -77,6 +106,22 @@ export default function ActEconomicasPage() {
       setLoading(false);
     }
   }, [auth, functions]);
+
+  const familiaTitleById = useMemo(
+    () => new Map(familias.map((familia) => [familia.id, familia.titulo || `Familia ${familia.id}`])),
+    [familias],
+  );
+
+  const especialidadTitleById = useMemo(
+    () =>
+      new Map(
+        especialidades.map((especialidad) => [
+          especialidad.id,
+          especialidad.titulo || `Especialidad ${especialidad.id}`,
+        ]),
+      ),
+    [especialidades],
+  );
 
   useEffect(() => {
     void fetchActEconomicas();
@@ -145,6 +190,43 @@ export default function ActEconomicasPage() {
   const columns = useMemo<GridColDef[]>(
     () => [
       {
+        field: 'portada',
+        headerName: 'Portada',
+        width: 60,
+        minWidth: 60,
+        maxWidth: 60,
+        align: 'center',
+        headerAlign: 'center',
+        cellClassName: 'cover-cell',
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => {
+          const row = params.row as ActEconomica;
+          return (
+            <Stack
+              sx={{
+                width: 60,
+                height: 52,
+                px: '10px',
+                boxSizing: 'border-box',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Avatar
+                src={row.imagenPortadaUrl || undefined}
+                alt={row.titulo || 'Actividad economica'}
+                variant="rounded"
+                sx={{ width: 40, height: 40 }}
+              >
+                {(row.titulo || 'A').trim().charAt(0).toUpperCase()}
+              </Avatar>
+            </Stack>
+          );
+        },
+      },
+      {
         field: 'titulo',
         headerName: 'Titulo',
         flex: 1,
@@ -159,18 +241,22 @@ export default function ActEconomicasPage() {
         valueGetter: (_value, row: ActEconomica) => row.descripcion || '',
       },
       {
-        field: 'familiaId',
-        headerName: 'Familia ID',
-        flex: 0.65,
-        minWidth: 110,
-        valueGetter: (_value, row: ActEconomica) => (row.familiaId != null ? row.familiaId : ''),
+        field: 'familiaTitulo',
+        headerName: 'Familia',
+        flex: 1,
+        minWidth: 160,
+        valueGetter: (_value, row: ActEconomica) =>
+          row.familiaId != null ? familiaTitleById.get(row.familiaId) || `Familia ${row.familiaId}` : '',
       },
       {
-        field: 'especialidadId',
-        headerName: 'Especialidad ID',
-        flex: 0.8,
-        minWidth: 130,
-        valueGetter: (_value, row: ActEconomica) => (row.especialidadId != null ? row.especialidadId : ''),
+        field: 'especialidadTitulo',
+        headerName: 'Especialidad',
+        flex: 1,
+        minWidth: 170,
+        valueGetter: (_value, row: ActEconomica) =>
+          row.especialidadId != null
+            ? especialidadTitleById.get(row.especialidadId) || `Especialidad ${row.especialidadId}`
+            : '',
       },
       {
         field: 'actions',
@@ -196,7 +282,7 @@ export default function ActEconomicasPage() {
         ),
       },
     ],
-    [],
+    [especialidadTitleById, familiaTitleById],
   );
 
   const columnToggleItems = useMemo(
@@ -237,6 +323,7 @@ export default function ActEconomicasPage() {
         columnVisibilityModel={columnVisibilityModel}
         onColumnVisibilityModelChange={setColumnVisibilityModel}
         loading={loading}
+        sx={{ '& .cover-cell': { p: 0 } }}
         getRowId={(row) => row.id}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}

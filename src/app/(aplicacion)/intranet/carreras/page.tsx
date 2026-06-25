@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
+import { Avatar, Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
 import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
@@ -17,13 +17,26 @@ interface Carrera {
   nombre: string | null;
   codigo: string | null;
   descripcion: string | null;
-  tipo: string | null;
-  estado: string | null;
+  nivel: string | null;
+  imagenPortadaUrl: string | null;
   actEconomicaId: number | null;
+  tipoCarreraId: number | null;
+}
+
+interface ActEconomicaOption {
+  id: number;
+  titulo: string | null;
+}
+
+interface TipoCarreraOption {
+  id: number;
+  nombre: string | null;
 }
 
 export default function CarrerasPage() {
   const [carreras, setCarreras] = useState<Carrera[]>([]);
+  const [actEconomicas, setActEconomicas] = useState<ActEconomicaOption[]>([]);
+  const [tiposCarrera, setTiposCarrera] = useState<TipoCarreraOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openCarreraModal, setOpenCarreraModal] = useState(false);
@@ -33,11 +46,12 @@ export default function CarrerasPage() {
   const [menuCarreraId, setMenuCarreraId] = useState<string | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 15 });
   const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
+    portada: true,
     nombre: true,
     codigo: true,
-    tipo: true,
-    estado: true,
-    actEconomicaId: true,
+    nivel: true,
+    tipoCarreraTitulo: true,
+    actEconomicaTitulo: true,
     descripcion: false,
     actions: true,
   });
@@ -50,8 +64,36 @@ export default function CarrerasPage() {
     try {
       if (auth.currentUser) await auth.currentUser.getIdToken(true);
       const listCarreras = httpsCallable<undefined, { carreras?: Carrera[] }>(functions, 'listCarreras');
-      const result = await listCarreras();
-      setCarreras(result.data.carreras || []);
+      const listActEconomicas = httpsCallable<undefined, { actEconomicas?: ActEconomicaOption[] }>(
+        functions,
+        'listActEconomicas',
+      );
+      const listTiposCarrera = httpsCallable<undefined, { tiposCarrera?: TipoCarreraOption[] }>(
+        functions,
+        'listTiposCarrera',
+      );
+      const [carrerasResult, actEconomicasResult, tiposCarreraResult] = await Promise.all([
+        listCarreras(),
+        listActEconomicas(),
+        listTiposCarrera(),
+      ]);
+      const nextTiposCarrera = tiposCarreraResult.data.tiposCarrera || [];
+      const nextTipoCarreraTitleById = new Map(
+        nextTiposCarrera.map((tipoCarrera) => [
+          tipoCarrera.id,
+          tipoCarrera.nombre || `Tipo ${tipoCarrera.id}`,
+        ]),
+      );
+      const nextCarreras = (carrerasResult.data.carreras || []).slice().sort((a, b) => {
+        const typeCompare = String(b.tipoCarreraId != null ? nextTipoCarreraTitleById.get(b.tipoCarreraId) || '' : '')
+          .localeCompare(String(a.tipoCarreraId != null ? nextTipoCarreraTitleById.get(a.tipoCarreraId) || '' : ''), 'es');
+        if (typeCompare !== 0) return typeCompare;
+        return String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es');
+      });
+
+      setCarreras(nextCarreras);
+      setActEconomicas(actEconomicasResult.data.actEconomicas || []);
+      setTiposCarrera(nextTiposCarrera);
       setError(null);
     } catch (err) {
       console.error('Error fetching carreras: ', err);
@@ -64,6 +106,22 @@ export default function CarrerasPage() {
   useEffect(() => {
     void fetchCarreras();
   }, [fetchCarreras]);
+
+  const actEconomicaTitleById = useMemo(
+    () =>
+      new Map(
+        actEconomicas.map((actEconomica) => [
+          actEconomica.id,
+          actEconomica.titulo || `Actividad economica ${actEconomica.id}`,
+        ]),
+      ),
+    [actEconomicas],
+  );
+
+  const tipoCarreraTitleById = useMemo(
+    () => new Map(tiposCarrera.map((tipoCarrera) => [tipoCarrera.id, tipoCarrera.nombre || `Tipo ${tipoCarrera.id}`])),
+    [tiposCarrera],
+  );
 
   const handleDismissCarreraModal = useCallback(() => setOpenCarreraModal(false), []);
 
@@ -111,11 +169,66 @@ export default function CarrerasPage() {
 
   const columns = useMemo<GridColDef[]>(
     () => [
+      {
+        field: 'portada',
+        headerName: 'Portada',
+        width: 60,
+        minWidth: 60,
+        maxWidth: 60,
+        align: 'center',
+        headerAlign: 'center',
+        cellClassName: 'cover-cell',
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => {
+          const row = params.row as Carrera;
+          return (
+            <Stack
+              sx={{
+                width: 60,
+                height: 52,
+                px: '10px',
+                boxSizing: 'border-box',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Avatar
+                src={row.imagenPortadaUrl || undefined}
+                alt={row.nombre || 'Carrera'}
+                variant="rounded"
+                sx={{ width: 40, height: 40 }}
+              >
+                {(row.nombre || 'C').trim().charAt(0).toUpperCase()}
+              </Avatar>
+            </Stack>
+          );
+        },
+      },
       { field: 'nombre', headerName: 'Nombre', flex: 1.2, minWidth: 180, valueGetter: (_value, row: Carrera) => row.nombre || '' },
       { field: 'codigo', headerName: 'Codigo', flex: 0.7, minWidth: 110, valueGetter: (_value, row: Carrera) => row.codigo || '' },
-      { field: 'tipo', headerName: 'Tipo', flex: 0.8, minWidth: 120, valueGetter: (_value, row: Carrera) => row.tipo || '' },
-      { field: 'estado', headerName: 'Estado', flex: 0.8, minWidth: 120, valueGetter: (_value, row: Carrera) => row.estado || '' },
-      { field: 'actEconomicaId', headerName: 'Act. Economica ID', flex: 0.85, minWidth: 145, valueGetter: (_value, row: Carrera) => (row.actEconomicaId != null ? row.actEconomicaId : '') },
+      { field: 'nivel', headerName: 'Nivel', flex: 0.8, minWidth: 150, valueGetter: (_value, row: Carrera) => row.nivel || '' },
+      {
+        field: 'tipoCarreraTitulo',
+        headerName: 'Tipo de Carrera',
+        flex: 0.9,
+        minWidth: 170,
+        valueGetter: (_value, row: Carrera) =>
+          row.tipoCarreraId != null
+            ? tipoCarreraTitleById.get(row.tipoCarreraId) || `Tipo de Carrera ${row.tipoCarreraId}`
+            : '',
+      },
+      {
+        field: 'actEconomicaTitulo',
+        headerName: 'Act. Economica',
+        flex: 1,
+        minWidth: 170,
+        valueGetter: (_value, row: Carrera) =>
+          row.actEconomicaId != null
+            ? actEconomicaTitleById.get(row.actEconomicaId) || `Actividad economica ${row.actEconomicaId}`
+            : '',
+      },
       { field: 'descripcion', headerName: 'Descripcion', flex: 1.5, minWidth: 240, valueGetter: (_value, row: Carrera) => row.descripcion || '' },
       {
         field: 'actions',
@@ -141,7 +254,7 @@ export default function CarrerasPage() {
         ),
       },
     ],
-    [],
+    [actEconomicaTitleById, tipoCarreraTitleById],
   );
 
   const columnToggleItems = useMemo(
@@ -174,6 +287,7 @@ export default function CarrerasPage() {
         columnVisibilityModel={columnVisibilityModel}
         onColumnVisibilityModelChange={setColumnVisibilityModel}
         loading={loading}
+        sx={{ '& .cover-cell': { p: 0 } }}
         getRowId={(row) => row.id}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}

@@ -11,6 +11,7 @@ import {
   DataConnectPlanInput,
   DataConnectRoleInput,
   DataConnectSectorInput,
+  DataConnectTipoCarreraInput,
   DataConnectUnidadDidacticaInput,
   DataConnectUserInput,
 } from "./types.js";
@@ -179,6 +180,7 @@ export function buildSectorDataFromInput(input: Record<string, unknown>): DataCo
   return compactUndefined({
     titulo: asNullableString(input.titulo),
     descripcion: asNullableString(input.descripcion),
+    imagenPortadaUrl: asNullableString(input.imagenPortadaUrl),
   });
 }
 
@@ -186,6 +188,7 @@ export function buildActEconomicaDataFromInput(input: Record<string, unknown>): 
   return compactUndefined({
     titulo: asNullableString(input.titulo),
     descripcion: asNullableString(input.descripcion),
+    imagenPortadaUrl: asNullableString(input.imagenPortadaUrl),
     familiaId: toNumberOrNull(input.familiaId),
     especialidadId: toNumberOrNull(input.especialidadId),
   });
@@ -195,6 +198,7 @@ export function buildFamiliaDataFromInput(input: Record<string, unknown>): DataC
   return compactUndefined({
     titulo: asNullableString(input.titulo),
     descripcion: asNullableString(input.descripcion),
+    imagenPortadaUrl: asNullableString(input.imagenPortadaUrl),
     sectorId: toNumberOrNull(input.sectorId),
   });
 }
@@ -206,7 +210,14 @@ export function buildEspecialidadDataFromInput(input: Record<string, unknown>): 
     descripcion: asNullableString(input.descripcion),
     descripcion2: asNullableString(input.descripcion2),
     slug: asNullableString(input.slug),
+    imagenPortadaUrl: asNullableString(input.imagenPortadaUrl),
     actEconomicaId: toNumberOrNull(input.actEconomicaId),
+  });
+}
+
+export function buildTipoCarreraDataFromInput(input: Record<string, unknown>): DataConnectTipoCarreraInput {
+  return compactUndefined({
+    nombre: asNullableString(input.nombre),
   });
 }
 
@@ -215,24 +226,31 @@ export function buildCarreraDataFromInput(input: Record<string, unknown>): DataC
     nombre: asNullableString(input.nombre),
     codigo: asNullableString(input.codigo),
     descripcion: asNullableString(input.descripcion),
-    tipo: asNullableString(input.tipo),
-    estado: asNullableString(input.estado),
+    nivel: asNullableString(input.nivel),
+    imagenPortadaUrl: asNullableString(input.imagenPortadaUrl),
     creadoEn: asNullableTimestamp(input.creadoEn),
     actualizadoEn: asNullableTimestamp(input.actualizadoEn),
     actEconomicaId: toNumberOrNull(input.actEconomicaId),
+    tipoCarreraId: toNumberOrNull(input.tipoCarreraId),
   });
 }
 
 export function buildPlanDataFromInput(input: Record<string, unknown>): DataConnectPlanInput {
   return compactUndefined({
-    version: asNullableString(input.version),
     duracion: asNullableString(input.duracion),
     creditos: toNumberOrNull(input.creditos),
-    nivel: asNullableString(input.nivel),
     tituloComercial: asNullableString(input.tituloComercial),
     slug: asNullableString(input.slug),
     descripcion2: asNullableString(input.descripcion2),
+    imagenPortadaUrl: asNullableString(input.imagenPortadaUrl),
+    planEstudio: asNullableString(input.planEstudio),
+    periodoCaducidad: asNullableString(input.periodoCaducidad),
+    resolucionTipo: asNullableString(input.resolucionTipo),
+    nro: asNullableString(input.nro),
+    anio: toNumberOrNull(input.anio),
+    genera: asNullableString(input.genera),
     carreraId: toNumberOrNull(input.carreraId),
+    periodoVigenciaId: toNumberOrNull(input.periodoVigenciaId),
   });
 }
 

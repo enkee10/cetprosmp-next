@@ -204,6 +204,15 @@ extend type ActEconomica {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "ActEconomica.id", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `ActEconomica` table where the `imagenPortadaUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  imagenPortadaUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ActEconomica.imagenPortadaUrl", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `ActEconomica` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   titulo_count(
@@ -1907,15 +1916,6 @@ extend type Carrera {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Carrera.descripcion", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Carrera` table where the `estado` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  estado_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Carrera.estado", purpose: QUERY_COUNT)
-  """
   ✨ Count the number of rows in the `Carrera` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   id_count(
@@ -1924,6 +1924,24 @@ extend type Carrera {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Carrera.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `imagenPortadaUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  imagenPortadaUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.imagenPortadaUrl", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Carrera` table where the `nivel` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nivel_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.nivel", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Carrera` table where the `nombre` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -1934,14 +1952,14 @@ extend type Carrera {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Carrera.nombre", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Carrera` table where the `tipo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  ✨ Count the number of rows in the `Carrera` table where the `tipoCarreraId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
-  tipo_count(
+  tipoCarreraId_count(
     """
     Set to true to count the number of distinct values.
     """
     distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Carrera.tipo", purpose: QUERY_COUNT)
+  ): Int! @fdc_generated(from: "Carrera.tipoCarreraId", purpose: QUERY_COUNT)
   """
   ✨ Sum the `actEconomicaId` field in the `Carrera` table.
   """
@@ -1961,6 +1979,15 @@ extend type Carrera {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Carrera.id", purpose: QUERY_SUM)
   """
+  ✨ Sum the `tipoCarreraId` field in the `Carrera` table.
+  """
+  tipoCarreraId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Carrera.tipoCarreraId", purpose: QUERY_SUM)
+  """
   ✨ Average the `actEconomicaId` field in the `Carrera` table.
   """
   actEconomicaId_avg(
@@ -1979,6 +2006,15 @@ extend type Carrera {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Carrera.id", purpose: QUERY_AVG)
   """
+  ✨ Average the `tipoCarreraId` field in the `Carrera` table.
+  """
+  tipoCarreraId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Carrera.tipoCarreraId", purpose: QUERY_AVG)
+  """
   ✨ Minimum of the `actEconomicaId` field in the `Carrera` table.
   """
   actEconomicaId_min: Int @fdc_generated(from: "Carrera.actEconomicaId", purpose: QUERY_MIN)
@@ -1995,6 +2031,10 @@ extend type Carrera {
   """
   id_min: Int @fdc_generated(from: "Carrera.id", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `tipoCarreraId` field in the `Carrera` table.
+  """
+  tipoCarreraId_min: Int @fdc_generated(from: "Carrera.tipoCarreraId", purpose: QUERY_MIN)
+  """
   ✨ Maximum of the `actEconomicaId` field in the `Carrera` table.
   """
   actEconomicaId_max: Int @fdc_generated(from: "Carrera.actEconomicaId", purpose: QUERY_MAX)
@@ -2010,6 +2050,10 @@ extend type Carrera {
   ✨ Maximum of the `id` field in the `Carrera` table.
   """
   id_max: Int @fdc_generated(from: "Carrera.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `tipoCarreraId` field in the `Carrera` table.
+  """
+  tipoCarreraId_max: Int @fdc_generated(from: "Carrera.tipoCarreraId", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """
@@ -2429,6 +2473,15 @@ extend type Especialidad {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Especialidad.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Especialidad` table where the `imagenPortadaUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  imagenPortadaUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Especialidad.imagenPortadaUrl", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Especialidad` table where the `slug` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -4290,6 +4343,15 @@ extend type Familia {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Familia.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Familia` table where the `imagenPortadaUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  imagenPortadaUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Familia.imagenPortadaUrl", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Familia` table where the `sectorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -7710,6 +7772,15 @@ extend type Plan {
   """
   _count: Int! @fdc_generated(from: "Plan.", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Plan` table where the `anio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  anio_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Plan.anio", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Plan` table where the `carreraId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   carreraId_count(
@@ -7746,6 +7817,15 @@ extend type Plan {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Plan.duracion", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Plan` table where the `genera` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  genera_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Plan.genera", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Plan` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   id_count(
@@ -7755,14 +7835,59 @@ extend type Plan {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Plan.id", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Plan` table where the `nivel` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  ✨ Count the number of rows in the `Plan` table where the `imagenPortadaUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
-  nivel_count(
+  imagenPortadaUrl_count(
     """
     Set to true to count the number of distinct values.
     """
     distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Plan.nivel", purpose: QUERY_COUNT)
+  ): Int! @fdc_generated(from: "Plan.imagenPortadaUrl", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Plan` table where the `nro` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nro_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Plan.nro", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Plan` table where the `periodoCaducidad` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  periodoCaducidad_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Plan.periodoCaducidad", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Plan` table where the `periodoVigenciaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  periodoVigenciaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Plan` table where the `planEstudio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  planEstudio_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Plan.planEstudio", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Plan` table where the `resolucionTipo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  resolucionTipo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Plan.resolucionTipo", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Plan` table where the `slug` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -7782,14 +7907,14 @@ extend type Plan {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Plan.tituloComercial", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Plan` table where the `version` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  ✨ Sum the `anio` field in the `Plan` table.
   """
-  version_count(
+  anio_sum(
     """
-    Set to true to count the number of distinct values.
+    Set to true to sum the distinct values.
     """
     distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Plan.version", purpose: QUERY_COUNT)
+  ): Int @fdc_generated(from: "Plan.anio", purpose: QUERY_SUM)
   """
   ✨ Sum the `carreraId` field in the `Plan` table.
   """
@@ -7818,6 +7943,24 @@ extend type Plan {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Plan.id", purpose: QUERY_SUM)
   """
+  ✨ Sum the `periodoVigenciaId` field in the `Plan` table.
+  """
+  periodoVigenciaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `anio` field in the `Plan` table.
+  """
+  anio_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Plan.anio", purpose: QUERY_AVG)
+  """
   ✨ Average the `carreraId` field in the `Plan` table.
   """
   carreraId_avg(
@@ -7845,6 +7988,19 @@ extend type Plan {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Plan.id", purpose: QUERY_AVG)
   """
+  ✨ Average the `periodoVigenciaId` field in the `Plan` table.
+  """
+  periodoVigenciaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `anio` field in the `Plan` table.
+  """
+  anio_min: Int @fdc_generated(from: "Plan.anio", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `carreraId` field in the `Plan` table.
   """
   carreraId_min: Int @fdc_generated(from: "Plan.carreraId", purpose: QUERY_MIN)
@@ -7857,6 +8013,14 @@ extend type Plan {
   """
   id_min: Int @fdc_generated(from: "Plan.id", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `periodoVigenciaId` field in the `Plan` table.
+  """
+  periodoVigenciaId_min: Int @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `anio` field in the `Plan` table.
+  """
+  anio_max: Int @fdc_generated(from: "Plan.anio", purpose: QUERY_MAX)
+  """
   ✨ Maximum of the `carreraId` field in the `Plan` table.
   """
   carreraId_max: Int @fdc_generated(from: "Plan.carreraId", purpose: QUERY_MAX)
@@ -7868,6 +8032,10 @@ extend type Plan {
   ✨ Maximum of the `id` field in the `Plan` table.
   """
   id_max: Int @fdc_generated(from: "Plan.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `periodoVigenciaId` field in the `Plan` table.
+  """
+  periodoVigenciaId_max: Int @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """
@@ -8963,6 +9131,15 @@ extend type Sector {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Sector.id", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Sector` table where the `imagenPortadaUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  imagenPortadaUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Sector.imagenPortadaUrl", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Sector` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   titulo_count(
@@ -9071,6 +9248,40 @@ extend type Semestre {
     """
     having: Grupo_Having
   ): [Grupo!]! @fdc_generated(from: "Grupo.semestre", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Plan` objects in a one-to-many relationship (where `Plan`.`periodoVigencia` is this object).
+  """
+  planes_on_periodoVigencia(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Plan_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Plan_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Plan_Having
+  ): [Plan!]! @fdc_generated(from: "Plan.periodoVigencia", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
@@ -9385,6 +9596,98 @@ extend type Tecnica {
   A generated field that is used for caching results in SDKs.
   """
   _id: ID! @fdc_generated(from: "Tecnica.id", purpose: ENTITY_ID)
+}
+extend type TipoCarrera {
+  """
+  ✨ List `Carrera` objects in a one-to-many relationship (where `Carrera`.`tipoCarrera` is this object).
+  """
+  carreras_on_tipoCarrera(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Carrera_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Carrera_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Carrera_Having
+  ): [Carrera!]! @fdc_generated(from: "Carrera.tipoCarrera", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "TipoCarrera", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `TipoCarrera` table.
+  """
+  _count: Int! @fdc_generated(from: "TipoCarrera.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TipoCarrera` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TipoCarrera.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TipoCarrera` table where the `nombre` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nombre_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TipoCarrera.nombre", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `TipoCarrera` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "TipoCarrera.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `TipoCarrera` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "TipoCarrera.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `TipoCarrera` table.
+  """
+  id_min: Int @fdc_generated(from: "TipoCarrera.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `TipoCarrera` table.
+  """
+  id_max: Int @fdc_generated(from: "TipoCarrera.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "TipoCarrera.id", purpose: ENTITY_ID)
 }
 extend type Turno {
   """

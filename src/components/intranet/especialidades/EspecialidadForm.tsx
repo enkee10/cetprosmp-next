@@ -2,9 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Alert, Box, Button, CircularProgress, Container, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
+import CoverImageField from '@/components/intranet/academico/CoverImageField';
 
 interface EspecialidadFormProps {
   especialidad?: {
@@ -14,6 +27,7 @@ interface EspecialidadFormProps {
     descripcion: string;
     descripcion2: string;
     slug: string;
+    imagenPortadaUrl?: string | null;
     actEconomicaId: string;
   } | null;
   especialidadId?: string;
@@ -29,7 +43,13 @@ interface EspecialidadData {
   descripcion: string | null;
   descripcion2: string | null;
   slug: string | null;
+  imagenPortadaUrl: string | null;
   actEconomicaId: number | null;
+}
+
+interface ActEconomicaOption {
+  id: number;
+  titulo: string | null;
 }
 
 export function EspecialidadForm({
@@ -44,11 +64,32 @@ export function EspecialidadForm({
   const [descripcion, setDescripcion] = useState(especialidad ? especialidad.descripcion : '');
   const [descripcion2, setDescripcion2] = useState(especialidad ? especialidad.descripcion2 : '');
   const [slug, setSlug] = useState(especialidad ? especialidad.slug : '');
+  const [imagenPortadaUrl, setImagenPortadaUrl] = useState(especialidad?.imagenPortadaUrl || '');
   const [actEconomicaId, setActEconomicaId] = useState(especialidad ? especialidad.actEconomicaId : '');
+  const [actEconomicas, setActEconomicas] = useState<ActEconomicaOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingEspecialidad, setLoadingEspecialidad] = useState(Boolean(especialidadId && !especialidad));
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchActEconomicas = async () => {
+      try {
+        const functions = getFunctions(app);
+        const listActEconomicas = httpsCallable<undefined, { actEconomicas?: ActEconomicaOption[] }>(
+          functions,
+          'listActEconomicas',
+        );
+        const result = await listActEconomicas();
+        setActEconomicas(result.data.actEconomicas || []);
+      } catch (err) {
+        console.error('Error fetching actividades economicas: ', err);
+        setError('No se pudieron cargar las actividades economicas para el selector.');
+      }
+    };
+
+    void fetchActEconomicas();
+  }, []);
 
   useEffect(() => {
     const fetchEspecialidad = async () => {
@@ -70,6 +111,7 @@ export function EspecialidadForm({
           setDescripcion(fetched.descripcion || '');
           setDescripcion2(fetched.descripcion2 || '');
           setSlug(fetched.slug || '');
+          setImagenPortadaUrl(fetched.imagenPortadaUrl || '');
           setActEconomicaId(fetched.actEconomicaId != null ? String(fetched.actEconomicaId) : '');
         }
       } catch (err) {
@@ -98,6 +140,7 @@ export function EspecialidadForm({
           descripcion: string;
           descripcion2: string;
           slug: string;
+          imagenPortadaUrl?: string | null;
           actEconomicaId?: number | null;
         },
         { id: number | null }
@@ -110,6 +153,7 @@ export function EspecialidadForm({
         descripcion,
         descripcion2,
         slug,
+        imagenPortadaUrl: imagenPortadaUrl.trim() || null,
         actEconomicaId: actEconomicaId ? Number(actEconomicaId) : null,
       });
 
@@ -181,13 +225,31 @@ export function EspecialidadForm({
           fullWidth
           margin="normal"
         />
-        <TextField
-          label="Actividad Economica ID"
-          value={actEconomicaId}
-          onChange={(e) => setActEconomicaId(e.target.value)}
-          fullWidth
-          margin="normal"
-          type="number"
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Actividad Economica</InputLabel>
+          <Select
+            label="Actividad Economica"
+            value={actEconomicaId}
+            onChange={(event) => setActEconomicaId(String(event.target.value))}
+          >
+            <MenuItem value="">Sin actividad economica</MenuItem>
+            {actEconomicaId && !actEconomicas.some((actEconomica) => String(actEconomica.id) === actEconomicaId) ? (
+              <MenuItem value={actEconomicaId} disabled>
+                Actividad economica actual no disponible
+              </MenuItem>
+            ) : null}
+            {actEconomicas.map((actEconomica) => (
+              <MenuItem key={actEconomica.id} value={String(actEconomica.id)}>
+                {actEconomica.titulo || `Actividad economica ${actEconomica.id}`}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <CoverImageField
+          value={imagenPortadaUrl}
+          onChange={setImagenPortadaUrl}
+          storageFolder="especialidades"
+          disabled={loading}
         />
         <TextField
           label="Descripcion"

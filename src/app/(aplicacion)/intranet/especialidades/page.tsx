@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
+import { Avatar, Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
 import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
@@ -19,11 +19,18 @@ interface Especialidad {
   descripcion: string | null;
   descripcion2: string | null;
   slug: string | null;
+  imagenPortadaUrl: string | null;
   actEconomicaId: number | null;
+}
+
+interface ActEconomicaOption {
+  id: number;
+  titulo: string | null;
 }
 
 export default function EspecialidadesPage() {
   const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
+  const [actEconomicas, setActEconomicas] = useState<ActEconomicaOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openEspecialidadModal, setOpenEspecialidadModal] = useState(false);
@@ -37,10 +44,11 @@ export default function EspecialidadesPage() {
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
+      portada: true,
       titulo: true,
       tituloComercial: true,
       slug: true,
-      actEconomicaId: true,
+      actEconomicaTitulo: true,
       descripcion: false,
       descripcion2: false,
       actions: true,
@@ -59,8 +67,16 @@ export default function EspecialidadesPage() {
         functions,
         'listEspecialidades',
       );
-      const result = await listEspecialidades();
-      setEspecialidades(result.data.especialidades || []);
+      const listActEconomicas = httpsCallable<undefined, { actEconomicas?: ActEconomicaOption[] }>(
+        functions,
+        'listActEconomicas',
+      );
+      const [especialidadesResult, actEconomicasResult] = await Promise.all([
+        listEspecialidades(),
+        listActEconomicas(),
+      ]);
+      setEspecialidades(especialidadesResult.data.especialidades || []);
+      setActEconomicas(actEconomicasResult.data.actEconomicas || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching especialidades: ', err);
@@ -71,6 +87,17 @@ export default function EspecialidadesPage() {
       setLoading(false);
     }
   }, [auth, functions]);
+
+  const actEconomicaTitleById = useMemo(
+    () =>
+      new Map(
+        actEconomicas.map((actEconomica) => [
+          actEconomica.id,
+          actEconomica.titulo || `Actividad economica ${actEconomica.id}`,
+        ]),
+      ),
+    [actEconomicas],
+  );
 
   useEffect(() => {
     void fetchEspecialidades();
@@ -139,6 +166,43 @@ export default function EspecialidadesPage() {
   const columns = useMemo<GridColDef[]>(
     () => [
       {
+        field: 'portada',
+        headerName: 'Portada',
+        width: 60,
+        minWidth: 60,
+        maxWidth: 60,
+        align: 'center',
+        headerAlign: 'center',
+        cellClassName: 'cover-cell',
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => {
+          const row = params.row as Especialidad;
+          return (
+            <Stack
+              sx={{
+                width: 60,
+                height: 52,
+                px: '10px',
+                boxSizing: 'border-box',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Avatar
+                src={row.imagenPortadaUrl || undefined}
+                alt={row.titulo || 'Especialidad'}
+                variant="rounded"
+                sx={{ width: 40, height: 40 }}
+              >
+                {(row.titulo || 'E').trim().charAt(0).toUpperCase()}
+              </Avatar>
+            </Stack>
+          );
+        },
+      },
+      {
         field: 'titulo',
         headerName: 'Titulo',
         flex: 1,
@@ -160,11 +224,14 @@ export default function EspecialidadesPage() {
         valueGetter: (_value, row: Especialidad) => row.slug || '',
       },
       {
-        field: 'actEconomicaId',
-        headerName: 'Act. Economica ID',
-        flex: 0.8,
-        minWidth: 145,
-        valueGetter: (_value, row: Especialidad) => (row.actEconomicaId != null ? row.actEconomicaId : ''),
+        field: 'actEconomicaTitulo',
+        headerName: 'Act. Economica',
+        flex: 1,
+        minWidth: 170,
+        valueGetter: (_value, row: Especialidad) =>
+          row.actEconomicaId != null
+            ? actEconomicaTitleById.get(row.actEconomicaId) || `Actividad economica ${row.actEconomicaId}`
+            : '',
       },
       {
         field: 'descripcion',
@@ -204,7 +271,7 @@ export default function EspecialidadesPage() {
         ),
       },
     ],
-    [],
+    [actEconomicaTitleById],
   );
 
   const columnToggleItems = useMemo(
@@ -245,6 +312,7 @@ export default function EspecialidadesPage() {
         columnVisibilityModel={columnVisibilityModel}
         onColumnVisibilityModelChange={setColumnVisibilityModel}
         loading={loading}
+        sx={{ '& .cover-cell': { p: 0 } }}
         getRowId={(row) => row.id}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}

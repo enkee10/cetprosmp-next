@@ -38,11 +38,18 @@ export {
   deleteCarrera,
 } from "./carreras/handlers.js";
 export {
+  listTiposCarrera,
+  getTipoCarrera,
+  createOrUpdateTipoCarrera,
+  deleteTipoCarrera,
+} from "./tipos-carrera/handlers.js";
+export {
   listPlanes,
   getPlan,
   createOrUpdatePlan,
   deletePlan,
 } from "./planes/handlers.js";
+export { listSemestres } from "./semestres/handlers.js";
 export {
   listModulos,
   getModulo,

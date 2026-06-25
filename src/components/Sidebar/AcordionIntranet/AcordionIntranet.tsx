@@ -11,6 +11,7 @@ import {
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import CategoryIcon from '@mui/icons-material/Category';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import FactoryIcon from '@mui/icons-material/Factory';
@@ -64,6 +65,13 @@ const menuSections: IntranetMenuSection[] = [
       { id: 'indicadores-capacidad', title: 'Indicador de Capacidad', path: '/intranet/indicadores-capacidad', icon: <FactCheckIcon /> },
       { id: 'aprendizajes', title: 'Aprendizajes', path: '/intranet/aprendizajes', icon: <PsychologyIcon /> },
       { id: 'actividades', title: 'Actividad', path: '/intranet/actividades', icon: <EventNoteIcon /> },
+    ],
+  },
+  {
+    id: 'miselanea',
+    title: 'Miselanea',
+    items: [
+      { id: 'tipos-carrera', title: 'Tipos de Carrera', path: '/intranet/tipos-carrera', icon: <CategoryIcon /> },
     ],
   },
   {

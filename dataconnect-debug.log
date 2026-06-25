@@ -1,206 +1,222 @@
-I0625 14:33:19.500210   11280 load.go:31] Reloading schema and connectors...
-I0625 14:33:19.595282   11280 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 535e] UpdateResources(): done
-Main schema: sources: schema\schema.gql [24371B] 
-Connector "default": sources: example\queries.gql [1811B] example\mutations.gql [1673B] 
-I0625 14:33:19.702549   11280 codegen.go:101] [connector "default" javascriptSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
-I0625 14:33:19.720936   11280 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
-I0625 14:33:19.725929   11280 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
-I0625 14:33:19.730982   11280 collector.go:107] schema extensions wrote into "D:\\_Desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
+I0625 17:11:19.833349   16372 load.go:31] Reloading schema and connectors...
+I0625 17:11:19.946448   16372 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 45a0] UpdateResources(): done
+Main schema: sources: schema\schema.gql [24448B] 
+Connector "default": sources: example\mutations.gql [1740B] example\queries.gql [1877B] 
+I0625 17:11:20.042042   16372 codegen.go:101] [connector "default" javascriptSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+I0625 17:11:20.057965   16372 codegen.go:101] [connector "default" adminSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+I0625 17:11:20.066921   16372 codegen.go:101] [connector "default" adminSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+I0625 17:11:20.074117   16372 collector.go:107] schema extensions wrote into "C:\\_desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
 Generated sources: prelude.gql [84995B] main\input.gql [692475B] main\relation.gql [378751B] main\query.gql [75642B] main\mutation.gql [202275B] 
-I0625 14:33:19.774612   11280 collector.go:107] connector "default" javascriptSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
-Generated sources: react\esm\index.esm.js [3611B] react\README.md [52811B] .guides/setup.md [1682B] esm\index.esm.js [6095B] index.d.ts [14909B] esm\package.json [17B] package.json [853B] react\index.d.ts [4313B] react\package.json [460B] react\esm\package.json [17B] react\index.cjs.js [3804B] .guides/config.json [236B] index.cjs.js [6705B] README.md [47215B] .guides/usage.md [3712B] 
-I0625 14:33:19.776391   11280 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
-I0625 14:33:19.791847   11280 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+I0625 17:11:20.087167   16372 collector.go:107] connector "default" javascriptSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+Generated sources: .guides/setup.md [1682B] react\package.json [460B] react\README.md [52811B] .guides/config.json [236B] index.cjs.js [6705B] package.json [853B] README.md [47215B] esm\index.esm.js [6095B] esm\package.json [17B] react\esm\index.esm.js [3611B] .guides/usage.md [3712B] index.d.ts [14909B] react\index.d.ts [4313B] react\esm\package.json [17B] react\index.cjs.js [3804B] 
+I0625 17:11:20.089174   16372 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
+I0625 17:11:20.118718   16372 collector.go:107] connector "default" adminSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
 Generated sources: index.d.ts [14011B] esm\index.esm.js [3271B] esm\package.json [17B] index.cjs.js [3602B] package.json [632B] 
-I0625 14:33:19.797938   11280 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
-I0625 14:33:19.821117   11280 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
-Generated sources: index.d.ts [14011B] esm\index.esm.js [3271B] esm\package.json [17B] index.cjs.js [3602B] package.json [632B] 
-I0625 14:33:19.851056   11280 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
-I0625 14:33:19.852077   11280 load.go:109] Finished reloading
-I0625 14:33:19.852983   11280 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399
-I0625 14:33:19.853585   11280 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399
-I0625 14:33:22.990083   11280 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] UpdateResources(): done
-Main schema: sources: schema\schema.gql [24371B] 
-Connector "default": sources: example\mutations.gql [1673B] example\queries.gql [1811B] 
-I0625 14:33:23.027184   11280 configure_emulator.go:21] ConfigureEmulator successed
+I0625 17:11:20.118718   16372 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0625 17:11:20.122732   16372 collector.go:107] connector "default" adminSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+Generated sources: esm\package.json [17B] index.cjs.js [3602B] package.json [632B] index.d.ts [14011B] esm\index.esm.js [3271B] 
+I0625 17:11:20.127728   16372 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0625 17:11:20.127728   16372 load.go:109] Finished reloading
+I0625 17:11:20.127728   16372 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399
+I0625 17:11:20.127728   16372 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399
+I0625 17:11:23.270587   16372 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] UpdateResources(): done
+Main schema: sources: schema\schema.gql [24448B] 
+Connector "default": sources: example\mutations.gql [1740B] example\queries.gql [1877B] 
+I0625 17:11:23.334345   16372 configure_emulator.go:21] ConfigureEmulator successed
 Request: service_id:  "cetprosmp-2026-service"
-connection_string:  "postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable"
+connection_string:  "postgres://127.0.0.1:5432/cetprosmp-db?sslmode=disable"
 database:  "cetprosmp-db"
 
 Response: 
-I0625 14:50:53.779081   11280 execute.go:57] Database ping is quick (likely cached), took 874µs
-I0625 14:50:53.781607   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ImpersonateQuery query GetRoleById: succeeded. Connector: default
-I0625 14:51:05.755051   11280 execute.go:57] Database ping is quick (likely cached), took 2.2324ms
-I0625 14:51:05.760432   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:05.761921   11280 execute.go:57] Database ping is quick (likely cached), took 351.9µs
-I0625 14:51:05.763020   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:05.765337   11280 execute.go:57] Database ping is quick (likely cached), took 0s
-I0625 14:51:05.767496   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:05.770947   11280 execute.go:57] Database ping is quick (likely cached), took 494.1µs
-I0625 14:51:05.775683   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:05.776704   11280 execute.go:57] Database ping is quick (likely cached), took 1.0219ms
-I0625 14:51:05.777240   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:05.801632   11280 execute.go:57] Database ping is quick (likely cached), took 13.4964ms
-I0625 14:51:05.809868   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:05.814718   11280 execute.go:57] Database ping is quick (likely cached), took 4.85ms
-I0625 14:51:05.818084   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:05.820366   11280 execute.go:57] Database ping is quick (likely cached), took 2.0433ms
-I0625 14:51:05.824484   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:05.834214   11280 execute.go:57] Database ping is quick (likely cached), took 498.8µs
-I0625 14:51:05.835373   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:07.794508   11280 execute.go:57] Database ping is quick (likely cached), took 125.1µs
-I0625 14:51:07.797489   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-W0625 14:51:18.252986   11280 execute.go:51] Database ping is slow 29.4292ms
+I0625 17:13:08.072685   16372 execute.go:57] Database ping is quick (likely cached), took 1.6522ms
+I0625 17:13:08.081164   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ImpersonateQuery query GetRoleById: succeeded. Connector: default
+I0625 17:13:24.407112   16372 execute.go:57] Database ping is quick (likely cached), took 0s
+I0625 17:13:24.427115   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:13:24.433366   16372 execute.go:57] Database ping is quick (likely cached), took 993µs
+I0625 17:13:24.452515   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:13:24.454940   16372 execute.go:57] Database ping is quick (likely cached), took 1.9017ms
+I0625 17:13:24.461237   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:13:24.463232   16372 execute.go:57] Database ping is quick (likely cached), took 1.9947ms
+I0625 17:13:24.464642   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:13:24.484715   16372 execute.go:57] Database ping is quick (likely cached), took 1.0737ms
+I0625 17:13:24.487785   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:13:24.505232   16372 execute.go:57] Database ping is quick (likely cached), took 7.9398ms
+I0625 17:13:24.513850   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:13:24.518976   16372 execute.go:57] Database ping is quick (likely cached), took 4.5554ms
+I0625 17:13:24.528922   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:13:24.530660   16372 execute.go:57] Database ping is quick (likely cached), took 532.8µs
+I0625 17:13:24.535354   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:13:26.989094   16372 execute.go:57] Database ping is quick (likely cached), took 2.67ms
+I0625 17:13:26.996040   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:13:26.997374   16372 execute.go:57] Database ping is quick (likely cached), took 761.3µs
+I0625 17:13:26.999134   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:21:49.962453   16372 execute.go:57] Database ping is quick (likely cached), took 1.9975ms
+I0625 17:21:49.965963   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:21:49.967002   16372 execute.go:57] Database ping is quick (likely cached), took 531.6µs
+I0625 17:21:49.968820   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:21:49.987480   16372 execute.go:57] Database ping is quick (likely cached), took 1.2791ms
+I0625 17:21:49.992147   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:21:49.995899   16372 execute.go:57] Database ping is quick (likely cached), took 1.7323ms
+I0625 17:21:49.997304   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:21:57.010948   16372 execute.go:57] Database ping is quick (likely cached), took 1.822ms
+I0625 17:21:57.037859   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+W0625 17:21:57.098487   16372 execute.go:51] Database ping is slow 25.4688ms
 stats before: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}
 stats After: sql.DBStats{MaxOpenConnections:0, OpenConnections:1, InUse:0, Idle:1, WaitCount:0, WaitDuration:0, MaxIdleClosed:0, MaxIdleTimeClosed:0, MaxLifetimeClosed:0}
-I0625 14:51:18.257502   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:18.258002   11280 execute.go:57] Database ping is quick (likely cached), took 500.4µs
-I0625 14:51:18.260451   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:18.278437   11280 execute.go:57] Database ping is quick (likely cached), took 367.9µs
-I0625 14:51:18.280453   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:18.290408   11280 execute.go:57] Database ping is quick (likely cached), took 792.1µs
-I0625 14:51:18.293748   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:18.312096   11280 execute.go:57] Database ping is quick (likely cached), took 1.0266ms
-I0625 14:51:18.313688   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:18.317410   11280 execute.go:57] Database ping is quick (likely cached), took 2.9478ms
-I0625 14:51:18.323274   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:18.348153   11280 execute.go:57] Database ping is quick (likely cached), took 8.3565ms
-I0625 14:51:18.355373   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:18.361504   11280 execute.go:57] Database ping is quick (likely cached), took 1.1922ms
-I0625 14:51:18.362596   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:20.438064   11280 execute.go:57] Database ping is quick (likely cached), took 912.1µs
-I0625 14:51:20.441163   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:20.525821   11280 execute.go:57] Database ping is quick (likely cached), took 955.1µs
-I0625 14:51:20.528984   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:27.462544   11280 execute.go:57] Database ping is quick (likely cached), took 4.0776ms
-I0625 14:51:27.468216   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:27.469556   11280 execute.go:57] Database ping is quick (likely cached), took 622.6µs
-I0625 14:51:27.471017   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:27.486354   11280 execute.go:57] Database ping is quick (likely cached), took 4.3446ms
-I0625 14:51:27.488279   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:27.490005   11280 execute.go:57] Database ping is quick (likely cached), took 1.7263ms
-I0625 14:51:27.492138   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:30.371256   11280 execute.go:57] Database ping is quick (likely cached), took 1.3535ms
-I0625 14:51:30.376732   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:30.377698   11280 execute.go:57] Database ping is quick (likely cached), took 501µs
-I0625 14:51:30.384947   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:30.396446   11280 execute.go:57] Database ping is quick (likely cached), took 2.1787ms
-I0625 14:51:30.400471   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:51:30.414970   11280 execute.go:57] Database ping is quick (likely cached), took 1.2477ms
-I0625 14:51:30.417668   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:35.582496   11280 execute.go:57] Database ping is quick (likely cached), took 864.4µs
-I0625 14:52:35.600616   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql mutation : succeeded. 
-I0625 14:52:37.505624   11280 execute.go:57] Database ping is quick (likely cached), took 539.7µs
-I0625 14:52:37.507613   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql mutation : succeeded. 
-I0625 14:52:37.688877   11280 execute.go:57] Database ping is quick (likely cached), took 14.7774ms
-I0625 14:52:37.697639   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:37.699670   11280 execute.go:57] Database ping is quick (likely cached), took 2.0314ms
-I0625 14:52:37.701836   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:37.704363   11280 execute.go:57] Database ping is quick (likely cached), took 1.9897ms
-I0625 14:52:37.711567   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:37.716149   11280 execute.go:57] Database ping is quick (likely cached), took 4.5815ms
-I0625 14:52:37.721925   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:37.723473   11280 execute.go:57] Database ping is quick (likely cached), took 1.5474ms
-I0625 14:52:37.726146   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:37.726634   11280 execute.go:57] Database ping is quick (likely cached), took 488.4µs
-I0625 14:52:37.729134   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:37.754751   11280 execute.go:57] Database ping is quick (likely cached), took 346.3µs
-I0625 14:52:37.756588   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:37.972280   11280 execute.go:57] Database ping is quick (likely cached), took 4.5913ms
-I0625 14:52:37.974534   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:37.975342   11280 execute.go:57] Database ping is quick (likely cached), took 485.5µs
-I0625 14:52:37.978764   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:37.980771   11280 execute.go:57] Database ping is quick (likely cached), took 2.0069ms
-I0625 14:52:37.981775   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:45.682595   11280 execute.go:57] Database ping is quick (likely cached), took 16.026ms
-I0625 14:52:45.694662   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:45.698143   11280 execute.go:57] Database ping is quick (likely cached), took 3.4812ms
-I0625 14:52:45.699644   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:45.699644   11280 execute.go:57] Database ping is quick (likely cached), took 0s
-I0625 14:52:45.701918   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:45.707298   11280 execute.go:57] Database ping is quick (likely cached), took 4.8813ms
-I0625 14:52:45.719317   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:45.722314   11280 execute.go:57] Database ping is quick (likely cached), took 2.6602ms
-I0625 14:52:45.726820   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:45.727401   11280 execute.go:57] Database ping is quick (likely cached), took 580.7µs
-I0625 14:52:45.728991   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:45.728991   11280 execute.go:57] Database ping is quick (likely cached), took 0s
-I0625 14:52:45.730858   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:52:45.733266   11280 execute.go:57] Database ping is quick (likely cached), took 2.4074ms
-I0625 14:52:45.738121   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:58:41.229722   11280 execute.go:57] Database ping is quick (likely cached), took 7.9718ms
-I0625 14:58:41.233722   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:58:41.235156   11280 execute.go:57] Database ping is quick (likely cached), took 649.7µs
-I0625 14:58:41.237699   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:58:41.240188   11280 execute.go:57] Database ping is quick (likely cached), took 1.9593ms
-I0625 14:58:41.243004   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:58:41.243789   11280 execute.go:57] Database ping is quick (likely cached), took 784.9µs
-I0625 14:58:41.245765   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:59:13.597488   11280 execute.go:57] Database ping is quick (likely cached), took 6.5543ms
-I0625 14:59:13.599898   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:59:13.600415   11280 execute.go:57] Database ping is quick (likely cached), took 0s
-I0625 14:59:13.602064   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 14:59:13.602653   11280 execute.go:57] Database ping is quick (likely cached), took 84.1µs
-I0625 14:59:13.603794   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:00:47.596987   11280 execute.go:57] Database ping is quick (likely cached), took 524.3µs
-I0625 15:00:47.601823   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ImpersonateQuery query GetRoleById: succeeded. Connector: default
-I0625 15:00:56.455806   11280 execute.go:57] Database ping is quick (likely cached), took 13.4157ms
-I0625 15:00:56.465936   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:00:56.473472   11280 execute.go:57] Database ping is quick (likely cached), took 7.536ms
-I0625 15:00:56.477297   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:00:56.481906   11280 execute.go:57] Database ping is quick (likely cached), took 4.6089ms
-I0625 15:00:56.483896   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:00:56.488913   11280 execute.go:57] Database ping is quick (likely cached), took 5.0172ms
-I0625 15:00:56.494395   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:00:56.499617   11280 execute.go:57] Database ping is quick (likely cached), took 4.694ms
-I0625 15:00:56.504286   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:00:56.511575   11280 execute.go:57] Database ping is quick (likely cached), took 7.2887ms
-I0625 15:00:56.516033   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:00:56.516561   11280 execute.go:57] Database ping is quick (likely cached), took 528µs
-I0625 15:00:56.517843   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:00:56.518918   11280 execute.go:57] Database ping is quick (likely cached), took 1.0756ms
-I0625 15:00:56.520285   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:00:56.525133   11280 execute.go:57] Database ping is quick (likely cached), took 4.3226ms
-I0625 15:00:56.527434   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:00:56.528489   11280 execute.go:57] Database ping is quick (likely cached), took 1.0557ms
-I0625 15:00:56.529501   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:05.586319   11280 execute.go:57] Database ping is quick (likely cached), took 10.5648ms
-I0625 15:01:05.595525   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:05.597008   11280 execute.go:57] Database ping is quick (likely cached), took 1.4833ms
-I0625 15:01:05.600309   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:05.605068   11280 execute.go:57] Database ping is quick (likely cached), took 4.7594ms
-I0625 15:01:05.607255   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:05.610980   11280 execute.go:57] Database ping is quick (likely cached), took 3.7247ms
-I0625 15:01:05.613206   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:05.614270   11280 execute.go:57] Database ping is quick (likely cached), took 993.9µs
-I0625 15:01:05.616627   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:05.618067   11280 execute.go:57] Database ping is quick (likely cached), took 1.4397ms
-I0625 15:01:05.624252   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:05.624781   11280 execute.go:57] Database ping is quick (likely cached), took 528.5µs
-I0625 15:01:05.626360   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:05.626360   11280 execute.go:57] Database ping is quick (likely cached), took 0s
-I0625 15:01:05.629331   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:40.289915   11280 execute.go:57] Database ping is quick (likely cached), took 120.3µs
-I0625 15:01:40.291411   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql mutation : succeeded. 
-I0625 15:01:40.308547   11280 execute.go:57] Database ping is quick (likely cached), took 0s
-I0625 15:01:40.309979   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql mutation : succeeded. 
-I0625 15:01:40.500843   11280 execute.go:57] Database ping is quick (likely cached), took 11.3209ms
-I0625 15:01:40.507926   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:40.509332   11280 execute.go:57] Database ping is quick (likely cached), took 1.4062ms
-I0625 15:01:40.509944   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:40.511251   11280 execute.go:57] Database ping is quick (likely cached), took 1.3067ms
-I0625 15:01:40.517942   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:40.519954   11280 execute.go:57] Database ping is quick (likely cached), took 1.5387ms
-I0625 15:01:40.520661   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:40.522015   11280 execute.go:57] Database ping is quick (likely cached), took 1.3542ms
-I0625 15:01:40.525368   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:40.526585   11280 execute.go:57] Database ping is quick (likely cached), took 1.2172ms
-I0625 15:01:40.528684   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:40.531709   11280 execute.go:57] Database ping is quick (likely cached), took 3.025ms
-I0625 15:01:40.534299   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:40.766046   11280 execute.go:57] Database ping is quick (likely cached), took 2.7293ms
-I0625 15:01:40.768237   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:40.769236   11280 execute.go:57] Database ping is quick (likely cached), took 999.3µs
-I0625 15:01:40.770419   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
-I0625 15:01:40.771653   11280 execute.go:57] Database ping is quick (likely cached), took 1.2345ms
-I0625 15:01:40.772470   11280 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service a6fa] ExecuteGraphql query : succeeded. 
+I0625 17:21:57.133427   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:21:57.193834   16372 execute.go:57] Database ping is quick (likely cached), took 0s
+I0625 17:21:57.212461   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:21:57.213572   16372 execute.go:57] Database ping is quick (likely cached), took 1.1104ms
+I0625 17:21:57.217091   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:23:03.883268   16372 execute.go:57] Database ping is quick (likely cached), took 552.8µs
+I0625 17:23:04.013187   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:23:06.525432   16372 execute.go:57] Database ping is quick (likely cached), took 584.8µs
+I0625 17:23:06.531525   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:23:06.532246   16372 execute.go:57] Database ping is quick (likely cached), took 720.6µs
+I0625 17:23:06.539182   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:23:06.722966   16372 execute.go:57] Database ping is quick (likely cached), took 9.8336ms
+I0625 17:23:06.726729   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:23:06.727235   16372 execute.go:57] Database ping is quick (likely cached), took 506.1µs
+I0625 17:23:06.731500   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:23:06.734959   16372 execute.go:57] Database ping is quick (likely cached), took 3.4581ms
+I0625 17:23:06.742068   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:23:06.746803   16372 execute.go:57] Database ping is quick (likely cached), took 2.8157ms
+I0625 17:23:06.754465   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:23:06.760367   16372 execute.go:57] Database ping is quick (likely cached), took 564.9µs
+I0625 17:23:06.763250   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:23:06.774115   16372 execute.go:57] Database ping is quick (likely cached), took 562.6µs
+I0625 17:23:06.775531   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:23:06.864487   16372 execute.go:57] Database ping is quick (likely cached), took 531.1µs
+I0625 17:23:06.865668   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:23:07.016572   16372 execute.go:57] Database ping is quick (likely cached), took 2.3184ms
+I0625 17:23:07.020502   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:23:07.021086   16372 execute.go:57] Database ping is quick (likely cached), took 583.8µs
+I0625 17:23:07.023412   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:23:07.026001   16372 execute.go:57] Database ping is quick (likely cached), took 2.5893ms
+I0625 17:23:07.027407   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:24:02.762348   16372 execute.go:57] Database ping is quick (likely cached), took 8.6332ms
+I0625 17:24:02.772106   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:24:02.777224   16372 execute.go:57] Database ping is quick (likely cached), took 4.5959ms
+I0625 17:24:02.780835   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:24:02.781961   16372 execute.go:57] Database ping is quick (likely cached), took 620.4µs
+I0625 17:24:02.787289   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:24:02.789507   16372 execute.go:57] Database ping is quick (likely cached), took 2.2188ms
+I0625 17:24:02.795106   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:24:02.796459   16372 execute.go:57] Database ping is quick (likely cached), took 1.3526ms
+I0625 17:24:02.799189   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:24:02.799753   16372 execute.go:57] Database ping is quick (likely cached), took 564.2µs
+I0625 17:24:02.802964   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:24:02.805478   16372 execute.go:57] Database ping is quick (likely cached), took 579.1µs
+I0625 17:24:02.810717   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:24:02.811639   16372 execute.go:57] Database ping is quick (likely cached), took 921.4µs
+I0625 17:24:02.814382   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:26.141219   16372 execute.go:57] Database ping is quick (likely cached), took 968.7µs
+I0625 17:25:26.143969   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:25:26.163316   16372 execute.go:57] Database ping is quick (likely cached), took 576.2µs
+I0625 17:25:26.166535   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:25:26.168202   16372 execute.go:57] Database ping is quick (likely cached), took 1.6668ms
+I0625 17:25:26.173510   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:25:26.345078   16372 execute.go:57] Database ping is quick (likely cached), took 9.9881ms
+I0625 17:25:26.349914   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:26.355643   16372 execute.go:57] Database ping is quick (likely cached), took 5.7282ms
+I0625 17:25:26.359023   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:26.361201   16372 execute.go:57] Database ping is quick (likely cached), took 2.1783ms
+I0625 17:25:26.362780   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:26.364921   16372 execute.go:57] Database ping is quick (likely cached), took 2.1408ms
+I0625 17:25:26.367857   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:26.368430   16372 execute.go:57] Database ping is quick (likely cached), took 0s
+I0625 17:25:26.370216   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:26.371437   16372 execute.go:57] Database ping is quick (likely cached), took 558.5µs
+I0625 17:25:26.372787   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:26.376487   16372 execute.go:57] Database ping is quick (likely cached), took 3.7ms
+I0625 17:25:26.379198   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:26.638705   16372 execute.go:57] Database ping is quick (likely cached), took 3.3498ms
+I0625 17:25:26.645804   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:26.646954   16372 execute.go:57] Database ping is quick (likely cached), took 1.1501ms
+I0625 17:25:26.648177   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:26.650357   16372 execute.go:57] Database ping is quick (likely cached), took 2.1798ms
+I0625 17:25:26.653380   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:35.937043   16372 execute.go:57] Database ping is quick (likely cached), took 12.1791ms
+I0625 17:25:35.942187   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:35.943311   16372 execute.go:57] Database ping is quick (likely cached), took 1.1234ms
+I0625 17:25:35.944715   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:35.950197   16372 execute.go:57] Database ping is quick (likely cached), took 5.4812ms
+I0625 17:25:35.956565   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:35.958480   16372 execute.go:57] Database ping is quick (likely cached), took 1.9148ms
+I0625 17:25:35.963756   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:35.966345   16372 execute.go:57] Database ping is quick (likely cached), took 2.0328ms
+I0625 17:25:35.968240   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:35.970208   16372 execute.go:57] Database ping is quick (likely cached), took 1.9673ms
+I0625 17:25:35.972365   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:35.972871   16372 execute.go:57] Database ping is quick (likely cached), took 0s
+I0625 17:25:35.974530   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:25:35.976383   16372 execute.go:57] Database ping is quick (likely cached), took 1.8527ms
+I0625 17:25:35.979206   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:07.546851   16372 execute.go:57] Database ping is quick (likely cached), took 557µs
+I0625 17:26:07.556007   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:26:07.574815   16372 execute.go:57] Database ping is quick (likely cached), took 1.1219ms
+I0625 17:26:07.578606   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:26:07.579341   16372 execute.go:57] Database ping is quick (likely cached), took 735.6µs
+I0625 17:26:07.587121   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:26:07.751570   16372 execute.go:57] Database ping is quick (likely cached), took 7.6864ms
+I0625 17:26:07.764272   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:07.766987   16372 execute.go:57] Database ping is quick (likely cached), took 2.715ms
+I0625 17:26:07.771517   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:07.774133   16372 execute.go:57] Database ping is quick (likely cached), took 2.6156ms
+I0625 17:26:07.777594   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:07.778954   16372 execute.go:57] Database ping is quick (likely cached), took 1.36ms
+I0625 17:26:07.780133   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:07.782157   16372 execute.go:57] Database ping is quick (likely cached), took 1.2789ms
+I0625 17:26:07.785710   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:07.787364   16372 execute.go:57] Database ping is quick (likely cached), took 1.6537ms
+I0625 17:26:07.791237   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:07.791765   16372 execute.go:57] Database ping is quick (likely cached), took 527.7µs
+I0625 17:26:07.793269   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:08.064647   16372 execute.go:57] Database ping is quick (likely cached), took 15.9336ms
+I0625 17:26:08.068203   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:08.068737   16372 execute.go:57] Database ping is quick (likely cached), took 533.8µs
+I0625 17:26:08.070287   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:08.072287   16372 execute.go:57] Database ping is quick (likely cached), took 999µs
+I0625 17:26:08.079356   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:13.998418   16372 execute.go:57] Database ping is quick (likely cached), took 12.1868ms
+I0625 17:26:14.006801   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:14.008538   16372 execute.go:57] Database ping is quick (likely cached), took 1.7369ms
+I0625 17:26:14.017713   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:14.020386   16372 execute.go:57] Database ping is quick (likely cached), took 2.6731ms
+I0625 17:26:14.026951   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:14.031410   16372 execute.go:57] Database ping is quick (likely cached), took 4.4597ms
+I0625 17:26:14.034792   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:14.035331   16372 execute.go:57] Database ping is quick (likely cached), took 538.7µs
+I0625 17:26:14.036763   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:14.038454   16372 execute.go:57] Database ping is quick (likely cached), took 1.6909ms
+I0625 17:26:14.039529   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:14.040088   16372 execute.go:57] Database ping is quick (likely cached), took 559.5µs
+I0625 17:26:14.043418   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:14.045435   16372 execute.go:57] Database ping is quick (likely cached), took 2.0173ms
+I0625 17:26:14.050001   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:45.547876   16372 execute.go:57] Database ping is quick (likely cached), took 923.7µs
+I0625 17:26:45.550688   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:26:45.569362   16372 execute.go:57] Database ping is quick (likely cached), took 1.1868ms
+I0625 17:26:45.572172   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:26:45.572686   16372 execute.go:57] Database ping is quick (likely cached), took 514.1µs
+I0625 17:26:45.576496   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql mutation : succeeded. 
+I0625 17:26:45.792193   16372 execute.go:57] Database ping is quick (likely cached), took 9.9241ms
+I0625 17:26:45.803800   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:45.805785   16372 execute.go:57] Database ping is quick (likely cached), took 1.9849ms
+I0625 17:26:45.806728   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:45.808849   16372 execute.go:57] Database ping is quick (likely cached), took 2.1213ms
+I0625 17:26:45.814081   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:45.815872   16372 execute.go:57] Database ping is quick (likely cached), took 1.2554ms
+I0625 17:26:45.817203   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:45.819710   16372 execute.go:57] Database ping is quick (likely cached), took 2.507ms
+I0625 17:26:45.821605   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:45.822112   16372 execute.go:57] Database ping is quick (likely cached), took 506.9µs
+I0625 17:26:45.823166   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:45.824942   16372 execute.go:57] Database ping is quick (likely cached), took 1.7762ms
+I0625 17:26:45.826286   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:46.066765   16372 execute.go:57] Database ping is quick (likely cached), took 4.0939ms
+I0625 17:26:46.068887   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:46.070032   16372 execute.go:57] Database ping is quick (likely cached), took 1.145ms
+I0625 17:26:46.071490   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 
+I0625 17:26:46.073675   16372 execute.go:57] Database ping is quick (likely cached), took 2.1844ms
+I0625 17:26:46.074335   16372 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 32a8] ExecuteGraphql query : succeeded. 

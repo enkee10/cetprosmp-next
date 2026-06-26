@@ -6591,15 +6591,6 @@ extend type Modulo {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Modulo.creditos", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Modulo` table where the `descripcion2` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  descripcion2_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Modulo.descripcion2", purpose: QUERY_COUNT)
-  """
   ✨ Count the number of rows in the `Modulo` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   descripcion_count(

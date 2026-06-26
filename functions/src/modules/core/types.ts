@@ -180,6 +180,83 @@ export interface DataConnectSemestre {
   archivado?: boolean | null;
 }
 
+export interface DataConnectCalendario {
+  id: number;
+  titulo?: string | null;
+  descripcion?: string | null;
+  fechaIni?: string | null;
+  fechaFin?: string | null;
+  tipo?: string | null;
+  color?: string | null;
+  activo?: boolean | null;
+  archivado?: boolean | null;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+  semestreId?: number | null;
+}
+
+export interface DataConnectCalendarioInput {
+  titulo?: string | null;
+  descripcion?: string | null;
+  fechaIni?: string | null;
+  fechaFin?: string | null;
+  tipo?: string | null;
+  color?: string | null;
+  activo?: boolean;
+  archivado?: boolean;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+  semestreId?: number | null;
+}
+
+export interface DataConnectGrupo {
+  id: number;
+  turnoNombre?: string | null;
+  descripcion?: string | null;
+  nombreDisplay?: string | null;
+  estado?: string | null;
+  archivado?: boolean | null;
+  moduloId?: number | null;
+  semestreId?: number | null;
+  personalId?: number | null;
+  paqueteId?: number | null;
+  turnoId?: number | null;
+  grupoOrd?: number | null;
+}
+
+export interface DataConnectEvento {
+  id: number;
+  titulo?: string | null;
+  descripcion?: string | null;
+  tipoEvento?: string | null;
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
+  todoElDia?: boolean | null;
+  ubicacion?: string | null;
+  color?: string | null;
+  estado?: string | null;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+  calendarioId: number;
+  grupoId?: number | null;
+}
+
+export interface DataConnectEventoInput {
+  titulo?: string | null;
+  descripcion?: string | null;
+  tipoEvento?: string | null;
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
+  todoElDia?: boolean;
+  ubicacion?: string | null;
+  color?: string | null;
+  estado?: string | null;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+  calendarioId: number;
+  grupoId?: number | null;
+}
+
 export interface DataConnectModulo {
   id: number;
   titulo?: string | null;
@@ -191,7 +268,7 @@ export interface DataConnectModulo {
   metas?: number | null;
   activo?: boolean | null;
   slug?: string | null;
-  descripcion2?: string | null;
+  plan?: { planEstudio?: string | null } | null;
   planId?: number | null;
 }
 
@@ -205,7 +282,6 @@ export interface DataConnectModuloInput {
   metas?: number | null;
   activo?: boolean;
   slug?: string | null;
-  descripcion2?: string | null;
   planId?: number | null;
 }
 

@@ -26,7 +26,9 @@ const LIST_MODULOS_QUERY = `
       metas
       activo
       slug
-      descripcion2
+      plan {
+        planEstudio
+      }
       planId
     }
   }
@@ -45,7 +47,9 @@ const GET_MODULO_QUERY = `
       metas
       activo
       slug
-      descripcion2
+      plan {
+        planEstudio
+      }
       planId
     }
   }

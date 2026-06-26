@@ -4,7 +4,9 @@ import {
   DataConnectAprendizajeInput,
   DataConnectCapacidadTerminalInput,
   DataConnectCarreraInput,
+  DataConnectCalendarioInput,
   DataConnectEspecialidadInput,
+  DataConnectEventoInput,
   DataConnectFamiliaInput,
   DataConnectIndicadorCapacidadInput,
   DataConnectMatriculaInput,
@@ -258,6 +260,40 @@ export function buildPlanDataFromInput(input: Record<string, unknown>): DataConn
   });
 }
 
+export function buildCalendarioDataFromInput(input: Record<string, unknown>): DataConnectCalendarioInput {
+  return compactUndefined({
+    titulo: asNullableString(input.titulo),
+    descripcion: asNullableString(input.descripcion),
+    fechaIni: asNullableTimestamp(input.fechaIni),
+    fechaFin: asNullableTimestamp(input.fechaFin),
+    tipo: asNullableString(input.tipo),
+    color: asNullableString(input.color),
+    activo: toBoolean(input.activo),
+    archivado: toBoolean(input.archivado),
+    fechaCreacion: asNullableTimestamp(input.fechaCreacion),
+    fechaActualizacion: asNullableTimestamp(input.fechaActualizacion),
+    semestreId: toNumberOrNull(input.semestreId),
+  });
+}
+
+export function buildEventoDataFromInput(input: Record<string, unknown>): DataConnectEventoInput {
+  return compactUndefined({
+    titulo: asNullableString(input.titulo),
+    descripcion: asNullableString(input.descripcion),
+    tipoEvento: asNullableString(input.tipoEvento),
+    fechaInicio: asNullableTimestamp(input.fechaInicio),
+    fechaFin: asNullableTimestamp(input.fechaFin),
+    todoElDia: toBoolean(input.todoElDia),
+    ubicacion: asNullableString(input.ubicacion),
+    color: asNullableString(input.color),
+    estado: asNullableString(input.estado),
+    fechaCreacion: asNullableTimestamp(input.fechaCreacion),
+    fechaActualizacion: asNullableTimestamp(input.fechaActualizacion),
+    calendarioId: toNumber(input.calendarioId, 0),
+    grupoId: toNumberOrNull(input.grupoId),
+  }) as DataConnectEventoInput;
+}
+
 export function buildModuloDataFromInput(input: Record<string, unknown>): DataConnectModuloInput {
   return compactUndefined({
     titulo: asNullableString(input.titulo),
@@ -269,7 +305,6 @@ export function buildModuloDataFromInput(input: Record<string, unknown>): DataCo
     metas: toNumberOrNull(input.metas),
     activo: toBoolean(input.activo),
     slug: asNullableString(input.slug),
-    descripcion2: asNullableString(input.descripcion2),
     planId: toNumberOrNull(input.planId),
   });
 }

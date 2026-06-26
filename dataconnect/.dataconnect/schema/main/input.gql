@@ -13137,14 +13137,6 @@ input Modulo_Data {
   """
   descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
-  ✨ Generated from Field `Modulo`.`descripcion2` of type `String`
-  """
-  descripcion2: String
-  """
-  ✨ `_expr` server value variant of `descripcion2` (✨ Generated from Field `Modulo`.`descripcion2` of type `String`)
-  """
-  descripcion2_expr: String_Expr @fdc_forbiddenInVariables
-  """
   ✨ Generated from Field `Modulo`.`horas` of type `Int`
   """
   horas: Int
@@ -13266,10 +13258,6 @@ input Modulo_Filter {
   """
   descripcion: String_Filter
   """
-  ✨ Generated from Field `Modulo`.`descripcion2` of type `String`
-  """
-  descripcion2: String_Filter
-  """
   ✨ Generated from Field `Modulo`.`horas` of type `Int`
   """
   horas: Int_Filter
@@ -13359,10 +13347,6 @@ input Modulo_Having {
   ✨ Generated from Field `Modulo`.`creditos_count` of type `Int!`
   """
   creditos_count: Int_Filter
-  """
-  ✨ Generated from Field `Modulo`.`descripcion2_count` of type `Int!`
-  """
-  descripcion2_count: Int_Filter
   """
   ✨ Generated from Field `Modulo`.`descripcion_count` of type `Int!`
   """
@@ -13551,10 +13535,6 @@ input Modulo_Order {
   """
   descripcion: OrderDirection
   """
-  ✨ Generated from Field `Modulo`.`descripcion2` of type `String`
-  """
-  descripcion2: OrderDirection
-  """
   ✨ Generated from Field `Modulo`.`horas` of type `Int`
   """
   horas: OrderDirection
@@ -13590,10 +13570,6 @@ input Modulo_Order {
   ✨ Generated from Field `Modulo`.`creditos_count` of type `Int!`
   """
   creditos_count: OrderDirection
-  """
-  ✨ Generated from Field `Modulo`.`descripcion2_count` of type `Int!`
-  """
-  descripcion2_count: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`descripcion_count` of type `Int!`
   """

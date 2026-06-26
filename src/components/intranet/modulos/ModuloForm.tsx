@@ -9,7 +9,11 @@ import {
   Checkbox,
   CircularProgress,
   Container,
+  FormControl,
   FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -34,9 +38,35 @@ interface ModuloData {
   metas: number | null;
   activo: boolean | null;
   slug: string | null;
-  descripcion2: string | null;
   planId: number | null;
 }
+
+interface PlanOption {
+  id: number;
+  tituloComercial: string | null;
+  carreraId: number | null;
+}
+
+interface CarreraOption {
+  id: number;
+  nombre: string | null;
+}
+
+const normalizeSlug = (value: string): string =>
+  value
+    .replace(/[ÃƒÂ±Ãƒâ€˜]/g, 'n')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
+
+const getPlanLabel = (plan: PlanOption, carreraTitleById: Map<number, string>) =>
+  (plan.carreraId != null ? carreraTitleById.get(plan.carreraId) : undefined) ||
+  plan.tituloComercial ||
+  `Plan ${plan.id}`;
 
 export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: ModuloFormProps) {
   const [titulo, setTitulo] = useState('');
@@ -48,12 +78,52 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
   const [metas, setMetas] = useState('');
   const [activo, setActivo] = useState(true);
   const [slug, setSlug] = useState('');
-  const [descripcion2, setDescripcion2] = useState('');
   const [planId, setPlanId] = useState('');
+  const [planes, setPlanes] = useState<PlanOption[]>([]);
+  const [carreras, setCarreras] = useState<CarreraOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingModulo, setLoadingModulo] = useState(Boolean(moduloId));
+  const [loadingPlanes, setLoadingPlanes] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchPlanes = async () => {
+      setLoadingPlanes(true);
+      try {
+        const functions = getFunctions(app);
+        const listPlanes = httpsCallable<undefined, { planes?: PlanOption[] }>(functions, 'listPlanes');
+        const listCarreras = httpsCallable<undefined, { carreras?: CarreraOption[] }>(functions, 'listCarreras');
+        const [planesResult, carrerasResult] = await Promise.all([
+          listPlanes(),
+          listCarreras(),
+        ]);
+        const nextCarreras = carrerasResult.data.carreras || [];
+        const nextCarreraTitleById = new Map(
+          nextCarreras.map((carrera) => [carrera.id, carrera.nombre || `Carrera ${carrera.id}`]),
+        );
+        setPlanes(
+          (planesResult.data.planes || [])
+            .slice()
+            .sort((a, b) =>
+              getPlanLabel(a, nextCarreraTitleById).localeCompare(
+                getPlanLabel(b, nextCarreraTitleById),
+                'es',
+                { numeric: true },
+              ),
+            ),
+        );
+        setCarreras(nextCarreras);
+      } catch (err) {
+        console.error('Error fetching plan options: ', err);
+        setError('No se pudieron cargar los planes para el formulario.');
+      } finally {
+        setLoadingPlanes(false);
+      }
+    };
+
+    void fetchPlanes();
+  }, []);
 
   useEffect(() => {
     const fetchModulo = async () => {
@@ -76,7 +146,6 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           setMetas(fetched.metas != null ? String(fetched.metas) : '');
           setActivo(Boolean(fetched.activo));
           setSlug(fetched.slug || '');
-          setDescripcion2(fetched.descripcion2 || '');
           setPlanId(fetched.planId != null ? String(fetched.planId) : '');
         }
       } catch (err) {
@@ -90,10 +159,20 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
     void fetchModulo();
   }, [moduloId]);
 
+  const carreraTitleById = new Map(
+    carreras.map((carrera) => [carrera.id, carrera.nombre || `Carrera ${carrera.id}`]),
+  );
+
+  const handleTituloBlur = () => {
+    setSlug(normalizeSlug(titulo));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    const nextSlug = normalizeSlug(titulo);
+    setSlug(nextSlug);
 
     try {
       const functions = getFunctions(app);
@@ -109,7 +188,6 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           metas?: number | null;
           activo: boolean;
           slug: string;
-          descripcion2: string;
           planId?: number | null;
         },
         { id: number | null }
@@ -125,8 +203,7 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
         creditos: creditos ? Number(creditos) : null,
         metas: metas ? Number(metas) : null,
         activo,
-        slug,
-        descripcion2,
+        slug: nextSlug,
         planId: planId ? Number(planId) : null,
       });
 
@@ -173,20 +250,103 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       <form onSubmit={handleSubmit}>
-        <TextField label="Titulo" value={titulo} onChange={(e) => setTitulo(e.target.value)} fullWidth margin="normal" required />
-        <TextField label="Titulo Comercial" value={tituloComercial} onChange={(e) => setTituloComercial(e.target.value)} fullWidth margin="normal" />
-        <TextField label="Orden" value={orden} onChange={(e) => setOrden(e.target.value)} fullWidth margin="normal" type="number" />
-        <TextField label="Horas" value={horas} onChange={(e) => setHoras(e.target.value)} fullWidth margin="normal" type="number" />
-        <TextField label="Creditos" value={creditos} onChange={(e) => setCreditos(e.target.value)} fullWidth margin="normal" type="number" />
-        <TextField label="Metas" value={metas} onChange={(e) => setMetas(e.target.value)} fullWidth margin="normal" type="number" />
-        <TextField label="Slug" value={slug} onChange={(e) => setSlug(e.target.value)} fullWidth margin="normal" />
-        <TextField label="Plan ID" value={planId} onChange={(e) => setPlanId(e.target.value)} fullWidth margin="normal" type="number" />
-        <FormControlLabel
-          control={<Checkbox checked={activo} onChange={(e) => setActivo(e.target.checked)} />}
-          label="Activo"
-        />
-        <TextField label="Descripcion" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} fullWidth margin="normal" minRows={3} multiline />
-        <TextField label="Descripcion 2" value={descripcion2} onChange={(e) => setDescripcion2(e.target.value)} fullWidth margin="normal" minRows={3} multiline />
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(12, minmax(0, 1fr))' },
+            '& .MuiFormControl-root': { m: 0 },
+          }}
+        >
+          <TextField
+            label="Titulo de modulo"
+            value={titulo}
+            onBlur={handleTituloBlur}
+            onChange={(e) => setTitulo(e.target.value)}
+            fullWidth
+            required
+            sx={{ gridColumn: '1 / -1' }}
+          />
+
+          <FormControl fullWidth sx={{ gridColumn: '1 / -1' }}>
+            <InputLabel>Titulo del plan</InputLabel>
+            <Select
+              label="Titulo del plan"
+              value={planId}
+              onChange={(event) => setPlanId(String(event.target.value))}
+              disabled={loadingPlanes}
+            >
+              <MenuItem value="">Sin plan</MenuItem>
+              {planId && !planes.some((plan) => String(plan.id) === planId) ? (
+                <MenuItem value={planId} disabled>
+                  Plan actual no disponible
+                </MenuItem>
+              ) : null}
+              {planes.map((plan) => (
+                <MenuItem key={plan.id} value={String(plan.id)}>
+                  {getPlanLabel(plan, carreraTitleById)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <TextField
+            label="Orden"
+            value={orden}
+            onChange={(e) => setOrden(e.target.value)}
+            fullWidth
+            type="number"
+            sx={{ gridColumn: { xs: 'auto', md: 'span 3' } }}
+          />
+          <TextField
+            label="Horas"
+            value={horas}
+            onChange={(e) => setHoras(e.target.value)}
+            fullWidth
+            type="number"
+            sx={{ gridColumn: { xs: 'auto', md: 'span 3' } }}
+          />
+          <TextField
+            label="Creditos"
+            value={creditos}
+            onChange={(e) => setCreditos(e.target.value)}
+            fullWidth
+            type="number"
+            sx={{ gridColumn: { xs: 'auto', md: 'span 3' } }}
+          />
+          <TextField
+            label="Metas"
+            value={metas}
+            onChange={(e) => setMetas(e.target.value)}
+            fullWidth
+            type="number"
+            sx={{ gridColumn: { xs: 'auto', md: 'span 3' } }}
+          />
+
+          <TextField
+            label="Slug"
+            value={slug}
+            fullWidth
+            disabled
+            sx={{ gridColumn: { xs: 'auto', md: 'span 9' } }}
+          />
+          <FormControlLabel
+            control={<Checkbox checked={activo} onChange={(e) => setActivo(e.target.checked)} />}
+            label="Activo"
+            sx={{ gridColumn: { xs: 'auto', md: 'span 3' }, alignSelf: 'center' }}
+          />
+
+          <TextField
+            label="Descripcion"
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
+            fullWidth
+            minRows={3}
+            multiline
+            sx={{ gridColumn: '1 / -1' }}
+          />
+        </Box>
+
         <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
           <Button type="submit" variant="contained" color="primary" disabled={loading}>
             {loading ? <CircularProgress size={24} /> : (moduloId ? 'Actualizar' : 'Crear')}

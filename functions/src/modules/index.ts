@@ -51,6 +51,17 @@ export {
 } from "./planes/handlers.js";
 export { listSemestres } from "./semestres/handlers.js";
 export {
+  listCalendarios,
+  getCalendario,
+  createOrUpdateCalendario,
+  deleteCalendario,
+  listEventos,
+  getEvento,
+  createOrUpdateEvento,
+  deleteEvento,
+  listGrupos,
+} from "./calendarios/handlers.js";
+export {
   listModulos,
   getModulo,
   createOrUpdateModulo,

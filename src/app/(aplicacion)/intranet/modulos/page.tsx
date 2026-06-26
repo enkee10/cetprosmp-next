@@ -23,7 +23,7 @@ interface Modulo {
   metas: number | null;
   activo: boolean | null;
   slug: string | null;
-  descripcion2: string | null;
+  plan: { planEstudio: string | null } | null;
   planId: number | null;
 }
 
@@ -42,17 +42,11 @@ export default function ModulosPage() {
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
-      orden: true,
+      numero: true,
       titulo: true,
-      tituloComercial: true,
+      plan: true,
       horas: true,
       creditos: true,
-      metas: true,
-      activo: true,
-      planId: true,
-      slug: false,
-      descripcion: false,
-      descripcion2: false,
       actions: true,
     });
 
@@ -149,11 +143,16 @@ export default function ModulosPage() {
   const columns = useMemo<GridColDef[]>(
     () => [
       {
-        field: 'orden',
-        headerName: 'Orden',
-        flex: 0.55,
-        minWidth: 90,
-        valueGetter: (_value, row: Modulo) => (row.orden != null ? row.orden : ''),
+        field: 'numero',
+        headerName: 'Nro.',
+        align: 'center',
+        headerAlign: 'center',
+        width: 82,
+        minWidth: 82,
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
       {
         field: 'titulo',
@@ -163,11 +162,11 @@ export default function ModulosPage() {
         valueGetter: (_value, row: Modulo) => row.titulo || '',
       },
       {
-        field: 'tituloComercial',
-        headerName: 'Titulo Comercial',
-        flex: 1.15,
-        minWidth: 190,
-        valueGetter: (_value, row: Modulo) => row.tituloComercial || '',
+        field: 'plan',
+        headerName: 'Plan',
+        flex: 1,
+        minWidth: 170,
+        valueGetter: (_value, row: Modulo) => row.plan?.planEstudio || '',
       },
       {
         field: 'horas',
@@ -182,48 +181,6 @@ export default function ModulosPage() {
         flex: 0.7,
         minWidth: 110,
         valueGetter: (_value, row: Modulo) => (row.creditos != null ? row.creditos : ''),
-      },
-      {
-        field: 'metas',
-        headerName: 'Metas',
-        flex: 0.6,
-        minWidth: 95,
-        valueGetter: (_value, row: Modulo) => (row.metas != null ? row.metas : ''),
-      },
-      {
-        field: 'activo',
-        headerName: 'Activo',
-        flex: 0.65,
-        minWidth: 100,
-        valueGetter: (_value, row: Modulo) => (row.activo ? 'Si' : 'No'),
-      },
-      {
-        field: 'planId',
-        headerName: 'Plan ID',
-        flex: 0.65,
-        minWidth: 105,
-        valueGetter: (_value, row: Modulo) => (row.planId != null ? row.planId : ''),
-      },
-      {
-        field: 'slug',
-        headerName: 'Slug',
-        flex: 1,
-        minWidth: 160,
-        valueGetter: (_value, row: Modulo) => row.slug || '',
-      },
-      {
-        field: 'descripcion',
-        headerName: 'Descripcion',
-        flex: 1.5,
-        minWidth: 240,
-        valueGetter: (_value, row: Modulo) => row.descripcion || '',
-      },
-      {
-        field: 'descripcion2',
-        headerName: 'Descripcion 2',
-        flex: 1.5,
-        minWidth: 240,
-        valueGetter: (_value, row: Modulo) => row.descripcion2 || '',
       },
       {
         field: 'actions',
@@ -261,7 +218,7 @@ export default function ModulosPage() {
             ? column.headerName
             : column.field,
         checked: columnVisibilityModel[column.field] !== false,
-        disabled: column.field === 'actions',
+        disabled: column.field === 'numero' || column.field === 'actions',
       })),
     [columnVisibilityModel, columns],
   );

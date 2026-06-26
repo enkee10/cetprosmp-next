@@ -62,6 +62,8 @@ const menuSections: IntranetMenuSection[] = [
       { id: 'planes', title: 'Planes', path: '/intranet/planes', icon: <AssignmentIcon /> },
       { id: 'modulos', title: 'Módulos', path: '/intranet/modulos', icon: <ViewModuleIcon /> },
       { id: 'paquetes', title: 'Paquetes', path: '/intranet/paquetes', icon: <Inventory2Icon /> },
+      { id: 'calendarios', title: 'Calendarios', path: '/intranet/calendarios', icon: <EventNoteIcon /> },
+      { id: 'eventos', title: 'Eventos', path: '/intranet/eventos', icon: <EventNoteIcon /> },
       { id: 'unidades-didacticas', title: 'Unidades Didácticas', path: '/intranet/unidades-didacticas', icon: <MenuBookIcon /> },
       { id: 'capacidades-terminales', title: 'Capacidades Terminales', path: '/intranet/capacidades-terminales', icon: <TrackChangesIcon /> },
       { id: 'indicadores-capacidad', title: 'Indicador de Capacidad', path: '/intranet/indicadores-capacidad', icon: <FactCheckIcon /> },

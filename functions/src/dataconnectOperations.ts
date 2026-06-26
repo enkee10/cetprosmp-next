@@ -136,14 +136,50 @@ export const DELETE_PLAN_MUTATION = `
   }
 `;
 
+export const INSERT_CALENDARIO_MUTATION = `
+  mutation InsertCalendario($data: Calendario_Data! @allow(fields: "titulo descripcion fechaIni fechaFin tipo color activo archivado fechaCreacion fechaActualizacion semestreId")) {
+    calendario_insert(data: $data)
+  }
+`;
+
+export const UPDATE_CALENDARIO_MUTATION = `
+  mutation UpdateCalendario($id: Int!, $data: Calendario_Data! @allow(fields: "titulo descripcion fechaIni fechaFin tipo color activo archivado fechaCreacion fechaActualizacion semestreId")) {
+    calendario_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_CALENDARIO_MUTATION = `
+  mutation DeleteCalendario($id: Int!) {
+    calendario_delete(id: $id)
+  }
+`;
+
+export const INSERT_EVENTO_MUTATION = `
+  mutation InsertEvento($data: Evento_Data! @allow(fields: "titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado fechaCreacion fechaActualizacion calendarioId grupoId")) {
+    evento_insert(data: $data)
+  }
+`;
+
+export const UPDATE_EVENTO_MUTATION = `
+  mutation UpdateEvento($id: Int!, $data: Evento_Data! @allow(fields: "titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado fechaCreacion fechaActualizacion calendarioId grupoId")) {
+    evento_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_EVENTO_MUTATION = `
+  mutation DeleteEvento($id: Int!) {
+    evento_delete(id: $id)
+  }
+`;
+
 export const INSERT_MODULO_MUTATION = `
-  mutation InsertModulo($data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos metas activo slug descripcion2 planId")) {
+  mutation InsertModulo($data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos metas activo slug planId")) {
     modulo_insert(data: $data)
   }
 `;
 
 export const UPDATE_MODULO_MUTATION = `
-  mutation UpdateModulo($id: Int!, $data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos metas activo slug descripcion2 planId")) {
+  mutation UpdateModulo($id: Int!, $data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos metas activo slug planId")) {
     modulo_update(id: $id, data: $data)
   }
 `;

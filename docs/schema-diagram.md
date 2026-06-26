@@ -156,7 +156,6 @@ erDiagram
         Int metas
         Boolean activo
         String slug
-        String descripcion2
         Int planId FK
     }
 

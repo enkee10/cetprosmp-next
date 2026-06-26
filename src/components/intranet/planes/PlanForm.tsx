@@ -73,7 +73,6 @@ interface ModuloData {
   metas: number | null;
   activo: boolean | null;
   slug: string | null;
-  descripcion2: string | null;
   planId: number | null;
 }
 
@@ -89,7 +88,6 @@ interface ModuloDraft {
   metas: string;
   activo: boolean;
   slug: string;
-  descripcion2: string;
   deleted?: boolean;
 }
 
@@ -118,7 +116,6 @@ const createEmptyModuloDraft = (): ModuloDraft => ({
   metas: '',
   activo: true,
   slug: '',
-  descripcion2: '',
 });
 
 const mapModuloToDraft = (modulo: ModuloData): ModuloDraft => ({
@@ -133,7 +130,6 @@ const mapModuloToDraft = (modulo: ModuloData): ModuloDraft => ({
   metas: modulo.metas != null ? String(modulo.metas) : '',
   activo: modulo.activo ?? true,
   slug: modulo.slug || '',
-  descripcion2: modulo.descripcion2 || '',
 });
 
 const hasModuloDraftContent = (modulo: ModuloDraft) =>
@@ -146,7 +142,6 @@ const hasModuloDraftContent = (modulo: ModuloDraft) =>
     modulo.creditos,
     modulo.metas,
     modulo.slug,
-    modulo.descripcion2,
   ].some((value) => value.trim().length > 0);
 
 const getYearFromPeriodoVigencia = (value: string) => value.match(/\b(?:19|20)\d{2}\b/)?.[0] || '';
@@ -367,7 +362,6 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
           metas?: number | null;
           activo: boolean;
           slug: string;
-          descripcion2: string;
           planId?: number | null;
         },
         { id: number | null }
@@ -388,7 +382,6 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
             metas: modulo.metas ? Number(modulo.metas) : null,
             activo: modulo.activo,
             slug: modulo.slug,
-            descripcion2: modulo.descripcion2,
             planId: savedPlanId,
           }),
         ),
@@ -721,16 +714,7 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
                     fullWidth
                     minRows={2}
                     multiline
-                    sx={{ gridColumn: { xs: 'auto', md: 'span 6' } }}
-                  />
-                  <TextField
-                    label="Descripcion 2"
-                    value={modulo.descripcion2}
-                    onChange={(e) => handleUpdateModulo(modulo.localId, 'descripcion2', e.target.value)}
-                    fullWidth
-                    minRows={2}
-                    multiline
-                    sx={{ gridColumn: { xs: 'auto', md: 'span 6' } }}
+                    sx={{ gridColumn: '1 / -1' }}
                   />
                 </Box>
               </Box>

@@ -141,7 +141,6 @@ type Modulo @table(name: "modulos") {
   metas: Int
   activo: Boolean
   slug: String
-  descripcion2: String @col(name: "descripcion_2")
 
   plan: Plan @ref(fields: "planId", references: "id")
   planId: Int @col(name: "plan_id")

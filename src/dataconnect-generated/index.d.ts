@@ -311,6 +311,11 @@ export interface Modulo_Key {
   __typename?: 'Modulo_Key';
 }
 
+export interface PaqueteModulo_Key {
+  id: number;
+  __typename?: 'PaqueteModulo_Key';
+}
+
 export interface Paquete_Key {
   id: number;
   __typename?: 'Paquete_Key';

@@ -468,6 +468,14 @@ erDiagram
         Boolean archivado
     }
 
+    PAQUETE_MODULO {
+        Int id PK
+        Int orden
+        Boolean obligatorio
+        Int paqueteId FK
+        Int moduloId FK
+    }
+
     MATRICULA {
         Int id PK
         String recibo
@@ -621,6 +629,8 @@ erDiagram
     EVENTO ||--o{ EVENTO_RELACION : evento
     EVENTO ||--o{ RECORDATORIO : evento
     EVENTO_OCURRENCIA ||--o{ RECORDATORIO : eventoOcurrencia
+    PAQUETE ||--o{ PAQUETE_MODULO : paquete
+    MODULO ||--o{ PAQUETE_MODULO : modulo
     GRUPO ||--o{ MATRICULA : grupo
     PAQUETE ||--o{ MATRICULA : paquete
     USER ||--o{ MATRICULA : user

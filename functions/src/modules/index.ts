@@ -57,6 +57,13 @@ export {
   deleteModulo,
 } from "./modulos/handlers.js";
 export {
+  listPaquetes,
+  getPaquete,
+  createOrUpdatePaquete,
+  deletePaquete,
+} from "./paquetes/handlers.js";
+export { createMatriculaDesdePaquete } from "./matriculas/handlers.js";
+export {
   listUnidadesDidacticas,
   getUnidadDidactica,
   createOrUpdateUnidadDidactica,

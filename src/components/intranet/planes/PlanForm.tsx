@@ -96,6 +96,17 @@ interface ModuloDraft {
 const RESOLUCION_TIPO_OPTIONS = ['R.D.', 'R.M.', 'OFI.'];
 const GENERA_OPTIONS = ['UGEL', 'DRE', 'MINEDU'];
 
+const normalizeSlug = (value: string): string =>
+  value
+    .replace(/[Ã±Ã‘]/g, 'n')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
+
 const createEmptyModuloDraft = (): ModuloDraft => ({
   localId: `new-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   titulo: '',
@@ -249,6 +260,18 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
     setAnio(getYearFromPeriodoVigencia(periodoVigenciaTitle));
   }, [periodoVigenciaId, semestres]);
 
+  useEffect(() => {
+    if (!carreraId) {
+      setSlug('');
+      return;
+    }
+
+    const selectedCarrera = carreras.find((carrera) => String(carrera.id) === carreraId);
+    if (!selectedCarrera) return;
+
+    setSlug(normalizeSlug(selectedCarrera.nombre || `Carrera ${selectedCarrera.id}`));
+  }, [carreraId, carreras]);
+
   const handleAddModulo = () => {
     setModulos((prev) => [...prev, createEmptyModuloDraft()]);
   };
@@ -315,7 +338,7 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
         duracion,
         creditos: creditos ? Number(creditos) : null,
         tituloComercial,
-        slug,
+        slug: normalizeSlug(slug),
         descripcion2,
         imagenPortadaUrl: imagenPortadaUrl.trim() || null,
         planEstudio: planEstudio.trim() || null,
@@ -454,8 +477,8 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
           <TextField
             label="Slug"
             value={slug}
-            onChange={(e) => setSlug(e.target.value)}
             fullWidth
+            disabled
             sx={{ gridColumn: '1 / -1' }}
           />
           <TextField

@@ -244,6 +244,60 @@ export const DELETE_ACTIVIDAD_MUTATION = `
   }
 `;
 
+export const INSERT_PAQUETE_MUTATION = `
+  mutation InsertPaquete($data: Paquete_Data! @allow(fields: "titulo descripcion archivado")) {
+    paquete_insert(data: $data)
+  }
+`;
+
+export const UPDATE_PAQUETE_MUTATION = `
+  mutation UpdatePaquete($id: Int!, $data: Paquete_Data! @allow(fields: "titulo descripcion archivado")) {
+    paquete_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_PAQUETE_MUTATION = `
+  mutation DeletePaquete($id: Int!) {
+    paquete_delete(id: $id)
+  }
+`;
+
+export const INSERT_PAQUETE_MODULO_MUTATION = `
+  mutation InsertPaqueteModulo($data: PaqueteModulo_Data! @allow(fields: "paqueteId moduloId orden obligatorio")) {
+    paqueteModulo_insert(data: $data)
+  }
+`;
+
+export const DELETE_PAQUETE_MODULOS_BY_PAQUETE_MUTATION = `
+  mutation DeletePaqueteModulosByPaquete($paqueteId: Int!) {
+    paqueteModulo_deleteMany(where: { paqueteId: { eq: $paqueteId } })
+  }
+`;
+
+export const INSERT_MATRICULA_MUTATION = `
+  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha archivado grupoId paqueteId userId")) {
+    matricula_insert(data: $data)
+  }
+`;
+
+export const DELETE_MATRICULA_MUTATION = `
+  mutation DeleteMatricula($id: Int!) {
+    matricula_delete(id: $id)
+  }
+`;
+
+export const INSERT_MODULO_ESTUDIANTE_MUTATION = `
+  mutation InsertModuloEstudiante($data: ModuloEstudiante_Data! @allow(fields: "promedio matriculaId moduloId")) {
+    moduloEstudiante_insert(data: $data)
+  }
+`;
+
+export const DELETE_MODULO_ESTUDIANTES_BY_MATRICULA_MUTATION = `
+  mutation DeleteModuloEstudiantesByMatricula($matriculaId: Int!) {
+    moduloEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+  }
+`;
+
 export const INSERT_USER_MUTATION = `
   mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
     user_insert(data: $data)

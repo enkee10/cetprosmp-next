@@ -306,6 +306,15 @@ extend type Mutation {
     data: Paquete_Data!
   ): Paquete_KeyOutput! @fdc_generated(from: "Paquete", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `PaqueteModulo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  paqueteModulo_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: PaqueteModulo_Data!
+  ): PaqueteModulo_KeyOutput! @fdc_generated(from: "PaqueteModulo", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Personal` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   personal_insert(
@@ -782,6 +791,15 @@ extend type Mutation {
     """
     data: [Paquete_Data!]!
   ): [Paquete_KeyOutput!]! @fdc_generated(from: "Paquete", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `PaqueteModulo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  paqueteModulo_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [PaqueteModulo_Data!]!
+  ): [PaqueteModulo_KeyOutput!]! @fdc_generated(from: "PaqueteModulo", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Personal` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1260,6 +1278,15 @@ extend type Mutation {
     data: Paquete_Data!
   ): Paquete_KeyOutput! @fdc_generated(from: "Paquete", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `PaqueteModulo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PaqueteModulo`.
+  """
+  paqueteModulo_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: PaqueteModulo_Data!
+  ): PaqueteModulo_KeyOutput! @fdc_generated(from: "PaqueteModulo", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Personal` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Personal`.
   """
   personal_upsert(
@@ -1736,6 +1763,15 @@ extend type Mutation {
     """
     data: [Paquete_Data!]!
   ): [Paquete_KeyOutput!]! @fdc_generated(from: "Paquete", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `PaqueteModulo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PaqueteModulo`.
+  """
+  paqueteModulo_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [PaqueteModulo_Data!]!
+  ): [PaqueteModulo_KeyOutput!]! @fdc_generated(from: "PaqueteModulo", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Personal` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Personal`.
   """
@@ -2893,6 +2929,35 @@ extend type Mutation {
     """
     data: Paquete_Data!
   ): Paquete_KeyOutput @fdc_generated(from: "Paquete", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `PaqueteModulo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `PaqueteModulo` or `null` if not found.
+  """
+  paqueteModulo_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: PaqueteModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PaqueteModulo_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: PaqueteModulo_Data!
+  ): PaqueteModulo_KeyOutput @fdc_generated(from: "PaqueteModulo", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Personal` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Personal` or `null` if not found.
   """
@@ -4081,6 +4146,25 @@ extend type Mutation {
     data: Paquete_Data!
   ): Int! @fdc_generated(from: "Paquete", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `PaqueteModulo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  paqueteModulo_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: PaqueteModulo_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: PaqueteModulo_Data!
+  ): Int! @fdc_generated(from: "PaqueteModulo", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Personal` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   personal_updateMany(
@@ -5258,6 +5342,30 @@ extend type Mutation {
     first: Paquete_FirstRow
   ): Paquete_KeyOutput @fdc_generated(from: "Paquete", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `PaqueteModulo` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  paqueteModulo_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: PaqueteModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PaqueteModulo_FirstRow
+  ): PaqueteModulo_KeyOutput @fdc_generated(from: "PaqueteModulo", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Personal` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   personal_delete(
@@ -6179,6 +6287,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Paquete", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `PaqueteModulo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  paqueteModulo_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: PaqueteModulo_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "PaqueteModulo", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Personal` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

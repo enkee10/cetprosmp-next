@@ -203,6 +203,12 @@ It has the same format as `Paquete_Key`, but is only used as mutation return val
 """
 scalar Paquete_KeyOutput
 """
+✨ `PaqueteModulo_KeyOutput` returns the primary key fields of table type `PaqueteModulo`.
+
+It has the same format as `PaqueteModulo_Key`, but is only used as mutation return value.
+"""
+scalar PaqueteModulo_KeyOutput
+"""
 ✨ `Personal_KeyOutput` returns the primary key fields of table type `Personal`.
 
 It has the same format as `Personal_Key`, but is only used as mutation return value.
@@ -13211,6 +13217,10 @@ input Modulo_Data {
   """
   moduloVideos_on_modulo: [ModuloVideo_Data!]
   """
+  ✨ Generated from Field `Modulo`.`paqueteModulos_on_modulo` of type `[PaqueteModulo!]!`
+  """
+  paqueteModulos_on_modulo: [PaqueteModulo_Data!]
+  """
   ✨ Generated from Field `Modulo`.`unidadesDidacticas_on_modulo` of type `[UnidadDidactica!]!`
   """
   unidadesDidacticas_on_modulo: [UnidadDidactica_Data!]
@@ -13295,6 +13305,10 @@ input Modulo_Filter {
   ✨ Generated from Field `Modulo`.`moduloVideos_on_modulo` of type `[ModuloVideo!]!`
   """
   moduloVideos_on_modulo: ModuloVideo_ListFilter
+  """
+  ✨ Generated from Field `Modulo`.`paqueteModulos_on_modulo` of type `[PaqueteModulo!]!`
+  """
+  paqueteModulos_on_modulo: PaqueteModulo_ListFilter
   """
   ✨ Generated from Field `Modulo`.`unidadesDidacticas_on_modulo` of type `[UnidadDidactica!]!`
   """
@@ -14503,6 +14517,10 @@ input Paquete_Data {
   ✨ Generated from Field `Paquete`.`matriculas_on_paquete` of type `[Matricula!]!`
   """
   matriculas_on_paquete: [Matricula_Data!]
+  """
+  ✨ Generated from Field `Paquete`.`paqueteModulos_on_paquete` of type `[PaqueteModulo!]!`
+  """
+  paqueteModulos_on_paquete: [PaqueteModulo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Paquete'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -14544,6 +14562,10 @@ input Paquete_Filter {
   ✨ Generated from Field `Paquete`.`matriculas_on_paquete` of type `[Matricula!]!`
   """
   matriculas_on_paquete: Matricula_ListFilter
+  """
+  ✨ Generated from Field `Paquete`.`paqueteModulos_on_paquete` of type `[PaqueteModulo!]!`
+  """
+  paqueteModulos_on_paquete: PaqueteModulo_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'Paquete'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -14697,6 +14719,389 @@ input Paquete_Order {
   ✨ Generated from Field `Paquete`.`id_max` of type `Int`
   """
   id_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'PaqueteModulo'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input PaqueteModulo_Data {
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `PaqueteModulo`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `PaqueteModulo`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId` of type `Int!`
+  """
+  moduloId: Int
+  """
+  ✨ `_expr` server value variant of `moduloId` (✨ Generated from Field `PaqueteModulo`.`moduloId` of type `Int!`)
+  """
+  moduloId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `moduloId` (✨ Generated from Field `PaqueteModulo`.`moduloId` of type `Int!`)
+  """
+  moduloId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId` of type `Int!`
+  """
+  paqueteId: Int
+  """
+  ✨ `_expr` server value variant of `paqueteId` (✨ Generated from Field `PaqueteModulo`.`paqueteId` of type `Int!`)
+  """
+  paqueteId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `paqueteId` (✨ Generated from Field `PaqueteModulo`.`paqueteId` of type `Int!`)
+  """
+  paqueteId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteModulo`.`modulo` of type `Modulo!`
+  """
+  modulo: Modulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paquete` of type `Paquete!`
+  """
+  paquete: Paquete_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteModulo`.`obligatorio` of type `Boolean`
+  """
+  obligatorio: Boolean
+  """
+  ✨ `_expr` server value variant of `obligatorio` (✨ Generated from Field `PaqueteModulo`.`obligatorio` of type `Boolean`)
+  """
+  obligatorio_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden` of type `Int`
+  """
+  orden: Int
+  """
+  ✨ `_expr` server value variant of `orden` (✨ Generated from Field `PaqueteModulo`.`orden` of type `Int`)
+  """
+  orden_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `orden` (✨ Generated from Field `PaqueteModulo`.`orden` of type `Int`)
+  """
+  orden_update: [Int_Update!] @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'PaqueteModulo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input PaqueteModulo_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [PaqueteModulo_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: PaqueteModulo_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [PaqueteModulo_Filter!]
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId` of type `Int!`
+  """
+  moduloId: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId` of type `Int!`
+  """
+  paqueteId: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`modulo` of type `Modulo!`
+  """
+  modulo: Modulo_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paquete` of type `Paquete!`
+  """
+  paquete: Paquete_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`obligatorio` of type `Boolean`
+  """
+  obligatorio: Boolean_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden` of type `Int`
+  """
+  orden: Int_Filter
+}
+"""
+✨ Generated first-row input type for table 'PaqueteModulo'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input PaqueteModulo_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [PaqueteModulo_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: PaqueteModulo_Filter
+}
+"""
+✨ Generated having input type for table 'PaqueteModulo'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input PaqueteModulo_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [PaqueteModulo_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: PaqueteModulo_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [PaqueteModulo_Having!]
+  """
+  ✨ Generated from Field `PaqueteModulo`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId_count` of type `Int!`
+  """
+  moduloId_count: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`obligatorio_count` of type `Int!`
+  """
+  obligatorio_count: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden_count` of type `Int!`
+  """
+  orden_count: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId_count` of type `Int!`
+  """
+  paqueteId_count: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId_sum` of type `Int`
+  """
+  moduloId_sum: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden_sum` of type `Int`
+  """
+  orden_sum: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId_sum` of type `Int`
+  """
+  paqueteId_sum: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId_avg` of type `Float`
+  """
+  moduloId_avg: Float_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden_avg` of type `Float`
+  """
+  orden_avg: Float_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId_avg` of type `Float`
+  """
+  paqueteId_avg: Float_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId_min` of type `Int`
+  """
+  moduloId_min: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden_min` of type `Int`
+  """
+  orden_min: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId_min` of type `Int`
+  """
+  paqueteId_min: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId_max` of type `Int`
+  """
+  moduloId_max: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden_max` of type `Int`
+  """
+  orden_max: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId_max` of type `Int`
+  """
+  paqueteId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'PaqueteModulo'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input PaqueteModulo_Key {
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `PaqueteModulo`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'PaqueteModulo'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input PaqueteModulo_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: PaqueteModulo_Filter
+}
+"""
+✨ Generated order input type for table 'PaqueteModulo'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input PaqueteModulo_Order {
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId` of type `Int!`
+  """
+  moduloId: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId` of type `Int!`
+  """
+  paqueteId: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`modulo` of type `Modulo!`
+  """
+  modulo: Modulo_Order
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paquete` of type `Paquete!`
+  """
+  paquete: Paquete_Order
+  """
+  ✨ Generated from Field `PaqueteModulo`.`obligatorio` of type `Boolean`
+  """
+  obligatorio: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden` of type `Int`
+  """
+  orden: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId_count` of type `Int!`
+  """
+  moduloId_count: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`obligatorio_count` of type `Int!`
+  """
+  obligatorio_count: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden_count` of type `Int!`
+  """
+  orden_count: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId_count` of type `Int!`
+  """
+  paqueteId_count: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId_sum` of type `Int`
+  """
+  moduloId_sum: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden_sum` of type `Int`
+  """
+  orden_sum: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId_sum` of type `Int`
+  """
+  paqueteId_sum: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId_avg` of type `Float`
+  """
+  moduloId_avg: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden_avg` of type `Float`
+  """
+  orden_avg: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId_avg` of type `Float`
+  """
+  paqueteId_avg: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId_min` of type `Int`
+  """
+  moduloId_min: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden_min` of type `Int`
+  """
+  orden_min: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId_min` of type `Int`
+  """
+  paqueteId_min: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`moduloId_max` of type `Int`
+  """
+  moduloId_max: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`orden_max` of type `Int`
+  """
+  orden_max: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`paqueteId_max` of type `Int`
+  """
+  paqueteId_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'Personal'. It includes all necessary fields for creating or upserting rows into table.

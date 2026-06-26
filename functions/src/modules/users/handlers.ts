@@ -475,6 +475,7 @@ export const updateUserProfile = https.onCall(async (data, context) => {
       ?? asNullableString(data?.fecha_creacion ?? data?.fechaCreacion)
       ?? nowIso;
     const fechaModificacionForWorkspace = payload.fechaModificacion ?? nowIso;
+    let workspaceWarning: string | null = null;
     if (shouldSyncStudent) {
       const previousWorkspaceEmail =
         resolveWorkspacePrimaryEmail({
@@ -528,12 +529,17 @@ export const updateUserProfile = https.onCall(async (data, context) => {
           instruccion: payload.instruccion ?? null,
           estadoCivil: payload.estadoCivil ?? null,
           blocked: Boolean(payload.blocked),
-        }, { previousEmail: previousWorkspaceEmail });
+        }, { previousEmail: previousWorkspaceEmail, createIfMissing: false });
       } catch (workspaceError: unknown) {
         const rawMessage = String((workspaceError as { message?: string } | null)?.message || "");
         const safeMessage = rawMessage || "No se pudo sincronizar los cambios del usuario con Google Workspace.";
-        console.error("Workspace sync failed in updateUserProfile:", workspaceError);
-        throw new https.HttpsError("failed-precondition", safeMessage);
+        if (safeMessage.includes("Usuario no encontrado en Workspace") && safeMessage.includes("No se recreo")) {
+          console.warn("Workspace user missing in updateUserProfile:", workspaceError);
+          workspaceWarning = safeMessage;
+        } else {
+          console.error("Workspace sync failed in updateUserProfile:", workspaceError);
+          throw new https.HttpsError("failed-precondition", safeMessage);
+        }
       }
     } else if (shouldSyncPreviousRole) {
       const fallbackWorkspaceEmail =
@@ -565,7 +571,7 @@ export const updateUserProfile = https.onCall(async (data, context) => {
       }
     }
 
-    return { id: getIdFromKeyOutput(updated.data.user_update) ?? existingId };
+    return { id: getIdFromKeyOutput(updated.data.user_update) ?? existingId, workspaceWarning };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     const message = String((error as { message?: string } | null)?.message || "");

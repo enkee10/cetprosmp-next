@@ -65,6 +65,7 @@ export type WorkspaceUserContext = {
 
 type WorkspaceSyncOptions = {
   previousEmail?: string | null;
+  createIfMissing?: boolean;
 };
 
 type WorkspaceDirectoryClient = {
@@ -735,8 +736,58 @@ export async function syncStudentToWorkspace(
   if (!currentEmail) {
     throw new Error("No se pudo resolver el correo principal de Workspace para sincronizar al usuario.");
   }
+  const createIfMissing = options?.createIfMissing !== false;
   const shouldRenamePrimaryEmail = Boolean(previousEmail) && previousEmail !== currentEmail;
   let effectiveUserKeyForPhoto = currentEmail;
+
+  if (!createIfMissing) {
+    const updateExisting = async (userKey: string) => {
+      const response = await directory.users.update({
+        userKey,
+        requestBody: payload,
+      });
+      effectiveUserKeyForPhoto = response.data.id || response.data.primaryEmail || currentEmail;
+    };
+
+    try {
+      if (shouldRenamePrimaryEmail) {
+        await updateExisting(previousEmail);
+      } else {
+        await updateExisting(currentEmail);
+      }
+    } catch (error: unknown) {
+      const { status, reason } = getWorkspaceErrorMeta(error);
+      const notFound =
+        status === 404
+        || reason.includes("notfound")
+        || reason.includes("resource not found");
+
+      if (!shouldRenamePrimaryEmail || !notFound) {
+        if (notFound) {
+          throw new Error(`Usuario no encontrado en Workspace: '${currentEmail}'. No se recreo la cuenta.`);
+        }
+        throw error;
+      }
+
+      try {
+        await updateExisting(currentEmail);
+      } catch (updateError: unknown) {
+        const { status: updateStatus, reason: updateReason } = getWorkspaceErrorMeta(updateError);
+        const updateNotFound =
+          updateStatus === 404
+          || updateReason.includes("notfound")
+          || updateReason.includes("resource not found");
+        if (updateNotFound) {
+          throw new Error(`Usuario no encontrado en Workspace: '${currentEmail}'. No se recreo la cuenta.`);
+        }
+        throw updateError;
+      }
+    }
+
+    await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar ?? null);
+    await syncWorkspaceRoleGroupsInternal(directory, currentEmail, context.roleId ?? null);
+    return;
+  }
 
   try {
     if (shouldRenamePrimaryEmail) {

@@ -331,6 +331,7 @@ const UsersPage = () => {
     setLoading(true);
     setFormSubmitting(true);
     setErrorMessage(null);
+    let workspaceWarning: string | null = null;
     try {
       if (selectedUser) {
         const updateUserProfile = httpsCallable(functions, 'updateUserProfile');
@@ -346,7 +347,7 @@ const UsersPage = () => {
           return;
         }
 
-        await updateUserProfile({
+        const updateResult = await updateUserProfile({
           documentId: selectedUser.documentId,
           previousEmail: selectedUser.email,
           previousCorreoInstitucional:
@@ -357,7 +358,11 @@ const UsersPage = () => {
           previousApellidoPaterno: selectedUser.apellidoPaterno,
           previousApellidoMaterno: selectedUser.apellidoMaterno,
           ...dataToUpdate,
-        });
+        }) as { data?: { workspaceWarning?: string | null } };
+        workspaceWarning =
+          typeof updateResult.data?.workspaceWarning === 'string'
+            ? updateResult.data.workspaceWarning
+            : null;
 
         const currentRole = selectedUser.rolId ? String(selectedUser.rolId) : '';
         const nextRole = dataToUpdate.rolId ? String(dataToUpdate.rolId) : '';
@@ -380,13 +385,16 @@ const UsersPage = () => {
       setFormOpen(false);
       setSelectedUser(null);
       setUserFormResetKey((prev) => prev + 1);
+      if (workspaceWarning) {
+        showTemporaryErrorMessage(workspaceWarning);
+      }
     } catch (error) {
       console.error('Error saving user: ', error);
       const parsedMessage = getCallableErrorMessage(error, 'No se pudo guardar el usuario.');
       if (BLOCKED_ROLE_CHANGE_MESSAGES.has(parsedMessage)) {
         closeUserFormAfterBlockedRoleChange(parsedMessage);
       } else {
-        setErrorMessage(parsedMessage);
+        showTemporaryErrorMessage(parsedMessage);
       }
     } finally {
       setFormSubmitting(false);

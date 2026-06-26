@@ -209,6 +209,59 @@ export interface DataConnectModuloInput {
   planId?: number | null;
 }
 
+export interface DataConnectPaquete {
+  id: number;
+  titulo?: string | null;
+  descripcion?: string | null;
+  archivado?: boolean | null;
+}
+
+export interface DataConnectPaqueteInput {
+  titulo?: string | null;
+  descripcion?: string | null;
+  archivado?: boolean;
+}
+
+export interface DataConnectPaqueteModulo {
+  id: number;
+  orden?: number | null;
+  obligatorio?: boolean | null;
+  paqueteId: number;
+  moduloId: number;
+}
+
+export interface DataConnectPaqueteModuloInput {
+  orden?: number | null;
+  obligatorio?: boolean;
+  paqueteId: number;
+  moduloId: number;
+}
+
+export interface DataConnectMatricula {
+  id: number;
+  recibo?: string | null;
+  fecha?: string | null;
+  archivado?: boolean | null;
+  grupoId?: number | null;
+  paqueteId?: number | null;
+  userId?: number | null;
+}
+
+export interface DataConnectMatriculaInput {
+  recibo?: string | null;
+  fecha?: string | null;
+  archivado?: boolean;
+  grupoId?: number | null;
+  paqueteId?: number | null;
+  userId?: number | null;
+}
+
+export interface DataConnectModuloEstudianteInput {
+  promedio?: number | null;
+  matriculaId: number;
+  moduloId: number;
+}
+
 export interface DataConnectUnidadDidactica {
   id: number;
   nombre?: string | null;

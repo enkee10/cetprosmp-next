@@ -16,6 +16,7 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import FactoryIcon from '@mui/icons-material/Factory';
 import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 import LockPersonIcon from '@mui/icons-material/LockPerson';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PeopleIcon from '@mui/icons-material/People';
@@ -60,6 +61,7 @@ const menuSections: IntranetMenuSection[] = [
       { id: 'carreras', title: 'Carreras', path: '/intranet/carreras', icon: <SchoolIcon /> },
       { id: 'planes', title: 'Planes', path: '/intranet/planes', icon: <AssignmentIcon /> },
       { id: 'modulos', title: 'Módulos', path: '/intranet/modulos', icon: <ViewModuleIcon /> },
+      { id: 'paquetes', title: 'Paquetes', path: '/intranet/paquetes', icon: <Inventory2Icon /> },
       { id: 'unidades-didacticas', title: 'Unidades Didácticas', path: '/intranet/unidades-didacticas', icon: <MenuBookIcon /> },
       { id: 'capacidades-terminales', title: 'Capacidades Terminales', path: '/intranet/capacidades-terminales', icon: <TrackChangesIcon /> },
       { id: 'indicadores-capacidad', title: 'Indicador de Capacidad', path: '/intranet/indicadores-capacidad', icon: <FactCheckIcon /> },

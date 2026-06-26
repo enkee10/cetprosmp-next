@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Box, Toolbar, CircularProgress } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import IntranetSidebar from '@/components/intranet/IntranetSidebar'; // + Import centralizado en el nuevo componente unificado
 
 const MIN_PERMISSION_LEVEL = 300;
@@ -52,7 +52,7 @@ export default function IntranetLayout({
                   p: 3,
                 }}
             >
-                <Toolbar />
+                <Box sx={{ minHeight: { xs: 18.6667, sm: 21.3333 } }} />
                 {children}
             </Box>
         </Box>

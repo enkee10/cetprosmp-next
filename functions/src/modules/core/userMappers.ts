@@ -7,7 +7,11 @@ import {
   DataConnectEspecialidadInput,
   DataConnectFamiliaInput,
   DataConnectIndicadorCapacidadInput,
+  DataConnectMatriculaInput,
   DataConnectModuloInput,
+  DataConnectModuloEstudianteInput,
+  DataConnectPaqueteInput,
+  DataConnectPaqueteModuloInput,
   DataConnectPlanInput,
   DataConnectRoleInput,
   DataConnectSectorInput,
@@ -268,6 +272,42 @@ export function buildModuloDataFromInput(input: Record<string, unknown>): DataCo
     descripcion2: asNullableString(input.descripcion2),
     planId: toNumberOrNull(input.planId),
   });
+}
+
+export function buildPaqueteDataFromInput(input: Record<string, unknown>): DataConnectPaqueteInput {
+  return compactUndefined({
+    titulo: asNullableString(input.titulo),
+    descripcion: asNullableString(input.descripcion),
+    archivado: toBoolean(input.archivado),
+  });
+}
+
+export function buildPaqueteModuloDataFromInput(input: Record<string, unknown>): DataConnectPaqueteModuloInput {
+  return compactUndefined({
+    paqueteId: toNumber(input.paqueteId, 0),
+    moduloId: toNumber(input.moduloId, 0),
+    orden: toNumberOrNull(input.orden),
+    obligatorio: toBoolean(input.obligatorio) ?? true,
+  }) as DataConnectPaqueteModuloInput;
+}
+
+export function buildMatriculaDataFromInput(input: Record<string, unknown>): DataConnectMatriculaInput {
+  return compactUndefined({
+    recibo: asNullableString(input.recibo),
+    fecha: asNullableTimestamp(input.fecha),
+    archivado: toBoolean(input.archivado),
+    grupoId: toNumberOrNull(input.grupoId),
+    paqueteId: toNumberOrNull(input.paqueteId),
+    userId: toNumberOrNull(input.userId),
+  });
+}
+
+export function buildModuloEstudianteDataFromInput(input: Record<string, unknown>): DataConnectModuloEstudianteInput {
+  return compactUndefined({
+    promedio: toNumberOrNull(input.promedio),
+    matriculaId: toNumber(input.matriculaId, 0),
+    moduloId: toNumber(input.moduloId, 0),
+  }) as DataConnectModuloEstudianteInput;
 }
 
 export function buildUnidadDidacticaDataFromInput(input: Record<string, unknown>): DataConnectUnidadDidacticaInput {

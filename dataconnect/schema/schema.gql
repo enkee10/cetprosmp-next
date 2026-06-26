@@ -563,6 +563,18 @@ type Paquete @table(name: "paquetes") {
   archivado: Boolean
 }
 
+type PaqueteModulo @table(name: "paquete_modulos", singular: "paqueteModulo", plural: "paqueteModulos") @unique(fields: ["paquete", "modulo"]) {
+  id: Int! @col(dataType: "serial")
+  orden: Int
+  obligatorio: Boolean
+
+  paquete: Paquete! @ref(fields: "paqueteId", references: "id")
+  paqueteId: Int! @col(name: "paquete_id")
+
+  modulo: Modulo! @ref(fields: "moduloId", references: "id")
+  moduloId: Int! @col(name: "modulo_id")
+}
+
 type Matricula @table(name: "matriculas") {
   id: Int! @col(dataType: "serial")
   recibo: String

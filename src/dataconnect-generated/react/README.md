@@ -316,6 +316,7 @@ export interface ListUsersData {
     tipoDocumento?: string | null;
     dni?: string | null;
     sexo?: string | null;
+    nacionalidad?: string | null;
     estadoCivil?: string | null;
     instruccion?: string | null;
     fechaNacimiento?: TimestampString | null;

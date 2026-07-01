@@ -288,6 +288,33 @@ extend type Mutation {
     data: Matricula_Data!
   ): Matricula_KeyOutput! @fdc_generated(from: "Matricula", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `MatriculaGrupo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  matriculaGrupo_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: MatriculaGrupo_Data!
+  ): MatriculaGrupo_KeyOutput! @fdc_generated(from: "MatriculaGrupo", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `MatriculaPaquete` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  matriculaPaquete_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: MatriculaPaquete_Data!
+  ): MatriculaPaquete_KeyOutput! @fdc_generated(from: "MatriculaPaquete", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `MatriculaUser` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  matriculaUser_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: MatriculaUser_Data!
+  ): MatriculaUser_KeyOutput! @fdc_generated(from: "MatriculaUser", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Metodo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   metodo_insert(
@@ -332,6 +359,15 @@ extend type Mutation {
     """
     data: Paquete_Data!
   ): Paquete_KeyOutput! @fdc_generated(from: "Paquete", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `PaqueteGrupo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  paqueteGrupo_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: PaqueteGrupo_Data!
+  ): PaqueteGrupo_KeyOutput! @fdc_generated(from: "PaqueteGrupo", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `PaqueteModulo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -801,6 +837,33 @@ extend type Mutation {
     data: [Matricula_Data!]!
   ): [Matricula_KeyOutput!]! @fdc_generated(from: "Matricula", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `MatriculaGrupo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  matriculaGrupo_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [MatriculaGrupo_Data!]!
+  ): [MatriculaGrupo_KeyOutput!]! @fdc_generated(from: "MatriculaGrupo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `MatriculaPaquete` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  matriculaPaquete_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [MatriculaPaquete_Data!]!
+  ): [MatriculaPaquete_KeyOutput!]! @fdc_generated(from: "MatriculaPaquete", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `MatriculaUser` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  matriculaUser_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [MatriculaUser_Data!]!
+  ): [MatriculaUser_KeyOutput!]! @fdc_generated(from: "MatriculaUser", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Metodo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   metodo_insertMany(
@@ -845,6 +908,15 @@ extend type Mutation {
     """
     data: [Paquete_Data!]!
   ): [Paquete_KeyOutput!]! @fdc_generated(from: "Paquete", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `PaqueteGrupo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  paqueteGrupo_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [PaqueteGrupo_Data!]!
+  ): [PaqueteGrupo_KeyOutput!]! @fdc_generated(from: "PaqueteGrupo", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `PaqueteModulo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1314,6 +1386,33 @@ extend type Mutation {
     data: Matricula_Data!
   ): Matricula_KeyOutput! @fdc_generated(from: "Matricula", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `MatriculaGrupo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaGrupo`.
+  """
+  matriculaGrupo_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: MatriculaGrupo_Data!
+  ): MatriculaGrupo_KeyOutput! @fdc_generated(from: "MatriculaGrupo", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `MatriculaPaquete` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaPaquete`.
+  """
+  matriculaPaquete_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: MatriculaPaquete_Data!
+  ): MatriculaPaquete_KeyOutput! @fdc_generated(from: "MatriculaPaquete", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `MatriculaUser` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaUser`.
+  """
+  matriculaUser_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: MatriculaUser_Data!
+  ): MatriculaUser_KeyOutput! @fdc_generated(from: "MatriculaUser", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Metodo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Metodo`.
   """
   metodo_upsert(
@@ -1358,6 +1457,15 @@ extend type Mutation {
     """
     data: Paquete_Data!
   ): Paquete_KeyOutput! @fdc_generated(from: "Paquete", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `PaqueteGrupo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PaqueteGrupo`.
+  """
+  paqueteGrupo_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: PaqueteGrupo_Data!
+  ): PaqueteGrupo_KeyOutput! @fdc_generated(from: "PaqueteGrupo", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `PaqueteModulo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PaqueteModulo`.
   """
@@ -1827,6 +1935,33 @@ extend type Mutation {
     data: [Matricula_Data!]!
   ): [Matricula_KeyOutput!]! @fdc_generated(from: "Matricula", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `MatriculaGrupo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaGrupo`.
+  """
+  matriculaGrupo_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [MatriculaGrupo_Data!]!
+  ): [MatriculaGrupo_KeyOutput!]! @fdc_generated(from: "MatriculaGrupo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `MatriculaPaquete` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaPaquete`.
+  """
+  matriculaPaquete_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [MatriculaPaquete_Data!]!
+  ): [MatriculaPaquete_KeyOutput!]! @fdc_generated(from: "MatriculaPaquete", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `MatriculaUser` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaUser`.
+  """
+  matriculaUser_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [MatriculaUser_Data!]!
+  ): [MatriculaUser_KeyOutput!]! @fdc_generated(from: "MatriculaUser", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Metodo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Metodo`.
   """
   metodo_upsertMany(
@@ -1871,6 +2006,15 @@ extend type Mutation {
     """
     data: [Paquete_Data!]!
   ): [Paquete_KeyOutput!]! @fdc_generated(from: "Paquete", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `PaqueteGrupo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PaqueteGrupo`.
+  """
+  paqueteGrupo_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [PaqueteGrupo_Data!]!
+  ): [PaqueteGrupo_KeyOutput!]! @fdc_generated(from: "PaqueteGrupo", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `PaqueteModulo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PaqueteModulo`.
   """
@@ -2980,6 +3124,63 @@ extend type Mutation {
     data: Matricula_Data!
   ): Matricula_KeyOutput @fdc_generated(from: "Matricula", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `MatriculaGrupo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `MatriculaGrupo` or `null` if not found.
+  """
+  matriculaGrupo_update(
+    """
+    The key used to identify the object.
+    """
+    key: MatriculaGrupo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: MatriculaGrupo_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: MatriculaGrupo_Data!
+  ): MatriculaGrupo_KeyOutput @fdc_generated(from: "MatriculaGrupo", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `MatriculaPaquete` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `MatriculaPaquete` or `null` if not found.
+  """
+  matriculaPaquete_update(
+    """
+    The key used to identify the object.
+    """
+    key: MatriculaPaquete_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: MatriculaPaquete_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: MatriculaPaquete_Data!
+  ): MatriculaPaquete_KeyOutput @fdc_generated(from: "MatriculaPaquete", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `MatriculaUser` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `MatriculaUser` or `null` if not found.
+  """
+  matriculaUser_update(
+    """
+    The key used to identify the object.
+    """
+    key: MatriculaUser_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: MatriculaUser_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: MatriculaUser_Data!
+  ): MatriculaUser_KeyOutput @fdc_generated(from: "MatriculaUser", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Metodo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Metodo` or `null` if not found.
   """
   metodo_update(
@@ -3124,6 +3325,25 @@ extend type Mutation {
     """
     data: Paquete_Data!
   ): Paquete_KeyOutput @fdc_generated(from: "Paquete", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `PaqueteGrupo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `PaqueteGrupo` or `null` if not found.
+  """
+  paqueteGrupo_update(
+    """
+    The key used to identify the object.
+    """
+    key: PaqueteGrupo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PaqueteGrupo_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: PaqueteGrupo_Data!
+  ): PaqueteGrupo_KeyOutput @fdc_generated(from: "PaqueteGrupo", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `PaqueteModulo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `PaqueteModulo` or `null` if not found.
   """
@@ -4303,6 +4523,63 @@ extend type Mutation {
     data: Matricula_Data!
   ): Int! @fdc_generated(from: "Matricula", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `MatriculaGrupo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  matriculaGrupo_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: MatriculaGrupo_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: MatriculaGrupo_Data!
+  ): Int! @fdc_generated(from: "MatriculaGrupo", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `MatriculaPaquete` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  matriculaPaquete_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: MatriculaPaquete_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: MatriculaPaquete_Data!
+  ): Int! @fdc_generated(from: "MatriculaPaquete", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `MatriculaUser` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  matriculaUser_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: MatriculaUser_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: MatriculaUser_Data!
+  ): Int! @fdc_generated(from: "MatriculaUser", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Metodo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   metodo_updateMany(
@@ -4397,6 +4674,25 @@ extend type Mutation {
     """
     data: Paquete_Data!
   ): Int! @fdc_generated(from: "Paquete", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `PaqueteGrupo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  paqueteGrupo_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: PaqueteGrupo_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: PaqueteGrupo_Data!
+  ): Int! @fdc_generated(from: "PaqueteGrupo", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `PaqueteModulo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -5546,6 +5842,48 @@ extend type Mutation {
     first: Matricula_FirstRow
   ): Matricula_KeyOutput @fdc_generated(from: "Matricula", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `MatriculaGrupo` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  matriculaGrupo_delete(
+    """
+    The key used to identify the object.
+    """
+    key: MatriculaGrupo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: MatriculaGrupo_FirstRow
+  ): MatriculaGrupo_KeyOutput @fdc_generated(from: "MatriculaGrupo", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `MatriculaPaquete` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  matriculaPaquete_delete(
+    """
+    The key used to identify the object.
+    """
+    key: MatriculaPaquete_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: MatriculaPaquete_FirstRow
+  ): MatriculaPaquete_KeyOutput @fdc_generated(from: "MatriculaPaquete", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `MatriculaUser` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  matriculaUser_delete(
+    """
+    The key used to identify the object.
+    """
+    key: MatriculaUser_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: MatriculaUser_FirstRow
+  ): MatriculaUser_KeyOutput @fdc_generated(from: "MatriculaUser", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Metodo` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   metodo_delete(
@@ -5665,6 +6003,20 @@ extend type Mutation {
     """
     first: Paquete_FirstRow
   ): Paquete_KeyOutput @fdc_generated(from: "Paquete", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `PaqueteGrupo` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  paqueteGrupo_delete(
+    """
+    The key used to identify the object.
+    """
+    key: PaqueteGrupo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PaqueteGrupo_FirstRow
+  ): PaqueteGrupo_KeyOutput @fdc_generated(from: "PaqueteGrupo", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `PaqueteModulo` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -6584,6 +6936,48 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "Matricula", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `MatriculaGrupo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  matriculaGrupo_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: MatriculaGrupo_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaGrupo", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `MatriculaPaquete` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  matriculaPaquete_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: MatriculaPaquete_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaPaquete", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `MatriculaUser` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  matriculaUser_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: MatriculaUser_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaUser", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Metodo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   metodo_deleteMany(
@@ -6653,6 +7047,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Paquete", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `PaqueteGrupo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  paqueteGrupo_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: PaqueteGrupo_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "PaqueteGrupo", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `PaqueteModulo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

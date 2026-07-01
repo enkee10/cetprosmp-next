@@ -479,7 +479,7 @@ export const DELETE_PAQUETE_MODULOS_BY_PAQUETE_MUTATION = `
 `;
 
 export const INSERT_MATRICULA_MUTATION = `
-  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha archivado paqueteId userId")) {
+  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha archivado paqueteId semestreId userId")) {
     matricula_insert(data: $data)
   }
 `;
@@ -503,13 +503,13 @@ export const DELETE_MODULO_ESTUDIANTES_BY_MATRICULA_MUTATION = `
 `;
 
 export const INSERT_USER_MUTATION = `
-  mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
+  mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar dniImagenFrenteUrl dniImagenReversoUrl rolId")) {
     user_insert(data: $data)
   }
 `;
 
 export const UPDATE_USER_MUTATION = `
-  mutation UpdateUser($id: Int!, $data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
+  mutation UpdateUser($id: Int!, $data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar dniImagenFrenteUrl dniImagenReversoUrl rolId")) {
     user_update(id: $id, data: $data)
   }
 `;

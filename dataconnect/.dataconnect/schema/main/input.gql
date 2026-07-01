@@ -191,6 +191,24 @@ It has the same format as `Matricula_Key`, but is only used as mutation return v
 """
 scalar Matricula_KeyOutput
 """
+✨ `MatriculaGrupo_KeyOutput` returns the primary key fields of table type `MatriculaGrupo`.
+
+It has the same format as `MatriculaGrupo_Key`, but is only used as mutation return value.
+"""
+scalar MatriculaGrupo_KeyOutput
+"""
+✨ `MatriculaPaquete_KeyOutput` returns the primary key fields of table type `MatriculaPaquete`.
+
+It has the same format as `MatriculaPaquete_Key`, but is only used as mutation return value.
+"""
+scalar MatriculaPaquete_KeyOutput
+"""
+✨ `MatriculaUser_KeyOutput` returns the primary key fields of table type `MatriculaUser`.
+
+It has the same format as `MatriculaUser_Key`, but is only used as mutation return value.
+"""
+scalar MatriculaUser_KeyOutput
+"""
 ✨ `Metodo_KeyOutput` returns the primary key fields of table type `Metodo`.
 
 It has the same format as `Metodo_Key`, but is only used as mutation return value.
@@ -220,6 +238,12 @@ scalar ModuloVideo_KeyOutput
 It has the same format as `Paquete_Key`, but is only used as mutation return value.
 """
 scalar Paquete_KeyOutput
+"""
+✨ `PaqueteGrupo_KeyOutput` returns the primary key fields of table type `PaqueteGrupo`.
+
+It has the same format as `PaqueteGrupo_Key`, but is only used as mutation return value.
+"""
+scalar PaqueteGrupo_KeyOutput
 """
 ✨ `PaqueteModulo_KeyOutput` returns the primary key fields of table type `PaqueteModulo`.
 
@@ -3285,6 +3309,14 @@ input Calendario_Data {
   """
   activo_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Calendario`.`archivado` of type `Boolean`
+  """
+  archivado: Boolean
+  """
+  ✨ `_expr` server value variant of `archivado` (✨ Generated from Field `Calendario`.`archivado` of type `Boolean`)
+  """
+  archivado_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Calendario`.`color` of type `String`
   """
   color: String
@@ -3345,6 +3377,38 @@ input Calendario_Data {
   """
   fechaCreacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Calendario`.`fechaFin` of type `Timestamp`
+  """
+  fechaFin: Timestamp
+  """
+  ✨ `_expr` server value variant of `fechaFin` (✨ Generated from Field `Calendario`.`fechaFin` of type `Timestamp`)
+  """
+  fechaFin_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fechaFin` (✨ Generated from Field `Calendario`.`fechaFin` of type `Timestamp`)
+  """
+  fechaFin_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaFin` (✨ Generated from Field `Calendario`.`fechaFin` of type `Timestamp`)
+  """
+  fechaFin_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Calendario`.`fechaIni` of type `Timestamp`
+  """
+  fechaIni: Timestamp
+  """
+  ✨ `_expr` server value variant of `fechaIni` (✨ Generated from Field `Calendario`.`fechaIni` of type `Timestamp`)
+  """
+  fechaIni_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fechaIni` (✨ Generated from Field `Calendario`.`fechaIni` of type `Timestamp`)
+  """
+  fechaIni_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaIni` (✨ Generated from Field `Calendario`.`fechaIni` of type `Timestamp`)
+  """
+  fechaIni_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Calendario`.`fin` of type `Timestamp`
   """
   fin: Timestamp
@@ -3376,6 +3440,14 @@ input Calendario_Data {
   ✨ `_update` server value variant of `inicio` (✨ Generated from Field `Calendario`.`inicio` of type `Timestamp`)
   """
   inicio_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Calendario`.`tipo` of type `String`
+  """
+  tipo: String
+  """
+  ✨ `_expr` server value variant of `tipo` (✨ Generated from Field `Calendario`.`tipo` of type `String`)
+  """
+  tipo_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Calendario`.`titulo` of type `String`
   """
@@ -3442,6 +3514,10 @@ input Calendario_Filter {
   """
   activo: Boolean_Filter
   """
+  ✨ Generated from Field `Calendario`.`archivado` of type `Boolean`
+  """
+  archivado: Boolean_Filter
+  """
   ✨ Generated from Field `Calendario`.`color` of type `String`
   """
   color: String_Filter
@@ -3462,6 +3538,14 @@ input Calendario_Filter {
   """
   fechaCreacion: Timestamp_Filter
   """
+  ✨ Generated from Field `Calendario`.`fechaFin` of type `Timestamp`
+  """
+  fechaFin: Timestamp_Filter
+  """
+  ✨ Generated from Field `Calendario`.`fechaIni` of type `Timestamp`
+  """
+  fechaIni: Timestamp_Filter
+  """
   ✨ Generated from Field `Calendario`.`fin` of type `Timestamp`
   """
   fin: Timestamp_Filter
@@ -3469,6 +3553,10 @@ input Calendario_Filter {
   ✨ Generated from Field `Calendario`.`inicio` of type `Timestamp`
   """
   inicio: Timestamp_Filter
+  """
+  ✨ Generated from Field `Calendario`.`tipo` of type `String`
+  """
+  tipo: String_Filter
   """
   ✨ Generated from Field `Calendario`.`titulo` of type `String`
   """
@@ -3528,6 +3616,10 @@ input Calendario_Having {
   """
   anioId_count: Int_Filter
   """
+  ✨ Generated from Field `Calendario`.`archivado_count` of type `Int!`
+  """
+  archivado_count: Int_Filter
+  """
   ✨ Generated from Field `Calendario`.`color_count` of type `Int!`
   """
   color_count: Int_Filter
@@ -3548,6 +3640,14 @@ input Calendario_Having {
   """
   fechaCreacion_count: Int_Filter
   """
+  ✨ Generated from Field `Calendario`.`fechaFin_count` of type `Int!`
+  """
+  fechaFin_count: Int_Filter
+  """
+  ✨ Generated from Field `Calendario`.`fechaIni_count` of type `Int!`
+  """
+  fechaIni_count: Int_Filter
+  """
   ✨ Generated from Field `Calendario`.`fin_count` of type `Int!`
   """
   fin_count: Int_Filter
@@ -3567,6 +3667,10 @@ input Calendario_Having {
   ✨ Generated from Field `Calendario`.`semestreId_count` of type `Int!`
   """
   semestreId_count: Int_Filter
+  """
+  ✨ Generated from Field `Calendario`.`tipo_count` of type `Int!`
+  """
+  tipo_count: Int_Filter
   """
   ✨ Generated from Field `Calendario`.`titulo_count` of type `Int!`
   """
@@ -3628,6 +3732,14 @@ input Calendario_Having {
   """
   fechaCreacion_min: Timestamp_Filter
   """
+  ✨ Generated from Field `Calendario`.`fechaFin_min` of type `Timestamp`
+  """
+  fechaFin_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Calendario`.`fechaIni_min` of type `Timestamp`
+  """
+  fechaIni_min: Timestamp_Filter
+  """
   ✨ Generated from Field `Calendario`.`fin_min` of type `Timestamp`
   """
   fin_min: Timestamp_Filter
@@ -3663,6 +3775,14 @@ input Calendario_Having {
   ✨ Generated from Field `Calendario`.`fechaCreacion_max` of type `Timestamp`
   """
   fechaCreacion_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `Calendario`.`fechaFin_max` of type `Timestamp`
+  """
+  fechaFin_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `Calendario`.`fechaIni_max` of type `Timestamp`
+  """
+  fechaIni_max: Timestamp_Filter
   """
   ✨ Generated from Field `Calendario`.`fin_max` of type `Timestamp`
   """
@@ -3747,6 +3867,10 @@ input Calendario_Order {
   """
   activo: OrderDirection
   """
+  ✨ Generated from Field `Calendario`.`archivado` of type `Boolean`
+  """
+  archivado: OrderDirection
+  """
   ✨ Generated from Field `Calendario`.`color` of type `String`
   """
   color: OrderDirection
@@ -3767,6 +3891,14 @@ input Calendario_Order {
   """
   fechaCreacion: OrderDirection
   """
+  ✨ Generated from Field `Calendario`.`fechaFin` of type `Timestamp`
+  """
+  fechaFin: OrderDirection
+  """
+  ✨ Generated from Field `Calendario`.`fechaIni` of type `Timestamp`
+  """
+  fechaIni: OrderDirection
+  """
   ✨ Generated from Field `Calendario`.`fin` of type `Timestamp`
   """
   fin: OrderDirection
@@ -3774,6 +3906,10 @@ input Calendario_Order {
   ✨ Generated from Field `Calendario`.`inicio` of type `Timestamp`
   """
   inicio: OrderDirection
+  """
+  ✨ Generated from Field `Calendario`.`tipo` of type `String`
+  """
+  tipo: OrderDirection
   """
   ✨ Generated from Field `Calendario`.`titulo` of type `String`
   """
@@ -3790,6 +3926,10 @@ input Calendario_Order {
   ✨ Generated from Field `Calendario`.`anioId_count` of type `Int!`
   """
   anioId_count: OrderDirection
+  """
+  ✨ Generated from Field `Calendario`.`archivado_count` of type `Int!`
+  """
+  archivado_count: OrderDirection
   """
   ✨ Generated from Field `Calendario`.`color_count` of type `Int!`
   """
@@ -3811,6 +3951,14 @@ input Calendario_Order {
   """
   fechaCreacion_count: OrderDirection
   """
+  ✨ Generated from Field `Calendario`.`fechaFin_count` of type `Int!`
+  """
+  fechaFin_count: OrderDirection
+  """
+  ✨ Generated from Field `Calendario`.`fechaIni_count` of type `Int!`
+  """
+  fechaIni_count: OrderDirection
+  """
   ✨ Generated from Field `Calendario`.`fin_count` of type `Int!`
   """
   fin_count: OrderDirection
@@ -3830,6 +3978,10 @@ input Calendario_Order {
   ✨ Generated from Field `Calendario`.`semestreId_count` of type `Int!`
   """
   semestreId_count: OrderDirection
+  """
+  ✨ Generated from Field `Calendario`.`tipo_count` of type `Int!`
+  """
+  tipo_count: OrderDirection
   """
   ✨ Generated from Field `Calendario`.`titulo_count` of type `Int!`
   """
@@ -3891,6 +4043,14 @@ input Calendario_Order {
   """
   fechaCreacion_min: OrderDirection
   """
+  ✨ Generated from Field `Calendario`.`fechaFin_min` of type `Timestamp`
+  """
+  fechaFin_min: OrderDirection
+  """
+  ✨ Generated from Field `Calendario`.`fechaIni_min` of type `Timestamp`
+  """
+  fechaIni_min: OrderDirection
+  """
   ✨ Generated from Field `Calendario`.`fin_min` of type `Timestamp`
   """
   fin_min: OrderDirection
@@ -3926,6 +4086,14 @@ input Calendario_Order {
   ✨ Generated from Field `Calendario`.`fechaCreacion_max` of type `Timestamp`
   """
   fechaCreacion_max: OrderDirection
+  """
+  ✨ Generated from Field `Calendario`.`fechaFin_max` of type `Timestamp`
+  """
+  fechaFin_max: OrderDirection
+  """
+  ✨ Generated from Field `Calendario`.`fechaIni_max` of type `Timestamp`
+  """
+  fechaIni_max: OrderDirection
   """
   ✨ Generated from Field `Calendario`.`fin_max` of type `Timestamp`
   """
@@ -4686,6 +4854,18 @@ input Carrera_Data {
   """
   creadoEn_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Carrera`.`creditos` of type `Int`
+  """
+  creditos: Int
+  """
+  ✨ `_expr` server value variant of `creditos` (✨ Generated from Field `Carrera`.`creditos` of type `Int`)
+  """
+  creditos_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `creditos` (✨ Generated from Field `Carrera`.`creditos` of type `Int`)
+  """
+  creditos_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Carrera`.`descripcion` of type `String`
   """
   descripcion: String
@@ -4693,6 +4873,22 @@ input Carrera_Data {
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Carrera`.`descripcion` of type `String`)
   """
   descripcion_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Carrera`.`descripcion2` of type `String`
+  """
+  descripcion2: String
+  """
+  ✨ `_expr` server value variant of `descripcion2` (✨ Generated from Field `Carrera`.`descripcion2` of type `String`)
+  """
+  descripcion2_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Carrera`.`duracion` of type `String`
+  """
+  duracion: String
+  """
+  ✨ `_expr` server value variant of `duracion` (✨ Generated from Field `Carrera`.`duracion` of type `String`)
+  """
+  duracion_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`imagenPortadaUrl` of type `String`
   """
@@ -4717,6 +4913,30 @@ input Carrera_Data {
   ✨ `_expr` server value variant of `nombre` (✨ Generated from Field `Carrera`.`nombre` of type `String`)
   """
   nombre_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Carrera`.`slug` of type `String`
+  """
+  slug: String
+  """
+  ✨ `_expr` server value variant of `slug` (✨ Generated from Field `Carrera`.`slug` of type `String`)
+  """
+  slug_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Carrera`.`titulo` of type `String`
+  """
+  titulo: String
+  """
+  ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `Carrera`.`titulo` of type `String`)
+  """
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Carrera`.`tituloComercial` of type `String`
+  """
+  tituloComercial: String
+  """
+  ✨ `_expr` server value variant of `tituloComercial` (✨ Generated from Field `Carrera`.`tituloComercial` of type `String`)
+  """
+  tituloComercial_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Carrera`.`planes_on_carrera` of type `[Plan!]!`
   """
@@ -4771,9 +4991,21 @@ input Carrera_Filter {
   """
   creadoEn: Timestamp_Filter
   """
+  ✨ Generated from Field `Carrera`.`creditos` of type `Int`
+  """
+  creditos: Int_Filter
+  """
   ✨ Generated from Field `Carrera`.`descripcion` of type `String`
   """
   descripcion: String_Filter
+  """
+  ✨ Generated from Field `Carrera`.`descripcion2` of type `String`
+  """
+  descripcion2: String_Filter
+  """
+  ✨ Generated from Field `Carrera`.`duracion` of type `String`
+  """
+  duracion: String_Filter
   """
   ✨ Generated from Field `Carrera`.`imagenPortadaUrl` of type `String`
   """
@@ -4786,6 +5018,18 @@ input Carrera_Filter {
   ✨ Generated from Field `Carrera`.`nombre` of type `String`
   """
   nombre: String_Filter
+  """
+  ✨ Generated from Field `Carrera`.`slug` of type `String`
+  """
+  slug: String_Filter
+  """
+  ✨ Generated from Field `Carrera`.`titulo` of type `String`
+  """
+  titulo: String_Filter
+  """
+  ✨ Generated from Field `Carrera`.`tituloComercial` of type `String`
+  """
+  tituloComercial: String_Filter
   """
   ✨ Generated from Field `Carrera`.`planes_on_carrera` of type `[Plan!]!`
   """
@@ -4845,9 +5089,21 @@ input Carrera_Having {
   """
   creadoEn_count: Int_Filter
   """
+  ✨ Generated from Field `Carrera`.`creditos_count` of type `Int!`
+  """
+  creditos_count: Int_Filter
+  """
+  ✨ Generated from Field `Carrera`.`descripcion2_count` of type `Int!`
+  """
+  descripcion2_count: Int_Filter
+  """
   ✨ Generated from Field `Carrera`.`descripcion_count` of type `Int!`
   """
   descripcion_count: Int_Filter
+  """
+  ✨ Generated from Field `Carrera`.`duracion_count` of type `Int!`
+  """
+  duracion_count: Int_Filter
   """
   ✨ Generated from Field `Carrera`.`id_count` of type `Int!`
   """
@@ -4865,13 +5121,29 @@ input Carrera_Having {
   """
   nombre_count: Int_Filter
   """
+  ✨ Generated from Field `Carrera`.`slug_count` of type `Int!`
+  """
+  slug_count: Int_Filter
+  """
   ✨ Generated from Field `Carrera`.`tipoCarreraId_count` of type `Int!`
   """
   tipoCarreraId_count: Int_Filter
   """
+  ✨ Generated from Field `Carrera`.`tituloComercial_count` of type `Int!`
+  """
+  tituloComercial_count: Int_Filter
+  """
+  ✨ Generated from Field `Carrera`.`titulo_count` of type `Int!`
+  """
+  titulo_count: Int_Filter
+  """
   ✨ Generated from Field `Carrera`.`actEconomicaId_sum` of type `Int`
   """
   actEconomicaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `Carrera`.`creditos_sum` of type `Int`
+  """
+  creditos_sum: Int_Filter
   """
   ✨ Generated from Field `Carrera`.`id_sum` of type `Int`
   """
@@ -4884,6 +5156,10 @@ input Carrera_Having {
   ✨ Generated from Field `Carrera`.`actEconomicaId_avg` of type `Float`
   """
   actEconomicaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Carrera`.`creditos_avg` of type `Float`
+  """
+  creditos_avg: Float_Filter
   """
   ✨ Generated from Field `Carrera`.`id_avg` of type `Float`
   """
@@ -4905,6 +5181,10 @@ input Carrera_Having {
   """
   creadoEn_min: Timestamp_Filter
   """
+  ✨ Generated from Field `Carrera`.`creditos_min` of type `Int`
+  """
+  creditos_min: Int_Filter
+  """
   ✨ Generated from Field `Carrera`.`id_min` of type `Int`
   """
   id_min: Int_Filter
@@ -4924,6 +5204,10 @@ input Carrera_Having {
   ✨ Generated from Field `Carrera`.`creadoEn_max` of type `Timestamp`
   """
   creadoEn_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `Carrera`.`creditos_max` of type `Int`
+  """
+  creditos_max: Int_Filter
   """
   ✨ Generated from Field `Carrera`.`id_max` of type `Int`
   """
@@ -4996,9 +5280,21 @@ input Carrera_Order {
   """
   creadoEn: OrderDirection
   """
+  ✨ Generated from Field `Carrera`.`creditos` of type `Int`
+  """
+  creditos: OrderDirection
+  """
   ✨ Generated from Field `Carrera`.`descripcion` of type `String`
   """
   descripcion: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`descripcion2` of type `String`
+  """
+  descripcion2: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`duracion` of type `String`
+  """
+  duracion: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`imagenPortadaUrl` of type `String`
   """
@@ -5011,6 +5307,18 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`nombre` of type `String`
   """
   nombre: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`slug` of type `String`
+  """
+  slug: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`titulo` of type `String`
+  """
+  titulo: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`tituloComercial` of type `String`
+  """
+  tituloComercial: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`_count` of type `Int!`
   """
@@ -5032,9 +5340,21 @@ input Carrera_Order {
   """
   creadoEn_count: OrderDirection
   """
+  ✨ Generated from Field `Carrera`.`creditos_count` of type `Int!`
+  """
+  creditos_count: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`descripcion2_count` of type `Int!`
+  """
+  descripcion2_count: OrderDirection
+  """
   ✨ Generated from Field `Carrera`.`descripcion_count` of type `Int!`
   """
   descripcion_count: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`duracion_count` of type `Int!`
+  """
+  duracion_count: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`id_count` of type `Int!`
   """
@@ -5052,13 +5372,29 @@ input Carrera_Order {
   """
   nombre_count: OrderDirection
   """
+  ✨ Generated from Field `Carrera`.`slug_count` of type `Int!`
+  """
+  slug_count: OrderDirection
+  """
   ✨ Generated from Field `Carrera`.`tipoCarreraId_count` of type `Int!`
   """
   tipoCarreraId_count: OrderDirection
   """
+  ✨ Generated from Field `Carrera`.`tituloComercial_count` of type `Int!`
+  """
+  tituloComercial_count: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`titulo_count` of type `Int!`
+  """
+  titulo_count: OrderDirection
+  """
   ✨ Generated from Field `Carrera`.`actEconomicaId_sum` of type `Int`
   """
   actEconomicaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`creditos_sum` of type `Int`
+  """
+  creditos_sum: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`id_sum` of type `Int`
   """
@@ -5071,6 +5407,10 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`actEconomicaId_avg` of type `Float`
   """
   actEconomicaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`creditos_avg` of type `Float`
+  """
+  creditos_avg: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`id_avg` of type `Float`
   """
@@ -5092,6 +5432,10 @@ input Carrera_Order {
   """
   creadoEn_min: OrderDirection
   """
+  ✨ Generated from Field `Carrera`.`creditos_min` of type `Int`
+  """
+  creditos_min: OrderDirection
+  """
   ✨ Generated from Field `Carrera`.`id_min` of type `Int`
   """
   id_min: OrderDirection
@@ -5111,6 +5455,10 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`creadoEn_max` of type `Timestamp`
   """
   creadoEn_max: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`creditos_max` of type `Int`
+  """
+  creditos_max: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`id_max` of type `Int`
   """
@@ -11519,6 +11867,18 @@ input Grupo_Data {
   """
   archivado_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Grupo`.`calendarioId` of type `Int`
+  """
+  calendarioId: Int
+  """
+  ✨ `_expr` server value variant of `calendarioId` (✨ Generated from Field `Grupo`.`calendarioId` of type `Int`)
+  """
+  calendarioId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `calendarioId` (✨ Generated from Field `Grupo`.`calendarioId` of type `Int`)
+  """
+  calendarioId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Grupo`.`descripcion` of type `String`
   """
   descripcion: String
@@ -11579,6 +11939,18 @@ input Grupo_Data {
   """
   grupoOrd_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Grupo`.`moduloId` of type `Int`
+  """
+  moduloId: Int
+  """
+  ✨ `_expr` server value variant of `moduloId` (✨ Generated from Field `Grupo`.`moduloId` of type `Int`)
+  """
+  moduloId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `moduloId` (✨ Generated from Field `Grupo`.`moduloId` of type `Int`)
+  """
+  moduloId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Grupo`.`nombreDisplay` of type `String`
   """
   nombreDisplay: String
@@ -11603,9 +11975,17 @@ input Grupo_Data {
   """
   grupoModulos_on_grupo: [GrupoModulo_Data!]
   """
+  ✨ Generated from Field `Grupo`.`matriculaGrupos_on_grupo` of type `[MatriculaGrupo!]!`
+  """
+  matriculaGrupos_on_grupo: [MatriculaGrupo_Data!]
+  """
   ✨ Generated from Field `Grupo`.`modulosEstudiantes_on_grupo` of type `[ModuloEstudiante!]!`
   """
   modulosEstudiantes_on_grupo: [ModuloEstudiante_Data!]
+  """
+  ✨ Generated from Field `Grupo`.`paqueteGrupos_on_grupo` of type `[PaqueteGrupo!]!`
+  """
+  paqueteGrupos_on_grupo: [PaqueteGrupo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Grupo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -11672,6 +12052,10 @@ input Grupo_Filter {
   """
   archivado: Boolean_Filter
   """
+  ✨ Generated from Field `Grupo`.`calendarioId` of type `Int`
+  """
+  calendarioId: Int_Filter
+  """
   ✨ Generated from Field `Grupo`.`descripcion` of type `String`
   """
   descripcion: String_Filter
@@ -11692,6 +12076,10 @@ input Grupo_Filter {
   """
   grupoOrd: Int_Filter
   """
+  ✨ Generated from Field `Grupo`.`moduloId` of type `Int`
+  """
+  moduloId: Int_Filter
+  """
   ✨ Generated from Field `Grupo`.`nombreDisplay` of type `String`
   """
   nombreDisplay: String_Filter
@@ -11708,9 +12096,25 @@ input Grupo_Filter {
   """
   grupoModulos_on_grupo: GrupoModulo_ListFilter
   """
+  ✨ Generated from Field `Grupo`.`matriculaGrupos_on_grupo` of type `[MatriculaGrupo!]!`
+  """
+  matriculaGrupos_on_grupo: MatriculaGrupo_ListFilter
+  """
   ✨ Generated from Field `Grupo`.`modulosEstudiantes_on_grupo` of type `[ModuloEstudiante!]!`
   """
   modulosEstudiantes_on_grupo: ModuloEstudiante_ListFilter
+  """
+  ✨ Generated from Field `Grupo`.`paqueteGrupos_on_grupo` of type `[PaqueteGrupo!]!`
+  """
+  paqueteGrupos_on_grupo: PaqueteGrupo_ListFilter
+  """
+  ✨ Generated from Field `Grupo`.`matriculas_via_MatriculaGrupo` of type `[Matricula!]!`
+  """
+  matriculas_via_MatriculaGrupo: Matricula_ListFilter
+  """
+  ✨ Generated from Field `Grupo`.`paquetes_via_PaqueteGrupo` of type `[Paquete!]!`
+  """
+  paquetes_via_PaqueteGrupo: Paquete_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'Grupo'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -11754,6 +12158,10 @@ input Grupo_Having {
   """
   archivado_count: Int_Filter
   """
+  ✨ Generated from Field `Grupo`.`calendarioId_count` of type `Int!`
+  """
+  calendarioId_count: Int_Filter
+  """
   ✨ Generated from Field `Grupo`.`descripcion_count` of type `Int!`
   """
   descripcion_count: Int_Filter
@@ -11782,6 +12190,10 @@ input Grupo_Having {
   """
   id_count: Int_Filter
   """
+  ✨ Generated from Field `Grupo`.`moduloId_count` of type `Int!`
+  """
+  moduloId_count: Int_Filter
+  """
   ✨ Generated from Field `Grupo`.`nombreDisplay_count` of type `Int!`
   """
   nombreDisplay_count: Int_Filter
@@ -11806,6 +12218,10 @@ input Grupo_Having {
   """
   turnoNombre_count: Int_Filter
   """
+  ✨ Generated from Field `Grupo`.`calendarioId_sum` of type `Int`
+  """
+  calendarioId_sum: Int_Filter
+  """
   ✨ Generated from Field `Grupo`.`grupoOrd_sum` of type `Int`
   """
   grupoOrd_sum: Int_Filter
@@ -11817,6 +12233,10 @@ input Grupo_Having {
   ✨ Generated from Field `Grupo`.`id_sum` of type `Int`
   """
   id_sum: Int_Filter
+  """
+  ✨ Generated from Field `Grupo`.`moduloId_sum` of type `Int`
+  """
+  moduloId_sum: Int_Filter
   """
   ✨ Generated from Field `Grupo`.`paqueteId_sum` of type `Int`
   """
@@ -11834,6 +12254,10 @@ input Grupo_Having {
   """
   turnoId_sum: Int_Filter
   """
+  ✨ Generated from Field `Grupo`.`calendarioId_avg` of type `Float`
+  """
+  calendarioId_avg: Float_Filter
+  """
   ✨ Generated from Field `Grupo`.`grupoOrd_avg` of type `Float`
   """
   grupoOrd_avg: Float_Filter
@@ -11845,6 +12269,10 @@ input Grupo_Having {
   ✨ Generated from Field `Grupo`.`id_avg` of type `Float`
   """
   id_avg: Float_Filter
+  """
+  ✨ Generated from Field `Grupo`.`moduloId_avg` of type `Float`
+  """
+  moduloId_avg: Float_Filter
   """
   ✨ Generated from Field `Grupo`.`paqueteId_avg` of type `Float`
   """
@@ -11861,6 +12289,10 @@ input Grupo_Having {
   ✨ Generated from Field `Grupo`.`turnoId_avg` of type `Float`
   """
   turnoId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Grupo`.`calendarioId_min` of type `Int`
+  """
+  calendarioId_min: Int_Filter
   """
   ✨ Generated from Field `Grupo`.`fechaActualizacion_min` of type `Timestamp`
   """
@@ -11882,6 +12314,10 @@ input Grupo_Having {
   """
   id_min: Int_Filter
   """
+  ✨ Generated from Field `Grupo`.`moduloId_min` of type `Int`
+  """
+  moduloId_min: Int_Filter
+  """
   ✨ Generated from Field `Grupo`.`paqueteId_min` of type `Int`
   """
   paqueteId_min: Int_Filter
@@ -11897,6 +12333,10 @@ input Grupo_Having {
   ✨ Generated from Field `Grupo`.`turnoId_min` of type `Int`
   """
   turnoId_min: Int_Filter
+  """
+  ✨ Generated from Field `Grupo`.`calendarioId_max` of type `Int`
+  """
+  calendarioId_max: Int_Filter
   """
   ✨ Generated from Field `Grupo`.`fechaActualizacion_max` of type `Timestamp`
   """
@@ -11917,6 +12357,10 @@ input Grupo_Having {
   ✨ Generated from Field `Grupo`.`id_max` of type `Int`
   """
   id_max: Int_Filter
+  """
+  ✨ Generated from Field `Grupo`.`moduloId_max` of type `Int`
+  """
+  moduloId_max: Int_Filter
   """
   ✨ Generated from Field `Grupo`.`paqueteId_max` of type `Int`
   """
@@ -12013,6 +12457,10 @@ input Grupo_Order {
   """
   archivado: OrderDirection
   """
+  ✨ Generated from Field `Grupo`.`calendarioId` of type `Int`
+  """
+  calendarioId: OrderDirection
+  """
   ✨ Generated from Field `Grupo`.`descripcion` of type `String`
   """
   descripcion: OrderDirection
@@ -12033,6 +12481,10 @@ input Grupo_Order {
   """
   grupoOrd: OrderDirection
   """
+  ✨ Generated from Field `Grupo`.`moduloId` of type `Int`
+  """
+  moduloId: OrderDirection
+  """
   ✨ Generated from Field `Grupo`.`nombreDisplay` of type `String`
   """
   nombreDisplay: OrderDirection
@@ -12048,6 +12500,10 @@ input Grupo_Order {
   ✨ Generated from Field `Grupo`.`archivado_count` of type `Int!`
   """
   archivado_count: OrderDirection
+  """
+  ✨ Generated from Field `Grupo`.`calendarioId_count` of type `Int!`
+  """
+  calendarioId_count: OrderDirection
   """
   ✨ Generated from Field `Grupo`.`descripcion_count` of type `Int!`
   """
@@ -12077,6 +12533,10 @@ input Grupo_Order {
   """
   id_count: OrderDirection
   """
+  ✨ Generated from Field `Grupo`.`moduloId_count` of type `Int!`
+  """
+  moduloId_count: OrderDirection
+  """
   ✨ Generated from Field `Grupo`.`nombreDisplay_count` of type `Int!`
   """
   nombreDisplay_count: OrderDirection
@@ -12101,6 +12561,10 @@ input Grupo_Order {
   """
   turnoNombre_count: OrderDirection
   """
+  ✨ Generated from Field `Grupo`.`calendarioId_sum` of type `Int`
+  """
+  calendarioId_sum: OrderDirection
+  """
   ✨ Generated from Field `Grupo`.`grupoOrd_sum` of type `Int`
   """
   grupoOrd_sum: OrderDirection
@@ -12112,6 +12576,10 @@ input Grupo_Order {
   ✨ Generated from Field `Grupo`.`id_sum` of type `Int`
   """
   id_sum: OrderDirection
+  """
+  ✨ Generated from Field `Grupo`.`moduloId_sum` of type `Int`
+  """
+  moduloId_sum: OrderDirection
   """
   ✨ Generated from Field `Grupo`.`paqueteId_sum` of type `Int`
   """
@@ -12129,6 +12597,10 @@ input Grupo_Order {
   """
   turnoId_sum: OrderDirection
   """
+  ✨ Generated from Field `Grupo`.`calendarioId_avg` of type `Float`
+  """
+  calendarioId_avg: OrderDirection
+  """
   ✨ Generated from Field `Grupo`.`grupoOrd_avg` of type `Float`
   """
   grupoOrd_avg: OrderDirection
@@ -12140,6 +12612,10 @@ input Grupo_Order {
   ✨ Generated from Field `Grupo`.`id_avg` of type `Float`
   """
   id_avg: OrderDirection
+  """
+  ✨ Generated from Field `Grupo`.`moduloId_avg` of type `Float`
+  """
+  moduloId_avg: OrderDirection
   """
   ✨ Generated from Field `Grupo`.`paqueteId_avg` of type `Float`
   """
@@ -12156,6 +12632,10 @@ input Grupo_Order {
   ✨ Generated from Field `Grupo`.`turnoId_avg` of type `Float`
   """
   turnoId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Grupo`.`calendarioId_min` of type `Int`
+  """
+  calendarioId_min: OrderDirection
   """
   ✨ Generated from Field `Grupo`.`fechaActualizacion_min` of type `Timestamp`
   """
@@ -12177,6 +12657,10 @@ input Grupo_Order {
   """
   id_min: OrderDirection
   """
+  ✨ Generated from Field `Grupo`.`moduloId_min` of type `Int`
+  """
+  moduloId_min: OrderDirection
+  """
   ✨ Generated from Field `Grupo`.`paqueteId_min` of type `Int`
   """
   paqueteId_min: OrderDirection
@@ -12192,6 +12676,10 @@ input Grupo_Order {
   ✨ Generated from Field `Grupo`.`turnoId_min` of type `Int`
   """
   turnoId_min: OrderDirection
+  """
+  ✨ Generated from Field `Grupo`.`calendarioId_max` of type `Int`
+  """
+  calendarioId_max: OrderDirection
   """
   ✨ Generated from Field `Grupo`.`fechaActualizacion_max` of type `Timestamp`
   """
@@ -12212,6 +12700,10 @@ input Grupo_Order {
   ✨ Generated from Field `Grupo`.`id_max` of type `Int`
   """
   id_max: OrderDirection
+  """
+  ✨ Generated from Field `Grupo`.`moduloId_max` of type `Int`
+  """
+  moduloId_max: OrderDirection
   """
   ✨ Generated from Field `Grupo`.`paqueteId_max` of type `Int`
   """
@@ -13790,6 +14282,18 @@ input Matricula_Data {
   """
   paqueteId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Matricula`.`semestreId` of type `Int`
+  """
+  semestreId: Int
+  """
+  ✨ `_expr` server value variant of `semestreId` (✨ Generated from Field `Matricula`.`semestreId` of type `Int`)
+  """
+  semestreId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `semestreId` (✨ Generated from Field `Matricula`.`semestreId` of type `Int`)
+  """
+  semestreId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Matricula`.`userId` of type `Int`
   """
   userId: Int
@@ -13805,6 +14309,10 @@ input Matricula_Data {
   ✨ Generated from Field `Matricula`.`paquete` of type `Paquete`
   """
   paquete: Paquete_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Matricula`.`semestre` of type `Semestre`
+  """
+  semestre: Semestre_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Matricula`.`user` of type `User`
   """
@@ -13858,6 +14366,18 @@ input Matricula_Data {
   """
   indicadoresCapacidadEstudiantes_on_matricula: [IndicadorCapacidadEstudiante_Data!]
   """
+  ✨ Generated from Field `Matricula`.`matriculaGrupos_on_matricula` of type `[MatriculaGrupo!]!`
+  """
+  matriculaGrupos_on_matricula: [MatriculaGrupo_Data!]
+  """
+  ✨ Generated from Field `Matricula`.`matriculaPaquetes_on_matricula` of type `[MatriculaPaquete!]!`
+  """
+  matriculaPaquetes_on_matricula: [MatriculaPaquete_Data!]
+  """
+  ✨ Generated from Field `Matricula`.`matriculaUsers_on_matricula` of type `[MatriculaUser!]!`
+  """
+  matriculaUsers_on_matricula: [MatriculaUser_Data!]
+  """
   ✨ Generated from Field `Matricula`.`modulosEstudiantes_on_matricula` of type `[ModuloEstudiante!]!`
   """
   modulosEstudiantes_on_matricula: [ModuloEstudiante_Data!]
@@ -13891,6 +14411,10 @@ input Matricula_Filter {
   """
   paqueteId: Int_Filter
   """
+  ✨ Generated from Field `Matricula`.`semestreId` of type `Int`
+  """
+  semestreId: Int_Filter
+  """
   ✨ Generated from Field `Matricula`.`userId` of type `Int`
   """
   userId: Int_Filter
@@ -13898,6 +14422,10 @@ input Matricula_Filter {
   ✨ Generated from Field `Matricula`.`paquete` of type `Paquete`
   """
   paquete: Paquete_Filter
+  """
+  ✨ Generated from Field `Matricula`.`semestre` of type `Semestre`
+  """
+  semestre: Semestre_Filter
   """
   ✨ Generated from Field `Matricula`.`user` of type `User`
   """
@@ -13931,6 +14459,18 @@ input Matricula_Filter {
   """
   indicadoresCapacidadEstudiantes_on_matricula: IndicadorCapacidadEstudiante_ListFilter
   """
+  ✨ Generated from Field `Matricula`.`matriculaGrupos_on_matricula` of type `[MatriculaGrupo!]!`
+  """
+  matriculaGrupos_on_matricula: MatriculaGrupo_ListFilter
+  """
+  ✨ Generated from Field `Matricula`.`matriculaPaquetes_on_matricula` of type `[MatriculaPaquete!]!`
+  """
+  matriculaPaquetes_on_matricula: MatriculaPaquete_ListFilter
+  """
+  ✨ Generated from Field `Matricula`.`matriculaUsers_on_matricula` of type `[MatriculaUser!]!`
+  """
+  matriculaUsers_on_matricula: MatriculaUser_ListFilter
+  """
   ✨ Generated from Field `Matricula`.`modulosEstudiantes_on_matricula` of type `[ModuloEstudiante!]!`
   """
   modulosEstudiantes_on_matricula: ModuloEstudiante_ListFilter
@@ -13938,6 +14478,18 @@ input Matricula_Filter {
   ✨ Generated from Field `Matricula`.`unidadesDidacticasEstudiantes_on_matricula` of type `[UnidadDidacticaEstudiante!]!`
   """
   unidadesDidacticasEstudiantes_on_matricula: UnidadDidacticaEstudiante_ListFilter
+  """
+  ✨ Generated from Field `Matricula`.`grupos_via_MatriculaGrupo` of type `[Grupo!]!`
+  """
+  grupos_via_MatriculaGrupo: Grupo_ListFilter
+  """
+  ✨ Generated from Field `Matricula`.`paquetes_via_MatriculaPaquete` of type `[Paquete!]!`
+  """
+  paquetes_via_MatriculaPaquete: Paquete_ListFilter
+  """
+  ✨ Generated from Field `Matricula`.`users_via_MatriculaUser` of type `[User!]!`
+  """
+  users_via_MatriculaUser: User_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'Matricula'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -13997,6 +14549,10 @@ input Matricula_Having {
   """
   recibo_count: Int_Filter
   """
+  ✨ Generated from Field `Matricula`.`semestreId_count` of type `Int!`
+  """
+  semestreId_count: Int_Filter
+  """
   ✨ Generated from Field `Matricula`.`userId_count` of type `Int!`
   """
   userId_count: Int_Filter
@@ -14009,6 +14565,10 @@ input Matricula_Having {
   """
   paqueteId_sum: Int_Filter
   """
+  ✨ Generated from Field `Matricula`.`semestreId_sum` of type `Int`
+  """
+  semestreId_sum: Int_Filter
+  """
   ✨ Generated from Field `Matricula`.`userId_sum` of type `Int`
   """
   userId_sum: Int_Filter
@@ -14020,6 +14580,10 @@ input Matricula_Having {
   ✨ Generated from Field `Matricula`.`paqueteId_avg` of type `Float`
   """
   paqueteId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Matricula`.`semestreId_avg` of type `Float`
+  """
+  semestreId_avg: Float_Filter
   """
   ✨ Generated from Field `Matricula`.`userId_avg` of type `Float`
   """
@@ -14037,6 +14601,10 @@ input Matricula_Having {
   """
   paqueteId_min: Int_Filter
   """
+  ✨ Generated from Field `Matricula`.`semestreId_min` of type `Int`
+  """
+  semestreId_min: Int_Filter
+  """
   ✨ Generated from Field `Matricula`.`userId_min` of type `Int`
   """
   userId_min: Int_Filter
@@ -14052,6 +14620,10 @@ input Matricula_Having {
   ✨ Generated from Field `Matricula`.`paqueteId_max` of type `Int`
   """
   paqueteId_max: Int_Filter
+  """
+  ✨ Generated from Field `Matricula`.`semestreId_max` of type `Int`
+  """
+  semestreId_max: Int_Filter
   """
   ✨ Generated from Field `Matricula`.`userId_max` of type `Int`
   """
@@ -14096,6 +14668,10 @@ input Matricula_Order {
   """
   paqueteId: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`semestreId` of type `Int`
+  """
+  semestreId: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`userId` of type `Int`
   """
   userId: OrderDirection
@@ -14103,6 +14679,10 @@ input Matricula_Order {
   ✨ Generated from Field `Matricula`.`paquete` of type `Paquete`
   """
   paquete: Paquete_Order
+  """
+  ✨ Generated from Field `Matricula`.`semestre` of type `Semestre`
+  """
+  semestre: Semestre_Order
   """
   ✨ Generated from Field `Matricula`.`user` of type `User`
   """
@@ -14144,6 +14724,10 @@ input Matricula_Order {
   """
   recibo_count: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`semestreId_count` of type `Int!`
+  """
+  semestreId_count: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`userId_count` of type `Int!`
   """
   userId_count: OrderDirection
@@ -14156,6 +14740,10 @@ input Matricula_Order {
   """
   paqueteId_sum: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`semestreId_sum` of type `Int`
+  """
+  semestreId_sum: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`userId_sum` of type `Int`
   """
   userId_sum: OrderDirection
@@ -14167,6 +14755,10 @@ input Matricula_Order {
   ✨ Generated from Field `Matricula`.`paqueteId_avg` of type `Float`
   """
   paqueteId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Matricula`.`semestreId_avg` of type `Float`
+  """
+  semestreId_avg: OrderDirection
   """
   ✨ Generated from Field `Matricula`.`userId_avg` of type `Float`
   """
@@ -14184,6 +14776,10 @@ input Matricula_Order {
   """
   paqueteId_min: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`semestreId_min` of type `Int`
+  """
+  semestreId_min: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`userId_min` of type `Int`
   """
   userId_min: OrderDirection
@@ -14200,7 +14796,932 @@ input Matricula_Order {
   """
   paqueteId_max: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`semestreId_max` of type `Int`
+  """
+  semestreId_max: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`userId_max` of type `Int`
+  """
+  userId_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'MatriculaGrupo'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input MatriculaGrupo_Data {
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int
+  """
+  ✨ `_expr` server value variant of `matriculaId` (✨ Generated from Field `MatriculaGrupo`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `matriculaId` (✨ Generated from Field `MatriculaGrupo`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId` of type `Int!`
+  """
+  grupoId: Int
+  """
+  ✨ `_expr` server value variant of `grupoId` (✨ Generated from Field `MatriculaGrupo`.`grupoId` of type `Int!`)
+  """
+  grupoId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoId` (✨ Generated from Field `MatriculaGrupo`.`grupoId` of type `Int!`)
+  """
+  grupoId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupo` of type `Grupo!`
+  """
+  grupo: Grupo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `MatriculaGrupo`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `MatriculaGrupo`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'MatriculaGrupo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input MatriculaGrupo_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [MatriculaGrupo_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: MatriculaGrupo_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [MatriculaGrupo_Filter!]
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId` of type `Int!`
+  """
+  grupoId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupo` of type `Grupo!`
+  """
+  grupo: Grupo_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id` of type `Int!`
+  """
+  id: Int_Filter
+}
+"""
+✨ Generated first-row input type for table 'MatriculaGrupo'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input MatriculaGrupo_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [MatriculaGrupo_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: MatriculaGrupo_Filter
+}
+"""
+✨ Generated having input type for table 'MatriculaGrupo'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input MatriculaGrupo_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [MatriculaGrupo_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: MatriculaGrupo_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [MatriculaGrupo_Having!]
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId_count` of type `Int!`
+  """
+  grupoId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId_count` of type `Int!`
+  """
+  matriculaId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId_sum` of type `Int`
+  """
+  grupoId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId_sum` of type `Int`
+  """
+  matriculaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId_avg` of type `Float`
+  """
+  grupoId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId_avg` of type `Float`
+  """
+  matriculaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId_min` of type `Int`
+  """
+  grupoId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId_min` of type `Int`
+  """
+  matriculaId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId_max` of type `Int`
+  """
+  grupoId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId_max` of type `Int`
+  """
+  matriculaId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'MatriculaGrupo'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input MatriculaGrupo_Key {
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int
+  """
+  ✨ `_expr` server value variant of `matriculaId` (✨ Generated from Field `MatriculaGrupo`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId` of type `Int!`
+  """
+  grupoId: Int
+  """
+  ✨ `_expr` server value variant of `grupoId` (✨ Generated from Field `MatriculaGrupo`.`grupoId` of type `Int!`)
+  """
+  grupoId_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'MatriculaGrupo'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input MatriculaGrupo_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: MatriculaGrupo_Filter
+}
+"""
+✨ Generated order input type for table 'MatriculaGrupo'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input MatriculaGrupo_Order {
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId` of type `Int!`
+  """
+  matriculaId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId` of type `Int!`
+  """
+  grupoId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupo` of type `Grupo!`
+  """
+  grupo: Grupo_Order
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Order
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId_count` of type `Int!`
+  """
+  grupoId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId_count` of type `Int!`
+  """
+  matriculaId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId_sum` of type `Int`
+  """
+  grupoId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId_sum` of type `Int`
+  """
+  matriculaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId_avg` of type `Float`
+  """
+  grupoId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId_avg` of type `Float`
+  """
+  matriculaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId_min` of type `Int`
+  """
+  grupoId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId_min` of type `Int`
+  """
+  matriculaId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`grupoId_max` of type `Int`
+  """
+  grupoId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaGrupo`.`matriculaId_max` of type `Int`
+  """
+  matriculaId_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'MatriculaPaquete'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input MatriculaPaquete_Data {
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int
+  """
+  ✨ `_expr` server value variant of `matriculaId` (✨ Generated from Field `MatriculaPaquete`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `matriculaId` (✨ Generated from Field `MatriculaPaquete`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId` of type `Int!`
+  """
+  paqueteId: Int
+  """
+  ✨ `_expr` server value variant of `paqueteId` (✨ Generated from Field `MatriculaPaquete`.`paqueteId` of type `Int!`)
+  """
+  paqueteId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `paqueteId` (✨ Generated from Field `MatriculaPaquete`.`paqueteId` of type `Int!`)
+  """
+  paqueteId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paquete` of type `Paquete!`
+  """
+  paquete: Paquete_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `MatriculaPaquete`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `MatriculaPaquete`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'MatriculaPaquete'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input MatriculaPaquete_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [MatriculaPaquete_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: MatriculaPaquete_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [MatriculaPaquete_Filter!]
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId` of type `Int!`
+  """
+  paqueteId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paquete` of type `Paquete!`
+  """
+  paquete: Paquete_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id` of type `Int!`
+  """
+  id: Int_Filter
+}
+"""
+✨ Generated first-row input type for table 'MatriculaPaquete'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input MatriculaPaquete_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [MatriculaPaquete_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: MatriculaPaquete_Filter
+}
+"""
+✨ Generated having input type for table 'MatriculaPaquete'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input MatriculaPaquete_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [MatriculaPaquete_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: MatriculaPaquete_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [MatriculaPaquete_Having!]
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId_count` of type `Int!`
+  """
+  matriculaId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId_count` of type `Int!`
+  """
+  paqueteId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId_sum` of type `Int`
+  """
+  matriculaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId_sum` of type `Int`
+  """
+  paqueteId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId_avg` of type `Float`
+  """
+  matriculaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId_avg` of type `Float`
+  """
+  paqueteId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId_min` of type `Int`
+  """
+  matriculaId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId_min` of type `Int`
+  """
+  paqueteId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId_max` of type `Int`
+  """
+  matriculaId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId_max` of type `Int`
+  """
+  paqueteId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'MatriculaPaquete'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input MatriculaPaquete_Key {
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int
+  """
+  ✨ `_expr` server value variant of `matriculaId` (✨ Generated from Field `MatriculaPaquete`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId` of type `Int!`
+  """
+  paqueteId: Int
+  """
+  ✨ `_expr` server value variant of `paqueteId` (✨ Generated from Field `MatriculaPaquete`.`paqueteId` of type `Int!`)
+  """
+  paqueteId_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'MatriculaPaquete'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input MatriculaPaquete_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: MatriculaPaquete_Filter
+}
+"""
+✨ Generated order input type for table 'MatriculaPaquete'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input MatriculaPaquete_Order {
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId` of type `Int!`
+  """
+  matriculaId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId` of type `Int!`
+  """
+  paqueteId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Order
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paquete` of type `Paquete!`
+  """
+  paquete: Paquete_Order
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId_count` of type `Int!`
+  """
+  matriculaId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId_count` of type `Int!`
+  """
+  paqueteId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId_sum` of type `Int`
+  """
+  matriculaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId_sum` of type `Int`
+  """
+  paqueteId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId_avg` of type `Float`
+  """
+  matriculaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId_avg` of type `Float`
+  """
+  paqueteId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId_min` of type `Int`
+  """
+  matriculaId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId_min` of type `Int`
+  """
+  paqueteId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`matriculaId_max` of type `Int`
+  """
+  matriculaId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaPaquete`.`paqueteId_max` of type `Int`
+  """
+  paqueteId_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'MatriculaUser'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input MatriculaUser_Data {
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int
+  """
+  ✨ `_expr` server value variant of `matriculaId` (✨ Generated from Field `MatriculaUser`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `matriculaId` (✨ Generated from Field `MatriculaUser`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId` of type `Int!`
+  """
+  userId: Int
+  """
+  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `MatriculaUser`.`userId` of type `Int!`)
+  """
+  userId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `userId` (✨ Generated from Field `MatriculaUser`.`userId` of type `Int!`)
+  """
+  userId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaUser`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaUser`.`user` of type `User!`
+  """
+  user: User_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaUser`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `MatriculaUser`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `MatriculaUser`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'MatriculaUser'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input MatriculaUser_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [MatriculaUser_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: MatriculaUser_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [MatriculaUser_Filter!]
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId` of type `Int!`
+  """
+  userId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`user` of type `User!`
+  """
+  user: User_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`id` of type `Int!`
+  """
+  id: Int_Filter
+}
+"""
+✨ Generated first-row input type for table 'MatriculaUser'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input MatriculaUser_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [MatriculaUser_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: MatriculaUser_Filter
+}
+"""
+✨ Generated having input type for table 'MatriculaUser'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input MatriculaUser_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [MatriculaUser_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: MatriculaUser_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [MatriculaUser_Having!]
+  """
+  ✨ Generated from Field `MatriculaUser`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId_count` of type `Int!`
+  """
+  matriculaId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId_count` of type `Int!`
+  """
+  userId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId_sum` of type `Int`
+  """
+  matriculaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId_sum` of type `Int`
+  """
+  userId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId_avg` of type `Float`
+  """
+  matriculaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId_avg` of type `Float`
+  """
+  userId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId_min` of type `Int`
+  """
+  matriculaId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId_min` of type `Int`
+  """
+  userId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId_max` of type `Int`
+  """
+  matriculaId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId_max` of type `Int`
+  """
+  userId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'MatriculaUser'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input MatriculaUser_Key {
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int
+  """
+  ✨ `_expr` server value variant of `matriculaId` (✨ Generated from Field `MatriculaUser`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId` of type `Int!`
+  """
+  userId: Int
+  """
+  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `MatriculaUser`.`userId` of type `Int!`)
+  """
+  userId_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'MatriculaUser'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input MatriculaUser_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: MatriculaUser_Filter
+}
+"""
+✨ Generated order input type for table 'MatriculaUser'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input MatriculaUser_Order {
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId` of type `Int!`
+  """
+  matriculaId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId` of type `Int!`
+  """
+  userId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Order
+  """
+  ✨ Generated from Field `MatriculaUser`.`user` of type `User!`
+  """
+  user: User_Order
+  """
+  ✨ Generated from Field `MatriculaUser`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId_count` of type `Int!`
+  """
+  matriculaId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId_count` of type `Int!`
+  """
+  userId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId_sum` of type `Int`
+  """
+  matriculaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId_sum` of type `Int`
+  """
+  userId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId_avg` of type `Float`
+  """
+  matriculaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId_avg` of type `Float`
+  """
+  userId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId_min` of type `Int`
+  """
+  matriculaId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId_min` of type `Int`
+  """
+  userId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`matriculaId_max` of type `Int`
+  """
+  matriculaId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaUser`.`userId_max` of type `Int`
   """
   userId_max: OrderDirection
 }
@@ -14464,6 +15985,18 @@ input Modulo_Data {
   """
   activo_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Modulo`.`carreraId` of type `Int`
+  """
+  carreraId: Int
+  """
+  ✨ `_expr` server value variant of `carreraId` (✨ Generated from Field `Modulo`.`carreraId` of type `Int`)
+  """
+  carreraId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `carreraId` (✨ Generated from Field `Modulo`.`carreraId` of type `Int`)
+  """
+  carreraId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Modulo`.`creditos` of type `Int`
   """
   creditos: Int
@@ -14483,6 +16016,14 @@ input Modulo_Data {
   ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Modulo`.`descripcion` of type `String`)
   """
   descripcion_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Modulo`.`descripcion2` of type `String`
+  """
+  descripcion2: String
+  """
+  ✨ `_expr` server value variant of `descripcion2` (✨ Generated from Field `Modulo`.`descripcion2` of type `String`)
+  """
+  descripcion2_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`horas` of type `Int`
   """
@@ -14597,6 +16138,10 @@ input Modulo_Filter {
   """
   activo: Boolean_Filter
   """
+  ✨ Generated from Field `Modulo`.`carreraId` of type `Int`
+  """
+  carreraId: Int_Filter
+  """
   ✨ Generated from Field `Modulo`.`creditos` of type `Int`
   """
   creditos: Int_Filter
@@ -14604,6 +16149,10 @@ input Modulo_Filter {
   ✨ Generated from Field `Modulo`.`descripcion` of type `String`
   """
   descripcion: String_Filter
+  """
+  ✨ Generated from Field `Modulo`.`descripcion2` of type `String`
+  """
+  descripcion2: String_Filter
   """
   ✨ Generated from Field `Modulo`.`horas` of type `Int`
   """
@@ -14691,9 +16240,17 @@ input Modulo_Having {
   """
   activo_count: Int_Filter
   """
+  ✨ Generated from Field `Modulo`.`carreraId_count` of type `Int!`
+  """
+  carreraId_count: Int_Filter
+  """
   ✨ Generated from Field `Modulo`.`creditos_count` of type `Int!`
   """
   creditos_count: Int_Filter
+  """
+  ✨ Generated from Field `Modulo`.`descripcion2_count` of type `Int!`
+  """
+  descripcion2_count: Int_Filter
   """
   ✨ Generated from Field `Modulo`.`descripcion_count` of type `Int!`
   """
@@ -14731,6 +16288,10 @@ input Modulo_Having {
   """
   titulo_count: Int_Filter
   """
+  ✨ Generated from Field `Modulo`.`carreraId_sum` of type `Int`
+  """
+  carreraId_sum: Int_Filter
+  """
   ✨ Generated from Field `Modulo`.`creditos_sum` of type `Int`
   """
   creditos_sum: Int_Filter
@@ -14754,6 +16315,10 @@ input Modulo_Having {
   ✨ Generated from Field `Modulo`.`planId_sum` of type `Int`
   """
   planId_sum: Int_Filter
+  """
+  ✨ Generated from Field `Modulo`.`carreraId_avg` of type `Float`
+  """
+  carreraId_avg: Float_Filter
   """
   ✨ Generated from Field `Modulo`.`creditos_avg` of type `Float`
   """
@@ -14779,6 +16344,10 @@ input Modulo_Having {
   """
   planId_avg: Float_Filter
   """
+  ✨ Generated from Field `Modulo`.`carreraId_min` of type `Int`
+  """
+  carreraId_min: Int_Filter
+  """
   ✨ Generated from Field `Modulo`.`creditos_min` of type `Int`
   """
   creditos_min: Int_Filter
@@ -14802,6 +16371,10 @@ input Modulo_Having {
   ✨ Generated from Field `Modulo`.`planId_min` of type `Int`
   """
   planId_min: Int_Filter
+  """
+  ✨ Generated from Field `Modulo`.`carreraId_max` of type `Int`
+  """
+  carreraId_max: Int_Filter
   """
   ✨ Generated from Field `Modulo`.`creditos_max` of type `Int`
   """
@@ -14874,6 +16447,10 @@ input Modulo_Order {
   """
   activo: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`carreraId` of type `Int`
+  """
+  carreraId: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`creditos` of type `Int`
   """
   creditos: OrderDirection
@@ -14881,6 +16458,10 @@ input Modulo_Order {
   ✨ Generated from Field `Modulo`.`descripcion` of type `String`
   """
   descripcion: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`descripcion2` of type `String`
+  """
+  descripcion2: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`horas` of type `Int`
   """
@@ -14914,9 +16495,17 @@ input Modulo_Order {
   """
   activo_count: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`carreraId_count` of type `Int!`
+  """
+  carreraId_count: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`creditos_count` of type `Int!`
   """
   creditos_count: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`descripcion2_count` of type `Int!`
+  """
+  descripcion2_count: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`descripcion_count` of type `Int!`
   """
@@ -14954,6 +16543,10 @@ input Modulo_Order {
   """
   titulo_count: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`carreraId_sum` of type `Int`
+  """
+  carreraId_sum: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`creditos_sum` of type `Int`
   """
   creditos_sum: OrderDirection
@@ -14977,6 +16570,10 @@ input Modulo_Order {
   ✨ Generated from Field `Modulo`.`planId_sum` of type `Int`
   """
   planId_sum: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`carreraId_avg` of type `Float`
+  """
+  carreraId_avg: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`creditos_avg` of type `Float`
   """
@@ -15002,6 +16599,10 @@ input Modulo_Order {
   """
   planId_avg: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`carreraId_min` of type `Int`
+  """
+  carreraId_min: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`creditos_min` of type `Int`
   """
   creditos_min: OrderDirection
@@ -15025,6 +16626,10 @@ input Modulo_Order {
   ✨ Generated from Field `Modulo`.`planId_min` of type `Int`
   """
   planId_min: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`carreraId_max` of type `Int`
+  """
+  carreraId_max: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`creditos_max` of type `Int`
   """
@@ -15913,6 +17518,14 @@ input Paquete_Data {
   """
   matriculas_on_paquete: [Matricula_Data!]
   """
+  ✨ Generated from Field `Paquete`.`matriculaPaquetes_on_paquete` of type `[MatriculaPaquete!]!`
+  """
+  matriculaPaquetes_on_paquete: [MatriculaPaquete_Data!]
+  """
+  ✨ Generated from Field `Paquete`.`paqueteGrupos_on_paquete` of type `[PaqueteGrupo!]!`
+  """
+  paqueteGrupos_on_paquete: [PaqueteGrupo_Data!]
+  """
   ✨ Generated from Field `Paquete`.`paqueteModulos_on_paquete` of type `[PaqueteModulo!]!`
   """
   paqueteModulos_on_paquete: [PaqueteModulo_Data!]
@@ -15958,9 +17571,25 @@ input Paquete_Filter {
   """
   matriculas_on_paquete: Matricula_ListFilter
   """
+  ✨ Generated from Field `Paquete`.`matriculaPaquetes_on_paquete` of type `[MatriculaPaquete!]!`
+  """
+  matriculaPaquetes_on_paquete: MatriculaPaquete_ListFilter
+  """
+  ✨ Generated from Field `Paquete`.`paqueteGrupos_on_paquete` of type `[PaqueteGrupo!]!`
+  """
+  paqueteGrupos_on_paquete: PaqueteGrupo_ListFilter
+  """
   ✨ Generated from Field `Paquete`.`paqueteModulos_on_paquete` of type `[PaqueteModulo!]!`
   """
   paqueteModulos_on_paquete: PaqueteModulo_ListFilter
+  """
+  ✨ Generated from Field `Paquete`.`grupos_via_PaqueteGrupo` of type `[Grupo!]!`
+  """
+  grupos_via_PaqueteGrupo: Grupo_ListFilter
+  """
+  ✨ Generated from Field `Paquete`.`matriculas_via_MatriculaPaquete` of type `[Matricula!]!`
+  """
+  matriculas_via_MatriculaPaquete: Matricula_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'Paquete'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -16114,6 +17743,373 @@ input Paquete_Order {
   ✨ Generated from Field `Paquete`.`id_max` of type `Int`
   """
   id_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'PaqueteGrupo'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input PaqueteGrupo_Data {
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId` of type `Int!`
+  """
+  paqueteId: Int
+  """
+  ✨ `_expr` server value variant of `paqueteId` (✨ Generated from Field `PaqueteGrupo`.`paqueteId` of type `Int!`)
+  """
+  paqueteId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `paqueteId` (✨ Generated from Field `PaqueteGrupo`.`paqueteId` of type `Int!`)
+  """
+  paqueteId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId` of type `Int!`
+  """
+  grupoId: Int
+  """
+  ✨ `_expr` server value variant of `grupoId` (✨ Generated from Field `PaqueteGrupo`.`grupoId` of type `Int!`)
+  """
+  grupoId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoId` (✨ Generated from Field `PaqueteGrupo`.`grupoId` of type `Int!`)
+  """
+  grupoId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupo` of type `Grupo!`
+  """
+  grupo: Grupo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paquete` of type `Paquete!`
+  """
+  paquete: Paquete_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd` of type `Int`
+  """
+  grupoOrd: Int
+  """
+  ✨ `_expr` server value variant of `grupoOrd` (✨ Generated from Field `PaqueteGrupo`.`grupoOrd` of type `Int`)
+  """
+  grupoOrd_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoOrd` (✨ Generated from Field `PaqueteGrupo`.`grupoOrd` of type `Int`)
+  """
+  grupoOrd_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `PaqueteGrupo`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `PaqueteGrupo`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'PaqueteGrupo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input PaqueteGrupo_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [PaqueteGrupo_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: PaqueteGrupo_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [PaqueteGrupo_Filter!]
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId` of type `Int!`
+  """
+  paqueteId: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId` of type `Int!`
+  """
+  grupoId: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupo` of type `Grupo!`
+  """
+  grupo: Grupo_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paquete` of type `Paquete!`
+  """
+  paquete: Paquete_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd` of type `Int`
+  """
+  grupoOrd: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id` of type `Int!`
+  """
+  id: Int_Filter
+}
+"""
+✨ Generated first-row input type for table 'PaqueteGrupo'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input PaqueteGrupo_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [PaqueteGrupo_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: PaqueteGrupo_Filter
+}
+"""
+✨ Generated having input type for table 'PaqueteGrupo'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input PaqueteGrupo_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [PaqueteGrupo_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: PaqueteGrupo_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [PaqueteGrupo_Having!]
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId_count` of type `Int!`
+  """
+  grupoId_count: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd_count` of type `Int!`
+  """
+  grupoOrd_count: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId_count` of type `Int!`
+  """
+  paqueteId_count: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId_sum` of type `Int`
+  """
+  grupoId_sum: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd_sum` of type `Int`
+  """
+  grupoOrd_sum: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId_sum` of type `Int`
+  """
+  paqueteId_sum: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId_avg` of type `Float`
+  """
+  grupoId_avg: Float_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd_avg` of type `Float`
+  """
+  grupoOrd_avg: Float_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId_avg` of type `Float`
+  """
+  paqueteId_avg: Float_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId_min` of type `Int`
+  """
+  grupoId_min: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd_min` of type `Int`
+  """
+  grupoOrd_min: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId_min` of type `Int`
+  """
+  paqueteId_min: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId_max` of type `Int`
+  """
+  grupoId_max: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd_max` of type `Int`
+  """
+  grupoOrd_max: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId_max` of type `Int`
+  """
+  paqueteId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'PaqueteGrupo'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input PaqueteGrupo_Key {
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId` of type `Int!`
+  """
+  paqueteId: Int
+  """
+  ✨ `_expr` server value variant of `paqueteId` (✨ Generated from Field `PaqueteGrupo`.`paqueteId` of type `Int!`)
+  """
+  paqueteId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId` of type `Int!`
+  """
+  grupoId: Int
+  """
+  ✨ `_expr` server value variant of `grupoId` (✨ Generated from Field `PaqueteGrupo`.`grupoId` of type `Int!`)
+  """
+  grupoId_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'PaqueteGrupo'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input PaqueteGrupo_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: PaqueteGrupo_Filter
+}
+"""
+✨ Generated order input type for table 'PaqueteGrupo'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input PaqueteGrupo_Order {
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId` of type `Int!`
+  """
+  paqueteId: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId` of type `Int!`
+  """
+  grupoId: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupo` of type `Grupo!`
+  """
+  grupo: Grupo_Order
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paquete` of type `Paquete!`
+  """
+  paquete: Paquete_Order
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd` of type `Int`
+  """
+  grupoOrd: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId_count` of type `Int!`
+  """
+  grupoId_count: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd_count` of type `Int!`
+  """
+  grupoOrd_count: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId_count` of type `Int!`
+  """
+  paqueteId_count: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId_sum` of type `Int`
+  """
+  grupoId_sum: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd_sum` of type `Int`
+  """
+  grupoOrd_sum: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId_sum` of type `Int`
+  """
+  paqueteId_sum: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId_avg` of type `Float`
+  """
+  grupoId_avg: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd_avg` of type `Float`
+  """
+  grupoOrd_avg: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId_avg` of type `Float`
+  """
+  paqueteId_avg: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId_min` of type `Int`
+  """
+  grupoId_min: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd_min` of type `Int`
+  """
+  grupoOrd_min: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId_min` of type `Int`
+  """
+  paqueteId_min: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoId_max` of type `Int`
+  """
+  grupoId_max: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`grupoOrd_max` of type `Int`
+  """
+  grupoOrd_max: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteGrupo`.`paqueteId_max` of type `Int`
+  """
+  paqueteId_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'PaqueteModulo'. It includes all necessary fields for creating or upserting rows into table.
@@ -20713,6 +22709,10 @@ input Semestre_Data {
   """
   grupos_on_semestre: [Grupo_Data!]
   """
+  ✨ Generated from Field `Semestre`.`matriculas_on_semestre` of type `[Matricula!]!`
+  """
+  matriculas_on_semestre: [Matricula_Data!]
+  """
   ✨ Generated from Field `Semestre`.`planes_on_periodoVigencia` of type `[Plan!]!`
   """
   planes_on_periodoVigencia: [Plan_Data!]
@@ -20801,6 +22801,10 @@ input Semestre_Filter {
   ✨ Generated from Field `Semestre`.`grupos_on_semestre` of type `[Grupo!]!`
   """
   grupos_on_semestre: Grupo_ListFilter
+  """
+  ✨ Generated from Field `Semestre`.`matriculas_on_semestre` of type `[Matricula!]!`
+  """
+  matriculas_on_semestre: Matricula_ListFilter
   """
   ✨ Generated from Field `Semestre`.`planes_on_periodoVigencia` of type `[Plan!]!`
   """
@@ -22915,6 +24919,22 @@ input User_Data {
   """
   dni_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `User`.`dniImagenFrenteUrl` of type `String`
+  """
+  dniImagenFrenteUrl: String
+  """
+  ✨ `_expr` server value variant of `dniImagenFrenteUrl` (✨ Generated from Field `User`.`dniImagenFrenteUrl` of type `String`)
+  """
+  dniImagenFrenteUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `User`.`dniImagenReversoUrl` of type `String`
+  """
+  dniImagenReversoUrl: String
+  """
+  ✨ `_expr` server value variant of `dniImagenReversoUrl` (✨ Generated from Field `User`.`dniImagenReversoUrl` of type `String`)
+  """
+  dniImagenReversoUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `User`.`documentId` of type `String`
   """
   documentId: String
@@ -23003,6 +25023,14 @@ input User_Data {
   """
   instruccion_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `User`.`nacionalidad` of type `String`
+  """
+  nacionalidad: String
+  """
+  ✨ `_expr` server value variant of `nacionalidad` (✨ Generated from Field `User`.`nacionalidad` of type `String`)
+  """
+  nacionalidad_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `User`.`nombre` of type `String`
   """
   nombre: String
@@ -23058,6 +25086,10 @@ input User_Data {
   ✨ Generated from Field `User`.`matriculas_on_user` of type `[Matricula!]!`
   """
   matriculas_on_user: [Matricula_Data!]
+  """
+  ✨ Generated from Field `User`.`matriculaUsers_on_user` of type `[MatriculaUser!]!`
+  """
+  matriculaUsers_on_user: [MatriculaUser_Data!]
   """
   ✨ Generated from Field `User`.`personals_on_user` of type `[Personal!]!`
   """
@@ -23136,6 +25168,14 @@ input User_Filter {
   """
   dni: String_Filter
   """
+  ✨ Generated from Field `User`.`dniImagenFrenteUrl` of type `String`
+  """
+  dniImagenFrenteUrl: String_Filter
+  """
+  ✨ Generated from Field `User`.`dniImagenReversoUrl` of type `String`
+  """
+  dniImagenReversoUrl: String_Filter
+  """
   ✨ Generated from Field `User`.`documentId` of type `String`
   """
   documentId: String_Filter
@@ -23167,6 +25207,10 @@ input User_Filter {
   ✨ Generated from Field `User`.`instruccion` of type `String`
   """
   instruccion: String_Filter
+  """
+  ✨ Generated from Field `User`.`nacionalidad` of type `String`
+  """
+  nacionalidad: String_Filter
   """
   ✨ Generated from Field `User`.`nombre` of type `String`
   """
@@ -23200,9 +25244,17 @@ input User_Filter {
   """
   matriculas_on_user: Matricula_ListFilter
   """
+  ✨ Generated from Field `User`.`matriculaUsers_on_user` of type `[MatriculaUser!]!`
+  """
+  matriculaUsers_on_user: MatriculaUser_ListFilter
+  """
   ✨ Generated from Field `User`.`personals_on_user` of type `[Personal!]!`
   """
   personals_on_user: Personal_ListFilter
+  """
+  ✨ Generated from Field `User`.`matriculas_via_MatriculaUser` of type `[Matricula!]!`
+  """
+  matriculas_via_MatriculaUser: Matricula_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'User'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -23282,6 +25334,14 @@ input User_Having {
   """
   distrito_count: Int_Filter
   """
+  ✨ Generated from Field `User`.`dniImagenFrenteUrl_count` of type `Int!`
+  """
+  dniImagenFrenteUrl_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`dniImagenReversoUrl_count` of type `Int!`
+  """
+  dniImagenReversoUrl_count: Int_Filter
+  """
   ✨ Generated from Field `User`.`dni_count` of type `Int!`
   """
   dni_count: Int_Filter
@@ -23321,6 +25381,10 @@ input User_Having {
   ✨ Generated from Field `User`.`instruccion_count` of type `Int!`
   """
   instruccion_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`nacionalidad_count` of type `Int!`
+  """
+  nacionalidad_count: Int_Filter
   """
   ✨ Generated from Field `User`.`nombre_count` of type `Int!`
   """
@@ -23493,6 +25557,14 @@ input User_Order {
   """
   dni: OrderDirection
   """
+  ✨ Generated from Field `User`.`dniImagenFrenteUrl` of type `String`
+  """
+  dniImagenFrenteUrl: OrderDirection
+  """
+  ✨ Generated from Field `User`.`dniImagenReversoUrl` of type `String`
+  """
+  dniImagenReversoUrl: OrderDirection
+  """
   ✨ Generated from Field `User`.`documentId` of type `String`
   """
   documentId: OrderDirection
@@ -23524,6 +25596,10 @@ input User_Order {
   ✨ Generated from Field `User`.`instruccion` of type `String`
   """
   instruccion: OrderDirection
+  """
+  ✨ Generated from Field `User`.`nacionalidad` of type `String`
+  """
+  nacionalidad: OrderDirection
   """
   ✨ Generated from Field `User`.`nombre` of type `String`
   """
@@ -23593,6 +25669,14 @@ input User_Order {
   """
   distrito_count: OrderDirection
   """
+  ✨ Generated from Field `User`.`dniImagenFrenteUrl_count` of type `Int!`
+  """
+  dniImagenFrenteUrl_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`dniImagenReversoUrl_count` of type `Int!`
+  """
+  dniImagenReversoUrl_count: OrderDirection
+  """
   ✨ Generated from Field `User`.`dni_count` of type `Int!`
   """
   dni_count: OrderDirection
@@ -23632,6 +25716,10 @@ input User_Order {
   ✨ Generated from Field `User`.`instruccion_count` of type `Int!`
   """
   instruccion_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`nacionalidad_count` of type `Int!`
+  """
+  nacionalidad_count: OrderDirection
   """
   ✨ Generated from Field `User`.`nombre_count` of type `Int!`
   """

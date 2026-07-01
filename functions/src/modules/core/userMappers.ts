@@ -158,6 +158,7 @@ export function buildUserDataFromInput(
     apellidoPaterno,
     apellidoMaterno,
     sexo: asNullableString(input.sexo),
+    nacionalidad: asNullableString(input.nacionalidad ?? input.Nacionalidad),
     estadoCivil: asNullableString(input.estado_civil ?? input.estadoCivil),
     instruccion: asNullableString(input.instruccion),
     fechaNacimiento: asNullableTimestamp(input.fecha_nacimiento ?? input.fechaNacimiento),
@@ -170,6 +171,8 @@ export function buildUserDataFromInput(
     fechaModificacion: asNullableTimestamp(input.fecha_modificacion ?? input.fechaModificacion),
     emailCreador: asNullableString(input.email_creador ?? input.emailCreador),
     avatar: asNullableString(input.avatar ?? input.foto) ?? asNullableString(defaults?.photoURL) ?? null,
+    dniImagenFrenteUrl: asNullableString(input.dniImagenFrenteUrl ?? input.dni_imagen_frente_url),
+    dniImagenReversoUrl: asNullableString(input.dniImagenReversoUrl ?? input.dni_imagen_reverso_url),
     rolId: toNumberOrNull(input.rolId) ?? defaults?.rolId ?? null,
   };
 
@@ -416,6 +419,7 @@ export function buildMatriculaDataFromInput(input: Record<string, unknown>): Dat
     fecha: asNullableTimestamp(input.fecha),
     archivado: toBoolean(input.archivado),
     paqueteId: toNumberOrNull(input.paqueteId),
+    semestreId: toNumberOrNull(input.semestreId),
     userId: toNumberOrNull(input.userId),
   });
 }

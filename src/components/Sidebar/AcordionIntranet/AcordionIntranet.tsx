@@ -90,6 +90,7 @@ const menuSections: IntranetMenuSection[] = [
     id: 'registros',
     title: 'Registros',
     items: [
+      { id: 'matriculas', title: 'MatrÃ­culas', path: '/intranet/matriculas', icon: <AssignmentIcon /> },
       { id: 'users', title: 'Users', path: '/intranet/users', icon: <PeopleIcon /> },
       { id: 'roles', title: 'Roles', path: '/intranet/roles', icon: <LockPersonIcon /> },
     ],

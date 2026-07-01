@@ -18,6 +18,7 @@ type User @table(name: "users") {
   apellidoPaterno: String @col(name: "apellido_paterno")
   apellidoMaterno: String @col(name: "apellido_materno")
   sexo: String
+  nacionalidad: String @default(value: "PERUANA")
   estadoCivil: String @col(name: "estado_civil")
   instruccion: String
   fechaNacimiento: Timestamp @col(name: "fecha_nacimiento")
@@ -30,6 +31,8 @@ type User @table(name: "users") {
   fechaModificacion: Timestamp @col(name: "fecha_modificacion")
   emailCreador: String @col(name: "email_creador")
   avatar: String
+  dniImagenFrenteUrl: String @col(name: "dni_imagen_frente_url", dataType: "text")
+  dniImagenReversoUrl: String @col(name: "dni_imagen_reverso_url", dataType: "text")
 
   rol: Rol @ref(fields: "rolId", references: "id")
   rolId: Int @col(name: "rol_id")
@@ -94,9 +97,15 @@ type TipoCarrera @table(name: "tipo_carreras", singular: "tipoCarrera", plural: 
 type Carrera @table(name: "carreras", singular: "carrera", plural: "carreras") {
   id: Int! @col(dataType: "serial")
   nombre: String
+  titulo: String
   codigo: String
   descripcion: String
+  duracion: String
+  creditos: Int
   nivel: String
+  tituloComercial: String @col(name: "titulo_comercial")
+  slug: String
+  descripcion2: String @col(name: "descripcion_2")
   imagenPortadaUrl: String @col(name: "imagen_portada_url", dataType: "text")
   creadoEn: Timestamp @col(name: "creado_en")
   actualizadoEn: Timestamp @col(name: "actualizado_en")
@@ -130,12 +139,13 @@ type Plan @table(name: "planes", singular: "plan", plural: "planes") {
   periodoVigenciaId: Int @col(name: "periodo_vigencia_id")
 }
 
-type Modulo @table(name: "modulos") {
+type Modulo @table(name: "modulos") @index(fields: ["carreraId"]) {
   id: Int! @col(dataType: "serial")
   titulo: String
   tituloComercial: String @col(name: "titulo_comercial")
   orden: Int
   descripcion: String
+  descripcion2: String @col(name: "descripcion_2")
   horas: Int
   creditos: Int
   metas: Int
@@ -144,6 +154,8 @@ type Modulo @table(name: "modulos") {
 
   plan: Plan @ref(fields: "planId", references: "id")
   planId: Int @col(name: "plan_id")
+
+  carreraId: Int @col(name: "carrera_id")
 }
 
 type UnidadDidactica @table(name: "unidades_didacticas", singular: "unidadDidactica", plural: "unidadesDidacticas") {
@@ -431,9 +443,13 @@ type Calendario @table(name: "calendarios") {
   descripcion: String
   inicio: Timestamp
   fin: Timestamp
+  fechaIni: Timestamp @col(name: "fecha_ini")
+  fechaFin: Timestamp @col(name: "fecha_fin")
+  tipo: String
   duracion: Int
   color: String
   activo: Boolean
+  archivado: Boolean
   fechaCreacion: Timestamp @col(name: "fecha_creacion")
   fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
 
@@ -469,7 +485,7 @@ type Horario @table(name: "horarios") {
   fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
 }
 
-type Grupo @table(name: "grupos") {
+type Grupo @table(name: "grupos") @index(fields: ["calendarioId"]) @index(fields: ["moduloId"]) {
   id: Int! @col(dataType: "serial")
   turnoNombre: String @col(name: "turno")
   descripcion: String
@@ -487,6 +503,10 @@ type Grupo @table(name: "grupos") {
 
   paquete: Paquete @ref(fields: "paqueteId", references: "id")
   paqueteId: Int @col(name: "paquete_id")
+
+  moduloId: Int @col(name: "modulo_id")
+
+  calendarioId: Int @col(name: "calendario_id")
 
   turno: Turno @ref(fields: "turnoId", references: "id")
   turnoId: Int @col(name: "turno_id")
@@ -614,6 +634,17 @@ type Paquete @table(name: "paquetes") {
   archivado: Boolean
 }
 
+type PaqueteGrupo @table(name: "paquete_grupos", key: ["paquete", "grupo"], singular: "paqueteGrupo", plural: "paqueteGrupos") {
+  id: Int! @col(dataType: "serial")
+  grupoOrd: Int @col(name: "grupo_ord")
+
+  paquete: Paquete! @ref(fields: "paqueteId", references: "id")
+  paqueteId: Int! @col(name: "paquete_id")
+
+  grupo: Grupo! @ref(fields: "grupoId", references: "id")
+  grupoId: Int! @col(name: "grupo_id")
+}
+
 type PaqueteModulo @table(name: "paquete_modulos", singular: "paqueteModulo", plural: "paqueteModulos") @unique(fields: ["paquete", "modulo"]) {
   id: Int! @col(dataType: "serial")
   orden: Int
@@ -635,8 +666,41 @@ type Matricula @table(name: "matriculas") {
   paquete: Paquete @ref(fields: "paqueteId", references: "id")
   paqueteId: Int @col(name: "paquete_id")
 
+  semestre: Semestre @ref(fields: "semestreId", references: "id")
+  semestreId: Int @col(name: "semestre_id")
+
   user: User @ref(fields: "userId", references: "id")
   userId: Int @col(name: "user_id")
+}
+
+type MatriculaUser @table(name: "matricula_users", key: ["matricula", "user"], singular: "matriculaUser", plural: "matriculaUsers") {
+  id: Int! @col(dataType: "serial")
+
+  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
+  matriculaId: Int! @col(name: "matricula_id")
+
+  user: User! @ref(fields: "userId", references: "id")
+  userId: Int! @col(name: "user_id")
+}
+
+type MatriculaGrupo @table(name: "matricula_grupos", key: ["matricula", "grupo"], singular: "matriculaGrupo", plural: "matriculaGrupos") {
+  id: Int! @col(dataType: "serial")
+
+  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
+  matriculaId: Int! @col(name: "matricula_id")
+
+  grupo: Grupo! @ref(fields: "grupoId", references: "id")
+  grupoId: Int! @col(name: "grupo_id")
+}
+
+type MatriculaPaquete @table(name: "matricula_paquetes", key: ["matricula", "paquete"], singular: "matriculaPaquete", plural: "matriculaPaquetes") {
+  id: Int! @col(dataType: "serial")
+
+  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
+  matriculaId: Int! @col(name: "matricula_id")
+
+  paquete: Paquete! @ref(fields: "paqueteId", references: "id")
+  paqueteId: Int! @col(name: "paquete_id")
 }
 
 type Asistencia @table(name: "asistencias") @unique(fields: ["eventoOcurrencia", "matricula"]) {

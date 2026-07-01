@@ -291,11 +291,30 @@ export interface ListUsersData {
     tipoDocumento?: string | null;
     dni?: string | null;
     sexo?: string | null;
+    nacionalidad?: string | null;
     estadoCivil?: string | null;
     instruccion?: string | null;
     fechaNacimiento?: TimestampString | null;
     rolId?: number | null;
   } & User_Key)[];
+}
+
+export interface MatriculaGrupo_Key {
+  matriculaId: number;
+  grupoId: number;
+  __typename?: 'MatriculaGrupo_Key';
+}
+
+export interface MatriculaPaquete_Key {
+  matriculaId: number;
+  paqueteId: number;
+  __typename?: 'MatriculaPaquete_Key';
+}
+
+export interface MatriculaUser_Key {
+  matriculaId: number;
+  userId: number;
+  __typename?: 'MatriculaUser_Key';
 }
 
 export interface Matricula_Key {
@@ -321,6 +340,12 @@ export interface ModuloVideo_Key {
 export interface Modulo_Key {
   id: number;
   __typename?: 'Modulo_Key';
+}
+
+export interface PaqueteGrupo_Key {
+  paqueteId: number;
+  grupoId: number;
+  __typename?: 'PaqueteGrupo_Key';
 }
 
 export interface PaqueteModulo_Key {

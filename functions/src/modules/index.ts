@@ -113,7 +113,12 @@ export {
   createOrUpdatePaquete,
   deletePaquete,
 } from "./paquetes/handlers.js";
-export { createMatriculaDesdePaquete } from "./matriculas/handlers.js";
+export {
+  createMatriculaDesdePaquete,
+  crearMatriculaFormulario,
+  listMatriculaPaquetesBySemestre,
+  verificarDocumentoMatricula,
+} from "./matriculas/handlers.js";
 export {
   listUnidadesDidacticas,
   getUnidadDidactica,

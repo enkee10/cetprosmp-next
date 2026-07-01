@@ -44,6 +44,7 @@ const LIST_USERS_QUERY = `
       tipoDocumento
       dni
       sexo
+      nacionalidad
       estadoCivil
       instruccion
       fechaNacimiento
@@ -312,6 +313,7 @@ export const createNewUser = https.onCall(async (data, context) => {
     );
 
     const profileDataForPersist = profileData;
+    profileDataForPersist.nacionalidad = profileDataForPersist.nacionalidad ?? "PERUANA";
     profileDataForPersist.fechaCreacion = profileDataForPersist.fechaCreacion ?? nowIso;
     profileDataForPersist.fechaModificacion =
       profileDataForPersist.fechaModificacion ?? profileDataForPersist.fechaCreacion ?? nowIso;

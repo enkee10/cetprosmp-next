@@ -42,6 +42,7 @@ const createValidationSchema = (isCreating: boolean) => yup.object().shape({
   email: yup.string().email('Debe ser un email válido').required('El email es requerido'),
   tipo_documento: yup.string().oneOf(['DNI', 'CE']).required(),
   dni: yup.string().matches(/^\d{8}$/, 'El DNI debe tener 8 dígitos'),
+  nacionalidad: yup.string().required('La nacionalidad es requerida'),
   password: isCreating
     ? yup.string().min(8, 'La contraseña debe tener al menos 8 caracteres').required('La contraseña es requerida')
     : yup.string().notRequired(),
@@ -70,6 +71,7 @@ interface UserFormValues {
   email: string;
   tipo_documento: 'DNI' | 'CE';
   dni: string;
+  nacionalidad: string;
   password: string;
   instruccion: 'Primaria' | 'Secundaria' | 'Superior';
   estado_civil: 'Soltero' | 'Casado(a)' | 'Viudo(a)' | 'Divorciado(a)';
@@ -183,6 +185,7 @@ const UserForm: React.FC<UserFormProps> = ({
       email: '',
       tipo_documento: 'DNI',
       dni: '',
+      nacionalidad: 'PERUANA',
       password: '',
       instruccion: 'Primaria',
       estado_civil: 'Soltero',
@@ -331,6 +334,7 @@ const UserForm: React.FC<UserFormProps> = ({
       email: asString(initialData?.email),
       tipo_documento: asTipoDocumento(initialData?.tipo_documento ?? initialData?.tipoDocumento),
       dni: asString(initialData?.dni),
+      nacionalidad: asString(initialData?.nacionalidad ?? initialData?.Nacionalidad) || 'PERUANA',
       password: '',
       instruccion: asInstruccion(initialData?.instruccion),
       estado_civil: asEstadoCivil(initialData?.estado_civil ?? initialData?.estadoCivil),
@@ -457,6 +461,8 @@ const UserForm: React.FC<UserFormProps> = ({
                 }}
               />
             )} />
+
+            <Controller name="nacionalidad" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 11 }} label="Nacionalidad" error={!!errors.nacionalidad} helperText={errors.nacionalidad?.message} fullWidth />} />
 
             {isCreating && (
               <Controller name="password" control={control} render={({ field }) => (

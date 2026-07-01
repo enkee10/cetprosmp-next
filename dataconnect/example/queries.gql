@@ -32,6 +32,7 @@ query ListUsers @auth(expr: "has(auth.token.level) && auth.token.level >= 600") 
     tipoDocumento
     dni
     sexo
+    nacionalidad
     estadoCivil
     instruccion
     fechaNacimiento

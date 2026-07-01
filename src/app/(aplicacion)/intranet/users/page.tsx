@@ -40,6 +40,7 @@ interface User {
   avatar?: string;
   tipoDocumento?: string;
   dni?: string;
+  nacionalidad?: string;
   instruccion?: string;
   estadoCivil?: string;
   direccion?: string;
@@ -150,6 +151,7 @@ const UsersPage = () => {
       sexo: false,
       fechaNacimiento: false,
       dni: false,
+      nacionalidad: true,
       estadoCivil: false,
       instruccion: false,
       direccion: false,
@@ -193,6 +195,7 @@ const UsersPage = () => {
               ...(row as unknown as User),
               blocked: Boolean(row.blocked),
               bloqueado: Boolean(row.bloqueado ?? row.blocked),
+              nacionalidad: String(row.nacionalidad || 'PERUANA'),
               rolId: Number.isFinite(roleParsed) ? roleParsed : null,
             };
           });
@@ -452,6 +455,7 @@ const UsersPage = () => {
         renderCell: (params) => formatDateAsDayMonthYear(params.value),
       },
       { field: 'dni', headerName: 'N° de documento', flex: 0.8, minWidth: 135 },
+      { field: 'nacionalidad', headerName: 'Nacionalidad', flex: 0.8, minWidth: 125 },
       { field: 'estadoCivil', headerName: 'Estado Civil', flex: 0.8, minWidth: 125 },
       { field: 'instruccion', headerName: 'Instrucción', flex: 0.8, minWidth: 120 },
       { field: 'direccion', headerName: 'Direccion', flex: 1.1, minWidth: 150 },

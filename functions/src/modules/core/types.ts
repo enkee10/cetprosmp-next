@@ -18,6 +18,7 @@ export interface DataConnectUserInput {
   apellidoPaterno?: string | null;
   apellidoMaterno?: string | null;
   sexo?: string | null;
+  nacionalidad?: string | null;
   estadoCivil?: string | null;
   instruccion?: string | null;
   fechaNacimiento?: string | null;
@@ -30,6 +31,8 @@ export interface DataConnectUserInput {
   fechaModificacion?: string | null;
   emailCreador?: string | null;
   avatar?: string | null;
+  dniImagenFrenteUrl?: string | null;
+  dniImagenReversoUrl?: string | null;
   rolId?: number | null;
 }
 
@@ -570,6 +573,7 @@ export interface DataConnectMatricula {
   fecha?: string | null;
   archivado?: boolean | null;
   paqueteId?: number | null;
+  semestreId?: number | null;
   userId?: number | null;
 }
 
@@ -578,6 +582,7 @@ export interface DataConnectMatriculaInput {
   fecha?: string | null;
   archivado?: boolean;
   paqueteId?: number | null;
+  semestreId?: number | null;
   userId?: number | null;
 }
 

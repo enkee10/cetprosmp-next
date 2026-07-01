@@ -33,6 +33,50 @@ export interface DataConnectUserInput {
   rolId?: number | null;
 }
 
+export interface DataConnectPersonal {
+  id: number;
+  displayName?: string | null;
+  memo?: string | null;
+  userId?: number | null;
+  user?: {
+    id?: number | null;
+    documentId?: string | null;
+    username?: string | null;
+    nombre?: string | null;
+    apellidoPaterno?: string | null;
+    email?: string | null;
+    avatar?: string | null;
+    rolId?: number | null;
+    rol?: {
+      id?: number | null;
+      titulo?: string | null;
+      scala?: number | null;
+    } | null;
+  } | null;
+  userUsername?: string | null;
+  avatar?: string | null;
+  cargo?: string | null;
+  especialidadIds?: number[];
+  especialidadesTitulo?: string | null;
+  personalEspecialidads_on_personal?: Array<{
+    id?: number | null;
+    personalId?: number | null;
+    especialidadId?: number | null;
+    orden?: number | null;
+    especialidad?: {
+      id?: number | null;
+      titulo?: string | null;
+      tituloComercial?: string | null;
+    } | null;
+  }> | null;
+}
+
+export interface DataConnectPersonalInput {
+  displayName?: string | null;
+  memo?: string | null;
+  userId?: number | null;
+}
+
 export interface DataConnectRoleInput {
   titulo?: string | null;
   scala?: number | null;
@@ -177,36 +221,113 @@ export interface DataConnectSemestre {
   id: number;
   titulo?: string | null;
   descripcion?: string | null;
+  inicio?: string | null;
+  fin?: string | null;
   archivado?: boolean | null;
+  anioId?: number | null;
+  directorId?: number | null;
+  coordinador1Id?: number | null;
+  coordinador2Id?: number | null;
+  anio?: { titulo?: string | null; nombre?: string | null } | null;
+  anioTitulo?: string | null;
+}
+
+export interface DataConnectSemestreInput {
+  titulo?: string | null;
+  descripcion?: string | null;
+  inicio?: string | null;
+  fin?: string | null;
+  archivado?: boolean | null;
+  anioId?: number | null;
+  directorId?: number | null;
+  coordinador1Id?: number | null;
+  coordinador2Id?: number | null;
+}
+
+export interface DataConnectAnio {
+  id: number;
+  nombre?: string | null;
+  titulo?: string | null;
+}
+
+export interface DataConnectAnioInput {
+  nombre?: string | null;
+  titulo?: string | null;
 }
 
 export interface DataConnectCalendario {
   id: number;
   titulo?: string | null;
   descripcion?: string | null;
-  fechaIni?: string | null;
-  fechaFin?: string | null;
-  tipo?: string | null;
+  inicio?: string | null;
+  fin?: string | null;
+  duracion?: number | null;
   color?: string | null;
   activo?: boolean | null;
-  archivado?: boolean | null;
   fechaCreacion?: string | null;
   fechaActualizacion?: string | null;
+  anioId?: number | null;
   semestreId?: number | null;
+  horarioId?: number | null;
+  semestre?: { titulo?: string | null; fin?: string | null } | null;
+  horario?: { nombre?: string | null } | null;
 }
 
 export interface DataConnectCalendarioInput {
   titulo?: string | null;
   descripcion?: string | null;
-  fechaIni?: string | null;
-  fechaFin?: string | null;
-  tipo?: string | null;
+  inicio?: string | null;
+  fin?: string | null;
+  duracion?: number | null;
   color?: string | null;
   activo?: boolean;
-  archivado?: boolean;
   fechaCreacion?: string | null;
   fechaActualizacion?: string | null;
+  anioId?: number | null;
   semestreId?: number | null;
+  horarioId?: number | null;
+}
+
+export interface DataConnectTurno {
+  id: number;
+  nombre?: string | null;
+  horaInicio?: string | null;
+  horaFin?: string | null;
+  estado?: string | null;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+}
+
+export interface DataConnectTurnoInput {
+  nombre?: string | null;
+  horaInicio?: string | null;
+  horaFin?: string | null;
+  estado?: string | null;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+}
+
+export interface DataConnectHorario {
+  id: number;
+  nombre?: string | null;
+  descripcion?: string | null;
+  regla?: string | null;
+  diasSemana?: string | null;
+  viernesAlternoInicio?: string | null;
+  activo?: boolean | null;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+}
+
+export interface DataConnectHorarioInput {
+  nombre?: string | null;
+  descripcion?: string | null;
+  regla?: string | null;
+  diasSemana?: string | null;
+  viernesAlternoInicio?: string | null;
+  activo?: boolean;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
 }
 
 export interface DataConnectGrupo {
@@ -216,12 +337,53 @@ export interface DataConnectGrupo {
   nombreDisplay?: string | null;
   estado?: string | null;
   archivado?: boolean | null;
-  moduloId?: number | null;
   semestreId?: number | null;
   personalId?: number | null;
   paqueteId?: number | null;
   turnoId?: number | null;
+  horarioId?: number | null;
   grupoOrd?: number | null;
+  semestre?: { titulo?: string | null } | null;
+  personal?: DataConnectPersonal | null;
+  paquete?: { titulo?: string | null } | null;
+  turno?: DataConnectTurno | null;
+  horario?: DataConnectHorario | null;
+  grupoModulos?: DataConnectGrupoModulo[];
+}
+
+export interface DataConnectGrupoInput {
+  turnoNombre?: string | null;
+  descripcion?: string | null;
+  nombreDisplay?: string | null;
+  estado?: string | null;
+  archivado?: boolean;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+  semestreId?: number | null;
+  personalId?: number | null;
+  paqueteId?: number | null;
+  turnoId?: number | null;
+  horarioId?: number | null;
+  grupoOrd?: number | null;
+}
+
+export interface DataConnectGrupoModulo {
+  id: number;
+  orden?: number | null;
+  obligatorio?: boolean | null;
+  grupoId: number;
+  moduloId: number;
+  calendarioId?: number | null;
+  modulo?: { titulo?: string | null; tituloComercial?: string | null } | null;
+  calendario?: DataConnectCalendario | null;
+}
+
+export interface DataConnectGrupoModuloInput {
+  orden?: number | null;
+  obligatorio?: boolean;
+  grupoId: number;
+  moduloId: number;
+  calendarioId?: number | null;
 }
 
 export interface DataConnectEvento {
@@ -238,7 +400,10 @@ export interface DataConnectEvento {
   fechaCreacion?: string | null;
   fechaActualizacion?: string | null;
   calendarioId: number;
-  grupoId?: number | null;
+  semestreId?: number | null;
+  relaciones?: DataConnectEventoRelacion[];
+  recurrencias?: DataConnectEventoRecurrencia[];
+  ocurrencias?: DataConnectEventoOcurrencia[];
 }
 
 export interface DataConnectEventoInput {
@@ -254,6 +419,91 @@ export interface DataConnectEventoInput {
   fechaCreacion?: string | null;
   fechaActualizacion?: string | null;
   calendarioId: number;
+  semestreId?: number | null;
+}
+
+export interface DataConnectEventoRelacion {
+  id: number;
+  entidadTipo?: string | null;
+  entidadId?: number | null;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+  eventoId: number;
+}
+
+export interface DataConnectEventoRelacionInput {
+  entidadTipo?: string | null;
+  entidadId?: number | null;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+  eventoId: number;
+}
+
+export interface DataConnectEventoRecurrencia {
+  id: number;
+  frecuencia?: string | null;
+  intervalo?: number | null;
+  diasSemana?: string | null;
+  diaMes?: number | null;
+  semanaMes?: number | null;
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
+  cantidadOcurrencias?: number | null;
+  reglaEspecial?: string | null;
+  activo?: boolean | null;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+  eventoId: number;
+  horarioId?: number | null;
+  turnoId?: number | null;
+  horario?: DataConnectHorario | null;
+  turno?: DataConnectTurno | null;
+}
+
+export interface DataConnectEventoRecurrenciaInput {
+  frecuencia?: string | null;
+  intervalo?: number | null;
+  diasSemana?: string | null;
+  diaMes?: number | null;
+  semanaMes?: number | null;
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
+  cantidadOcurrencias?: number | null;
+  reglaEspecial?: string | null;
+  activo?: boolean;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+  eventoId: number;
+  horarioId?: number | null;
+  turnoId?: number | null;
+}
+
+export interface DataConnectEventoOcurrencia {
+  id: number;
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
+  numeroOcurrencia?: number | null;
+  tipoOcurrencia?: string | null;
+  estado?: string | null;
+  observacion?: string | null;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+  eventoId: number;
+  recurrenciaId?: number | null;
+  grupoId?: number | null;
+}
+
+export interface DataConnectEventoOcurrenciaInput {
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
+  numeroOcurrencia?: number | null;
+  tipoOcurrencia?: string | null;
+  estado?: string | null;
+  observacion?: string | null;
+  fechaCreacion?: string | null;
+  fechaActualizacion?: string | null;
+  eventoId: number;
+  recurrenciaId?: number | null;
   grupoId?: number | null;
 }
 
@@ -304,6 +554,7 @@ export interface DataConnectPaqueteModulo {
   obligatorio?: boolean | null;
   paqueteId: number;
   moduloId: number;
+  modulo?: { titulo?: string | null; tituloComercial?: string | null } | null;
 }
 
 export interface DataConnectPaqueteModuloInput {
@@ -318,7 +569,6 @@ export interface DataConnectMatricula {
   recibo?: string | null;
   fecha?: string | null;
   archivado?: boolean | null;
-  grupoId?: number | null;
   paqueteId?: number | null;
   userId?: number | null;
 }
@@ -327,7 +577,6 @@ export interface DataConnectMatriculaInput {
   recibo?: string | null;
   fecha?: string | null;
   archivado?: boolean;
-  grupoId?: number | null;
   paqueteId?: number | null;
   userId?: number | null;
 }
@@ -336,6 +585,7 @@ export interface DataConnectModuloEstudianteInput {
   promedio?: number | null;
   matriculaId: number;
   moduloId: number;
+  grupoId?: number | null;
 }
 
 export interface DataConnectUnidadDidactica {

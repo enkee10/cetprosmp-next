@@ -268,6 +268,14 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
             sx={{ gridColumn: '1 / -1' }}
           />
 
+          <TextField
+            label="Titulo comercial"
+            value={tituloComercial}
+            onChange={(e) => setTituloComercial(e.target.value)}
+            fullWidth
+            sx={{ gridColumn: '1 / -1' }}
+          />
+
           <FormControl fullWidth sx={{ gridColumn: '1 / -1' }}>
             <InputLabel>Titulo del plan</InputLabel>
             <Select

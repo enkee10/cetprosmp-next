@@ -286,6 +286,7 @@ erDiagram
         Float promedio
         Int matriculaId FK
         Int moduloId FK
+        Int grupoId FK
     }
 
     UNIDAD_DIDACTICA_ESTUDIANTE {
@@ -337,11 +338,20 @@ erDiagram
         Int orden
     }
 
+    ANIO {
+        Int id PK
+        String nombre
+        String titulo
+    }
+
     SEMESTRE {
         Int id PK
         String titulo
         String descripcion
+        Timestamp inicio
+        Timestamp fin
         Boolean archivado
+        Int anioId FK
         Int directorId FK
         Int coordinador1Id FK
         Int coordinador2Id FK
@@ -351,15 +361,16 @@ erDiagram
         Int id PK
         String titulo
         String descripcion
-        Timestamp fechaIni
-        Timestamp fechaFin
-        String tipo
+        Timestamp inicio
+        Timestamp fin
+        Int duracion
         String color
         Boolean activo
-        Boolean archivado
         Timestamp fechaCreacion
         Timestamp fechaActualizacion
+        Int anioId FK
         Int semestreId FK
+        Int horarioId FK
     }
 
     TURNO {
@@ -368,6 +379,18 @@ erDiagram
         Timestamp horaInicio
         Timestamp horaFin
         String estado
+        Timestamp fechaCreacion
+        Timestamp fechaActualizacion
+    }
+
+    HORARIO {
+        Int id PK
+        String nombre
+        String descripcion
+        String regla
+        String diasSemana
+        String viernesAlternoInicio
+        Boolean activo
         Timestamp fechaCreacion
         Timestamp fechaActualizacion
     }
@@ -381,12 +404,21 @@ erDiagram
         Boolean archivado
         Timestamp fechaCreacion
         Timestamp fechaActualizacion
-        Int moduloId FK
         Int semestreId FK
         Int personalId FK
         Int paqueteId FK
         Int turnoId FK
+        Int horarioId FK
         Int grupoOrd
+    }
+
+    GRUPO_MODULO {
+        Int id PK
+        Int orden
+        Boolean obligatorio
+        Int grupoId FK
+        Int moduloId FK
+        Int calendarioId FK
     }
 
     EVENTO {
@@ -403,7 +435,7 @@ erDiagram
         Timestamp fechaCreacion
         Timestamp fechaActualizacion
         Int calendarioId FK
-        Int grupoId FK
+        Int semestreId FK
     }
 
     EVENTO_RECURRENCIA {
@@ -421,6 +453,8 @@ erDiagram
         Timestamp fechaCreacion
         Timestamp fechaActualizacion
         Int eventoId FK
+        Int horarioId FK
+        Int turnoId FK
     }
 
     EVENTO_OCURRENCIA {
@@ -480,7 +514,6 @@ erDiagram
         String recibo
         Timestamp fecha
         Boolean archivado
-        Int grupoId FK
         Int paqueteId FK
         Int userId FK
     }
@@ -599,6 +632,7 @@ erDiagram
     EVALUACION ||--o{ ASPECTO_EVALUACION : evaluacion
     MATRICULA ||--o{ MODULO_ESTUDIANTE : matricula
     MODULO ||--o{ MODULO_ESTUDIANTE : modulo
+    GRUPO ||--o{ MODULO_ESTUDIANTE : grupo
     MATRICULA ||--o{ UNIDAD_DIDACTICA_ESTUDIANTE : matricula
     UNIDAD_DIDACTICA ||--o{ UNIDAD_DIDACTICA_ESTUDIANTE : unidadDidactica
     MATRICULA ||--o{ CAPACIDAD_TERMINAL_ESTUDIANTE : matricula
@@ -612,16 +646,24 @@ erDiagram
     USER ||--o{ PERSONAL : user
     PERSONAL ||--o{ PERSONAL_ESPECIALIDAD : personal
     ESPECIALIDAD ||--o{ PERSONAL_ESPECIALIDAD : especialidad
+    ANIO ||--o{ SEMESTRE : anio
     PERSONAL ||--o{ SEMESTRE : director
+    ANIO ||--o{ CALENDARIO : anio
     SEMESTRE ||--o{ CALENDARIO : semestre
-    MODULO ||--o{ GRUPO : modulo
+    HORARIO ||--o{ CALENDARIO : horario
     SEMESTRE ||--o{ GRUPO : semestre
     PERSONAL ||--o{ GRUPO : personal
     PAQUETE ||--o{ GRUPO : paquete
     TURNO ||--o{ GRUPO : turno
+    HORARIO ||--o{ GRUPO : horario
+    GRUPO ||--o{ GRUPO_MODULO : grupo
+    MODULO ||--o{ GRUPO_MODULO : modulo
+    CALENDARIO ||--o{ GRUPO_MODULO : calendario
     CALENDARIO ||--o{ EVENTO : calendario
-    GRUPO ||--o{ EVENTO : grupo
+    SEMESTRE ||--o{ EVENTO : semestre
     EVENTO ||--o{ EVENTO_RECURRENCIA : evento
+    HORARIO ||--o{ EVENTO_RECURRENCIA : horario
+    TURNO ||--o{ EVENTO_RECURRENCIA : turno
     EVENTO ||--o{ EVENTO_OCURRENCIA : evento
     EVENTO_RECURRENCIA ||--o{ EVENTO_OCURRENCIA : recurrencia
     GRUPO ||--o{ EVENTO_OCURRENCIA : grupo
@@ -630,7 +672,6 @@ erDiagram
     EVENTO_OCURRENCIA ||--o{ RECORDATORIO : eventoOcurrencia
     PAQUETE ||--o{ PAQUETE_MODULO : paquete
     MODULO ||--o{ PAQUETE_MODULO : modulo
-    GRUPO ||--o{ MATRICULA : grupo
     PAQUETE ||--o{ MATRICULA : paquete
     USER ||--o{ MATRICULA : user
     EVENTO_OCURRENCIA ||--o{ ASISTENCIA : eventoOcurrencia

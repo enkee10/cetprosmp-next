@@ -27,6 +27,15 @@ extend type Mutation {
     data: Actividad_Data!
   ): Actividad_KeyOutput! @fdc_generated(from: "Actividad", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Anio` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  anio_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Anio_Data!
+  ): Anio_KeyOutput! @fdc_generated(from: "Anio", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Aprendizaje` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   aprendizaje_insert(
@@ -233,6 +242,24 @@ extend type Mutation {
     """
     data: Grupo_Data!
   ): Grupo_KeyOutput! @fdc_generated(from: "Grupo", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `GrupoModulo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  grupoModulo_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: GrupoModulo_Data!
+  ): GrupoModulo_KeyOutput! @fdc_generated(from: "GrupoModulo", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Horario` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  horario_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Horario_Data!
+  ): Horario_KeyOutput! @fdc_generated(from: "Horario", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `IndicadorCapacidad` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -513,6 +540,15 @@ extend type Mutation {
     data: [Actividad_Data!]!
   ): [Actividad_KeyOutput!]! @fdc_generated(from: "Actividad", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `Anio` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  anio_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Anio_Data!]!
+  ): [Anio_KeyOutput!]! @fdc_generated(from: "Anio", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Aprendizaje` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   aprendizaje_insertMany(
@@ -719,6 +755,24 @@ extend type Mutation {
     """
     data: [Grupo_Data!]!
   ): [Grupo_KeyOutput!]! @fdc_generated(from: "Grupo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `GrupoModulo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  grupoModulo_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [GrupoModulo_Data!]!
+  ): [GrupoModulo_KeyOutput!]! @fdc_generated(from: "GrupoModulo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Horario` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  horario_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Horario_Data!]!
+  ): [Horario_KeyOutput!]! @fdc_generated(from: "Horario", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `IndicadorCapacidad` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -999,6 +1053,15 @@ extend type Mutation {
     data: Actividad_Data!
   ): Actividad_KeyOutput! @fdc_generated(from: "Actividad", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Anio` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Anio`.
+  """
+  anio_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Anio_Data!
+  ): Anio_KeyOutput! @fdc_generated(from: "Anio", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Aprendizaje` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Aprendizaje`.
   """
   aprendizaje_upsert(
@@ -1205,6 +1268,24 @@ extend type Mutation {
     """
     data: Grupo_Data!
   ): Grupo_KeyOutput! @fdc_generated(from: "Grupo", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `GrupoModulo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModulo`.
+  """
+  grupoModulo_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: GrupoModulo_Data!
+  ): GrupoModulo_KeyOutput! @fdc_generated(from: "GrupoModulo", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Horario` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Horario`.
+  """
+  horario_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Horario_Data!
+  ): Horario_KeyOutput! @fdc_generated(from: "Horario", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `IndicadorCapacidad` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `IndicadorCapacidad`.
   """
@@ -1485,6 +1566,15 @@ extend type Mutation {
     data: [Actividad_Data!]!
   ): [Actividad_KeyOutput!]! @fdc_generated(from: "Actividad", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `Anio` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Anio`.
+  """
+  anio_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Anio_Data!]!
+  ): [Anio_KeyOutput!]! @fdc_generated(from: "Anio", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Aprendizaje` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Aprendizaje`.
   """
   aprendizaje_upsertMany(
@@ -1691,6 +1781,24 @@ extend type Mutation {
     """
     data: [Grupo_Data!]!
   ): [Grupo_KeyOutput!]! @fdc_generated(from: "Grupo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `GrupoModulo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModulo`.
+  """
+  grupoModulo_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [GrupoModulo_Data!]!
+  ): [GrupoModulo_KeyOutput!]! @fdc_generated(from: "GrupoModulo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Horario` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Horario`.
+  """
+  horario_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Horario_Data!]!
+  ): [Horario_KeyOutput!]! @fdc_generated(from: "Horario", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `IndicadorCapacidad` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `IndicadorCapacidad`.
   """
@@ -2030,6 +2138,35 @@ extend type Mutation {
     """
     data: Actividad_Data!
   ): Actividad_KeyOutput @fdc_generated(from: "Actividad", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Anio` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Anio` or `null` if not found.
+  """
+  anio_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Anio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Anio_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Anio_Data!
+  ): Anio_KeyOutput @fdc_generated(from: "Anio", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Aprendizaje` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Aprendizaje` or `null` if not found.
   """
@@ -2697,6 +2834,64 @@ extend type Mutation {
     """
     data: Grupo_Data!
   ): Grupo_KeyOutput @fdc_generated(from: "Grupo", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `GrupoModulo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `GrupoModulo` or `null` if not found.
+  """
+  grupoModulo_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModulo_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: GrupoModulo_Data!
+  ): GrupoModulo_KeyOutput @fdc_generated(from: "GrupoModulo", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Horario` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Horario` or `null` if not found.
+  """
+  horario_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Horario_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Horario_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Horario_Data!
+  ): Horario_KeyOutput @fdc_generated(from: "Horario", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `IndicadorCapacidad` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `IndicadorCapacidad` or `null` if not found.
   """
@@ -3557,6 +3752,25 @@ extend type Mutation {
     data: Actividad_Data!
   ): Int! @fdc_generated(from: "Actividad", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Anio` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  anio_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Anio_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Anio_Data!
+  ): Int! @fdc_generated(from: "Anio", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Aprendizaje` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   aprendizaje_updateMany(
@@ -3993,6 +4207,44 @@ extend type Mutation {
     """
     data: Grupo_Data!
   ): Int! @fdc_generated(from: "Grupo", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `GrupoModulo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  grupoModulo_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: GrupoModulo_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: GrupoModulo_Data!
+  ): Int! @fdc_generated(from: "GrupoModulo", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Horario` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  horario_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Horario_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Horario_Data!
+  ): Int! @fdc_generated(from: "Horario", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `IndicadorCapacidad` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -4598,6 +4850,30 @@ extend type Mutation {
     first: Actividad_FirstRow
   ): Actividad_KeyOutput @fdc_generated(from: "Actividad", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `Anio` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  anio_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Anio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Anio_FirstRow
+  ): Anio_KeyOutput @fdc_generated(from: "Anio", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Aprendizaje` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   aprendizaje_delete(
@@ -5149,6 +5425,54 @@ extend type Mutation {
     """
     first: Grupo_FirstRow
   ): Grupo_KeyOutput @fdc_generated(from: "Grupo", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `GrupoModulo` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  grupoModulo_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModulo_FirstRow
+  ): GrupoModulo_KeyOutput @fdc_generated(from: "GrupoModulo", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Horario` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  horario_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Horario_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Horario_FirstRow
+  ): Horario_KeyOutput @fdc_generated(from: "Horario", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `IndicadorCapacidad` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -5854,6 +6178,20 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "Actividad", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `Anio` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  anio_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Anio_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Anio", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Aprendizaje` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   aprendizaje_deleteMany(
@@ -6175,6 +6513,34 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Grupo", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `GrupoModulo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  grupoModulo_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: GrupoModulo_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "GrupoModulo", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Horario` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  horario_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Horario_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Horario", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `IndicadorCapacidad` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

@@ -141,6 +141,17 @@ iframe {
 .tox-tinymce-aux .tox-dialog__body-content {
   min-width: 0;
 }
+
+textarea,
+[role="listbox"],
+.MuiMenu-paper,
+.MuiMenu-list,
+.MuiPopover-paper,
+.MuiAutocomplete-listbox,
+.MuiDialogContent-root,
+.MuiDataGrid-virtualScroller {
+  overscroll-behavior: contain;
+}
 /*
 @media (prefers-color-scheme: dark) {
   html {

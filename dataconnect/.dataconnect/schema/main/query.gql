@@ -72,6 +72,30 @@ extend type Query {
     first: Actividad_FirstRow
   ): Actividad @fdc_generated(from: "Actividad", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `Anio` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  anio(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Anio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Anio_FirstRow
+  ): Anio @fdc_generated(from: "Anio", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Aprendizaje` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   aprendizaje(
@@ -623,6 +647,54 @@ extend type Query {
     """
     first: Grupo_FirstRow
   ): Grupo @fdc_generated(from: "Grupo", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `GrupoModulo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  grupoModulo(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModulo_FirstRow
+  ): GrupoModulo @fdc_generated(from: "GrupoModulo", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Horario` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  horario(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Horario_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Horario_FirstRow
+  ): Horario @fdc_generated(from: "Horario", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `IndicadorCapacidad` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -1387,6 +1459,40 @@ extend type Query {
     """
     having: Actividad_Having
   ): [Actividad!]! @fdc_generated(from: "Actividad", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Anio` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  anios(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Anio_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Anio_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Anio_Having
+  ): [Anio!]! @fdc_generated(from: "Anio", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Aprendizaje` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -2169,6 +2275,74 @@ extend type Query {
     """
     having: Grupo_Having
   ): [Grupo!]! @fdc_generated(from: "Grupo", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `GrupoModulo` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  grupoModulos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: GrupoModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [GrupoModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: GrupoModulo_Having
+  ): [GrupoModulo!]! @fdc_generated(from: "GrupoModulo", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Horario` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  horarios(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Horario_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Horario_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Horario_Having
+  ): [Horario!]! @fdc_generated(from: "Horario", purpose: QUERY_MULTIPLE)
   """
   ✨ List `IndicadorCapacidad` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

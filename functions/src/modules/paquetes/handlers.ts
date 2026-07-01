@@ -35,6 +35,10 @@ const LIST_PAQUETES_QUERY = `
       obligatorio
       paqueteId
       moduloId
+      modulo {
+        titulo
+        tituloComercial
+      }
     }
   }
 `;
@@ -53,6 +57,10 @@ const GET_PAQUETE_QUERY = `
       obligatorio
       paqueteId
       moduloId
+      modulo {
+        titulo
+        tituloComercial
+      }
     }
   }
 `;

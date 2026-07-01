@@ -2,6 +2,7 @@ import {
   DataConnectActEconomicaInput,
   DataConnectActividadInput,
   DataConnectAprendizajeInput,
+  DataConnectAnioInput,
   DataConnectCapacidadTerminalInput,
   DataConnectCarreraInput,
   DataConnectCalendarioInput,
@@ -14,6 +15,7 @@ import {
   DataConnectModuloEstudianteInput,
   DataConnectPaqueteInput,
   DataConnectPaqueteModuloInput,
+  DataConnectPersonalInput,
   DataConnectPlanInput,
   DataConnectRoleInput,
   DataConnectSectorInput,
@@ -260,19 +262,101 @@ export function buildPlanDataFromInput(input: Record<string, unknown>): DataConn
   });
 }
 
+export function buildAnioDataFromInput(input: Record<string, unknown>): DataConnectAnioInput {
+  return compactUndefined({
+    nombre: asNullableString(input.nombre),
+    titulo: asNullableString(input.titulo),
+  });
+}
+
+export function buildSemestreDataFromInput(input: Record<string, unknown>) {
+  return compactUndefined({
+    titulo: asNullableString(input.titulo),
+    descripcion: asNullableString(input.descripcion),
+    inicio: asNullableTimestamp(input.inicio),
+    fin: asNullableTimestamp(input.fin),
+    archivado: toBoolean(input.archivado),
+    anioId: toNumberOrNull(input.anioId),
+    directorId: toNumberOrNull(input.directorId),
+    coordinador1Id: toNumberOrNull(input.coordinador1Id),
+    coordinador2Id: toNumberOrNull(input.coordinador2Id),
+  });
+}
+
 export function buildCalendarioDataFromInput(input: Record<string, unknown>): DataConnectCalendarioInput {
   return compactUndefined({
     titulo: asNullableString(input.titulo),
     descripcion: asNullableString(input.descripcion),
-    fechaIni: asNullableTimestamp(input.fechaIni),
-    fechaFin: asNullableTimestamp(input.fechaFin),
-    tipo: asNullableString(input.tipo),
+    inicio: asNullableTimestamp(input.inicio),
+    fin: asNullableTimestamp(input.fin),
+    duracion: toNumberOrNull(input.duracion),
     color: asNullableString(input.color),
     activo: toBoolean(input.activo),
+    fechaCreacion: asNullableTimestamp(input.fechaCreacion),
+    fechaActualizacion: asNullableTimestamp(input.fechaActualizacion),
+    anioId: toNumberOrNull(input.anioId),
+    semestreId: toNumberOrNull(input.semestreId),
+    horarioId: toNumberOrNull(input.horarioId),
+  });
+}
+
+export function buildTurnoDataFromInput(input: Record<string, unknown>) {
+  return compactUndefined({
+    nombre: asNullableString(input.nombre),
+    horaInicio: asNullableTimestamp(input.horaInicio),
+    horaFin: asNullableTimestamp(input.horaFin),
+    estado: asNullableString(input.estado),
+    fechaCreacion: asNullableTimestamp(input.fechaCreacion),
+    fechaActualizacion: asNullableTimestamp(input.fechaActualizacion),
+  });
+}
+
+export function buildHorarioDataFromInput(input: Record<string, unknown>) {
+  return compactUndefined({
+    nombre: asNullableString(input.nombre),
+    descripcion: asNullableString(input.descripcion),
+    regla: asNullableString(input.regla),
+    diasSemana: asNullableString(input.diasSemana),
+    viernesAlternoInicio: asNullableString(input.viernesAlternoInicio),
+    activo: toBoolean(input.activo),
+    fechaCreacion: asNullableTimestamp(input.fechaCreacion),
+    fechaActualizacion: asNullableTimestamp(input.fechaActualizacion),
+  });
+}
+
+export function buildGrupoDataFromInput(input: Record<string, unknown>) {
+  return compactUndefined({
+    turnoNombre: asNullableString(input.turnoNombre),
+    descripcion: asNullableString(input.descripcion),
+    nombreDisplay: asNullableString(input.nombreDisplay),
+    estado: asNullableString(input.estado),
     archivado: toBoolean(input.archivado),
     fechaCreacion: asNullableTimestamp(input.fechaCreacion),
     fechaActualizacion: asNullableTimestamp(input.fechaActualizacion),
     semestreId: toNumberOrNull(input.semestreId),
+    personalId: toNumberOrNull(input.personalId),
+    paqueteId: toNumberOrNull(input.paqueteId),
+    turnoId: toNumberOrNull(input.turnoId),
+    horarioId: toNumberOrNull(input.horarioId),
+    grupoOrd: toNumberOrNull(input.grupoOrd),
+  });
+}
+
+export function buildGrupoModuloDataFromInput(input: Record<string, unknown>) {
+  return compactUndefined({
+    grupoId: toNumber(input.grupoId, 0),
+    moduloId: toNumber(input.moduloId, 0),
+    orden: toNumberOrNull(input.orden),
+    obligatorio: toBoolean(input.obligatorio) ?? true,
+    calendarioId: toNumberOrNull(input.calendarioId),
+  });
+}
+
+export function buildPersonalDataFromInput(input: Record<string, unknown>): DataConnectPersonalInput {
+  return compactUndefined({
+    displayName: asNullableString(input.displayName),
+    memo: asNullableString(input.memo),
+    userId: toNumberOrNull(input.userId),
   });
 }
 
@@ -290,7 +374,7 @@ export function buildEventoDataFromInput(input: Record<string, unknown>): DataCo
     fechaCreacion: asNullableTimestamp(input.fechaCreacion),
     fechaActualizacion: asNullableTimestamp(input.fechaActualizacion),
     calendarioId: toNumber(input.calendarioId, 0),
-    grupoId: toNumberOrNull(input.grupoId),
+    semestreId: toNumberOrNull(input.semestreId),
   }) as DataConnectEventoInput;
 }
 
@@ -331,7 +415,6 @@ export function buildMatriculaDataFromInput(input: Record<string, unknown>): Dat
     recibo: asNullableString(input.recibo),
     fecha: asNullableTimestamp(input.fecha),
     archivado: toBoolean(input.archivado),
-    grupoId: toNumberOrNull(input.grupoId),
     paqueteId: toNumberOrNull(input.paqueteId),
     userId: toNumberOrNull(input.userId),
   });
@@ -342,6 +425,7 @@ export function buildModuloEstudianteDataFromInput(input: Record<string, unknown
     promedio: toNumberOrNull(input.promedio),
     matriculaId: toNumber(input.matriculaId, 0),
     moduloId: toNumber(input.moduloId, 0),
+    grupoId: toNumberOrNull(input.grupoId),
   }) as DataConnectModuloEstudianteInput;
 }
 

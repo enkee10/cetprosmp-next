@@ -298,7 +298,7 @@ export default function CarrerasPage() {
         <MenuItem onClick={() => { if (menuCarreraId) void handleDeleteCarrera(menuCarreraId); }}>Eliminar</MenuItem>
       </Menu>
 
-      <Modal1 open={openCarreraModal} onClose={handleDismissCarreraModal} title={editingCarreraId ? 'Editar Carrera' : 'Crear Carrera'}>
+      <Modal1 open={openCarreraModal} onClose={handleDismissCarreraModal} title={editingCarreraId ? 'Editar Carrera' : 'Crear Carrera'} maxWidth={720}>
         <CarreraForm
           key={`${editingCarreraId ?? 'new-carrera'}-${carreraFormResetKey}`}
           asModal

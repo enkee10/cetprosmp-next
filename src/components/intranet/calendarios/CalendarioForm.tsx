@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Alert,
@@ -31,44 +31,167 @@ interface CalendarioData {
   id: number;
   titulo: string | null;
   descripcion: string | null;
-  fechaIni: string | null;
-  fechaFin: string | null;
-  tipo: string | null;
+  inicio: string | null;
+  fin: string | null;
+  duracion: number | null;
   color: string | null;
   activo: boolean | null;
-  archivado: boolean | null;
+  anioId: number | null;
   semestreId: number | null;
+  horarioId: number | null;
+}
+
+interface AnioOption {
+  id: number;
+  nombre: string | null;
+  titulo: string | null;
 }
 
 interface SemestreOption {
   id: number;
   titulo: string | null;
-  archivado: boolean | null;
+  inicio?: string | null;
+  fin?: string | null;
+  anioId?: number | null;
+  anio?: {
+    id: number;
+    nombre?: string | null;
+    titulo?: string | null;
+  } | null;
 }
 
-const CALENDARIO_TIPOS = ['academico', 'institucional', 'clases', 'evaluaciones', 'otros'];
+interface HorarioOption {
+  id: number;
+  nombre: string | null;
+}
 
-const toDateTimeLocal = (value: string | null) => {
+const isoToDateInput = (value: string | null | undefined) => {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return localDate.toISOString().slice(0, 16);
+  return date.toISOString().slice(0, 10);
 };
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const getSemestreCodigo = (value: string | null | undefined) => {
+  return String(value ?? '').trim().slice(-4);
+};
+
+const normalizeHorarioNombre = (value: string | null | undefined) =>
+  String(value ?? '').trim().replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').toLowerCase();
+
+const getDateOrNull = (value: string | null | undefined) => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const getDatePartsOrNull = (value: string | null | undefined) => {
+  if (!value) return null;
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    return {
+      year: Number(match[1]),
+      month: Number(match[2]),
+      day: Number(match[3]),
+    };
+  }
+
+  const date = getDateOrNull(value);
+  if (!date) return null;
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+  };
+};
+
+const getDateKey = (year: number, month: number, day: number) => year * 10000 + month * 100 + day;
+
+const getCalendarioPeriodoSuffix = (
+  horarioNombre: string | null | undefined,
+  duracionValue: string | number | null | undefined,
+  calendarioFin: string | null | undefined,
+  semestreFin: string | null | undefined,
+) => {
+  const duracionText = String(duracionValue ?? '').trim();
+
+  if (duracionText === '150') {
+    const calendarioFinParts = getDatePartsOrNull(calendarioFin);
+    if (!calendarioFinParts) return '';
+
+    const calendarioFinKey = getDateKey(
+      calendarioFinParts.year,
+      calendarioFinParts.month,
+      calendarioFinParts.day,
+    );
+    const cortes = [
+      { key: getDateKey(calendarioFinParts.year, 5, 30), suffix: '-1' },
+      { key: getDateKey(calendarioFinParts.year, 7, 30), suffix: '-2' },
+      { key: getDateKey(calendarioFinParts.year, 10, 30), suffix: '-3' },
+      { key: getDateKey(calendarioFinParts.year, 12, 30), suffix: '-4' },
+    ];
+
+    return cortes.find((corte) => calendarioFinKey < corte.key)?.suffix || '';
+  }
+
+  if (normalizeHorarioNombre(horarioNombre) !== 'lun - vie') return '';
+  if (duracionText !== '300') return '';
+
+  const calendarioFinDate = getDateOrNull(calendarioFin);
+  const semestreFinDate = getDateOrNull(semestreFin);
+  if (!calendarioFinDate || !semestreFinDate) return '-2';
+
+  const limitePrimerBloque = new Date(semestreFinDate.getTime() - 30 * MS_PER_DAY);
+  return calendarioFinDate.getTime() < limitePrimerBloque.getTime() ? '-1' : '-2';
+};
+
+const isSemestreVigente = (semestre: SemestreOption, date: Date) => {
+  if (!semestre.inicio || !semestre.fin) return false;
+  const inicio = new Date(semestre.inicio);
+  const fin = new Date(semestre.fin);
+  if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) return false;
+
+  const finInclusivo = new Date(fin);
+  const endsAtLocalMidnight =
+    finInclusivo.getHours() === 0 &&
+    finInclusivo.getMinutes() === 0 &&
+    finInclusivo.getSeconds() === 0 &&
+    finInclusivo.getMilliseconds() === 0;
+  const endsAtUtcMidnight =
+    finInclusivo.getUTCHours() === 0 &&
+    finInclusivo.getUTCMinutes() === 0 &&
+    finInclusivo.getUTCSeconds() === 0 &&
+    finInclusivo.getUTCMilliseconds() === 0;
+
+  if (endsAtUtcMidnight) {
+    finInclusivo.setUTCHours(23, 59, 59, 999);
+  } else if (endsAtLocalMidnight) {
+    finInclusivo.setHours(23, 59, 59, 999);
+  }
+
+  return inicio.getTime() <= date.getTime() && date.getTime() <= finInclusivo.getTime();
+};
+
+const getSemestreAnioId = (semestre: SemestreOption | null | undefined) => semestre?.anioId ?? semestre?.anio?.id ?? null;
+
 export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCancel }: CalendarioFormProps) {
-  const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [fechaIni, setFechaIni] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
-  const [tipo, setTipo] = useState('');
+  const [inicio, setInicio] = useState('');
+  const [fin, setFin] = useState('');
+  const [duracion, setDuracion] = useState('');
   const [color, setColor] = useState('#1976d2');
   const [activo, setActivo] = useState(true);
-  const [archivado, setArchivado] = useState(false);
+  const [anioId, setAnioId] = useState('');
   const [semestreId, setSemestreId] = useState('');
+  const [horarioId, setHorarioId] = useState('');
+  const [anios, setAnios] = useState<AnioOption[]>([]);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
+  const [horarios, setHorarios] = useState<HorarioOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingCalendario, setLoadingCalendario] = useState(Boolean(calendarioId));
+  const [autoPeriodoAplicado, setAutoPeriodoAplicado] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -76,12 +199,24 @@ export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCance
     const fetchOptions = async () => {
       try {
         const functions = getFunctions(app);
+        const listAnios = httpsCallable<undefined, { anios?: AnioOption[] }>(functions, 'listAnios');
         const listSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(functions, 'listSemestres');
-        const result = await listSemestres();
-        setSemestres(result.data.semestres || []);
+        const listHorarios = httpsCallable<undefined, { horarios?: HorarioOption[] }>(functions, 'listHorarios');
+        const [aniosResult, semestresResult, horariosResult] = await Promise.all([
+          listAnios(),
+          listSemestres(),
+          listHorarios(),
+        ]);
+        setAnios(aniosResult.data.anios || []);
+        setSemestres(semestresResult.data.semestres || []);
+        setHorarios(
+          (horariosResult.data.horarios || [])
+            .slice()
+            .sort((a, b) => String(a.nombre ?? '').localeCompare(String(b.nombre ?? ''), 'es', { numeric: true })),
+        );
       } catch (err) {
         console.error('Error fetching calendario options: ', err);
-        setError('No se pudieron cargar los semestres para el formulario.');
+        setError('No se pudieron cargar los años para el formulario.');
       }
     };
 
@@ -103,15 +238,15 @@ export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCance
         const fetched = result.data.calendario;
 
         if (fetched) {
-          setTitulo(fetched.titulo || '');
           setDescripcion(fetched.descripcion || '');
-          setFechaIni(toDateTimeLocal(fetched.fechaIni));
-          setFechaFin(toDateTimeLocal(fetched.fechaFin));
-          setTipo(fetched.tipo || '');
+          setInicio(isoToDateInput(fetched.inicio));
+          setFin(isoToDateInput(fetched.fin));
+          setDuracion(fetched.duracion != null ? String(fetched.duracion) : '');
           setColor(fetched.color || '#1976d2');
           setActivo(fetched.activo ?? true);
-          setArchivado(Boolean(fetched.archivado));
+          setAnioId(fetched.anioId != null ? String(fetched.anioId) : '');
           setSemestreId(fetched.semestreId != null ? String(fetched.semestreId) : '');
+          setHorarioId(fetched.horarioId != null ? String(fetched.horarioId) : '');
         }
       } catch (err) {
         console.error('Error fetching calendario: ', err);
@@ -124,10 +259,81 @@ export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCance
     void fetchCalendario();
   }, [calendarioId]);
 
+  const semestreVigente = useMemo(
+    () => (!calendarioId ? semestres.find((semestre) => isSemestreVigente(semestre, new Date())) || null : null),
+    [calendarioId, semestres],
+  );
+
+  useEffect(() => {
+    if (calendarioId || autoPeriodoAplicado || !semestreVigente) return;
+    const vigenteAnioId = getSemestreAnioId(semestreVigente);
+    if (vigenteAnioId == null) return;
+
+    setAnioId(String(vigenteAnioId));
+    setSemestreId(String(semestreVigente.id));
+    setAutoPeriodoAplicado(true);
+  }, [autoPeriodoAplicado, calendarioId, semestreVigente]);
+
+  useEffect(() => {
+    if (calendarioId || semestreId || !anioId || !semestreVigente) return;
+    const vigenteAnioId = getSemestreAnioId(semestreVigente);
+    if (vigenteAnioId != null && String(vigenteAnioId) === anioId) {
+      setSemestreId(String(semestreVigente.id));
+    }
+  }, [anioId, calendarioId, semestreId, semestreVigente]);
+
+  useEffect(() => {
+    if (!semestreId) return;
+    const semestre = semestres.find((item) => String(item.id) === semestreId);
+    const selectedAnioId = getSemestreAnioId(semestre);
+    if (selectedAnioId != null && anioId !== String(selectedAnioId)) {
+      setAnioId(String(selectedAnioId));
+    }
+  }, [anioId, semestreId, semestres]);
+
+  useEffect(() => {
+    if (!anioId || !semestreId) return;
+    const semestre = semestres.find((item) => String(item.id) === semestreId);
+    const selectedAnioId = getSemestreAnioId(semestre);
+    if (semestre && String(selectedAnioId ?? '') !== anioId) {
+      setSemestreId('');
+    }
+  }, [anioId, semestreId, semestres]);
+
+  const filteredSemestres = anioId
+    ? semestres.filter((semestre) => String(getSemestreAnioId(semestre) ?? '') === anioId)
+    : [];
+  const selectedSemestre = semestres.find((semestre) => String(semestre.id) === semestreId) || null;
+  const selectedHorario = horarios.find((horario) => String(horario.id) === horarioId) || null;
+  const titulo = useMemo(
+    () => {
+      const duracionText = duracion.trim();
+      const horarioText = selectedHorario?.nombre?.trim() || '';
+      const semestreCodigo = getSemestreCodigo(selectedSemestre?.titulo);
+      const semestreText = semestreCodigo
+        ? `(${semestreCodigo}${getCalendarioPeriodoSuffix(horarioText, duracionText, fin, selectedSemestre?.fin)})`
+        : '';
+
+      return [
+        duracionText,
+        duracionText ? 'horas' : '',
+        horarioText,
+        semestreText,
+      ].filter(Boolean).join(' ');
+    },
+    [duracion, fin, selectedHorario, selectedSemestre],
+  );
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (!semestreId || !horarioId || !duracion.trim()) {
+      setError('Selecciona semestre, horario y duracion para formar el titulo del calendario.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const functions = getFunctions(app);
@@ -136,13 +342,14 @@ export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCance
           id?: number;
           titulo: string;
           descripcion: string;
-          fechaIni?: string | null;
-          fechaFin?: string | null;
-          tipo?: string | null;
+          inicio?: string | null;
+          fin?: string | null;
+          duracion?: number | null;
           color?: string | null;
           activo: boolean;
-          archivado: boolean;
+          anioId?: number | null;
           semestreId?: number | null;
+          horarioId?: number | null;
         },
         { id: number | null }
       >(functions, 'createOrUpdateCalendario');
@@ -151,13 +358,14 @@ export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCance
         id: calendarioId ? Number(calendarioId) : undefined,
         titulo,
         descripcion,
-        fechaIni: fechaIni || null,
-        fechaFin: fechaFin || null,
-        tipo: tipo || null,
+        inicio: inicio || null,
+        fin: fin || null,
+        duracion: duracion ? Number(duracion) : null,
         color: color || null,
         activo,
-        archivado,
+        anioId: anioId ? Number(anioId) : null,
         semestreId: semestreId ? Number(semestreId) : null,
+        horarioId: horarioId ? Number(horarioId) : null,
       });
 
       if (onSaved) {
@@ -214,11 +422,32 @@ export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCance
           <TextField
             label="Titulo"
             value={titulo}
-            onChange={(event) => setTitulo(event.target.value)}
             fullWidth
             required
+            disabled
             sx={{ gridColumn: '1 / -1' }}
           />
+
+          <FormControl fullWidth sx={{ gridColumn: { xs: 'auto', md: 'span 6' } }}>
+            <InputLabel>Año</InputLabel>
+            <Select
+              label="Año"
+              value={anioId}
+              onChange={(event) => setAnioId(String(event.target.value))}
+            >
+              <MenuItem value="">Sin año</MenuItem>
+              {anioId && !anios.some((anio) => String(anio.id) === anioId) ? (
+                <MenuItem value={anioId} disabled>
+                  Año actual no disponible
+                </MenuItem>
+              ) : null}
+              {anios.map((anio) => (
+                <MenuItem key={anio.id} value={String(anio.id)}>
+                  {anio.nombre || anio.titulo || `Año ${anio.id}`}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
           <FormControl fullWidth sx={{ gridColumn: { xs: 'auto', md: 'span 6' } }}>
             <InputLabel>Semestre</InputLabel>
@@ -226,14 +455,15 @@ export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCance
               label="Semestre"
               value={semestreId}
               onChange={(event) => setSemestreId(String(event.target.value))}
+              disabled={!anioId}
             >
-              <MenuItem value="">Sin semestre</MenuItem>
-              {semestreId && !semestres.some((semestre) => String(semestre.id) === semestreId) ? (
+              <MenuItem value="">{anioId ? 'Sin semestre' : 'Selecciona un año primero'}</MenuItem>
+              {semestreId && !filteredSemestres.some((semestre) => String(semestre.id) === semestreId) ? (
                 <MenuItem value={semestreId} disabled>
                   Semestre actual no disponible
                 </MenuItem>
               ) : null}
-              {semestres.map((semestre) => (
+              {filteredSemestres.map((semestre) => (
                 <MenuItem key={semestre.id} value={String(semestre.id)}>
                   {semestre.titulo || `Semestre ${semestre.id}`}
                 </MenuItem>
@@ -241,13 +471,51 @@ export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCance
             </Select>
           </FormControl>
 
+          <TextField
+            label="Inicio"
+            value={inicio}
+            onChange={(event) => setInicio(event.target.value)}
+            fullWidth
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}
+          />
+
+          <TextField
+            label="Fin"
+            value={fin}
+            onChange={(event) => setFin(event.target.value)}
+            fullWidth
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}
+          />
+
+          <TextField
+            label="Duracion"
+            value={duracion}
+            onChange={(event) => setDuracion(event.target.value)}
+            fullWidth
+            type="number"
+            sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}
+          />
+
           <FormControl fullWidth sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}>
-            <InputLabel>Tipo</InputLabel>
-            <Select label="Tipo" value={tipo} onChange={(event) => setTipo(String(event.target.value))}>
-              <MenuItem value="">Sin tipo</MenuItem>
-              {CALENDARIO_TIPOS.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option}
+            <InputLabel>Horario</InputLabel>
+            <Select
+              label="Horario"
+              value={horarioId}
+              onChange={(event) => setHorarioId(String(event.target.value))}
+            >
+              <MenuItem value="">Sin horario</MenuItem>
+              {horarioId && !horarios.some((horario) => String(horario.id) === horarioId) ? (
+                <MenuItem value={horarioId} disabled>
+                  Horario actual no disponible
+                </MenuItem>
+              ) : null}
+              {horarios.map((horario) => (
+                <MenuItem key={horario.id} value={String(horario.id)}>
+                  {horario.nombre || `Horario ${horario.id}`}
                 </MenuItem>
               ))}
             </Select>
@@ -259,37 +527,13 @@ export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCance
             onChange={(event) => setColor(event.target.value)}
             fullWidth
             type="color"
-            sx={{ gridColumn: { xs: 'auto', md: 'span 2' } }}
-          />
-
-          <TextField
-            label="Fecha inicio"
-            value={fechaIni}
-            onChange={(event) => setFechaIni(event.target.value)}
-            fullWidth
-            type="datetime-local"
-            InputLabelProps={{ shrink: true }}
-            sx={{ gridColumn: { xs: 'auto', md: 'span 6' } }}
-          />
-          <TextField
-            label="Fecha fin"
-            value={fechaFin}
-            onChange={(event) => setFechaFin(event.target.value)}
-            fullWidth
-            type="datetime-local"
-            InputLabelProps={{ shrink: true }}
-            sx={{ gridColumn: { xs: 'auto', md: 'span 6' } }}
+            sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}
           />
 
           <FormControlLabel
             control={<Checkbox checked={activo} onChange={(event) => setActivo(event.target.checked)} />}
             label="Activo"
-            sx={{ gridColumn: { xs: 'auto', md: 'span 3' } }}
-          />
-          <FormControlLabel
-            control={<Checkbox checked={archivado} onChange={(event) => setArchivado(event.target.checked)} />}
-            label="Archivado"
-            sx={{ gridColumn: { xs: 'auto', md: 'span 3' } }}
+            sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}
           />
 
           <TextField

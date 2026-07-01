@@ -347,6 +347,7 @@ export default function EspecialidadesPage() {
         open={openEspecialidadModal}
         onClose={handleDismissEspecialidadModal}
         title={editingEspecialidadId ? 'Editar Especialidad' : 'Crear Especialidad'}
+        maxWidth={760}
       >
         <EspecialidadForm
           key={`${editingEspecialidadId ?? 'new-especialidad'}-${especialidadFormResetKey}`}

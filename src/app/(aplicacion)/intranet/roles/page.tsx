@@ -116,9 +116,10 @@ export default function RolesPage() {
       {
         field: 'scala',
         headerName: 'Nivel (Scala)',
+        type: 'number',
         flex: 0.8,
         minWidth: 120,
-        valueGetter: (_value, row: Role) => (row.scala != null ? row.scala : ''),
+        valueGetter: (_value, row: Role) => (row.scala != null ? row.scala : null),
       },
       {
         field: 'actions',
@@ -212,6 +213,7 @@ export default function RolesPage() {
         open={openRoleModal}
         onClose={handleDismissRoleModal}
         title={editingRoleId ? 'Editar Rol' : 'Crear Rol'}
+        maxWidth={560}
       >
         <RoleForm
           key={`${editingRoleId ?? 'new-role'}-${roleFormResetKey}`}

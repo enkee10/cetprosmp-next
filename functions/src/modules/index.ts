@@ -1,5 +1,11 @@
 export { assignDefaultRole, syncDataConnectUserOnAuthDelete } from "./triggers/handlers.js";
-export { registerUser, listUsers, createNewUser, updateUserProfile, deleteUser } from "./users/handlers.js";
+export {
+  registerUser,
+  listUsers,
+  createNewUser,
+  updateUserProfile,
+  deleteUser,
+} from "./users/handlers.js";
 export {
   listRoles,
   getRole,
@@ -49,7 +55,30 @@ export {
   createOrUpdatePlan,
   deletePlan,
 } from "./planes/handlers.js";
-export { listSemestres } from "./semestres/handlers.js";
+export {
+  listAnios,
+  getAnio,
+  createOrUpdateAnio,
+  deleteAnio,
+} from "./anios/handlers.js";
+export {
+  listSemestres,
+  getSemestre,
+  createOrUpdateSemestre,
+  deleteSemestre,
+} from "./semestres/handlers.js";
+export {
+  listTurnos,
+  getTurno,
+  createOrUpdateTurno,
+  deleteTurno,
+} from "./turnos/handlers.js";
+export {
+  listHorarios,
+  getHorario,
+  createOrUpdateHorario,
+  deleteHorario,
+} from "./horarios/handlers.js";
 export {
   listCalendarios,
   getCalendario,
@@ -59,8 +88,19 @@ export {
   getEvento,
   createOrUpdateEvento,
   deleteEvento,
-  listGrupos,
 } from "./calendarios/handlers.js";
+export {
+  listGrupos,
+  getGrupo,
+  createOrUpdateGrupo,
+  deleteGrupo,
+} from "./grupos/handlers.js";
+export {
+  listPersonal,
+  getPersonal,
+  createOrUpdatePersonal,
+  deletePersonal,
+} from "./personal/handlers.js";
 export {
   listModulos,
   getModulo,

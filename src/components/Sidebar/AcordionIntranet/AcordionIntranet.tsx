@@ -11,6 +11,7 @@ import {
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CategoryIcon from '@mui/icons-material/Category';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
@@ -22,6 +23,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PeopleIcon from '@mui/icons-material/People';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import SchoolIcon from '@mui/icons-material/School';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import FullCustomAccordion, {
@@ -62,6 +64,10 @@ const menuSections: IntranetMenuSection[] = [
       { id: 'planes', title: 'Planes', path: '/intranet/planes', icon: <AssignmentIcon /> },
       { id: 'modulos', title: 'Módulos', path: '/intranet/modulos', icon: <ViewModuleIcon /> },
       { id: 'paquetes', title: 'Paquetes', path: '/intranet/paquetes', icon: <Inventory2Icon /> },
+      { id: 'grupos', title: 'Grupos', path: '/intranet/grupos', icon: <PeopleIcon /> },
+      { id: 'personal', title: 'Personal', path: '/intranet/personal', icon: <PeopleIcon /> },
+      { id: 'turnos', title: 'Turnos', path: '/intranet/turnos', icon: <ScheduleIcon /> },
+      { id: 'horarios', title: 'Horarios', path: '/intranet/horarios', icon: <ScheduleIcon /> },
       { id: 'calendarios', title: 'Calendarios', path: '/intranet/calendarios', icon: <EventNoteIcon /> },
       { id: 'eventos', title: 'Eventos', path: '/intranet/eventos', icon: <EventNoteIcon /> },
       { id: 'unidades-didacticas', title: 'Unidades Didácticas', path: '/intranet/unidades-didacticas', icon: <MenuBookIcon /> },
@@ -75,6 +81,8 @@ const menuSections: IntranetMenuSection[] = [
     id: 'miselanea',
     title: 'Miselanea',
     items: [
+      { id: 'anios', title: 'Años', path: '/intranet/anios', icon: <CalendarMonthIcon /> },
+      { id: 'semestres', title: 'Semestres', path: '/intranet/semestres', icon: <ScheduleIcon /> },
       { id: 'tipos-carrera', title: 'Tipos de Carrera', path: '/intranet/tipos-carrera', icon: <CategoryIcon /> },
     ],
   },

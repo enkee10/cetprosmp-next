@@ -254,9 +254,10 @@ export default function PlanesPage() {
       {
         field: 'creditos',
         headerName: 'Creditos',
+        type: 'number',
         flex: 0.7,
         minWidth: 110,
-        valueGetter: (_value, row: Plan) => (row.creditos != null ? row.creditos : ''),
+        valueGetter: (_value, row: Plan) => (row.creditos != null ? row.creditos : null),
       },
       {
         field: 'periodoCaducidad',
@@ -452,6 +453,7 @@ export default function PlanesPage() {
         open={openPlanModal}
         onClose={handleDismissPlanModal}
         title={editingPlanId ? 'Editar Plan' : 'Crear Plan'}
+        maxWidth={1000}
       >
         <PlanForm
           key={`${editingPlanId ?? 'new-plan'}-${planFormResetKey}`}

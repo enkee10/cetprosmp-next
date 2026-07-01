@@ -358,6 +358,7 @@ export default function ActEconomicasPage() {
         open={openActEconomicaModal}
         onClose={handleDismissActEconomicaModal}
         title={editingActEconomicaId ? 'Editar Actividad Economica' : 'Crear Actividad Economica'}
+        maxWidth={760}
       >
         <ActEconomicaForm
           key={`${editingActEconomicaId ?? 'new-act-economica'}-${actEconomicaFormResetKey}`}

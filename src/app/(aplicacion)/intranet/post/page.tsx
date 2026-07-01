@@ -370,6 +370,7 @@ export default function PostsPage() {
         open={formOpen}
         onClose={handleDismissPostModal}
         title={selectedPost ? 'Editar Post' : 'Agregar Post'}
+        maxWidth={1000}
         disableAutoFocus
         disableEnforceFocus
       >

@@ -36,12 +36,26 @@ interface AcademicCrudPageProps {
   fields: AcademicFieldConfig[];
   columns: AcademicColumnConfig[];
   labelField: string;
+  modalMaxWidth?: number | string;
 }
 
 function renderCellValue(value: unknown) {
   if (value === null || value === undefined) return '';
   if (typeof value === 'boolean') return value ? 'Si' : 'No';
   return String(value);
+}
+
+function renderNumberCellValue(value: unknown) {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function renderTimestampCellValue(value: unknown) {
+  if (typeof value !== 'string' || !value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short' }).format(date);
 }
 
 export function AcademicCrudPage({
@@ -58,6 +72,7 @@ export function AcademicCrudPage({
   fields,
   columns: columnConfigs,
   labelField,
+  modalMaxWidth = 720,
 }: AcademicCrudPageProps) {
   const [rows, setRows] = useState<AcademicRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,6 +182,11 @@ export function AcademicCrudPage({
     }
   }, [deleteCallableName, entityKey, entityLabel, entityPluralLabel, fetchRows, functions, labelField, rows]);
 
+  const fieldTypeByName = useMemo(
+    () => new Map(fields.map((field) => [field.name, field.type])),
+    [fields],
+  );
+
   const columns = useMemo<GridColDef[]>(
     () => [
       ...columnConfigs.map<GridColDef>((column) => ({
@@ -174,7 +194,13 @@ export function AcademicCrudPage({
         headerName: column.headerName,
         flex: column.flex ?? 1,
         minWidth: column.minWidth ?? 140,
-        valueGetter: (_value, row: AcademicRow) => renderCellValue(row[column.field]),
+        type: fieldTypeByName.get(column.field) === 'number' ? 'number' : undefined,
+        valueGetter: (_value, row: AcademicRow) =>
+          fieldTypeByName.get(column.field) === 'number'
+            ? renderNumberCellValue(row[column.field])
+            : fieldTypeByName.get(column.field) === 'timestamp'
+              ? renderTimestampCellValue(row[column.field])
+            : renderCellValue(row[column.field]),
       })),
       {
         field: 'actions',
@@ -200,7 +226,7 @@ export function AcademicCrudPage({
         ),
       },
     ],
-    [columnConfigs],
+    [columnConfigs, fieldTypeByName],
   );
 
   const columnToggleItems = useMemo(
@@ -275,6 +301,7 @@ export function AcademicCrudPage({
         open={openModal}
         onClose={handleDismissModal}
         title={editingId ? `Editar ${entityLabel}` : `Crear ${entityLabel}`}
+        maxWidth={modalMaxWidth}
       >
         <AcademicEntityForm
           key={`${editingId ?? `new-${entityKey}`}-${formResetKey}`}

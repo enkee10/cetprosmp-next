@@ -1,17 +1,38 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Box, Button, CircularProgress, TextField } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from '@mui/material';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 
-export type AcademicFieldType = 'text' | 'number' | 'textarea' | 'timestamp';
+export type AcademicFieldType = 'text' | 'number' | 'textarea' | 'timestamp' | 'select';
+
+export interface AcademicSelectOption {
+  value: string | number;
+  label: string;
+}
 
 export interface AcademicFieldConfig {
   name: string;
   label: string;
   type?: AcademicFieldType;
   required?: boolean;
+  options?: AcademicSelectOption[];
+  optionsCallableName?: string;
+  optionsRowsKey?: string;
+  optionValueField?: string;
+  optionLabelField?: string;
+  optionValueType?: 'string' | 'number';
 }
 
 interface AcademicEntityFormProps {
@@ -38,11 +59,25 @@ function buildPayload(fields: AcademicFieldConfig[], values: Record<string, stri
     const raw = values[field.name]?.trim() ?? '';
     if (field.type === 'number') {
       payload[field.name] = raw ? Number(raw) : null;
+    } else if (field.type === 'select' && field.optionValueType === 'number') {
+      payload[field.name] = raw ? Number(raw) : null;
     } else {
       payload[field.name] = raw || null;
     }
     return payload;
   }, {});
+}
+
+function getOptionLabel(row: Record<string, unknown>, field: AcademicFieldConfig) {
+  const labelField = field.optionLabelField ?? 'titulo';
+  const label =
+    row[labelField] ??
+    row.nombre ??
+    row.titulo ??
+    row.id ??
+    '';
+
+  return String(label);
 }
 
 export function AcademicEntityForm({
@@ -63,10 +98,58 @@ export function AcademicEntityForm({
   const [loading, setLoading] = useState(false);
   const [loadingEntity, setLoadingEntity] = useState(Boolean(entityId));
   const [error, setError] = useState<string | null>(null);
+  const [selectOptions, setSelectOptions] = useState<Record<string, AcademicSelectOption[]>>({});
 
   useEffect(() => {
     setValues(initialValues);
   }, [initialValues]);
+
+  useEffect(() => {
+    const fetchSelectOptions = async () => {
+      const selectFields = fields.filter((field) => field.type === 'select');
+      if (selectFields.length === 0) {
+        setSelectOptions({});
+        return;
+      }
+
+      const functions = getFunctions(app);
+      const nextOptions: Record<string, AcademicSelectOption[]> = {};
+
+      for (const field of selectFields) {
+        if (field.options) {
+          nextOptions[field.name] = field.options;
+          continue;
+        }
+
+        if (!field.optionsCallableName || !field.optionsRowsKey) {
+          nextOptions[field.name] = [];
+          continue;
+        }
+
+        const listOptions = httpsCallable<undefined, Record<string, Record<string, unknown>[]>>(
+          functions,
+          field.optionsCallableName,
+        );
+        const result = await listOptions();
+        const rows = result.data[field.optionsRowsKey] ?? [];
+        const valueField = field.optionValueField ?? 'id';
+
+        nextOptions[field.name] = rows
+          .map((row) => ({
+            value: String(row[valueField] ?? ''),
+            label: getOptionLabel(row, field),
+          }))
+          .filter((option) => option.value !== '');
+      }
+
+      setSelectOptions(nextOptions);
+    };
+
+    fetchSelectOptions().catch((err) => {
+      console.error(`Error fetching select options for ${entityKey}: `, err);
+      setError(`No se pudieron cargar las opciones de ${entityLabel.toLowerCase()}.`);
+    });
+  }, [entityKey, entityLabel, fields]);
 
   useEffect(() => {
     const fetchEntity = async () => {
@@ -149,29 +232,55 @@ export function AcademicEntityForm({
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       <form onSubmit={handleSubmit}>
-        {fields.map((field) => (
-          <TextField
-            key={field.name}
-            label={field.label}
-            value={values[field.name] ?? ''}
-            onChange={(event) =>
-              setValues((prev) => ({ ...prev, [field.name]: event.target.value }))
-            }
-            fullWidth
-            margin="normal"
-            required={field.required}
-            type={
-              field.type === 'number'
-                ? 'number'
-                : field.type === 'timestamp'
-                  ? 'datetime-local'
-                  : undefined
-            }
-            minRows={field.type === 'textarea' ? 3 : undefined}
-            multiline={field.type === 'textarea'}
-            InputLabelProps={field.type === 'timestamp' ? { shrink: true } : undefined}
-          />
-        ))}
+        {fields.map((field) => {
+          if (field.type === 'select') {
+            return (
+              <FormControl key={field.name} fullWidth margin="normal" required={field.required}>
+                <InputLabel>{field.label}</InputLabel>
+                <Select
+                  label={field.label}
+                  value={values[field.name] ?? ''}
+                  onChange={(event) =>
+                    setValues((prev) => ({ ...prev, [field.name]: String(event.target.value) }))
+                  }
+                >
+                  <MenuItem value="">
+                    <em>Seleccionar</em>
+                  </MenuItem>
+                  {(selectOptions[field.name] ?? []).map((option) => (
+                    <MenuItem key={option.value} value={String(option.value)}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            );
+          }
+
+          return (
+            <TextField
+              key={field.name}
+              label={field.label}
+              value={values[field.name] ?? ''}
+              onChange={(event) =>
+                setValues((prev) => ({ ...prev, [field.name]: event.target.value }))
+              }
+              fullWidth
+              margin="normal"
+              required={field.required}
+              type={
+                field.type === 'number'
+                  ? 'number'
+                  : field.type === 'timestamp'
+                    ? 'datetime-local'
+                    : undefined
+              }
+              minRows={field.type === 'textarea' ? 3 : undefined}
+              multiline={field.type === 'textarea'}
+              InputLabelProps={field.type === 'timestamp' ? { shrink: true } : undefined}
+            />
+          );
+        })}
 
         <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
           <Button type="submit" variant="contained" color="primary" disabled={loading}>

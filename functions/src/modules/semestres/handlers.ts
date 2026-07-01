@@ -1,35 +1,159 @@
 import { https } from "firebase-functions/v1";
+import {
+  buildSemestreDataFromInput,
+  getIdFromKeyOutput,
+  toNumber,
+  toNumberOrNull,
+} from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
-import { DataConnectSemestre } from "../core/types.js";
+import { DataConnectSemestre, DataConnectSemestreInput } from "../core/types.js";
+import {
+  DELETE_SEMESTRE_MUTATION,
+  INSERT_SEMESTRE_MUTATION,
+  UPDATE_SEMESTRE_MUTATION,
+} from "../../dataconnectOperations.js";
+
+const SEMESTRE_FIELDS = `
+  id
+  titulo
+  descripcion
+  inicio
+  fin
+  archivado
+  anioId
+  directorId
+  coordinador1Id
+  coordinador2Id
+  anio {
+    id
+    nombre
+    titulo
+  }
+`;
 
 const LIST_SEMESTRES_QUERY = `
   query ListSemestresManual {
     semestres(limit: 500) {
-      id
-      titulo
-      descripcion
-      archivado
+      ${SEMESTRE_FIELDS}
     }
   }
 `;
 
-export const listSemestres = https.onCall(async (_data, context) => {
+const GET_SEMESTRE_QUERY = `
+  query GetSemestreManual($id: Int!) {
+    semestre(id: $id) {
+      ${SEMESTRE_FIELDS}
+    }
+  }
+`;
+
+function requireLevel(context: https.CallableContext, action: string) {
   const requesterLevel = context.auth?.token?.level ?? 0;
   if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to list semesters.");
+    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
   }
+}
+
+const sortSemestres = (items: DataConnectSemestre[]) =>
+  items
+    .slice()
+    .sort((a, b) =>
+      String(a.anio?.nombre ?? a.anio?.titulo ?? "").localeCompare(
+        String(b.anio?.nombre ?? b.anio?.titulo ?? ""),
+        "es",
+        { numeric: true },
+      ) ||
+      String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es", { numeric: true }) ||
+      a.id - b.id,
+    );
+
+const addAnioTitulo = (semestre: DataConnectSemestre): DataConnectSemestre => ({
+  ...semestre,
+  anioTitulo: semestre.anio?.nombre ?? semestre.anio?.titulo ?? null,
+});
+
+export const listSemestres = https.onCall(async (_data, context) => {
+  requireLevel(context, "list semesters");
 
   try {
     const response = await dataConnect.executeGraphql<{ semestres: DataConnectSemestre[] }, Record<string, never>>(
       LIST_SEMESTRES_QUERY,
     );
-    const semestres = (response.data.semestres ?? [])
-      .slice()
-      .sort((a, b) => String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es"));
-
-    return { semestres };
+    return { semestres: sortSemestres(response.data.semestres ?? []).map(addAnioTitulo) };
   } catch (error) {
     console.error("Error in listSemestres:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while listing semesters.");
+  }
+});
+
+export const getSemestre = https.onCall(async (data, context) => {
+  requireLevel(context, "get semesters");
+
+  const semestreId = toNumber(data?.id, -1);
+  if (semestreId <= 0) {
+    throw new https.HttpsError("invalid-argument", "id is required.");
+  }
+
+  try {
+    const response = await dataConnect.executeGraphql<{ semestre: DataConnectSemestre | null }, { id: number }>(
+      GET_SEMESTRE_QUERY,
+      { variables: { id: semestreId } },
+    );
+    return { semestre: response.data.semestre ? addAnioTitulo(response.data.semestre) : null };
+  } catch (error) {
+    console.error("Error in getSemestre:", error);
+    throw new https.HttpsError("internal", "An unexpected error occurred while getting semester.");
+  }
+});
+
+export const createOrUpdateSemestre = https.onCall(async (data, context) => {
+  requireLevel(context, "mutate semesters");
+
+  const payload = buildSemestreDataFromInput(data as Record<string, unknown>) as DataConnectSemestreInput;
+  if (!payload.titulo) {
+    throw new https.HttpsError("invalid-argument", "titulo is required.");
+  }
+
+  const semestreId = toNumberOrNull(data?.id);
+
+  try {
+    if (semestreId) {
+      const updated = await dataConnect.executeGraphql<
+        { semestre_update: unknown },
+        { id: number; data: DataConnectSemestreInput }
+      >(UPDATE_SEMESTRE_MUTATION, { variables: { id: semestreId, data: payload } });
+
+      return { id: getIdFromKeyOutput(updated.data.semestre_update) ?? semestreId };
+    }
+
+    const created = await dataConnect.executeGraphql<
+      { semestre_insert: unknown },
+      { data: DataConnectSemestreInput }
+    >(INSERT_SEMESTRE_MUTATION, { variables: { data: payload } });
+
+    return { id: getIdFromKeyOutput(created.data.semestre_insert) };
+  } catch (error) {
+    console.error("Error in createOrUpdateSemestre:", error);
+    throw new https.HttpsError("internal", "An unexpected error occurred while saving semester.");
+  }
+});
+
+export const deleteSemestre = https.onCall(async (data, context) => {
+  requireLevel(context, "delete semesters");
+
+  const semestreId = toNumber(data?.id, -1);
+  if (semestreId <= 0) {
+    throw new https.HttpsError("invalid-argument", "id is required.");
+  }
+
+  try {
+    const deleted = await dataConnect.executeGraphql<{ semestre_delete: unknown }, { id: number }>(
+      DELETE_SEMESTRE_MUTATION,
+      { variables: { id: semestreId } },
+    );
+    return { id: getIdFromKeyOutput(deleted.data.semestre_delete) ?? semestreId };
+  } catch (error) {
+    console.error("Error in deleteSemestre:", error);
+    throw new https.HttpsError("internal", "An unexpected error occurred while deleting semester.");
   }
 });

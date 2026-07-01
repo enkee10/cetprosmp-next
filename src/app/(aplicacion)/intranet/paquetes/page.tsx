@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
-import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
+import {
+  GridColDef,
+  GridColumnVisibilityModel,
+  GridFilterModel,
+  GridPaginationModel,
+} from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -38,12 +43,23 @@ export default function PaquetesPage() {
   const [menuPaqueteId, setMenuPaqueteId] = useState<string | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
-    pageSize: 15,
+    pageSize: 50,
+  });
+  const [filterModel, setFilterModel] = useState<GridFilterModel>({
+    items: [
+      {
+        id: 1,
+        field: 'cantidadModulos',
+        operator: '>=',
+        value: '2',
+      },
+    ],
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
+      numero: true,
       titulo: true,
-      modulos: true,
+      modulos: false,
       cantidadModulos: true,
       archivado: true,
       descripcion: false,
@@ -147,6 +163,18 @@ export default function PaquetesPage() {
   const columns = useMemo<GridColDef[]>(
     () => [
       {
+        field: 'numero',
+        headerName: '#',
+        width: 72,
+        minWidth: 72,
+        align: 'center',
+        headerAlign: 'center',
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      {
         field: 'titulo',
         headerName: 'Titulo',
         flex: 1,
@@ -161,11 +189,12 @@ export default function PaquetesPage() {
         valueGetter: (_value, row: Paquete) =>
           (row.moduloIds || [])
             .map((id) => moduloTitleById.get(id) || `Modulo ${id}`)
-            .join(', '),
+            .join(' / '),
       },
       {
         field: 'cantidadModulos',
         headerName: 'Cant.',
+        type: 'number',
         flex: 0.45,
         minWidth: 80,
         valueGetter: (_value, row: Paquete) => row.moduloIds?.length || 0,
@@ -220,7 +249,7 @@ export default function PaquetesPage() {
             ? column.headerName
             : column.field,
         checked: columnVisibilityModel[column.field] !== false,
-        disabled: column.field === 'actions',
+        disabled: column.field === 'numero' || column.field === 'actions',
       })),
     [columnVisibilityModel, columns],
   );
@@ -252,6 +281,8 @@ export default function PaquetesPage() {
         getRowId={(row) => row.id}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
+        filterModel={filterModel}
+        onFilterModelChange={setFilterModel}
       />
 
       <Menu
@@ -283,6 +314,7 @@ export default function PaquetesPage() {
         open={openPaqueteModal}
         onClose={handleDismissPaqueteModal}
         title={editingPaqueteId ? 'Editar Paquete' : 'Crear Paquete'}
+        maxWidth={720}
       >
         <PaqueteForm
           key={`${editingPaqueteId ?? 'new-paquete'}-${paqueteFormResetKey}`}

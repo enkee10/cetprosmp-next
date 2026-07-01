@@ -24,7 +24,7 @@ interface Evento {
   color: string | null;
   estado: string | null;
   calendarioId: number;
-  grupoId: number | null;
+  semestreId: number | null;
 }
 
 interface CalendarioOption {
@@ -32,10 +32,10 @@ interface CalendarioOption {
   titulo: string | null;
 }
 
-interface GrupoOption {
+interface SemestreOption {
   id: number;
-  nombreDisplay: string | null;
-  turnoNombre: string | null;
+  titulo: string | null;
+  archivado: boolean | null;
 }
 
 const formatDateTime = (value: string | null) => {
@@ -45,13 +45,10 @@ const formatDateTime = (value: string | null) => {
   return new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short' }).format(date);
 };
 
-const getGrupoLabel = (grupo: GrupoOption) =>
-  [grupo.nombreDisplay || `Grupo ${grupo.id}`, grupo.turnoNombre].filter(Boolean).join(' - ');
-
 export default function EventosPage() {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [calendarios, setCalendarios] = useState<CalendarioOption[]>([]);
-  const [grupos, setGrupos] = useState<GrupoOption[]>([]);
+  const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openEventoModal, setOpenEventoModal] = useState(false);
@@ -61,13 +58,14 @@ export default function EventosPage() {
   const [menuEventoId, setMenuEventoId] = useState<string | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 15 });
   const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
+    numero: true,
     titulo: true,
+    semestre: true,
     calendario: true,
-    tipoEvento: true,
+    tipoEvento: false,
     fechaInicio: true,
     fechaFin: true,
-    grupo: true,
-    estado: true,
+    estado: false,
     todoElDia: false,
     ubicacion: false,
     color: false,
@@ -86,15 +84,15 @@ export default function EventosPage() {
       }
       const listEventos = httpsCallable<undefined, { eventos?: Evento[] }>(functions, 'listEventos');
       const listCalendarios = httpsCallable<undefined, { calendarios?: CalendarioOption[] }>(functions, 'listCalendarios');
-      const listGrupos = httpsCallable<undefined, { grupos?: GrupoOption[] }>(functions, 'listGrupos');
-      const [eventosResult, calendariosResult, gruposResult] = await Promise.all([
+      const listSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(functions, 'listSemestres');
+      const [eventosResult, calendariosResult, semestresResult] = await Promise.all([
         listEventos(),
         listCalendarios(),
-        listGrupos(),
+        listSemestres(),
       ]);
       setEventos(eventosResult.data.eventos || []);
       setCalendarios(calendariosResult.data.calendarios || []);
-      setGrupos(gruposResult.data.grupos || []);
+      setSemestres(semestresResult.data.semestres || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching eventos: ', err);
@@ -113,9 +111,9 @@ export default function EventosPage() {
     [calendarios],
   );
 
-  const grupoTitleById = useMemo(
-    () => new Map(grupos.map((grupo) => [grupo.id, getGrupoLabel(grupo)])),
-    [grupos],
+  const semestreTitleById = useMemo(
+    () => new Map(semestres.map((semestre) => [semestre.id, semestre.titulo || `Semestre ${semestre.id}`])),
+    [semestres],
   );
 
   const handleEventoSaved = useCallback(() => {
@@ -157,7 +155,27 @@ export default function EventosPage() {
 
   const columns = useMemo<GridColDef[]>(
     () => [
+      {
+        field: 'numero',
+        headerName: '#',
+        width: 72,
+        minWidth: 72,
+        align: 'center',
+        headerAlign: 'center',
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
       { field: 'titulo', headerName: 'Titulo', flex: 1.2, minWidth: 180, valueGetter: (_value, row: Evento) => row.titulo || '' },
+      {
+        field: 'semestre',
+        headerName: 'Semestre',
+        flex: 1,
+        minWidth: 160,
+        valueGetter: (_value, row: Evento) =>
+          row.semestreId != null ? semestreTitleById.get(row.semestreId) || `Semestre ${row.semestreId}` : '',
+      },
       {
         field: 'calendario',
         headerName: 'Calendario',
@@ -168,14 +186,6 @@ export default function EventosPage() {
       { field: 'tipoEvento', headerName: 'Tipo', flex: 0.75, minWidth: 120, valueGetter: (_value, row: Evento) => row.tipoEvento || '' },
       { field: 'fechaInicio', headerName: 'Inicio', flex: 0.9, minWidth: 145, valueGetter: (_value, row: Evento) => formatDateTime(row.fechaInicio) },
       { field: 'fechaFin', headerName: 'Fin', flex: 0.9, minWidth: 145, valueGetter: (_value, row: Evento) => formatDateTime(row.fechaFin) },
-      {
-        field: 'grupo',
-        headerName: 'Grupo',
-        flex: 1,
-        minWidth: 160,
-        valueGetter: (_value, row: Evento) =>
-          row.grupoId != null ? grupoTitleById.get(row.grupoId) || `Grupo ${row.grupoId}` : '',
-      },
       { field: 'estado', headerName: 'Estado', flex: 0.75, minWidth: 115, valueGetter: (_value, row: Evento) => row.estado || '' },
       { field: 'todoElDia', headerName: 'Todo el dia', flex: 0.75, minWidth: 120, valueGetter: (_value, row: Evento) => (row.todoElDia ? 'Si' : 'No') },
       { field: 'ubicacion', headerName: 'Ubicacion', flex: 1, minWidth: 160, valueGetter: (_value, row: Evento) => row.ubicacion || '' },
@@ -224,7 +234,7 @@ export default function EventosPage() {
         ),
       },
     ],
-    [calendarioTitleById, grupoTitleById],
+    [calendarioTitleById, semestreTitleById],
   );
 
   const columnToggleItems = useMemo(
@@ -300,6 +310,7 @@ export default function EventosPage() {
         open={openEventoModal}
         onClose={() => setOpenEventoModal(false)}
         title={editingEventoId ? 'Editar Evento' : 'Crear Evento'}
+        maxWidth={1000}
       >
         <EventoForm
           key={`${editingEventoId ?? 'new-evento'}-${eventoFormResetKey}`}

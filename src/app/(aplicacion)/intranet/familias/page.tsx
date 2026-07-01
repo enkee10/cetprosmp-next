@@ -312,6 +312,7 @@ export default function FamiliasPage() {
         open={openFamiliaModal}
         onClose={handleDismissFamiliaModal}
         title={editingFamiliaId ? 'Editar Familia' : 'Crear Familia'}
+        maxWidth={720}
       >
         <FamiliaForm
           key={`${editingFamiliaId ?? 'new-familia'}-${familiaFormResetKey}`}

@@ -412,6 +412,7 @@ const UsersPage = () => {
         filterable: false,
         renderCell: (params) => {
           const { avatar, nombre, apellidoPaterno } = params.row as User;
+          const avatarSrc = avatar?.trim() || undefined;
           const initials =
             nombre && apellidoPaterno ? `${nombre[0]}${apellidoPaterno[0]}`.toUpperCase() : null;
           return (
@@ -424,7 +425,7 @@ const UsersPage = () => {
                 justifyContent: 'flex-start',
               }}
             >
-              <Avatar src={avatar || undefined}>{initials}</Avatar>
+              <Avatar src={avatarSrc} imgProps={{ referrerPolicy: 'no-referrer' }}>{initials}</Avatar>
             </Box>
           );
         },
@@ -458,6 +459,7 @@ const UsersPage = () => {
       {
         field: 'rolId',
         headerName: 'Rol',
+        type: 'number',
         align: 'center',
         headerAlign: 'center',
         width: 60,
@@ -591,6 +593,7 @@ const UsersPage = () => {
         open={formOpen}
         onClose={handleDismissUserModal}
         title={selectedUser ? 'Editar Usuario' : 'Agregar Usuario'}
+        maxWidth="md"
       >
         {formOpen ? (
           <UserForm

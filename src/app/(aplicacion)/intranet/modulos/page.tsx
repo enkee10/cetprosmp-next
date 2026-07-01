@@ -38,7 +38,7 @@ export default function ModulosPage() {
   const [menuModuloId, setMenuModuloId] = useState<string | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
-    pageSize: 15,
+    pageSize: 50,
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
@@ -171,16 +171,18 @@ export default function ModulosPage() {
       {
         field: 'horas',
         headerName: 'Horas',
+        type: 'number',
         flex: 0.6,
         minWidth: 95,
-        valueGetter: (_value, row: Modulo) => (row.horas != null ? row.horas : ''),
+        valueGetter: (_value, row: Modulo) => (row.horas != null ? row.horas : null),
       },
       {
         field: 'creditos',
         headerName: 'Creditos',
+        type: 'number',
         flex: 0.7,
         minWidth: 110,
-        valueGetter: (_value, row: Modulo) => (row.creditos != null ? row.creditos : ''),
+        valueGetter: (_value, row: Modulo) => (row.creditos != null ? row.creditos : null),
       },
       {
         field: 'actions',
@@ -281,6 +283,7 @@ export default function ModulosPage() {
         open={openModuloModal}
         onClose={handleDismissModuloModal}
         title={editingModuloId ? 'Editar Modulo' : 'Crear Modulo'}
+        maxWidth={760}
       >
         <ModuloForm
           key={`${editingModuloId ?? 'new-modulo'}-${moduloFormResetKey}`}

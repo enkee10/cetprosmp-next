@@ -4,6 +4,7 @@ import {
   buildModuloEstudianteDataFromInput,
   getIdFromKeyOutput,
   toNumber,
+  toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
 import {
@@ -46,6 +47,22 @@ const sortPaqueteModulos = (items: DataConnectPaqueteModulo[]) =>
   items
     .slice()
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId);
+
+function buildGrupoIdByModuloId(data: unknown) {
+  const fallbackGrupoId = toNumberOrNull((data as Record<string, unknown> | null)?.grupoId) ?? null;
+  const result = new Map<number, number | null>();
+  const moduloGrupos = (data as Record<string, unknown> | null)?.moduloGrupos;
+  if (!Array.isArray(moduloGrupos)) return { result, fallbackGrupoId };
+
+  for (const item of moduloGrupos) {
+    if (typeof item !== "object" || item === null) continue;
+    const moduloId = toNumberOrNull((item as Record<string, unknown>).moduloId);
+    if (!moduloId) continue;
+    result.set(moduloId, toNumberOrNull((item as Record<string, unknown>).grupoId) ?? null);
+  }
+
+  return { result, fallbackGrupoId };
+}
 
 async function cleanupMatricula(matriculaId: number) {
   try {
@@ -96,6 +113,7 @@ export const createMatriculaDesdePaquete = https.onCall(async (data, context) =>
         "El paquete debe tener entre 1 y 3 modulos antes de matricular.",
       );
     }
+    const { result: grupoIdByModuloId, fallbackGrupoId } = buildGrupoIdByModuloId(data);
 
     const matriculaPayload = buildMatriculaDataFromInput({
       ...(data as Record<string, unknown>),
@@ -120,6 +138,7 @@ export const createMatriculaDesdePaquete = https.onCall(async (data, context) =>
         const moduloEstudiante = buildModuloEstudianteDataFromInput({
           matriculaId,
           moduloId: paqueteModulo.moduloId,
+          grupoId: grupoIdByModuloId.get(paqueteModulo.moduloId) ?? fallbackGrupoId,
           promedio: null,
         });
         return dataConnect.executeGraphql<
@@ -133,7 +152,10 @@ export const createMatriculaDesdePaquete = https.onCall(async (data, context) =>
       id: matriculaId,
       paqueteId,
       userId,
-      moduloIds: paqueteModulos.map((item) => item.moduloId),
+      modulos: paqueteModulos.map((item) => ({
+        moduloId: item.moduloId,
+        grupoId: grupoIdByModuloId.get(item.moduloId) ?? fallbackGrupoId,
+      })),
     };
   } catch (error) {
     if (matriculaId) {

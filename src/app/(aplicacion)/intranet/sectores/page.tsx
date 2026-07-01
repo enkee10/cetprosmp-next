@@ -294,6 +294,7 @@ export default function SectoresPage() {
         open={openSectorModal}
         onClose={handleDismissSectorModal}
         title={editingSectorId ? 'Editar Sector' : 'Crear Sector'}
+        maxWidth={720}
       >
         <SectorForm
           key={`${editingSectorId ?? 'new-sector'}-${sectorFormResetKey}`}

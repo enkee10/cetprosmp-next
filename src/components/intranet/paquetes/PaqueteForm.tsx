@@ -52,11 +52,11 @@ const getModuloLabel = (modulo: ModuloOption) =>
   modulo.tituloComercial || modulo.titulo || `Modulo ${modulo.id}`;
 
 export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: PaqueteFormProps) {
-  const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [archivado, setArchivado] = useState(false);
   const [moduloIds, setModuloIds] = useState<string[]>([]);
   const [modulos, setModulos] = useState<ModuloOption[]>([]);
+  const [loadingModulos, setLoadingModulos] = useState(true);
   const [loading, setLoading] = useState(false);
   const [loadingPaquete, setLoadingPaquete] = useState(Boolean(paqueteId));
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +64,7 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
 
   useEffect(() => {
     const fetchOptions = async () => {
+      setLoadingModulos(true);
       try {
         const functions = getFunctions(app);
         const listModulos = httpsCallable<undefined, { modulos?: ModuloOption[] }>(functions, 'listModulos');
@@ -76,6 +77,8 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
       } catch (err) {
         console.error('Error fetching paquete form options: ', err);
         setError('No se pudieron cargar los modulos para el formulario.');
+      } finally {
+        setLoadingModulos(false);
       }
     };
 
@@ -94,7 +97,6 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
         const fetched = result.data.paquete;
 
         if (fetched) {
-          setTitulo(fetched.titulo || '');
           setDescripcion(fetched.descripcion || '');
           setArchivado(Boolean(fetched.archivado));
           setModuloIds((fetched.moduloIds || []).map((id) => String(id)));
@@ -117,12 +119,20 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
 
   const selectedModuloNames = moduloIds
     .map((id) => moduloTitleById.get(id) || `Modulo ${id}`)
-    .join(', ');
+    .join(' / ');
+
+  const generatedTitulo = selectedModuloNames;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (loadingModulos) {
+      setError('Espera a que carguen los modulos antes de guardar el paquete.');
+      setLoading(false);
+      return;
+    }
 
     if (moduloIds.length < 1 || moduloIds.length > MAX_MODULOS_PER_PAQUETE) {
       setError('Selecciona entre 1 y 3 modulos para el paquete.');
@@ -145,7 +155,7 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
 
       await createOrUpdatePaquete({
         id: paqueteId ? Number(paqueteId) : undefined,
-        titulo,
+        titulo: generatedTitulo,
         descripcion,
         archivado,
         moduloIds: moduloIds.map(Number),
@@ -196,14 +206,15 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
       <form onSubmit={handleSubmit}>
         <TextField
           label="Titulo"
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
+          value={generatedTitulo}
           fullWidth
           margin="normal"
           required
+          disabled
+          helperText="Se genera automaticamente con los modulos seleccionados."
         />
 
-        <FormControl fullWidth margin="normal" required>
+        <FormControl fullWidth margin="normal" required disabled={loadingModulos}>
           <InputLabel>Modulos del paquete</InputLabel>
           <Select
             multiple
@@ -249,7 +260,7 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
         />
 
         <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-          <Button type="submit" variant="contained" color="primary" disabled={loading}>
+          <Button type="submit" variant="contained" color="primary" disabled={loading || loadingModulos}>
             {loading ? <CircularProgress size={24} /> : (paqueteId ? 'Actualizar' : 'Crear')}
           </Button>
           {onCancel && (

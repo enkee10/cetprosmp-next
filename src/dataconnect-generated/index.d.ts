@@ -26,6 +26,11 @@ export interface Actividad_Key {
   __typename?: 'Actividad_Key';
 }
 
+export interface Anio_Key {
+  id: number;
+  __typename?: 'Anio_Key';
+}
+
 export interface Aprendizaje_Key {
   id: number;
   __typename?: 'Aprendizaje_Key';
@@ -208,9 +213,19 @@ export interface GetUserByDocumentIdVariables {
   documentId: string;
 }
 
+export interface GrupoModulo_Key {
+  id: number;
+  __typename?: 'GrupoModulo_Key';
+}
+
 export interface Grupo_Key {
   id: number;
   __typename?: 'Grupo_Key';
+}
+
+export interface Horario_Key {
+  id: number;
+  __typename?: 'Horario_Key';
 }
 
 export interface IndicadorCapacidadEstudiante_Key {

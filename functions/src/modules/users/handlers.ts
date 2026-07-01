@@ -52,6 +52,10 @@ const LIST_USERS_QUERY = `
       fechaModificacion
       emailCreador
       rolId
+      rol {
+        titulo
+        scala
+      }
     }
   }
 `;
@@ -105,6 +109,33 @@ async function executeListUsersQuerySerialized(): Promise<Array<Record<string, u
 
   listUsersQueryQueue = current.catch(() => undefined);
   return current;
+}
+
+async function hydrateMissingAuthAvatars(users: Array<Record<string, unknown>>): Promise<Array<Record<string, unknown>>> {
+  const missingAvatarUsers = users.filter((user) => !asNullableString(user.avatar) && asNullableString(user.documentId));
+  if (missingAvatarUsers.length === 0) return users;
+
+  const avatarEntries = await Promise.all(
+    missingAvatarUsers.map(async (user) => {
+      const documentId = asNullableString(user.documentId);
+      if (!documentId) return null;
+
+      const authUser = await authAdmin
+        .getUser(documentId)
+        .catch((error: unknown) =>
+          (error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error),
+        );
+
+      return authUser?.photoURL ? [documentId, authUser.photoURL] as const : null;
+    }),
+  );
+  const avatarByDocumentId = new Map(avatarEntries.filter((entry): entry is readonly [string, string] => Boolean(entry)));
+
+  return users.map((user) => {
+    const documentId = asNullableString(user.documentId);
+    const authAvatar = documentId ? avatarByDocumentId.get(documentId) : null;
+    return authAvatar ? { ...user, avatar: user.avatar || authAvatar } : user;
+  });
 }
 
 function isStudentToTeacherOrHigherTransition(
@@ -167,12 +198,12 @@ export const listUsers = https.onCall(async (_data, context) => {
   }
 
   try {
-    const users = (await executeListUsersQuerySerialized()).map((user) => ({
+    const users = (await hydrateMissingAuthAvatars(await executeListUsersQuerySerialized())).map((user) => ({
       ...user,
       bloqueado: Boolean(user.blocked),
       rolId: user.rolId ? String(user.rolId) : "",
-      rolTitulo: "Sin Rol",
-      rolLevel: 0,
+      rolTitulo: (user.rol as { titulo?: string | null } | null)?.titulo ?? "Sin Rol",
+      rolLevel: (user.rol as { scala?: number | null } | null)?.scala ?? 0,
     }));
 
     return { users };
@@ -274,7 +305,7 @@ export const createNewUser = https.onCall(async (data, context) => {
         email,
         username,
         displayName: username,
-        photoURL: null,
+        photoURL: createdAuthUser.photoURL || null,
         provider: "password",
         rolId: roleNumberId,
       },
@@ -430,6 +461,9 @@ export const updateUserProfile = https.onCall(async (data, context) => {
     const authUser = await authAdmin
       .getUser(documentId)
       .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
+    if (!payload.avatar && authUser?.photoURL) {
+      payload.avatar = authUser.photoURL;
+    }
     const nextAuthPrimaryEmail = asNullableString(payload.correoInstitucional);
     if (authUser) {
       const authUpdate: {

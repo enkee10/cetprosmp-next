@@ -394,8 +394,7 @@ const UserForm: React.FC<UserFormProps> = ({
             display: 'grid',
             gridTemplateColumns: {
               xs: 'minmax(0, 1fr)',
-              sm: 'repeat(2, minmax(260px, 260px))',
-              md: 'repeat(2, minmax(320px, 320px))',
+              sm: 'repeat(2, minmax(0, 1fr))',
             },
             gap: 2,
             mt: 1,

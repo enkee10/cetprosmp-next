@@ -136,14 +136,50 @@ export const DELETE_PLAN_MUTATION = `
   }
 `;
 
+export const INSERT_ANIO_MUTATION = `
+  mutation InsertAnio($data: Anio_Data! @allow(fields: "nombre titulo")) {
+    anio_insert(data: $data)
+  }
+`;
+
+export const UPDATE_ANIO_MUTATION = `
+  mutation UpdateAnio($id: Int!, $data: Anio_Data! @allow(fields: "nombre titulo")) {
+    anio_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_ANIO_MUTATION = `
+  mutation DeleteAnio($id: Int!) {
+    anio_delete(id: $id)
+  }
+`;
+
+export const INSERT_SEMESTRE_MUTATION = `
+  mutation InsertSemestre($data: Semestre_Data! @allow(fields: "titulo descripcion inicio fin archivado anioId directorId coordinador1Id coordinador2Id")) {
+    semestre_insert(data: $data)
+  }
+`;
+
+export const UPDATE_SEMESTRE_MUTATION = `
+  mutation UpdateSemestre($id: Int!, $data: Semestre_Data! @allow(fields: "titulo descripcion inicio fin archivado anioId directorId coordinador1Id coordinador2Id")) {
+    semestre_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_SEMESTRE_MUTATION = `
+  mutation DeleteSemestre($id: Int!) {
+    semestre_delete(id: $id)
+  }
+`;
+
 export const INSERT_CALENDARIO_MUTATION = `
-  mutation InsertCalendario($data: Calendario_Data! @allow(fields: "titulo descripcion fechaIni fechaFin tipo color activo archivado fechaCreacion fechaActualizacion semestreId")) {
+  mutation InsertCalendario($data: Calendario_Data! @allow(fields: "titulo descripcion inicio fin duracion color activo fechaCreacion fechaActualizacion anioId semestreId horarioId")) {
     calendario_insert(data: $data)
   }
 `;
 
 export const UPDATE_CALENDARIO_MUTATION = `
-  mutation UpdateCalendario($id: Int!, $data: Calendario_Data! @allow(fields: "titulo descripcion fechaIni fechaFin tipo color activo archivado fechaCreacion fechaActualizacion semestreId")) {
+  mutation UpdateCalendario($id: Int!, $data: Calendario_Data! @allow(fields: "titulo descripcion inicio fin duracion color activo fechaCreacion fechaActualizacion anioId semestreId horarioId")) {
     calendario_update(id: $id, data: $data)
   }
 `;
@@ -154,14 +190,110 @@ export const DELETE_CALENDARIO_MUTATION = `
   }
 `;
 
+export const INSERT_TURNO_MUTATION = `
+  mutation InsertTurno($data: Turno_Data! @allow(fields: "nombre horaInicio horaFin estado fechaCreacion fechaActualizacion")) {
+    turno_insert(data: $data)
+  }
+`;
+
+export const UPDATE_TURNO_MUTATION = `
+  mutation UpdateTurno($id: Int!, $data: Turno_Data! @allow(fields: "nombre horaInicio horaFin estado fechaCreacion fechaActualizacion")) {
+    turno_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_TURNO_MUTATION = `
+  mutation DeleteTurno($id: Int!) {
+    turno_delete(id: $id)
+  }
+`;
+
+export const INSERT_HORARIO_MUTATION = `
+  mutation InsertHorario($data: Horario_Data! @allow(fields: "nombre descripcion regla diasSemana viernesAlternoInicio activo fechaCreacion fechaActualizacion")) {
+    horario_insert(data: $data)
+  }
+`;
+
+export const UPDATE_HORARIO_MUTATION = `
+  mutation UpdateHorario($id: Int!, $data: Horario_Data! @allow(fields: "nombre descripcion regla diasSemana viernesAlternoInicio activo fechaCreacion fechaActualizacion")) {
+    horario_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_HORARIO_MUTATION = `
+  mutation DeleteHorario($id: Int!) {
+    horario_delete(id: $id)
+  }
+`;
+
+export const INSERT_GRUPO_MUTATION = `
+  mutation InsertGrupo($data: Grupo_Data! @allow(fields: "turnoNombre descripcion nombreDisplay estado archivado fechaCreacion fechaActualizacion semestreId personalId paqueteId turnoId horarioId grupoOrd")) {
+    grupo_insert(data: $data)
+  }
+`;
+
+export const UPDATE_GRUPO_MUTATION = `
+  mutation UpdateGrupo($id: Int!, $data: Grupo_Data! @allow(fields: "turnoNombre descripcion nombreDisplay estado archivado fechaCreacion fechaActualizacion semestreId personalId paqueteId turnoId horarioId grupoOrd")) {
+    grupo_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_GRUPO_MUTATION = `
+  mutation DeleteGrupo($id: Int!) {
+    grupo_delete(id: $id)
+  }
+`;
+
+export const INSERT_GRUPO_MODULO_MUTATION = `
+  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "grupoId moduloId orden obligatorio calendarioId")) {
+    grupoModulo_insert(data: $data)
+  }
+`;
+
+export const DELETE_GRUPO_MODULOS_BY_GRUPO_MUTATION = `
+  mutation DeleteGrupoModulosByGrupo($grupoId: Int!) {
+    grupoModulo_deleteMany(where: { grupoId: { eq: $grupoId } })
+  }
+`;
+
+export const INSERT_PERSONAL_MUTATION = `
+  mutation InsertPersonal($data: Personal_Data! @allow(fields: "displayName memo userId")) {
+    personal_insert(data: $data)
+  }
+`;
+
+export const UPDATE_PERSONAL_MUTATION = `
+  mutation UpdatePersonal($id: Int!, $data: Personal_Data! @allow(fields: "displayName memo userId")) {
+    personal_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_PERSONAL_MUTATION = `
+  mutation DeletePersonal($id: Int!) {
+    personal_delete(id: $id)
+  }
+`;
+
+export const INSERT_PERSONAL_ESPECIALIDAD_MUTATION = `
+  mutation InsertPersonalEspecialidad($data: PersonalEspecialidad_Data! @allow(fields: "personalId especialidadId orden")) {
+    personalEspecialidad_insert(data: $data)
+  }
+`;
+
+export const DELETE_PERSONAL_ESPECIALIDADES_BY_PERSONAL_MUTATION = `
+  mutation DeletePersonalEspecialidadesByPersonal($personalId: Int!) {
+    personalEspecialidad_deleteMany(where: { personalId: { eq: $personalId } })
+  }
+`;
+
 export const INSERT_EVENTO_MUTATION = `
-  mutation InsertEvento($data: Evento_Data! @allow(fields: "titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado fechaCreacion fechaActualizacion calendarioId grupoId")) {
+  mutation InsertEvento($data: Evento_Data! @allow(fields: "titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado fechaCreacion fechaActualizacion calendarioId semestreId")) {
     evento_insert(data: $data)
   }
 `;
 
 export const UPDATE_EVENTO_MUTATION = `
-  mutation UpdateEvento($id: Int!, $data: Evento_Data! @allow(fields: "titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado fechaCreacion fechaActualizacion calendarioId grupoId")) {
+  mutation UpdateEvento($id: Int!, $data: Evento_Data! @allow(fields: "titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado fechaCreacion fechaActualizacion calendarioId semestreId")) {
     evento_update(id: $id, data: $data)
   }
 `;
@@ -169,6 +301,42 @@ export const UPDATE_EVENTO_MUTATION = `
 export const DELETE_EVENTO_MUTATION = `
   mutation DeleteEvento($id: Int!) {
     evento_delete(id: $id)
+  }
+`;
+
+export const INSERT_EVENTO_RELACION_MUTATION = `
+  mutation InsertEventoRelacion($data: EventoRelacion_Data! @allow(fields: "entidadTipo entidadId fechaCreacion fechaActualizacion eventoId")) {
+    eventoRelacion_insert(data: $data)
+  }
+`;
+
+export const DELETE_EVENTO_RELACIONES_BY_EVENTO_MUTATION = `
+  mutation DeleteEventoRelacionesByEvento($eventoId: Int!) {
+    eventoRelacion_deleteMany(where: { eventoId: { eq: $eventoId } })
+  }
+`;
+
+export const INSERT_EVENTO_RECURRENCIA_MUTATION = `
+  mutation InsertEventoRecurrencia($data: EventoRecurrencia_Data! @allow(fields: "frecuencia intervalo diasSemana diaMes semanaMes fechaInicio fechaFin cantidadOcurrencias reglaEspecial activo fechaCreacion fechaActualizacion eventoId horarioId turnoId")) {
+    eventoRecurrencia_insert(data: $data)
+  }
+`;
+
+export const UPDATE_EVENTO_RECURRENCIA_MUTATION = `
+  mutation UpdateEventoRecurrencia($id: Int!, $data: EventoRecurrencia_Data! @allow(fields: "frecuencia intervalo diasSemana diaMes semanaMes fechaInicio fechaFin cantidadOcurrencias reglaEspecial activo fechaCreacion fechaActualizacion eventoId horarioId turnoId")) {
+    eventoRecurrencia_update(id: $id, data: $data)
+  }
+`;
+
+export const INSERT_EVENTO_OCURRENCIA_MUTATION = `
+  mutation InsertEventoOcurrencia($data: EventoOcurrencia_Data! @allow(fields: "fechaInicio fechaFin numeroOcurrencia tipoOcurrencia estado observacion fechaCreacion fechaActualizacion eventoId recurrenciaId grupoId")) {
+    eventoOcurrencia_insert(data: $data)
+  }
+`;
+
+export const UPDATE_EVENTO_OCURRENCIA_MUTATION = `
+  mutation UpdateEventoOcurrencia($id: Int!, $data: EventoOcurrencia_Data! @allow(fields: "fechaInicio fechaFin numeroOcurrencia tipoOcurrencia estado observacion fechaCreacion fechaActualizacion eventoId recurrenciaId grupoId")) {
+    eventoOcurrencia_update(id: $id, data: $data)
   }
 `;
 
@@ -311,7 +479,7 @@ export const DELETE_PAQUETE_MODULOS_BY_PAQUETE_MUTATION = `
 `;
 
 export const INSERT_MATRICULA_MUTATION = `
-  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha archivado grupoId paqueteId userId")) {
+  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha archivado paqueteId userId")) {
     matricula_insert(data: $data)
   }
 `;
@@ -323,7 +491,7 @@ export const DELETE_MATRICULA_MUTATION = `
 `;
 
 export const INSERT_MODULO_ESTUDIANTE_MUTATION = `
-  mutation InsertModuloEstudiante($data: ModuloEstudiante_Data! @allow(fields: "promedio matriculaId moduloId")) {
+  mutation InsertModuloEstudiante($data: ModuloEstudiante_Data! @allow(fields: "promedio matriculaId moduloId grupoId")) {
     moduloEstudiante_insert(data: $data)
   }
 `;

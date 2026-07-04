@@ -33,6 +33,10 @@ firebase-debug.log*
 .env.test.local
 .env.production.local
 functions/.env.local.example
+functions/.env
+functions/.env.*
+!functions/.env.example
+!functions/.env.*.example
 
 # vercel
 .vercel

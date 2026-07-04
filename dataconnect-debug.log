@@ -1,61 +1,30 @@
-I0701 15:46:30.808472   18288 load.go:31] Reloading schema and connectors...
-I0701 15:46:30.925404   18288 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 0f98] UpdateResources(): done
-Main schema: sources: schema\schema.gql [28857B] 
-Connector "default": sources: example\mutations.gql [1740B] example\queries.gql [1891B] 
-I0701 15:46:31.043115   18288 codegen.go:101] [connector "default" javascriptSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
-I0701 15:46:31.078320   18288 codegen.go:101] [connector "default" adminSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
-I0701 15:46:31.086217   18288 codegen.go:101] [connector "default" adminSdk] Generating sources into "C:\\_desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
-I0701 15:46:31.100153   18288 collector.go:107] schema extensions wrote into "C:\\_desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
-Generated sources: prelude.gql [84995B] main\input.gql [817409B] main\relation.gql [460312B] main\query.gql [86328B] main\mutation.gql [231293B] 
-I0701 15:46:31.161483   18288 collector.go:107] connector "default" javascriptSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
-Generated sources: index.d.ts [15746B] esm\index.esm.js [6095B] index.cjs.js [6705B] react\esm\index.esm.js [3611B] README.md [47249B] .guides/config.json [236B] package.json [853B] react\index.d.ts [4313B] react\index.cjs.js [3804B] react\README.md [52845B] esm\package.json [17B] react\package.json [460B] react\esm\package.json [17B] .guides/usage.md [3712B] .guides/setup.md [1682B] 
-I0701 15:46:31.182781   18288 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
-I0701 15:46:31.190490   18288 collector.go:107] connector "default" adminSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+I0702 15:28:59.849622   10164 load.go:31] Reloading schema and connectors...
+I0702 15:28:59.935809   10164 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service d7bd] UpdateResources(): done
+Main schema: sources: schema\schema.gql [29258B] 
+Connector "default": sources: example\mutations.gql [1673B] example\queries.gql [1895B] 
+I0702 15:29:00.028541   10164 codegen.go:101] [connector "default" javascriptSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+I0702 15:29:00.040527   10164 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+I0702 15:29:00.050185   10164 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+I0702 15:29:00.054097   10164 collector.go:107] schema extensions wrote into "D:\\_Desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
+Generated sources: main\query.gql [86328B] main\mutation.gql [231293B] prelude.gql [84995B] main\input.gql [821056B] main\relation.gql [461921B] 
+I0702 15:29:00.066870   10164 collector.go:107] connector "default" javascriptSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+Generated sources: react\package.json [460B] react\esm\package.json [17B] esm\index.esm.js [6095B] react\esm\index.esm.js [3611B] esm\package.json [17B] .guides/usage.md [3712B] .guides/setup.md [1682B] index.cjs.js [6705B] package.json [853B] README.md [47249B] react\index.d.ts [4313B] react\index.cjs.js [3804B] react\README.md [52845B] .guides/config.json [236B] index.d.ts [15746B] 
+I0702 15:29:00.071843   10164 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
+I0702 15:29:00.075424   10164 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+Generated sources: index.cjs.js [3602B] package.json [632B] index.d.ts [14848B] esm\index.esm.js [3271B] esm\package.json [17B] 
+I0702 15:29:00.076807   10164 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0702 15:29:00.077587   10164 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
 Generated sources: index.d.ts [14848B] esm\index.esm.js [3271B] esm\package.json [17B] index.cjs.js [3602B] package.json [632B] 
-I0701 15:46:31.198778   18288 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
-I0701 15:46:31.203721   18288 collector.go:107] connector "default" adminSdk wrote into "C:\\_desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
-Generated sources: index.d.ts [14848B] esm\index.esm.js [3271B] esm\package.json [17B] index.cjs.js [3602B] package.json [632B] 
-I0701 15:46:31.211824   18288 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
-I0701 15:46:31.211824   18288 load.go:109] Finished reloading
-I0701 15:46:31.214823   18288 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399
-I0701 15:46:31.215898   18288 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399
-I0701 15:46:33.988567   18288 migrate.go:24] Running migration SQL:
-Step 1: ALTER TABLE "public"."calendarios" ADD COLUMN "archivado" boolean NULL, ADD COLUMN "fecha_fin" timestamptz NULL, ADD COLUMN "fecha_ini" timestamptz NULL, ADD COLUMN "tipo" text NULL
-Step 2: ALTER TABLE "public"."carreras" ADD COLUMN "creditos" integer NULL, ADD COLUMN "descripcion_2" text NULL, ADD COLUMN "duracion" text NULL, ADD COLUMN "slug" text NULL, ADD COLUMN "titulo" text NULL, ADD COLUMN "titulo_comercial" text NULL
-Step 3: ALTER TABLE "public"."grupos" ADD COLUMN "calendario_id" integer NULL, ADD COLUMN "modulo_id" integer NULL
-Step 4: CREATE INDEX "grupos_calendarioId_idx" ON "public"."grupos" ("calendario_id")
-Step 5: CREATE INDEX "grupos_moduloId_idx" ON "public"."grupos" ("modulo_id")
-Step 6: ALTER TABLE "public"."modulos" ADD COLUMN "carrera_id" integer NULL, ADD COLUMN "descripcion_2" text NULL
-Step 7: CREATE INDEX "modulos_carreraId_idx" ON "public"."modulos" ("carrera_id")
-Step 8: ALTER TABLE "public"."matriculas" ADD COLUMN "semestre_id" integer NULL, ADD CONSTRAINT "matriculas_semestre_id_fkey" FOREIGN KEY ("semestre_id") REFERENCES "public"."semestres" ("id") ON DELETE SET NULL
-Step 9: CREATE INDEX "matriculas_semestreId_idx" ON "public"."matriculas" ("semestre_id")
-Step 10: CREATE TABLE "public"."matricula_grupos" ("matricula_id" integer NOT NULL, "grupo_id" integer NOT NULL, "id" serial NOT NULL, PRIMARY KEY ("matricula_id", "grupo_id"), CONSTRAINT "matricula_grupos_grupo_id_fkey" FOREIGN KEY ("grupo_id") REFERENCES "public"."grupos" ("id") ON DELETE CASCADE, CONSTRAINT "matricula_grupos_matricula_id_fkey" FOREIGN KEY ("matricula_id") REFERENCES "public"."matriculas" ("id") ON DELETE CASCADE)
-Step 11: CREATE INDEX "matricula_grupos_grupoId_idx" ON "public"."matricula_grupos" ("grupo_id")
-Step 12: CREATE INDEX "matricula_grupos_matriculaId_idx" ON "public"."matricula_grupos" ("matricula_id")
-Step 13: CREATE TABLE "public"."matricula_paquetes" ("matricula_id" integer NOT NULL, "paquete_id" integer NOT NULL, "id" serial NOT NULL, PRIMARY KEY ("matricula_id", "paquete_id"), CONSTRAINT "matricula_paquetes_matricula_id_fkey" FOREIGN KEY ("matricula_id") REFERENCES "public"."matriculas" ("id") ON DELETE CASCADE, CONSTRAINT "matricula_paquetes_paquete_id_fkey" FOREIGN KEY ("paquete_id") REFERENCES "public"."paquetes" ("id") ON DELETE CASCADE)
-Step 14: CREATE INDEX "matricula_paquetes_matriculaId_idx" ON "public"."matricula_paquetes" ("matricula_id")
-Step 15: CREATE INDEX "matricula_paquetes_paqueteId_idx" ON "public"."matricula_paquetes" ("paquete_id")
-Step 16: ALTER TABLE "public"."users" ADD COLUMN "dni_imagen_frente_url" text NULL, ADD COLUMN "dni_imagen_reverso_url" text NULL, ADD COLUMN "nacionalidad" text NULL DEFAULT 'PERUANA'
-Step 17: CREATE TABLE "public"."matricula_users" ("matricula_id" integer NOT NULL, "user_id" integer NOT NULL, "id" serial NOT NULL, PRIMARY KEY ("matricula_id", "user_id"), CONSTRAINT "matricula_users_matricula_id_fkey" FOREIGN KEY ("matricula_id") REFERENCES "public"."matriculas" ("id") ON DELETE CASCADE, CONSTRAINT "matricula_users_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE CASCADE)
-Step 18: CREATE INDEX "matricula_users_matriculaId_idx" ON "public"."matricula_users" ("matricula_id")
-Step 19: CREATE INDEX "matricula_users_userId_idx" ON "public"."matricula_users" ("user_id")
-Step 20: CREATE TABLE "public"."paquete_grupos" ("paquete_id" integer NOT NULL, "grupo_id" integer NOT NULL, "grupo_ord" integer NULL, "id" serial NOT NULL, PRIMARY KEY ("paquete_id", "grupo_id"), CONSTRAINT "paquete_grupos_grupo_id_fkey" FOREIGN KEY ("grupo_id") REFERENCES "public"."grupos" ("id") ON DELETE CASCADE, CONSTRAINT "paquete_grupos_paquete_id_fkey" FOREIGN KEY ("paquete_id") REFERENCES "public"."paquetes" ("id") ON DELETE CASCADE)
-Step 21: CREATE INDEX "paquete_grupos_grupoId_idx" ON "public"."paquete_grupos" ("grupo_id")
-Step 22: CREATE INDEX "paquete_grupos_paqueteId_idx" ON "public"."paquete_grupos" ("paquete_id")
-I0701 15:46:34.269760   18288 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 8e64] UpdateResources(): done
-Main schema: sources: schema\schema.gql [28857B] 
-Connector "default": sources: example\mutations.gql [1740B] example\queries.gql [1891B] 
-I0701 15:46:34.311425   18288 configure_emulator.go:21] ConfigureEmulator successed
+I0702 15:29:00.078823   10164 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0702 15:29:00.078823   10164 load.go:109] Finished reloading
+I0702 15:29:00.079323   10164 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399
+I0702 15:29:00.079823   10164 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399
+I0702 15:29:03.134871   10164 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 1c57] UpdateResources(): done
+Main schema: sources: schema\schema.gql [29258B] 
+Connector "default": sources: example\mutations.gql [1673B] example\queries.gql [1895B] 
+I0702 15:29:03.170777   10164 configure_emulator.go:21] ConfigureEmulator successed
 Request: service_id:  "cetprosmp-2026-service"
-connection_string:  "postgres://127.0.0.1:5432/cetprosmp-db?sslmode=disable"
+connection_string:  "postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable"
 database:  "cetprosmp-db"
 
 Response: 
-I0701 15:51:04.173649   18288 execute.go:57] Database ping is quick (likely cached), took 1.0874ms
-I0701 15:51:04.178795   18288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 8e64] ImpersonateQuery query GetRoleById: succeeded. Connector: default
-I0701 15:51:46.644497   18288 execute.go:57] Database ping is quick (likely cached), took 966.1µs
-I0701 15:51:46.650387   18288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 8e64] ExecuteGraphql query : succeeded. 
-I0701 15:51:46.650387   18288 execute.go:57] Database ping is quick (likely cached), took 0s
-I0701 15:51:46.652726   18288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 8e64] ExecuteGraphql query : succeeded. 
-I0701 15:52:05.227877   18288 execute.go:57] Database ping is quick (likely cached), took 942.5µs
-I0701 15:52:05.229930   18288 engine.go:209] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 8e64] ExecuteGraphql query : succeeded. 

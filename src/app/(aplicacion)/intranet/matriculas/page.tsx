@@ -258,12 +258,6 @@ const getCurrentSemestre = (semestres: SemestreOption[], now = new Date()) =>
     return startOfDay(inicio).getTime() <= now.getTime() && now.getTime() <= endOfDay(fin).getTime();
   }) ?? null;
 
-const areSameDocumentFiles = (first?: File | null, second?: File | null) =>
-  Boolean(first && second)
-    && first.name === second.name
-    && first.size === second.size
-    && first.lastModified === second.lastModified;
-
 const asString = (value: unknown) => (typeof value === 'string' ? value : '');
 
 const fileToGenerativePart = async (file: File) => {
@@ -427,32 +421,72 @@ const classifyGeminiFiles = (files: File[], aiResult: GeminiMatriculaResult) => 
     : files.length === 1 && reverseIndex === null
       ? 0
       : null;
+  const buildClassifiedArchivo = (
+    archivo: GeminiArchivoResult,
+    itemIndex: number,
+  ): DocumentoArchivoClasificado => {
+    const fileIndex = getGeminiArchivoIndex(archivo, itemIndex, files.length);
+    const tipoLado = normalizeSearchText(archivo.tipoLado);
+    const ladoAsignado = tipoLado.includes('reverso') || hasReverseEvidenceInGeminiFile(archivo)
+      ? 'reverso'
+      : tipoLado.includes('frente')
+        ? 'frente'
+        : fileIndex === reverseIndex
+          ? 'reverso'
+          : fileIndex === frontIndex
+            ? 'frente'
+            : 'desconocido';
+
+    return {
+      indice: fileIndex + 1,
+      nombreArchivo: asString(archivo.nombreArchivo) || files[fileIndex]?.name || `archivo ${fileIndex + 1}`,
+      ladoAsignado,
+      gemini: {
+        indice: archivo.indice ?? fileIndex + 1,
+        tipoLado: archivo.tipoLado ?? null,
+        areaLectura: archivo.areaLectura ?? null,
+        tieneDosCuerpos: Boolean(archivo.tieneDosCuerpos),
+        senalesReverso: archivo.senalesReverso ?? [],
+        fragmentosReverso: archivo.fragmentosReverso ?? [],
+        contieneDireccion: Boolean(archivo.contieneDireccion),
+        contieneDomicilio: Boolean(archivo.contieneDomicilio),
+        contieneDistrito: Boolean(archivo.contieneDistrito),
+        contienePerMrz: Boolean(archivo.contienePerMrz),
+      },
+    };
+  };
+
+  const classifiedArchivos = archivos.map(buildClassifiedArchivo);
+  const hasFrontMetadata = classifiedArchivos.some((archivo) => archivo.ladoAsignado === 'frente');
+  const hasReverseMetadata = classifiedArchivos.some((archivo) => archivo.ladoAsignado === 'reverso');
+  if (!hasFrontMetadata && frontIndex !== null && frontIndex >= 0) {
+    classifiedArchivos.push({
+      indice: frontIndex + 1,
+      nombreArchivo: files[frontIndex]?.name || `archivo ${frontIndex + 1}`,
+      ladoAsignado: 'frente',
+      gemini: null,
+    });
+  }
+  if (!hasReverseMetadata && reverseIndex !== null && reverseIndex >= 0) {
+    classifiedArchivos.push({
+      indice: reverseIndex + 1,
+      nombreArchivo: files[reverseIndex]?.name || `archivo ${reverseIndex + 1}`,
+      ladoAsignado: 'reverso',
+      gemini: null,
+    });
+  }
 
   return {
     frontIndex: frontIndex >= 0 ? frontIndex : null,
     reverseIndex,
-    archivos: files.map((file, index) => {
-      const archivo = archivos.find((item, itemIndex) => getGeminiArchivoIndex(item, itemIndex, files.length) === index);
-      return {
-        indice: index + 1,
-        nombreArchivo: file.name,
-        ladoAsignado: index === reverseIndex ? 'reverso' : index === frontIndex ? 'frente' : 'desconocido',
-        gemini: archivo
-          ? {
-              indice: archivo.indice ?? index + 1,
-              tipoLado: archivo.tipoLado ?? null,
-              areaLectura: archivo.areaLectura ?? null,
-              tieneDosCuerpos: Boolean(archivo.tieneDosCuerpos),
-              senalesReverso: archivo.senalesReverso ?? [],
-              fragmentosReverso: archivo.fragmentosReverso ?? [],
-              contieneDireccion: Boolean(archivo.contieneDireccion),
-              contieneDomicilio: Boolean(archivo.contieneDomicilio),
-              contieneDistrito: Boolean(archivo.contieneDistrito),
-              contienePerMrz: Boolean(archivo.contienePerMrz),
-            }
-          : null,
-      };
-    }),
+    archivos: classifiedArchivos.length
+      ? classifiedArchivos
+      : files.map((file, index) => ({
+          indice: index + 1,
+          nombreArchivo: file.name,
+          ladoAsignado: index === reverseIndex ? 'reverso' : index === frontIndex ? 'frente' : 'desconocido',
+          gemini: null,
+        })),
   };
 };
 
@@ -477,7 +511,6 @@ const analyzeMatriculaDocumentsWithGemini = async (
   tipoDocumento: string,
   dni: string,
   files: File[],
-  options?: { duplicatedFileBodyDetection?: boolean },
 ): Promise<GeminiMatriculaResult> => {
   const ai = getAI(app, { backend: new GoogleAIBackend() });
   const model = getGenerativeModel(ai, {
@@ -489,23 +522,18 @@ const analyzeMatriculaDocumentsWithGemini = async (
     },
   });
 
-  const duplicatedFileInstructions = options?.duplicatedFileBodyDetection
-    ? `
-Caso especial de archivo duplicado:
-- Los dos adjuntos parecen ser el mismo archivo subido dos veces, puede ser imagen o PDF.
-- Primero determina si el archivo contiene dos cuerpos/imagenes visibles del documento en una misma pagina o vista, por ejemplo frente arriba y reverso abajo.
-- Si detectas dos cuerpos, analiza archivo 1 usando solo el cuerpo/area superior y reporta "areaLectura": "superior" y "tieneDosCuerpos": true.
-- Si detectas dos cuerpos, analiza archivo 2 usando solo el cuerpo/area inferior y reporta "areaLectura": "inferior" y "tieneDosCuerpos": true.
-- Si NO detectas dos cuerpos separados, analiza ambos adjuntos completos y reporta "areaLectura": "completa" y "tieneDosCuerpos": false.
+  const documentReadingInstructions = `
+Estrategia de lectura:
+- Primero analiza el archivo 1 y determina si contiene dos cuerpos/imagenes completos del documento en una misma pagina o vista.
+- Dos cuerpos significa que se ven claramente dos lados separados del documento, por ejemplo frente arriba y reverso abajo, o reverso arriba y frente abajo.
+- Si el archivo 1 contiene dos cuerpos completos, trabaja solo con el archivo 1 y no leas ni uses el archivo 2 bajo ninguna circunstancia.
+- En ese caso, lee los dos cuerpos del archivo 1 y de ahi extrae todos los datos, valida el tipo y numero de documento, determina cual cuerpo es frente y cual es reverso, y prepara la metadata para OpenCV.
+- Si el archivo 1 contiene dos cuerpos completos pero no logras validar algun dato, devuelve el dato como null o la validacion como false; no uses el archivo 2 como respaldo.
+- Cuando uses solo el archivo 1 con dos cuerpos, devuelve dos elementos en "archivos" con "indice": 1: uno para el cuerpo "superior" y otro para el cuerpo "inferior"; en cada elemento indica "tipoLado" frente/reverso y "areaLectura" superior/inferior.
+- Solo si el archivo 1 no contiene dos cuerpos completos, analiza tambien el archivo 2.
+- Si un archivo tiene un solo cuerpo, reporta "areaLectura": "completa" y "tieneDosCuerpos": false.
+- Si un archivo tiene dos cuerpos, reporta "areaLectura": "superior" o "inferior" segun el cuerpo que estes clasificando en ese elemento de "archivos".
 - No generes ni modifiques imagenes; solo limita la lectura visual cuando realmente hay dos cuerpos.
-- Luego clasifica cual area o archivo corresponde a frente y cual a reverso usando las mismas senales.
-`.trim()
-    : `
-Caso normal:
-- Analiza cada adjunto completo.
-- En "archivos.tieneDosCuerpos", indica si ese archivo contiene dos cuerpos/imagenes visibles del documento.
-- Si un adjunto tiene un solo cuerpo, reporta "areaLectura": "completa".
-- Si un adjunto tiene dos cuerpos, reporta en "areaLectura" el area que usaste para clasificar ese archivo: "superior" si el lado identificado esta arriba, o "inferior" si esta abajo.
 `.trim();
 
   const prompt = `
@@ -516,10 +544,10 @@ Documento esperado en el formulario:
 - tipoDocumento: ${tipoDocumento}
 - numeroDocumento: ${dni}
 
-${duplicatedFileInstructions}
+${documentReadingInstructions}
 
 Reglas:
-- Debes analizar cada archivo por separado. El primer adjunto es archivo 1, el segundo adjunto es archivo 2.
+- El primer adjunto es archivo 1, el segundo adjunto es archivo 2. Si la estrategia de lectura indica no usar el archivo 2, no reportes datos extraidos del archivo 2.
 - Si es DNI, identifica "documento nacional de identidad" o "nacional" y extrae el numero con formato ########-#. Para comparar, usa los 8 digitos antes del guion.
 - Si es carnet de extranjeria, identifica "carnet" o "extranjeria" y extrae el numero con formato #########.
 - Para reverso, basta encontrar alguna palabra o dato equivalente a direccion, domicilio, distrito o el fragmento "per<".
@@ -808,13 +836,11 @@ function MatriculaForm({
           setMessage('Sube al menos un archivo del documento para analizarlo con Gemini.');
           return;
         }
-        const duplicatedFileBodyDetection = files.length === 2 && areSameDocumentFiles(files[0], files[1]);
 
         const aiResult = await analyzeMatriculaDocumentsWithGemini(
           values.tipoDocumento,
           normalizeDocumentNumber(values.dni),
           files,
-          { duplicatedFileBodyDetection },
         );
         const detectedType = normalizeAiDocumentType(aiResult.tipoDocumento);
         const detectedNumber = normalizeDetectedDocumentNumber(values.tipoDocumento, aiResult.numeroDocumento);
@@ -823,7 +849,7 @@ function MatriculaForm({
         const fileClassification = classifyGeminiFiles(files, aiResult);
         const analysisMetadata: DocumentoAnalisisTemporal = {
           motor: 'gemini',
-          pdfDuplicadoConDeteccionDeCuerpos: duplicatedFileBodyDetection,
+          pdfDuplicadoConDeteccionDeCuerpos: false,
           archivos: fileClassification.archivos,
           respuestaGemini: compactGeminiResultForMessage(aiResult),
         };

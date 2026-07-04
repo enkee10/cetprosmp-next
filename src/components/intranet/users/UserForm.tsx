@@ -153,6 +153,15 @@ const formatDateTimeForDisplay = (value: unknown): string => {
   ].join(' ');
 };
 
+const getInitialString = (
+  initialData: Record<string, unknown> | undefined,
+  camelKey: string,
+  snakeKey: string,
+): string => {
+  const value = initialData?.[camelKey] ?? initialData?.[snakeKey];
+  return typeof value === 'string' ? value.trim() : '';
+};
+
 const UserForm: React.FC<UserFormProps> = ({
   onCancel,
   onSubmit,
@@ -170,6 +179,17 @@ const UserForm: React.FC<UserFormProps> = ({
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const apellidoPaternoRef = useRef<HTMLInputElement>(null);
   const lastAutoInstitutionalEmailRef = useRef('');
+  const dniImagenFrenteProcesadaUrl = getInitialString(
+    initialData,
+    'dniImagenFrenteProcesadaUrl',
+    'dni_imagen_frente_procesada_url',
+  );
+  const dniImagenReversoProcesadaUrl = getInitialString(
+    initialData,
+    'dniImagenReversoProcesadaUrl',
+    'dni_imagen_reverso_procesada_url',
+  );
+  const hasProcessedDniImages = Boolean(dniImagenFrenteProcesadaUrl || dniImagenReversoProcesadaUrl);
 
   const { handleSubmit, control, formState: { errors }, reset, watch, setValue, getValues } = useForm<UserFormValues>({
     resolver: yupResolver(createValidationSchema(isCreating)) as Resolver<UserFormValues>,
@@ -598,6 +618,74 @@ const UserForm: React.FC<UserFormProps> = ({
                 />
               )}
             />
+            {!isCreating && (
+              <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' }, mt: 1 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                  DNI procesado
+                </Typography>
+                {hasProcessedDniImages ? (
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: {
+                        xs: 'minmax(0, 1fr)',
+                        md: 'repeat(2, minmax(0, 1fr))',
+                      },
+                      gap: 2,
+                    }}
+                  >
+                    {dniImagenFrenteProcesadaUrl && (
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Frente procesado
+                        </Typography>
+                        <Box
+                          component="img"
+                          src={dniImagenFrenteProcesadaUrl}
+                          alt="DNI frente procesado"
+                          sx={{
+                            display: 'block',
+                            width: '100%',
+                            maxWidth: 400,
+                            height: 'auto',
+                            mt: 0.5,
+                            borderRadius: 1,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                          }}
+                        />
+                      </Box>
+                    )}
+                    {dniImagenReversoProcesadaUrl && (
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Reverso procesado
+                        </Typography>
+                        <Box
+                          component="img"
+                          src={dniImagenReversoProcesadaUrl}
+                          alt="DNI reverso procesado"
+                          sx={{
+                            display: 'block',
+                            width: '100%',
+                            maxWidth: 400,
+                            height: 'auto',
+                            mt: 0.5,
+                            borderRadius: 1,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                          }}
+                        />
+                      </Box>
+                    )}
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    Aun no hay imagenes procesadas para este usuario.
+                  </Typography>
+                )}
+              </Box>
+            )}
         </Box>
       </form>
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>

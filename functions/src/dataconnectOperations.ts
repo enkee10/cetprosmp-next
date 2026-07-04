@@ -484,15 +484,60 @@ export const INSERT_MATRICULA_MUTATION = `
   }
 `;
 
+export const UPDATE_MATRICULA_MUTATION = `
+  mutation UpdateMatricula($id: Int!, $data: Matricula_Data! @allow(fields: "recibo fecha archivado paqueteId semestreId userId")) {
+    matricula_update(id: $id, data: $data)
+  }
+`;
+
 export const DELETE_MATRICULA_MUTATION = `
   mutation DeleteMatricula($id: Int!) {
     matricula_delete(id: $id)
   }
 `;
 
+export const LIST_MATRICULA_IDS_BY_USER_QUERY = `
+  query ListMatriculaIdsByUser($userId: Int!) {
+    matriculas(where: { userId: { eq: $userId } }, limit: 500) {
+      id
+    }
+    matriculaUsers(where: { userId: { eq: $userId } }, limit: 500) {
+      matriculaId
+    }
+  }
+`;
+
+export const LIST_EVALUACION_ESTUDIANTE_IDS_BY_MATRICULA_QUERY = `
+  query ListEvaluacionEstudianteIdsByMatricula($matriculaId: Int!) {
+    evaluacionesEstudiantes(where: { matriculaId: { eq: $matriculaId } }, limit: 500) {
+      id
+    }
+  }
+`;
+
 export const INSERT_MODULO_ESTUDIANTE_MUTATION = `
   mutation InsertModuloEstudiante($data: ModuloEstudiante_Data! @allow(fields: "promedio matriculaId moduloId grupoId")) {
     moduloEstudiante_insert(data: $data)
+  }
+`;
+
+export const DELETE_ASPECTOS_EVALUACION_ESTUDIANTES_BY_EVALUACION_ESTUDIANTE_MUTATION = `
+  mutation DeleteAspectosEvaluacionEstudiantesByEvaluacionEstudiante($evaluacionEstudianteId: Int!) {
+    aspectoEvaluacionEstudiante_deleteMany(where: { evaluacionEstudianteId: { eq: $evaluacionEstudianteId } })
+  }
+`;
+
+export const DELETE_MATRICULA_DEPENDENCIES_MUTATION = `
+  mutation DeleteMatriculaDependencies($matriculaId: Int!) {
+    asistencia_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    evaluacionEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    indicadorCapacidadEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    capacidadTerminalEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    unidadDidacticaEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    matriculaGrupo_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    matriculaPaquete_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    matriculaUser_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    moduloEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
   }
 `;
 
@@ -503,13 +548,13 @@ export const DELETE_MODULO_ESTUDIANTES_BY_MATRICULA_MUTATION = `
 `;
 
 export const INSERT_USER_MUTATION = `
-  mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar dniImagenFrenteUrl dniImagenReversoUrl rolId")) {
+  mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento fechaVencimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar dniImagenFrenteUrl dniImagenReversoUrl dniImagenFrenteProcesadaUrl dniImagenReversoProcesadaUrl rolId")) {
     user_insert(data: $data)
   }
 `;
 
 export const UPDATE_USER_MUTATION = `
-  mutation UpdateUser($id: Int!, $data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar dniImagenFrenteUrl dniImagenReversoUrl rolId")) {
+  mutation UpdateUser($id: Int!, $data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento fechaVencimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar dniImagenFrenteUrl dniImagenReversoUrl dniImagenFrenteProcesadaUrl dniImagenReversoProcesadaUrl rolId")) {
     user_update(id: $id, data: $data)
   }
 `;

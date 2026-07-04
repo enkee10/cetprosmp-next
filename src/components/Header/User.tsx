@@ -32,6 +32,16 @@ const getFirebaseAuthMessage = (error: unknown, fallbackMessage: string) => { //
       return "Demasiados intentos. Intenta nuevamente en unos minutos."; // + informa que debe esperar antes de volver a intentar
     case "auth/network-request-failed": // + contempla problemas de conectividad al comunicarse con Firebase
       return "No se pudo conectar con el servidor. Revisa tu conexion a internet."; // + informa un problema de red durante la autenticacion
+    case "auth/unauthorized-domain": // + contempla cuando el dominio actual no esta permitido en Firebase Auth
+      return "Este dominio no esta autorizado para iniciar sesion con Google en Firebase Auth."; // + informa el problema exacto de dominios autorizados
+    case "auth/popup-blocked": // + contempla cuando el navegador bloquea el popup de Google
+      return "El navegador bloqueo la ventana de Google. Permite ventanas emergentes e intenta nuevamente."; // + indica la accion concreta para completar el login
+    case "auth/popup-closed-by-user": // + contempla cuando el usuario cierra el popup antes de completar el flujo
+      return "Se cerro la ventana de Google antes de completar el inicio de sesion."; // + informa que el flujo fue cancelado
+    case "auth/cancelled-popup-request": // + contempla intentos simultaneos de popup
+      return "Ya hay una ventana de inicio de sesion abierta. Cierra la anterior e intenta nuevamente."; // + evita que el usuario repita el flujo en paralelo
+    case "auth/account-exists-with-different-credential": // + contempla cuentas existentes con otro proveedor para el mismo correo
+      return "Ya existe una cuenta con ese correo usando otro metodo de acceso. Intenta con correo y contrasena."; // + orienta al usuario hacia el metodo disponible
     case "auth/email-not-verified": // + contempla el caso controlado donde el correo aun no fue verificado
       return "Debes verificar tu correo antes de iniciar sesion."; // + informa que primero debe confirmar su direccion de correo
     case "auth/email-already-in-use": // + contempla cuando el correo ya fue registrado en Firebase Auth
@@ -43,7 +53,7 @@ const getFirebaseAuthMessage = (error: unknown, fallbackMessage: string) => { //
     case "auth/invalid-password": // + contempla cuando el backend de Admin detecta una contrasena invalida por longitud o formato
       return "La contrasena debe tener al menos 6 caracteres."; // + informa la regla minima de longitud contemplada por Firebase para password
     case "auth/operation-not-allowed": // + contempla cuando el proveedor de email y contrasena no esta habilitado
-      return "El acceso con correo y contrasena no esta habilitado en Firebase."; // + informa un problema de configuracion del proyecto
+      return "Este metodo de inicio de sesion no esta habilitado en Firebase Auth."; // + informa un problema de configuracion del proveedor usado
     case "functions/invalid-argument": // + contempla errores de validacion enviados por la callable de registro
     case "functions/failed-precondition": // + contempla problemas de configuracion enviados por la callable de registro
     case "functions/resource-exhausted": // + contempla limites o demasiados intentos reportados por la callable
@@ -51,7 +61,7 @@ const getFirebaseAuthMessage = (error: unknown, fallbackMessage: string) => { //
     case "functions/internal": // + contempla errores internos devueltos por la callable cuando el backend no pudo completar el registro
       return rawMessage || "Ocurrio un error interno mientras se procesaba tu solicitud."; // + muestra el detalle del backend si existe o un texto generico si no
     default: // + cubre cualquier otro codigo no contemplado explicitamente
-      return fallbackMessage; // + devuelve el mensaje generico definido por el flujo que llamo la funcion
+      return code ? `${fallbackMessage} Codigo: ${code}. ${rawMessage}`.trim() : fallbackMessage; // + muestra temporalmente el codigo real para diagnosticar Google Sign-In
   }
 }; // + cierra el traductor de errores de Firebase a mensajes de interfaz
 

@@ -1,5 +1,6 @@
 import { https } from "firebase-functions/v1";
 import { UPDATE_USER_MUTATION } from "../../dataconnectOperations.js";
+import { deleteMatriculasForUser } from "../core/matriculaDeletion.js";
 import {
   deleteStudentFromWorkspace,
   resolveStudentWorkspacePrimaryEmail,
@@ -34,6 +35,8 @@ const LIST_USERS_QUERY = `
       email
       blocked
       avatar
+      dniImagenFrenteProcesadaUrl
+      dniImagenReversoProcesadaUrl
       nombre
       apellidoPaterno
       apellidoMaterno
@@ -631,6 +634,9 @@ export const deleteUser = https.onCall(async (data, context) => {
   }
 
   try {
+    const dataConnectUserId = await findDataConnectUserIdByDocumentId(uid);
+    const deletedMatriculaIds = dataConnectUserId ? await deleteMatriculasForUser(dataConnectUserId) : [];
+
     const authUserBeforeDelete = await authAdmin
       .getUser(uid)
       .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
@@ -688,6 +694,7 @@ export const deleteUser = https.onCall(async (data, context) => {
       result: authDeleted
         ? `Successfully deleted user ${uid}.`
         : `User ${uid} was not present in Auth. Data Connect profile was removed.`,
+      deletedMatriculaIds,
     };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;

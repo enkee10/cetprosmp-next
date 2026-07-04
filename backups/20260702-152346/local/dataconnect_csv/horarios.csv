@@ -1,0 +1,6 @@
+id,activo,descripcion,dias_semana,fecha_actualizacion,fecha_creacion,nombre,regla,viernes_alterno_inicio
+6,t,Lunes y miercoles.,"1,3",2026-06-29 05:19:04.547+00,2026-06-29 05:19:04.547+00,"Lun, Mie","LUN,MIE",
+7,t,Martes y jueves.,"2,4",2026-06-29 05:19:04.547+00,2026-06-29 05:19:04.547+00,"Mar, Jue","MAR,JUE",
+1,t,"Lunes, miercoles y viernes intercalado empezando por el primer viernes disponible.","1,3,5",2026-06-30 01:56:07.364+00,2026-06-29 05:19:04.547+00,"Lun, Mie, @Vie","LUN,MIE,VIE",
+3,t,"Martes, jueves y viernes intercalado empezando por el primer viernes disponible.","2,4,5",2026-06-30 01:56:14.694+00,2026-06-29 05:19:04.547+00,"Mar, Jue, @Vie","MAR,JUE,VIE",
+5,t,De lunes a viernes.,"1,2,3,4,5",2026-06-30 02:17:57.239+00,2026-06-29 05:19:04.547+00,Lun - Vie,"LUN,MAR,MIE,JUE,VIE",

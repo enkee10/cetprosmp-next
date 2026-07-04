@@ -22,6 +22,7 @@ export interface DataConnectUserInput {
   estadoCivil?: string | null;
   instruccion?: string | null;
   fechaNacimiento?: string | null;
+  fechaVencimiento?: string | null;
   direccion?: string | null;
   distrito?: string | null;
   telefono?: string | null;
@@ -33,6 +34,8 @@ export interface DataConnectUserInput {
   avatar?: string | null;
   dniImagenFrenteUrl?: string | null;
   dniImagenReversoUrl?: string | null;
+  dniImagenFrenteProcesadaUrl?: string | null;
+  dniImagenReversoProcesadaUrl?: string | null;
   rolId?: number | null;
 }
 

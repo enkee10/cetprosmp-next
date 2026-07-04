@@ -22,12 +22,14 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
 
-const shouldUseFirebaseEmulators = () => {
-  if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS) {
-    return process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === 'true';
+const isEnabled = (value: string | undefined) => value === 'true' || value === '1' || value === 'yes' || value === 'si';
+
+const shouldUseFirebaseEmulator = (serviceFlag: string | undefined, options?: { allowGlobal?: boolean }) => {
+  if (serviceFlag !== undefined) {
+    return isEnabled(serviceFlag);
   }
 
-  return process.env.NODE_ENV !== 'production';
+  return options?.allowGlobal === false ? false : isEnabled(process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS);
 };
 
 const safelyConnectEmulator = (connectFn: () => void) => {
@@ -42,25 +44,33 @@ const safelyConnectEmulator = (connectFn: () => void) => {
   }
 };
 
-if (shouldUseFirebaseEmulators()) {
+if (shouldUseFirebaseEmulator(process.env.NEXT_PUBLIC_USE_AUTH_EMULATOR)) {
   const authHost = process.env.NEXT_PUBLIC_AUTH_EMULATOR_HOST || '127.0.0.1';
   const authPort = Number(process.env.NEXT_PUBLIC_AUTH_EMULATOR_PORT || '9099');
-  const firestoreHost = process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST || '127.0.0.1';
-  const firestorePort = Number(process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_PORT || '8080');
-  const storageHost = process.env.NEXT_PUBLIC_STORAGE_EMULATOR_HOST || '127.0.0.1';
-  const storagePort = Number(process.env.NEXT_PUBLIC_STORAGE_EMULATOR_PORT || '9199');
-  const functionsHost = process.env.NEXT_PUBLIC_FUNCTIONS_EMULATOR_HOST || '127.0.0.1';
-  const functionsPort = Number(process.env.NEXT_PUBLIC_FUNCTIONS_EMULATOR_PORT || '5001');
-
   safelyConnectEmulator(() => {
     connectAuthEmulator(auth, `http://${authHost}:${authPort}`, { disableWarnings: true });
   });
+}
+
+if (shouldUseFirebaseEmulator(process.env.NEXT_PUBLIC_USE_FIRESTORE_EMULATOR)) {
+  const firestoreHost = process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST || '127.0.0.1';
+  const firestorePort = Number(process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_PORT || '8080');
   safelyConnectEmulator(() => {
     connectFirestoreEmulator(db, firestoreHost, firestorePort);
   });
+}
+
+if (shouldUseFirebaseEmulator(process.env.NEXT_PUBLIC_USE_STORAGE_EMULATOR)) {
+  const storageHost = process.env.NEXT_PUBLIC_STORAGE_EMULATOR_HOST || '127.0.0.1';
+  const storagePort = Number(process.env.NEXT_PUBLIC_STORAGE_EMULATOR_PORT || '9199');
   safelyConnectEmulator(() => {
     connectStorageEmulator(storage, storageHost, storagePort);
   });
+}
+
+if (shouldUseFirebaseEmulator(process.env.NEXT_PUBLIC_USE_FUNCTIONS_EMULATOR, { allowGlobal: false })) {
+  const functionsHost = process.env.NEXT_PUBLIC_FUNCTIONS_EMULATOR_HOST || '127.0.0.1';
+  const functionsPort = Number(process.env.NEXT_PUBLIC_FUNCTIONS_EMULATOR_PORT || '5001');
   safelyConnectEmulator(() => {
     connectFunctionsEmulator(functions, functionsHost, functionsPort);
   });

@@ -1,0 +1,20 @@
+id,creditos,descripcion_2,duracion,slug,titulo_comercial,carrera_id,imagen_portada_url,anio,genera,nro,periodo_caducidad,resolucion_tipo,periodo_vigencia_id,plan_estudio
+4,40,,1056,soporte-computadoras,Soporte técnico de computadoras,4,,2025,UGEL,01643,,R.D.,1,Plan 2025-1
+3,,,1000,hilanderia,Hilandería,17,,2026,UGEL,03602,,R.D.,3,Plan 2026-1
+18,,,1000,cuero-calzado,Cuero y Calzado,23,,2023,UGEL,04504,,R.D.,38,Plan 2023-1
+17,,,1000,asistencia-cocina,Asistencia en cocina,20,,2024,UGEL,00957,,R.D.,36,Plan 2024-1
+5,,,1000,operaciones-computadoras,Operación de Computadoras,5,,2026,UGEL,03602,,R.D.,3,Plan 2026-1
+19,,,1000,peluqueria,Peluquería,21,,2022,UGEL,02198,,R.D.,40,Plan 2022-1
+2,,,1000,equipos-electronicos-de-consumo,Equipos Electrónicos de Consumo,18,,2026,UGEL,03602,,R.D.,3,Plan 2026-1
+15,,,1000,mantenimiento-basico-de-casas-y-edificios,Mantenimiento Básico de Casas y Edificios,15,,2026,UGEL,03602,,R.D.,3,Plan 2026-1
+8,40,,1056,bordados-prendas,Bordado en prendas de vestir,8,,2026,UGEL,03601,,R.D.,3,Plan 2026-1
+11,40,,1056,cuero-marroquineria,Artículos de Cuero y Marroquinería,11,,2025,UGEL,01643,,R.D.,1,Plan 2025-1
+6,40,,1056,corte-ensamblaje,Corte y Ensamblaje,6,,2025,UGEL,01643,,R.D.,1,Plan 2025-1
+10,40,,1056,confeccion-calzado,Confección de calzado,10,,2025,UGEL,01643,,R.D.,1,Plan 2025-1
+7,40,,1056,costura-acabados,Costura y Acabados,7,,2025,UGEL,01643,,R.D.,1,Plan 2025-1
+13,40,,1056,panaderia-pasteleria,Panadería y Pastelería,13,,2025,UGEL,01643,,R.D.,1,Plan 2025-1
+1,40,,1056,peluqueria-barberia,Peluquería y Barberia,1,,2025,UGEL,01643,,R.D.,1,Plan 2025-1
+16,40,,1056,,,16,,2026,UGEL,03601,,R.D.,3,Plan 2026-1
+9,,,1000,confeccion-textil,Confección Textil,9,,2023,UGEL,04504,,R.D.,38,Plan 2023-1
+12,,,1000,manualidades,Manualidades,12,,2026,UGEL,03602,,R.D.,3,Plan 2026-1
+14,,,1000,asistente-panaderia-pasteleria,Asistencia de Pastelería y Panadería,22,,2022,UGEL,02198,,R.D.,40,Plan 2022-1

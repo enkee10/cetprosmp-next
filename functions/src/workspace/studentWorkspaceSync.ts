@@ -66,6 +66,7 @@ export type WorkspaceUserContext = {
 type WorkspaceSyncOptions = {
   previousEmail?: string | null;
   createIfMissing?: boolean;
+  createPassword?: string | null;
 };
 
 type WorkspaceDirectoryClient = {
@@ -728,9 +729,10 @@ export async function syncStudentToWorkspace(
   const personalSchemaMapping = await resolvePersonalSchemaMapping(directory);
   const payload = buildWorkspacePayload(context, personalSchemaMapping);
   const hasProvidedPassword = typeof payload.password === "string" && payload.password.trim().length > 0;
+  const createPassword = String(options?.createPassword || "").trim();
   const insertPayload: admin_directory_v1.Schema$User = hasProvidedPassword
     ? payload
-    : { ...payload, password: generateWorkspacePassword() };
+    : { ...payload, password: createPassword || generateWorkspacePassword() };
   const previousEmail = String(options?.previousEmail || "").trim().toLowerCase();
   const currentEmail = String(payload.primaryEmail || "").trim().toLowerCase();
   if (!currentEmail) {

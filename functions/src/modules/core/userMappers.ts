@@ -162,6 +162,7 @@ export function buildUserDataFromInput(
     estadoCivil: asNullableString(input.estado_civil ?? input.estadoCivil),
     instruccion: asNullableString(input.instruccion),
     fechaNacimiento: asNullableTimestamp(input.fecha_nacimiento ?? input.fechaNacimiento),
+    fechaVencimiento: asNullableTimestamp(input.fecha_vencimiento ?? input.fechaVencimiento),
     direccion: asNullableString(input.direccion),
     distrito: asNullableString(input.distrito),
     telefono: asNullableString(input.telefono),
@@ -173,6 +174,12 @@ export function buildUserDataFromInput(
     avatar: asNullableString(input.avatar ?? input.foto) ?? asNullableString(defaults?.photoURL) ?? null,
     dniImagenFrenteUrl: asNullableString(input.dniImagenFrenteUrl ?? input.dni_imagen_frente_url),
     dniImagenReversoUrl: asNullableString(input.dniImagenReversoUrl ?? input.dni_imagen_reverso_url),
+    dniImagenFrenteProcesadaUrl: asNullableString(
+      input.dniImagenFrenteProcesadaUrl ?? input.dni_imagen_frente_procesada_url,
+    ),
+    dniImagenReversoProcesadaUrl: asNullableString(
+      input.dniImagenReversoProcesadaUrl ?? input.dni_imagen_reverso_procesada_url,
+    ),
     rolId: toNumberOrNull(input.rolId) ?? defaults?.rolId ?? null,
   };
 

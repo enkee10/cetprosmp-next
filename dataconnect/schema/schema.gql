@@ -22,6 +22,7 @@ type User @table(name: "users") {
   estadoCivil: String @col(name: "estado_civil")
   instruccion: String
   fechaNacimiento: Timestamp @col(name: "fecha_nacimiento")
+  fechaVencimiento: Timestamp @col(name: "fecha_vencimiento")
   direccion: String
   distrito: String
   telefono: String
@@ -33,6 +34,8 @@ type User @table(name: "users") {
   avatar: String
   dniImagenFrenteUrl: String @col(name: "dni_imagen_frente_url", dataType: "text")
   dniImagenReversoUrl: String @col(name: "dni_imagen_reverso_url", dataType: "text")
+  dniImagenFrenteProcesadaUrl: String @col(name: "dni_imagen_frente_procesada_url", dataType: "text")
+  dniImagenReversoProcesadaUrl: String @col(name: "dni_imagen_reverso_procesada_url", dataType: "text")
 
   rol: Rol @ref(fields: "rolId", references: "id")
   rolId: Int @col(name: "rol_id")

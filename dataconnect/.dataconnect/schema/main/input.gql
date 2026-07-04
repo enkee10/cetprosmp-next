@@ -24919,6 +24919,14 @@ input User_Data {
   """
   dni_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `User`.`dniImagenFrenteProcesadaUrl` of type `String`
+  """
+  dniImagenFrenteProcesadaUrl: String
+  """
+  ✨ `_expr` server value variant of `dniImagenFrenteProcesadaUrl` (✨ Generated from Field `User`.`dniImagenFrenteProcesadaUrl` of type `String`)
+  """
+  dniImagenFrenteProcesadaUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `User`.`dniImagenFrenteUrl` of type `String`
   """
   dniImagenFrenteUrl: String
@@ -24926,6 +24934,14 @@ input User_Data {
   ✨ `_expr` server value variant of `dniImagenFrenteUrl` (✨ Generated from Field `User`.`dniImagenFrenteUrl` of type `String`)
   """
   dniImagenFrenteUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `User`.`dniImagenReversoProcesadaUrl` of type `String`
+  """
+  dniImagenReversoProcesadaUrl: String
+  """
+  ✨ `_expr` server value variant of `dniImagenReversoProcesadaUrl` (✨ Generated from Field `User`.`dniImagenReversoProcesadaUrl` of type `String`)
+  """
+  dniImagenReversoProcesadaUrl_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`dniImagenReversoUrl` of type `String`
   """
@@ -25014,6 +25030,22 @@ input User_Data {
   ✨ `_update` server value variant of `fechaNacimiento` (✨ Generated from Field `User`.`fechaNacimiento` of type `Timestamp`)
   """
   fechaNacimiento_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `User`.`fechaVencimiento` of type `Timestamp`
+  """
+  fechaVencimiento: Timestamp
+  """
+  ✨ `_expr` server value variant of `fechaVencimiento` (✨ Generated from Field `User`.`fechaVencimiento` of type `Timestamp`)
+  """
+  fechaVencimiento_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fechaVencimiento` (✨ Generated from Field `User`.`fechaVencimiento` of type `Timestamp`)
+  """
+  fechaVencimiento_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaVencimiento` (✨ Generated from Field `User`.`fechaVencimiento` of type `Timestamp`)
+  """
+  fechaVencimiento_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`instruccion` of type `String`
   """
@@ -25168,9 +25200,17 @@ input User_Filter {
   """
   dni: String_Filter
   """
+  ✨ Generated from Field `User`.`dniImagenFrenteProcesadaUrl` of type `String`
+  """
+  dniImagenFrenteProcesadaUrl: String_Filter
+  """
   ✨ Generated from Field `User`.`dniImagenFrenteUrl` of type `String`
   """
   dniImagenFrenteUrl: String_Filter
+  """
+  ✨ Generated from Field `User`.`dniImagenReversoProcesadaUrl` of type `String`
+  """
+  dniImagenReversoProcesadaUrl: String_Filter
   """
   ✨ Generated from Field `User`.`dniImagenReversoUrl` of type `String`
   """
@@ -25203,6 +25243,10 @@ input User_Filter {
   ✨ Generated from Field `User`.`fechaNacimiento` of type `Timestamp`
   """
   fechaNacimiento: Timestamp_Filter
+  """
+  ✨ Generated from Field `User`.`fechaVencimiento` of type `Timestamp`
+  """
+  fechaVencimiento: Timestamp_Filter
   """
   ✨ Generated from Field `User`.`instruccion` of type `String`
   """
@@ -25334,9 +25378,17 @@ input User_Having {
   """
   distrito_count: Int_Filter
   """
+  ✨ Generated from Field `User`.`dniImagenFrenteProcesadaUrl_count` of type `Int!`
+  """
+  dniImagenFrenteProcesadaUrl_count: Int_Filter
+  """
   ✨ Generated from Field `User`.`dniImagenFrenteUrl_count` of type `Int!`
   """
   dniImagenFrenteUrl_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`dniImagenReversoProcesadaUrl_count` of type `Int!`
+  """
+  dniImagenReversoProcesadaUrl_count: Int_Filter
   """
   ✨ Generated from Field `User`.`dniImagenReversoUrl_count` of type `Int!`
   """
@@ -25373,6 +25425,10 @@ input User_Having {
   ✨ Generated from Field `User`.`fechaNacimiento_count` of type `Int!`
   """
   fechaNacimiento_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`fechaVencimiento_count` of type `Int!`
+  """
+  fechaVencimiento_count: Int_Filter
   """
   ✨ Generated from Field `User`.`id_count` of type `Int!`
   """
@@ -25442,6 +25498,10 @@ input User_Having {
   """
   fechaNacimiento_min: Timestamp_Filter
   """
+  ✨ Generated from Field `User`.`fechaVencimiento_min` of type `Timestamp`
+  """
+  fechaVencimiento_min: Timestamp_Filter
+  """
   ✨ Generated from Field `User`.`id_min` of type `Int`
   """
   id_min: Int_Filter
@@ -25461,6 +25521,10 @@ input User_Having {
   ✨ Generated from Field `User`.`fechaNacimiento_max` of type `Timestamp`
   """
   fechaNacimiento_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `User`.`fechaVencimiento_max` of type `Timestamp`
+  """
+  fechaVencimiento_max: Timestamp_Filter
   """
   ✨ Generated from Field `User`.`id_max` of type `Int`
   """
@@ -25557,9 +25621,17 @@ input User_Order {
   """
   dni: OrderDirection
   """
+  ✨ Generated from Field `User`.`dniImagenFrenteProcesadaUrl` of type `String`
+  """
+  dniImagenFrenteProcesadaUrl: OrderDirection
+  """
   ✨ Generated from Field `User`.`dniImagenFrenteUrl` of type `String`
   """
   dniImagenFrenteUrl: OrderDirection
+  """
+  ✨ Generated from Field `User`.`dniImagenReversoProcesadaUrl` of type `String`
+  """
+  dniImagenReversoProcesadaUrl: OrderDirection
   """
   ✨ Generated from Field `User`.`dniImagenReversoUrl` of type `String`
   """
@@ -25592,6 +25664,10 @@ input User_Order {
   ✨ Generated from Field `User`.`fechaNacimiento` of type `Timestamp`
   """
   fechaNacimiento: OrderDirection
+  """
+  ✨ Generated from Field `User`.`fechaVencimiento` of type `Timestamp`
+  """
+  fechaVencimiento: OrderDirection
   """
   ✨ Generated from Field `User`.`instruccion` of type `String`
   """
@@ -25669,9 +25745,17 @@ input User_Order {
   """
   distrito_count: OrderDirection
   """
+  ✨ Generated from Field `User`.`dniImagenFrenteProcesadaUrl_count` of type `Int!`
+  """
+  dniImagenFrenteProcesadaUrl_count: OrderDirection
+  """
   ✨ Generated from Field `User`.`dniImagenFrenteUrl_count` of type `Int!`
   """
   dniImagenFrenteUrl_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`dniImagenReversoProcesadaUrl_count` of type `Int!`
+  """
+  dniImagenReversoProcesadaUrl_count: OrderDirection
   """
   ✨ Generated from Field `User`.`dniImagenReversoUrl_count` of type `Int!`
   """
@@ -25708,6 +25792,10 @@ input User_Order {
   ✨ Generated from Field `User`.`fechaNacimiento_count` of type `Int!`
   """
   fechaNacimiento_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`fechaVencimiento_count` of type `Int!`
+  """
+  fechaVencimiento_count: OrderDirection
   """
   ✨ Generated from Field `User`.`id_count` of type `Int!`
   """
@@ -25777,6 +25865,10 @@ input User_Order {
   """
   fechaNacimiento_min: OrderDirection
   """
+  ✨ Generated from Field `User`.`fechaVencimiento_min` of type `Timestamp`
+  """
+  fechaVencimiento_min: OrderDirection
+  """
   ✨ Generated from Field `User`.`id_min` of type `Int`
   """
   id_min: OrderDirection
@@ -25796,6 +25888,10 @@ input User_Order {
   ✨ Generated from Field `User`.`fechaNacimiento_max` of type `Timestamp`
   """
   fechaNacimiento_max: OrderDirection
+  """
+  ✨ Generated from Field `User`.`fechaVencimiento_max` of type `Timestamp`
+  """
+  fechaVencimiento_max: OrderDirection
   """
   ✨ Generated from Field `User`.`id_max` of type `Int`
   """

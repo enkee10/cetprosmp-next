@@ -12946,6 +12946,15 @@ extend type User {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "User.distrito", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `User` table where the `dniImagenFrenteProcesadaUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  dniImagenFrenteProcesadaUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.dniImagenFrenteProcesadaUrl", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `User` table where the `dniImagenFrenteUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   dniImagenFrenteUrl_count(
@@ -12954,6 +12963,15 @@ extend type User {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "User.dniImagenFrenteUrl", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `dniImagenReversoProcesadaUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  dniImagenReversoProcesadaUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.dniImagenReversoProcesadaUrl", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `User` table where the `dniImagenReversoUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -13035,6 +13053,15 @@ extend type User {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "User.fechaNacimiento", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `fechaVencimiento` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaVencimiento_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.fechaVencimiento", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `User` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -13174,6 +13201,10 @@ extend type User {
   """
   fechaNacimiento_min: Timestamp @fdc_generated(from: "User.fechaNacimiento", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `fechaVencimiento` field in the `User` table.
+  """
+  fechaVencimiento_min: Timestamp @fdc_generated(from: "User.fechaVencimiento", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `id` field in the `User` table.
   """
   id_min: Int @fdc_generated(from: "User.id", purpose: QUERY_MIN)
@@ -13193,6 +13224,10 @@ extend type User {
   ✨ Maximum of the `fechaNacimiento` field in the `User` table.
   """
   fechaNacimiento_max: Timestamp @fdc_generated(from: "User.fechaNacimiento", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaVencimiento` field in the `User` table.
+  """
+  fechaVencimiento_max: Timestamp @fdc_generated(from: "User.fechaVencimiento", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `id` field in the `User` table.
   """

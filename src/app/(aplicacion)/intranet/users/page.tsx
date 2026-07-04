@@ -56,6 +56,8 @@ interface User {
   fecha_creacion?: string;
   fecha_modificacion?: string;
   email_creador?: string;
+  dniImagenFrenteProcesadaUrl?: string | null;
+  dniImagenReversoProcesadaUrl?: string | null;
 }
 
 type UserFormSubmitData = Parameters<React.ComponentProps<typeof UserForm>['onSubmit']>[0];

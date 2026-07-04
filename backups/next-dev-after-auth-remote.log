@@ -1,0 +1,98 @@
+
+> mi-frontend@0.1.0 dev
+> next dev --turbo
+
+   ▲ Next.js 15.5.18 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://169.254.128.118:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+Creating turbopack project { dir: 'D:\\_Desarrollo\\cetprosmp-next', testMode: true }
+ ✓ Compiled middleware in 170ms
+ ✓ Ready in 1364ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.9s
+ GET / 200 in 5856ms
+ ✓ Compiled in 89ms
+ GET / 200 in 474ms
+ GET / 200 in 229ms
+ ○ Compiling /intranet ...
+ ✓ Compiled /intranet in 999ms
+ GET /intranet 200 in 1111ms
+ GET / 200 in 123ms
+ GET / 200 in 124ms
+ GET /intranet 200 in 106ms
+ GET / 200 in 208ms
+ GET /intranet 200 in 146ms
+ GET / 200 in 157ms
+ GET / 200 in 151ms
+ GET /intranet 200 in 102ms
+ ○ Compiling /intranet/matriculas ...
+ ✓ Compiled /intranet/matriculas in 5.5s
+ GET /intranet/matriculas 200 in 5628ms
+ ○ Compiling /intranet/users ...
+ ✓ Compiled /intranet/users in 1478ms
+ GET /intranet/users 200 in 1574ms
+ GET /intranet/matriculas 200 in 112ms
+ GET /intranet/users 200 in 105ms
+ GET /intranet/matriculas 200 in 105ms
+ GET /intranet/users 200 in 104ms
+ GET /intranet/matriculas 200 in 133ms
+ GET /intranet/matriculas 200 in 123ms
+ GET /intranet/matriculas 200 in 102ms
+ GET /intranet/users 200 in 108ms
+ GET /intranet/matriculas 200 in 102ms
+ GET /intranet/users 200 in 151ms
+ GET /intranet/users 200 in 455ms
+ GET /intranet/matriculas 200 in 116ms
+ GET /intranet/users 200 in 102ms
+ GET /intranet/matriculas 200 in 109ms
+ GET /intranet/users 200 in 109ms
+ GET /intranet/users 200 in 104ms
+ GET /intranet/matriculas 200 in 102ms
+ GET /intranet/users 200 in 101ms
+ GET /intranet/matriculas 200 in 101ms
+ GET /intranet/users 200 in 108ms
+ GET /intranet/users 200 in 243ms
+ GET /intranet/matriculas 200 in 151ms
+ GET /intranet/users 200 in 105ms
+ GET /intranet/matriculas 200 in 107ms
+ GET /intranet/users 200 in 111ms
+ GET / 200 in 244ms
+ GET /intranet 200 in 91ms
+ GET /intranet/matriculas 200 in 86ms
+ GET /intranet/users 200 in 92ms
+ GET /intranet/users 200 in 105ms
+ GET /intranet/matriculas 200 in 88ms
+ GET /intranet/users 200 in 91ms
+ GET / 200 in 268ms
+ GET /intranet 200 in 88ms
+ GET /intranet/matriculas 200 in 93ms
+ GET /intranet/users 200 in 104ms
+ GET /intranet/matriculas 200 in 95ms
+ GET /intranet/matriculas 200 in 110ms
+ GET /intranet/users 200 in 104ms
+ GET /intranet/matriculas 200 in 110ms
+ GET /intranet/users 200 in 111ms
+ GET / 200 in 219ms
+ GET /intranet 200 in 93ms
+ GET /intranet/users 200 in 100ms
+ GET /intranet/matriculas 200 in 101ms
+ GET /intranet/users 200 in 104ms
+ GET /intranet/matriculas 200 in 110ms
+ GET /intranet/users 200 in 110ms
+ GET /intranet/users 200 in 201ms
+ ○ Compiling /intranet/horarios ...
+ ✓ Compiled /intranet/horarios in 1705ms
+ GET /intranet/horarios 200 in 1803ms
+ GET /intranet/matriculas 200 in 98ms
+ GET /intranet/matriculas 200 in 258ms
+ GET /intranet/users 200 in 127ms
+ GET /intranet/users 200 in 105ms
+ GET /intranet/matriculas 200 in 119ms
+ GET /intranet/matriculas 200 in 175ms
+ ✓ Compiled in 300ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.5s
+[?25h

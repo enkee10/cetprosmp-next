@@ -116,7 +116,13 @@ export {
 export {
   createMatriculaDesdePaquete,
   crearMatriculaFormulario,
+  deleteMatricula,
+  getMatricula,
+  listMatriculas,
   listMatriculaPaquetesBySemestre,
+  onMatriculaAvatarExtractionJobCreated,
+  onMatriculaDocumentoProcessingJobCreated,
+  updateMatriculaFormulario,
   verificarDocumentoMatricula,
 } from "./matriculas/handlers.js";
 export {

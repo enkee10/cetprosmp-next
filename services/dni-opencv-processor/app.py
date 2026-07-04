@@ -334,6 +334,11 @@ def build_document_detection_masks(image: np.ndarray) -> list[tuple[str, np.ndar
     blue_card = cv2.morphologyEx(blue_card, cv2.MORPH_OPEN, open_kernel, iterations=1)
     blue_card = cv2.dilate(blue_card, np.ones((5, 5), np.uint8), iterations=1)
 
+    yellow_card = ((hsv[:, :, 0] >= 14) & (hsv[:, :, 0] <= 50) & (saturation > 28) & (value > 55) & (value < 252)).astype(np.uint8) * 255
+    yellow_card = cv2.morphologyEx(yellow_card, cv2.MORPH_CLOSE, close_kernel, iterations=2)
+    yellow_card = cv2.morphologyEx(yellow_card, cv2.MORPH_OPEN, open_kernel, iterations=1)
+    yellow_card = cv2.dilate(yellow_card, np.ones((5, 5), np.uint8), iterations=1)
+
     color_card = ((saturation > 24) & (value > 45) & (value < 252)).astype(np.uint8) * 255
     color_card = cv2.morphologyEx(color_card, cv2.MORPH_CLOSE, close_kernel, iterations=2)
     color_card = cv2.morphologyEx(color_card, cv2.MORPH_OPEN, open_kernel, iterations=1)
@@ -344,7 +349,7 @@ def build_document_detection_masks(image: np.ndarray) -> list[tuple[str, np.ndar
     foreground = cv2.morphologyEx(foreground, cv2.MORPH_OPEN, open_kernel, iterations=1)
     foreground = cv2.dilate(foreground, np.ones((5, 5), np.uint8), iterations=1)
 
-    return [("blue_card", blue_card), ("color_card", color_card), ("foreground", foreground), ("edges", edges)]
+    return [("blue_card", blue_card), ("yellow_card", yellow_card), ("color_card", color_card), ("foreground", foreground), ("edges", edges)]
 
 
 def rect_mask_fill_ratio(mask: np.ndarray, rect: np.ndarray) -> float:
@@ -373,7 +378,7 @@ def find_document_contours(image: np.ndarray, limit: int = 1) -> list[np.ndarray
     scale = 1200 / max(height, width) if max(height, width) > 1200 else 1.0
     resized = cv2.resize(image, (int(width * scale), int(height * scale)))
     image_area = resized.shape[0] * resized.shape[1]
-    min_area_fraction = 0.055 if limit > 1 else 0.045
+    min_area_fraction = 0.055 if limit > 1 else 0.085
     candidates: list[tuple[float, np.ndarray]] = []
 
     detection_masks = build_document_detection_masks(resized)
@@ -409,7 +414,8 @@ def find_document_contours(image: np.ndarray, limit: int = 1) -> list[np.ndarray
 
             ratio = rect_width / max(1.0, rect_height)
             normalized_ratio = ratio if ratio >= 1 else 1 / ratio
-            if not 1.35 <= normalized_ratio <= 1.82:
+            max_ratio = 2.35 if mask_name == "yellow_card" else 1.82
+            if not 1.35 <= normalized_ratio <= max_ratio:
                 continue
 
             fill_ratio = contour_area / rect_area
@@ -419,6 +425,8 @@ def find_document_contours(image: np.ndarray, limit: int = 1) -> list[np.ndarray
             color_fill_ratio = rect_mask_fill_ratio(color_mask, rect)
             if mask_name == "color_card" and color_fill_ratio < 0.12:
                 continue
+            if mask_name == "yellow_card" and color_fill_ratio < 0.10:
+                continue
             if mask_name == "blue_card" and color_fill_ratio < 0.09:
                 continue
             if mask_name != "color_card" and color_fill_ratio < 0.055:
@@ -426,7 +434,7 @@ def find_document_contours(image: np.ndarray, limit: int = 1) -> list[np.ndarray
 
             ratio_score = 1.0 - min(abs(normalized_ratio - DOCUMENT_RATIO) / DOCUMENT_RATIO, 1.0)
             area_score = min(rect_fraction / 0.20, 1.0)
-            mask_bonus = 1.2 if mask_name == "blue_card" else 0.85 if mask_name == "color_card" else 0.35 if mask_name == "foreground" else 0.0
+            mask_bonus = 1.2 if mask_name == "blue_card" else 1.05 if mask_name == "yellow_card" else 0.85 if mask_name == "color_card" else 0.35 if mask_name == "foreground" else 0.0
             color_bonus = min(color_fill_ratio * 2.4, 1.65)
             border_penalty = border_touch_penalty(rect, resized.shape[1], resized.shape[0])
             score = contour_area * (1.0 + ratio_score + area_score + mask_bonus + color_bonus) * border_penalty

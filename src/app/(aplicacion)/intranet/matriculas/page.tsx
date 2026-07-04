@@ -524,13 +524,15 @@ const analyzeMatriculaDocumentsWithGemini = async (
 
   const documentReadingInstructions = `
 Estrategia de lectura:
-- Primero analiza el archivo 1 y determina si contiene dos cuerpos/imagenes completos del documento en una misma pagina o vista.
+- Primero revisa el archivo 1 para determinar si contiene dos cuerpos/imagenes completos del documento en una misma pagina o vista.
+- Si el archivo 1 no tiene dos cuerpos completos, revisa el archivo 2 con el mismo criterio.
 - Dos cuerpos significa que se ven claramente dos lados separados del documento, por ejemplo frente arriba y reverso abajo, o reverso arriba y frente abajo.
-- Si el archivo 1 contiene dos cuerpos completos, trabaja solo con el archivo 1 y no leas ni uses el archivo 2 bajo ninguna circunstancia.
-- En ese caso, lee los dos cuerpos del archivo 1 y de ahi extrae todos los datos, valida el tipo y numero de documento, determina cual cuerpo es frente y cual es reverso, y prepara la metadata para OpenCV.
-- Si el archivo 1 contiene dos cuerpos completos pero no logras validar algun dato, devuelve el dato como null o la validacion como false; no uses el archivo 2 como respaldo.
-- Cuando uses solo el archivo 1 con dos cuerpos, devuelve dos elementos en "archivos" con "indice": 1: uno para el cuerpo "superior" y otro para el cuerpo "inferior"; en cada elemento indica "tipoLado" frente/reverso y "areaLectura" superior/inferior.
-- Solo si el archivo 1 no contiene dos cuerpos completos, analiza tambien el archivo 2.
+- Si cualquiera de los dos archivos contiene dos cuerpos completos, trabaja solo con ese archivo y no leas ni uses el otro archivo bajo ninguna circunstancia.
+- La prioridad es fija: si el archivo 1 tiene dos cuerpos, usa archivo 1; solo si el archivo 1 no tiene dos cuerpos y el archivo 2 si los tiene, usa archivo 2.
+- En ese caso, lee los dos cuerpos del archivo elegido y de ahi extrae todos los datos, valida el tipo y numero de documento, determina cual cuerpo es frente y cual es reverso, y prepara la metadata para OpenCV.
+- Si el archivo elegido contiene dos cuerpos completos pero no logras validar algun dato, devuelve el dato como null o la validacion como false; no uses el otro archivo como respaldo.
+- Cuando uses un solo archivo con dos cuerpos, devuelve dos elementos en "archivos" con el mismo "indice" del archivo elegido: uno para el cuerpo "superior" y otro para el cuerpo "inferior"; en cada elemento indica "tipoLado" frente/reverso y "areaLectura" superior/inferior.
+- Solo si ningun archivo contiene dos cuerpos completos, analiza ambos archivos con el flujo normal de frente/reverso.
 - Si un archivo tiene un solo cuerpo, reporta "areaLectura": "completa" y "tieneDosCuerpos": false.
 - Si un archivo tiene dos cuerpos, reporta "areaLectura": "superior" o "inferior" segun el cuerpo que estes clasificando en ese elemento de "archivos".
 - No generes ni modifiques imagenes; solo limita la lectura visual cuando realmente hay dos cuerpos.
@@ -547,7 +549,7 @@ Documento esperado en el formulario:
 ${documentReadingInstructions}
 
 Reglas:
-- El primer adjunto es archivo 1, el segundo adjunto es archivo 2. Si la estrategia de lectura indica no usar el archivo 2, no reportes datos extraidos del archivo 2.
+- El primer adjunto es archivo 1, el segundo adjunto es archivo 2. Si la estrategia de lectura indica usar solo un archivo, no reportes datos extraidos del otro archivo.
 - Si es DNI, identifica "documento nacional de identidad" o "nacional" y extrae el numero con formato ########-#. Para comparar, usa los 8 digitos antes del guion.
 - Si es carnet de extranjeria, identifica "carnet" o "extranjeria" y extrae el numero con formato #########.
 - Para reverso, basta encontrar alguna palabra o dato equivalente a direccion, domicilio, distrito o el fragmento "per<".

@@ -105,6 +105,7 @@ export {
   listModulos,
   getModulo,
   createOrUpdateModulo,
+  updateModuloOrden,
   deleteModulo,
 } from "./modulos/handlers.js";
 export {

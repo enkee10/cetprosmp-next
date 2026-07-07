@@ -68,13 +68,12 @@ type Especialidad @table(name: "especialidades") {
   id: Int! @col(dataType: "serial")
   titulo: String
   tituloComercial: String @col(name: "titulo_comercial")
+  orden: Int
   descripcion: String
   descripcion2: String @col(name: "descripcion_2")
   slug: String
   imagenPortadaUrl: String @col(name: "imagen_portada_url", dataType: "text")
 
-  actEconomica: ActEconomica @ref(fields: "actEconomicaId", references: "id")
-  actEconomicaId: Int @col(name: "act_economica_id")
 }
 
 type ActEconomica @table(name: "act_economicas") {
@@ -86,10 +85,6 @@ type ActEconomica @table(name: "act_economicas") {
   familia: Familia @ref(fields: "familiaId", references: "id")
   familiaId: Int @col(name: "familia_id")
 
-  # Se conserva porque tu migración dejó este campo.
-  # Si luego decides normalizar más, podríamos quitar uno de los dos sentidos.
-  especialidad: Especialidad @ref(fields: "especialidadId", references: "id")
-  especialidadId: Int @col(name: "especialidad_id")
 }
 
 type TipoCarrera @table(name: "tipo_carreras", singular: "tipoCarrera", plural: "tipoCarreras") {
@@ -116,6 +111,9 @@ type Carrera @table(name: "carreras", singular: "carrera", plural: "carreras") {
   actEconomica: ActEconomica @ref(fields: "actEconomicaId", references: "id")
   actEconomicaId: Int @col(name: "act_economica_id")
 
+  especialidad: Especialidad @ref(fields: "especialidadId", references: "id")
+  especialidadId: Int @col(name: "especialidad_id")
+
   tipoCarrera: TipoCarrera @ref(fields: "tipoCarreraId", references: "id")
   tipoCarreraId: Int @col(name: "tipo_carrera_id")
 }
@@ -140,6 +138,9 @@ type Plan @table(name: "planes", singular: "plan", plural: "planes") {
 
   periodoVigencia: Semestre @ref(fields: "periodoVigenciaId", references: "id")
   periodoVigenciaId: Int @col(name: "periodo_vigencia_id")
+
+  version: Semestre @ref(fields: "versionId", references: "id")
+  versionId: Int @col(name: "version_id")
 }
 
 type Modulo @table(name: "modulos") @index(fields: ["carreraId"]) {
@@ -167,6 +168,14 @@ type UnidadDidactica @table(name: "unidades_didacticas", singular: "unidadDidact
   duracion: Int
   creditos: Int
   sigla: String
+}
+
+type UnidadDidacticaModulo @table(name: "unidad_didactica_modulos", singular: "unidadDidacticaModulo", plural: "unidadDidacticaModulos") @unique(fields: ["unidadDidactica", "modulo"]) @index(fields: ["unidadDidacticaId"]) @index(fields: ["moduloId"]) {
+  id: Int! @col(dataType: "serial")
+  orden: Int
+
+  unidadDidactica: UnidadDidactica! @ref(fields: "unidadDidacticaId", references: "id")
+  unidadDidacticaId: Int! @col(name: "unidad_didactica_id")
 
   modulo: Modulo! @ref(fields: "moduloId", references: "id")
   moduloId: Int! @col(name: "modulo_id")
@@ -335,6 +344,41 @@ type ModuloEstudiante @table(name: "modulos_estudiantes", singular: "moduloEstud
 
   grupo: Grupo @ref(fields: "grupoId", references: "id")
   grupoId: Int @col(name: "grupo_id")
+}
+
+type EfsrtPppEstudiante @table(name: "efsrt_ppp_estudiantes", singular: "efsrtPppEstudiante", plural: "efsrtPppEstudiantes") @unique(fields: ["grupoModulo", "moduloEstudiante"]) @index(fields: ["grupoModuloId"]) @index(fields: ["moduloEstudianteId"]) {
+  id: Int! @col(dataType: "serial")
+  promedioFinal: Float @col(name: "promedio_final")
+  modoCalculo: String @col(name: "modo_calculo", dataType: "varchar(20)")
+  observacion: String @col(dataType: "text")
+  fechaRegistro: Timestamp @col(name: "fecha_registro")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
+
+  grupoModulo: GrupoModulo! @ref(fields: "grupoModuloId", references: "id")
+  grupoModuloId: Int! @col(name: "grupo_modulo_id")
+
+  moduloEstudiante: ModuloEstudiante! @ref(fields: "moduloEstudianteId", references: "id")
+  moduloEstudianteId: Int! @col(name: "modulo_estudiante_id")
+
+  registradoPor: User @ref(fields: "registradoPorId", references: "id")
+  registradoPorId: Int @col(name: "registrado_por_id")
+}
+
+type EfsrtPppNota @table(name: "efsrt_ppp_notas", singular: "efsrtPppNota", plural: "efsrtPppNotas") @unique(fields: ["practica", "efsrtPppEstudiante"]) @index(fields: ["practicaId"]) @index(fields: ["efsrtPppEstudianteId"]) {
+  id: Int! @col(dataType: "serial")
+  nota: Float
+  observacion: String @col(dataType: "text")
+  fechaEvaluacion: Timestamp @col(name: "fecha_evaluacion")
+  fechaRegistro: Timestamp @col(name: "fecha_registro")
+
+  practica: EfsrtPppPractica! @ref(fields: "practicaId", references: "id")
+  practicaId: Int! @col(name: "practica_id")
+
+  efsrtPppEstudiante: EfsrtPppEstudiante! @ref(fields: "efsrtPppEstudianteId", references: "id")
+  efsrtPppEstudianteId: Int! @col(name: "efsrt_ppp_estudiante_id")
+
+  registradoPor: User @ref(fields: "registradoPorId", references: "id")
+  registradoPorId: Int @col(name: "registrado_por_id")
 }
 
 type UnidadDidacticaEstudiante @table(name: "unidades_didacticas_estudiantes", singular: "unidadDidacticaEstudiante", plural: "unidadesDidacticasEstudiantes") @unique(fields: ["matricula", "unidadDidactica"]) {
@@ -533,6 +577,22 @@ type GrupoModulo @table(name: "grupo_modulos", singular: "grupoModulo", plural: 
 
   calendario: Calendario @ref(fields: "calendarioId", references: "id")
   calendarioId: Int @col(name: "calendario_id")
+}
+
+type EfsrtPppPractica @table(name: "efsrt_ppp_practicas", singular: "efsrtPppPractica", plural: "efsrtPppPracticas") @unique(fields: ["grupoModulo", "numero"]) @index(fields: ["grupoModuloId"]) {
+  id: Int! @col(dataType: "serial")
+  numero: Int!
+  titulo: String
+  descripcion: String @col(dataType: "text")
+  fecha: Timestamp
+  puntajeMaximo: Float @col(name: "puntaje_maximo")
+  peso: Float
+  activo: Boolean
+  fechaCreacion: Timestamp @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
+
+  grupoModulo: GrupoModulo! @ref(fields: "grupoModuloId", references: "id")
+  grupoModuloId: Int! @col(name: "grupo_modulo_id")
 }
 
 type Evento @table(name: "eventos") {

@@ -117,6 +117,33 @@ extend type Mutation {
     data: DatoGeneral_Data!
   ): DatoGeneral_KeyOutput! @fdc_generated(from: "DatoGeneral", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `EfsrtPppEstudiante` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  efsrtPppEstudiante_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: EfsrtPppEstudiante_Data!
+  ): EfsrtPppEstudiante_KeyOutput! @fdc_generated(from: "EfsrtPppEstudiante", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `EfsrtPppNota` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  efsrtPppNota_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: EfsrtPppNota_Data!
+  ): EfsrtPppNota_KeyOutput! @fdc_generated(from: "EfsrtPppNota", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `EfsrtPppPractica` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  efsrtPppPractica_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: EfsrtPppPractica_Data!
+  ): EfsrtPppPractica_KeyOutput! @fdc_generated(from: "EfsrtPppPractica", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `EjeTransversal` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   ejeTransversal_insert(
@@ -522,6 +549,15 @@ extend type Mutation {
     data: UnidadDidacticaEstudiante_Data!
   ): UnidadDidacticaEstudiante_KeyOutput! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `UnidadDidacticaModulo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  unidadDidacticaModulo_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: UnidadDidacticaModulo_Data!
+  ): UnidadDidacticaModulo_KeyOutput! @fdc_generated(from: "UnidadDidacticaModulo", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `User` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   user_insert(
@@ -665,6 +701,33 @@ extend type Mutation {
     """
     data: [DatoGeneral_Data!]!
   ): [DatoGeneral_KeyOutput!]! @fdc_generated(from: "DatoGeneral", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `EfsrtPppEstudiante` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  efsrtPppEstudiante_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [EfsrtPppEstudiante_Data!]!
+  ): [EfsrtPppEstudiante_KeyOutput!]! @fdc_generated(from: "EfsrtPppEstudiante", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `EfsrtPppNota` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  efsrtPppNota_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [EfsrtPppNota_Data!]!
+  ): [EfsrtPppNota_KeyOutput!]! @fdc_generated(from: "EfsrtPppNota", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `EfsrtPppPractica` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  efsrtPppPractica_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [EfsrtPppPractica_Data!]!
+  ): [EfsrtPppPractica_KeyOutput!]! @fdc_generated(from: "EfsrtPppPractica", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `EjeTransversal` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1071,6 +1134,15 @@ extend type Mutation {
     data: [UnidadDidacticaEstudiante_Data!]!
   ): [UnidadDidacticaEstudiante_KeyOutput!]! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `UnidadDidacticaModulo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  unidadDidacticaModulo_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [UnidadDidacticaModulo_Data!]!
+  ): [UnidadDidacticaModulo_KeyOutput!]! @fdc_generated(from: "UnidadDidacticaModulo", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `User` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   user_insertMany(
@@ -1214,6 +1286,33 @@ extend type Mutation {
     """
     data: DatoGeneral_Data!
   ): DatoGeneral_KeyOutput! @fdc_generated(from: "DatoGeneral", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `EfsrtPppEstudiante` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EfsrtPppEstudiante`.
+  """
+  efsrtPppEstudiante_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: EfsrtPppEstudiante_Data!
+  ): EfsrtPppEstudiante_KeyOutput! @fdc_generated(from: "EfsrtPppEstudiante", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `EfsrtPppNota` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EfsrtPppNota`.
+  """
+  efsrtPppNota_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: EfsrtPppNota_Data!
+  ): EfsrtPppNota_KeyOutput! @fdc_generated(from: "EfsrtPppNota", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `EfsrtPppPractica` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EfsrtPppPractica`.
+  """
+  efsrtPppPractica_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: EfsrtPppPractica_Data!
+  ): EfsrtPppPractica_KeyOutput! @fdc_generated(from: "EfsrtPppPractica", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `EjeTransversal` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EjeTransversal`.
   """
@@ -1620,6 +1719,15 @@ extend type Mutation {
     data: UnidadDidacticaEstudiante_Data!
   ): UnidadDidacticaEstudiante_KeyOutput! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `UnidadDidacticaModulo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UnidadDidacticaModulo`.
+  """
+  unidadDidacticaModulo_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: UnidadDidacticaModulo_Data!
+  ): UnidadDidacticaModulo_KeyOutput! @fdc_generated(from: "UnidadDidacticaModulo", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `User` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
   """
   user_upsert(
@@ -1763,6 +1871,33 @@ extend type Mutation {
     """
     data: [DatoGeneral_Data!]!
   ): [DatoGeneral_KeyOutput!]! @fdc_generated(from: "DatoGeneral", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `EfsrtPppEstudiante` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EfsrtPppEstudiante`.
+  """
+  efsrtPppEstudiante_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [EfsrtPppEstudiante_Data!]!
+  ): [EfsrtPppEstudiante_KeyOutput!]! @fdc_generated(from: "EfsrtPppEstudiante", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `EfsrtPppNota` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EfsrtPppNota`.
+  """
+  efsrtPppNota_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [EfsrtPppNota_Data!]!
+  ): [EfsrtPppNota_KeyOutput!]! @fdc_generated(from: "EfsrtPppNota", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `EfsrtPppPractica` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EfsrtPppPractica`.
+  """
+  efsrtPppPractica_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [EfsrtPppPractica_Data!]!
+  ): [EfsrtPppPractica_KeyOutput!]! @fdc_generated(from: "EfsrtPppPractica", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `EjeTransversal` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `EjeTransversal`.
   """
@@ -2169,6 +2304,15 @@ extend type Mutation {
     data: [UnidadDidacticaEstudiante_Data!]!
   ): [UnidadDidacticaEstudiante_KeyOutput!]! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `UnidadDidacticaModulo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UnidadDidacticaModulo`.
+  """
+  unidadDidacticaModulo_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [UnidadDidacticaModulo_Data!]!
+  ): [UnidadDidacticaModulo_KeyOutput!]! @fdc_generated(from: "UnidadDidacticaModulo", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `User` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
   """
   user_upsertMany(
@@ -2572,6 +2716,93 @@ extend type Mutation {
     """
     data: DatoGeneral_Data!
   ): DatoGeneral_KeyOutput @fdc_generated(from: "DatoGeneral", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `EfsrtPppEstudiante` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `EfsrtPppEstudiante` or `null` if not found.
+  """
+  efsrtPppEstudiante_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EfsrtPppEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EfsrtPppEstudiante_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: EfsrtPppEstudiante_Data!
+  ): EfsrtPppEstudiante_KeyOutput @fdc_generated(from: "EfsrtPppEstudiante", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `EfsrtPppNota` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `EfsrtPppNota` or `null` if not found.
+  """
+  efsrtPppNota_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EfsrtPppNota_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EfsrtPppNota_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: EfsrtPppNota_Data!
+  ): EfsrtPppNota_KeyOutput @fdc_generated(from: "EfsrtPppNota", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `EfsrtPppPractica` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `EfsrtPppPractica` or `null` if not found.
+  """
+  efsrtPppPractica_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EfsrtPppPractica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EfsrtPppPractica_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: EfsrtPppPractica_Data!
+  ): EfsrtPppPractica_KeyOutput @fdc_generated(from: "EfsrtPppPractica", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `EjeTransversal` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `EjeTransversal` or `null` if not found.
   """
@@ -3828,6 +4059,35 @@ extend type Mutation {
     data: UnidadDidacticaEstudiante_Data!
   ): UnidadDidacticaEstudiante_KeyOutput @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `UnidadDidacticaModulo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `UnidadDidacticaModulo` or `null` if not found.
+  """
+  unidadDidacticaModulo_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: UnidadDidacticaModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UnidadDidacticaModulo_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: UnidadDidacticaModulo_Data!
+  ): UnidadDidacticaModulo_KeyOutput @fdc_generated(from: "UnidadDidacticaModulo", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `User` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `User` or `null` if not found.
   """
   user_update(
@@ -4161,6 +4421,63 @@ extend type Mutation {
     """
     data: DatoGeneral_Data!
   ): Int! @fdc_generated(from: "DatoGeneral", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `EfsrtPppEstudiante` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  efsrtPppEstudiante_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: EfsrtPppEstudiante_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: EfsrtPppEstudiante_Data!
+  ): Int! @fdc_generated(from: "EfsrtPppEstudiante", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `EfsrtPppNota` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  efsrtPppNota_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: EfsrtPppNota_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: EfsrtPppNota_Data!
+  ): Int! @fdc_generated(from: "EfsrtPppNota", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `EfsrtPppPractica` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  efsrtPppPractica_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: EfsrtPppPractica_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: EfsrtPppPractica_Data!
+  ): Int! @fdc_generated(from: "EfsrtPppPractica", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `EjeTransversal` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -5017,6 +5334,25 @@ extend type Mutation {
     data: UnidadDidacticaEstudiante_Data!
   ): Int! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `UnidadDidacticaModulo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  unidadDidacticaModulo_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: UnidadDidacticaModulo_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: UnidadDidacticaModulo_Data!
+  ): Int! @fdc_generated(from: "UnidadDidacticaModulo", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `User` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   user_updateMany(
@@ -5385,6 +5721,78 @@ extend type Mutation {
     """
     first: DatoGeneral_FirstRow
   ): DatoGeneral_KeyOutput @fdc_generated(from: "DatoGeneral", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `EfsrtPppEstudiante` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  efsrtPppEstudiante_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EfsrtPppEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EfsrtPppEstudiante_FirstRow
+  ): EfsrtPppEstudiante_KeyOutput @fdc_generated(from: "EfsrtPppEstudiante", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `EfsrtPppNota` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  efsrtPppNota_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EfsrtPppNota_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EfsrtPppNota_FirstRow
+  ): EfsrtPppNota_KeyOutput @fdc_generated(from: "EfsrtPppNota", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `EfsrtPppPractica` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  efsrtPppPractica_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EfsrtPppPractica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EfsrtPppPractica_FirstRow
+  ): EfsrtPppPractica_KeyOutput @fdc_generated(from: "EfsrtPppPractica", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `EjeTransversal` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -6416,6 +6824,30 @@ extend type Mutation {
     first: UnidadDidacticaEstudiante_FirstRow
   ): UnidadDidacticaEstudiante_KeyOutput @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `UnidadDidacticaModulo` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  unidadDidacticaModulo_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: UnidadDidacticaModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UnidadDidacticaModulo_FirstRow
+  ): UnidadDidacticaModulo_KeyOutput @fdc_generated(from: "UnidadDidacticaModulo", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `User` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   user_delete(
@@ -6669,6 +7101,48 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "DatoGeneral", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `EfsrtPppEstudiante` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  efsrtPppEstudiante_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: EfsrtPppEstudiante_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppEstudiante", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `EfsrtPppNota` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  efsrtPppNota_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: EfsrtPppNota_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppNota", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `EfsrtPppPractica` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  efsrtPppPractica_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: EfsrtPppPractica_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `EjeTransversal` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
@@ -7299,6 +7773,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `UnidadDidacticaModulo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  unidadDidacticaModulo_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: UnidadDidacticaModulo_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "UnidadDidacticaModulo", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `User` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

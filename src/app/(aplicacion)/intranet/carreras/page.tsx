@@ -20,6 +20,13 @@ interface Carrera {
   nivel: string | null;
   imagenPortadaUrl: string | null;
   actEconomicaId: number | null;
+  especialidadId: number | null;
+  especialidad?: {
+    id?: number | null;
+    titulo?: string | null;
+    tituloComercial?: string | null;
+    orden?: number | null;
+  } | null;
   tipoCarreraId: number | null;
 }
 
@@ -52,6 +59,7 @@ export default function CarrerasPage() {
     nivel: true,
     tipoCarreraTitulo: true,
     actEconomicaTitulo: true,
+    especialidadTitulo: false,
     descripcion: false,
     actions: true,
   });
@@ -228,6 +236,16 @@ export default function CarrerasPage() {
           row.actEconomicaId != null
             ? actEconomicaTitleById.get(row.actEconomicaId) || `Actividad economica ${row.actEconomicaId}`
             : '',
+      },
+      {
+        field: 'especialidadTitulo',
+        headerName: 'Especialidad',
+        flex: 1,
+        minWidth: 170,
+        valueGetter: (_value, row: Carrera) =>
+          row.especialidad?.tituloComercial
+          || row.especialidad?.titulo
+          || (row.especialidadId != null ? `Especialidad ${row.especialidadId}` : ''),
       },
       { field: 'descripcion', headerName: 'Descripcion', flex: 1.5, minWidth: 240, valueGetter: (_value, row: Carrera) => row.descripcion || '' },
       {

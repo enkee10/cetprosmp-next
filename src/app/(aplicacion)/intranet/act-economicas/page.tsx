@@ -29,7 +29,6 @@ interface ActEconomica {
   descripcion: string | null;
   imagenPortadaUrl: string | null;
   familiaId: number | null;
-  especialidadId: number | null;
 }
 
 interface FamiliaOption {
@@ -37,15 +36,9 @@ interface FamiliaOption {
   titulo: string | null;
 }
 
-interface EspecialidadOption {
-  id: number;
-  titulo: string | null;
-}
-
 export default function ActEconomicasPage() {
   const [actEconomicas, setActEconomicas] = useState<ActEconomica[]>([]);
   const [familias, setFamilias] = useState<FamiliaOption[]>([]);
-  const [especialidades, setEspecialidades] = useState<EspecialidadOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openActEconomicaModal, setOpenActEconomicaModal] = useState(false);
@@ -63,7 +56,6 @@ export default function ActEconomicasPage() {
       titulo: true,
       descripcion: false,
       familiaTitulo: true,
-      especialidadTitulo: true,
       actions: true,
     });
 
@@ -84,18 +76,12 @@ export default function ActEconomicasPage() {
         functions,
         'listFamilias',
       );
-      const listEspecialidades = httpsCallable<undefined, { especialidades?: EspecialidadOption[] }>(
-        functions,
-        'listEspecialidades',
-      );
-      const [actEconomicasResult, familiasResult, especialidadesResult] = await Promise.all([
+      const [actEconomicasResult, familiasResult] = await Promise.all([
         listActEconomicas(),
         listFamilias(),
-        listEspecialidades(),
       ]);
       setActEconomicas(actEconomicasResult.data.actEconomicas || []);
       setFamilias(familiasResult.data.familias || []);
-      setEspecialidades(especialidadesResult.data.especialidades || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching act economicas: ', err);
@@ -110,17 +96,6 @@ export default function ActEconomicasPage() {
   const familiaTitleById = useMemo(
     () => new Map(familias.map((familia) => [familia.id, familia.titulo || `Familia ${familia.id}`])),
     [familias],
-  );
-
-  const especialidadTitleById = useMemo(
-    () =>
-      new Map(
-        especialidades.map((especialidad) => [
-          especialidad.id,
-          especialidad.titulo || `Especialidad ${especialidad.id}`,
-        ]),
-      ),
-    [especialidades],
   );
 
   useEffect(() => {
@@ -249,16 +224,6 @@ export default function ActEconomicasPage() {
           row.familiaId != null ? familiaTitleById.get(row.familiaId) || `Familia ${row.familiaId}` : '',
       },
       {
-        field: 'especialidadTitulo',
-        headerName: 'Especialidad',
-        flex: 1,
-        minWidth: 170,
-        valueGetter: (_value, row: ActEconomica) =>
-          row.especialidadId != null
-            ? especialidadTitleById.get(row.especialidadId) || `Especialidad ${row.especialidadId}`
-            : '',
-      },
-      {
         field: 'actions',
         headerName: '...',
         align: 'center',
@@ -282,7 +247,7 @@ export default function ActEconomicasPage() {
         ),
       },
     ],
-    [especialidadTitleById, familiaTitleById],
+    [familiaTitleById],
   );
 
   const columnToggleItems = useMemo(

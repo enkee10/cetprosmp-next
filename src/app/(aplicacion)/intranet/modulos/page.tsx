@@ -23,9 +23,45 @@ interface Modulo {
   metas: number | null;
   activo: boolean | null;
   slug: string | null;
-  plan: { planEstudio: string | null } | null;
+  plan: {
+    planEstudio: string | null;
+    carrera?: {
+      especialidad?: {
+        id?: number | null;
+        titulo?: string | null;
+        tituloComercial?: string | null;
+        orden?: number | null;
+      } | null;
+    } | null;
+  } | null;
   planId: number | null;
 }
+
+const normalizeOrden = (value: unknown) => {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
+};
+
+const getModuloEspecialidadLabel = (modulo: Modulo) =>
+  modulo.plan?.carrera?.especialidad?.tituloComercial ||
+  modulo.plan?.carrera?.especialidad?.titulo ||
+  '';
+
+const getModuloEspecialidadOrden = (modulo: Modulo) =>
+  modulo.plan?.carrera?.especialidad?.orden ?? Number.MAX_SAFE_INTEGER;
+
+const sortModulos = (items: Modulo[]) =>
+  items
+    .slice()
+    .sort(
+      (a, b) =>
+        getModuloEspecialidadOrden(a) - getModuloEspecialidadOrden(b) ||
+        getModuloEspecialidadLabel(a).localeCompare(getModuloEspecialidadLabel(b), 'es', { numeric: true }) ||
+        (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER) ||
+        String(a.titulo ?? '').localeCompare(String(b.titulo ?? ''), 'es', { numeric: true }) ||
+        a.id - b.id,
+    );
 
 export default function ModulosPage() {
   const [modulos, setModulos] = useState<Modulo[]>([]);
@@ -44,6 +80,7 @@ export default function ModulosPage() {
     useState<GridColumnVisibilityModel>({
       numero: true,
       titulo: true,
+      orden: true,
       plan: true,
       horas: true,
       creditos: true,
@@ -64,7 +101,7 @@ export default function ModulosPage() {
         'listModulos',
       );
       const result = await listModulos();
-      setModulos(result.data.modulos || []);
+      setModulos(sortModulos(result.data.modulos || []));
       setError(null);
     } catch (err) {
       console.error('Error fetching modulos: ', err);
@@ -140,6 +177,36 @@ export default function ModulosPage() {
     }
   }, [fetchModulos, functions, modulos]);
 
+  const handleProcessRowUpdate = useCallback(async (newRow: Modulo, oldRow: Modulo) => {
+    const nextOrden = normalizeOrden(newRow.orden);
+    if (nextOrden === oldRow.orden) {
+      return oldRow;
+    }
+
+    const updateModuloOrden = httpsCallable<
+      {
+        id: number;
+        orden?: number | null;
+      },
+      { id: number | null }
+    >(functions, 'updateModuloOrden');
+
+    await updateModuloOrden({ id: oldRow.id, orden: nextOrden });
+
+    const updatedRow = { ...oldRow, orden: nextOrden };
+    setModulos((current) =>
+      sortModulos(current.map((modulo) => (modulo.id === updatedRow.id ? updatedRow : modulo))),
+    );
+    setError(null);
+    return updatedRow;
+  }, [functions]);
+
+  const handleProcessRowUpdateError = useCallback((err: unknown) => {
+    console.error('Error updating modulo orden: ', err);
+    const message = (err as { message?: string } | null)?.message || '';
+    setError(message ? `No se pudo actualizar el orden: ${message}` : 'No se pudo actualizar el orden.');
+  }, []);
+
   const columns = useMemo<GridColDef[]>(
     () => [
       {
@@ -160,6 +227,19 @@ export default function ModulosPage() {
         flex: 1.25,
         minWidth: 190,
         valueGetter: (_value, row: Modulo) => row.titulo || '',
+      },
+      {
+        field: 'orden',
+        headerName: 'Ord.',
+        type: 'number',
+        width: 60,
+        minWidth: 60,
+        maxWidth: 60,
+        align: 'center',
+        headerAlign: 'center',
+        editable: true,
+        valueParser: (value) => normalizeOrden(value),
+        valueGetter: (_value, row: Modulo) => (row.orden != null ? row.orden : null),
       },
       {
         field: 'plan',
@@ -252,6 +332,8 @@ export default function ModulosPage() {
         getRowId={(row) => row.id}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
+        processRowUpdate={handleProcessRowUpdate}
+        onProcessRowUpdateError={handleProcessRowUpdateError}
       />
 
       <Menu

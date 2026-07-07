@@ -21,6 +21,8 @@ import {
   DataConnectIndicadorCapacidadInput,
   DataConnectUnidadDidactica,
   DataConnectUnidadDidacticaInput,
+  DataConnectUnidadDidacticaModulo,
+  DataConnectUnidadDidacticaModuloInput,
 } from "../core/types.js";
 import {
   DELETE_ACTIVIDAD_MUTATION,
@@ -28,10 +30,12 @@ import {
   DELETE_CAPACIDAD_TERMINAL_MUTATION,
   DELETE_INDICADOR_CAPACIDAD_MUTATION,
   DELETE_UNIDAD_DIDACTICA_MUTATION,
+  DELETE_UNIDAD_DIDACTICA_MODULOS_BY_UNIDAD_MUTATION,
   INSERT_ACTIVIDAD_MUTATION,
   INSERT_APRENDIZAJE_MUTATION,
   INSERT_CAPACIDAD_TERMINAL_MUTATION,
   INSERT_INDICADOR_CAPACIDAD_MUTATION,
+  INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION,
   INSERT_UNIDAD_DIDACTICA_MUTATION,
   UPDATE_ACTIVIDAD_MUTATION,
   UPDATE_APRENDIZAJE_MUTATION,
@@ -48,7 +52,12 @@ const LIST_UNIDADES_DIDACTICAS_QUERY = `
       duracion
       creditos
       sigla
+    }
+    unidadDidacticaModulos(limit: 2000) {
+      id
+      unidadDidacticaId
       moduloId
+      orden
     }
   }
 `;
@@ -61,7 +70,12 @@ const GET_UNIDAD_DIDACTICA_QUERY = `
       duracion
       creditos
       sigla
+    }
+    unidadDidacticaModulos(where: { unidadDidacticaId: { eq: $id } }, limit: 2000) {
+      id
+      unidadDidacticaId
       moduloId
+      orden
     }
   }
 `;
@@ -175,15 +189,78 @@ function requireLevel(context: https.CallableContext, action: string) {
   }
 }
 
+function parseModuloIds(input: unknown): number[] {
+  const rawItems = Array.isArray(input)
+    ? input
+    : typeof input === "string"
+      ? input.split(",")
+      : input == null
+        ? []
+        : [input];
+
+  return [...new Set(
+    rawItems
+      .map((item) => Number(String(item).trim()))
+      .filter((item) => Number.isInteger(item) && item > 0),
+  )];
+}
+
+function attachUnidadDidacticaModuloIds(
+  unidadesDidacticas: DataConnectUnidadDidactica[],
+  unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[],
+) {
+  const moduloIdsByUnidadId = new Map<number, number[]>();
+  for (const item of unidadDidacticaModulos) {
+    const current = moduloIdsByUnidadId.get(item.unidadDidacticaId) ?? [];
+    current.push(item.moduloId);
+    moduloIdsByUnidadId.set(item.unidadDidacticaId, current);
+  }
+
+  return unidadesDidacticas.map((unidadDidactica) => ({
+    ...unidadDidactica,
+    moduloIds: (moduloIdsByUnidadId.get(unidadDidactica.id) ?? [])
+      .slice()
+      .sort((a, b) => a - b),
+  }));
+}
+
+async function syncUnidadDidacticaModulos(unidadDidacticaId: number, moduloIds: number[]) {
+  await dataConnect.executeGraphql<
+    { unidadDidacticaModulo_deleteMany: number },
+    { unidadDidacticaId: number }
+  >(DELETE_UNIDAD_DIDACTICA_MODULOS_BY_UNIDAD_MUTATION, { variables: { unidadDidacticaId } });
+
+  await Promise.all(
+    moduloIds.map((moduloId, index) => {
+      const data: DataConnectUnidadDidacticaModuloInput = {
+        unidadDidacticaId,
+        moduloId,
+        orden: index + 1,
+      };
+
+      return dataConnect.executeGraphql<
+        { unidadDidacticaModulo_insert: unknown },
+        { data: DataConnectUnidadDidacticaModuloInput }
+      >(INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION, { variables: { data } });
+    }),
+  );
+}
+
 export const listUnidadesDidacticas = https.onCall(async (_data, context) => {
   requireLevel(context, "list didactic units");
 
   try {
     const response = await dataConnect.executeGraphql<
-      { unidadesDidacticas: DataConnectUnidadDidactica[] },
+      {
+        unidadesDidacticas: DataConnectUnidadDidactica[];
+        unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
+      },
       Record<string, never>
     >(LIST_UNIDADES_DIDACTICAS_QUERY);
-    const unidadesDidacticas = (response.data.unidadesDidacticas ?? [])
+    const unidadesDidacticas = attachUnidadDidacticaModuloIds(
+      response.data.unidadesDidacticas ?? [],
+      response.data.unidadDidacticaModulos ?? [],
+    )
       .slice()
       .sort((a, b) => String(a.nombre ?? "").localeCompare(String(b.nombre ?? ""), "es"));
 
@@ -204,11 +281,21 @@ export const getUnidadDidactica = https.onCall(async (data, context) => {
 
   try {
     const response = await dataConnect.executeGraphql<
-      { unidadDidactica: DataConnectUnidadDidactica | null },
+      {
+        unidadDidactica: DataConnectUnidadDidactica | null;
+        unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
+      },
       { id: number }
     >(GET_UNIDAD_DIDACTICA_QUERY, { variables: { id: unidadDidacticaId } });
 
-    return { unidadDidactica: response.data.unidadDidactica ?? null };
+    const unidadDidactica = response.data.unidadDidactica
+      ? attachUnidadDidacticaModuloIds(
+        [response.data.unidadDidactica],
+        response.data.unidadDidacticaModulos ?? [],
+      )[0]
+      : null;
+
+    return { unidadDidactica };
   } catch (error) {
     console.error("Error in getUnidadDidactica:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while getting didactic unit.");
@@ -219,31 +306,41 @@ export const createOrUpdateUnidadDidactica = https.onCall(async (data, context) 
   requireLevel(context, "mutate didactic units");
 
   const payload = buildUnidadDidacticaDataFromInput(data as Record<string, unknown>);
+  const moduloIds = parseModuloIds((data as Record<string, unknown>).moduloIds ?? data?.moduloId);
   if (!payload.nombre) {
     throw new https.HttpsError("invalid-argument", "nombre is required.");
   }
-  if (!payload.moduloId) {
-    throw new https.HttpsError("invalid-argument", "moduloId is required.");
+  if (moduloIds.length === 0) {
+    throw new https.HttpsError("invalid-argument", "At least one moduloId is required.");
   }
 
   const unidadDidacticaId = toNumberOrNull(data?.id);
 
   try {
+    let savedUnidadDidacticaId = unidadDidacticaId;
     if (unidadDidacticaId) {
       const updated = await dataConnect.executeGraphql<
         { unidadDidactica_update: unknown },
         { id: number; data: DataConnectUnidadDidacticaInput }
       >(UPDATE_UNIDAD_DIDACTICA_MUTATION, { variables: { id: unidadDidacticaId, data: payload } });
 
-      return { id: getIdFromKeyOutput(updated.data.unidadDidactica_update) ?? unidadDidacticaId };
+      savedUnidadDidacticaId = getIdFromKeyOutput(updated.data.unidadDidactica_update) ?? unidadDidacticaId;
+    } else {
+      const created = await dataConnect.executeGraphql<
+        { unidadDidactica_insert: unknown },
+        { data: DataConnectUnidadDidacticaInput }
+      >(INSERT_UNIDAD_DIDACTICA_MUTATION, { variables: { data: payload } });
+
+      savedUnidadDidacticaId = getIdFromKeyOutput(created.data.unidadDidactica_insert);
     }
 
-    const created = await dataConnect.executeGraphql<
-      { unidadDidactica_insert: unknown },
-      { data: DataConnectUnidadDidacticaInput }
-    >(INSERT_UNIDAD_DIDACTICA_MUTATION, { variables: { data: payload } });
+    if (!savedUnidadDidacticaId) {
+      throw new Error("No se pudo obtener el id de la unidad didactica guardada.");
+    }
 
-    return { id: getIdFromKeyOutput(created.data.unidadDidactica_insert) };
+    await syncUnidadDidacticaModulos(savedUnidadDidacticaId, moduloIds);
+
+    return { id: savedUnidadDidacticaId };
   } catch (error) {
     console.error("Error in createOrUpdateUnidadDidactica:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while saving didactic unit.");
@@ -259,6 +356,11 @@ export const deleteUnidadDidactica = https.onCall(async (data, context) => {
   }
 
   try {
+    await dataConnect.executeGraphql<
+      { unidadDidacticaModulo_deleteMany: number },
+      { unidadDidacticaId: number }
+    >(DELETE_UNIDAD_DIDACTICA_MODULOS_BY_UNIDAD_MUTATION, { variables: { unidadDidacticaId } });
+
     const deleted = await dataConnect.executeGraphql<{ unidadDidactica_delete: unknown }, { id: number }>(
       DELETE_UNIDAD_DIDACTICA_MUTATION,
       { variables: { id: unidadDidacticaId } },

@@ -38,6 +38,7 @@ interface User {
   blocked?: boolean;
   bloqueado?: boolean;
   avatar?: string;
+  avatarPequeno?: string;
   tipoDocumento?: string;
   dni?: string;
   nacionalidad?: string;
@@ -125,6 +126,45 @@ const formatDateAsDayMonthYear = (value: unknown) => {
   if (!match) return raw;
 
   return `${match[3]}/${match[2]}/${match[1]}`;
+};
+
+const UserAvatarCell = ({
+  avatar,
+  avatarPequeno,
+  nombre,
+  apellidoPaterno,
+}: Pick<User, 'avatar' | 'avatarPequeno' | 'nombre' | 'apellidoPaterno'>) => {
+  const fallbackSrc = avatar?.trim() || undefined;
+  const preferredSrc = avatarPequeno?.trim() || fallbackSrc;
+  const [src, setSrc] = useState(preferredSrc);
+
+  useEffect(() => {
+    setSrc(preferredSrc);
+  }, [preferredSrc]);
+
+  const initials =
+    nombre && apellidoPaterno ? `${nombre[0]}${apellidoPaterno[0]}`.toUpperCase() : null;
+
+  return (
+    <Avatar
+      src={src}
+      sx={{
+        bgcolor: 'transparent',
+        background: 'linear-gradient(180deg, #8fd8ff 0%, #ffffff 100%)',
+      }}
+      imgProps={{
+        referrerPolicy: 'no-referrer',
+        onError: () => {
+          setSrc((current) => {
+            if (current && fallbackSrc && current !== fallbackSrc) return fallbackSrc;
+            return undefined;
+          });
+        },
+      }}
+    >
+      {initials}
+    </Avatar>
+  );
 };
 
 const UsersPage = () => {
@@ -416,10 +456,7 @@ const UsersPage = () => {
         sortable: false,
         filterable: false,
         renderCell: (params) => {
-          const { avatar, nombre, apellidoPaterno } = params.row as User;
-          const avatarSrc = avatar?.trim() || undefined;
-          const initials =
-            nombre && apellidoPaterno ? `${nombre[0]}${apellidoPaterno[0]}`.toUpperCase() : null;
+          const { avatar, avatarPequeno, nombre, apellidoPaterno } = params.row as User;
           return (
             <Box
               sx={{
@@ -430,7 +467,12 @@ const UsersPage = () => {
                 justifyContent: 'flex-start',
               }}
             >
-              <Avatar src={avatarSrc} imgProps={{ referrerPolicy: 'no-referrer' }}>{initials}</Avatar>
+              <UserAvatarCell
+                avatar={avatar}
+                avatarPequeno={avatarPequeno}
+                nombre={nombre}
+                apellidoPaterno={apellidoPaterno}
+              />
             </Box>
           );
         },

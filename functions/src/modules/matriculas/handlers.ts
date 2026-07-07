@@ -598,6 +598,7 @@ async function enqueueMatriculaDocumentProcessingJob(params: {
   userId: number;
   tipoDocumento: string;
   dni: string;
+  fechaNacimiento?: string | null;
   frente: UploadedDocumentImage;
   reverso: UploadedDocumentImage;
   dniImagenFrenteProcesadaUrl?: string | null;
@@ -636,6 +637,7 @@ async function enqueueMatriculaDocumentProcessingJob(params: {
     userId: params.userId,
     tipoDocumento: params.tipoDocumento,
     dni: params.dni,
+    fechaNacimiento: normalizeDate(params.fechaNacimiento),
     analisisDocumentoTemporal: params.analisisDocumentoTemporal,
     sides,
     processor: {
@@ -725,6 +727,7 @@ function getProcessedDocumentOutput(
 async function enqueueMatriculaAvatarExtractionJob(params: {
   userId: unknown;
   dni: string;
+  fechaNacimiento?: string | null;
   documentProcessingJobId: string;
   frenteProcesado: ProcessedDocumentOutput | null;
 }) {
@@ -741,6 +744,7 @@ async function enqueueMatriculaAvatarExtractionJob(params: {
       source: "matricula_document_processing",
       userId,
       dni: params.dni,
+      fechaNacimiento: normalizeDate(params.fechaNacimiento),
       documentProcessingJobId: params.documentProcessingJobId,
       frenteProcesado: params.frenteProcesado,
     }) as FirebaseFirestore.DocumentData);
@@ -749,6 +753,7 @@ async function enqueueMatriculaAvatarExtractionJob(params: {
     jobId: ref.id,
     userId,
     dni: params.dni,
+    fechaNacimiento: normalizeDate(params.fechaNacimiento),
     sourcePath: params.frenteProcesado.path,
   });
   return ref.id;
@@ -867,6 +872,40 @@ function isGenerativeAvatarEnabled(): boolean {
   return value === "true" || value === "1" || value === "yes" || value === "si";
 }
 
+function getLimaDateParts(now = new Date()): { year: number; month: number; day: number } {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Lima",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const getPart = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? 0);
+  return {
+    year: getPart("year"),
+    month: getPart("month"),
+    day: getPart("day"),
+  };
+}
+
+function calculateCurrentAge(fechaNacimiento: unknown, now = new Date()): number | null {
+  const normalized = normalizeDate(fechaNacimiento);
+  if (!normalized) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(normalized);
+  if (!match) return null;
+
+  const birthYear = Number(match[1]);
+  const birthMonth = Number(match[2]);
+  const birthDay = Number(match[3]);
+  const today = getLimaDateParts(now);
+  if (!birthYear || !birthMonth || !birthDay || birthYear > today.year) return null;
+
+  let age = today.year - birthYear;
+  if (today.month < birthMonth || (today.month === birthMonth && today.day < birthDay)) {
+    age -= 1;
+  }
+  return age >= 0 && age <= 120 ? age : null;
+}
+
 function extractGeneratedImageFromInteraction(interaction: unknown): Buffer {
   const raw = interaction as {
     candidates?: Array<{
@@ -911,18 +950,106 @@ async function buildDirectCropAvatarImage(params: {
     .toBuffer();
 }
 
+function isWhiteAvatarBackgroundPixel(data: Buffer, index: number): boolean {
+  return data[index] >= 242 && data[index + 1] >= 242 && data[index + 2] >= 242;
+}
+
+async function removeWhiteAvatarBackgroundFromTopAndSides(buffer: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(buffer)
+    .resize(600, 800, { fit: "cover" })
+    .flatten({ background: "#FFFFFF" })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const width = info.width;
+  const height = info.height;
+  const pixelCount = width * height;
+  const visited = new Uint8Array(pixelCount);
+  const queue = new Int32Array(pixelCount);
+  let head = 0;
+  let tail = 0;
+
+  const enqueueIfBackground = (x: number, y: number) => {
+    if (x < 0 || x >= width || y < 0 || y >= height) return;
+    const pixelIndex = y * width + x;
+    if (visited[pixelIndex]) return;
+    const dataIndex = pixelIndex * 4;
+    if (!isWhiteAvatarBackgroundPixel(data, dataIndex)) return;
+    visited[pixelIndex] = 1;
+    queue[tail] = pixelIndex;
+    tail += 1;
+  };
+
+  for (let x = 0; x < width; x += 1) {
+    enqueueIfBackground(x, 0);
+  }
+  const sideSeedHeight = Math.max(1, Math.floor((height * 3) / 4));
+  for (let y = 0; y < sideSeedHeight; y += 1) {
+    enqueueIfBackground(0, y);
+    enqueueIfBackground(width - 1, y);
+  }
+
+  while (head < tail) {
+    const pixelIndex = queue[head];
+    head += 1;
+    const x = pixelIndex % width;
+    const y = Math.floor(pixelIndex / width);
+    const dataIndex = pixelIndex * 4;
+    data[dataIndex + 3] = 0;
+
+    enqueueIfBackground(x + 1, y);
+    enqueueIfBackground(x - 1, y);
+    enqueueIfBackground(x, y + 1);
+    enqueueIfBackground(x, y - 1);
+  }
+
+  return sharp(data, {
+    raw: {
+      width,
+      height,
+      channels: 4,
+    },
+  })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+}
+
 async function generateCarnetAvatarImage(params: {
   referenceBuffer: Buffer;
-}): Promise<{ buffer: Buffer; model: string; location: string; projectId: string; interactionId: string | null }> {
+  currentAge: number | null;
+}): Promise<{
+  buffer: Buffer;
+  contentType: string;
+  extension: string;
+  model: string;
+  location: string;
+  projectId: string;
+  interactionId: string | null;
+}> {
   const projectId = resolveAvatarImageProjectId();
   const location = resolveAvatarImageLocation();
   const model = resolveAvatarImageModel();
-  const prompt = [
+  const ageInstruction = params.currentAge !== null
+    ? `La edad aparente final debe corresponder a la edad actual calculada del usuario: ${params.currentAge} anos.`
+    : "Manten la edad aparente de la referencia porque no se recibio fecha de nacimiento valida.";
+  let prompt = [
     "Genera una fotografia tipo carnet/retrato a color usando estrictamente la persona de la imagen de referencia.",
     "Objetivo: mejorar la visualizacion, nitidez, iluminacion y color solamente.",
     "Mantén los rasgos faciales, edad aparente, identidad, expresion neutral y proporciones naturales de la referencia.",
     "No embellezcas, no retoques la piel, no cambies facciones, no cambies edad, no cambies genero, no agregues maquillaje ni accesorios nuevos.",
     "Encuadre: rostro y hombros, frontal, estilo documento oficial, fondo claro liso, sin textos, sin logos, sin bordes, sin elementos del DNI.",
+    "Salida: retrato vertical 3:4, apariencia fotografica natural.",
+  ].join(" ");
+  prompt = [
+    "Genera una fotografia tipo carnet/retrato a color usando estrictamente la persona de la imagen de referencia.",
+    "Objetivo: mejorar la visualizacion, nitidez, iluminacion y color solamente.",
+    "Manten los rasgos faciales, identidad, expresion neutral y proporciones naturales de la referencia.",
+    "Manten el mismo cabello, largo, volumen, linea de cabello, peinado y color de cabello de la referencia. No inventes ni estilices el peinado.",
+    ageInstruction,
+    "No embellezcas, no retoques la piel, no cambies facciones principales, no cambies genero, no agregues maquillaje ni accesorios nuevos.",
+    "Encuadre: rostro y hombros, frontal, estilo documento oficial, sin textos, sin logos, sin bordes, sin elementos del DNI.",
+    "Fondo: blanco puro #FFFFFF, liso y uniforme, sin sombras fuertes, sin textura, sin degradado y sin patron de transparencia.",
+    "No uses fondo verde, no uses color chroma key, no uses transparencia y no simules cuadricula de transparencia.",
     "Salida: retrato vertical 3:4, apariencia fotografica natural.",
   ].join(" ");
 
@@ -975,13 +1102,12 @@ async function generateCarnetAvatarImage(params: {
   }
   const interaction = JSON.parse(responseText) as unknown;
   const generatedBuffer = extractGeneratedImageFromInteraction(interaction);
-  const normalizedBuffer = await sharp(generatedBuffer)
-    .resize(600, 800, { fit: "cover" })
-    .jpeg({ quality: 92 })
-    .toBuffer();
+  const normalizedBuffer = await removeWhiteAvatarBackgroundFromTopAndSides(generatedBuffer);
 
   return {
     buffer: normalizedBuffer,
+    contentType: "image/png",
+    extension: "png",
     model,
     location,
     projectId,
@@ -995,18 +1121,34 @@ function buildFirebaseStorageUrl(bucketName: string, path: string, token: string
 
 async function uploadAvatarImage(params: {
   avatarBuffer: Buffer;
+  contentType?: string;
+  extension?: string;
+  sizeLabel?: string;
+  width?: number;
+  height?: number;
   bucketName: string;
   userId: number;
   dni: string;
   jobId: string;
 }): Promise<{ path: string; url: string; bucket: string; contentType: string }> {
   const safeDni = normalizeDocumentNumber(params.dni) || String(params.userId);
-  const path = `usuarios/avatars/${safeDni}/avatar-dni-${params.jobId}.jpg`;
+  const contentType = params.contentType ?? "image/jpeg";
+  const extension = params.extension ?? (contentType === "image/png" ? "png" : "jpg");
+  const sizeLabel = asCleanString(params.sizeLabel) ?? "grande";
+  const path = `usuarios/avatars/${safeDni}/avatar-dni-${params.jobId}-${sizeLabel}.${extension}`;
   const token = randomUUID();
   const bucket = getStorage().bucket(params.bucketName);
   const file = bucket.file(path);
-  await file.save(params.avatarBuffer, {
-    contentType: "image/jpeg",
+  const outputBuffer = params.width && params.height
+    ? await sharp(params.avatarBuffer)
+      .resize(params.width, params.height, { fit: "cover" })
+      .toFormat(contentType === "image/png" ? "png" : "jpeg", contentType === "image/png"
+        ? { compressionLevel: 9 }
+        : { quality: 90 })
+      .toBuffer()
+    : params.avatarBuffer;
+  await file.save(outputBuffer, {
+    contentType,
     metadata: {
       metadata: { firebaseStorageDownloadTokens: token },
     },
@@ -1016,8 +1158,38 @@ async function uploadAvatarImage(params: {
     path,
     url: buildFirebaseStorageUrl(bucket.name, path, token),
     bucket: bucket.name,
-    contentType: "image/jpeg",
+    contentType,
   };
+}
+
+async function uploadAvatarImages(params: {
+  avatarBuffer: Buffer;
+  contentType?: string;
+  extension?: string;
+  bucketName: string;
+  userId: number;
+  dni: string;
+  jobId: string;
+}): Promise<{
+  grande: { path: string; url: string; bucket: string; contentType: string };
+  mediano: { path: string; url: string; bucket: string; contentType: string };
+  pequeno: { path: string; url: string; bucket: string; contentType: string };
+}> {
+  const base = {
+    avatarBuffer: params.avatarBuffer,
+    contentType: params.contentType,
+    extension: params.extension,
+    bucketName: params.bucketName,
+    userId: params.userId,
+    dni: params.dni,
+    jobId: params.jobId,
+  };
+  const [grande, mediano, pequeno] = await Promise.all([
+    uploadAvatarImage({ ...base, sizeLabel: "grande" }),
+    uploadAvatarImage({ ...base, sizeLabel: "mediano", width: 300, height: 400 }),
+    uploadAvatarImage({ ...base, sizeLabel: "pequeno", width: 96, height: 128 }),
+  ]);
+  return { grande, mediano, pequeno };
 }
 
 async function processMatriculaAvatarExtractionJob(
@@ -1044,15 +1216,19 @@ async function processMatriculaAvatarExtractionJob(
     const { buffer, bucketName } = await downloadProcessedImage(source);
     const cropBox = await detectAvatarCropBox(buffer);
     const generativeAvatarEnabled = isGenerativeAvatarEnabled();
+    const currentAge = calculateCurrentAge(job.fechaNacimiento);
     const generatedAvatar = generativeAvatarEnabled
       ? await generateCarnetAvatarImage({
         referenceBuffer: await buildAvatarReferenceImage({ sourceBuffer: buffer, cropBox }),
+        currentAge,
       })
       : null;
     const avatarBuffer = generatedAvatar?.buffer
       ?? await buildDirectCropAvatarImage({ sourceBuffer: buffer, cropBox });
-    const avatar = await uploadAvatarImage({
+    const avatar = await uploadAvatarImages({
       avatarBuffer,
+      contentType: generatedAvatar?.contentType,
+      extension: generatedAvatar?.extension,
       bucketName,
       userId,
       dni: asCleanString(job.dni) ?? "",
@@ -1060,12 +1236,13 @@ async function processMatriculaAvatarExtractionJob(
     });
     await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
       UPDATE_USER_MUTATION,
-      { variables: { id: userId, data: { avatar: avatar.url } } },
+      { variables: { id: userId, data: { avatar: avatar.grande.url } } },
     );
     await ref.update({
       status: "completed",
       updatedAt: new Date().toISOString(),
-      avatar,
+      avatar: avatar.grande,
+      avatarTamanos: avatar,
       cropBox,
       generation: {
         mode: generatedAvatar ? "gemini_carnet_color" : "vision_direct_crop",
@@ -1073,6 +1250,8 @@ async function processMatriculaAvatarExtractionJob(
         location: generatedAvatar?.location ?? null,
         projectId: generatedAvatar?.projectId ?? null,
         interactionId: generatedAvatar?.interactionId ?? null,
+        currentAge,
+        fechaNacimiento: normalizeDate(job.fechaNacimiento),
         reference: generatedAvatar ? "dni_frente_procesado_face_crop" : "dni_frente_procesado",
         generativeAvatarEnabled,
       },
@@ -1081,7 +1260,9 @@ async function processMatriculaAvatarExtractionJob(
     console.info("matricula_avatar_extraction_completed", {
       jobId,
       userId,
-      avatarPath: avatar.path,
+      avatarPath: avatar.grande.path,
+      avatarMedianoPath: avatar.mediano.path,
+      avatarPequenoPath: avatar.pequeno.path,
       cropBox,
       avatarMode: generatedAvatar ? "gemini_carnet_color" : "vision_direct_crop",
       avatarModel: generatedAvatar?.model ?? null,
@@ -1213,6 +1394,7 @@ async function dispatchMatriculaDocumentProcessingJob(
       ? await enqueueMatriculaAvatarExtractionJob({
         userId: job.userId,
         dni: asCleanString(job.dni) ?? "",
+        fechaNacimiento: asCleanString(job.fechaNacimiento),
         documentProcessingJobId: jobId,
         frenteProcesado: getProcessedDocumentOutput(processorResult, "frente"),
       })
@@ -2165,6 +2347,7 @@ export const crearMatriculaFormulario = https.onCall(async (data, context) => {
         userId,
         tipoDocumento,
         dni,
+        fechaNacimiento: data?.fechaNacimiento,
         frente: getUploadedImage(data?.dniImagenFrente, existingUser?.dniImagenFrenteUrl),
         reverso: getUploadedImage(data?.dniImagenReverso, existingUser?.dniImagenReversoUrl),
         dniImagenFrenteProcesadaUrl: existingUser?.dniImagenFrenteProcesadaUrl,
@@ -2276,6 +2459,7 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
         userId,
         tipoDocumento,
         dni,
+        fechaNacimiento: data?.fechaNacimiento ?? userToSave?.fechaNacimiento,
         frente: getUploadedImage(data?.dniImagenFrente, userToSave?.dniImagenFrenteUrl),
         reverso: getUploadedImage(data?.dniImagenReverso, userToSave?.dniImagenReversoUrl),
         dniImagenFrenteProcesadaUrl: userToSave?.dniImagenFrenteProcesadaUrl,

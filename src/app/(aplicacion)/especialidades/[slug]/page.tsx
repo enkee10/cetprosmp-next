@@ -66,14 +66,6 @@ export default async function EspecialidadDetallePage({ params }: { params: Prom
     );
   }
 
-//prueba
-console.log({
-  NEXT_PUBLIC_IMG_PREDETERMINADA: process.env.NEXT_PUBLIC_DEFAULT_IMG_URL,
-  rutaCompleta: `${process.env.NEXT_PUBLIC_DEFAULT_IMG_URL}`,
-});
-//fin
-
-
   const carrerasConCodigo = (especialidad.carreras ?? []).filter((c) => c.codigo?.trim());
   const modulosSinCodigo = (especialidad.carreras ?? [])
     .filter((c) => !c.codigo?.trim())

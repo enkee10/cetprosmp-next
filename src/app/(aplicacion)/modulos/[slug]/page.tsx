@@ -10,7 +10,7 @@ import VideoGallery from '@/components/VideoGallery';
 import { getStrapiMedia } from '@/lib/getStrapiMedia';
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 const generarLorem = () => {
@@ -29,8 +29,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  // Await the params to resolve before accessing properties
-  const { slug } = await Promise.resolve(params);
+  const { slug } = await params;
   const modulos: Modulo[] = await getModulos();
   const modulo = modulos.find((e) => e.slug === slug);
   if (!modulo) return {};
@@ -41,8 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ModuloDetallePage({ params }: PageProps) {
-  // Await the params to resolve before accessing properties
-  const { slug } = await Promise.resolve(params);
+  const { slug } = await params;
   const modulos: Modulo[] = await getModulos();
   const modulo = modulos.find((e) => e.slug === slug);
   if (!modulo) notFound();

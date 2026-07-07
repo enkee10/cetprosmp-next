@@ -541,7 +541,6 @@ export interface ListActEconomicasData {
     titulo?: string | null;
     descripcion?: string | null;
     familiaId?: number | null;
-    especialidadId?: number | null;
   } & ActEconomica_Key)[];
 }
 ```

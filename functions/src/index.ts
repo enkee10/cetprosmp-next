@@ -74,6 +74,7 @@ export {
   listModulos,
   getModulo,
   createOrUpdateModulo,
+  updateModuloOrden,
   deleteModulo,
   listPaquetes,
   getPaquete,

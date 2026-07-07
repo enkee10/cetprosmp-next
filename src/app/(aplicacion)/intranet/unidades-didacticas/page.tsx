@@ -7,7 +7,7 @@ const fields = [
   { name: 'duracion', label: 'Duracion', type: 'number' as const },
   { name: 'creditos', label: 'Creditos', type: 'number' as const },
   { name: 'sigla', label: 'Sigla' },
-  { name: 'moduloId', label: 'Modulo ID', type: 'number' as const, required: true },
+  { name: 'moduloIds', label: 'Modulo IDs', type: 'number-list' as const, required: true },
 ];
 
 const columns = [
@@ -15,7 +15,7 @@ const columns = [
   { field: 'sigla', headerName: 'Sigla', flex: 0.7, minWidth: 100 },
   { field: 'duracion', headerName: 'Duracion', flex: 0.7, minWidth: 110 },
   { field: 'creditos', headerName: 'Creditos', flex: 0.7, minWidth: 110 },
-  { field: 'moduloId', headerName: 'Modulo ID', flex: 0.75, minWidth: 115 },
+  { field: 'moduloIds', headerName: 'Modulo IDs', flex: 0.85, minWidth: 130 },
 ];
 
 export default function UnidadesDidacticasPage() {

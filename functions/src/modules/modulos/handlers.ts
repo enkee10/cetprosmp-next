@@ -22,6 +22,7 @@ import {
   INSERT_PAQUETE_MUTATION,
   INSERT_MODULO_MUTATION,
   UPDATE_MODULO_MUTATION,
+  UPDATE_MODULO_ORDEN_MUTATION,
   UPDATE_PAQUETE_MUTATION,
 } from "../../dataconnectOperations.js";
 
@@ -40,6 +41,14 @@ const LIST_MODULOS_QUERY = `
       slug
       plan {
         planEstudio
+        carrera {
+          especialidad {
+            id
+            titulo
+            tituloComercial
+            orden
+          }
+        }
       }
       planId
     }
@@ -61,6 +70,14 @@ const GET_MODULO_QUERY = `
       slug
       plan {
         planEstudio
+        carrera {
+          especialidad {
+            id
+            titulo
+            tituloComercial
+            orden
+          }
+        }
       }
       planId
     }
@@ -105,6 +122,25 @@ const GET_PAQUETE_MODULOS_WITH_MODULOS_QUERY = `
 
 const getModuloLabel = (moduloId: number, modulo?: { titulo?: string | null; tituloComercial?: string | null } | null) =>
   modulo?.tituloComercial || modulo?.titulo || `Modulo ${moduloId}`;
+
+const getModuloEspecialidadLabel = (modulo: DataConnectModulo) =>
+  modulo.plan?.carrera?.especialidad?.tituloComercial
+  || modulo.plan?.carrera?.especialidad?.titulo
+  || "";
+
+const getModuloEspecialidadOrden = (modulo: DataConnectModulo) =>
+  modulo.plan?.carrera?.especialidad?.orden ?? Number.MAX_SAFE_INTEGER;
+
+const sortModulos = (items: DataConnectModulo[]) =>
+  items
+    .slice()
+    .sort((a, b) =>
+      getModuloEspecialidadOrden(a) - getModuloEspecialidadOrden(b)
+      || getModuloEspecialidadLabel(a).localeCompare(getModuloEspecialidadLabel(b), "es", { numeric: true })
+      || (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER)
+      || String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es", { numeric: true })
+      || a.id - b.id,
+    );
 
 const buildPaqueteTituloFromModulos = (items: DataConnectPaqueteModulo[]) =>
   items
@@ -228,9 +264,7 @@ export const listModulos = https.onCall(async (_data, context) => {
     const response = await dataConnect.executeGraphql<{ modulos: DataConnectModulo[] }, Record<string, never>>(
       LIST_MODULOS_QUERY,
     );
-    const modulos = (response.data.modulos ?? [])
-      .slice()
-      .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es"));
+    const modulos = sortModulos(response.data.modulos ?? []);
 
     return { modulos };
   } catch (error) {
@@ -319,6 +353,36 @@ export const createOrUpdateModulo = https.onCall(async (data, context) => {
   } catch (error) {
     console.error("Error in createOrUpdateModulo:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while saving module.");
+  }
+});
+
+export const updateModuloOrden = https.onCall(async (data, context) => {
+  const requesterLevel = context.auth?.token?.level ?? 0;
+  if (requesterLevel < 600) {
+    throw new https.HttpsError("permission-denied", "You do not have permission to mutate modules.");
+  }
+
+  const moduloId = toNumber(data?.id, -1);
+  if (moduloId <= 0) {
+    throw new https.HttpsError("invalid-argument", "id is required.");
+  }
+
+  const orden = toNumberOrNull(data?.orden);
+  const payload = buildModuloDataFromInput({ orden });
+
+  try {
+    const updated = await dataConnect.executeGraphql<
+      { modulo_update: unknown },
+      { id: number; data: DataConnectModuloInput }
+    >(
+      UPDATE_MODULO_ORDEN_MUTATION,
+      { variables: { id: moduloId, data: payload } },
+    );
+
+    return { id: getIdFromKeyOutput(updated.data.modulo_update) ?? moduloId };
+  } catch (error) {
+    console.error("Error in updateModuloOrden:", error);
+    throw new https.HttpsError("internal", "An unexpected error occurred while saving module order.");
   }
 });
 

@@ -34,7 +34,14 @@ interface CarreraData {
   nivel: string | null;
   imagenPortadaUrl: string | null;
   actEconomicaId: number | null;
+  especialidadId: number | null;
   tipoCarreraId: number | null;
+}
+
+interface EspecialidadOption {
+  id: number;
+  titulo: string | null;
+  tituloComercial?: string | null;
 }
 
 interface ActEconomicaOption {
@@ -56,8 +63,10 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
   const [nivel, setNivel] = useState('');
   const [imagenPortadaUrl, setImagenPortadaUrl] = useState('');
   const [actEconomicaId, setActEconomicaId] = useState('');
+  const [especialidadId, setEspecialidadId] = useState('');
   const [tipoCarreraId, setTipoCarreraId] = useState('');
   const [actEconomicas, setActEconomicas] = useState<ActEconomicaOption[]>([]);
+  const [especialidades, setEspecialidades] = useState<EspecialidadOption[]>([]);
   const [tiposCarrera, setTiposCarrera] = useState<TipoCarreraOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingCarrera, setLoadingCarrera] = useState(Boolean(carreraId));
@@ -68,6 +77,10 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
     const fetchOptions = async () => {
       try {
         const functions = getFunctions(app);
+        const listEspecialidades = httpsCallable<undefined, { especialidades?: EspecialidadOption[] }>(
+          functions,
+          'listEspecialidades',
+        );
         const listActEconomicas = httpsCallable<undefined, { actEconomicas?: ActEconomicaOption[] }>(
           functions,
           'listActEconomicas',
@@ -76,10 +89,12 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
           functions,
           'listTiposCarrera',
         );
-        const [actEconomicasResult, tiposCarreraResult] = await Promise.all([
+        const [especialidadesResult, actEconomicasResult, tiposCarreraResult] = await Promise.all([
+          listEspecialidades(),
           listActEconomicas(),
           listTiposCarrera(),
         ]);
+        setEspecialidades(especialidadesResult.data.especialidades || []);
         setActEconomicas(actEconomicasResult.data.actEconomicas || []);
         setTiposCarrera(tiposCarreraResult.data.tiposCarrera || []);
       } catch (err) {
@@ -109,6 +124,7 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
           setNivel(fetched.nivel || '');
           setImagenPortadaUrl(fetched.imagenPortadaUrl || '');
           setActEconomicaId(fetched.actEconomicaId != null ? String(fetched.actEconomicaId) : '');
+          setEspecialidadId(fetched.especialidadId != null ? String(fetched.especialidadId) : '');
           setTipoCarreraId(fetched.tipoCarreraId != null ? String(fetched.tipoCarreraId) : '');
         }
       } catch (err) {
@@ -138,6 +154,7 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
           nivel?: string | null;
           imagenPortadaUrl?: string | null;
           actEconomicaId?: number | null;
+          especialidadId?: number | null;
           tipoCarreraId?: number | null;
         },
         { id: number | null }
@@ -151,6 +168,7 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
         nivel: nivel || null,
         imagenPortadaUrl: imagenPortadaUrl.trim() || null,
         actEconomicaId: actEconomicaId ? Number(actEconomicaId) : null,
+        especialidadId: especialidadId ? Number(especialidadId) : null,
         tipoCarreraId: tipoCarreraId ? Number(tipoCarreraId) : null,
       });
 
@@ -255,6 +273,26 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
             {actEconomicas.map((actEconomica) => (
               <MenuItem key={actEconomica.id} value={String(actEconomica.id)}>
                 {actEconomica.titulo || `Actividad economica ${actEconomica.id}`}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Especialidad</InputLabel>
+          <Select
+            label="Especialidad"
+            value={especialidadId}
+            onChange={(event) => setEspecialidadId(String(event.target.value))}
+          >
+            <MenuItem value="">Sin especialidad</MenuItem>
+            {especialidadId && !especialidades.some((especialidad) => String(especialidad.id) === especialidadId) ? (
+              <MenuItem value={especialidadId} disabled>
+                Especialidad actual no disponible
+              </MenuItem>
+            ) : null}
+            {especialidades.map((especialidad) => (
+              <MenuItem key={especialidad.id} value={String(especialidad.id)}>
+                {especialidad.tituloComercial || especialidad.titulo || `Especialidad ${especialidad.id}`}
               </MenuItem>
             ))}
           </Select>

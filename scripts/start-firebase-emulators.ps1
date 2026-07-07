@@ -1,5 +1,10 @@
 param(
-  [string]$ProjectId = 'cetprosmp-2026'
+  [string]$ProjectId = 'cetprosmp-2026',
+  [string]$ExportDir = './exportedData',
+  [string]$Only = 'firestore,storage,dataconnect',
+  [switch]$Full,
+  [switch]$NoImport,
+  [switch]$NoExport
 )
 
 $ErrorActionPreference = 'Stop'
@@ -46,7 +51,24 @@ foreach ($ownerId in $ownerIds) {
   }
 }
 
-$only = "auth,firestore,dataconnect,storage,functions,hosting"
-$cmd = "npx -y firebase-tools@latest emulators:start --project $ProjectId --only $only"
+$selectedEmulators = $Only
+if ($Full) {
+  $selectedEmulators = 'auth,functions,firestore,storage,dataconnect'
+}
+
+if (($selectedEmulators -split ',') -contains 'functions') {
+  $env:FUNCTIONS_DISCOVERY_TIMEOUT = '60'
+}
+
+$cmd = "npx -y firebase-tools@latest emulators:start --project $ProjectId --only $selectedEmulators"
+
+if (-not $NoImport -and (Test-Path $ExportDir)) {
+  $cmd = "$cmd --import=$ExportDir"
+}
+
+if (-not $NoExport) {
+  $cmd = "$cmd --export-on-exit=$ExportDir"
+}
+
 cmd /c $cmd
 exit $LASTEXITCODE

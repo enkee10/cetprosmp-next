@@ -477,7 +477,7 @@ const classifyGeminiFiles = (files: File[], aiResult: GeminiMatriculaResult) => 
   }
 
   return {
-    frontIndex: frontIndex >= 0 ? frontIndex : null,
+    frontIndex: frontIndex !== null && frontIndex >= 0 ? frontIndex : null,
     reverseIndex,
     archivos: classifiedArchivos.length
       ? classifiedArchivos

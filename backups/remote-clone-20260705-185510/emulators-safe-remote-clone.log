@@ -1,0 +1,227 @@
+
+> mi-frontend@0.1.0 emulators:safe
+> powershell -ExecutionPolicy Bypass -File ./scripts/start-firebase-emulators.ps1 -Only auth,functions,firestore,storage,dataconnect
+
+Usando JAVA_HOME=C:\Users\Enrique\.jdks\jdk-21.0.11+10
+[2026-07-06T00:22:14.972Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[2026-07-06T00:22:14.976Z] > authorizing via signed-in user (enkee03@cetprosmp.edu.pe)
+[2026-07-06T00:22:15.085Z] openjdk version "21.0.11" 2026-04-21 LTS
+OpenJDK Runtime Environment Microsoft-13877171 (build 21.0.11+10-LTS)
+OpenJDK 64-Bit Server VM Microsoft-13877171 (build 21.0.11+10-LTS, mixed mode, sharing)
+
+[2026-07-06T00:22:15.091Z] Parsed Java major version: 21
+i  emulators: Starting emulators: auth, functions, firestore, storage, dataconnect {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: auth, functions, firestore, storage, dataconnect"}}
+[2026-07-06T00:22:15.107Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-07-06T00:22:15.108Z] [auth] Authentication Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-07-06T00:22:15.108Z] [firestore] Firestore Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-07-06T00:22:15.109Z] [firestore.websocket] websocket server for firestore only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-07-06T00:22:15.109Z] [storage] Storage Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+!  dataconnect: postgres server for dataconnect unable to start on port 5432, starting on 5433 instead. {"metadata":{"emulator":{"name":"dataconnect"},"message":"postgres server for dataconnect unable to start on port 5432, starting on 5433 instead."}}
+[2026-07-06T00:22:15.112Z] [dataconnect.postgres] postgres server for dataconnect only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-07-06T00:22:15.113Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}],"dataconnect":[{"address":"127.0.0.1","family":"IPv4","port":9399},{"address":"::1","family":"IPv6","port":9399}],"dataconnect.postgres":[{"address":"127.0.0.1","family":"IPv4","port":5433}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[2026-07-06T00:22:15.129Z] Found emulator hub locator: {"version":"15.22.4","origins":["http://127.0.0.1:4400","http://[::1]:4400"],"pid":20760}
+[2026-07-06T00:22:15.130Z] Write emulator hub locator at C:\Users\Enrique\AppData\Local\Temp\hub-cetprosmp-2026.json
+[2026-07-06T00:22:15.149Z] Checked if tokens are valid: true, expires at: 1783300230823
+[2026-07-06T00:22:15.150Z] Checked if tokens are valid: true, expires at: 1783300230823
+[2026-07-06T00:22:15.151Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026 [none]
+[2026-07-06T00:22:15.609Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026 200
+[2026-07-06T00:22:15.612Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026 {"projectId":"cetprosmp-2026","projectNumber":"242152120618","displayName":"cetprosmp","name":"projects/cetprosmp-2026","resources":{"hostingSite":"cetprosmp-2026"},"state":"ACTIVE","labels":{"firebase":"enabled","firebase/storage-default-bucket":"created"},"etag":"1_c5d0d42c-4f39-4704-bfe7-a42c7b2a55f1"}
+[2026-07-06T00:22:15.625Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-07-06T00:22:15.626Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-07-06T00:22:15.627Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[2026-07-06T00:22:15.627Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}],"dataconnect":[{"address":"127.0.0.1","family":"IPv4","port":9399},{"address":"::1","family":"IPv6","port":9399}],"dataconnect.postgres":[{"address":"127.0.0.1","family":"IPv4","port":5433}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+!  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, database, hosting, pubsub {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, database, hosting, pubsub\u001b[22m"}}
+!  functions: Application Default Credentials detected. Non-emulated services will access production using these credentials. Be careful! {"metadata":{"emulator":{"name":"functions"},"message":"Application Default Credentials detected. Non-emulated services will access production using these credentials. Be careful!"}}
+[2026-07-06T00:22:16.878Z] Checked if tokens are valid: true, expires at: 1783300230823
+[2026-07-06T00:22:16.878Z] Checked if tokens are valid: true, expires at: 1783300230823
+[2026-07-06T00:22:16.879Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026/adminSdkConfig [none]
+[2026-07-06T00:22:17.238Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026/adminSdkConfig 200
+[2026-07-06T00:22:17.238Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/cetprosmp-2026/adminSdkConfig {"projectId":"cetprosmp-2026","storageBucket":"cetprosmp-2026.firebasestorage.app"}
+i  firestore: Importing data from D:\_Desarrollo\cetprosmp-next\exportedData\firestore_export\firestore.overall_export_metadata {"metadata":{"emulator":{"name":"firestore"},"message":"Importing data from D:\\_Desarrollo\\cetprosmp-next\\exportedData\\firestore_export\\firestore.overall_export_metadata"}}
+[2026-07-06T00:22:17.277Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: auto_download"}}
+[2026-07-06T00:22:17.278Z] Ignoring unsupported arg: single_project_mode_error {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: single_project_mode_error"}}
+[2026-07-06T00:22:17.278Z] Starting Firestore Emulator with command {"binary":"java","args":["-Dgoogle.cloud_firestore.debug_log_level=FINE","-Duser.language=en","-jar","C:\\Users\\Enrique\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.21.0.jar","--host","127.0.0.1","--port",8080,"--websocket_port",9150,"--database-edition","standard","--project_id","cetprosmp-2026","--seed_from_export","D:\\_Desarrollo\\cetprosmp-next\\exportedData\\firestore_export\\firestore.overall_export_metadata","--rules","D:\\_Desarrollo\\cetprosmp-next\\firestore.rules","--single_project_mode",true,"--functions_emulator","127.0.0.1:5001"],"optionalArgs":["port","webchannel_port","host","rules","websocket_port","database-edition","functions_emulator","seed_from_export","project_id","single_project_mode"],"joinArgs":false,"shell":false,"port":8080} {"metadata":{"emulator":{"name":"firestore"},"message":"Starting Firestore Emulator with command {\"binary\":\"java\",\"args\":[\"-Dgoogle.cloud_firestore.debug_log_level=FINE\",\"-Duser.language=en\",\"-jar\",\"C:\\\\Users\\\\Enrique\\\\.cache\\\\firebase\\\\emulators\\\\cloud-firestore-emulator-v1.21.0.jar\",\"--host\",\"127.0.0.1\",\"--port\",8080,\"--websocket_port\",9150,\"--database-edition\",\"standard\",\"--project_id\",\"cetprosmp-2026\",\"--seed_from_export\",\"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\exportedData\\\\firestore_export\\\\firestore.overall_export_metadata\",\"--rules\",\"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\firestore.rules\",\"--single_project_mode\",true,\"--functions_emulator\",\"127.0.0.1:5001\"],\"optionalArgs\":[\"port\",\"webchannel_port\",\"host\",\"rules\",\"websocket_port\",\"database-edition\",\"functions_emulator\",\"seed_from_export\",\"project_id\",\"single_project_mode\"],\"joinArgs\":false,\"shell\":false,\"port\":8080}"}}
+i  firestore: Firestore Emulator logging to firestore-debug.log {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator logging to \u001b[1mfirestore-debug.log\u001b[22m"}}
+[2026-07-06T00:22:18.855Z] Jul 05, 2026 7:22:18 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://127.0.0.1:9150
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 05, 2026 7:22:18 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start\r\nINFO: Started WebSocket server on ws://127.0.0.1:9150\r\n"}}
+[2026-07-06T00:22:18.890Z] 
+API endpoint: http://127.0.0.1:8080
+Database Edition:  {"metadata":{"emulator":{"name":"firestore"},"message":"\nAPI endpoint: http://127.0.0.1:8080\nDatabase Edition: "}}
+[2026-07-06T00:22:18.891Z] STANDARD
+Database Mode: CLOUD_FIRESTORE
+
+If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+
+If you are running a Firestore in Datastore Mode project, run:
+
+   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080
+
+Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
+Dev App Server is now running.
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"STANDARD\nDatabase Mode: CLOUD_FIRESTORE\n\nIf you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:\r\n\n   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080\n\nIf you are running a Firestore in Datastore Mode project, run:\r\n\n   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080\n\nNote: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.\r\nDev App Server is now running.\n\r\n"}}
++  firestore: Firestore Emulator was started in standard edition. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator was started in standard edition."}}
++  firestore: Firestore Emulator UI websocket is running on 9150. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator UI websocket is running on 9150."}}
+i  auth: Importing config from D:\_Desarrollo\cetprosmp-next\exportedData\auth_export\config.json {"metadata":{"emulator":{"name":"auth"},"message":"Importing config from D:\\_Desarrollo\\cetprosmp-next\\exportedData\\auth_export\\config.json"}}
+i  auth: Importing accounts from D:\_Desarrollo\cetprosmp-next\exportedData\auth_export\accounts.json {"metadata":{"emulator":{"name":"auth"},"message":"Importing accounts from D:\\_Desarrollo\\cetprosmp-next\\exportedData\\auth_export\\accounts.json"}}
+i  dataconnect: Importing data from D:\_Desarrollo\cetprosmp-next\exportedData\dataconnect_export {"metadata":{"emulator":{"name":"dataconnect"},"message":"Importing data from D:\\_Desarrollo\\cetprosmp-next\\exportedData\\dataconnect_export"}}
+[2026-07-06T00:22:28.996Z] defaultcredentials: writing to file C:\Users\Enrique\AppData\Roaming\firebase\enkee03_cetprosmp_edu.pe_application_default_credentials.json
+[2026-07-06T00:22:29.324Z] I0705 19:22:29.263175   24680 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 015e] UpdateResources(): done
+Main schema: sources: schema\schema.gql [29258B] 
+Connector "default": sources: example\mutations.gql [1673B] example\queries.gql [1895B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.263175   24680 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 015e] UpdateResources(): done\nMain schema: sources: schema\\schema.gql [29258B] \nConnector \"default\": sources: example\\mutations.gql [1673B] example\\queries.gql [1895B] \n"}}
+[2026-07-06T00:22:29.325Z] defaultcredentials: writing to file C:\Users\Enrique\AppData\Roaming\firebase\enkee03_cetprosmp_edu.pe_application_default_credentials.json
+[2026-07-06T00:22:29.328Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"dataconnect"},"message":"Ignoring unsupported arg: auto_download"}}
+[2026-07-06T00:22:29.329Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"dataconnect"},"message":"Ignoring unsupported arg: port"}}
+[2026-07-06T00:22:29.329Z] Starting SQL Connect Emulator with command {"binary":"C:\\Users\\Enrique\\.cache\\firebase\\emulators\\dataconnect-emulator-3.4.14.exe","args":["--logtostderr","-v=2","dev","--listen=127.0.0.1:9399,[::1]:9399","--config_dir=D:\\_Desarrollo\\cetprosmp-next\\dataconnect","--enable_output_schema_extensions=true","--enable_output_generated_sdk=true"],"optionalArgs":["listen","config_dir","enable_output_schema_extensions","enable_output_generated_sdk"],"joinArgs":true,"shell":false,"port":9399} {"metadata":{"emulator":{"name":"dataconnect"},"message":"Starting SQL Connect Emulator with command {\"binary\":\"C:\\\\Users\\\\Enrique\\\\.cache\\\\firebase\\\\emulators\\\\dataconnect-emulator-3.4.14.exe\",\"args\":[\"--logtostderr\",\"-v=2\",\"dev\",\"--listen=127.0.0.1:9399,[::1]:9399\",\"--config_dir=D:\\\\_Desarrollo\\\\cetprosmp-next\\\\dataconnect\",\"--enable_output_schema_extensions=true\",\"--enable_output_generated_sdk=true\"],\"optionalArgs\":[\"listen\",\"config_dir\",\"enable_output_schema_extensions\",\"enable_output_generated_sdk\"],\"joinArgs\":true,\"shell\":false,\"port\":9399}"}}
+i  dataconnect: SQL Connect Emulator logging to dataconnect-debug.log {"metadata":{"emulator":{"name":"dataconnect"},"message":"SQL Connect Emulator logging to \u001b[1mdataconnect-debug.log\u001b[22m"}}
+i  dataconnect: Started up Postgres server, listening on {"address":"127.0.0.1","family":"IPv4","port":5433} {"metadata":{"emulator":{"name":"dataconnect"},"message":"Started up Postgres server, listening on {\"address\":\"127.0.0.1\",\"family\":\"IPv4\",\"port\":5433}"}}
+[2026-07-06T00:22:29.366Z] [SQL Connect] Connecting to postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable}...
+[2026-07-06T00:22:29.366Z] >>> [apiv2][query] POST http://127.0.0.1:9399/emulator/configure [none]
+[2026-07-06T00:22:29.367Z] >>> [apiv2][body] POST http://127.0.0.1:9399/emulator/configure {"connectionString":"postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable","database":"cetprosmp-db","serviceId":"cetprosmp-2026-service"}
+[2026-07-06T00:22:29.368Z] *** [apiv2] error from fetch(http://127.0.0.1:9399/emulator/configure, {"headers":{},"method":"POST","body":"{\"connectionString\":\"postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable\",\"database\":\"cetprosmp-db\",\"serviceId\":\"cetprosmp-2026-service\"}"}): FetchError: request to http://127.0.0.1:9399/emulator/configure failed, reason: connect ECONNREFUSED 127.0.0.1:9399
+[2026-07-06T00:22:29.369Z] [SQL Connect] Retrying connectToPostgress call (1 of 3 attempts): SQL Connect emulator: FirebaseError: Failed to make request to http://127.0.0.1:9399/emulator/configure
+[2026-07-06T00:22:29.373Z] I0705 19:22:29.358770    4204 load.go:31] Reloading schema and connectors...
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.358770    4204 load.go:31] Reloading schema and connectors...\n"}}
+[2026-07-06T00:22:29.449Z] I0705 19:22:29.449348    4204 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 68e3] UpdateResources(): done
+Main schema: sources: schema\schema.gql [29258B] 
+Connector "default": sources: example\mutations.gql [1673B] example\queries.gql [1895B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.449348    4204 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service 68e3] UpdateResources(): done\nMain schema: sources: schema\\schema.gql [29258B] \nConnector \"default\": sources: example\\mutations.gql [1673B] example\\queries.gql [1895B] \n"}}
+[2026-07-06T00:22:29.555Z] I0705 19:22:29.554988    4204 codegen.go:101] [connector "default" javascriptSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.554988    4204 codegen.go:101] [connector \"default\" javascriptSdk] Generating sources into \"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\src\\\\dataconnect-generated\"\n"}}
+[2026-07-06T00:22:29.580Z] I0705 19:22:29.580090    4204 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.580090    4204 codegen.go:101] [connector \"default\" adminSdk] Generating sources into \"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\src\\\\dataconnect-admin-generated\"\n"}}
+[2026-07-06T00:22:29.585Z] I0705 19:22:29.585073    4204 codegen.go:101] [connector "default" adminSdk] Generating sources into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.585073    4204 codegen.go:101] [connector \"default\" adminSdk] Generating sources into \"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\functions\\\\src\\\\dataconnect-admin-generated\"\n"}}
+[2026-07-06T00:22:29.589Z] I0705 19:22:29.589621    4204 collector.go:107] schema extensions wrote into "D:\\_Desarrollo\\cetprosmp-next\\dataconnect\\.dataconnect\\schema"
+Generated sources: prelude.gql [84995B] main\input.gql [821056B] main\relation.gql [461921B] main\query.gql [86328B] main\mutation.gql [231293B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.589621    4204 collector.go:107] schema extensions wrote into \"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\dataconnect\\\\.dataconnect\\\\schema\"\nGenerated sources: prelude.gql [84995B] main\\input.gql [821056B] main\\relation.gql [461921B] main\\query.gql [86328B] main\\mutation.gql [231293B] \n"}}
+[2026-07-06T00:22:29.626Z] I0705 19:22:29.626643    4204 collector.go:107] connector "default" javascriptSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-generated"
+Generated sources: package.json [853B] react\esm\index.esm.js [3611B] .guides/usage.md [3712B] .guides/config.json [236B] index.cjs.js [6705B] README.md [47249B] react\esm\package.json [17B] react\README.md [52845B] .guides/setup.md [1682B] react\package.json [460B] esm\index.esm.js [6095B] react\index.d.ts [4313B] react\index.cjs.js [3804B] index.d.ts [15746B] esm\package.json [17B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.626643    4204 collector.go:107] connector \"default\" javascriptSdk wrote into \"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\src\\\\dataconnect-generated\"\nGenerated sources: package.json [853B] react\\esm\\index.esm.js [3611B] .guides/usage.md [3712B] .guides/config.json [236B] index.cjs.js [6705B] README.md [47249B] react\\esm\\package.json [17B] react\\README.md [52845B] .guides/setup.md [1682B] react\\package.json [460B] esm\\index.esm.js [6095B] react\\index.d.ts [4313B] react\\index.cjs.js [3804B] index.d.ts [15746B] esm\\package.json [17B] \n"}}
+[2026-07-06T00:22:29.669Z] I0705 19:22:29.669289    4204 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.669289    4204 installsdk.go:55] Package @dataconnect/generated is already installed. Skipping installation\n"}}
+[2026-07-06T00:22:29.670Z] I0705 19:22:29.670717    4204 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\src\\dataconnect-admin-generated"
+Generated sources: index.d.ts [14848B] esm\index.esm.js [3271B] esm\package.json [17B] index.cjs.js [3602B] package.json [632B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.670717    4204 collector.go:107] connector \"default\" adminSdk wrote into \"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\src\\\\dataconnect-admin-generated\"\nGenerated sources: index.d.ts [14848B] esm\\index.esm.js [3271B] esm\\package.json [17B] index.cjs.js [3602B] package.json [632B] \n"}}
+[2026-07-06T00:22:29.671Z] I0705 19:22:29.671211    4204 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.671211    4204 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation\n"}}
+[2026-07-06T00:22:29.672Z] I0705 19:22:29.672210    4204 collector.go:107] connector "default" adminSdk wrote into "D:\\_Desarrollo\\cetprosmp-next\\functions\\src\\dataconnect-admin-generated"
+Generated sources: esm\package.json [17B] index.cjs.js [3602B] package.json [632B] index.d.ts [14848B] esm\index.esm.js [3271B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.672210    4204 collector.go:107] connector \"default\" adminSdk wrote into \"D:\\\\_Desarrollo\\\\cetprosmp-next\\\\functions\\\\src\\\\dataconnect-admin-generated\"\nGenerated sources: esm\\package.json [17B] index.cjs.js [3602B] package.json [632B] index.d.ts [14848B] esm\\index.esm.js [3271B] \n"}}
+[2026-07-06T00:22:29.707Z] I0705 19:22:29.708011    4204 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation
+I0705 19:22:29.708011    4204 load.go:109] Finished reloading
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.708011    4204 installsdk.go:55] Package @dataconnect/admin-generated is already installed. Skipping installation\nI0705 19:22:29.708011    4204 load.go:109] Finished reloading\n"}}
+[2026-07-06T00:22:29.710Z] I0705 19:22:29.710910    4204 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.710910    4204 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:9399\n"}}
+[2026-07-06T00:22:29.711Z] I0705 19:22:29.710910    4204 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:29.710910    4204 dev.go:104] Listening on address (HTTP + gRPC): [::1]:9399\n"}}
+[2026-07-06T00:22:31.375Z] [SQL Connect] Connecting to postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable}...
+[2026-07-06T00:22:31.376Z] >>> [apiv2][query] POST http://127.0.0.1:9399/emulator/configure [none]
+[2026-07-06T00:22:31.376Z] >>> [apiv2][body] POST http://127.0.0.1:9399/emulator/configure {"connectionString":"postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable","database":"cetprosmp-db","serviceId":"cetprosmp-2026-service"}
+[2026-07-06T00:22:31.454Z] Importing from D:\_Desarrollo\cetprosmp-next\exportedData\dataconnect_export\postgres.tar.gz
+[2026-07-06T00:22:34.350Z] I0705 19:22:34.349556    4204 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service e5aa] UpdateResources(): done
+Main schema: sources: schema\schema.gql [29258B] 
+Connector "default": sources: example\mutations.gql [1673B] example\queries.gql [1895B] 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:34.349556    4204 control.go:100] [projects/emulator/locations/emulator/services/cetprosmp-2026-service e5aa] UpdateResources(): done\nMain schema: sources: schema\\schema.gql [29258B] \nConnector \"default\": sources: example\\mutations.gql [1673B] example\\queries.gql [1895B] \n"}}
+[2026-07-06T00:22:34.388Z] I0705 19:22:34.388665    4204 configure_emulator.go:21] ConfigureEmulator successed
+Request: service_id:  "cetprosmp-2026-service"
+connection_string:  "postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable"
+database:  "cetprosmp-db"
+
+Response: 
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0705 19:22:34.388665    4204 configure_emulator.go:21] ConfigureEmulator successed\nRequest: service_id:  \"cetprosmp-2026-service\"\nconnection_string:  \"postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable\"\ndatabase:  \"cetprosmp-db\"\n\nResponse: \n"}}
+[2026-07-06T00:22:34.391Z] <<< [apiv2][status] POST http://127.0.0.1:9399/emulator/configure 200
+[2026-07-06T00:22:34.392Z] <<< [apiv2][body] POST http://127.0.0.1:9399/emulator/configure {}
+[2026-07-06T00:22:34.392Z] [SQL Connect] Successfully connected to postgres://127.0.0.1:5433/cetprosmp-db?sslmode=disable}
+[2026-07-06T00:22:34.406Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"storage"},"message":"Ignoring unsupported arg: port"}}
+[2026-07-06T00:22:35.195Z] Temp file directory for storage emulator: C:\Users\Enrique\AppData\Local\Temp/firebase/storage/blobs {"metadata":{"emulator":{"name":"storage"},"message":"Temp file directory for storage emulator: C:\\Users\\Enrique\\AppData\\Local\\Temp/firebase/storage/blobs"}}
+i  functions: Watching "D:\_Desarrollo\cetprosmp-next\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"D:\\_Desarrollo\\cetprosmp-next\\functions\" for Cloud Functions..."}}
+[2026-07-06T00:22:35.785Z] Validating nodejs source
+[2026-07-06T00:22:36.877Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "set ESLINT_USE_FLAT_CONFIG=false&& eslint .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "npm run build && firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@dataconnect/admin-generated": "file:src/dataconnect-admin-generated",
+    "firebase-admin": "^13.10.0",
+    "firebase-functions": "^7.2.5",
+    "googleapis": "^142.0.0",
+    "mi-frontend": "file:..",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[2026-07-06T00:22:36.878Z] Building nodejs source
+[2026-07-06T00:22:36.879Z] Failed to find version of module node: reached end of search path D:\_Desarrollo\cetprosmp-next\functions\node_modules
++  functions: Using node@22 from host. 
+i  functions: Loaded environment variables from .env. 
+[2026-07-06T00:22:36.892Z] Could not find functions.yaml. Must use http discovery
+[2026-07-06T00:22:36.905Z] Found firebase-functions binary at 'D:\_Desarrollo\cetprosmp-next\functions\node_modules\.bin\firebase-functions'
+Serving at port 8877
+
+!!  functions: Failed to load function definition from source: FirebaseError: User code failed to load. Cannot determine backend specification. Timeout after 10000. See https://firebase.google.com/docs/functions/tips#avoid_deployment_timeouts_during_initialization' {"metadata":{"emulator":{"name":"functions"},"message":"Failed to load function definition from source: FirebaseError: User code failed to load. Cannot determine backend specification. Timeout after 10000. See https://firebase.google.com/docs/functions/tips#avoid_deployment_timeouts_during_initialization'"}}
+[2026-07-06T00:23:28.733Z] >>> [apiv2][query] GET http://127.0.0.1:9399/emulator/info [none]
+[2026-07-06T00:23:28.741Z] <<< [apiv2][status] GET http://127.0.0.1:9399/emulator/info 200
+[2026-07-06T00:23:28.742Z] <<< [apiv2][body] GET http://127.0.0.1:9399/emulator/info {"version":"","services":[{"serviceId":"cetprosmp-2026-service","connectionString":"dbname='cetprosmp-db' host='127.0.0.1' port='5433' sslmode='disable' dbname='cetprosmp-db'"}]}
+
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────────┬────────────────┬─────────────────────────────────┐
+│ Emulator       │ Host:Port      │ View in Emulator UI             │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Authentication │ 127.0.0.1:9099 │ http://127.0.0.1:4000/auth      │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Functions      │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Firestore      │ 127.0.0.1:8080 │ http://127.0.0.1:4000/firestore │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Storage        │ 127.0.0.1:9199 │ http://127.0.0.1:4000/storage   │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ SQL Connect    │ 127.0.0.1:9399 │ n/a                             │
+└────────────────┴────────────────┴─────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+!!  dataconnect: Postgres threw an unexpected error, shutting down the SQL Connect emulator: Error: read ECONNRESET {"metadata":{"emulator":{"name":"dataconnect"},"message":"Postgres threw an unexpected error, shutting down the SQL Connect emulator: Error: read ECONNRESET"}}
+i  emulators: Shutting down emulators. {"metadata":{"emulator":{"name":"hub"},"message":"Shutting down emulators."}}
+i  ui: Stopping Emulator UI {"metadata":{"emulator":{"name":"ui"},"message":"Stopping Emulator UI"}}
+i  functions: Stopping Functions Emulator {"metadata":{"emulator":{"name":"functions"},"message":"Stopping Functions Emulator"}}
+i  firestore: Stopping Firestore Emulator {"metadata":{"emulator":{"name":"firestore"},"message":"Stopping Firestore Emulator"}}
+!  dataconnect: Fatal error occurred: 
+   SQL Connect Emulator has exited with code: 4294967295, 
+   stopping all running emulators {"metadata":{"emulator":{"name":"dataconnect"},"message":"Fatal error occurred: \n   SQL Connect Emulator has exited with code: 4294967295, \n   stopping all running emulators"}}
+i  firestore: Stopping Firestore Emulator {"metadata":{"emulator":{"name":"firestore"},"message":"Stopping Firestore Emulator"}}
+i  auth: Stopping Authentication Emulator {"metadata":{"emulator":{"name":"auth"},"message":"Stopping Authentication Emulator"}}
+i  storage: Stopping Storage Emulator {"metadata":{"emulator":{"name":"storage"},"message":"Stopping Storage Emulator"}}
+!  Firestore Emulator has exited upon receiving signal: SIGINT 
+i  auth: Stopping Authentication Emulator {"metadata":{"emulator":{"name":"auth"},"message":"Stopping Authentication Emulator"}}
+i  storage: Stopping Storage Emulator {"metadata":{"emulator":{"name":"storage"},"message":"Stopping Storage Emulator"}}

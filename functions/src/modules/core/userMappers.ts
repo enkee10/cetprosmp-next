@@ -100,6 +100,11 @@ export function toNumberOrNull(value: unknown): number | null | undefined {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+export function toIntegerOrNull(value: unknown): number | null | undefined {
+  const parsed = toNumberOrNull(value);
+  return typeof parsed === "number" ? Math.trunc(parsed) : parsed;
+}
+
 export function getIdFromKeyOutput(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string") {
@@ -208,7 +213,6 @@ export function buildActEconomicaDataFromInput(input: Record<string, unknown>): 
     descripcion: asNullableString(input.descripcion),
     imagenPortadaUrl: asNullableString(input.imagenPortadaUrl),
     familiaId: toNumberOrNull(input.familiaId),
-    especialidadId: toNumberOrNull(input.especialidadId),
   });
 }
 
@@ -225,11 +229,11 @@ export function buildEspecialidadDataFromInput(input: Record<string, unknown>): 
   return compactUndefined({
     titulo: asNullableString(input.titulo),
     tituloComercial: asNullableString(input.tituloComercial),
+    orden: toIntegerOrNull(input.orden),
     descripcion: asNullableString(input.descripcion),
     descripcion2: asNullableString(input.descripcion2),
     slug: asNullableString(input.slug),
     imagenPortadaUrl: asNullableString(input.imagenPortadaUrl),
-    actEconomicaId: toNumberOrNull(input.actEconomicaId),
   });
 }
 
@@ -249,6 +253,7 @@ export function buildCarreraDataFromInput(input: Record<string, unknown>): DataC
     creadoEn: asNullableTimestamp(input.creadoEn),
     actualizadoEn: asNullableTimestamp(input.actualizadoEn),
     actEconomicaId: toNumberOrNull(input.actEconomicaId),
+    especialidadId: toNumberOrNull(input.especialidadId),
     tipoCarreraId: toNumberOrNull(input.tipoCarreraId),
   });
 }
@@ -269,6 +274,7 @@ export function buildPlanDataFromInput(input: Record<string, unknown>): DataConn
     genera: asNullableString(input.genera),
     carreraId: toNumberOrNull(input.carreraId),
     periodoVigenciaId: toNumberOrNull(input.periodoVigenciaId),
+    versionId: toNumberOrNull(input.versionId),
   });
 }
 
@@ -392,7 +398,7 @@ export function buildModuloDataFromInput(input: Record<string, unknown>): DataCo
   return compactUndefined({
     titulo: asNullableString(input.titulo),
     tituloComercial: asNullableString(input.tituloComercial),
-    orden: toNumberOrNull(input.orden),
+    orden: toIntegerOrNull(input.orden),
     descripcion: asNullableString(input.descripcion),
     horas: toNumberOrNull(input.horas),
     creditos: toNumberOrNull(input.creditos),
@@ -446,7 +452,6 @@ export function buildUnidadDidacticaDataFromInput(input: Record<string, unknown>
     duracion: toNumberOrNull(input.duracion),
     creditos: toNumberOrNull(input.creditos),
     sigla: asNullableString(input.sigla),
-    moduloId: toNumberOrNull(input.moduloId),
   });
 }
 

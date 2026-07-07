@@ -10,8 +10,10 @@ export function generarJsonLd(especialidad: Especialidad): object {
                 .join(' ')
             : 'Curso técnico en CETPRO San Martín de Porres.';
 
+    const primeraImagen = especialidad.imagenes?.[0];
     const imagenDestacada =
-        especialidad.imagenes?.[0]?.url || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL;
+        (typeof primeraImagen === 'string' ? primeraImagen : primeraImagen?.url)
+        || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL;
 
     return {
         "@context": "https://schema.org",

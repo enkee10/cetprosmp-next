@@ -11,18 +11,7 @@ import {
   Button,
 } from '@mui/material';
 import Link from 'next/link';
-
-export type Publicacion = {
-  id: number;
-  titulo: string;
-  slug: string;
-  tipo: 'noticia' | 'evento' | 'comunicado' | string;
-  descripcionCorta?: string;
-  contenido?: string; // fallback si no hay descripcionCorta
-  fechaPublicacion?: string;
-  destacado?: boolean;
-  imagenPrincipal?: string | null;
-};
+import type { Publicacion } from '@/types/publicaciones';
 
 type Props = { publicacion: Publicacion };
 
@@ -48,9 +37,10 @@ const PublicacionesCard: React.FC<Props> = ({ publicacion }) => {
     process.env.NEXT_PUBLIC_DEFAULT_IMG_URL || '/imagenes/img-predeterminada.avif';
   const imagen =
     imagenPrincipal && imagenPrincipal.trim() !== '' ? imagenPrincipal : imgFallback;
+  const contenidoTexto = typeof contenido === 'string' ? contenido : '';
 
   // Descripción: descripcionCorta (máx 15) → contenido (máx 15) → lorem (15)
-  const baseDesc = descripcionCorta.trim() || contenido.trim() || LOREM_15;
+  const baseDesc = descripcionCorta.trim() || contenidoTexto.trim() || LOREM_15;
   const resumen = clipWords(baseDesc, 15);
 
   return (

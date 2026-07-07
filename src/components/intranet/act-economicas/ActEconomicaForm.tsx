@@ -26,7 +26,6 @@ interface ActEconomicaFormProps {
     descripcion: string;
     imagenPortadaUrl?: string | null;
     familiaId: string;
-    especialidadId: string;
   } | null;
   actEconomicaId?: string;
   asModal?: boolean;
@@ -40,15 +39,9 @@ interface ActEconomicaData {
   descripcion: string | null;
   imagenPortadaUrl: string | null;
   familiaId: number | null;
-  especialidadId: number | null;
 }
 
 interface FamiliaOption {
-  id: number;
-  titulo: string | null;
-}
-
-interface EspecialidadOption {
   id: number;
   titulo: string | null;
 }
@@ -64,9 +57,7 @@ export function ActEconomicaForm({
   const [descripcion, setDescripcion] = useState(actEconomica ? actEconomica.descripcion : '');
   const [imagenPortadaUrl, setImagenPortadaUrl] = useState(actEconomica?.imagenPortadaUrl || '');
   const [familiaId, setFamiliaId] = useState(actEconomica ? actEconomica.familiaId : '');
-  const [especialidadId, setEspecialidadId] = useState(actEconomica ? actEconomica.especialidadId : '');
   const [familias, setFamilias] = useState<FamiliaOption[]>([]);
-  const [especialidades, setEspecialidades] = useState<EspecialidadOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingActEconomica, setLoadingActEconomica] = useState(Boolean(actEconomicaId && !actEconomica));
   const [error, setError] = useState<string | null>(null);
@@ -77,16 +68,8 @@ export function ActEconomicaForm({
       try {
         const functions = getFunctions(app);
         const listFamilias = httpsCallable<undefined, { familias?: FamiliaOption[] }>(functions, 'listFamilias');
-        const listEspecialidades = httpsCallable<undefined, { especialidades?: EspecialidadOption[] }>(
-          functions,
-          'listEspecialidades',
-        );
-        const [familiasResult, especialidadesResult] = await Promise.all([
-          listFamilias(),
-          listEspecialidades(),
-        ]);
+        const familiasResult = await listFamilias();
         setFamilias(familiasResult.data.familias || []);
-        setEspecialidades(especialidadesResult.data.especialidades || []);
       } catch (err) {
         console.error('Error fetching act economica options: ', err);
         setError('No se pudieron cargar las opciones relacionadas para el formulario.');
@@ -115,7 +98,6 @@ export function ActEconomicaForm({
           setDescripcion(fetched.descripcion || '');
           setImagenPortadaUrl(fetched.imagenPortadaUrl || '');
           setFamiliaId(fetched.familiaId != null ? String(fetched.familiaId) : '');
-          setEspecialidadId(fetched.especialidadId != null ? String(fetched.especialidadId) : '');
         }
       } catch (err) {
         console.error('Error fetching act economica: ', err);
@@ -142,7 +124,6 @@ export function ActEconomicaForm({
           descripcion: string;
           imagenPortadaUrl?: string | null;
           familiaId?: number | null;
-          especialidadId?: number | null;
         },
         { id: number | null }
       >(functions, 'createOrUpdateActEconomica');
@@ -153,7 +134,6 @@ export function ActEconomicaForm({
         descripcion,
         imagenPortadaUrl: imagenPortadaUrl.trim() || null,
         familiaId: familiaId ? Number(familiaId) : null,
-        especialidadId: especialidadId ? Number(especialidadId) : null,
       });
 
       if (onSaved) {
@@ -245,26 +225,6 @@ export function ActEconomicaForm({
             {familias.map((familia) => (
               <MenuItem key={familia.id} value={String(familia.id)}>
                 {familia.titulo || `Familia ${familia.id}`}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Especialidad</InputLabel>
-          <Select
-            label="Especialidad"
-            value={especialidadId}
-            onChange={(event) => setEspecialidadId(String(event.target.value))}
-          >
-            <MenuItem value="">Sin especialidad</MenuItem>
-            {especialidadId && !especialidades.some((especialidad) => String(especialidad.id) === especialidadId) ? (
-              <MenuItem value={especialidadId} disabled>
-                Especialidad actual no disponible
-              </MenuItem>
-            ) : null}
-            {especialidades.map((especialidad) => (
-              <MenuItem key={especialidad.id} value={String(especialidad.id)}>
-                {especialidad.titulo || `Especialidad ${especialidad.id}`}
               </MenuItem>
             ))}
           </Select>

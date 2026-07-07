@@ -312,6 +312,78 @@ extend type Query {
     first: DatoGeneral_FirstRow
   ): DatoGeneral @fdc_generated(from: "DatoGeneral", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `EfsrtPppEstudiante` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  efsrtPppEstudiante(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EfsrtPppEstudiante_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EfsrtPppEstudiante_FirstRow
+  ): EfsrtPppEstudiante @fdc_generated(from: "EfsrtPppEstudiante", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `EfsrtPppNota` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  efsrtPppNota(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EfsrtPppNota_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EfsrtPppNota_FirstRow
+  ): EfsrtPppNota @fdc_generated(from: "EfsrtPppNota", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `EfsrtPppPractica` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  efsrtPppPractica(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: EfsrtPppPractica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: EfsrtPppPractica_FirstRow
+  ): EfsrtPppPractica @fdc_generated(from: "EfsrtPppPractica", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `EjeTransversal` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   ejeTransversal(
@@ -1342,6 +1414,30 @@ extend type Query {
     first: UnidadDidacticaEstudiante_FirstRow
   ): UnidadDidacticaEstudiante @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `UnidadDidacticaModulo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  unidadDidacticaModulo(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: UnidadDidacticaModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UnidadDidacticaModulo_FirstRow
+  ): UnidadDidacticaModulo @fdc_generated(from: "UnidadDidacticaModulo", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `User` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   user(
@@ -1855,6 +1951,108 @@ extend type Query {
     """
     having: DatoGeneral_Having
   ): [DatoGeneral!]! @fdc_generated(from: "DatoGeneral", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `EfsrtPppEstudiante` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  efsrtPppEstudiantes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EfsrtPppEstudiante_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EfsrtPppEstudiante_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EfsrtPppEstudiante_Having
+  ): [EfsrtPppEstudiante!]! @fdc_generated(from: "EfsrtPppEstudiante", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `EfsrtPppNota` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  efsrtPppNotas(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EfsrtPppNota_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EfsrtPppNota_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EfsrtPppNota_Having
+  ): [EfsrtPppNota!]! @fdc_generated(from: "EfsrtPppNota", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `EfsrtPppPractica` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  efsrtPppPracticas(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EfsrtPppPractica_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EfsrtPppPractica_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EfsrtPppPractica_Having
+  ): [EfsrtPppPractica!]! @fdc_generated(from: "EfsrtPppPractica", purpose: QUERY_MULTIPLE)
   """
   ✨ List `EjeTransversal` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -3385,6 +3583,40 @@ extend type Query {
     """
     having: UnidadDidacticaEstudiante_Having
   ): [UnidadDidacticaEstudiante!]! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `UnidadDidacticaModulo` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  unidadDidacticaModulos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: UnidadDidacticaModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [UnidadDidacticaModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: UnidadDidacticaModulo_Having
+  ): [UnidadDidacticaModulo!]! @fdc_generated(from: "UnidadDidacticaModulo", purpose: QUERY_MULTIPLE)
   """
   ✨ List `User` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

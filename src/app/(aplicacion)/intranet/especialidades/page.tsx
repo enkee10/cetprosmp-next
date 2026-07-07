@@ -16,21 +16,31 @@ interface Especialidad {
   id: number;
   titulo: string | null;
   tituloComercial: string | null;
+  orden: number | null;
   descripcion: string | null;
   descripcion2: string | null;
   slug: string | null;
   imagenPortadaUrl: string | null;
-  actEconomicaId: number | null;
 }
 
-interface ActEconomicaOption {
-  id: number;
-  titulo: string | null;
-}
+const normalizeOrden = (value: unknown) => {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
+};
+
+const sortEspecialidades = (items: Especialidad[]) =>
+  items
+    .slice()
+    .sort(
+      (a, b) =>
+        (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER) ||
+        String(a.titulo ?? '').localeCompare(String(b.titulo ?? ''), 'es', { numeric: true }) ||
+        a.id - b.id,
+    );
 
 export default function EspecialidadesPage() {
   const [especialidades, setEspecialidades] = useState<Especialidad[]>([]);
-  const [actEconomicas, setActEconomicas] = useState<ActEconomicaOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openEspecialidadModal, setOpenEspecialidadModal] = useState(false);
@@ -47,8 +57,8 @@ export default function EspecialidadesPage() {
       portada: true,
       titulo: true,
       tituloComercial: true,
+      orden: true,
       slug: true,
-      actEconomicaTitulo: true,
       descripcion: false,
       descripcion2: false,
       actions: true,
@@ -67,16 +77,8 @@ export default function EspecialidadesPage() {
         functions,
         'listEspecialidades',
       );
-      const listActEconomicas = httpsCallable<undefined, { actEconomicas?: ActEconomicaOption[] }>(
-        functions,
-        'listActEconomicas',
-      );
-      const [especialidadesResult, actEconomicasResult] = await Promise.all([
-        listEspecialidades(),
-        listActEconomicas(),
-      ]);
-      setEspecialidades(especialidadesResult.data.especialidades || []);
-      setActEconomicas(actEconomicasResult.data.actEconomicas || []);
+      const especialidadesResult = await listEspecialidades();
+      setEspecialidades(sortEspecialidades(especialidadesResult.data.especialidades || []));
       setError(null);
     } catch (err) {
       console.error('Error fetching especialidades: ', err);
@@ -87,17 +89,6 @@ export default function EspecialidadesPage() {
       setLoading(false);
     }
   }, [auth, functions]);
-
-  const actEconomicaTitleById = useMemo(
-    () =>
-      new Map(
-        actEconomicas.map((actEconomica) => [
-          actEconomica.id,
-          actEconomica.titulo || `Actividad economica ${actEconomica.id}`,
-        ]),
-      ),
-    [actEconomicas],
-  );
 
   useEffect(() => {
     void fetchEspecialidades();
@@ -163,6 +154,51 @@ export default function EspecialidadesPage() {
     }
   }, [especialidades, fetchEspecialidades, functions]);
 
+  const handleProcessRowUpdate = useCallback(async (newRow: Especialidad, oldRow: Especialidad) => {
+    const nextOrden = normalizeOrden(newRow.orden);
+    if (nextOrden === oldRow.orden) {
+      return oldRow;
+    }
+
+    const createOrUpdateEspecialidad = httpsCallable<
+      {
+        id: number;
+        titulo: string;
+        tituloComercial: string;
+        orden?: number | null;
+        descripcion: string;
+        descripcion2: string;
+        slug: string;
+        imagenPortadaUrl?: string | null;
+      },
+      { id: number | null }
+    >(functions, 'createOrUpdateEspecialidad');
+
+    await createOrUpdateEspecialidad({
+      id: oldRow.id,
+      titulo: oldRow.titulo || '',
+      tituloComercial: oldRow.tituloComercial || '',
+      orden: nextOrden,
+      descripcion: oldRow.descripcion || '',
+      descripcion2: oldRow.descripcion2 || '',
+      slug: oldRow.slug || '',
+      imagenPortadaUrl: oldRow.imagenPortadaUrl?.trim() || null,
+    });
+
+    const updatedRow = { ...oldRow, orden: nextOrden };
+    setEspecialidades((current) =>
+      sortEspecialidades(current.map((especialidad) => (especialidad.id === updatedRow.id ? updatedRow : especialidad))),
+    );
+    setError(null);
+    return updatedRow;
+  }, [functions]);
+
+  const handleProcessRowUpdateError = useCallback((err: unknown) => {
+    console.error('Error updating especialidad orden: ', err);
+    const message = (err as { message?: string } | null)?.message || '';
+    setError(message ? `No se pudo actualizar el orden: ${message}` : 'No se pudo actualizar el orden.');
+  }, []);
+
   const columns = useMemo<GridColDef[]>(
     () => [
       {
@@ -203,6 +239,19 @@ export default function EspecialidadesPage() {
         },
       },
       {
+        field: 'orden',
+        headerName: 'Ord.',
+        type: 'number',
+        width: 60,
+        minWidth: 60,
+        maxWidth: 60,
+        align: 'center',
+        headerAlign: 'center',
+        editable: true,
+        valueParser: (value) => normalizeOrden(value),
+        valueGetter: (_value, row: Especialidad) => (row.orden != null ? row.orden : null),
+      },
+      {
         field: 'titulo',
         headerName: 'Titulo',
         flex: 1,
@@ -222,16 +271,6 @@ export default function EspecialidadesPage() {
         flex: 1,
         minWidth: 160,
         valueGetter: (_value, row: Especialidad) => row.slug || '',
-      },
-      {
-        field: 'actEconomicaTitulo',
-        headerName: 'Act. Economica',
-        flex: 1,
-        minWidth: 170,
-        valueGetter: (_value, row: Especialidad) =>
-          row.actEconomicaId != null
-            ? actEconomicaTitleById.get(row.actEconomicaId) || `Actividad economica ${row.actEconomicaId}`
-            : '',
       },
       {
         field: 'descripcion',
@@ -271,7 +310,7 @@ export default function EspecialidadesPage() {
         ),
       },
     ],
-    [actEconomicaTitleById],
+    [],
   );
 
   const columnToggleItems = useMemo(
@@ -316,6 +355,8 @@ export default function EspecialidadesPage() {
         getRowId={(row) => row.id}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
+        processRowUpdate={handleProcessRowUpdate}
+        onProcessRowUpdateError={handleProcessRowUpdateError}
       />
 
       <Menu

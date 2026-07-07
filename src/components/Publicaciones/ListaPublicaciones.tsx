@@ -16,7 +16,8 @@ import {
   Alert,
 } from '@mui/material';
 //import Grid from '@mui/material/Grid2'; // 👈 Grid v2 (para usar prop `size`)
-import PublicacionesCard, { Publicacion } from './PublicacionesCard';
+import PublicacionesCard from './PublicacionesCard';
+import type { Publicacion } from '@/types/publicaciones';
 
 type FiltroTipo = 'todos' | 'noticia' | 'evento' | 'comunicado';
 
@@ -178,4 +179,4 @@ Asegúrate de que exista /public/data/publicaciones.json.`}
 }
 
 // (Opcional) re-export del tipo por comodidad
-export type { Publicacion } from './PublicacionesCard';
+export type { Publicacion } from '@/types/publicaciones';

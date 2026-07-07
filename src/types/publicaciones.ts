@@ -4,7 +4,8 @@ export interface Publicacion {
     slug: string;
     tipo: 'noticia' | 'evento' | 'comunicado' | string;
     descripcionCorta?: string;
-    contenido?: string;
+    contenido?: string | unknown[];
+    galeria?: string[];
     fechaPublicacion?: string;
     fechaEventoInicio?: string | null;
     fechaEventoFin?: string | null;

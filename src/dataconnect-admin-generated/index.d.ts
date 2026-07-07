@@ -99,6 +99,21 @@ export interface DeletePostVariables {
   id: number;
 }
 
+export interface EfsrtPppEstudiante_Key {
+  id: number;
+  __typename?: 'EfsrtPppEstudiante_Key';
+}
+
+export interface EfsrtPppNota_Key {
+  id: number;
+  __typename?: 'EfsrtPppNota_Key';
+}
+
+export interface EfsrtPppPractica_Key {
+  id: number;
+  __typename?: 'EfsrtPppPractica_Key';
+}
+
 export interface EjeTransversal_Key {
   id: number;
   __typename?: 'EjeTransversal_Key';
@@ -241,7 +256,6 @@ export interface ListActEconomicasData {
     titulo?: string | null;
     descripcion?: string | null;
     familiaId?: number | null;
-    especialidadId?: number | null;
   } & ActEconomica_Key)[];
 }
 
@@ -432,6 +446,11 @@ export interface Turno_Key {
 export interface UnidadDidacticaEstudiante_Key {
   id: number;
   __typename?: 'UnidadDidacticaEstudiante_Key';
+}
+
+export interface UnidadDidacticaModulo_Key {
+  id: number;
+  __typename?: 'UnidadDidacticaModulo_Key';
 }
 
 export interface UnidadDidactica_Key {

@@ -8,10 +8,6 @@ import {
   Button,
   CircularProgress,
   Container,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -28,7 +24,7 @@ interface EspecialidadFormProps {
     descripcion2: string;
     slug: string;
     imagenPortadaUrl?: string | null;
-    actEconomicaId: string;
+    orden?: string;
   } | null;
   especialidadId?: string;
   asModal?: boolean;
@@ -40,16 +36,11 @@ interface EspecialidadData {
   id: number;
   titulo: string | null;
   tituloComercial: string | null;
+  orden: number | null;
   descripcion: string | null;
   descripcion2: string | null;
   slug: string | null;
   imagenPortadaUrl: string | null;
-  actEconomicaId: number | null;
-}
-
-interface ActEconomicaOption {
-  id: number;
-  titulo: string | null;
 }
 
 export function EspecialidadForm({
@@ -61,35 +52,15 @@ export function EspecialidadForm({
 }: EspecialidadFormProps) {
   const [titulo, setTitulo] = useState(especialidad ? especialidad.titulo : '');
   const [tituloComercial, setTituloComercial] = useState(especialidad ? especialidad.tituloComercial : '');
+  const [orden, setOrden] = useState(especialidad?.orden || '');
   const [descripcion, setDescripcion] = useState(especialidad ? especialidad.descripcion : '');
   const [descripcion2, setDescripcion2] = useState(especialidad ? especialidad.descripcion2 : '');
   const [slug, setSlug] = useState(especialidad ? especialidad.slug : '');
   const [imagenPortadaUrl, setImagenPortadaUrl] = useState(especialidad?.imagenPortadaUrl || '');
-  const [actEconomicaId, setActEconomicaId] = useState(especialidad ? especialidad.actEconomicaId : '');
-  const [actEconomicas, setActEconomicas] = useState<ActEconomicaOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingEspecialidad, setLoadingEspecialidad] = useState(Boolean(especialidadId && !especialidad));
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchActEconomicas = async () => {
-      try {
-        const functions = getFunctions(app);
-        const listActEconomicas = httpsCallable<undefined, { actEconomicas?: ActEconomicaOption[] }>(
-          functions,
-          'listActEconomicas',
-        );
-        const result = await listActEconomicas();
-        setActEconomicas(result.data.actEconomicas || []);
-      } catch (err) {
-        console.error('Error fetching actividades economicas: ', err);
-        setError('No se pudieron cargar las actividades economicas para el selector.');
-      }
-    };
-
-    void fetchActEconomicas();
-  }, []);
 
   useEffect(() => {
     const fetchEspecialidad = async () => {
@@ -108,11 +79,11 @@ export function EspecialidadForm({
         if (fetched) {
           setTitulo(fetched.titulo || '');
           setTituloComercial(fetched.tituloComercial || '');
+          setOrden(fetched.orden != null ? String(fetched.orden) : '');
           setDescripcion(fetched.descripcion || '');
           setDescripcion2(fetched.descripcion2 || '');
           setSlug(fetched.slug || '');
           setImagenPortadaUrl(fetched.imagenPortadaUrl || '');
-          setActEconomicaId(fetched.actEconomicaId != null ? String(fetched.actEconomicaId) : '');
         }
       } catch (err) {
         console.error('Error fetching especialidad: ', err);
@@ -124,6 +95,12 @@ export function EspecialidadForm({
 
     void fetchEspecialidad();
   }, [especialidadId, especialidad]);
+
+  const handleOrdenChange = (value: string) => {
+    if (/^-?\d*$/.test(value)) {
+      setOrden(value);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,11 +114,11 @@ export function EspecialidadForm({
           id?: number;
           titulo: string;
           tituloComercial: string;
+          orden?: number | null;
           descripcion: string;
           descripcion2: string;
           slug: string;
           imagenPortadaUrl?: string | null;
-          actEconomicaId?: number | null;
         },
         { id: number | null }
       >(functions, 'createOrUpdateEspecialidad');
@@ -150,11 +127,11 @@ export function EspecialidadForm({
         id: especialidadId ? Number(especialidadId) : undefined,
         titulo,
         tituloComercial,
+        orden: orden ? parseInt(orden, 10) : null,
         descripcion,
         descripcion2,
         slug,
         imagenPortadaUrl: imagenPortadaUrl.trim() || null,
-        actEconomicaId: actEconomicaId ? Number(actEconomicaId) : null,
       });
 
       if (onSaved) {
@@ -211,13 +188,31 @@ export function EspecialidadForm({
           margin="normal"
           required
         />
-        <TextField
-          label="Titulo Comercial"
-          value={tituloComercial}
-          onChange={(e) => setTituloComercial(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(12, minmax(0, 1fr))' },
+            mt: 2,
+          }}
+        >
+          <TextField
+            label="Titulo Comercial"
+            value={tituloComercial}
+            onChange={(e) => setTituloComercial(e.target.value)}
+            fullWidth
+            sx={{ gridColumn: { xs: '1 / -1', md: 'span 9' } }}
+          />
+          <TextField
+            label="Orden"
+            value={orden}
+            onChange={(e) => handleOrdenChange(e.target.value)}
+            fullWidth
+            type="number"
+            inputProps={{ step: 1 }}
+            sx={{ gridColumn: { xs: '1 / -1', md: 'span 3' } }}
+          />
+        </Box>
         <TextField
           label="Slug"
           value={slug}
@@ -225,26 +220,6 @@ export function EspecialidadForm({
           fullWidth
           margin="normal"
         />
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Actividad Economica</InputLabel>
-          <Select
-            label="Actividad Economica"
-            value={actEconomicaId}
-            onChange={(event) => setActEconomicaId(String(event.target.value))}
-          >
-            <MenuItem value="">Sin actividad economica</MenuItem>
-            {actEconomicaId && !actEconomicas.some((actEconomica) => String(actEconomica.id) === actEconomicaId) ? (
-              <MenuItem value={actEconomicaId} disabled>
-                Actividad economica actual no disponible
-              </MenuItem>
-            ) : null}
-            {actEconomicas.map((actEconomica) => (
-              <MenuItem key={actEconomica.id} value={String(actEconomica.id)}>
-                {actEconomica.titulo || `Actividad economica ${actEconomica.id}`}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
         <CoverImageField
           value={imagenPortadaUrl}
           onChange={setImagenPortadaUrl}

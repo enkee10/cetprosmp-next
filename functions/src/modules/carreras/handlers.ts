@@ -25,6 +25,13 @@ const LIST_CARRERAS_QUERY = `
       creadoEn
       actualizadoEn
       actEconomicaId
+      especialidadId
+      especialidad {
+        id
+        titulo
+        tituloComercial
+        orden
+      }
       tipoCarreraId
     }
   }
@@ -42,6 +49,13 @@ const GET_CARRERA_QUERY = `
       creadoEn
       actualizadoEn
       actEconomicaId
+      especialidadId
+      especialidad {
+        id
+        titulo
+        tituloComercial
+        orden
+      }
       tipoCarreraId
     }
   }

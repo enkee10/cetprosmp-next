@@ -52,7 +52,6 @@ query ListActEconomicas @auth(expr: "has(auth.token.level) && auth.token.level >
     titulo
     descripcion
     familiaId
-    especialidadId
   }
 }
 

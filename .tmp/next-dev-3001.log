@@ -1,0 +1,13 @@
+
+> mi-frontend@0.1.0 dev
+> next dev --turbo -p 3001
+
+   ▲ Next.js 15.5.18 (Turbopack)
+   - Local:        http://localhost:3001
+   - Network:      http://169.254.128.118:3001
+   - Environments: .env.local
+
+ ✓ Starting...
+Creating turbopack project { dir: 'D:\\_Desarrollo\\cetprosmp-next', testMode: true }
+ ✓ Compiled middleware in 179ms
+ ✓ Ready in 1580ms

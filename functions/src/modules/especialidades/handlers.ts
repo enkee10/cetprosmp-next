@@ -19,11 +19,11 @@ const LIST_ESPECIALIDADES_QUERY = `
       id
       titulo
       tituloComercial
+      orden
       descripcion
       descripcion2
       slug
       imagenPortadaUrl
-      actEconomicaId
     }
   }
 `;
@@ -34,11 +34,11 @@ const GET_ESPECIALIDAD_QUERY = `
       id
       titulo
       tituloComercial
+      orden
       descripcion
       descripcion2
       slug
       imagenPortadaUrl
-      actEconomicaId
     }
   }
 `;
@@ -56,7 +56,11 @@ export const listEspecialidades = https.onCall(async (_data, context) => {
     >(LIST_ESPECIALIDADES_QUERY);
     const especialidades = (response.data.especialidads ?? [])
       .slice()
-      .sort((a, b) => String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es"));
+      .sort((a, b) =>
+        (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER)
+        || String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es", { numeric: true })
+        || a.id - b.id,
+      );
 
     return { especialidades };
   } catch (error) {

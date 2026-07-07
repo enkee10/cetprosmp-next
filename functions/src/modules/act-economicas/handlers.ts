@@ -21,7 +21,6 @@ const LIST_ACT_ECONOMICAS_QUERY = `
       descripcion
       imagenPortadaUrl
       familiaId
-      especialidadId
     }
   }
 `;
@@ -34,7 +33,6 @@ const GET_ACT_ECONOMICA_QUERY = `
       descripcion
       imagenPortadaUrl
       familiaId
-      especialidadId
     }
   }
 `;

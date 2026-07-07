@@ -15,7 +15,7 @@ import {
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 
-export type AcademicFieldType = 'text' | 'number' | 'textarea' | 'timestamp' | 'select';
+export type AcademicFieldType = 'text' | 'number' | 'number-list' | 'textarea' | 'timestamp' | 'select';
 
 export interface AcademicSelectOption {
   value: string | number;
@@ -50,15 +50,23 @@ type EntityData = Record<string, unknown>;
 
 function formatInitialValue(value: unknown, type?: AcademicFieldType) {
   if (value === null || value === undefined) return '';
+  if (type === 'number-list' && Array.isArray(value)) return value.join(', ');
   if (type === 'timestamp' && typeof value === 'string') return value.slice(0, 16);
   return String(value);
 }
 
 function buildPayload(fields: AcademicFieldConfig[], values: Record<string, string>) {
-  return fields.reduce<Record<string, string | number | null>>((payload, field) => {
+  return fields.reduce<Record<string, string | number | number[] | null>>((payload, field) => {
     const raw = values[field.name]?.trim() ?? '';
     if (field.type === 'number') {
       payload[field.name] = raw ? Number(raw) : null;
+    } else if (field.type === 'number-list') {
+      payload[field.name] = raw
+        ? raw
+          .split(',')
+          .map((item) => Number(item.trim()))
+          .filter((item) => Number.isFinite(item) && item > 0)
+        : [];
     } else if (field.type === 'select' && field.optionValueType === 'number') {
       payload[field.name] = raw ? Number(raw) : null;
     } else {

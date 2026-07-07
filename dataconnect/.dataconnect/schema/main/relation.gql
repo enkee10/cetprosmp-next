@@ -126,40 +126,6 @@ extend type ActEconomica {
     having: Carrera_Having
   ): [Carrera!]! @fdc_generated(from: "Carrera.actEconomica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
-  ✨ List `Especialidad` objects in a one-to-many relationship (where `Especialidad`.`actEconomica` is this object).
-  """
-  especialidads_on_actEconomica(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: Especialidad_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [Especialidad_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: Especialidad_Having
-  ): [Especialidad!]! @fdc_generated(from: "Especialidad.actEconomica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
-  """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
   _metadata: _Metadata @fdc_generated(from: "ActEconomica", purpose: METADATA_FIELD)
@@ -176,15 +142,6 @@ extend type ActEconomica {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "ActEconomica.descripcion", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `ActEconomica` table where the `especialidadId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  especialidadId_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "ActEconomica.especialidadId", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `ActEconomica` table where the `familiaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -222,15 +179,6 @@ extend type ActEconomica {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "ActEconomica.titulo", purpose: QUERY_COUNT)
   """
-  ✨ Sum the `especialidadId` field in the `ActEconomica` table.
-  """
-  especialidadId_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "ActEconomica.especialidadId", purpose: QUERY_SUM)
-  """
   ✨ Sum the `familiaId` field in the `ActEconomica` table.
   """
   familiaId_sum(
@@ -248,15 +196,6 @@ extend type ActEconomica {
     """
     distinct: Boolean = false
   ): Int @fdc_generated(from: "ActEconomica.id", purpose: QUERY_SUM)
-  """
-  ✨ Average the `especialidadId` field in the `ActEconomica` table.
-  """
-  especialidadId_avg(
-    """
-    Set to true to average the distinct values.
-    """
-    distinct: Boolean = false
-  ): Float @fdc_generated(from: "ActEconomica.especialidadId", purpose: QUERY_AVG)
   """
   ✨ Average the `familiaId` field in the `ActEconomica` table.
   """
@@ -276,10 +215,6 @@ extend type ActEconomica {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "ActEconomica.id", purpose: QUERY_AVG)
   """
-  ✨ Minimum of the `especialidadId` field in the `ActEconomica` table.
-  """
-  especialidadId_min: Int @fdc_generated(from: "ActEconomica.especialidadId", purpose: QUERY_MIN)
-  """
   ✨ Minimum of the `familiaId` field in the `ActEconomica` table.
   """
   familiaId_min: Int @fdc_generated(from: "ActEconomica.familiaId", purpose: QUERY_MIN)
@@ -287,10 +222,6 @@ extend type ActEconomica {
   ✨ Minimum of the `id` field in the `ActEconomica` table.
   """
   id_min: Int @fdc_generated(from: "ActEconomica.id", purpose: QUERY_MIN)
-  """
-  ✨ Maximum of the `especialidadId` field in the `ActEconomica` table.
-  """
-  especialidadId_max: Int @fdc_generated(from: "ActEconomica.especialidadId", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `familiaId` field in the `ActEconomica` table.
   """
@@ -2251,6 +2182,15 @@ extend type Carrera {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Carrera.duracion", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Carrera` table where the `especialidadId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  especialidadId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.especialidadId", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Carrera` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   id_count(
@@ -2341,6 +2281,15 @@ extend type Carrera {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Carrera.creditos", purpose: QUERY_SUM)
   """
+  ✨ Sum the `especialidadId` field in the `Carrera` table.
+  """
+  especialidadId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Carrera.especialidadId", purpose: QUERY_SUM)
+  """
   ✨ Sum the `id` field in the `Carrera` table.
   """
   id_sum(
@@ -2377,6 +2326,15 @@ extend type Carrera {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Carrera.creditos", purpose: QUERY_AVG)
   """
+  ✨ Average the `especialidadId` field in the `Carrera` table.
+  """
+  especialidadId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Carrera.especialidadId", purpose: QUERY_AVG)
+  """
   ✨ Average the `id` field in the `Carrera` table.
   """
   id_avg(
@@ -2411,6 +2369,10 @@ extend type Carrera {
   """
   creditos_min: Int @fdc_generated(from: "Carrera.creditos", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `especialidadId` field in the `Carrera` table.
+  """
+  especialidadId_min: Int @fdc_generated(from: "Carrera.especialidadId", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `id` field in the `Carrera` table.
   """
   id_min: Int @fdc_generated(from: "Carrera.id", purpose: QUERY_MIN)
@@ -2434,6 +2396,10 @@ extend type Carrera {
   ✨ Maximum of the `creditos` field in the `Carrera` table.
   """
   creditos_max: Int @fdc_generated(from: "Carrera.creditos", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `especialidadId` field in the `Carrera` table.
+  """
+  especialidadId_max: Int @fdc_generated(from: "Carrera.especialidadId", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `id` field in the `Carrera` table.
   """
@@ -2613,6 +2579,814 @@ extend type DatoGeneral {
   """
   _id: ID! @fdc_generated(from: "DatoGeneral.id", purpose: ENTITY_ID)
 }
+extend type EfsrtPppEstudiante {
+  """
+  ✨ List `EfsrtPppNota` objects in a one-to-many relationship (where `EfsrtPppNota`.`efsrtPppEstudiante` is this object).
+  """
+  efsrtPppNotas_on_efsrtPppEstudiante(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EfsrtPppNota_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EfsrtPppNota_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EfsrtPppNota_Having
+  ): [EfsrtPppNota!]! @fdc_generated(from: "EfsrtPppNota.efsrtPppEstudiante", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "EfsrtPppEstudiante", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `EfsrtPppEstudiante` table.
+  """
+  _count: Int! @fdc_generated(from: "EfsrtPppEstudiante.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppEstudiante` table where the `fechaActualizacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaActualizacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppEstudiante.fechaActualizacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppEstudiante` table where the `fechaRegistro` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaRegistro_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppEstudiante.fechaRegistro", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppEstudiante` table where the `grupoModuloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoModuloId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppEstudiante.grupoModuloId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppEstudiante` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppEstudiante.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppEstudiante` table where the `modoCalculo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  modoCalculo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppEstudiante.modoCalculo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppEstudiante` table where the `moduloEstudianteId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  moduloEstudianteId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppEstudiante.moduloEstudianteId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppEstudiante` table where the `observacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  observacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppEstudiante.observacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppEstudiante` table where the `promedioFinal` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  promedioFinal_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppEstudiante.promedioFinal", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppEstudiante` table where the `registradoPorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  registradoPorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppEstudiante.registradoPorId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `grupoModuloId` field in the `EfsrtPppEstudiante` table.
+  """
+  grupoModuloId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "EfsrtPppEstudiante.grupoModuloId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `EfsrtPppEstudiante` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "EfsrtPppEstudiante.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `moduloEstudianteId` field in the `EfsrtPppEstudiante` table.
+  """
+  moduloEstudianteId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "EfsrtPppEstudiante.moduloEstudianteId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `promedioFinal` field in the `EfsrtPppEstudiante` table.
+  """
+  promedioFinal_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppEstudiante.promedioFinal", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `registradoPorId` field in the `EfsrtPppEstudiante` table.
+  """
+  registradoPorId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "EfsrtPppEstudiante.registradoPorId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `grupoModuloId` field in the `EfsrtPppEstudiante` table.
+  """
+  grupoModuloId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppEstudiante.grupoModuloId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `EfsrtPppEstudiante` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppEstudiante.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `moduloEstudianteId` field in the `EfsrtPppEstudiante` table.
+  """
+  moduloEstudianteId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppEstudiante.moduloEstudianteId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `promedioFinal` field in the `EfsrtPppEstudiante` table.
+  """
+  promedioFinal_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppEstudiante.promedioFinal", purpose: QUERY_AVG)
+  """
+  ✨ Average the `registradoPorId` field in the `EfsrtPppEstudiante` table.
+  """
+  registradoPorId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppEstudiante.registradoPorId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `fechaActualizacion` field in the `EfsrtPppEstudiante` table.
+  """
+  fechaActualizacion_min: Timestamp @fdc_generated(from: "EfsrtPppEstudiante.fechaActualizacion", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaRegistro` field in the `EfsrtPppEstudiante` table.
+  """
+  fechaRegistro_min: Timestamp @fdc_generated(from: "EfsrtPppEstudiante.fechaRegistro", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `grupoModuloId` field in the `EfsrtPppEstudiante` table.
+  """
+  grupoModuloId_min: Int @fdc_generated(from: "EfsrtPppEstudiante.grupoModuloId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `EfsrtPppEstudiante` table.
+  """
+  id_min: Int @fdc_generated(from: "EfsrtPppEstudiante.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `moduloEstudianteId` field in the `EfsrtPppEstudiante` table.
+  """
+  moduloEstudianteId_min: Int @fdc_generated(from: "EfsrtPppEstudiante.moduloEstudianteId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `promedioFinal` field in the `EfsrtPppEstudiante` table.
+  """
+  promedioFinal_min: Float @fdc_generated(from: "EfsrtPppEstudiante.promedioFinal", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `registradoPorId` field in the `EfsrtPppEstudiante` table.
+  """
+  registradoPorId_min: Int @fdc_generated(from: "EfsrtPppEstudiante.registradoPorId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `fechaActualizacion` field in the `EfsrtPppEstudiante` table.
+  """
+  fechaActualizacion_max: Timestamp @fdc_generated(from: "EfsrtPppEstudiante.fechaActualizacion", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaRegistro` field in the `EfsrtPppEstudiante` table.
+  """
+  fechaRegistro_max: Timestamp @fdc_generated(from: "EfsrtPppEstudiante.fechaRegistro", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `grupoModuloId` field in the `EfsrtPppEstudiante` table.
+  """
+  grupoModuloId_max: Int @fdc_generated(from: "EfsrtPppEstudiante.grupoModuloId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `EfsrtPppEstudiante` table.
+  """
+  id_max: Int @fdc_generated(from: "EfsrtPppEstudiante.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `moduloEstudianteId` field in the `EfsrtPppEstudiante` table.
+  """
+  moduloEstudianteId_max: Int @fdc_generated(from: "EfsrtPppEstudiante.moduloEstudianteId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `promedioFinal` field in the `EfsrtPppEstudiante` table.
+  """
+  promedioFinal_max: Float @fdc_generated(from: "EfsrtPppEstudiante.promedioFinal", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `registradoPorId` field in the `EfsrtPppEstudiante` table.
+  """
+  registradoPorId_max: Int @fdc_generated(from: "EfsrtPppEstudiante.registradoPorId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "EfsrtPppEstudiante.id", purpose: ENTITY_ID)
+}
+extend type EfsrtPppNota {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "EfsrtPppNota", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `EfsrtPppNota` table.
+  """
+  _count: Int! @fdc_generated(from: "EfsrtPppNota.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppNota` table where the `efsrtPppEstudianteId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  efsrtPppEstudianteId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppNota.efsrtPppEstudianteId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppNota` table where the `fechaEvaluacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaEvaluacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppNota.fechaEvaluacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppNota` table where the `fechaRegistro` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaRegistro_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppNota.fechaRegistro", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppNota` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppNota.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppNota` table where the `nota` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nota_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppNota.nota", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppNota` table where the `observacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  observacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppNota.observacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppNota` table where the `practicaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  practicaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppNota.practicaId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppNota` table where the `registradoPorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  registradoPorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppNota.registradoPorId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `efsrtPppEstudianteId` field in the `EfsrtPppNota` table.
+  """
+  efsrtPppEstudianteId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "EfsrtPppNota.efsrtPppEstudianteId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `EfsrtPppNota` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "EfsrtPppNota.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `nota` field in the `EfsrtPppNota` table.
+  """
+  nota_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppNota.nota", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `practicaId` field in the `EfsrtPppNota` table.
+  """
+  practicaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "EfsrtPppNota.practicaId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `registradoPorId` field in the `EfsrtPppNota` table.
+  """
+  registradoPorId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "EfsrtPppNota.registradoPorId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `efsrtPppEstudianteId` field in the `EfsrtPppNota` table.
+  """
+  efsrtPppEstudianteId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppNota.efsrtPppEstudianteId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `EfsrtPppNota` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppNota.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `nota` field in the `EfsrtPppNota` table.
+  """
+  nota_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppNota.nota", purpose: QUERY_AVG)
+  """
+  ✨ Average the `practicaId` field in the `EfsrtPppNota` table.
+  """
+  practicaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppNota.practicaId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `registradoPorId` field in the `EfsrtPppNota` table.
+  """
+  registradoPorId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppNota.registradoPorId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `efsrtPppEstudianteId` field in the `EfsrtPppNota` table.
+  """
+  efsrtPppEstudianteId_min: Int @fdc_generated(from: "EfsrtPppNota.efsrtPppEstudianteId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaEvaluacion` field in the `EfsrtPppNota` table.
+  """
+  fechaEvaluacion_min: Timestamp @fdc_generated(from: "EfsrtPppNota.fechaEvaluacion", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaRegistro` field in the `EfsrtPppNota` table.
+  """
+  fechaRegistro_min: Timestamp @fdc_generated(from: "EfsrtPppNota.fechaRegistro", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `EfsrtPppNota` table.
+  """
+  id_min: Int @fdc_generated(from: "EfsrtPppNota.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `nota` field in the `EfsrtPppNota` table.
+  """
+  nota_min: Float @fdc_generated(from: "EfsrtPppNota.nota", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `practicaId` field in the `EfsrtPppNota` table.
+  """
+  practicaId_min: Int @fdc_generated(from: "EfsrtPppNota.practicaId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `registradoPorId` field in the `EfsrtPppNota` table.
+  """
+  registradoPorId_min: Int @fdc_generated(from: "EfsrtPppNota.registradoPorId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `efsrtPppEstudianteId` field in the `EfsrtPppNota` table.
+  """
+  efsrtPppEstudianteId_max: Int @fdc_generated(from: "EfsrtPppNota.efsrtPppEstudianteId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaEvaluacion` field in the `EfsrtPppNota` table.
+  """
+  fechaEvaluacion_max: Timestamp @fdc_generated(from: "EfsrtPppNota.fechaEvaluacion", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaRegistro` field in the `EfsrtPppNota` table.
+  """
+  fechaRegistro_max: Timestamp @fdc_generated(from: "EfsrtPppNota.fechaRegistro", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `EfsrtPppNota` table.
+  """
+  id_max: Int @fdc_generated(from: "EfsrtPppNota.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `nota` field in the `EfsrtPppNota` table.
+  """
+  nota_max: Float @fdc_generated(from: "EfsrtPppNota.nota", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `practicaId` field in the `EfsrtPppNota` table.
+  """
+  practicaId_max: Int @fdc_generated(from: "EfsrtPppNota.practicaId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `registradoPorId` field in the `EfsrtPppNota` table.
+  """
+  registradoPorId_max: Int @fdc_generated(from: "EfsrtPppNota.registradoPorId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "EfsrtPppNota.id", purpose: ENTITY_ID)
+}
+extend type EfsrtPppPractica {
+  """
+  ✨ List `EfsrtPppNota` objects in a one-to-many relationship (where `EfsrtPppNota`.`practica` is this object).
+  """
+  efsrtPppNotas_on_practica(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EfsrtPppNota_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EfsrtPppNota_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EfsrtPppNota_Having
+  ): [EfsrtPppNota!]! @fdc_generated(from: "EfsrtPppNota.practica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "EfsrtPppPractica", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table.
+  """
+  _count: Int! @fdc_generated(from: "EfsrtPppPractica.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table where the `activo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  activo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica.activo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table where the `fechaActualizacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaActualizacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica.fechaActualizacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table where the `fechaCreacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaCreacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica.fechaCreacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table where the `fecha` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fecha_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica.fecha", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table where the `grupoModuloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoModuloId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica.grupoModuloId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table where the `numero` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  numero_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica.numero", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table where the `peso` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  peso_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica.peso", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table where the `puntajeMaximo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  puntajeMaximo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica.puntajeMaximo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `EfsrtPppPractica` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "EfsrtPppPractica.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `grupoModuloId` field in the `EfsrtPppPractica` table.
+  """
+  grupoModuloId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "EfsrtPppPractica.grupoModuloId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `EfsrtPppPractica` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "EfsrtPppPractica.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `numero` field in the `EfsrtPppPractica` table.
+  """
+  numero_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "EfsrtPppPractica.numero", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `peso` field in the `EfsrtPppPractica` table.
+  """
+  peso_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppPractica.peso", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `puntajeMaximo` field in the `EfsrtPppPractica` table.
+  """
+  puntajeMaximo_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppPractica.puntajeMaximo", purpose: QUERY_SUM)
+  """
+  ✨ Average the `grupoModuloId` field in the `EfsrtPppPractica` table.
+  """
+  grupoModuloId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppPractica.grupoModuloId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `EfsrtPppPractica` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppPractica.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `numero` field in the `EfsrtPppPractica` table.
+  """
+  numero_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppPractica.numero", purpose: QUERY_AVG)
+  """
+  ✨ Average the `peso` field in the `EfsrtPppPractica` table.
+  """
+  peso_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppPractica.peso", purpose: QUERY_AVG)
+  """
+  ✨ Average the `puntajeMaximo` field in the `EfsrtPppPractica` table.
+  """
+  puntajeMaximo_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "EfsrtPppPractica.puntajeMaximo", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `fechaActualizacion` field in the `EfsrtPppPractica` table.
+  """
+  fechaActualizacion_min: Timestamp @fdc_generated(from: "EfsrtPppPractica.fechaActualizacion", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaCreacion` field in the `EfsrtPppPractica` table.
+  """
+  fechaCreacion_min: Timestamp @fdc_generated(from: "EfsrtPppPractica.fechaCreacion", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fecha` field in the `EfsrtPppPractica` table.
+  """
+  fecha_min: Timestamp @fdc_generated(from: "EfsrtPppPractica.fecha", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `grupoModuloId` field in the `EfsrtPppPractica` table.
+  """
+  grupoModuloId_min: Int @fdc_generated(from: "EfsrtPppPractica.grupoModuloId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `EfsrtPppPractica` table.
+  """
+  id_min: Int @fdc_generated(from: "EfsrtPppPractica.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `numero` field in the `EfsrtPppPractica` table.
+  """
+  numero_min: Int @fdc_generated(from: "EfsrtPppPractica.numero", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `peso` field in the `EfsrtPppPractica` table.
+  """
+  peso_min: Float @fdc_generated(from: "EfsrtPppPractica.peso", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `puntajeMaximo` field in the `EfsrtPppPractica` table.
+  """
+  puntajeMaximo_min: Float @fdc_generated(from: "EfsrtPppPractica.puntajeMaximo", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `fechaActualizacion` field in the `EfsrtPppPractica` table.
+  """
+  fechaActualizacion_max: Timestamp @fdc_generated(from: "EfsrtPppPractica.fechaActualizacion", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaCreacion` field in the `EfsrtPppPractica` table.
+  """
+  fechaCreacion_max: Timestamp @fdc_generated(from: "EfsrtPppPractica.fechaCreacion", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fecha` field in the `EfsrtPppPractica` table.
+  """
+  fecha_max: Timestamp @fdc_generated(from: "EfsrtPppPractica.fecha", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `grupoModuloId` field in the `EfsrtPppPractica` table.
+  """
+  grupoModuloId_max: Int @fdc_generated(from: "EfsrtPppPractica.grupoModuloId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `EfsrtPppPractica` table.
+  """
+  id_max: Int @fdc_generated(from: "EfsrtPppPractica.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `numero` field in the `EfsrtPppPractica` table.
+  """
+  numero_max: Int @fdc_generated(from: "EfsrtPppPractica.numero", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `peso` field in the `EfsrtPppPractica` table.
+  """
+  peso_max: Float @fdc_generated(from: "EfsrtPppPractica.peso", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `puntajeMaximo` field in the `EfsrtPppPractica` table.
+  """
+  puntajeMaximo_max: Float @fdc_generated(from: "EfsrtPppPractica.puntajeMaximo", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "EfsrtPppPractica.id", purpose: ENTITY_ID)
+}
 extend type EjeTransversal {
   """
   ✨ List `Actividad` objects in a one-to-many relationship (where `Actividad`.`ejeTransversal` is this object).
@@ -2716,18 +3490,18 @@ extend type EjeTransversal {
 }
 extend type Especialidad {
   """
-  ✨ List `ActEconomica` objects in a one-to-many relationship (where `ActEconomica`.`especialidad` is this object).
+  ✨ List `Carrera` objects in a one-to-many relationship (where `Carrera`.`especialidad` is this object).
   """
-  actEconomicas_on_especialidad(
+  carreras_on_especialidad(
     """
     Filter condition to narrow down the query results.
     """
-    where: ActEconomica_Filter
+    where: Carrera_Filter
 
     """
     Order the query results by specific fields.
     """
-    orderBy: [ActEconomica_Order!]
+    orderBy: [Carrera_Order!]
 
     """
     Number of rows to skip before starting to return the results.
@@ -2747,8 +3521,8 @@ extend type Especialidad {
     """
     Filter condition to apply to the groups of aggregate queries.
     """
-    having: ActEconomica_Having
-  ): [ActEconomica!]! @fdc_generated(from: "ActEconomica.especialidad", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+    having: Carrera_Having
+  ): [Carrera!]! @fdc_generated(from: "Carrera.especialidad", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `PersonalEspecialidad` objects in a one-to-many relationship (where `PersonalEspecialidad`.`especialidad` is this object).
   """
@@ -2826,15 +3600,6 @@ extend type Especialidad {
   """
   _count: Int! @fdc_generated(from: "Especialidad.", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Especialidad` table where the `actEconomicaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  actEconomicaId_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Especialidad.actEconomicaId", purpose: QUERY_COUNT)
-  """
   ✨ Count the number of rows in the `Especialidad` table where the `descripcion2` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   descripcion2_count(
@@ -2871,6 +3636,15 @@ extend type Especialidad {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Especialidad.imagenPortadaUrl", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Especialidad` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  orden_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Especialidad.orden", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Especialidad` table where the `slug` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   slug_count(
@@ -2898,15 +3672,6 @@ extend type Especialidad {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Especialidad.titulo", purpose: QUERY_COUNT)
   """
-  ✨ Sum the `actEconomicaId` field in the `Especialidad` table.
-  """
-  actEconomicaId_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "Especialidad.actEconomicaId", purpose: QUERY_SUM)
-  """
   ✨ Sum the `id` field in the `Especialidad` table.
   """
   id_sum(
@@ -2916,14 +3681,14 @@ extend type Especialidad {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Especialidad.id", purpose: QUERY_SUM)
   """
-  ✨ Average the `actEconomicaId` field in the `Especialidad` table.
+  ✨ Sum the `orden` field in the `Especialidad` table.
   """
-  actEconomicaId_avg(
+  orden_sum(
     """
-    Set to true to average the distinct values.
+    Set to true to sum the distinct values.
     """
     distinct: Boolean = false
-  ): Float @fdc_generated(from: "Especialidad.actEconomicaId", purpose: QUERY_AVG)
+  ): Int @fdc_generated(from: "Especialidad.orden", purpose: QUERY_SUM)
   """
   ✨ Average the `id` field in the `Especialidad` table.
   """
@@ -2934,21 +3699,30 @@ extend type Especialidad {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Especialidad.id", purpose: QUERY_AVG)
   """
-  ✨ Minimum of the `actEconomicaId` field in the `Especialidad` table.
+  ✨ Average the `orden` field in the `Especialidad` table.
   """
-  actEconomicaId_min: Int @fdc_generated(from: "Especialidad.actEconomicaId", purpose: QUERY_MIN)
+  orden_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Especialidad.orden", purpose: QUERY_AVG)
   """
   ✨ Minimum of the `id` field in the `Especialidad` table.
   """
   id_min: Int @fdc_generated(from: "Especialidad.id", purpose: QUERY_MIN)
   """
-  ✨ Maximum of the `actEconomicaId` field in the `Especialidad` table.
+  ✨ Minimum of the `orden` field in the `Especialidad` table.
   """
-  actEconomicaId_max: Int @fdc_generated(from: "Especialidad.actEconomicaId", purpose: QUERY_MAX)
+  orden_min: Int @fdc_generated(from: "Especialidad.orden", purpose: QUERY_MIN)
   """
   ✨ Maximum of the `id` field in the `Especialidad` table.
   """
   id_max: Int @fdc_generated(from: "Especialidad.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `orden` field in the `Especialidad` table.
+  """
+  orden_max: Int @fdc_generated(from: "Especialidad.orden", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """
@@ -6173,6 +6947,74 @@ extend type Grupo {
 }
 extend type GrupoModulo {
   """
+  ✨ List `EfsrtPppEstudiante` objects in a one-to-many relationship (where `EfsrtPppEstudiante`.`grupoModulo` is this object).
+  """
+  efsrtPppEstudiantes_on_grupoModulo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EfsrtPppEstudiante_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EfsrtPppEstudiante_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EfsrtPppEstudiante_Having
+  ): [EfsrtPppEstudiante!]! @fdc_generated(from: "EfsrtPppEstudiante.grupoModulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `EfsrtPppPractica` objects in a one-to-many relationship (where `EfsrtPppPractica`.`grupoModulo` is this object).
+  """
+  efsrtPppPracticas_on_grupoModulo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EfsrtPppPractica_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EfsrtPppPractica_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EfsrtPppPractica_Having
+  ): [EfsrtPppPractica!]! @fdc_generated(from: "EfsrtPppPractica.grupoModulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
   _metadata: _Metadata @fdc_generated(from: "GrupoModulo", purpose: METADATA_FIELD)
@@ -8193,18 +9035,18 @@ extend type Modulo {
     having: PaqueteModulo_Having
   ): [PaqueteModulo!]! @fdc_generated(from: "PaqueteModulo.modulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
-  ✨ List `UnidadDidactica` objects in a one-to-many relationship (where `UnidadDidactica`.`modulo` is this object).
+  ✨ List `UnidadDidacticaModulo` objects in a one-to-many relationship (where `UnidadDidacticaModulo`.`modulo` is this object).
   """
-  unidadesDidacticas_on_modulo(
+  unidadDidacticaModulos_on_modulo(
     """
     Filter condition to narrow down the query results.
     """
-    where: UnidadDidactica_Filter
+    where: UnidadDidacticaModulo_Filter
 
     """
     Order the query results by specific fields.
     """
-    orderBy: [UnidadDidactica_Order!]
+    orderBy: [UnidadDidacticaModulo_Order!]
 
     """
     Number of rows to skip before starting to return the results.
@@ -8224,8 +9066,8 @@ extend type Modulo {
     """
     Filter condition to apply to the groups of aggregate queries.
     """
-    having: UnidadDidactica_Having
-  ): [UnidadDidactica!]! @fdc_generated(from: "UnidadDidactica.modulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+    having: UnidadDidacticaModulo_Having
+  ): [UnidadDidacticaModulo!]! @fdc_generated(from: "UnidadDidacticaModulo.modulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
@@ -8539,6 +9381,40 @@ extend type Modulo {
   _id: ID! @fdc_generated(from: "Modulo.id", purpose: ENTITY_ID)
 }
 extend type ModuloEstudiante {
+  """
+  ✨ List `EfsrtPppEstudiante` objects in a one-to-many relationship (where `EfsrtPppEstudiante`.`moduloEstudiante` is this object).
+  """
+  efsrtPppEstudiantes_on_moduloEstudiante(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EfsrtPppEstudiante_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EfsrtPppEstudiante_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EfsrtPppEstudiante_Having
+  ): [EfsrtPppEstudiante!]! @fdc_generated(from: "EfsrtPppEstudiante.moduloEstudiante", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
@@ -10160,6 +11036,15 @@ extend type Plan {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Plan.tituloComercial", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Plan` table where the `versionId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  versionId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Plan.versionId", purpose: QUERY_COUNT)
+  """
   ✨ Sum the `anio` field in the `Plan` table.
   """
   anio_sum(
@@ -10204,6 +11089,15 @@ extend type Plan {
     """
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `versionId` field in the `Plan` table.
+  """
+  versionId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Plan.versionId", purpose: QUERY_SUM)
   """
   ✨ Average the `anio` field in the `Plan` table.
   """
@@ -10250,6 +11144,15 @@ extend type Plan {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_AVG)
   """
+  ✨ Average the `versionId` field in the `Plan` table.
+  """
+  versionId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Plan.versionId", purpose: QUERY_AVG)
+  """
   ✨ Minimum of the `anio` field in the `Plan` table.
   """
   anio_min: Int @fdc_generated(from: "Plan.anio", purpose: QUERY_MIN)
@@ -10270,6 +11173,10 @@ extend type Plan {
   """
   periodoVigenciaId_min: Int @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `versionId` field in the `Plan` table.
+  """
+  versionId_min: Int @fdc_generated(from: "Plan.versionId", purpose: QUERY_MIN)
+  """
   ✨ Maximum of the `anio` field in the `Plan` table.
   """
   anio_max: Int @fdc_generated(from: "Plan.anio", purpose: QUERY_MAX)
@@ -10289,6 +11196,10 @@ extend type Plan {
   ✨ Maximum of the `periodoVigenciaId` field in the `Plan` table.
   """
   periodoVigenciaId_max: Int @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `versionId` field in the `Plan` table.
+  """
+  versionId_max: Int @fdc_generated(from: "Plan.versionId", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """
@@ -11604,6 +12515,40 @@ extend type Semestre {
     having: Plan_Having
   ): [Plan!]! @fdc_generated(from: "Plan.periodoVigencia", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `Plan` objects in a one-to-many relationship (where `Plan`.`version` is this object).
+  """
+  planes_on_version(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Plan_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Plan_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Plan_Having
+  ): [Plan!]! @fdc_generated(from: "Plan.version", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
   _metadata: _Metadata @fdc_generated(from: "Semestre", purpose: METADATA_FIELD)
@@ -12352,6 +13297,40 @@ extend type UnidadDidactica {
     having: UnidadDidacticaEstudiante_Having
   ): [UnidadDidacticaEstudiante!]! @fdc_generated(from: "UnidadDidacticaEstudiante.unidadDidactica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `UnidadDidacticaModulo` objects in a one-to-many relationship (where `UnidadDidacticaModulo`.`unidadDidactica` is this object).
+  """
+  unidadDidacticaModulos_on_unidadDidactica(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: UnidadDidacticaModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [UnidadDidacticaModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: UnidadDidacticaModulo_Having
+  ): [UnidadDidacticaModulo!]! @fdc_generated(from: "UnidadDidacticaModulo.unidadDidactica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
   _metadata: _Metadata @fdc_generated(from: "UnidadDidactica", purpose: METADATA_FIELD)
@@ -12386,15 +13365,6 @@ extend type UnidadDidactica {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "UnidadDidactica.id", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `UnidadDidactica` table where the `moduloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  moduloId_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "UnidadDidactica.moduloId", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `UnidadDidactica` table where the `nombre` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -12441,15 +13411,6 @@ extend type UnidadDidactica {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "UnidadDidactica.id", purpose: QUERY_SUM)
   """
-  ✨ Sum the `moduloId` field in the `UnidadDidactica` table.
-  """
-  moduloId_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "UnidadDidactica.moduloId", purpose: QUERY_SUM)
-  """
   ✨ Average the `creditos` field in the `UnidadDidactica` table.
   """
   creditos_avg(
@@ -12477,15 +13438,6 @@ extend type UnidadDidactica {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "UnidadDidactica.id", purpose: QUERY_AVG)
   """
-  ✨ Average the `moduloId` field in the `UnidadDidactica` table.
-  """
-  moduloId_avg(
-    """
-    Set to true to average the distinct values.
-    """
-    distinct: Boolean = false
-  ): Float @fdc_generated(from: "UnidadDidactica.moduloId", purpose: QUERY_AVG)
-  """
   ✨ Minimum of the `creditos` field in the `UnidadDidactica` table.
   """
   creditos_min: Int @fdc_generated(from: "UnidadDidactica.creditos", purpose: QUERY_MIN)
@@ -12498,10 +13450,6 @@ extend type UnidadDidactica {
   """
   id_min: Int @fdc_generated(from: "UnidadDidactica.id", purpose: QUERY_MIN)
   """
-  ✨ Minimum of the `moduloId` field in the `UnidadDidactica` table.
-  """
-  moduloId_min: Int @fdc_generated(from: "UnidadDidactica.moduloId", purpose: QUERY_MIN)
-  """
   ✨ Maximum of the `creditos` field in the `UnidadDidactica` table.
   """
   creditos_max: Int @fdc_generated(from: "UnidadDidactica.creditos", purpose: QUERY_MAX)
@@ -12513,10 +13461,6 @@ extend type UnidadDidactica {
   ✨ Maximum of the `id` field in the `UnidadDidactica` table.
   """
   id_max: Int @fdc_generated(from: "UnidadDidactica.id", purpose: QUERY_MAX)
-  """
-  ✨ Maximum of the `moduloId` field in the `UnidadDidactica` table.
-  """
-  moduloId_max: Int @fdc_generated(from: "UnidadDidactica.moduloId", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """
@@ -12676,6 +13620,160 @@ extend type UnidadDidacticaEstudiante {
   """
   _id: ID! @fdc_generated(from: "UnidadDidacticaEstudiante.id", purpose: ENTITY_ID)
 }
+extend type UnidadDidacticaModulo {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "UnidadDidacticaModulo", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `UnidadDidacticaModulo` table.
+  """
+  _count: Int! @fdc_generated(from: "UnidadDidacticaModulo.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `UnidadDidacticaModulo` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `UnidadDidacticaModulo` table where the `moduloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  moduloId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "UnidadDidacticaModulo.moduloId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `UnidadDidacticaModulo` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  orden_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "UnidadDidacticaModulo.orden", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `UnidadDidacticaModulo` table where the `unidadDidacticaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  unidadDidacticaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "UnidadDidacticaModulo.unidadDidacticaId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `UnidadDidacticaModulo` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `moduloId` field in the `UnidadDidacticaModulo` table.
+  """
+  moduloId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "UnidadDidacticaModulo.moduloId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `orden` field in the `UnidadDidacticaModulo` table.
+  """
+  orden_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "UnidadDidacticaModulo.orden", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `unidadDidacticaId` field in the `UnidadDidacticaModulo` table.
+  """
+  unidadDidacticaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "UnidadDidacticaModulo.unidadDidacticaId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `UnidadDidacticaModulo` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `moduloId` field in the `UnidadDidacticaModulo` table.
+  """
+  moduloId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "UnidadDidacticaModulo.moduloId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `orden` field in the `UnidadDidacticaModulo` table.
+  """
+  orden_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "UnidadDidacticaModulo.orden", purpose: QUERY_AVG)
+  """
+  ✨ Average the `unidadDidacticaId` field in the `UnidadDidacticaModulo` table.
+  """
+  unidadDidacticaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "UnidadDidacticaModulo.unidadDidacticaId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `UnidadDidacticaModulo` table.
+  """
+  id_min: Int @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `moduloId` field in the `UnidadDidacticaModulo` table.
+  """
+  moduloId_min: Int @fdc_generated(from: "UnidadDidacticaModulo.moduloId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `orden` field in the `UnidadDidacticaModulo` table.
+  """
+  orden_min: Int @fdc_generated(from: "UnidadDidacticaModulo.orden", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `unidadDidacticaId` field in the `UnidadDidacticaModulo` table.
+  """
+  unidadDidacticaId_min: Int @fdc_generated(from: "UnidadDidacticaModulo.unidadDidacticaId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `UnidadDidacticaModulo` table.
+  """
+  id_max: Int @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `moduloId` field in the `UnidadDidacticaModulo` table.
+  """
+  moduloId_max: Int @fdc_generated(from: "UnidadDidacticaModulo.moduloId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `orden` field in the `UnidadDidacticaModulo` table.
+  """
+  orden_max: Int @fdc_generated(from: "UnidadDidacticaModulo.orden", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `unidadDidacticaId` field in the `UnidadDidacticaModulo` table.
+  """
+  unidadDidacticaId_max: Int @fdc_generated(from: "UnidadDidacticaModulo.unidadDidacticaId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: ENTITY_ID)
+}
 extend type User {
   """
   ✨ List `Asistencia` objects in a one-to-many relationship (where `Asistencia`.`registradoPor` is this object).
@@ -12711,6 +13809,74 @@ extend type User {
     """
     having: Asistencia_Having
   ): [Asistencia!]! @fdc_generated(from: "Asistencia.registradoPor", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `EfsrtPppEstudiante` objects in a one-to-many relationship (where `EfsrtPppEstudiante`.`registradoPor` is this object).
+  """
+  efsrtPppEstudiantes_on_registradoPor(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EfsrtPppEstudiante_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EfsrtPppEstudiante_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EfsrtPppEstudiante_Having
+  ): [EfsrtPppEstudiante!]! @fdc_generated(from: "EfsrtPppEstudiante.registradoPor", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `EfsrtPppNota` objects in a one-to-many relationship (where `EfsrtPppNota`.`registradoPor` is this object).
+  """
+  efsrtPppNotas_on_registradoPor(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: EfsrtPppNota_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [EfsrtPppNota_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: EfsrtPppNota_Having
+  ): [EfsrtPppNota!]! @fdc_generated(from: "EfsrtPppNota.registradoPor", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `Matricula` objects in a one-to-many relationship (where `Matricula`.`user` is this object).
   """

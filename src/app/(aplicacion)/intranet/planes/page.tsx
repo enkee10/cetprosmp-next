@@ -28,6 +28,7 @@ interface Plan {
   genera: string | null;
   carreraId: number | null;
   periodoVigenciaId: number | null;
+  versionId: number | null;
 }
 
 interface CarreraOption {
@@ -75,6 +76,7 @@ export default function PlanesPage() {
       creditos: true,
       periodoVigenciaTitulo: false,
       periodoCaducidad: false,
+      versionTitulo: false,
       duracion: true,
       resolucionTipo: true,
       imagenPortada: false,
@@ -265,6 +267,14 @@ export default function PlanesPage() {
         flex: 0.8,
         minWidth: 125,
         valueGetter: (_value, row: Plan) => row.periodoCaducidad || '',
+      },
+      {
+        field: 'versionTitulo',
+        headerName: 'Version',
+        flex: 0.8,
+        minWidth: 130,
+        valueGetter: (_value, row: Plan) =>
+          row.versionId != null ? semestreTitleById.get(row.versionId) || `Semestre ${row.versionId}` : '',
       },
       {
         field: 'duracion',

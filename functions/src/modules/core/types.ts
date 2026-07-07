@@ -107,7 +107,6 @@ export interface DataConnectActEconomica {
   descripcion?: string | null;
   imagenPortadaUrl?: string | null;
   familiaId?: number | null;
-  especialidadId?: number | null;
 }
 
 export interface DataConnectActEconomicaInput {
@@ -115,7 +114,6 @@ export interface DataConnectActEconomicaInput {
   descripcion?: string | null;
   imagenPortadaUrl?: string | null;
   familiaId?: number | null;
-  especialidadId?: number | null;
 }
 
 export interface DataConnectFamilia {
@@ -137,21 +135,21 @@ export interface DataConnectEspecialidad {
   id: number;
   titulo?: string | null;
   tituloComercial?: string | null;
+  orden?: number | null;
   descripcion?: string | null;
   descripcion2?: string | null;
   slug?: string | null;
   imagenPortadaUrl?: string | null;
-  actEconomicaId?: number | null;
 }
 
 export interface DataConnectEspecialidadInput {
   titulo?: string | null;
   tituloComercial?: string | null;
+  orden?: number | null;
   descripcion?: string | null;
   descripcion2?: string | null;
   slug?: string | null;
   imagenPortadaUrl?: string | null;
-  actEconomicaId?: number | null;
 }
 
 export interface DataConnectTipoCarrera {
@@ -173,6 +171,13 @@ export interface DataConnectCarrera {
   creadoEn?: string | null;
   actualizadoEn?: string | null;
   actEconomicaId?: number | null;
+  especialidadId?: number | null;
+  especialidad?: {
+    id?: number | null;
+    titulo?: string | null;
+    tituloComercial?: string | null;
+    orden?: number | null;
+  } | null;
   tipoCarreraId?: number | null;
 }
 
@@ -185,6 +190,7 @@ export interface DataConnectCarreraInput {
   creadoEn?: string | null;
   actualizadoEn?: string | null;
   actEconomicaId?: number | null;
+  especialidadId?: number | null;
   tipoCarreraId?: number | null;
 }
 
@@ -204,6 +210,7 @@ export interface DataConnectPlan {
   genera?: string | null;
   carreraId?: number | null;
   periodoVigenciaId?: number | null;
+  versionId?: number | null;
 }
 
 export interface DataConnectPlanInput {
@@ -221,6 +228,7 @@ export interface DataConnectPlanInput {
   genera?: string | null;
   carreraId?: number | null;
   periodoVigenciaId?: number | null;
+  versionId?: number | null;
 }
 
 export interface DataConnectSemestre {
@@ -524,7 +532,17 @@ export interface DataConnectModulo {
   metas?: number | null;
   activo?: boolean | null;
   slug?: string | null;
-  plan?: { planEstudio?: string | null } | null;
+  plan?: {
+    planEstudio?: string | null;
+    carrera?: {
+      especialidad?: {
+        id?: number | null;
+        titulo?: string | null;
+        tituloComercial?: string | null;
+        orden?: number | null;
+      } | null;
+    } | null;
+  } | null;
   planId?: number | null;
 }
 
@@ -602,7 +620,7 @@ export interface DataConnectUnidadDidactica {
   duracion?: number | null;
   creditos?: number | null;
   sigla?: string | null;
-  moduloId?: number | null;
+  moduloIds?: number[];
 }
 
 export interface DataConnectUnidadDidacticaInput {
@@ -610,7 +628,19 @@ export interface DataConnectUnidadDidacticaInput {
   duracion?: number | null;
   creditos?: number | null;
   sigla?: string | null;
-  moduloId?: number | null;
+}
+
+export interface DataConnectUnidadDidacticaModulo {
+  id: number;
+  orden?: number | null;
+  unidadDidacticaId: number;
+  moduloId: number;
+}
+
+export interface DataConnectUnidadDidacticaModuloInput {
+  orden?: number | null;
+  unidadDidacticaId: number;
+  moduloId: number;
 }
 
 export interface DataConnectCapacidadTerminal {

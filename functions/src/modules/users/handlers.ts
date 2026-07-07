@@ -1,4 +1,5 @@
 import { https } from "firebase-functions/v1";
+import { getFirestore } from "firebase-admin/firestore";
 import { UPDATE_USER_MUTATION } from "../../dataconnectOperations.js";
 import { deleteMatriculasForUser } from "../core/matriculaDeletion.js";
 import {
@@ -82,6 +83,7 @@ const isTransientDataConnectSqlError = (error: unknown): boolean => {
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 let listUsersQueryQueue: Promise<unknown> = Promise.resolve();
+const MATRICULA_AVATAR_EXTRACTION_COLLECTION = "matriculaAvatarExtractionJobs";
 
 async function executeListUsersQuery(): Promise<Array<Record<string, unknown>>> {
   let lastError: unknown;
@@ -139,6 +141,52 @@ async function hydrateMissingAuthAvatars(users: Array<Record<string, unknown>>):
     const documentId = asNullableString(user.documentId);
     const authAvatar = documentId ? avatarByDocumentId.get(documentId) : null;
     return authAvatar ? { ...user, avatar: user.avatar || authAvatar } : user;
+  });
+}
+
+async function hydrateProcessedAvatarThumbnails(
+  users: Array<Record<string, unknown>>,
+): Promise<Array<Record<string, unknown>>> {
+  const userIds = new Set(
+    users
+      .map((user) => toNumber(user.id, 0))
+      .filter((id) => id > 0),
+  );
+  if (userIds.size === 0) return users;
+
+  const snapshot = await getFirestore()
+    .collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION)
+    .orderBy("updatedAt", "desc")
+    .limit(1000)
+    .get();
+
+  const thumbnailByUserId = new Map<number, string>();
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    const userId = toNumber(data.userId, 0);
+    if (!userIds.has(userId) || thumbnailByUserId.has(userId) || data.status !== "completed") return;
+
+    const avatarTamanos = data.avatarTamanos as {
+      pequeno?: { url?: unknown } | null;
+      grande?: { url?: unknown } | null;
+    } | null;
+    const avatar = data.avatar as { url?: unknown } | null;
+    const thumbnail =
+      asNullableString(avatarTamanos?.pequeno?.url)
+      ?? asNullableString(avatarTamanos?.grande?.url)
+      ?? asNullableString(avatar?.url);
+
+    if (thumbnail) {
+      thumbnailByUserId.set(userId, thumbnail);
+    }
+  });
+
+  if (thumbnailByUserId.size === 0) return users;
+
+  return users.map((user) => {
+    const userId = toNumber(user.id, 0);
+    const avatarPequeno = thumbnailByUserId.get(userId);
+    return avatarPequeno ? { ...user, avatarPequeno } : user;
   });
 }
 
@@ -202,7 +250,9 @@ export const listUsers = https.onCall(async (_data, context) => {
   }
 
   try {
-    const users = (await hydrateMissingAuthAvatars(await executeListUsersQuerySerialized())).map((user) => ({
+    const users = (await hydrateProcessedAvatarThumbnails(
+      await hydrateMissingAuthAvatars(await executeListUsersQuerySerialized()),
+    )).map((user) => ({
       ...user,
       bloqueado: Boolean(user.blocked),
       rolId: user.rolId ? String(user.rolId) : "",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Alert,
@@ -49,6 +49,7 @@ interface PlanData {
   genera: string | null;
   carreraId: number | null;
   periodoVigenciaId: number | null;
+  versionId: number | null;
 }
 
 interface CarreraOption {
@@ -146,6 +147,14 @@ const hasModuloDraftContent = (modulo: ModuloDraft) =>
 
 const getYearFromPeriodoVigencia = (value: string) => value.match(/\b(?:19|20)\d{2}\b/)?.[0] || '';
 
+const getSemestreLabel = (semestre: SemestreOption) => semestre.titulo || `Semestre ${semestre.id}`;
+
+const getSemestresFromPeriodo = (semestres: SemestreOption[], periodoVigenciaId: string) => {
+  if (!periodoVigenciaId) return [];
+  const periodoIndex = semestres.findIndex((semestre) => String(semestre.id) === periodoVigenciaId);
+  return periodoIndex >= 0 ? semestres.slice(periodoIndex) : [];
+};
+
 export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFormProps) {
   const [duracion, setDuracion] = useState('');
   const [creditos, setCreditos] = useState('');
@@ -161,6 +170,7 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
   const [genera, setGenera] = useState('');
   const [carreraId, setCarreraId] = useState('');
   const [periodoVigenciaId, setPeriodoVigenciaId] = useState('');
+  const [versionId, setVersionId] = useState('');
   const [modulos, setModulos] = useState<ModuloDraft[]>([]);
   const [deletedModuloIds, setDeletedModuloIds] = useState<number[]>([]);
   const [carreras, setCarreras] = useState<CarreraOption[]>([]);
@@ -221,6 +231,7 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
           setGenera(fetched.genera || '');
           setCarreraId(fetched.carreraId != null ? String(fetched.carreraId) : '');
           setPeriodoVigenciaId(fetched.periodoVigenciaId != null ? String(fetched.periodoVigenciaId) : '');
+          setVersionId(fetched.versionId != null ? String(fetched.versionId) : '');
           setModulos(
             (modulosResult.data.modulos || [])
               .filter((modulo) => modulo.planId === fetched.id)
@@ -266,6 +277,22 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
 
     setSlug(normalizeSlug(selectedCarrera.nombre || `Carrera ${selectedCarrera.id}`));
   }, [carreraId, carreras]);
+
+  const versionSemestres = useMemo(
+    () => getSemestresFromPeriodo(semestres, periodoVigenciaId),
+    [periodoVigenciaId, semestres],
+  );
+
+  const handlePeriodoVigenciaChange = (nextPeriodoVigenciaId: string) => {
+    setPeriodoVigenciaId(nextPeriodoVigenciaId);
+
+    if (!versionId) return;
+    const nextVersionOptions = getSemestresFromPeriodo(semestres, nextPeriodoVigenciaId);
+    const versionIsStillValid = nextVersionOptions.some((semestre) => String(semestre.id) === versionId);
+    if (!versionIsStillValid) {
+      setVersionId('');
+    }
+  };
 
   const handleAddModulo = () => {
     setModulos((prev) => [...prev, createEmptyModuloDraft()]);
@@ -324,6 +351,7 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
           genera?: string | null;
           carreraId?: number | null;
           periodoVigenciaId?: number | null;
+          versionId?: number | null;
         },
         { id: number | null }
       >(functions, 'createOrUpdatePlan');
@@ -344,6 +372,7 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
         genera: genera || null,
         carreraId: carreraId ? Number(carreraId) : null,
         periodoVigenciaId: periodoVigenciaId ? Number(periodoVigenciaId) : null,
+        versionId: versionId ? Number(versionId) : null,
       });
       const savedPlanId = planResult.data.id ?? (planId ? Number(planId) : null);
       if (!savedPlanId) {
@@ -548,7 +577,7 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
             <Select
               label="periodo_vigencia"
               value={periodoVigenciaId}
-              onChange={(event) => setPeriodoVigenciaId(String(event.target.value))}
+              onChange={(event) => handlePeriodoVigenciaChange(String(event.target.value))}
             >
               <MenuItem value="">Sin periodo vigencia</MenuItem>
               {periodoVigenciaId && !semestres.some((semestre) => String(semestre.id) === periodoVigenciaId) ? (
@@ -558,7 +587,7 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
               ) : null}
               {semestres.map((semestre) => (
                 <MenuItem key={semestre.id} value={String(semestre.id)}>
-                  {semestre.titulo || `Semestre ${semestre.id}`}
+                  {getSemestreLabel(semestre)}
                 </MenuItem>
               ))}
             </Select>
@@ -573,6 +602,32 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
               sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}
             />
           ) : null}
+
+          <FormControl fullWidth sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}>
+            <InputLabel>Version</InputLabel>
+            <Select
+              label="Version"
+              value={versionId}
+              onChange={(event) => setVersionId(String(event.target.value))}
+              disabled={!periodoVigenciaId}
+            >
+              <MenuItem value="">
+                {periodoVigenciaId ? 'Sin version' : 'Selecciona periodo vigencia'}
+              </MenuItem>
+              {versionId && !versionSemestres.some((semestre) => String(semestre.id) === versionId) ? (
+                <MenuItem value={versionId} disabled>
+                  {semestres.find((semestre) => String(semestre.id) === versionId)
+                    ? `${getSemestreLabel(semestres.find((semestre) => String(semestre.id) === versionId)!)} fuera de rango`
+                    : 'Version actual no disponible'}
+                </MenuItem>
+              ) : null}
+              {versionSemestres.map((semestre) => (
+                <MenuItem key={semestre.id} value={String(semestre.id)}>
+                  {getSemestreLabel(semestre)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
           <Box sx={{ gridColumn: '1 / -1' }}>
             <CoverImageField

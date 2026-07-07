@@ -5,7 +5,7 @@ import { getPublicacionBySlug, getPublicaciones, formatFecha } from '@/lib/getPu
 import RichText from '@/components/RichText';
 import PublicacionesCard from '@/components/Publicaciones/PublicacionesCard';
 
-type Params = { params: { slug: string } };
+type Params = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
   const all = await getPublicaciones();
@@ -13,7 +13,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Params) {
-  const pub = await getPublicacionBySlug(params.slug);
+  const { slug } = await params;
+  const pub = await getPublicacionBySlug(slug);
   if (!pub) return { title: 'Publicación no encontrada' };
   const desc = pub.descripcionCorta || '';
   return {
@@ -34,7 +35,8 @@ function formatFechaHora(iso?: string | null) {
 }
 
 export default async function PublicacionDetallePage({ params }: Params) {
-  const pub = await getPublicacionBySlug(params.slug);
+  const { slug } = await params;
+  const pub = await getPublicacionBySlug(slug);
   if (!pub) return notFound();
 
   const tipo = (pub.tipo || '').toLowerCase();

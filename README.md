@@ -22,17 +22,33 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Firebase Emulators (Local)
 
-1. Create a local env file based on `.env.emulators.local.example`.
-2. Start emulators:
+Daily local workflow:
+
+1. Merge the emulator flags from `.env.emulators.local.example` into `.env.local`.
+2. Start the emulators in one terminal:
 
 ```powershell
-./scripts/start-firebase-emulators.ps1
+npm run emulators:start
 ```
 
-3. Start the Next.js app:
+3. Start the Next.js app in another terminal:
 
 ```bash
 npm run dev
+```
+
+By default, the app uses local Firestore, Storage, and Data Connect while keeping
+Auth and Functions remote. Use the full stack only when you are actively testing
+local callable functions or Auth behavior:
+
+```powershell
+npm run emulators:full
+```
+
+Stop emulator processes if a port gets stuck:
+
+```powershell
+npm run emulators:stop
 ```
 
 ## Learn More

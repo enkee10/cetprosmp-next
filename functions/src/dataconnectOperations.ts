@@ -29,13 +29,13 @@ export const DELETE_SECTOR_MUTATION = `
 `;
 
 export const INSERT_ACT_ECONOMICA_MUTATION = `
-  mutation InsertActEconomica($data: ActEconomica_Data! @allow(fields: "titulo descripcion imagenPortadaUrl familiaId especialidadId")) {
+  mutation InsertActEconomica($data: ActEconomica_Data! @allow(fields: "titulo descripcion imagenPortadaUrl familiaId")) {
     actEconomica_insert(data: $data)
   }
 `;
 
 export const UPDATE_ACT_ECONOMICA_MUTATION = `
-  mutation UpdateActEconomica($id: Int!, $data: ActEconomica_Data! @allow(fields: "titulo descripcion imagenPortadaUrl familiaId especialidadId")) {
+  mutation UpdateActEconomica($id: Int!, $data: ActEconomica_Data! @allow(fields: "titulo descripcion imagenPortadaUrl familiaId")) {
     actEconomica_update(id: $id, data: $data)
   }
 `;
@@ -65,13 +65,13 @@ export const DELETE_FAMILIA_MUTATION = `
 `;
 
 export const INSERT_ESPECIALIDAD_MUTATION = `
-  mutation InsertEspecialidad($data: Especialidad_Data! @allow(fields: "titulo tituloComercial descripcion descripcion2 slug imagenPortadaUrl actEconomicaId")) {
+  mutation InsertEspecialidad($data: Especialidad_Data! @allow(fields: "titulo tituloComercial orden descripcion descripcion2 slug imagenPortadaUrl")) {
     especialidad_insert(data: $data)
   }
 `;
 
 export const UPDATE_ESPECIALIDAD_MUTATION = `
-  mutation UpdateEspecialidad($id: Int!, $data: Especialidad_Data! @allow(fields: "titulo tituloComercial descripcion descripcion2 slug imagenPortadaUrl actEconomicaId")) {
+  mutation UpdateEspecialidad($id: Int!, $data: Especialidad_Data! @allow(fields: "titulo tituloComercial orden descripcion descripcion2 slug imagenPortadaUrl")) {
     especialidad_update(id: $id, data: $data)
   }
 `;
@@ -101,13 +101,13 @@ export const DELETE_TIPO_CARRERA_MUTATION = `
 `;
 
 export const INSERT_CARRERA_MUTATION = `
-  mutation InsertCarrera($data: Carrera_Data! @allow(fields: "nombre codigo descripcion nivel imagenPortadaUrl creadoEn actualizadoEn actEconomicaId tipoCarreraId")) {
+  mutation InsertCarrera($data: Carrera_Data! @allow(fields: "nombre codigo descripcion nivel imagenPortadaUrl creadoEn actualizadoEn actEconomicaId especialidadId tipoCarreraId")) {
     carrera_insert(data: $data)
   }
 `;
 
 export const UPDATE_CARRERA_MUTATION = `
-  mutation UpdateCarrera($id: Int!, $data: Carrera_Data! @allow(fields: "nombre codigo descripcion nivel imagenPortadaUrl creadoEn actualizadoEn actEconomicaId tipoCarreraId")) {
+  mutation UpdateCarrera($id: Int!, $data: Carrera_Data! @allow(fields: "nombre codigo descripcion nivel imagenPortadaUrl creadoEn actualizadoEn actEconomicaId especialidadId tipoCarreraId")) {
     carrera_update(id: $id, data: $data)
   }
 `;
@@ -119,13 +119,13 @@ export const DELETE_CARRERA_MUTATION = `
 `;
 
 export const INSERT_PLAN_MUTATION = `
-  mutation InsertPlan($data: Plan_Data! @allow(fields: "duracion creditos tituloComercial slug descripcion2 imagenPortadaUrl planEstudio periodoCaducidad resolucionTipo nro anio genera carreraId periodoVigenciaId")) {
+  mutation InsertPlan($data: Plan_Data! @allow(fields: "duracion creditos tituloComercial slug descripcion2 imagenPortadaUrl planEstudio periodoCaducidad resolucionTipo nro anio genera carreraId periodoVigenciaId versionId")) {
     plan_insert(data: $data)
   }
 `;
 
 export const UPDATE_PLAN_MUTATION = `
-  mutation UpdatePlan($id: Int!, $data: Plan_Data! @allow(fields: "duracion creditos tituloComercial slug descripcion2 imagenPortadaUrl planEstudio periodoCaducidad resolucionTipo nro anio genera carreraId periodoVigenciaId")) {
+  mutation UpdatePlan($id: Int!, $data: Plan_Data! @allow(fields: "duracion creditos tituloComercial slug descripcion2 imagenPortadaUrl planEstudio periodoCaducidad resolucionTipo nro anio genera carreraId periodoVigenciaId versionId")) {
     plan_update(id: $id, data: $data)
   }
 `;
@@ -352,6 +352,12 @@ export const UPDATE_MODULO_MUTATION = `
   }
 `;
 
+export const UPDATE_MODULO_ORDEN_MUTATION = `
+  mutation UpdateModuloOrden($id: Int!, $data: Modulo_Data! @allow(fields: "orden")) {
+    modulo_update(id: $id, data: $data)
+  }
+`;
+
 export const DELETE_MODULO_MUTATION = `
   mutation DeleteModulo($id: Int!) {
     modulo_delete(id: $id)
@@ -359,13 +365,13 @@ export const DELETE_MODULO_MUTATION = `
 `;
 
 export const INSERT_UNIDAD_DIDACTICA_MUTATION = `
-  mutation InsertUnidadDidactica($data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla moduloId")) {
+  mutation InsertUnidadDidactica($data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla")) {
     unidadDidactica_insert(data: $data)
   }
 `;
 
 export const UPDATE_UNIDAD_DIDACTICA_MUTATION = `
-  mutation UpdateUnidadDidactica($id: Int!, $data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla moduloId")) {
+  mutation UpdateUnidadDidactica($id: Int!, $data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla")) {
     unidadDidactica_update(id: $id, data: $data)
   }
 `;
@@ -373,6 +379,18 @@ export const UPDATE_UNIDAD_DIDACTICA_MUTATION = `
 export const DELETE_UNIDAD_DIDACTICA_MUTATION = `
   mutation DeleteUnidadDidactica($id: Int!) {
     unidadDidactica_delete(id: $id)
+  }
+`;
+
+export const INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION = `
+  mutation InsertUnidadDidacticaModulo($data: UnidadDidacticaModulo_Data! @allow(fields: "unidadDidacticaId moduloId orden")) {
+    unidadDidacticaModulo_insert(data: $data)
+  }
+`;
+
+export const DELETE_UNIDAD_DIDACTICA_MODULOS_BY_UNIDAD_MUTATION = `
+  mutation DeleteUnidadDidacticaModulosByUnidad($unidadDidacticaId: Int!) {
+    unidadDidacticaModulo_deleteMany(where: { unidadDidacticaId: { eq: $unidadDidacticaId } })
   }
 `;
 

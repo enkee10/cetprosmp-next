@@ -1,0 +1,28 @@
+RuntimeError: unreachable
+    at wasm://wasm/021ce0b2:wasm-function[175]:0x59b3f
+    at invoke_v (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\@electric-sql\pglite\dist\index.cjs:12:179229)
+    at wasm://wasm/021ce0b2:wasm-function[178]:0x5a2de
+    at ge.execProtocolRawSync (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\@electric-sql\pglite\dist\index.cjs:12:190447)
+    at ge.execProtocolRaw (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\@electric-sql\pglite\dist\index.cjs:12:190623)
+    at Object.onMessage (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\emulator\dataconnect\pgliteServer.js:44:47)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Object.next (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\pg-gateway\dist\chunk-FCOSUQFU.cjs:1:208784)
+    at async _class5.handleClientMessage (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\pg-gateway\dist\chunk-FCOSUQFU.cjs:1:211494)
+    at async _class5.processData (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\pg-gateway\dist\chunk-FCOSUQFU.cjs:1:211063)
+RuntimeError: unreachable
+    at wasm://wasm/021ce0b2:wasm-function[3702]:0x27c3f0
+    at invoke_v (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\@electric-sql\pglite\dist\index.cjs:12:179229)
+    at wasm://wasm/021ce0b2:wasm-function[178]:0x5a555
+    at ge.execProtocolRawSync (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\@electric-sql\pglite\dist\index.cjs:12:190447)
+    at ge.execProtocolRaw (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\@electric-sql\pglite\dist\index.cjs:12:190623)
+    at Object.onMessage (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\emulator\dataconnect\pgliteServer.js:44:47)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Object.next (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\pg-gateway\dist\chunk-FCOSUQFU.cjs:1:208784)
+    at async _class5.handleClientMessage (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\pg-gateway\dist\chunk-FCOSUQFU.cjs:1:211494)
+    at async _class5.processData (C:\Users\Enrique\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\pg-gateway\dist\chunk-FCOSUQFU.cjs:1:211063)
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+  errno: -4077,
+  code: 'ECONNRESET',
+  syscall: 'read'
+}

@@ -7,11 +7,12 @@ import type { Personal } from '@/types/personal';
 import personalData from '@/../public/data/personal.json';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function PersonalDetallePage({ params }: Props) {
-  const id = Number(params.id);
+export default async function PersonalDetallePage({ params }: Props) {
+  const { id: rawId } = await params;
+  const id = Number(rawId);
   const persona = (personalData as Personal[]).find((p) => p.id === id);
 
   if (!persona) return notFound();

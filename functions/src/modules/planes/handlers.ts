@@ -31,6 +31,7 @@ const LIST_PLANES_QUERY = `
       genera
       carreraId
       periodoVigenciaId
+      versionId
     }
   }
 `;
@@ -53,6 +54,7 @@ const GET_PLAN_QUERY = `
       genera
       carreraId
       periodoVigenciaId
+      versionId
     }
   }
 `;

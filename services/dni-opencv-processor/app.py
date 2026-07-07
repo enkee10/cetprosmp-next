@@ -373,6 +373,53 @@ def border_touch_penalty(rect: np.ndarray, image_width: int, image_height: int) 
     return 0.55 if touches else 1.0
 
 
+def shrink_wide_rect_to_document_ratio(rect: np.ndarray, image_width: int) -> np.ndarray:
+    width_a = np.linalg.norm(rect[2] - rect[3])
+    width_b = np.linalg.norm(rect[1] - rect[0])
+    height_a = np.linalg.norm(rect[1] - rect[2])
+    height_b = np.linalg.norm(rect[0] - rect[3])
+    source_width = max(width_a, width_b)
+    source_height = max(height_a, height_b)
+    if source_height <= 1:
+        return rect
+
+    normalized_ratio = source_width / source_height
+    if normalized_ratio <= DOCUMENT_RATIO * 1.14:
+        return rect
+
+    target_width = source_height * DOCUMENT_RATIO
+    if target_width >= source_width:
+        return rect
+
+    x1, _y1, x2, _y2 = rect_bounds(rect)
+    right_touches_image = x2 >= image_width * 0.985
+    left_touches_image = x1 <= image_width * 0.015
+
+    top_width = max(1.0, np.linalg.norm(rect[1] - rect[0]))
+    bottom_width = max(1.0, np.linalg.norm(rect[2] - rect[3]))
+    top_scale = min(1.0, target_width / top_width)
+    bottom_scale = min(1.0, target_width / bottom_width)
+    adjusted = rect.copy()
+
+    if right_touches_image and not left_touches_image:
+        adjusted[1] = adjusted[0] + (rect[1] - rect[0]) * top_scale
+        adjusted[2] = adjusted[3] + (rect[2] - rect[3]) * bottom_scale
+        return adjusted
+
+    if left_touches_image and not right_touches_image:
+        adjusted[0] = adjusted[1] - (rect[1] - rect[0]) * top_scale
+        adjusted[3] = adjusted[2] - (rect[2] - rect[3]) * bottom_scale
+        return adjusted
+
+    top_trim = (1.0 - top_scale) / 2.0
+    bottom_trim = (1.0 - bottom_scale) / 2.0
+    adjusted[0] = rect[0] + (rect[1] - rect[0]) * top_trim
+    adjusted[1] = rect[1] - (rect[1] - rect[0]) * top_trim
+    adjusted[3] = rect[3] + (rect[2] - rect[3]) * bottom_trim
+    adjusted[2] = rect[2] - (rect[2] - rect[3]) * bottom_trim
+    return adjusted
+
+
 def find_document_contours(image: np.ndarray, limit: int = 1) -> list[np.ndarray]:
     height, width = image.shape[:2]
     scale = 1200 / max(height, width) if max(height, width) > 1200 else 1.0
@@ -401,6 +448,8 @@ def find_document_contours(image: np.ndarray, limit: int = 1) -> list[np.ndarray
             rect = contour_to_rect(contour)
             if rect is None:
                 continue
+            if mask_name == "yellow_card":
+                rect = shrink_wide_rect_to_document_ratio(rect, resized.shape[1])
             w1 = np.linalg.norm(rect[2] - rect[3])
             w2 = np.linalg.norm(rect[1] - rect[0])
             h1 = np.linalg.norm(rect[1] - rect[2])

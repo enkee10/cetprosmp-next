@@ -304,12 +304,16 @@ const normalizeRoleName = (value: string | null | undefined) =>
 const getRoleTokens = (value: string | null | undefined) =>
   normalizeRoleName(value).split(/[^a-z0-9]+/).filter(Boolean);
 
+const isSuperusuarioRole = (tokens: string[]) =>
+  tokens.includes('superusuario') || (tokens.includes('super') && tokens.includes('usuario'));
+
 const isAssignablePersonalForGrupo = (personal: PersonalOption) => {
   const cargoTokens = getRoleTokens(personal.cargo);
   return (
     cargoTokens.includes('docente') ||
     cargoTokens.includes('coordinador') ||
-    cargoTokens.includes('coordinadora')
+    cargoTokens.includes('coordinadora') ||
+    isSuperusuarioRole(cargoTokens)
   );
 };
 

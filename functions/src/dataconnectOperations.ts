@@ -412,6 +412,12 @@ export const INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION = `
   }
 `;
 
+export const UPDATE_UNIDAD_DIDACTICA_MODULO_MUTATION = `
+  mutation UpdateUnidadDidacticaModulo($id: Int!, $data: UnidadDidacticaModulo_Data! @allow(fields: "orden")) {
+    unidadDidacticaModulo_update(id: $id, data: $data)
+  }
+`;
+
 export const DELETE_UNIDAD_DIDACTICA_MODULOS_BY_UNIDAD_MUTATION = `
   mutation DeleteUnidadDidacticaModulosByUnidad($unidadDidacticaId: Int!) {
     unidadDidacticaModulo_deleteMany(where: { unidadDidacticaId: { eq: $unidadDidacticaId } })

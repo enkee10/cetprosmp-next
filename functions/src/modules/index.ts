@@ -135,6 +135,7 @@ export {
 } from "./matriculas/handlers.js";
 export {
   listEstructuraAcademica,
+  updateEstructuraAcademicaCell,
   listUnidadesDidacticas,
   getUnidadDidactica,
   createOrUpdateUnidadDidactica,

@@ -86,6 +86,7 @@ export {
   createOrUpdatePaquete,
   deletePaquete,
   listEstructuraAcademica,
+  updateEstructuraAcademicaCell,
   createMatriculaDesdePaquete,
   crearMatriculaFormulario,
   deleteMatricula,

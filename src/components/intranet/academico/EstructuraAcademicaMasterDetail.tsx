@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
   Alert,
@@ -81,7 +81,23 @@ interface ModuloDetalle {
   unidadesDidacticas: UnidadDidacticaDetalle[];
 }
 
-type DetailRow = [string, string | number | null | undefined];
+type EditableAcademicEntity = 'modulo' | 'unidadDidactica' | 'unidadDidacticaModulo' | 'capacidadTerminal' | 'indicadorCapacidad';
+type EditableValueType = 'text' | 'number' | 'boolean';
+type EditableCellValue = string | number | boolean | null;
+
+interface EditableCellTarget {
+  entity: EditableAcademicEntity;
+  id: number;
+  field: string;
+  valueType: EditableValueType;
+}
+
+interface DetailRow {
+  label: string;
+  value: string | number | boolean | null | undefined;
+  lines?: number;
+  target?: EditableCellTarget;
+}
 
 function normalizeText(value: unknown) {
   return String(value ?? '')
@@ -92,9 +108,35 @@ function normalizeText(value: unknown) {
     .trim();
 }
 
-function displayText(value: string | number | null | undefined) {
+function displayText(value: string | number | boolean | null | undefined) {
   if (value === null || value === undefined || value === '') return '-';
   return String(value);
+}
+
+function draftFromValue(value: EditableCellValue | undefined) {
+  if (value === null || value === undefined) return '';
+  return String(value);
+}
+
+function coerceDraftValue(value: string, valueType: EditableValueType): EditableCellValue {
+  const trimmed = value.trim();
+  if (valueType === 'number') {
+    if (!trimmed) return null;
+    const parsed = Number(trimmed);
+    if (!Number.isFinite(parsed)) throw new Error('El valor debe ser numerico.');
+    return parsed;
+  }
+  if (valueType === 'boolean') {
+    const normalized = trimmed.toLowerCase();
+    if (['true', '1', 'si', 'sí', 'yes'].includes(normalized)) return true;
+    if (['false', '0', 'no'].includes(normalized)) return false;
+    throw new Error('El valor debe ser true/false o si/no.');
+  }
+  return trimmed || null;
+}
+
+function sameEditableValue(a: EditableCellValue | undefined, b: EditableCellValue | undefined) {
+  return String(a ?? '') === String(b ?? '');
 }
 
 function moduloName(modulo: ModuloDetalle | null | undefined) {
@@ -124,10 +166,130 @@ function countIndicadores(unidades: UnidadDidacticaDetalle[]) {
   );
 }
 
-function LineText({ children, lines = 2 }: { children: string; lines?: number }) {
+function applyEditableCellUpdate(
+  items: ModuloDetalle[],
+  target: EditableCellTarget,
+  value: EditableCellValue,
+): ModuloDetalle[] {
+  return items.map((modulo) => {
+    if (target.entity === 'modulo' && modulo.id === target.id) {
+      return { ...modulo, [target.field]: value } as ModuloDetalle;
+    }
+
+    return {
+      ...modulo,
+      unidadesDidacticas: modulo.unidadesDidacticas.map((unidad) => {
+        if (target.entity === 'unidadDidacticaModulo' && unidad.relacionId === target.id) {
+          return { ...unidad, [target.field]: value } as UnidadDidacticaDetalle;
+        }
+
+        const updatedUnidad = target.entity === 'unidadDidactica' && unidad.id === target.id
+          ? ({ ...unidad, [target.field]: value } as UnidadDidacticaDetalle)
+          : unidad;
+
+        return {
+          ...updatedUnidad,
+          capacidadesTerminales: updatedUnidad.capacidadesTerminales.map((capacidad) => {
+            const updatedCapacidad = target.entity === 'capacidadTerminal' && capacidad.id === target.id
+              ? ({ ...capacidad, [target.field]: value } as CapacidadDetalle)
+              : capacidad;
+
+            return {
+              ...updatedCapacidad,
+              indicadoresCapacidad: updatedCapacidad.indicadoresCapacidad.map((indicador) => (
+                target.entity === 'indicadorCapacidad' && indicador.id === target.id
+                  ? ({ ...indicador, [target.field]: value } as IndicadorDetalle)
+                  : indicador
+              )),
+            };
+          }),
+        };
+      }),
+    };
+  });
+}
+
+function EditableValue({
+  value,
+  target,
+  lines = 2,
+  variant = 'caption',
+  onSave,
+}: {
+  value: EditableCellValue | undefined;
+  target?: EditableCellTarget;
+  lines?: number;
+  variant?: 'caption' | 'body2';
+  onSave: (target: EditableCellTarget, value: EditableCellValue) => Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(draftFromValue(value));
+  const committingRef = useRef(false);
+
+  useEffect(() => {
+    if (!editing) setDraft(draftFromValue(value));
+  }, [editing, value]);
+
+  const commit = useCallback(async () => {
+    if (!target || committingRef.current) return;
+    committingRef.current = true;
+    try {
+      const nextValue = coerceDraftValue(draft, target.valueType);
+      if (!sameEditableValue(value, nextValue)) {
+        await onSave(target, nextValue);
+      }
+      setEditing(false);
+    } finally {
+      committingRef.current = false;
+    }
+  }, [draft, onSave, target, value]);
+
+  if (target && editing) {
+    return (
+      <TextField
+        autoFocus
+        fullWidth
+        multiline={lines > 1 && target.valueType === 'text'}
+        maxRows={Math.max(lines, 2)}
+        size="small"
+        type={target.valueType === 'number' ? 'number' : 'text'}
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onClick={(event) => event.stopPropagation()}
+        onDoubleClick={(event) => event.stopPropagation()}
+        onBlur={() => void commit()}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            void commit();
+          }
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            setDraft(draftFromValue(value));
+            setEditing(false);
+          }
+        }}
+        sx={{
+          '& .MuiInputBase-input': {
+            fontSize: variant === 'caption' ? '0.75rem' : '0.875rem',
+            py: 0.35,
+          },
+        }}
+      />
+    );
+  }
+
   return (
     <Typography
       component="span"
+      variant={variant}
+      onDoubleClick={(event) => {
+        if (!target) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setEditing(true);
+      }}
+      title={target ? 'Doble clic para editar' : undefined}
       sx={{
         display: '-webkit-box',
         WebkitBoxOrient: 'vertical',
@@ -135,14 +297,23 @@ function LineText({ children, lines = 2 }: { children: string; lines?: number })
         overflow: 'hidden',
         wordBreak: 'break-word',
         lineHeight: 1.25,
+        cursor: target ? 'text' : 'inherit',
+        borderBottom: target ? '1px dotted transparent' : undefined,
+        '&:hover': target ? { borderBottomColor: 'text.secondary' } : undefined,
       }}
     >
-      {children}
+      {displayText(value)}
     </Typography>
   );
 }
 
-function DetailFields({ rows }: { rows: DetailRow[] }) {
+function DetailFields({
+  rows,
+  onSave,
+}: {
+  rows: DetailRow[];
+  onSave: (target: EditableCellTarget, value: EditableCellValue) => Promise<void>;
+}) {
   return (
     <Box
       sx={{
@@ -153,14 +324,17 @@ function DetailFields({ rows }: { rows: DetailRow[] }) {
         py: 1,
       }}
     >
-      {rows.map(([label, value]) => (
-        <Box key={label} sx={{ display: 'contents' }}>
+      {rows.map((row) => (
+        <Box key={row.label} sx={{ display: 'contents' }}>
           <Typography variant="caption" color="text.secondary">
-            {label}
+            {row.label}
           </Typography>
-          <Typography variant="caption" sx={{ wordBreak: 'break-word' }}>
-            {displayText(value)}
-          </Typography>
+          <EditableValue
+            value={row.value ?? null}
+            target={row.target}
+            lines={row.lines}
+            onSave={onSave}
+          />
         </Box>
       ))}
     </Box>
@@ -240,6 +414,25 @@ export default function EstructuraAcademicaMasterDetail() {
 
   const auth = getAuth(app);
   const functions = useMemo(() => getFunctions(app), []);
+
+  const saveEditableCell = useCallback(async (target: EditableCellTarget, value: EditableCellValue) => {
+    try {
+      if (auth.currentUser) {
+        await auth.currentUser.getIdToken(true);
+      }
+      const updateEstructuraAcademicaCell = httpsCallable<
+        EditableCellTarget & { value: EditableCellValue },
+        { id: number }
+      >(functions, 'updateEstructuraAcademicaCell');
+      await updateEstructuraAcademicaCell({ ...target, value });
+      setModulos((current) => applyEditableCellUpdate(current, target, value));
+      setError(null);
+    } catch (err) {
+      console.error('Error saving academic structure cell: ', err);
+      setError('No se pudo guardar la celda. Verifica tus permisos y el valor ingresado.');
+      throw err;
+    }
+  }, [auth, functions]);
 
   const fetchEstructura = useCallback(async () => {
     setLoading(true);
@@ -388,12 +581,45 @@ export default function EstructuraAcademicaMasterDetail() {
             details={
               selectedModulo ? (
                 <DetailFields
+                  onSave={saveEditableCell}
                   rows={[
-                    ['Id', selectedModulo.id],
-                    ['Orden', selectedModulo.orden],
-                    ['Horas', selectedModulo.horas],
-                    ['Creditos', selectedModulo.creditos],
-                    ['Plan', planName(selectedModulo)],
+                    { label: 'Id', value: selectedModulo.id },
+                    {
+                      label: 'Titulo',
+                      value: selectedModulo.titulo,
+                      target: { entity: 'modulo', id: selectedModulo.id, field: 'titulo', valueType: 'text' },
+                    },
+                    {
+                      label: 'Comercial',
+                      value: selectedModulo.tituloComercial,
+                      target: { entity: 'modulo', id: selectedModulo.id, field: 'tituloComercial', valueType: 'text' },
+                    },
+                    {
+                      label: 'Orden',
+                      value: selectedModulo.orden,
+                      target: { entity: 'modulo', id: selectedModulo.id, field: 'orden', valueType: 'number' },
+                    },
+                    {
+                      label: 'Horas',
+                      value: selectedModulo.horas,
+                      target: { entity: 'modulo', id: selectedModulo.id, field: 'horas', valueType: 'number' },
+                    },
+                    {
+                      label: 'Creditos',
+                      value: selectedModulo.creditos,
+                      target: { entity: 'modulo', id: selectedModulo.id, field: 'creditos', valueType: 'number' },
+                    },
+                    {
+                      label: 'Metas',
+                      value: selectedModulo.metas,
+                      target: { entity: 'modulo', id: selectedModulo.id, field: 'metas', valueType: 'number' },
+                    },
+                    {
+                      label: 'Slug',
+                      value: selectedModulo.slug,
+                      target: { entity: 'modulo', id: selectedModulo.id, field: 'slug', valueType: 'text' },
+                    },
+                    { label: 'Plan', value: planName(selectedModulo) },
                   ]}
                 />
               ) : undefined
@@ -416,7 +642,15 @@ export default function EstructuraAcademicaMasterDetail() {
                     <ListItemText
                       primaryTypographyProps={{ component: 'div' }}
                       secondaryTypographyProps={{ component: 'div' }}
-                      primary={<LineText lines={2}>{moduloName(modulo)}</LineText>}
+                      primary={
+                        <EditableValue
+                          value={moduloName(modulo)}
+                          target={{ entity: 'modulo', id: modulo.id, field: 'tituloComercial', valueType: 'text' }}
+                          lines={2}
+                          variant="body2"
+                          onSave={saveEditableCell}
+                        />
+                      }
                       secondary={
                         <Stack spacing={0.65} sx={{ mt: 0.65 }}>
                           <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-word' }}>
@@ -442,12 +676,39 @@ export default function EstructuraAcademicaMasterDetail() {
             details={
               selectedUnidad ? (
                 <DetailFields
+                  onSave={saveEditableCell}
                   rows={[
-                    ['Id', selectedUnidad.id],
-                    ['Orden', selectedUnidad.orden],
-                    ['Duracion', selectedUnidad.duracion],
-                    ['Creditos', selectedUnidad.creditos],
-                    ['Sigla', selectedUnidad.sigla],
+                    { label: 'Id', value: selectedUnidad.id },
+                    {
+                      label: 'Orden',
+                      value: selectedUnidad.orden,
+                      target: {
+                        entity: 'unidadDidacticaModulo',
+                        id: selectedUnidad.relacionId,
+                        field: 'orden',
+                        valueType: 'number',
+                      },
+                    },
+                    {
+                      label: 'Nombre',
+                      value: selectedUnidad.nombre,
+                      target: { entity: 'unidadDidactica', id: selectedUnidad.id, field: 'nombre', valueType: 'text' },
+                    },
+                    {
+                      label: 'Duracion',
+                      value: selectedUnidad.duracion,
+                      target: { entity: 'unidadDidactica', id: selectedUnidad.id, field: 'duracion', valueType: 'number' },
+                    },
+                    {
+                      label: 'Creditos',
+                      value: selectedUnidad.creditos,
+                      target: { entity: 'unidadDidactica', id: selectedUnidad.id, field: 'creditos', valueType: 'number' },
+                    },
+                    {
+                      label: 'Sigla',
+                      value: selectedUnidad.sigla,
+                      target: { entity: 'unidadDidactica', id: selectedUnidad.id, field: 'sigla', valueType: 'text' },
+                    },
                   ]}
                 />
               ) : undefined
@@ -470,7 +731,15 @@ export default function EstructuraAcademicaMasterDetail() {
                     <ListItemText
                       primaryTypographyProps={{ component: 'div' }}
                       secondaryTypographyProps={{ component: 'div' }}
-                      primary={<LineText lines={2}>{unidad.nombre || `Unidad ${unidad.id}`}</LineText>}
+                      primary={
+                        <EditableValue
+                          value={unidad.nombre || `Unidad ${unidad.id}`}
+                          target={{ entity: 'unidadDidactica', id: unidad.id, field: 'nombre', valueType: 'text' }}
+                          lines={2}
+                          variant="body2"
+                          onSave={saveEditableCell}
+                        />
+                      }
                       secondary={
                         <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
                           <Chip size="small" label={`Ord ${unidad.orden ?? '-'}`} />
@@ -491,11 +760,27 @@ export default function EstructuraAcademicaMasterDetail() {
             details={
               selectedCapacidad ? (
                 <DetailFields
+                  onSave={saveEditableCell}
                   rows={[
-                    ['Id', selectedCapacidad.id],
-                    ['Sigla', selectedCapacidad.sigla],
-                    ['Unidad', selectedCapacidad.unidadDidacticaId],
-                    ['Indicadores', selectedCapacidad.indicadoresCapacidad.length],
+                    { label: 'Id', value: selectedCapacidad.id },
+                    {
+                      label: 'Descripcion',
+                      value: selectedCapacidad.descripcion,
+                      lines: 3,
+                      target: {
+                        entity: 'capacidadTerminal',
+                        id: selectedCapacidad.id,
+                        field: 'descripcion',
+                        valueType: 'text',
+                      },
+                    },
+                    {
+                      label: 'Sigla',
+                      value: selectedCapacidad.sigla,
+                      target: { entity: 'capacidadTerminal', id: selectedCapacidad.id, field: 'sigla', valueType: 'text' },
+                    },
+                    { label: 'Unidad', value: selectedCapacidad.unidadDidacticaId },
+                    { label: 'Indicadores', value: selectedCapacidad.indicadoresCapacidad.length },
                   ]}
                 />
               ) : undefined
@@ -515,7 +800,20 @@ export default function EstructuraAcademicaMasterDetail() {
                     <ListItemText
                       primaryTypographyProps={{ component: 'div' }}
                       secondaryTypographyProps={{ component: 'div' }}
-                      primary={<LineText lines={4}>{capacidad.descripcion || `Capacidad ${capacidad.id}`}</LineText>}
+                      primary={
+                        <EditableValue
+                          value={capacidad.descripcion || `Capacidad ${capacidad.id}`}
+                          target={{
+                            entity: 'capacidadTerminal',
+                            id: capacidad.id,
+                            field: 'descripcion',
+                            valueType: 'text',
+                          }}
+                          lines={4}
+                          variant="body2"
+                          onSave={saveEditableCell}
+                        />
+                      }
                       secondary={
                         <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
                           <Chip size="small" label={`Id ${capacidad.id}`} />
@@ -535,10 +833,11 @@ export default function EstructuraAcademicaMasterDetail() {
             details={
               selectedCapacidad ? (
                 <DetailFields
+                  onSave={saveEditableCell}
                   rows={[
-                    ['Capacidad', selectedCapacidad.id],
-                    ['Unidad', selectedUnidad?.id],
-                    ['Modulo', selectedModulo?.id],
+                    { label: 'Capacidad', value: selectedCapacidad.id },
+                    { label: 'Unidad', value: selectedUnidad?.id },
+                    { label: 'Modulo', value: selectedModulo?.id },
                   ]}
                 />
               ) : undefined
@@ -557,11 +856,47 @@ export default function EstructuraAcademicaMasterDetail() {
                     <ListItemText
                       primaryTypographyProps={{ component: 'div' }}
                       secondaryTypographyProps={{ component: 'div' }}
-                      primary={<LineText lines={4}>{indicador.descripcion || `Indicador ${indicador.id}`}</LineText>}
+                      primary={
+                        <EditableValue
+                          value={indicador.descripcion || `Indicador ${indicador.id}`}
+                          target={{
+                            entity: 'indicadorCapacidad',
+                            id: indicador.id,
+                            field: 'descripcion',
+                            valueType: 'text',
+                          }}
+                          lines={4}
+                          variant="body2"
+                          onSave={saveEditableCell}
+                        />
+                      }
                       secondary={
                         <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
                           <Chip size="small" label={`Id ${indicador.id}`} />
-                          {indicador.sigla ? <Chip size="small" label={indicador.sigla} /> : null}
+                          <Box
+                            sx={{
+                              px: 0.75,
+                              minHeight: 24,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              border: '1px solid',
+                              borderColor: 'divider',
+                              borderRadius: 12,
+                              bgcolor: 'action.hover',
+                            }}
+                          >
+                            <EditableValue
+                              value={indicador.sigla}
+                              target={{
+                                entity: 'indicadorCapacidad',
+                                id: indicador.id,
+                                field: 'sigla',
+                                valueType: 'text',
+                              }}
+                              lines={1}
+                              onSave={saveEditableCell}
+                            />
+                          </Box>
                         </Stack>
                       }
                     />

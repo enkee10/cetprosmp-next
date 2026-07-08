@@ -20,6 +20,7 @@ import {
   DataConnectIndicadorCapacidad,
   DataConnectIndicadorCapacidadInput,
   DataConnectModulo,
+  DataConnectModuloInput,
   DataConnectUnidadDidactica,
   DataConnectUnidadDidacticaInput,
   DataConnectUnidadDidacticaModulo,
@@ -42,7 +43,9 @@ import {
   UPDATE_APRENDIZAJE_MUTATION,
   UPDATE_CAPACIDAD_TERMINAL_MUTATION,
   UPDATE_INDICADOR_CAPACIDAD_MUTATION,
+  UPDATE_MODULO_MUTATION,
   UPDATE_UNIDAD_DIDACTICA_MUTATION,
+  UPDATE_UNIDAD_DIDACTICA_MODULO_MUTATION,
 } from "../../dataconnectOperations.js";
 
 const LIST_UNIDADES_DIDACTICAS_QUERY = `
@@ -334,6 +337,140 @@ function requireLevel(context: https.CallableContext, action: string) {
     throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
   }
 }
+
+type EditableAcademicEntity = "modulo" | "unidadDidactica" | "unidadDidacticaModulo" | "capacidadTerminal" | "indicadorCapacidad";
+type EditableAcademicValueType = "text" | "number" | "boolean";
+
+const editableAcademicFields: Record<EditableAcademicEntity, Record<string, EditableAcademicValueType>> = {
+  modulo: {
+    titulo: "text",
+    tituloComercial: "text",
+    orden: "number",
+    descripcion: "text",
+    horas: "number",
+    creditos: "number",
+    metas: "number",
+    activo: "boolean",
+    slug: "text",
+  },
+  unidadDidactica: {
+    nombre: "text",
+    duracion: "number",
+    creditos: "number",
+    sigla: "text",
+  },
+  unidadDidacticaModulo: {
+    orden: "number",
+  },
+  capacidadTerminal: {
+    descripcion: "text",
+    sigla: "text",
+  },
+  indicadorCapacidad: {
+    descripcion: "text",
+    sigla: "text",
+  },
+};
+
+const requiredAcademicTextFields = new Set([
+  "modulo.titulo",
+  "unidadDidactica.nombre",
+  "capacidadTerminal.descripcion",
+  "indicadorCapacidad.descripcion",
+]);
+
+function parseEditableAcademicEntity(value: unknown): EditableAcademicEntity {
+  const entity = String(value ?? "");
+  if (entity in editableAcademicFields) return entity as EditableAcademicEntity;
+  throw new https.HttpsError("invalid-argument", "Invalid academic entity.");
+}
+
+function parseEditableAcademicField(entity: EditableAcademicEntity, value: unknown) {
+  const field = String(value ?? "");
+  const valueType = editableAcademicFields[entity][field];
+  if (!valueType) throw new https.HttpsError("invalid-argument", "Invalid academic field.");
+  return { field, valueType };
+}
+
+function parseEditableAcademicValue(entity: EditableAcademicEntity, field: string, valueType: EditableAcademicValueType, value: unknown) {
+  if (valueType === "number") {
+    if (value === null || value === undefined || String(value).trim() === "") return null;
+    const parsed = Number(String(value).trim());
+    if (!Number.isFinite(parsed)) throw new https.HttpsError("invalid-argument", "Value must be numeric.");
+    return parsed;
+  }
+
+  if (valueType === "boolean") {
+    if (typeof value === "boolean") return value;
+    const normalized = String(value ?? "").trim().toLowerCase();
+    if (["true", "1", "si", "sí", "yes"].includes(normalized)) return true;
+    if (["false", "0", "no"].includes(normalized)) return false;
+    throw new https.HttpsError("invalid-argument", "Value must be true or false.");
+  }
+
+  const text = String(value ?? "").trim();
+  if (!text && requiredAcademicTextFields.has(`${entity}.${field}`)) {
+    throw new https.HttpsError("invalid-argument", "Value is required.");
+  }
+  return text || null;
+}
+
+export const updateEstructuraAcademicaCell = https.onCall(async (data, context) => {
+  requireLevel(context, "update academic structure cells");
+
+  const entity = parseEditableAcademicEntity(data?.entity);
+  const { field, valueType } = parseEditableAcademicField(entity, data?.field);
+  const id = toNumber(data?.id, -1);
+  if (id <= 0) throw new https.HttpsError("invalid-argument", "id is required.");
+
+  const value = parseEditableAcademicValue(entity, field, valueType, data?.value);
+  const payload = { [field]: value };
+
+  try {
+    if (entity === "modulo") {
+      const updated = await dataConnect.executeGraphql<
+        { modulo_update: unknown },
+        { id: number; data: DataConnectModuloInput }
+      >(UPDATE_MODULO_MUTATION, { variables: { id, data: payload } });
+      return { id: getIdFromKeyOutput(updated.data.modulo_update) ?? id };
+    }
+
+    if (entity === "unidadDidactica") {
+      const updated = await dataConnect.executeGraphql<
+        { unidadDidactica_update: unknown },
+        { id: number; data: DataConnectUnidadDidacticaInput }
+      >(UPDATE_UNIDAD_DIDACTICA_MUTATION, { variables: { id, data: payload } });
+      return { id: getIdFromKeyOutput(updated.data.unidadDidactica_update) ?? id };
+    }
+
+    if (entity === "unidadDidacticaModulo") {
+      const updated = await dataConnect.executeGraphql<
+        { unidadDidacticaModulo_update: unknown },
+        { id: number; data: DataConnectUnidadDidacticaModuloInput }
+      >(UPDATE_UNIDAD_DIDACTICA_MODULO_MUTATION, {
+        variables: { id, data: payload as unknown as DataConnectUnidadDidacticaModuloInput },
+      });
+      return { id: getIdFromKeyOutput(updated.data.unidadDidacticaModulo_update) ?? id };
+    }
+
+    if (entity === "capacidadTerminal") {
+      const updated = await dataConnect.executeGraphql<
+        { capacidadTerminal_update: unknown },
+        { id: number; data: DataConnectCapacidadTerminalInput }
+      >(UPDATE_CAPACIDAD_TERMINAL_MUTATION, { variables: { id, data: payload } });
+      return { id: getIdFromKeyOutput(updated.data.capacidadTerminal_update) ?? id };
+    }
+
+    const updated = await dataConnect.executeGraphql<
+      { indicadorCapacidad_update: unknown },
+      { id: number; data: DataConnectIndicadorCapacidadInput }
+    >(UPDATE_INDICADOR_CAPACIDAD_MUTATION, { variables: { id, data: payload } });
+    return { id: getIdFromKeyOutput(updated.data.indicadorCapacidad_update) ?? id };
+  } catch (error) {
+    console.error("Error in updateEstructuraAcademicaCell:", error);
+    throw new https.HttpsError("internal", "An unexpected error occurred while updating academic structure.");
+  }
+});
 
 interface EstructuraModulo extends DataConnectModulo {}
 

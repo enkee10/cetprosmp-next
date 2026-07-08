@@ -39,15 +39,6 @@ npm run dev
 
 By default, the app uses local Auth, Functions, Firestore, Storage, and Data Connect.
 
-To test with the saved data without writing back to `exportedData`, use:
-
-```powershell
-npm run emulators:safe
-```
-
-Use `npm run emulators:start` only when you intentionally want emulator changes
-to be exported back into `exportedData` on exit.
-
 Stop emulator processes if a port gets stuck:
 
 ```powershell

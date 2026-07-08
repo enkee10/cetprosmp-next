@@ -99,8 +99,9 @@ interface PersonalOption {
   id: number;
   displayName: string | null;
   cargo?: string | null;
+  rolId?: number | string | null;
   userUsername?: string | null;
-  user?: { username?: string | null; apellidoPaterno?: string | null } | null;
+  user?: { username?: string | null; apellidoPaterno?: string | null; rolId?: number | string | null } | null;
 }
 
 interface TurnoOption {
@@ -307,13 +308,17 @@ const getRoleTokens = (value: string | null | undefined) =>
 const isSuperusuarioRole = (tokens: string[]) =>
   tokens.includes('superusuario') || (tokens.includes('super') && tokens.includes('usuario'));
 
+const isSuperusuarioRoleId = (personal: PersonalOption) =>
+  Number(personal.rolId ?? personal.user?.rolId ?? 0) === 8;
+
 const isAssignablePersonalForGrupo = (personal: PersonalOption) => {
   const cargoTokens = getRoleTokens(personal.cargo);
   return (
     cargoTokens.includes('docente') ||
     cargoTokens.includes('coordinador') ||
     cargoTokens.includes('coordinadora') ||
-    isSuperusuarioRole(cargoTokens)
+    isSuperusuarioRole(cargoTokens) ||
+    isSuperusuarioRoleId(personal)
   );
 };
 

@@ -58,6 +58,10 @@ if ($Full) {
 
 if (($selectedEmulators -split ',') -contains 'functions') {
   $env:FUNCTIONS_DISCOVERY_TIMEOUT = '60'
+  npm --prefix functions run build
+  if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+  }
 }
 
 $cmd = "npx -y firebase-tools@latest emulators:start --project $ProjectId --only $selectedEmulators"

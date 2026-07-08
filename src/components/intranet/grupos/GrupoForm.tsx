@@ -301,9 +301,16 @@ const normalizeRoleName = (value: string | null | undefined) =>
     .trim()
     .toLowerCase();
 
+const getRoleTokens = (value: string | null | undefined) =>
+  normalizeRoleName(value).split(/[^a-z0-9]+/).filter(Boolean);
+
 const isAssignablePersonalForGrupo = (personal: PersonalOption) => {
-  const cargo = normalizeRoleName(personal.cargo);
-  return cargo === 'docente' || cargo === 'coordinador' || cargo === 'coordinadora';
+  const cargoTokens = getRoleTokens(personal.cargo);
+  return (
+    cargoTokens.includes('docente') ||
+    cargoTokens.includes('coordinador') ||
+    cargoTokens.includes('coordinadora')
+  );
 };
 
 const isSemestreVigente = (semestre: SemestreOption, date: Date) => {

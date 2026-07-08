@@ -4,11 +4,11 @@
         "lint": "set ESLINT_USE_FLAT_CONFIG=false&& eslint .",
         "build": "tsc",
         "build:watch": "tsc --watch",
-        "serve": "npm run build && firebase emulators:start --only functions",
-        "shell": "npm run build && firebase functions:shell",
+        "serve": "npm run build && npx -y firebase-tools@latest emulators:start --only auth,functions,firestore,storage,dataconnect",
+        "shell": "npm run build && npx -y firebase-tools@latest functions:shell",
         "start": "npm run shell",
-        "deploy": "npm run build && firebase deploy --only functions",
-        "logs": "firebase functions:log"
+        "deploy": "npm run build && npx -y firebase-tools@latest deploy --only functions",
+        "logs": "npx -y firebase-tools@latest functions:log"
     },
     "engines": {
         "node": "22"

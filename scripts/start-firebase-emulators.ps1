@@ -1,7 +1,7 @@
 param(
   [string]$ProjectId = 'cetprosmp-2026',
   [string]$ExportDir = './exportedData',
-  [string]$Only = 'firestore,storage,dataconnect',
+  [string]$Only = 'auth,functions,firestore,storage,dataconnect',
   [switch]$Full,
   [switch]$NoImport,
   [switch]$NoExport

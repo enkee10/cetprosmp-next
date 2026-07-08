@@ -24,7 +24,7 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 Daily local workflow:
 
-1. Merge the emulator flags from `.env.emulators.local.example` into `.env.local`.
+1. Keep the emulator flags from `.env.emulators.local.example` in `.env.local`.
 2. Start the emulators in one terminal:
 
 ```powershell
@@ -37,13 +37,7 @@ npm run emulators:start
 npm run dev
 ```
 
-By default, the app uses local Firestore, Storage, and Data Connect while keeping
-Auth and Functions remote. Use the full stack only when you are actively testing
-local callable functions or Auth behavior:
-
-```powershell
-npm run emulators:full
-```
+By default, the app uses local Auth, Functions, Firestore, Storage, and Data Connect.
 
 Stop emulator processes if a port gets stuck:
 

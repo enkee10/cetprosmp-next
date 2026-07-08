@@ -279,6 +279,15 @@ extend type Mutation {
     data: GrupoModulo_Data!
   ): GrupoModulo_KeyOutput! @fdc_generated(from: "GrupoModulo", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `GrupoModuloUnidadDidactica` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  grupoModuloUnidadDidactica_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: GrupoModuloUnidadDidactica_Data!
+  ): GrupoModuloUnidadDidactica_KeyOutput! @fdc_generated(from: "GrupoModuloUnidadDidactica", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Horario` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   horario_insert(
@@ -863,6 +872,15 @@ extend type Mutation {
     """
     data: [GrupoModulo_Data!]!
   ): [GrupoModulo_KeyOutput!]! @fdc_generated(from: "GrupoModulo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `GrupoModuloUnidadDidactica` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  grupoModuloUnidadDidactica_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [GrupoModuloUnidadDidactica_Data!]!
+  ): [GrupoModuloUnidadDidactica_KeyOutput!]! @fdc_generated(from: "GrupoModuloUnidadDidactica", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Horario` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1449,6 +1467,15 @@ extend type Mutation {
     data: GrupoModulo_Data!
   ): GrupoModulo_KeyOutput! @fdc_generated(from: "GrupoModulo", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `GrupoModuloUnidadDidactica` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModuloUnidadDidactica`.
+  """
+  grupoModuloUnidadDidactica_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: GrupoModuloUnidadDidactica_Data!
+  ): GrupoModuloUnidadDidactica_KeyOutput! @fdc_generated(from: "GrupoModuloUnidadDidactica", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Horario` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Horario`.
   """
   horario_upsert(
@@ -2033,6 +2060,15 @@ extend type Mutation {
     """
     data: [GrupoModulo_Data!]!
   ): [GrupoModulo_KeyOutput!]! @fdc_generated(from: "GrupoModulo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `GrupoModuloUnidadDidactica` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModuloUnidadDidactica`.
+  """
+  grupoModuloUnidadDidactica_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [GrupoModuloUnidadDidactica_Data!]!
+  ): [GrupoModuloUnidadDidactica_KeyOutput!]! @fdc_generated(from: "GrupoModuloUnidadDidactica", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Horario` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Horario`.
   """
@@ -3238,6 +3274,35 @@ extend type Mutation {
     """
     data: GrupoModulo_Data!
   ): GrupoModulo_KeyOutput @fdc_generated(from: "GrupoModulo", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `GrupoModuloUnidadDidactica` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `GrupoModuloUnidadDidactica` or `null` if not found.
+  """
+  grupoModuloUnidadDidactica_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModuloUnidadDidactica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModuloUnidadDidactica_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: GrupoModuloUnidadDidactica_Data!
+  ): GrupoModuloUnidadDidactica_KeyOutput @fdc_generated(from: "GrupoModuloUnidadDidactica", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Horario` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Horario` or `null` if not found.
   """
@@ -4764,6 +4829,25 @@ extend type Mutation {
     data: GrupoModulo_Data!
   ): Int! @fdc_generated(from: "GrupoModulo", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `GrupoModuloUnidadDidactica` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  grupoModuloUnidadDidactica_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: GrupoModuloUnidadDidactica_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: GrupoModuloUnidadDidactica_Data!
+  ): Int! @fdc_generated(from: "GrupoModuloUnidadDidactica", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Horario` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   horario_updateMany(
@@ -6154,6 +6238,30 @@ extend type Mutation {
     first: GrupoModulo_FirstRow
   ): GrupoModulo_KeyOutput @fdc_generated(from: "GrupoModulo", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `GrupoModuloUnidadDidactica` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  grupoModuloUnidadDidactica_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModuloUnidadDidactica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModuloUnidadDidactica_FirstRow
+  ): GrupoModuloUnidadDidactica_KeyOutput @fdc_generated(from: "GrupoModuloUnidadDidactica", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Horario` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   horario_delete(
@@ -7353,6 +7461,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "GrupoModulo", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `GrupoModuloUnidadDidactica` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  grupoModuloUnidadDidactica_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: GrupoModuloUnidadDidactica_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "GrupoModuloUnidadDidactica", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Horario` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

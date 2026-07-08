@@ -562,12 +562,16 @@ type Grupo @table(name: "grupos") @index(fields: ["calendarioId"]) @index(fields
   horarioId: Int @col(name: "horario_id")
 
   grupoOrd: Int @col(name: "grupo_ord")
+  workspaceName: String @col(name: "workspace_name")
+  workspaceCorreo: String @col(name: "workspace_correo")
 }
 
 type GrupoModulo @table(name: "grupo_modulos", singular: "grupoModulo", plural: "grupoModulos") @unique(fields: ["grupo", "modulo"]) {
   id: Int! @col(dataType: "serial")
   orden: Int
   obligatorio: Boolean
+  inicio: Timestamp
+  fin: Timestamp
 
   grupo: Grupo! @ref(fields: "grupoId", references: "id")
   grupoId: Int! @col(name: "grupo_id")
@@ -577,6 +581,19 @@ type GrupoModulo @table(name: "grupo_modulos", singular: "grupoModulo", plural: 
 
   calendario: Calendario @ref(fields: "calendarioId", references: "id")
   calendarioId: Int @col(name: "calendario_id")
+}
+
+type GrupoModuloUnidadDidactica @table(name: "grupo_modulo_unidades_didacticas", singular: "grupoModuloUnidadDidactica", plural: "grupoModuloUnidadesDidacticas") @unique(fields: ["grupoModulo", "unidadDidactica"]) @index(fields: ["grupoModuloId"]) @index(fields: ["unidadDidacticaId"]) {
+  id: Int! @col(dataType: "serial")
+  orden: Int
+  inicio: Timestamp
+  fin: Timestamp
+
+  grupoModulo: GrupoModulo! @ref(fields: "grupoModuloId", references: "id")
+  grupoModuloId: Int! @col(name: "grupo_modulo_id")
+
+  unidadDidactica: UnidadDidactica! @ref(fields: "unidadDidacticaId", references: "id")
+  unidadDidacticaId: Int! @col(name: "unidad_didactica_id")
 }
 
 type EfsrtPppPractica @table(name: "efsrt_ppp_practicas", singular: "efsrtPppPractica", plural: "efsrtPppPracticas") @unique(fields: ["grupoModulo", "numero"]) @index(fields: ["grupoModuloId"]) {
@@ -851,6 +868,13 @@ type PublicacionVideo @table(name: "publicacion_videos") {
 type DatoGeneral @table(name: "dato_general") {
   id: Int! @col(dataType: "serial")
   nombreInstitucion: String @col(name: "nombre_institucion")
+  logoUrl: String @col(name: "logo_url")
+  codigoModular: String @col(name: "codigo_modular")
+  tipoGestion: String @col(name: "tipo_gestion")
+  departamento: String
+  provincia: String
+  distrito: String
+  dre: String
   direccion: String
   telefono1: String @col(name: "telefono_1")
   telefono2: String @col(name: "telefono_2")

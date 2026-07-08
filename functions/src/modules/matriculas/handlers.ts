@@ -34,6 +34,11 @@ import {
   UPDATE_USER_MUTATION,
 } from "../../dataconnectOperations.js";
 import {
+  addWorkspaceGroupMember,
+  removeWorkspaceGroupMember,
+  WorkspaceSyncError,
+} from "../../workspace/groupWorkspaceSync.js";
+import {
   resolveWorkspacePrimaryEmail,
   shouldSyncStudentWorkspace,
   syncStudentToWorkspace,
@@ -97,6 +102,22 @@ interface MatriculaRow {
     archivado?: boolean | null;
   } | null;
 }
+
+type MatriculaSaveUserResult = {
+  userId: number;
+  workspacePrimaryEmail: string | null;
+};
+
+type GrupoModuloMapping = {
+  grupoId: number;
+  workspaceCorreo?: string | null;
+  moduloGrupos: Array<{ moduloId: number; grupoId: number }>;
+};
+
+type MatriculaWorkspaceGroup = {
+  grupoId: number;
+  workspaceCorreo?: string | null;
+};
 
 interface OcrIdentityData {
   tipoDocumento?: string | null;
@@ -315,6 +336,7 @@ const GET_GRUPOS_BY_SEMESTRE_PAQUETE_QUERY = `
     grupos(where: { semestreId: { eq: $semestreId }, paqueteId: { eq: $paqueteId }, archivado: { ne: true } }, limit: 20) {
       id
       grupoOrd
+      workspaceCorreo
       paqueteId
       paquete {
         id
@@ -332,6 +354,31 @@ const GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY = `
       obligatorio
       grupoId
       moduloId
+    }
+  }
+`;
+
+const GET_MATRICULA_WORKSPACE_GROUPS_QUERY = `
+  query GetMatriculaWorkspaceGroups($matriculaId: Int!) {
+    modulosEstudiantes(where: { matriculaId: { eq: $matriculaId } }, limit: 20) {
+      grupoId
+      grupo {
+        id
+        workspaceCorreo
+      }
+    }
+  }
+`;
+
+const LIST_MODULO_ESTUDIANTES_BY_GROUP_QUERY = `
+  query ListModuloEstudiantesByGroup($grupoId: Int!) {
+    modulosEstudiantes(where: { grupoId: { eq: $grupoId } }, limit: 500) {
+      matriculaId
+      matricula {
+        id
+        userId
+        archivado
+      }
     }
   }
 `;
@@ -2023,9 +2070,14 @@ export const listMatriculaPaquetesBySemestre = https.onCall(async (data, context
   }
 });
 
-async function getGrupoModuloMapping(semestreId: number, paqueteId: number) {
+async function getGrupoModuloMapping(semestreId: number, paqueteId: number): Promise<GrupoModuloMapping> {
   const gruposResponse = await dataConnect.executeGraphql<{
-    grupos: Array<{ id: number; grupoOrd?: number | null; paquete?: { id?: number | null; archivado?: boolean | null } | null }>;
+    grupos: Array<{
+      id: number;
+      grupoOrd?: number | null;
+      workspaceCorreo?: string | null;
+      paquete?: { id?: number | null; archivado?: boolean | null } | null;
+    }>;
   }, { semestreId: number; paqueteId: number }>(
     GET_GRUPOS_BY_SEMESTRE_PAQUETE_QUERY,
     { variables: { semestreId, paqueteId } },
@@ -2047,6 +2099,7 @@ async function getGrupoModuloMapping(semestreId: number, paqueteId: number) {
 
   return {
     grupoId: grupo.id,
+    workspaceCorreo: grupo.workspaceCorreo ?? null,
     moduloGrupos: (modulosResponse.data.grupoModulos ?? []).map((item) => ({
       moduloId: item.moduloId,
       grupoId: item.grupoId,
@@ -2193,7 +2246,7 @@ async function saveUserForMatricula(
   existingUser: MatriculaUserRow | null,
   data: Record<string, unknown>,
   context: https.CallableContext,
-): Promise<number> {
+): Promise<MatriculaSaveUserResult> {
   const now = new Date().toISOString();
   const imageFront = getUploadedImage(data.dniImagenFrente);
   const imageBack = getUploadedImage(data.dniImagenReverso);
@@ -2232,8 +2285,8 @@ async function saveUserForMatricula(
     userId = await upsertDataConnectUserByDocumentId(authStudent.authUser.uid, payload);
   }
 
-  if (shouldSyncStudentWorkspace(authStudent.roleId, authStudent.roleTitle)) {
-    const workspacePrimaryEmail = resolveWorkspacePrimaryEmail({
+  const workspacePrimaryEmail = shouldSyncStudentWorkspace(authStudent.roleId, authStudent.roleTitle)
+    ? resolveWorkspacePrimaryEmail({
       roleId: authStudent.roleId,
       roleTitle: authStudent.roleTitle,
       nombre: payload.nombre ?? null,
@@ -2242,8 +2295,10 @@ async function saveUserForMatricula(
       dni: payload.dni ?? null,
       email: payload.email ?? null,
       institutionalEmail: payload.correoInstitucional ?? authStudent.institutionalEmail,
-    });
+    })
+    : null;
 
+  if (shouldSyncStudentWorkspace(authStudent.roleId, authStudent.roleTitle)) {
     if (!workspacePrimaryEmail) {
       throw new https.HttpsError(
         "failed-precondition",
@@ -2294,7 +2349,124 @@ async function saveUserForMatricula(
     }
   }
 
-  return userId;
+  return { userId, workspacePrimaryEmail };
+}
+
+async function getMatriculaWorkspaceGroups(matriculaId: number): Promise<MatriculaWorkspaceGroup[]> {
+  const response = await dataConnect.executeGraphql<{
+    modulosEstudiantes: Array<{
+      grupoId?: number | null;
+      grupo?: { id?: number | null; workspaceCorreo?: string | null } | null;
+    }>;
+  }, { matriculaId: number }>(
+    GET_MATRICULA_WORKSPACE_GROUPS_QUERY,
+    { variables: { matriculaId } },
+  );
+
+  const byGrupoId = new Map<number, MatriculaWorkspaceGroup>();
+  for (const item of response.data.modulosEstudiantes ?? []) {
+    const grupoId = item.grupoId ?? item.grupo?.id ?? null;
+    if (!grupoId) continue;
+    byGrupoId.set(grupoId, {
+      grupoId,
+      workspaceCorreo: item.grupo?.workspaceCorreo ?? null,
+    });
+  }
+
+  return Array.from(byGrupoId.values());
+}
+
+async function userHasAnotherMatriculaInWorkspaceGroup(
+  userId: number,
+  grupoId: number,
+  excludeMatriculaId: number,
+) {
+  const response = await dataConnect.executeGraphql<{
+    modulosEstudiantes: Array<{
+      matriculaId?: number | null;
+      matricula?: { id?: number | null; userId?: number | null; archivado?: boolean | null } | null;
+    }>;
+  }, { grupoId: number }>(
+    LIST_MODULO_ESTUDIANTES_BY_GROUP_QUERY,
+    { variables: { grupoId } },
+  );
+
+  return (response.data.modulosEstudiantes ?? []).some((item) =>
+    item.matriculaId !== excludeMatriculaId
+    && item.matricula?.id !== excludeMatriculaId
+    && item.matricula?.userId === userId
+    && item.matricula?.archivado !== true,
+  );
+}
+
+async function syncMatriculaStudentToWorkspaceGroup(
+  grupoMapping: GrupoModuloMapping,
+  workspacePrimaryEmail: string | null,
+) {
+  try {
+    return await addWorkspaceGroupMember(grupoMapping.workspaceCorreo ?? null, workspacePrimaryEmail);
+  } catch (error) {
+    if (error instanceof WorkspaceSyncError) {
+      throw new https.HttpsError("failed-precondition", error.message);
+    }
+    throw error;
+  }
+}
+
+function resolveWorkspaceEmailForMatriculaUser(user: MatriculaUserRow | null | undefined) {
+  if (!user) return null;
+  return resolveWorkspacePrimaryEmail({
+    roleId: user.rolId ?? STUDENT_ROLE_ID,
+    roleTitle: "estudiante",
+    nombre: user.nombre ?? null,
+    apellidoPaterno: user.apellidoPaterno ?? null,
+    apellidoMaterno: user.apellidoMaterno ?? null,
+    dni: user.dni ?? null,
+    email: user.email ?? null,
+    institutionalEmail: user.correoInstitucional ?? null,
+  });
+}
+
+async function syncMatriculaWorkspaceGroupChange(params: {
+  previousGroups: MatriculaWorkspaceGroup[];
+  newGroup: GrupoModuloMapping;
+  previousUserId: number;
+  currentMatriculaId: number;
+  previousWorkspaceEmail: string | null;
+  newWorkspaceEmail: string | null;
+}) {
+  const workspaceGroup = await syncMatriculaStudentToWorkspaceGroup(params.newGroup, params.newWorkspaceEmail);
+  const newGrupoIds = new Set<number>([
+    params.newGroup.grupoId,
+    ...params.newGroup.moduloGrupos.map((item) => item.grupoId),
+  ]);
+
+  const removals: Array<{ grupoId: number; workspaceCorreo?: string | null }> = [];
+  for (const previousGroup of params.previousGroups) {
+    if (newGrupoIds.has(previousGroup.grupoId)) continue;
+    const stillHasAnother = await userHasAnotherMatriculaInWorkspaceGroup(
+      params.previousUserId,
+      previousGroup.grupoId,
+      params.currentMatriculaId,
+    );
+    if (!stillHasAnother) removals.push(previousGroup);
+  }
+
+  for (const previousGroup of removals) {
+    try {
+      await removeWorkspaceGroupMember(previousGroup.workspaceCorreo ?? null, params.previousWorkspaceEmail);
+    } catch (error) {
+      if (error instanceof WorkspaceSyncError) {
+        throw new https.HttpsError("failed-precondition", error.message);
+      }
+      throw error;
+    }
+  }
+
+  return {
+    ...workspaceGroup,
+    removedFromGroups: removals.map((item) => item.grupoId),
+  };
 }
 
 export const crearMatriculaFormulario = https.onCall(async (data, context) => {
@@ -2321,11 +2493,12 @@ export const crearMatriculaFormulario = https.onCall(async (data, context) => {
 
   try {
     const existingUser = await findUserByDocument(tipoDocumento, dni);
-    const userId = await saveUserForMatricula(existingUser, {
+    const savedUser = await saveUserForMatricula(existingUser, {
       ...(data as Record<string, unknown>),
       tipoDocumento,
       dni,
     }, context);
+    const userId = savedUser.userId;
     await ensureNoMatriculaDuplicates(userId, semestreId, paqueteId, recibo);
     const grupoMapping = await getGrupoModuloMapping(semestreId, paqueteId);
     const matricula = await createMatriculaWithModuloEstudiantes({
@@ -2339,6 +2512,15 @@ export const crearMatriculaFormulario = https.onCall(async (data, context) => {
       fecha: new Date().toISOString(),
       archivado: false,
     });
+    let workspaceGroup: Awaited<ReturnType<typeof syncMatriculaStudentToWorkspaceGroup>>;
+    try {
+      workspaceGroup = await syncMatriculaStudentToWorkspaceGroup(grupoMapping, savedUser.workspacePrimaryEmail);
+    } catch (workspaceGroupError) {
+      if (matricula.id) {
+        await cleanupMatricula(matricula.id);
+      }
+      throw workspaceGroupError;
+    }
 
     let documentProcessingJobId: string | null = null;
     try {
@@ -2358,7 +2540,7 @@ export const crearMatriculaFormulario = https.onCall(async (data, context) => {
       console.warn("No se pudo encolar el procesamiento de documentos de matricula:", jobError);
     }
 
-    return { ...matricula, semestreId, documentProcessingJobId };
+    return { ...matricula, semestreId, documentProcessingJobId, workspaceGroup };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in crearMatriculaFormulario:", error);
@@ -2397,14 +2579,17 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
     if (!currentMatricula) {
       throw new https.HttpsError("not-found", "La matricula no existe.");
     }
+    const previousWorkspaceGroups = await getMatriculaWorkspaceGroups(matriculaId);
+    const previousWorkspaceEmail = resolveWorkspaceEmailForMatriculaUser(currentMatricula.user);
 
     const documentUser = await findUserByDocument(tipoDocumento, dni);
     const userToSave = documentUser ?? currentMatricula.user ?? null;
-    const userId = await saveUserForMatricula(userToSave, {
+    const savedUser = await saveUserForMatricula(userToSave, {
       ...(data as Record<string, unknown>),
       tipoDocumento,
       dni,
     }, context);
+    const userId = savedUser.userId;
 
     await ensureNoMatriculaDuplicates(userId, semestreId, paqueteId, recibo, matriculaId);
     const grupoMapping = await getGrupoModuloMapping(semestreId, paqueteId);
@@ -2451,6 +2636,14 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
       new Map(grupoMapping.moduloGrupos.map((item) => [item.moduloId, item.grupoId ?? null])),
       grupoMapping.grupoId,
     );
+    const workspaceGroup = await syncMatriculaWorkspaceGroupChange({
+      previousGroups: previousWorkspaceGroups,
+      newGroup: grupoMapping,
+      previousUserId: currentMatricula.userId ?? userId,
+      currentMatriculaId: savedMatriculaId,
+      previousWorkspaceEmail,
+      newWorkspaceEmail: savedUser.workspacePrimaryEmail,
+    });
 
     let documentProcessingJobId: string | null = null;
     try {
@@ -2470,7 +2663,7 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
       console.warn("No se pudo encolar el procesamiento de documentos de matricula actualizada:", jobError);
     }
 
-    return { id: savedMatriculaId, semestreId, paqueteId, userId, documentProcessingJobId };
+    return { id: savedMatriculaId, semestreId, paqueteId, userId, documentProcessingJobId, workspaceGroup };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in updateMatriculaFormulario:", error);

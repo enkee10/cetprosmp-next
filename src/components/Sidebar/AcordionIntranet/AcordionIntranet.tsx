@@ -9,10 +9,12 @@ import {
   ListItemText,
 } from '@mui/material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CategoryIcon from '@mui/icons-material/Category';
+import BusinessIcon from '@mui/icons-material/Business';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import FactoryIcon from '@mui/icons-material/Factory';
@@ -57,12 +59,14 @@ const menuSections: IntranetMenuSection[] = [
     title: 'Entidades',
     items: [
       { id: 'sectores', title: 'Sectores', path: '/intranet/sectores', icon: <FactoryIcon /> },
+      { id: 'datos-generales', title: 'Datos Generales', path: '/intranet/datos-generales', icon: <BusinessIcon /> },
       { id: 'familias', title: 'Familias', path: '/intranet/familias', icon: <FamilyRestroomIcon /> },
       { id: 'act-economicas', title: 'Actividades Económicas', path: '/intranet/act-economicas', icon: <AccountBalanceIcon /> },
       { id: 'especialidades', title: 'Especialidades', path: '/intranet/especialidades', icon: <AutoStoriesIcon /> },
       { id: 'carreras', title: 'Carreras', path: '/intranet/carreras', icon: <SchoolIcon /> },
       { id: 'planes', title: 'Planes', path: '/intranet/planes', icon: <AssignmentIcon /> },
       { id: 'modulos', title: 'Módulos', path: '/intranet/modulos', icon: <ViewModuleIcon /> },
+      { id: 'estructura-academica', title: 'Estructura Academica', path: '/intranet/estructura-academica', icon: <AccountTreeIcon /> },
       { id: 'paquetes', title: 'Paquetes', path: '/intranet/paquetes', icon: <Inventory2Icon /> },
       { id: 'grupos', title: 'Grupos', path: '/intranet/grupos', icon: <PeopleIcon /> },
       { id: 'personal', title: 'Personal', path: '/intranet/personal', icon: <PeopleIcon /> },

@@ -19,6 +19,7 @@ import {
   DataConnectCapacidadTerminalInput,
   DataConnectIndicadorCapacidad,
   DataConnectIndicadorCapacidadInput,
+  DataConnectModulo,
   DataConnectUnidadDidactica,
   DataConnectUnidadDidacticaInput,
   DataConnectUnidadDidacticaModulo,
@@ -182,12 +183,210 @@ const GET_ACTIVIDAD_QUERY = `
   }
 `;
 
+const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
+  query ListEstructuraAcademicaManual {
+    modulos(limit: 1000, orderBy: [{ planId: ASC }, { orden: ASC }, { tituloComercial: ASC }]) {
+      id
+      titulo
+      tituloComercial
+      orden
+      descripcion
+      horas
+      creditos
+      metas
+      activo
+      slug
+      planId
+      plan {
+        id
+        planEstudio
+        tituloComercial
+        carrera {
+          id
+          nombre
+          tituloComercial
+          especialidad {
+            id
+            titulo
+            tituloComercial
+            orden
+          }
+        }
+      }
+    }
+    unidadDidacticaModulos(limit: 50000, orderBy: [{ moduloId: ASC }, { orden: ASC }, { unidadDidacticaId: ASC }]) {
+      id
+      orden
+      moduloId
+      unidadDidacticaId
+    }
+    unidadesDidacticas(limit: 50000, orderBy: [{ id: ASC }]) {
+      id
+      nombre
+      duracion
+      creditos
+      sigla
+    }
+    capacidadesTerminales(limit: 50000, orderBy: [{ unidadDidacticaId: ASC }, { id: ASC }]) {
+      id
+      descripcion
+      sigla
+      unidadDidacticaId
+    }
+    indicadoresCapacidad(limit: 100000, orderBy: [{ capacidadTerminalId: ASC }, { id: ASC }]) {
+      id
+      descripcion
+      sigla
+      capacidadTerminalId
+    }
+  }
+`;
+
+interface EstructuraAcademicaQueryResponse {
+  modulos: EstructuraModulo[];
+  unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
+  unidadesDidacticas: DataConnectUnidadDidactica[];
+  capacidadesTerminales: DataConnectCapacidadTerminal[];
+  indicadoresCapacidad: DataConnectIndicadorCapacidad[];
+}
+
+function groupByNumber<T>(items: T[], keySelector: (item: T) => number | null | undefined) {
+  const grouped = new Map<number, T[]>();
+  for (const item of items) {
+    const key = keySelector(item);
+    if (!Number.isInteger(key)) continue;
+    const current = grouped.get(key as number) ?? [];
+    current.push(item);
+    grouped.set(key as number, current);
+  }
+  return grouped;
+}
+
+function sortById<T extends { id: number }>(items: T[]) {
+  return items.slice().sort((a, b) => a.id - b.id);
+}
+
+function sortRelations(items: DataConnectUnidadDidacticaModulo[]) {
+  return items
+    .slice()
+    .sort(
+      (a, b) =>
+        (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER) ||
+        a.unidadDidacticaId - b.unidadDidacticaId ||
+        a.id - b.id,
+    );
+}
+
+function buildCapacidadesForUnidad(
+  unidadId: number,
+  capacidadesByUnidadId: Map<number, DataConnectCapacidadTerminal[]>,
+  indicadoresByCapacidadId: Map<number, DataConnectIndicadorCapacidad[]>,
+) {
+  return sortById(capacidadesByUnidadId.get(unidadId) ?? [])
+    .map((capacidad) => ({
+      id: capacidad.id,
+      descripcion: capacidad.descripcion ?? null,
+      sigla: capacidad.sigla ?? null,
+      unidadDidacticaId: capacidad.unidadDidacticaId ?? null,
+      indicadoresCapacidad: sortById(indicadoresByCapacidadId.get(capacidad.id) ?? [])
+        .map((indicador) => ({
+          id: indicador.id,
+          descripcion: indicador.descripcion ?? null,
+          sigla: indicador.sigla ?? null,
+          capacidadTerminalId: indicador.capacidadTerminalId ?? null,
+        })),
+    }));
+}
+
+function buildUnidadesForModulo(
+  moduloId: number,
+  relationsByModuloId: Map<number, DataConnectUnidadDidacticaModulo[]>,
+  unidadesById: Map<number, DataConnectUnidadDidactica>,
+  capacidadesByUnidadId: Map<number, DataConnectCapacidadTerminal[]>,
+  indicadoresByCapacidadId: Map<number, DataConnectIndicadorCapacidad[]>,
+) {
+  return sortRelations(relationsByModuloId.get(moduloId) ?? [])
+    .map((relation) => {
+      const unidad = unidadesById.get(relation.unidadDidacticaId);
+      if (!unidad) return null;
+
+      return {
+        id: unidad.id,
+        relacionId: relation.id,
+        orden: relation.orden ?? null,
+        nombre: unidad.nombre ?? null,
+        duracion: unidad.duracion ?? null,
+        creditos: unidad.creditos ?? null,
+        sigla: unidad.sigla ?? null,
+        capacidadesTerminales: buildCapacidadesForUnidad(
+          unidad.id,
+          capacidadesByUnidadId,
+          indicadoresByCapacidadId,
+        ),
+      }
+    })
+    .filter(Boolean);
+}
+
 function requireLevel(context: https.CallableContext, action: string) {
   const requesterLevel = context.auth?.token?.level ?? 0;
   if (requesterLevel < 600) {
     throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
   }
 }
+
+interface EstructuraModulo extends DataConnectModulo {}
+
+function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
+  const unidadesById = new Map((response.unidadesDidacticas ?? []).map((unidad) => [unidad.id, unidad]));
+  const relationsByModuloId = groupByNumber(response.unidadDidacticaModulos ?? [], (relation) => relation.moduloId);
+  const capacidadesByUnidadId = groupByNumber(
+    response.capacidadesTerminales ?? [],
+    (capacidad) => capacidad.unidadDidacticaId,
+  );
+  const indicadoresByCapacidadId = groupByNumber(
+    response.indicadoresCapacidad ?? [],
+    (indicador) => indicador.capacidadTerminalId,
+  );
+
+  return (response.modulos ?? []).map((modulo) => ({
+    id: modulo.id,
+    titulo: modulo.titulo ?? null,
+    tituloComercial: modulo.tituloComercial ?? null,
+    orden: modulo.orden ?? null,
+    descripcion: modulo.descripcion ?? null,
+    horas: modulo.horas ?? null,
+    creditos: modulo.creditos ?? null,
+    metas: modulo.metas ?? null,
+    activo: modulo.activo ?? null,
+    slug: modulo.slug ?? null,
+    planId: modulo.planId ?? null,
+    plan: modulo.plan ?? null,
+    unidadesDidacticas: buildUnidadesForModulo(
+      modulo.id,
+      relationsByModuloId,
+      unidadesById,
+      capacidadesByUnidadId,
+      indicadoresByCapacidadId,
+    ),
+  }));
+}
+
+export const listEstructuraAcademica = https.onCall(async (_data, context) => {
+  requireLevel(context, "list academic structure");
+
+  try {
+    const response = await dataConnect.executeGraphql<
+      EstructuraAcademicaQueryResponse,
+      Record<string, never>
+    >(LIST_ESTRUCTURA_ACADEMICA_QUERY);
+
+    return { modulos: buildEstructuraAcademica(response.data) };
+  } catch (error) {
+    console.error("Error in listEstructuraAcademica:", error);
+    throw new https.HttpsError("internal", "An unexpected error occurred while listing academic structure.");
+  }
+});
 
 function parseModuloIds(input: unknown): number[] {
   const rawItems = Array.isArray(input)

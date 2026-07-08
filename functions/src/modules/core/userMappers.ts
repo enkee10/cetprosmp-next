@@ -9,6 +9,7 @@ import {
   DataConnectEspecialidadInput,
   DataConnectEventoInput,
   DataConnectFamiliaInput,
+  DataConnectGrupoModuloUnidadDidacticaInput,
   DataConnectIndicadorCapacidadInput,
   DataConnectMatriculaInput,
   DataConnectModuloInput,
@@ -355,6 +356,8 @@ export function buildGrupoDataFromInput(input: Record<string, unknown>) {
     turnoId: toNumberOrNull(input.turnoId),
     horarioId: toNumberOrNull(input.horarioId),
     grupoOrd: toNumberOrNull(input.grupoOrd),
+    workspaceName: asNullableString(input.workspaceName ?? input.workspace_name),
+    workspaceCorreo: asNullableString(input.workspaceCorreo ?? input.workspace_correo),
   });
 }
 
@@ -364,7 +367,46 @@ export function buildGrupoModuloDataFromInput(input: Record<string, unknown>) {
     moduloId: toNumber(input.moduloId, 0),
     orden: toNumberOrNull(input.orden),
     obligatorio: toBoolean(input.obligatorio) ?? true,
+    inicio: asNullableTimestamp(input.inicio),
+    fin: asNullableTimestamp(input.fin),
     calendarioId: toNumberOrNull(input.calendarioId),
+  });
+}
+
+export function buildGrupoModuloUnidadDidacticaDataFromInput(
+  input: Record<string, unknown>,
+): DataConnectGrupoModuloUnidadDidacticaInput {
+  return compactUndefined({
+    grupoModuloId: toNumber(input.grupoModuloId, 0),
+    unidadDidacticaId: toNumber(input.unidadDidacticaId, 0),
+    orden: toNumberOrNull(input.orden),
+    inicio: asNullableTimestamp(input.inicio),
+    fin: asNullableTimestamp(input.fin),
+  }) as DataConnectGrupoModuloUnidadDidacticaInput;
+}
+
+export function buildDatoGeneralDataFromInput(input: Record<string, unknown>) {
+  return compactUndefined({
+    nombreInstitucion: asNullableString(input.nombreInstitucion),
+    logoUrl: asNullableString(input.logoUrl ?? input.logo_url),
+    codigoModular: asNullableString(input.codigoModular ?? input.codigo_modular),
+    tipoGestion: asNullableString(input.tipoGestion ?? input.tipo_gestion),
+    departamento: asNullableString(input.departamento),
+    provincia: asNullableString(input.provincia),
+    distrito: asNullableString(input.distrito),
+    dre: asNullableString(input.dre ?? input.DRE),
+    direccion: asNullableString(input.direccion),
+    telefono1: asNullableString(input.telefono1),
+    telefono2: asNullableString(input.telefono2),
+    correo: asNullableString(input.correo),
+    paginaWeb: asNullableString(input.paginaWeb),
+    facebook: asNullableString(input.facebook),
+    youtube: asNullableString(input.youtube),
+    twitter: asNullableString(input.twitter),
+    instagram: asNullableString(input.instagram),
+    tiktok: asNullableString(input.tiktok),
+    ruc: asNullableString(input.ruc),
+    rd: asNullableString(input.rd),
   });
 }
 

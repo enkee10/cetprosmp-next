@@ -96,6 +96,13 @@ export {
   deleteGrupo,
 } from "./grupos/handlers.js";
 export {
+  getDatosGeneralesGlobales,
+  listDatosGenerales,
+  getDatoGeneral,
+  createOrUpdateDatoGeneral,
+  deleteDatoGeneral,
+} from "./datos-generales/handlers.js";
+export {
   listPersonal,
   getPersonal,
   createOrUpdatePersonal,
@@ -127,6 +134,7 @@ export {
   verificarDocumentoMatricula,
 } from "./matriculas/handlers.js";
 export {
+  listEstructuraAcademica,
   listUnidadesDidacticas,
   getUnidadDidactica,
   createOrUpdateUnidadDidactica,

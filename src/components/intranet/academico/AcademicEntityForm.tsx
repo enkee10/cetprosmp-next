@@ -15,7 +15,7 @@ import {
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 
-export type AcademicFieldType = 'text' | 'number' | 'number-list' | 'textarea' | 'timestamp' | 'select';
+export type AcademicFieldType = 'text' | 'number' | 'number-list' | 'textarea' | 'timestamp' | 'date' | 'select';
 
 export interface AcademicSelectOption {
   value: string | number;
@@ -51,6 +51,7 @@ type EntityData = Record<string, unknown>;
 function formatInitialValue(value: unknown, type?: AcademicFieldType) {
   if (value === null || value === undefined) return '';
   if (type === 'number-list' && Array.isArray(value)) return value.join(', ');
+  if (type === 'date' && typeof value === 'string') return value.slice(0, 10);
   if (type === 'timestamp' && typeof value === 'string') return value.slice(0, 16);
   return String(value);
 }
@@ -279,13 +280,15 @@ export function AcademicEntityForm({
               type={
                 field.type === 'number'
                   ? 'number'
+                  : field.type === 'date'
+                    ? 'date'
                   : field.type === 'timestamp'
                     ? 'datetime-local'
                     : undefined
               }
               minRows={field.type === 'textarea' ? 3 : undefined}
               multiline={field.type === 'textarea'}
-              InputLabelProps={field.type === 'timestamp' ? { shrink: true } : undefined}
+              InputLabelProps={field.type === 'timestamp' || field.type === 'date' ? { shrink: true } : undefined}
             />
           );
         })}

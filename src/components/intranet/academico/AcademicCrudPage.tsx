@@ -58,6 +58,13 @@ function renderTimestampCellValue(value: unknown) {
   return new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short' }).format(date);
 }
 
+function renderDateCellValue(value: unknown) {
+  if (typeof value !== 'string' || !value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('es-PE', { dateStyle: 'short' }).format(date);
+}
+
 export function AcademicCrudPage({
   rowsKey,
   entityKey,
@@ -198,6 +205,8 @@ export function AcademicCrudPage({
         valueGetter: (_value, row: AcademicRow) =>
           fieldTypeByName.get(column.field) === 'number'
             ? renderNumberCellValue(row[column.field])
+            : fieldTypeByName.get(column.field) === 'date'
+              ? renderDateCellValue(row[column.field])
             : fieldTypeByName.get(column.field) === 'timestamp'
               ? renderTimestampCellValue(row[column.field])
             : renderCellValue(row[column.field]),

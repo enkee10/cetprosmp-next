@@ -8,20 +8,19 @@ import {
   Checkbox,
   CircularProgress,
   Container,
+  Divider,
   FormControl,
   FormControlLabel,
+  IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { useRouter } from 'next/navigation';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
@@ -39,6 +38,8 @@ interface GrupoData {
   turnoNombre: string | null;
   descripcion: string | null;
   nombreDisplay: string | null;
+  workspaceName: string | null;
+  workspaceCorreo: string | null;
   estado: string | null;
   archivado: boolean | null;
   semestreId: number | null;
@@ -46,13 +47,28 @@ interface GrupoData {
   paqueteId: number | null;
   turnoId: number | null;
   horarioId: number | null;
-  grupoOrd: number | null;
   grupoModulos?: GrupoModuloDetalle[];
 }
 
 interface ModuloResumen {
   titulo?: string | null;
   tituloComercial?: string | null;
+  orden?: number | null;
+  plan?: {
+    carrera?: {
+      especialidad?: {
+        orden?: number | null;
+      } | null;
+    } | null;
+  } | null;
+}
+
+interface UnidadDidacticaResumen {
+  id: number;
+  nombre?: string | null;
+  duracion?: number | null;
+  creditos?: number | null;
+  sigla?: string | null;
 }
 
 interface PaqueteModuloOption {
@@ -62,6 +78,7 @@ interface PaqueteModuloOption {
   paqueteId: number;
   moduloId: number;
   modulo?: ModuloResumen | null;
+  unidadDidacticas?: UnidadDidacticaResumen[];
 }
 
 interface PaqueteOption {
@@ -101,37 +118,95 @@ interface HorarioOption {
   viernesAlternoInicio: string | null;
 }
 
-interface CalendarioOption {
-  id: number;
-  titulo: string | null;
-  duracion?: number | null;
-  semestreId?: number | null;
-  semestre?: { titulo?: string | null } | null;
-  horarioId?: number | null;
-  horario?: { nombre?: string | null } | null;
-}
-
 interface GrupoModuloDetalle {
   id?: number;
   orden: number | null;
   obligatorio: boolean | null;
+  inicio?: string | null;
+  fin?: string | null;
   grupoId?: number;
   moduloId: number;
   calendarioId?: number | null;
   modulo?: ModuloResumen | null;
+  unidadDidacticas?: GrupoModuloUnidadDidacticaDetalle[];
+}
+
+interface GrupoModuloUnidadDidacticaDetalle {
+  id?: number;
+  orden?: number | null;
+  inicio?: string | null;
+  fin?: string | null;
+  grupoModuloId?: number;
+  unidadDidacticaId: number;
+  unidadDidactica?: UnidadDidacticaResumen | null;
 }
 
 const getSemestreCodigo = (value: string | null | undefined) => String(value ?? '').trim().slice(-4);
 
-const getModuloTitulo = (modulo: ModuloResumen | null | undefined, moduloId: number) =>
-  modulo?.tituloComercial || modulo?.titulo || `Modulo ${moduloId}`;
+const WORKSPACE_NAME_MAX_LENGTH = 73;
+const WORKSPACE_CORREO_MAX_LENGTH = 80;
+const WORKSPACE_EMAIL_DOMAIN = '@cetprosmp.edu.pe';
 
-const getCalendarioTitulo = (calendario: CalendarioOption) => {
-  const duracionText = calendario.duracion != null ? `${calendario.duracion} horas` : '';
-  const horarioText = calendario.horario?.nombre?.trim() || '';
-  const semestreCodigo = getSemestreCodigo(calendario.semestre?.titulo);
-  const semestreText = semestreCodigo ? `(${semestreCodigo})` : '';
-  return [duracionText, horarioText, semestreText].filter(Boolean).join(' ') || calendario.titulo || `Calendario ${calendario.id}`;
+const trimPackageFromRight = (packageName: string, prefix: string, suffix: string, maxLength: number) => {
+  const available = maxLength - prefix.length - suffix.length;
+  const trimmedPackageName = packageName.slice(0, Math.max(0, available));
+  const value = `${prefix}${trimmedPackageName}${suffix}`;
+  return value.length > maxLength ? value.slice(0, maxLength) : value;
+};
+
+const normalizeEmailSegment = (value: string | null | undefined) =>
+  String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[ñÑ]/g, 'n')
+    .toLowerCase()
+    .replace(/[^a-z0-9._\s-]+/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+const getPrimaryPaqueteModulo = (paquete: PaqueteOption | undefined) =>
+  (paquete?.paqueteModulos ?? [])
+    .slice()
+    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId)[0] ?? null;
+
+const getOrdenText = (value: number | string | null | undefined) =>
+  value == null || value === '' ? '' : String(value);
+
+const buildWorkspaceName = (
+  semestre: SemestreOption | null,
+  paquete: PaqueteOption | undefined,
+  personalName: string,
+) => {
+  const paqueteModulo = getPrimaryPaqueteModulo(paquete);
+  const semestreCodigo = getSemestreCodigo(semestre?.titulo);
+  const ordenEspecialidad = getOrdenText(paqueteModulo?.modulo?.plan?.carrera?.especialidad?.orden);
+  const ordenModulo = getOrdenText(paqueteModulo?.modulo?.orden ?? paqueteModulo?.orden);
+  if (!semestreCodigo || !paquete?.titulo || !personalName) {
+    return '';
+  }
+
+  const prefix = `:${semestreCodigo}_${ordenEspecialidad}.${ordenModulo} `;
+  const suffix = personalName ? ` - ${personalName}` : '';
+  return trimPackageFromRight(paquete?.titulo?.trim() || '', prefix, suffix, WORKSPACE_NAME_MAX_LENGTH);
+};
+
+const buildWorkspaceCorreo = (
+  semestre: SemestreOption | null,
+  paquete: PaqueteOption | undefined,
+  personalName: string,
+) => {
+  const semestreCodigo = getSemestreCodigo(semestre?.titulo);
+  if (!semestreCodigo || !paquete?.titulo || !personalName) {
+    return '';
+  }
+
+  const packageSegment = normalizeEmailSegment(paquete?.titulo);
+  const personalSegment = normalizeEmailSegment(personalName);
+  const prefix = semestreCodigo ? `${semestreCodigo}-` : '';
+  const suffix = `${personalSegment ? `-${personalSegment}` : ''}${WORKSPACE_EMAIL_DOMAIN}`;
+  return trimPackageFromRight(packageSegment, prefix, suffix, WORKSPACE_CORREO_MAX_LENGTH);
 };
 
 const buildGrupoModulosFromPaquete = (
@@ -150,6 +225,7 @@ const buildGrupoModulosFromPaquete = (
         paqueteId: paquete.id,
         moduloId,
         modulo: null,
+        unidadDidacticas: [],
       }));
 
   return paqueteModulos
@@ -157,6 +233,25 @@ const buildGrupoModulosFromPaquete = (
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId)
     .map((paqueteModulo, index) => {
       const existing = currentByModuloId.get(paqueteModulo.moduloId);
+      const existingUnidadById = new Map(
+        (existing?.unidadDidacticas ?? []).map((item) => [item.unidadDidacticaId, item]),
+      );
+      const paqueteUnidades = paqueteModulo.unidadDidacticas ?? [];
+      const unidadDidacticas = paqueteUnidades.length > 0
+        ? paqueteUnidades.map((unidadDidactica, unidadIndex) => {
+            const existingUnidad = existingUnidadById.get(unidadDidactica.id);
+            return {
+              id: existingUnidad?.id,
+              grupoModuloId: existingUnidad?.grupoModuloId,
+              unidadDidacticaId: unidadDidactica.id,
+              unidadDidactica: existingUnidad?.unidadDidactica || unidadDidactica,
+              orden: existingUnidad?.orden ?? unidadIndex + 1,
+              inicio: existingUnidad?.inicio ?? null,
+              fin: existingUnidad?.fin ?? null,
+            };
+          })
+        : existing?.unidadDidacticas ?? [];
+
       return {
         id: existing?.id,
         grupoId: existing?.grupoId,
@@ -164,10 +259,28 @@ const buildGrupoModulosFromPaquete = (
         modulo: existing?.modulo || paqueteModulo.modulo || null,
         orden: existing?.orden ?? paqueteModulo.orden ?? index + 1,
         obligatorio: existing?.obligatorio ?? paqueteModulo.obligatorio ?? true,
+        inicio: existing?.inicio ?? null,
+        fin: existing?.fin ?? null,
         calendarioId: existing?.calendarioId ?? null,
+        unidadDidacticas,
       };
     });
 };
+
+const toDateInputValue = (value: string | null | undefined) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
+  return date.toISOString().slice(0, 10);
+};
+
+const getModuloLabel = (modulo: GrupoModuloDetalle) =>
+  modulo.modulo?.tituloComercial || modulo.modulo?.titulo || `Modulo ${modulo.moduloId}`;
+
+const getUnidadLabel = (unidad: GrupoModuloUnidadDidacticaDetalle) =>
+  unidad.unidadDidactica?.sigla
+    ? `${unidad.unidadDidactica.sigla} - ${unidad.unidadDidactica.nombre || `Unidad ${unidad.unidadDidacticaId}`}`
+    : unidad.unidadDidactica?.nombre || `Unidad ${unidad.unidadDidacticaId}`;
 
 const getDateOrNull = (value: string | null | undefined) => {
   if (!value) return null;
@@ -215,9 +328,11 @@ const isSemestreVigente = (semestre: SemestreOption, date: Date) => {
 export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: GrupoFormProps) {
   const [descripcion, setDescripcion] = useState('');
   const [turnoNombre, setTurnoNombre] = useState('');
+  const [workspaceName, setWorkspaceName] = useState('');
+  const [workspaceCorreo, setWorkspaceCorreo] = useState('');
+  const [workspaceManualEdit, setWorkspaceManualEdit] = useState(false);
   const [estado, setEstado] = useState('activo');
   const [archivado, setArchivado] = useState(false);
-  const [grupoOrd, setGrupoOrd] = useState('');
   const [paqueteId, setPaqueteId] = useState('');
   const [semestreId, setSemestreId] = useState('');
   const [personalId, setPersonalId] = useState('');
@@ -228,7 +343,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   const [personal, setPersonal] = useState<PersonalOption[]>([]);
   const [turnos, setTurnos] = useState<TurnoOption[]>([]);
   const [horarios, setHorarios] = useState<HorarioOption[]>([]);
-  const [calendarios, setCalendarios] = useState<CalendarioOption[]>([]);
   const [grupoModulos, setGrupoModulos] = useState<GrupoModuloDetalle[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [loadingGrupo, setLoadingGrupo] = useState(Boolean(grupoId));
@@ -247,21 +361,18 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         const listPersonal = httpsCallable<undefined, { personal?: PersonalOption[] }>(functions, 'listPersonal');
         const listTurnos = httpsCallable<undefined, { turnos?: TurnoOption[] }>(functions, 'listTurnos');
         const listHorarios = httpsCallable<undefined, { horarios?: HorarioOption[] }>(functions, 'listHorarios');
-        const listCalendarios = httpsCallable<undefined, { calendarios?: CalendarioOption[] }>(functions, 'listCalendarios');
         const [
           paquetesResult,
           semestresResult,
           personalResult,
           turnosResult,
           horariosResult,
-          calendariosResult,
         ] = await Promise.all([
           listPaquetes(),
           listSemestres(),
           listPersonal(),
           listTurnos(),
           listHorarios(),
-          listCalendarios(),
         ]);
 
         setPaquetes(
@@ -290,11 +401,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
             .slice()
             .sort((a, b) => String(a.nombre ?? '').localeCompare(String(b.nombre ?? ''), 'es', { numeric: true })),
         );
-        setCalendarios(
-          (calendariosResult.data.calendarios || [])
-            .slice()
-            .sort((a, b) => getCalendarioTitulo(a).localeCompare(getCalendarioTitulo(b), 'es', { numeric: true })),
-        );
       } catch (err) {
         console.error('Error fetching grupo form options: ', err);
         setError('No se pudieron cargar las opciones para el formulario.');
@@ -320,9 +426,10 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         if (fetched) {
           setDescripcion(fetched.descripcion || '');
           setTurnoNombre(fetched.turnoNombre || '');
+          setWorkspaceName(fetched.workspaceName || '');
+          setWorkspaceCorreo(fetched.workspaceCorreo || '');
           setEstado(fetched.estado || 'activo');
           setArchivado(Boolean(fetched.archivado));
-          setGrupoOrd(fetched.grupoOrd != null ? String(fetched.grupoOrd) : '');
           setPaqueteId(fetched.paqueteId != null ? String(fetched.paqueteId) : '');
           setSemestreId(fetched.semestreId != null ? String(fetched.semestreId) : '');
           setPersonalId(fetched.personalId != null ? String(fetched.personalId) : '');
@@ -369,6 +476,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   const selectedPersonal = personal.find((item) => String(item.id) === personalId) || null;
   const selectedTurno = turnos.find((turno) => String(turno.id) === turnoId);
   const selectedHorario = horarios.find((horario) => String(horario.id) === horarioId) || null;
+  const selectedPersonalName = getPersonalUsername(selectedPersonal);
   const nombreCalculado = useMemo(
     () =>
       [
@@ -376,13 +484,56 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         selectedPaquete?.titulo?.trim() || '',
         selectedTurno?.nombre ? `[${selectedTurno.nombre}]` : '',
         selectedHorario?.nombre?.trim() || '',
-        getPersonalUsername(selectedPersonal) ? `(${getPersonalUsername(selectedPersonal)})` : '',
+        selectedPersonalName ? `(${selectedPersonalName})` : '',
       ].filter(Boolean).join(' '),
-    [selectedHorario, selectedPaquete, selectedPersonal, selectedSemestre, selectedTurno],
+    [selectedHorario, selectedPaquete, selectedPersonalName, selectedSemestre, selectedTurno],
   );
-  const updateGrupoModulo = (moduloId: number, changes: Partial<GrupoModuloDetalle>) => {
+
+  useEffect(() => {
+    if (workspaceManualEdit) return;
+
+    setWorkspaceName(buildWorkspaceName(selectedSemestre, selectedPaquete, selectedPersonalName));
+    setWorkspaceCorreo(buildWorkspaceCorreo(selectedSemestre, selectedPaquete, selectedPersonalName));
+  }, [selectedPaquete, selectedPersonalName, selectedSemestre, workspaceManualEdit]);
+
+  const handleEnableWorkspaceEdit = () => {
+    setWorkspaceManualEdit(true);
+  };
+
+  const handleRestoreWorkspaceAuto = () => {
+    setWorkspaceManualEdit(false);
+    setWorkspaceName(buildWorkspaceName(selectedSemestre, selectedPaquete, selectedPersonalName));
+    setWorkspaceCorreo(buildWorkspaceCorreo(selectedSemestre, selectedPaquete, selectedPersonalName));
+  };
+
+  const updateGrupoModuloFecha = (moduloId: number, field: 'inicio' | 'fin', value: string) => {
     setGrupoModulos((prev) =>
-      prev.map((item) => (item.moduloId === moduloId ? { ...item, ...changes } : item)),
+      prev.map((item) =>
+        item.moduloId === moduloId
+          ? { ...item, [field]: value || null }
+          : item,
+      ),
+    );
+  };
+
+  const updateGrupoModuloUnidadFecha = (
+    moduloId: number,
+    unidadDidacticaId: number,
+    field: 'inicio' | 'fin',
+    value: string,
+  ) => {
+    setGrupoModulos((prev) =>
+      prev.map((item) => {
+        if (item.moduloId !== moduloId) return item;
+        return {
+          ...item,
+          unidadDidacticas: (item.unidadDidacticas ?? []).map((unidad) =>
+            unidad.unidadDidacticaId === unidadDidacticaId
+              ? { ...unidad, [field]: value || null }
+              : unidad,
+          ),
+        };
+      }),
     );
   };
 
@@ -409,17 +560,30 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       return;
     }
 
+    if (workspaceName.length > WORKSPACE_NAME_MAX_LENGTH) {
+      setError('Nombre Workspace no puede superar 73 caracteres.');
+      setLoading(false);
+      return;
+    }
+
+    if (workspaceCorreo.length > WORKSPACE_CORREO_MAX_LENGTH) {
+      setError('Correo Workspace no puede superar 80 caracteres.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const functions = getFunctions(app);
       const createOrUpdateGrupo = httpsCallable<
         {
           id?: number;
           nombreDisplay: string;
+          workspaceName?: string | null;
+          workspaceCorreo?: string | null;
           descripcion: string;
           turnoNombre: string;
           estado: string;
           archivado: boolean;
-          grupoOrd?: number | null;
           paqueteId?: number | null;
           semestreId?: number | null;
           personalId?: number | null;
@@ -429,7 +593,15 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
             moduloId: number;
             orden?: number | null;
             obligatorio?: boolean | null;
+            inicio?: string | null;
+            fin?: string | null;
             calendarioId?: number | null;
+            unidadDidacticas?: Array<{
+              unidadDidacticaId: number;
+              orden?: number | null;
+              inicio?: string | null;
+              fin?: string | null;
+            }>;
           }>;
         },
         { id: number | null; ids?: number[] }
@@ -438,11 +610,12 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       await createOrUpdateGrupo({
         id: grupoId ? Number(grupoId) : undefined,
         nombreDisplay: nombreCalculado.trim(),
+        workspaceName,
+        workspaceCorreo,
         descripcion,
         turnoNombre: selectedTurno?.nombre || turnoNombre,
         estado,
         archivado,
-        grupoOrd: grupoOrd ? Number(grupoOrd) : null,
         paqueteId: paqueteId ? Number(paqueteId) : null,
         semestreId: semestreId ? Number(semestreId) : null,
         personalId: personalId ? Number(personalId) : null,
@@ -452,7 +625,15 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
           moduloId: item.moduloId,
           orden: item.orden,
           obligatorio: item.obligatorio ?? true,
+          inicio: item.inicio || null,
+          fin: item.fin || null,
           calendarioId: item.calendarioId ?? null,
+          unidadDidacticas: (item.unidadDidacticas ?? []).map((unidad) => ({
+            unidadDidacticaId: unidad.unidadDidacticaId,
+            orden: unidad.orden ?? null,
+            inicio: unidad.inicio || null,
+            fin: unidad.fin || null,
+          })),
         })),
       });
 
@@ -516,6 +697,56 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
             sx={{ gridColumn: '1 / -1' }}
           />
 
+          <TextField
+            label="Nombre Workspace"
+            value={workspaceName}
+            onChange={(event) => setWorkspaceName(event.target.value)}
+            fullWidth
+            inputProps={{ maxLength: WORKSPACE_NAME_MAX_LENGTH }}
+            InputProps={{
+              readOnly: !workspaceManualEdit,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    edge="end"
+                    size="small"
+                    aria-label={workspaceManualEdit ? 'Restaurar calculo automatico' : 'Editar campos Workspace'}
+                    onClick={workspaceManualEdit ? handleRestoreWorkspaceAuto : handleEnableWorkspaceEdit}
+                  >
+                    {workspaceManualEdit ? <AutoFixHighIcon fontSize="small" /> : <EditIcon fontSize="small" />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            helperText={`${workspaceName.length}/${WORKSPACE_NAME_MAX_LENGTH}`}
+            sx={{ gridColumn: '1 / -1' }}
+          />
+
+          <TextField
+            label="Correo Workspace"
+            value={workspaceCorreo}
+            onChange={(event) => setWorkspaceCorreo(event.target.value)}
+            fullWidth
+            inputProps={{ maxLength: WORKSPACE_CORREO_MAX_LENGTH }}
+            InputProps={{
+              readOnly: !workspaceManualEdit,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    edge="end"
+                    size="small"
+                    aria-label={workspaceManualEdit ? 'Restaurar calculo automatico' : 'Editar campos Workspace'}
+                    onClick={workspaceManualEdit ? handleRestoreWorkspaceAuto : handleEnableWorkspaceEdit}
+                  >
+                    {workspaceManualEdit ? <AutoFixHighIcon fontSize="small" /> : <EditIcon fontSize="small" />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            helperText={`${workspaceCorreo.length}/${WORKSPACE_CORREO_MAX_LENGTH}`}
+            sx={{ gridColumn: '1 / -1' }}
+          />
+
           <FormControl fullWidth required sx={{ gridColumn: '1 / -1' }}>
             <InputLabel>Paquete</InputLabel>
             <Select
@@ -572,16 +803,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
             </Select>
           </FormControl>
 
-          <TextField
-            label="Orden"
-            value={grupoOrd}
-            onChange={(event) => setGrupoOrd(event.target.value)}
-            fullWidth
-            type="number"
-            sx={{ gridColumn: { xs: 'auto', md: 'span 2' } }}
-          />
-
-          <FormControl fullWidth sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}>
+          <FormControl fullWidth sx={{ gridColumn: { xs: 'auto', md: 'span 6' } }}>
             <InputLabel>Horario</InputLabel>
             <Select
               label="Horario"
@@ -628,88 +850,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
             </Select>
           </FormControl>
 
-          <Box sx={{ gridColumn: '1 / -1' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-              Modulos del grupo
-            </Typography>
-            <TableContainer
-              sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
-                maxWidth: '100%',
-              }}
-            >
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ width: '34%' }}>Modulo</TableCell>
-                    <TableCell sx={{ width: 92 }}>Orden</TableCell>
-                    <TableCell sx={{ width: 118 }} align="center">Obligatorio</TableCell>
-                    <TableCell>Calendario</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {grupoModulos.length > 0 ? (
-                    grupoModulos.map((item) => (
-                      <TableRow key={item.moduloId}>
-                        <TableCell>{getModuloTitulo(item.modulo, item.moduloId)}</TableCell>
-                        <TableCell>
-                          <TextField
-                            value={item.orden ?? ''}
-                            onChange={(event) =>
-                              updateGrupoModulo(item.moduloId, {
-                                orden: event.target.value ? Number(event.target.value) : null,
-                              })
-                            }
-                            size="small"
-                            type="number"
-                            fullWidth
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Checkbox
-                            checked={item.obligatorio ?? true}
-                            onChange={(event) =>
-                              updateGrupoModulo(item.moduloId, { obligatorio: event.target.checked })
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={item.calendarioId != null ? String(item.calendarioId) : ''}
-                            onChange={(event) =>
-                              updateGrupoModulo(item.moduloId, {
-                                calendarioId: event.target.value ? Number(event.target.value) : null,
-                              })
-                            }
-                            size="small"
-                            displayEmpty
-                            fullWidth
-                            disabled={loadingOptions}
-                          >
-                            <MenuItem value="">Sin calendario</MenuItem>
-                            {calendarios.map((calendario) => (
-                              <MenuItem key={calendario.id} value={String(calendario.id)}>
-                                {getCalendarioTitulo(calendario)}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} sx={{ color: 'text.secondary' }}>
-                        Selecciona un paquete para ver sus modulos.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-
           <TextField
             label="Descripcion"
             value={descripcion}
@@ -719,6 +859,107 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
             multiline
             sx={{ gridColumn: '1 / -1' }}
           />
+
+          {grupoModulos.length > 0 && (
+            <Box sx={{ gridColumn: '1 / -1', mt: 1 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+                Programacion academica
+              </Typography>
+              <Box sx={{ display: 'grid', gap: 1.5 }}>
+                {grupoModulos.map((modulo) => (
+                  <Box
+                    key={modulo.moduloId}
+                    sx={{
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 1,
+                      p: 1.5,
+                      display: 'grid',
+                      gap: 1.5,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gap: 1,
+                        gridTemplateColumns: { xs: '1fr', md: '1fr 160px 160px' },
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Typography variant="subtitle2">{getModuloLabel(modulo)}</Typography>
+                      <TextField
+                        label="Inicio"
+                        type="date"
+                        value={toDateInputValue(modulo.inicio)}
+                        onChange={(event) => updateGrupoModuloFecha(modulo.moduloId, 'inicio', event.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                        fullWidth
+                      />
+                      <TextField
+                        label="Fin"
+                        type="date"
+                        value={toDateInputValue(modulo.fin)}
+                        onChange={(event) => updateGrupoModuloFecha(modulo.moduloId, 'fin', event.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                        fullWidth
+                      />
+                    </Box>
+
+                    {(modulo.unidadDidacticas ?? []).length > 0 && (
+                      <>
+                        <Divider />
+                        <Box sx={{ display: 'grid', gap: 1 }}>
+                          {(modulo.unidadDidacticas ?? []).map((unidad) => (
+                            <Box
+                              key={unidad.unidadDidacticaId}
+                              sx={{
+                                display: 'grid',
+                                gap: 1,
+                                gridTemplateColumns: { xs: '1fr', md: '1fr 160px 160px' },
+                                alignItems: 'center',
+                              }}
+                            >
+                              <Typography variant="body2">{getUnidadLabel(unidad)}</Typography>
+                              <TextField
+                                label="Inicio"
+                                type="date"
+                                value={toDateInputValue(unidad.inicio)}
+                                onChange={(event) =>
+                                  updateGrupoModuloUnidadFecha(
+                                    modulo.moduloId,
+                                    unidad.unidadDidacticaId,
+                                    'inicio',
+                                    event.target.value,
+                                  )
+                                }
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                              />
+                              <TextField
+                                label="Fin"
+                                type="date"
+                                value={toDateInputValue(unidad.fin)}
+                                onChange={(event) =>
+                                  updateGrupoModuloUnidadFecha(
+                                    modulo.moduloId,
+                                    unidad.unidadDidacticaId,
+                                    'fin',
+                                    event.target.value,
+                                  )
+                                }
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                              />
+                            </Box>
+                          ))}
+                        </Box>
+                      </>
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
 
           <FormControlLabel
             control={<Checkbox checked={archivado} onChange={(event) => setArchivado(event.target.checked)} />}
@@ -742,5 +983,5 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   );
 
   if (asModal) return formContent;
-  return <Container maxWidth="sm">{formContent}</Container>;
+  return <Container maxWidth="md">{formContent}</Container>;
 }

@@ -24,6 +24,27 @@ const SEMESTRE_FIELDS = `
   directorId
   coordinador1Id
   coordinador2Id
+  director {
+    id
+    displayName
+    user {
+      username
+    }
+  }
+  coordinador1 {
+    id
+    displayName
+    user {
+      username
+    }
+  }
+  coordinador2 {
+    id
+    displayName
+    user {
+      username
+    }
+  }
   anio {
     id
     nombre
@@ -70,6 +91,9 @@ const sortSemestres = (items: DataConnectSemestre[]) =>
 const addAnioTitulo = (semestre: DataConnectSemestre): DataConnectSemestre => ({
   ...semestre,
   anioTitulo: semestre.anio?.nombre ?? semestre.anio?.titulo ?? null,
+  directorUsername: semestre.director?.user?.username ?? semestre.director?.displayName ?? null,
+  coordinador1Username: semestre.coordinador1?.user?.username ?? semestre.coordinador1?.displayName ?? null,
+  coordinador2Username: semestre.coordinador2?.user?.username ?? semestre.coordinador2?.displayName ?? null,
 });
 
 export const listSemestres = https.onCall(async (_data, context) => {

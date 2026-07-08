@@ -12,6 +12,7 @@ import {
   DataConnectPaqueteInput,
   DataConnectPaqueteModulo,
   DataConnectPaqueteModuloInput,
+  DataConnectUnidadDidacticaModulo,
 } from "../core/types.js";
 import {
   DELETE_PAQUETE_MODULOS_BY_PAQUETE_MUTATION,
@@ -38,6 +39,27 @@ const LIST_PAQUETES_QUERY = `
       modulo {
         titulo
         tituloComercial
+        orden
+        plan {
+          carrera {
+            especialidad {
+              orden
+            }
+          }
+        }
+      }
+    }
+    unidadDidacticaModulos(limit: 3000) {
+      id
+      orden
+      unidadDidacticaId
+      moduloId
+      unidadDidactica {
+        id
+        nombre
+        duracion
+        creditos
+        sigla
       }
     }
   }
@@ -60,6 +82,27 @@ const GET_PAQUETE_QUERY = `
       modulo {
         titulo
         tituloComercial
+        orden
+        plan {
+          carrera {
+            especialidad {
+              orden
+            }
+          }
+        }
+      }
+    }
+    unidadDidacticaModulos(limit: 3000) {
+      id
+      orden
+      unidadDidacticaId
+      moduloId
+      unidadDidactica {
+        id
+        nombre
+        duracion
+        creditos
+        sigla
       }
     }
   }
@@ -86,6 +129,27 @@ const sortPaqueteModulos = (items: DataConnectPaqueteModulo[]) =>
     .slice()
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId);
 
+const attachUnidadDidacticasToPaqueteModulos = (
+  paqueteModulos: DataConnectPaqueteModulo[],
+  unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[],
+) => {
+  const unidadesByModuloId = new Map<number, DataConnectUnidadDidacticaModulo[]>();
+  for (const item of unidadDidacticaModulos) {
+    const current = unidadesByModuloId.get(item.moduloId) ?? [];
+    current.push(item);
+    unidadesByModuloId.set(item.moduloId, current);
+  }
+
+  return paqueteModulos.map((paqueteModulo) => ({
+    ...paqueteModulo,
+    unidadDidacticas: (unidadesByModuloId.get(paqueteModulo.moduloId) ?? [])
+      .slice()
+      .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.unidadDidacticaId - b.unidadDidacticaId)
+      .map((item) => item.unidadDidactica)
+      .filter(Boolean),
+  }));
+};
+
 export const listPaquetes = https.onCall(async (_data, context) => {
   requireLevel(context, "list packages");
 
@@ -93,6 +157,7 @@ export const listPaquetes = https.onCall(async (_data, context) => {
     const response = await dataConnect.executeGraphql<{
       paquetes: DataConnectPaquete[];
       paqueteModulos: DataConnectPaqueteModulo[];
+      unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
     }, Record<string, never>>(LIST_PAQUETES_QUERY);
 
     const moduloIdsByPaqueteId = new Map<number, DataConnectPaqueteModulo[]>();
@@ -106,7 +171,10 @@ export const listPaquetes = https.onCall(async (_data, context) => {
       .slice()
       .sort((a, b) => String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es"))
       .map((paquete) => {
-        const paqueteModulos = sortPaqueteModulos(moduloIdsByPaqueteId.get(paquete.id) ?? []);
+        const paqueteModulos = attachUnidadDidacticasToPaqueteModulos(
+          sortPaqueteModulos(moduloIdsByPaqueteId.get(paquete.id) ?? []),
+          response.data.unidadDidacticaModulos ?? [],
+        );
         return {
           ...paquete,
           paqueteModulos,
@@ -133,12 +201,16 @@ export const getPaquete = https.onCall(async (data, context) => {
     const response = await dataConnect.executeGraphql<{
       paquete: DataConnectPaquete | null;
       paqueteModulos: DataConnectPaqueteModulo[];
+      unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
     }, { id: number }>(GET_PAQUETE_QUERY, { variables: { id: paqueteId } });
 
     const paquete = response.data.paquete;
     if (!paquete) return { paquete: null };
 
-    const paqueteModulos = sortPaqueteModulos(response.data.paqueteModulos ?? []);
+    const paqueteModulos = attachUnidadDidacticasToPaqueteModulos(
+      sortPaqueteModulos(response.data.paqueteModulos ?? []),
+      response.data.unidadDidacticaModulos ?? [],
+    );
     return {
       paquete: {
         ...paquete,

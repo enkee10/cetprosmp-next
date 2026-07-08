@@ -744,6 +744,30 @@ extend type Query {
     first: GrupoModulo_FirstRow
   ): GrupoModulo @fdc_generated(from: "GrupoModulo", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `GrupoModuloUnidadDidactica` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  grupoModuloUnidadDidactica(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModuloUnidadDidactica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModuloUnidadDidactica_FirstRow
+  ): GrupoModuloUnidadDidactica @fdc_generated(from: "GrupoModuloUnidadDidactica", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Horario` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   horario(
@@ -2563,6 +2587,40 @@ extend type Query {
     """
     having: GrupoModulo_Having
   ): [GrupoModulo!]! @fdc_generated(from: "GrupoModulo", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `GrupoModuloUnidadDidactica` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  grupoModuloUnidadesDidacticas(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: GrupoModuloUnidadDidactica_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [GrupoModuloUnidadDidactica_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: GrupoModuloUnidadDidactica_Having
+  ): [GrupoModuloUnidadDidactica!]! @fdc_generated(from: "GrupoModuloUnidadDidactica", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Horario` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

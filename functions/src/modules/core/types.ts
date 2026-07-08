@@ -51,6 +51,7 @@ export interface DataConnectPersonal {
     nombre?: string | null;
     apellidoPaterno?: string | null;
     email?: string | null;
+    correoInstitucional?: string | null;
     avatar?: string | null;
     rolId?: number | null;
     rol?: {
@@ -243,7 +244,13 @@ export interface DataConnectSemestre {
   coordinador1Id?: number | null;
   coordinador2Id?: number | null;
   anio?: { titulo?: string | null; nombre?: string | null } | null;
+  director?: Pick<DataConnectPersonal, "id" | "displayName" | "user"> | null;
+  coordinador1?: Pick<DataConnectPersonal, "id" | "displayName" | "user"> | null;
+  coordinador2?: Pick<DataConnectPersonal, "id" | "displayName" | "user"> | null;
   anioTitulo?: string | null;
+  directorUsername?: string | null;
+  coordinador1Username?: string | null;
+  coordinador2Username?: string | null;
 }
 
 export interface DataConnectSemestreInput {
@@ -357,6 +364,8 @@ export interface DataConnectGrupo {
   turnoId?: number | null;
   horarioId?: number | null;
   grupoOrd?: number | null;
+  workspaceName?: string | null;
+  workspaceCorreo?: string | null;
   semestre?: { titulo?: string | null } | null;
   personal?: DataConnectPersonal | null;
   paquete?: { titulo?: string | null } | null;
@@ -379,25 +388,99 @@ export interface DataConnectGrupoInput {
   turnoId?: number | null;
   horarioId?: number | null;
   grupoOrd?: number | null;
+  workspaceName?: string | null;
+  workspaceCorreo?: string | null;
 }
 
 export interface DataConnectGrupoModulo {
   id: number;
   orden?: number | null;
   obligatorio?: boolean | null;
+  inicio?: string | null;
+  fin?: string | null;
   grupoId: number;
   moduloId: number;
   calendarioId?: number | null;
-  modulo?: { titulo?: string | null; tituloComercial?: string | null } | null;
+  modulo?: Pick<DataConnectModulo, "titulo" | "tituloComercial" | "orden" | "plan"> | null;
   calendario?: DataConnectCalendario | null;
+  unidadDidacticas?: DataConnectGrupoModuloUnidadDidactica[];
 }
 
 export interface DataConnectGrupoModuloInput {
   orden?: number | null;
   obligatorio?: boolean;
+  inicio?: string | null;
+  fin?: string | null;
   grupoId: number;
   moduloId: number;
   calendarioId?: number | null;
+}
+
+export interface DataConnectGrupoModuloUnidadDidactica {
+  id: number;
+  orden?: number | null;
+  inicio?: string | null;
+  fin?: string | null;
+  grupoModuloId: number;
+  unidadDidacticaId: number;
+  unidadDidactica?: DataConnectUnidadDidactica | null;
+  grupoModulo?: Pick<DataConnectGrupoModulo, "id" | "grupoId" | "moduloId"> | null;
+}
+
+export interface DataConnectGrupoModuloUnidadDidacticaInput {
+  orden?: number | null;
+  inicio?: string | null;
+  fin?: string | null;
+  grupoModuloId: number;
+  unidadDidacticaId: number;
+}
+
+export interface DataConnectDatoGeneral {
+  id: number;
+  nombreInstitucion?: string | null;
+  logoUrl?: string | null;
+  codigoModular?: string | null;
+  tipoGestion?: string | null;
+  departamento?: string | null;
+  provincia?: string | null;
+  distrito?: string | null;
+  dre?: string | null;
+  direccion?: string | null;
+  telefono1?: string | null;
+  telefono2?: string | null;
+  correo?: string | null;
+  paginaWeb?: string | null;
+  facebook?: string | null;
+  youtube?: string | null;
+  twitter?: string | null;
+  instagram?: string | null;
+  tiktok?: string | null;
+  ruc?: string | null;
+  rd?: string | null;
+}
+
+export interface DataConnectDatoGeneralInput {
+  id?: number;
+  nombreInstitucion?: string | null;
+  logoUrl?: string | null;
+  codigoModular?: string | null;
+  tipoGestion?: string | null;
+  departamento?: string | null;
+  provincia?: string | null;
+  distrito?: string | null;
+  dre?: string | null;
+  direccion?: string | null;
+  telefono1?: string | null;
+  telefono2?: string | null;
+  correo?: string | null;
+  paginaWeb?: string | null;
+  facebook?: string | null;
+  youtube?: string | null;
+  twitter?: string | null;
+  instagram?: string | null;
+  tiktok?: string | null;
+  ruc?: string | null;
+  rd?: string | null;
 }
 
 export interface DataConnectEvento {
@@ -578,7 +661,8 @@ export interface DataConnectPaqueteModulo {
   obligatorio?: boolean | null;
   paqueteId: number;
   moduloId: number;
-  modulo?: { titulo?: string | null; tituloComercial?: string | null } | null;
+  modulo?: Pick<DataConnectModulo, "titulo" | "tituloComercial" | "orden" | "plan"> | null;
+  unidadDidacticas?: DataConnectUnidadDidactica[];
 }
 
 export interface DataConnectPaqueteModuloInput {
@@ -635,6 +719,7 @@ export interface DataConnectUnidadDidacticaModulo {
   orden?: number | null;
   unidadDidacticaId: number;
   moduloId: number;
+  unidadDidactica?: DataConnectUnidadDidactica | null;
 }
 
 export interface DataConnectUnidadDidacticaModuloInput {

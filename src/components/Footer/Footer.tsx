@@ -3,20 +3,20 @@
 import { Box, Container, Grid, Typography, Link as MuiLink } from '@mui/material';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
-import datoGeneral from '@/../public/data/dato-general.json';
+import { useDatosGenerales } from '@/context/DatosGeneralesContext';
 import MapaInteractivo from '@/components/Footer/MapaInteractivo';
-import WhatsappFlotante from '@/components/Footer/WhatsappFlotante'; // ✅ Importado
-
-const redesSociales = [
-  { nombre: 'tiktok', url: datoGeneral.tiktok, icono: '/imagenes/redes_sociales/tiktok.png' },
-  { nombre: 'facebook', url: datoGeneral.facebook, icono: '/imagenes/redes_sociales/facebook.png' },
-  { nombre: 'x', url: datoGeneral.twitter, icono: '/imagenes/redes_sociales/x.png' },
-  { nombre: 'instagram', url: datoGeneral.instagram, icono: '/imagenes/redes_sociales/instagram.png' },
-  { nombre: 'youtube', url: datoGeneral.youtube, icono: '/imagenes/redes_sociales/youtube.png' },
-];
+import WhatsappFlotante from '@/components/Footer/WhatsappFlotante';
 
 const Footer = () => {
   const { user } = useAuth();
+  const { datosGenerales: datoGeneral } = useDatosGenerales();
+  const redesSociales = [
+    { nombre: 'tiktok', url: datoGeneral.tiktok, icono: '/imagenes/redes_sociales/tiktok.png' },
+    { nombre: 'facebook', url: datoGeneral.facebook, icono: '/imagenes/redes_sociales/facebook.png' },
+    { nombre: 'x', url: datoGeneral.twitter, icono: '/imagenes/redes_sociales/x.png' },
+    { nombre: 'instagram', url: datoGeneral.instagram, icono: '/imagenes/redes_sociales/instagram.png' },
+    { nombre: 'youtube', url: datoGeneral.youtube, icono: '/imagenes/redes_sociales/youtube.png' },
+  ].filter((red) => Boolean(red.url));
 
   return (
     <Box
@@ -28,7 +28,7 @@ const Footer = () => {
         mt: 8,
         minHeight: 425,
         width: '100%',
-        position: 'relative', // ✅ Necesario para posicionar contenido flotante
+        position: 'relative',
       }}
     >
       <Container sx={{ maxWidth: '1000px' }}>
@@ -47,7 +47,6 @@ const Footer = () => {
             },
           }}
         >
-          {/* Columna izquierda */}
           <Grid
             size={{
               xs: 12,
@@ -55,11 +54,11 @@ const Footer = () => {
               lg: 5,
             }}
           >
-            <Typography sx={{ fontWeight: 'bold' }}>DIRECCIÓN:</Typography>
+            <Typography sx={{ fontWeight: 'bold' }}>DIRECCION:</Typography>
             <Typography>{datoGeneral.direccion}</Typography>
 
             <Box mt={2}>
-              <Typography sx={{ fontWeight: 'bold' }}>Teléfono 1:</Typography>
+              <Typography sx={{ fontWeight: 'bold' }}>Telefono 1:</Typography>
               <Box display="flex" justifyContent={{ xs: 'center', md: 'flex-start' }} alignItems="center">
                 <Typography>{datoGeneral.telefono1}</Typography>
                 <Image
@@ -73,7 +72,7 @@ const Footer = () => {
             </Box>
 
             <Box mt={2}>
-              <Typography sx={{ fontWeight: 'bold' }}>Teléfono 2:</Typography>
+              <Typography sx={{ fontWeight: 'bold' }}>Telefono 2:</Typography>
               <Box display="flex" justifyContent={{ xs: 'center', md: 'flex-start' }} alignItems="center">
                 <Typography>{datoGeneral.telefono2}</Typography>
                 <Image
@@ -104,7 +103,6 @@ const Footer = () => {
             )}
           </Grid>
 
-          {/* Columna derecha: Mapa y redes */}
           <Grid
             size={{
               xs: 12,
@@ -127,13 +125,13 @@ const Footer = () => {
 
             <Box mt={3}>
               <Typography variant="body1" sx={{ mb: 2 }}>
-                Visítanos en:
+                Visitanos en:
               </Typography>
               <Box display="flex" justifyContent={{ xs: 'center', md: 'flex-start' }} gap={2} flexWrap="wrap">
                 {redesSociales.map((red) => (
                   <MuiLink
                     key={red.nombre}
-                    href={red.url}
+                    href={red.url || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -151,10 +149,9 @@ const Footer = () => {
           </Grid>
         </Grid>
 
-        {/* Pie legal centrado */}
         <Box mt={4}>
           <Typography variant="body2" sx={{ textAlign: 'center' }}>
-            © 2025 {datoGeneral.nombreInstitucion}
+            &copy; 2025 {datoGeneral.nombreInstitucion}
           </Typography>
           <Typography variant="body2" sx={{ textAlign: 'center' }}>
             TODOS LOS DERECHOS RESERVADOS.
@@ -162,7 +159,6 @@ const Footer = () => {
         </Box>
       </Container>
 
-      {/* ✅ Botón flotante de WhatsApp en la esquina inferior derecha del footer */}
       <Box sx={{ position: 'absolute', bottom: 20, right: 20 }}>
         <WhatsappFlotante />
       </Box>

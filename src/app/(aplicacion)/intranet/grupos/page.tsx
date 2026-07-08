@@ -18,6 +18,8 @@ interface Grupo {
   turnoNombre: string | null;
   descripcion: string | null;
   nombreDisplay: string | null;
+  workspaceName: string | null;
+  workspaceCorreo: string | null;
   estado: string | null;
   archivado: boolean | null;
   semestreId: number | null;
@@ -90,6 +92,8 @@ export default function GruposPage() {
       semestre: false,
       turno: false,
       horario: false,
+      workspaceName: false,
+      workspaceCorreo: false,
       estado: true,
       archivado: true,
       descripcion: false,
@@ -240,6 +244,20 @@ export default function GruposPage() {
         flex: 1,
         minWidth: 180,
         valueGetter: (_value, row: Grupo) => row.horario?.nombre || (row.horarioId ? `Horario ${row.horarioId}` : ''),
+      },
+      {
+        field: 'workspaceName',
+        headerName: 'Nombre Workspace',
+        flex: 1,
+        minWidth: 180,
+        valueGetter: (_value, row: Grupo) => row.workspaceName || '',
+      },
+      {
+        field: 'workspaceCorreo',
+        headerName: 'Correo Workspace',
+        flex: 1,
+        minWidth: 190,
+        valueGetter: (_value, row: Grupo) => row.workspaceCorreo || '',
       },
       {
         field: 'estado',

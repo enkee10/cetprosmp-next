@@ -227,13 +227,13 @@ export const DELETE_HORARIO_MUTATION = `
 `;
 
 export const INSERT_GRUPO_MUTATION = `
-  mutation InsertGrupo($data: Grupo_Data! @allow(fields: "turnoNombre descripcion nombreDisplay estado archivado fechaCreacion fechaActualizacion semestreId personalId paqueteId turnoId horarioId grupoOrd")) {
+  mutation InsertGrupo($data: Grupo_Data! @allow(fields: "turnoNombre descripcion nombreDisplay estado archivado fechaCreacion fechaActualizacion semestreId personalId paqueteId turnoId horarioId grupoOrd workspaceName workspaceCorreo")) {
     grupo_insert(data: $data)
   }
 `;
 
 export const UPDATE_GRUPO_MUTATION = `
-  mutation UpdateGrupo($id: Int!, $data: Grupo_Data! @allow(fields: "turnoNombre descripcion nombreDisplay estado archivado fechaCreacion fechaActualizacion semestreId personalId paqueteId turnoId horarioId grupoOrd")) {
+  mutation UpdateGrupo($id: Int!, $data: Grupo_Data! @allow(fields: "turnoNombre descripcion nombreDisplay estado archivado fechaCreacion fechaActualizacion semestreId personalId paqueteId turnoId horarioId grupoOrd workspaceName workspaceCorreo")) {
     grupo_update(id: $id, data: $data)
   }
 `;
@@ -245,14 +245,38 @@ export const DELETE_GRUPO_MUTATION = `
 `;
 
 export const INSERT_GRUPO_MODULO_MUTATION = `
-  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "grupoId moduloId orden obligatorio calendarioId")) {
+  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "grupoId moduloId orden obligatorio inicio fin calendarioId")) {
     grupoModulo_insert(data: $data)
+  }
+`;
+
+export const INSERT_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION = `
+  mutation InsertGrupoModuloUnidadDidactica($data: GrupoModuloUnidadDidactica_Data! @allow(fields: "grupoModuloId unidadDidacticaId orden inicio fin")) {
+    grupoModuloUnidadDidactica_insert(data: $data)
   }
 `;
 
 export const DELETE_GRUPO_MODULOS_BY_GRUPO_MUTATION = `
   mutation DeleteGrupoModulosByGrupo($grupoId: Int!) {
     grupoModulo_deleteMany(where: { grupoId: { eq: $grupoId } })
+  }
+`;
+
+export const INSERT_DATO_GENERAL_MUTATION = `
+  mutation InsertDatoGeneral($data: DatoGeneral_Data! @allow(fields: "id nombreInstitucion logoUrl codigoModular tipoGestion departamento provincia distrito dre direccion telefono1 telefono2 correo paginaWeb facebook youtube twitter instagram tiktok ruc rd")) {
+    datoGeneral_insert(data: $data)
+  }
+`;
+
+export const UPDATE_DATO_GENERAL_MUTATION = `
+  mutation UpdateDatoGeneral($id: Int!, $data: DatoGeneral_Data! @allow(fields: "nombreInstitucion logoUrl codigoModular tipoGestion departamento provincia distrito dre direccion telefono1 telefono2 correo paginaWeb facebook youtube twitter instagram tiktok ruc rd")) {
+    datoGeneral_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_DATO_GENERAL_MUTATION = `
+  mutation DeleteDatoGeneral($id: Int!) {
+    datoGeneral_delete(id: $id)
   }
 `;
 

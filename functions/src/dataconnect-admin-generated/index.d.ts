@@ -225,6 +225,11 @@ export interface GetUserByDocumentIdVariables {
   documentId: string;
 }
 
+export interface GrupoModuloUnidadDidactica_Key {
+  id: number;
+  __typename?: 'GrupoModuloUnidadDidactica_Key';
+}
+
 export interface GrupoModulo_Key {
   id: number;
   __typename?: 'GrupoModulo_Key';

@@ -185,6 +185,12 @@ It has the same format as `GrupoModulo_Key`, but is only used as mutation return
 """
 scalar GrupoModulo_KeyOutput
 """
+✨ `GrupoModuloUnidadDidactica_KeyOutput` returns the primary key fields of table type `GrupoModuloUnidadDidactica`.
+
+It has the same format as `GrupoModuloUnidadDidactica_Key`, but is only used as mutation return value.
+"""
+scalar GrupoModuloUnidadDidactica_KeyOutput
+"""
 ✨ `Horario_KeyOutput` returns the primary key fields of table type `Horario`.
 
 It has the same format as `Horario_Key`, but is only used as mutation return value.
@@ -5501,6 +5507,14 @@ input DatoGeneral_Data {
   """
   id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `DatoGeneral`.`codigoModular` of type `String`
+  """
+  codigoModular: String
+  """
+  ✨ `_expr` server value variant of `codigoModular` (✨ Generated from Field `DatoGeneral`.`codigoModular` of type `String`)
+  """
+  codigoModular_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `DatoGeneral`.`correo` of type `String`
   """
   correo: String
@@ -5509,6 +5523,14 @@ input DatoGeneral_Data {
   """
   correo_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `DatoGeneral`.`departamento` of type `String`
+  """
+  departamento: String
+  """
+  ✨ `_expr` server value variant of `departamento` (✨ Generated from Field `DatoGeneral`.`departamento` of type `String`)
+  """
+  departamento_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `DatoGeneral`.`direccion` of type `String`
   """
   direccion: String
@@ -5516,6 +5538,22 @@ input DatoGeneral_Data {
   ✨ `_expr` server value variant of `direccion` (✨ Generated from Field `DatoGeneral`.`direccion` of type `String`)
   """
   direccion_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `DatoGeneral`.`distrito` of type `String`
+  """
+  distrito: String
+  """
+  ✨ `_expr` server value variant of `distrito` (✨ Generated from Field `DatoGeneral`.`distrito` of type `String`)
+  """
+  distrito_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `DatoGeneral`.`dre` of type `String`
+  """
+  dre: String
+  """
+  ✨ `_expr` server value variant of `dre` (✨ Generated from Field `DatoGeneral`.`dre` of type `String`)
+  """
+  dre_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`facebook` of type `String`
   """
@@ -5533,6 +5571,14 @@ input DatoGeneral_Data {
   """
   instagram_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `DatoGeneral`.`logoUrl` of type `String`
+  """
+  logoUrl: String
+  """
+  ✨ `_expr` server value variant of `logoUrl` (✨ Generated from Field `DatoGeneral`.`logoUrl` of type `String`)
+  """
+  logoUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `DatoGeneral`.`nombreInstitucion` of type `String`
   """
   nombreInstitucion: String
@@ -5548,6 +5594,14 @@ input DatoGeneral_Data {
   ✨ `_expr` server value variant of `paginaWeb` (✨ Generated from Field `DatoGeneral`.`paginaWeb` of type `String`)
   """
   paginaWeb_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `DatoGeneral`.`provincia` of type `String`
+  """
+  provincia: String
+  """
+  ✨ `_expr` server value variant of `provincia` (✨ Generated from Field `DatoGeneral`.`provincia` of type `String`)
+  """
+  provincia_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `DatoGeneral`.`rd` of type `String`
   """
@@ -5589,6 +5643,14 @@ input DatoGeneral_Data {
   """
   tiktok_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `DatoGeneral`.`tipoGestion` of type `String`
+  """
+  tipoGestion: String
+  """
+  ✨ `_expr` server value variant of `tipoGestion` (✨ Generated from Field `DatoGeneral`.`tipoGestion` of type `String`)
+  """
+  tipoGestion_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `DatoGeneral`.`twitter` of type `String`
   """
   twitter: String
@@ -5626,13 +5688,29 @@ input DatoGeneral_Filter {
   """
   id: Int_Filter
   """
+  ✨ Generated from Field `DatoGeneral`.`codigoModular` of type `String`
+  """
+  codigoModular: String_Filter
+  """
   ✨ Generated from Field `DatoGeneral`.`correo` of type `String`
   """
   correo: String_Filter
   """
+  ✨ Generated from Field `DatoGeneral`.`departamento` of type `String`
+  """
+  departamento: String_Filter
+  """
   ✨ Generated from Field `DatoGeneral`.`direccion` of type `String`
   """
   direccion: String_Filter
+  """
+  ✨ Generated from Field `DatoGeneral`.`distrito` of type `String`
+  """
+  distrito: String_Filter
+  """
+  ✨ Generated from Field `DatoGeneral`.`dre` of type `String`
+  """
+  dre: String_Filter
   """
   ✨ Generated from Field `DatoGeneral`.`facebook` of type `String`
   """
@@ -5642,6 +5720,10 @@ input DatoGeneral_Filter {
   """
   instagram: String_Filter
   """
+  ✨ Generated from Field `DatoGeneral`.`logoUrl` of type `String`
+  """
+  logoUrl: String_Filter
+  """
   ✨ Generated from Field `DatoGeneral`.`nombreInstitucion` of type `String`
   """
   nombreInstitucion: String_Filter
@@ -5649,6 +5731,10 @@ input DatoGeneral_Filter {
   ✨ Generated from Field `DatoGeneral`.`paginaWeb` of type `String`
   """
   paginaWeb: String_Filter
+  """
+  ✨ Generated from Field `DatoGeneral`.`provincia` of type `String`
+  """
+  provincia: String_Filter
   """
   ✨ Generated from Field `DatoGeneral`.`rd` of type `String`
   """
@@ -5669,6 +5755,10 @@ input DatoGeneral_Filter {
   ✨ Generated from Field `DatoGeneral`.`tiktok` of type `String`
   """
   tiktok: String_Filter
+  """
+  ✨ Generated from Field `DatoGeneral`.`tipoGestion` of type `String`
+  """
+  tipoGestion: String_Filter
   """
   ✨ Generated from Field `DatoGeneral`.`twitter` of type `String`
   """
@@ -5716,13 +5806,29 @@ input DatoGeneral_Having {
   """
   _count: Int_Filter
   """
+  ✨ Generated from Field `DatoGeneral`.`codigoModular_count` of type `Int!`
+  """
+  codigoModular_count: Int_Filter
+  """
   ✨ Generated from Field `DatoGeneral`.`correo_count` of type `Int!`
   """
   correo_count: Int_Filter
   """
+  ✨ Generated from Field `DatoGeneral`.`departamento_count` of type `Int!`
+  """
+  departamento_count: Int_Filter
+  """
   ✨ Generated from Field `DatoGeneral`.`direccion_count` of type `Int!`
   """
   direccion_count: Int_Filter
+  """
+  ✨ Generated from Field `DatoGeneral`.`distrito_count` of type `Int!`
+  """
+  distrito_count: Int_Filter
+  """
+  ✨ Generated from Field `DatoGeneral`.`dre_count` of type `Int!`
+  """
+  dre_count: Int_Filter
   """
   ✨ Generated from Field `DatoGeneral`.`facebook_count` of type `Int!`
   """
@@ -5736,6 +5842,10 @@ input DatoGeneral_Having {
   """
   instagram_count: Int_Filter
   """
+  ✨ Generated from Field `DatoGeneral`.`logoUrl_count` of type `Int!`
+  """
+  logoUrl_count: Int_Filter
+  """
   ✨ Generated from Field `DatoGeneral`.`nombreInstitucion_count` of type `Int!`
   """
   nombreInstitucion_count: Int_Filter
@@ -5743,6 +5853,10 @@ input DatoGeneral_Having {
   ✨ Generated from Field `DatoGeneral`.`paginaWeb_count` of type `Int!`
   """
   paginaWeb_count: Int_Filter
+  """
+  ✨ Generated from Field `DatoGeneral`.`provincia_count` of type `Int!`
+  """
+  provincia_count: Int_Filter
   """
   ✨ Generated from Field `DatoGeneral`.`rd_count` of type `Int!`
   """
@@ -5763,6 +5877,10 @@ input DatoGeneral_Having {
   ✨ Generated from Field `DatoGeneral`.`tiktok_count` of type `Int!`
   """
   tiktok_count: Int_Filter
+  """
+  ✨ Generated from Field `DatoGeneral`.`tipoGestion_count` of type `Int!`
+  """
+  tipoGestion_count: Int_Filter
   """
   ✨ Generated from Field `DatoGeneral`.`twitter_count` of type `Int!`
   """
@@ -5823,13 +5941,29 @@ input DatoGeneral_Order {
   """
   id: OrderDirection
   """
+  ✨ Generated from Field `DatoGeneral`.`codigoModular` of type `String`
+  """
+  codigoModular: OrderDirection
+  """
   ✨ Generated from Field `DatoGeneral`.`correo` of type `String`
   """
   correo: OrderDirection
   """
+  ✨ Generated from Field `DatoGeneral`.`departamento` of type `String`
+  """
+  departamento: OrderDirection
+  """
   ✨ Generated from Field `DatoGeneral`.`direccion` of type `String`
   """
   direccion: OrderDirection
+  """
+  ✨ Generated from Field `DatoGeneral`.`distrito` of type `String`
+  """
+  distrito: OrderDirection
+  """
+  ✨ Generated from Field `DatoGeneral`.`dre` of type `String`
+  """
+  dre: OrderDirection
   """
   ✨ Generated from Field `DatoGeneral`.`facebook` of type `String`
   """
@@ -5839,6 +5973,10 @@ input DatoGeneral_Order {
   """
   instagram: OrderDirection
   """
+  ✨ Generated from Field `DatoGeneral`.`logoUrl` of type `String`
+  """
+  logoUrl: OrderDirection
+  """
   ✨ Generated from Field `DatoGeneral`.`nombreInstitucion` of type `String`
   """
   nombreInstitucion: OrderDirection
@@ -5846,6 +5984,10 @@ input DatoGeneral_Order {
   ✨ Generated from Field `DatoGeneral`.`paginaWeb` of type `String`
   """
   paginaWeb: OrderDirection
+  """
+  ✨ Generated from Field `DatoGeneral`.`provincia` of type `String`
+  """
+  provincia: OrderDirection
   """
   ✨ Generated from Field `DatoGeneral`.`rd` of type `String`
   """
@@ -5867,6 +6009,10 @@ input DatoGeneral_Order {
   """
   tiktok: OrderDirection
   """
+  ✨ Generated from Field `DatoGeneral`.`tipoGestion` of type `String`
+  """
+  tipoGestion: OrderDirection
+  """
   ✨ Generated from Field `DatoGeneral`.`twitter` of type `String`
   """
   twitter: OrderDirection
@@ -5879,13 +6025,29 @@ input DatoGeneral_Order {
   """
   _count: OrderDirection
   """
+  ✨ Generated from Field `DatoGeneral`.`codigoModular_count` of type `Int!`
+  """
+  codigoModular_count: OrderDirection
+  """
   ✨ Generated from Field `DatoGeneral`.`correo_count` of type `Int!`
   """
   correo_count: OrderDirection
   """
+  ✨ Generated from Field `DatoGeneral`.`departamento_count` of type `Int!`
+  """
+  departamento_count: OrderDirection
+  """
   ✨ Generated from Field `DatoGeneral`.`direccion_count` of type `Int!`
   """
   direccion_count: OrderDirection
+  """
+  ✨ Generated from Field `DatoGeneral`.`distrito_count` of type `Int!`
+  """
+  distrito_count: OrderDirection
+  """
+  ✨ Generated from Field `DatoGeneral`.`dre_count` of type `Int!`
+  """
+  dre_count: OrderDirection
   """
   ✨ Generated from Field `DatoGeneral`.`facebook_count` of type `Int!`
   """
@@ -5899,6 +6061,10 @@ input DatoGeneral_Order {
   """
   instagram_count: OrderDirection
   """
+  ✨ Generated from Field `DatoGeneral`.`logoUrl_count` of type `Int!`
+  """
+  logoUrl_count: OrderDirection
+  """
   ✨ Generated from Field `DatoGeneral`.`nombreInstitucion_count` of type `Int!`
   """
   nombreInstitucion_count: OrderDirection
@@ -5906,6 +6072,10 @@ input DatoGeneral_Order {
   ✨ Generated from Field `DatoGeneral`.`paginaWeb_count` of type `Int!`
   """
   paginaWeb_count: OrderDirection
+  """
+  ✨ Generated from Field `DatoGeneral`.`provincia_count` of type `Int!`
+  """
+  provincia_count: OrderDirection
   """
   ✨ Generated from Field `DatoGeneral`.`rd_count` of type `Int!`
   """
@@ -5926,6 +6096,10 @@ input DatoGeneral_Order {
   ✨ Generated from Field `DatoGeneral`.`tiktok_count` of type `Int!`
   """
   tiktok_count: OrderDirection
+  """
+  ✨ Generated from Field `DatoGeneral`.`tipoGestion_count` of type `Int!`
+  """
+  tipoGestion_count: OrderDirection
   """
   ✨ Generated from Field `DatoGeneral`.`twitter_count` of type `Int!`
   """
@@ -13736,6 +13910,22 @@ input Grupo_Data {
   """
   turnoNombre_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Grupo`.`workspaceCorreo` of type `String`
+  """
+  workspaceCorreo: String
+  """
+  ✨ `_expr` server value variant of `workspaceCorreo` (✨ Generated from Field `Grupo`.`workspaceCorreo` of type `String`)
+  """
+  workspaceCorreo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Grupo`.`workspaceName` of type `String`
+  """
+  workspaceName: String
+  """
+  ✨ `_expr` server value variant of `workspaceName` (✨ Generated from Field `Grupo`.`workspaceName` of type `String`)
+  """
+  workspaceName_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Grupo`.`eventoOcurrencias_on_grupo` of type `[EventoOcurrencia!]!`
   """
   eventoOcurrencias_on_grupo: [EventoOcurrencia_Data!]
@@ -13856,6 +14046,14 @@ input Grupo_Filter {
   ✨ Generated from Field `Grupo`.`turnoNombre` of type `String`
   """
   turnoNombre: String_Filter
+  """
+  ✨ Generated from Field `Grupo`.`workspaceCorreo` of type `String`
+  """
+  workspaceCorreo: String_Filter
+  """
+  ✨ Generated from Field `Grupo`.`workspaceName` of type `String`
+  """
+  workspaceName: String_Filter
   """
   ✨ Generated from Field `Grupo`.`eventoOcurrencias_on_grupo` of type `[EventoOcurrencia!]!`
   """
@@ -13986,6 +14184,14 @@ input Grupo_Having {
   ✨ Generated from Field `Grupo`.`turnoNombre_count` of type `Int!`
   """
   turnoNombre_count: Int_Filter
+  """
+  ✨ Generated from Field `Grupo`.`workspaceCorreo_count` of type `Int!`
+  """
+  workspaceCorreo_count: Int_Filter
+  """
+  ✨ Generated from Field `Grupo`.`workspaceName_count` of type `Int!`
+  """
+  workspaceName_count: Int_Filter
   """
   ✨ Generated from Field `Grupo`.`calendarioId_sum` of type `Int`
   """
@@ -14262,6 +14468,14 @@ input Grupo_Order {
   """
   turnoNombre: OrderDirection
   """
+  ✨ Generated from Field `Grupo`.`workspaceCorreo` of type `String`
+  """
+  workspaceCorreo: OrderDirection
+  """
+  ✨ Generated from Field `Grupo`.`workspaceName` of type `String`
+  """
+  workspaceName: OrderDirection
+  """
   ✨ Generated from Field `Grupo`.`_count` of type `Int!`
   """
   _count: OrderDirection
@@ -14329,6 +14543,14 @@ input Grupo_Order {
   ✨ Generated from Field `Grupo`.`turnoNombre_count` of type `Int!`
   """
   turnoNombre_count: OrderDirection
+  """
+  ✨ Generated from Field `Grupo`.`workspaceCorreo_count` of type `Int!`
+  """
+  workspaceCorreo_count: OrderDirection
+  """
+  ✨ Generated from Field `Grupo`.`workspaceName_count` of type `Int!`
+  """
+  workspaceName_count: OrderDirection
   """
   ✨ Generated from Field `Grupo`.`calendarioId_sum` of type `Int`
   """
@@ -14555,6 +14777,38 @@ input GrupoModulo_Data {
   """
   modulo: Modulo_Key @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `GrupoModulo`.`fin` of type `Timestamp`
+  """
+  fin: Timestamp
+  """
+  ✨ `_expr` server value variant of `fin` (✨ Generated from Field `GrupoModulo`.`fin` of type `Timestamp`)
+  """
+  fin_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fin` (✨ Generated from Field `GrupoModulo`.`fin` of type `Timestamp`)
+  """
+  fin_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fin` (✨ Generated from Field `GrupoModulo`.`fin` of type `Timestamp`)
+  """
+  fin_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModulo`.`inicio` of type `Timestamp`
+  """
+  inicio: Timestamp
+  """
+  ✨ `_expr` server value variant of `inicio` (✨ Generated from Field `GrupoModulo`.`inicio` of type `Timestamp`)
+  """
+  inicio_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `inicio` (✨ Generated from Field `GrupoModulo`.`inicio` of type `Timestamp`)
+  """
+  inicio_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `inicio` (✨ Generated from Field `GrupoModulo`.`inicio` of type `Timestamp`)
+  """
+  inicio_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `GrupoModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: Boolean
@@ -14582,6 +14836,10 @@ input GrupoModulo_Data {
   ✨ Generated from Field `GrupoModulo`.`efsrtPppPracticas_on_grupoModulo` of type `[EfsrtPppPractica!]!`
   """
   efsrtPppPracticas_on_grupoModulo: [EfsrtPppPractica_Data!]
+  """
+  ✨ Generated from Field `GrupoModulo`.`grupoModuloUnidadesDidacticas_on_grupoModulo` of type `[GrupoModuloUnidadDidactica!]!`
+  """
+  grupoModuloUnidadesDidacticas_on_grupoModulo: [GrupoModuloUnidadDidactica_Data!]
 }
 """
 ✨ Generated filter input type for table 'GrupoModulo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -14628,6 +14886,14 @@ input GrupoModulo_Filter {
   """
   modulo: Modulo_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`fin` of type `Timestamp`
+  """
+  fin: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`inicio` of type `Timestamp`
+  """
+  inicio: Timestamp_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: Boolean_Filter
@@ -14643,6 +14909,10 @@ input GrupoModulo_Filter {
   ✨ Generated from Field `GrupoModulo`.`efsrtPppPracticas_on_grupoModulo` of type `[EfsrtPppPractica!]!`
   """
   efsrtPppPracticas_on_grupoModulo: EfsrtPppPractica_ListFilter
+  """
+  ✨ Generated from Field `GrupoModulo`.`grupoModuloUnidadesDidacticas_on_grupoModulo` of type `[GrupoModuloUnidadDidactica!]!`
+  """
+  grupoModuloUnidadesDidacticas_on_grupoModulo: GrupoModuloUnidadDidactica_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'GrupoModulo'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -14686,6 +14956,10 @@ input GrupoModulo_Having {
   """
   calendarioId_count: Int_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`fin_count` of type `Int!`
+  """
+  fin_count: Int_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`grupoId_count` of type `Int!`
   """
   grupoId_count: Int_Filter
@@ -14693,6 +14967,10 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`inicio_count` of type `Int!`
+  """
+  inicio_count: Int_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`moduloId_count` of type `Int!`
   """
@@ -14750,6 +15028,10 @@ input GrupoModulo_Having {
   """
   calendarioId_min: Int_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`fin_min` of type `Timestamp`
+  """
+  fin_min: Timestamp_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`grupoId_min` of type `Int`
   """
   grupoId_min: Int_Filter
@@ -14757,6 +15039,10 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`id_min` of type `Int`
   """
   id_min: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`inicio_min` of type `Timestamp`
+  """
+  inicio_min: Timestamp_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`moduloId_min` of type `Int`
   """
@@ -14770,6 +15056,10 @@ input GrupoModulo_Having {
   """
   calendarioId_max: Int_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`fin_max` of type `Timestamp`
+  """
+  fin_max: Timestamp_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`grupoId_max` of type `Int`
   """
   grupoId_max: Int_Filter
@@ -14777,6 +15067,10 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`id_max` of type `Int`
   """
   id_max: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`inicio_max` of type `Timestamp`
+  """
+  inicio_max: Timestamp_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`moduloId_max` of type `Int`
   """
@@ -14845,6 +15139,14 @@ input GrupoModulo_Order {
   """
   modulo: Modulo_Order
   """
+  ✨ Generated from Field `GrupoModulo`.`fin` of type `Timestamp`
+  """
+  fin: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`inicio` of type `Timestamp`
+  """
+  inicio: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: OrderDirection
@@ -14861,6 +15163,10 @@ input GrupoModulo_Order {
   """
   calendarioId_count: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`fin_count` of type `Int!`
+  """
+  fin_count: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`grupoId_count` of type `Int!`
   """
   grupoId_count: OrderDirection
@@ -14868,6 +15174,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`inicio_count` of type `Int!`
+  """
+  inicio_count: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`moduloId_count` of type `Int!`
   """
@@ -14925,6 +15235,10 @@ input GrupoModulo_Order {
   """
   calendarioId_min: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`fin_min` of type `Timestamp`
+  """
+  fin_min: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`grupoId_min` of type `Int`
   """
   grupoId_min: OrderDirection
@@ -14932,6 +15246,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`id_min` of type `Int`
   """
   id_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`inicio_min` of type `Timestamp`
+  """
+  inicio_min: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`moduloId_min` of type `Int`
   """
@@ -14945,6 +15263,10 @@ input GrupoModulo_Order {
   """
   calendarioId_max: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`fin_max` of type `Timestamp`
+  """
+  fin_max: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`grupoId_max` of type `Int`
   """
   grupoId_max: OrderDirection
@@ -14953,6 +15275,10 @@ input GrupoModulo_Order {
   """
   id_max: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`inicio_max` of type `Timestamp`
+  """
+  inicio_max: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`moduloId_max` of type `Int`
   """
   moduloId_max: OrderDirection
@@ -14960,6 +15286,461 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`orden_max` of type `Int`
   """
   orden_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'GrupoModuloUnidadDidactica'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input GrupoModuloUnidadDidactica_Data {
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int
+  """
+  ✨ `_expr` server value variant of `grupoModuloId` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoModuloId` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId` of type `Int!`
+  """
+  unidadDidacticaId: Int
+  """
+  ✨ `_expr` server value variant of `unidadDidacticaId` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId` of type `Int!`)
+  """
+  unidadDidacticaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `unidadDidacticaId` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId` of type `Int!`)
+  """
+  unidadDidacticaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidactica` of type `UnidadDidactica!`
+  """
+  unidadDidactica: UnidadDidactica_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin` of type `Timestamp`
+  """
+  fin: Timestamp
+  """
+  ✨ `_expr` server value variant of `fin` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin` of type `Timestamp`)
+  """
+  fin_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fin` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin` of type `Timestamp`)
+  """
+  fin_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fin` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin` of type `Timestamp`)
+  """
+  fin_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio` of type `Timestamp`
+  """
+  inicio: Timestamp
+  """
+  ✨ `_expr` server value variant of `inicio` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio` of type `Timestamp`)
+  """
+  inicio_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `inicio` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio` of type `Timestamp`)
+  """
+  inicio_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `inicio` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio` of type `Timestamp`)
+  """
+  inicio_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden` of type `Int`
+  """
+  orden: Int
+  """
+  ✨ `_expr` server value variant of `orden` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden` of type `Int`)
+  """
+  orden_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `orden` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden` of type `Int`)
+  """
+  orden_update: [Int_Update!] @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'GrupoModuloUnidadDidactica'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input GrupoModuloUnidadDidactica_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [GrupoModuloUnidadDidactica_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: GrupoModuloUnidadDidactica_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [GrupoModuloUnidadDidactica_Filter!]
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId` of type `Int!`
+  """
+  unidadDidacticaId: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidactica` of type `UnidadDidactica!`
+  """
+  unidadDidactica: UnidadDidactica_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin` of type `Timestamp`
+  """
+  fin: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio` of type `Timestamp`
+  """
+  inicio: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden` of type `Int`
+  """
+  orden: Int_Filter
+}
+"""
+✨ Generated first-row input type for table 'GrupoModuloUnidadDidactica'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input GrupoModuloUnidadDidactica_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [GrupoModuloUnidadDidactica_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: GrupoModuloUnidadDidactica_Filter
+}
+"""
+✨ Generated having input type for table 'GrupoModuloUnidadDidactica'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input GrupoModuloUnidadDidactica_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [GrupoModuloUnidadDidactica_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: GrupoModuloUnidadDidactica_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [GrupoModuloUnidadDidactica_Having!]
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin_count` of type `Int!`
+  """
+  fin_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio_count` of type `Int!`
+  """
+  inicio_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden_count` of type `Int!`
+  """
+  orden_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId_count` of type `Int!`
+  """
+  unidadDidacticaId_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden_sum` of type `Int`
+  """
+  orden_sum: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId_sum` of type `Int`
+  """
+  unidadDidacticaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden_avg` of type `Float`
+  """
+  orden_avg: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId_avg` of type `Float`
+  """
+  unidadDidacticaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin_min` of type `Timestamp`
+  """
+  fin_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio_min` of type `Timestamp`
+  """
+  inicio_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden_min` of type `Int`
+  """
+  orden_min: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId_min` of type `Int`
+  """
+  unidadDidacticaId_min: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin_max` of type `Timestamp`
+  """
+  fin_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio_max` of type `Timestamp`
+  """
+  inicio_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden_max` of type `Int`
+  """
+  orden_max: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId_max` of type `Int`
+  """
+  unidadDidacticaId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'GrupoModuloUnidadDidactica'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input GrupoModuloUnidadDidactica_Key {
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `GrupoModuloUnidadDidactica`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'GrupoModuloUnidadDidactica'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input GrupoModuloUnidadDidactica_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: GrupoModuloUnidadDidactica_Filter
+}
+"""
+✨ Generated order input type for table 'GrupoModuloUnidadDidactica'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input GrupoModuloUnidadDidactica_Order {
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId` of type `Int!`
+  """
+  unidadDidacticaId: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Order
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidactica` of type `UnidadDidactica!`
+  """
+  unidadDidactica: UnidadDidactica_Order
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin` of type `Timestamp`
+  """
+  fin: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio` of type `Timestamp`
+  """
+  inicio: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden` of type `Int`
+  """
+  orden: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin_count` of type `Int!`
+  """
+  fin_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio_count` of type `Int!`
+  """
+  inicio_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden_count` of type `Int!`
+  """
+  orden_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId_count` of type `Int!`
+  """
+  unidadDidacticaId_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden_sum` of type `Int`
+  """
+  orden_sum: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId_sum` of type `Int`
+  """
+  unidadDidacticaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden_avg` of type `Float`
+  """
+  orden_avg: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId_avg` of type `Float`
+  """
+  unidadDidacticaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin_min` of type `Timestamp`
+  """
+  fin_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio_min` of type `Timestamp`
+  """
+  inicio_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden_min` of type `Int`
+  """
+  orden_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId_min` of type `Int`
+  """
+  unidadDidacticaId_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`fin_max` of type `Timestamp`
+  """
+  fin_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`inicio_max` of type `Timestamp`
+  """
+  inicio_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`orden_max` of type `Int`
+  """
+  orden_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloUnidadDidactica`.`unidadDidacticaId_max` of type `Int`
+  """
+  unidadDidacticaId_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'Horario'. It includes all necessary fields for creating or upserting rows into table.
@@ -25962,6 +26743,10 @@ input UnidadDidactica_Data {
   """
   capacidadesTerminales_on_unidadDidactica: [CapacidadTerminal_Data!]
   """
+  ✨ Generated from Field `UnidadDidactica`.`grupoModuloUnidadesDidacticas_on_unidadDidactica` of type `[GrupoModuloUnidadDidactica!]!`
+  """
+  grupoModuloUnidadesDidacticas_on_unidadDidactica: [GrupoModuloUnidadDidactica_Data!]
+  """
   ✨ Generated from Field `UnidadDidactica`.`unidadesDidacticasEstudiantes_on_unidadDidactica` of type `[UnidadDidacticaEstudiante!]!`
   """
   unidadesDidacticasEstudiantes_on_unidadDidactica: [UnidadDidacticaEstudiante_Data!]
@@ -26010,6 +26795,10 @@ input UnidadDidactica_Filter {
   ✨ Generated from Field `UnidadDidactica`.`capacidadesTerminales_on_unidadDidactica` of type `[CapacidadTerminal!]!`
   """
   capacidadesTerminales_on_unidadDidactica: CapacidadTerminal_ListFilter
+  """
+  ✨ Generated from Field `UnidadDidactica`.`grupoModuloUnidadesDidacticas_on_unidadDidactica` of type `[GrupoModuloUnidadDidactica!]!`
+  """
+  grupoModuloUnidadesDidacticas_on_unidadDidactica: GrupoModuloUnidadDidactica_ListFilter
   """
   ✨ Generated from Field `UnidadDidactica`.`unidadesDidacticasEstudiantes_on_unidadDidactica` of type `[UnidadDidacticaEstudiante!]!`
   """

@@ -1,10 +1,12 @@
 param(
   [string]$ProjectId = 'cetprosmp-2026',
   [string]$ExportDir = './exportedData',
+  [string]$BackupDir = './backups',
   [string]$Only = 'auth,functions,firestore,storage,dataconnect',
   [switch]$Full,
   [switch]$NoImport,
-  [switch]$NoExport
+  [switch]$NoExport,
+  [switch]$NoBackup
 )
 
 $ErrorActionPreference = 'Stop'
@@ -66,11 +68,29 @@ if (($selectedEmulators -split ',') -contains 'functions') {
 
 $cmd = "npx -y firebase-tools@latest emulators:start --project $ProjectId --only $selectedEmulators"
 
-if (-not $NoImport -and (Test-Path $ExportDir)) {
+$willImport = -not $NoImport -and (Test-Path $ExportDir)
+
+if (-not $NoExport -and -not $NoBackup -and (Test-Path $ExportDir)) {
+  $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+  $exportLeaf = Split-Path -Path $ExportDir -Leaf
+  if (-not $exportLeaf) {
+    $exportLeaf = 'emulator-data'
+  }
+  $backupPath = Join-Path $BackupDir "$exportLeaf-before-emulators-$timestamp"
+  New-Item -ItemType Directory -Force -Path $BackupDir | Out-Null
+  Copy-Item -Path $ExportDir -Destination $backupPath -Recurse -Force
+  Write-Host "Respaldo preventivo creado en $backupPath"
+}
+
+if ($willImport) {
+  Write-Host "Importando datos de emuladores desde $ExportDir"
   $cmd = "$cmd --import=$ExportDir"
+} elseif (-not $NoImport) {
+  Write-Warning "No se encontro $ExportDir. Los emuladores arrancaran sin importar datos."
 }
 
 if (-not $NoExport) {
+  Write-Host "Exportando datos de emuladores al cerrar hacia $ExportDir"
   $cmd = "$cmd --export-on-exit=$ExportDir"
 }
 

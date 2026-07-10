@@ -9,7 +9,7 @@ runConfig:
 # Environment variables.
 env:
   - variable: MAINTENANCE_MODE
-    value: "true"
+    value: "false"
     availability:
       - BUILD
       - RUNTIME

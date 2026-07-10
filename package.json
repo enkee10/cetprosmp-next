@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "next dev --turbo",
     "emulators:start": "powershell -ExecutionPolicy Bypass -File ./scripts/start-firebase-emulators.ps1",
-    "emulators:safe": "powershell -ExecutionPolicy Bypass -File ./scripts/start-firebase-emulators.ps1 -Only auth,functions,firestore,storage,dataconnect",
+    "emulators:safe": "powershell -ExecutionPolicy Bypass -File ./scripts/start-firebase-emulators.ps1 -ExportDir ./data -Only auth,functions,firestore,storage,dataconnect",
     "emulators:full": "powershell -ExecutionPolicy Bypass -File ./scripts/start-firebase-emulators.ps1 -Full",
     "emulators:stop": "powershell -ExecutionPolicy Bypass -File ./scripts/stop-firebase-emulators.ps1",
     "auth:oob:verify-latest": "node scripts/auth-oob.mjs verify-latest",

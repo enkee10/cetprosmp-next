@@ -1080,7 +1080,7 @@ async function createSharedStringWriter(zip: JSZip) {
   const save = () => {
     if (additions.length === 0) return;
     const nextXml = originalXml
-      .replace(/<sst\b[^>]*>/i, (tag) =>
+      .replace(/<sst\b[^>]*>/i, (tag: string) =>
         setXmlAttribute(
           setXmlAttribute(tag, "count", String(count + additions.length)),
           "uniqueCount",
@@ -1142,7 +1142,58 @@ function officeBinaryCandidates() {
   ].filter(Boolean);
 }
 
+function reportesOfficeConverterUrl() {
+  return String(process.env.REPORTES_OFFICE_CONVERTER_URL || "").trim().replace(/\/+$/, "");
+}
+
+function reportesOfficeConverterUsesIam() {
+  return ["1", "true", "yes", "on"].includes(
+    String(process.env.REPORTES_OFFICE_CONVERTER_IAM || "").trim().toLowerCase(),
+  );
+}
+
+async function getIdentityToken(audience: string) {
+  const metadataUrl = `http://metadata/computeMetadata/v1/instance/service-accounts/default/identity?audience=${encodeURIComponent(audience)}`;
+  const response = await fetch(metadataUrl, {
+    headers: { "Metadata-Flavor": "Google" },
+  });
+  if (!response.ok) {
+    const message = await response.text().catch(() => "");
+    throw new Error(`No se pudo obtener identity token para Cloud Run. HTTP ${response.status}: ${message}`);
+  }
+  return response.text();
+}
+
+async function convertXlsxToPdfWithService(xlsxBuffer: Buffer, baseName: string, converterUrl: string) {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "X-Report-Name": baseName,
+  };
+  const token = String(process.env.REPORTES_OFFICE_CONVERTER_TOKEN || "").trim();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  } else if (reportesOfficeConverterUsesIam()) {
+    headers.Authorization = `Bearer ${await getIdentityToken(converterUrl)}`;
+  }
+
+  const response = await fetch(`${converterUrl}/convert`, {
+    method: "POST",
+    headers,
+    body: xlsxBuffer as unknown as BodyInit,
+  });
+  if (!response.ok) {
+    const message = await response.text().catch(() => "");
+    throw new Error(`No se pudo convertir el Excel a PDF en Cloud Run. HTTP ${response.status}: ${message}`);
+  }
+  return Buffer.from(await response.arrayBuffer());
+}
+
 async function convertXlsxToPdf(xlsxBuffer: Buffer, baseName: string) {
+  const converterUrl = reportesOfficeConverterUrl();
+  if (converterUrl) {
+    return convertXlsxToPdfWithService(xlsxBuffer, baseName, converterUrl);
+  }
+
   const dir = await mkdtemp(join(tmpdir(), "reportes-"));
   const xlsxPath = join(dir, `${baseName}.xlsx`);
   const pdfPath = join(dir, `${baseName}.pdf`);

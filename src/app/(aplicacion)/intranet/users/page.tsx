@@ -24,6 +24,7 @@ import UserForm from '@/components/intranet/users/UserForm';
 import Modal1 from '@/components/Modal1';
 import { useAuth } from '@/context/AuthContext';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
+import { canDeleteIntranetRecords } from '@/lib/intranetPermissions';
 
 interface User {
   id: number;
@@ -169,6 +170,7 @@ const UserAvatarCell = ({
 
 const UsersPage = () => {
   const { user, loading: authLoading } = useAuth();
+  const canDeleteRecords = canDeleteIntranetRecords(user?.role, user?.level);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -207,7 +209,7 @@ const UsersPage = () => {
   const listUsers = useMemo(
     () =>
       httpsCallable<undefined, { users?: Record<string, unknown>[] }>(functions, 'listUsers', {
-        timeout: 15000,
+        timeout: 60000,
       }),
     [],
   );
@@ -616,25 +618,27 @@ const UsersPage = () => {
         >
           Editar
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            if (menuUser) {
-              handleDeleteUser({
-                documentId: menuUser.documentId,
-                email: menuUser.email,
-                dni: menuUser.dni,
-                rolId: menuUser.rolId,
-                nombre: menuUser.nombre,
-                apellidoPaterno: menuUser.apellidoPaterno,
-                apellidoMaterno: menuUser.apellidoMaterno,
-                correoInstitucional: menuUser.correoInstitucional,
-                correo_institucional: menuUser.correo_institucional,
-              });
-            }
-          }}
-        >
-          Eliminar
-        </MenuItem>
+        {canDeleteRecords ? (
+          <MenuItem
+            onClick={() => {
+              if (menuUser) {
+                handleDeleteUser({
+                  documentId: menuUser.documentId,
+                  email: menuUser.email,
+                  dni: menuUser.dni,
+                  rolId: menuUser.rolId,
+                  nombre: menuUser.nombre,
+                  apellidoPaterno: menuUser.apellidoPaterno,
+                  apellidoMaterno: menuUser.apellidoMaterno,
+                  correoInstitucional: menuUser.correoInstitucional,
+                  correo_institucional: menuUser.correo_institucional,
+                });
+              }
+            }}
+          >
+            Eliminar
+          </MenuItem>
+        ) : null}
       </Menu>
 
       <Modal1

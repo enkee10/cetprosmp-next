@@ -19,6 +19,7 @@
 # misc
 .DS_Store
 *.pem
+.tools/
 
 # debug
 npm-debug.log*
@@ -52,3 +53,13 @@ functions/node_modules
 dataconnect-debug.log
 firestore-debug.log
 pglite-debug.log
+
+# local backups and emulator exports
+/backups/
+/exportedData/
+/tmp/
+/.tmp/
+/firebase-export-*/
+cloud-sql-proxy.exe
+*.zip
+*.log

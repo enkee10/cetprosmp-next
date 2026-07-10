@@ -117,4 +117,12 @@ export {
   getActividad,
   createOrUpdateActividad,
   deleteActividad,
+  createRegistroAuxiliarMatricula,
+  getRegistroAuxiliar,
+  listRegistroAuxiliarDocenteModulos,
+  retireRegistroAuxiliarMatricula,
+  saveRegistroAuxiliar,
+  updateRegistroAuxiliarGrupoModuloFechas,
+  generateReporteDocumento,
+  listReporteDocumentosOptions,
 } from "./modules/index.js";

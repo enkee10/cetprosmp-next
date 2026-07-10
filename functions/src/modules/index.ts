@@ -157,3 +157,15 @@ export {
   createOrUpdateActividad,
   deleteActividad,
 } from "./academico/handlers.js";
+export {
+  createRegistroAuxiliarMatricula,
+  getRegistroAuxiliar,
+  listRegistroAuxiliarDocenteModulos,
+  retireRegistroAuxiliarMatricula,
+  saveRegistroAuxiliar,
+  updateRegistroAuxiliarGrupoModuloFechas,
+} from "./registro-auxiliar/handlers.js";
+export {
+  generateReporteDocumento,
+  listReporteDocumentosOptions,
+} from "./reportes/handlers.js";

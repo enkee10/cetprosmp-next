@@ -245,7 +245,7 @@ export const DELETE_GRUPO_MUTATION = `
 `;
 
 export const INSERT_GRUPO_MODULO_MUTATION = `
-  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "grupoId moduloId orden obligatorio inicio fin calendarioId")) {
+  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId")) {
     grupoModulo_insert(data: $data)
   }
 `;
@@ -365,13 +365,13 @@ export const UPDATE_EVENTO_OCURRENCIA_MUTATION = `
 `;
 
 export const INSERT_MODULO_MUTATION = `
-  mutation InsertModulo($data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos metas activo slug planId")) {
+  mutation InsertModulo($data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos duracionEfsrt creditosEfsrt metas activo slug planId")) {
     modulo_insert(data: $data)
   }
 `;
 
 export const UPDATE_MODULO_MUTATION = `
-  mutation UpdateModulo($id: Int!, $data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos metas activo slug planId")) {
+  mutation UpdateModulo($id: Int!, $data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos duracionEfsrt creditosEfsrt metas activo slug planId")) {
     modulo_update(id: $id, data: $data)
   }
 `;
@@ -564,7 +564,7 @@ export const LIST_EVALUACION_ESTUDIANTE_IDS_BY_MATRICULA_QUERY = `
 `;
 
 export const INSERT_MODULO_ESTUDIANTE_MUTATION = `
-  mutation InsertModuloEstudiante($data: ModuloEstudiante_Data! @allow(fields: "promedio matriculaId moduloId grupoId")) {
+  mutation InsertModuloEstudiante($data: ModuloEstudiante_Data! @allow(fields: "promedio puntaje matriculaId moduloId grupoId")) {
     moduloEstudiante_insert(data: $data)
   }
 `;

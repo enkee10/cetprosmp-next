@@ -9,6 +9,7 @@ import MatriculaMenuWrapper from "./MatriculaMenuWrapper";
 import IntranetMenuWrapper from "./IntranetMenuWrapper";
 import { useAuth } from "@/context/AuthContext"; // Ruta corregida
 import { styled } from "@mui/material/styles";
+import { canAccessIntranet } from "@/lib/intranetPermissions";
 
 const MenuBox = styled(Box)(({ theme }) => ({
   flexGrow: 1,
@@ -44,9 +45,7 @@ const MenuBox = styled(Box)(({ theme }) => ({
 
 export default function MenuPrincipal() {
   const { user } = useAuth();
-
-  // Get user level from our custom user object, default to 0.
-  const userLevel = user?.level ?? 0;
+  const showIntranet = canAccessIntranet(user?.role, user?.level);
 
   return (
     <MenuBox>
@@ -56,9 +55,7 @@ export default function MenuPrincipal() {
       <NovedadesMenuWrapper />
       <MatriculaMenuWrapper />
       
-      {/* --- THIS IS THE CORRECT LOGIC --- */}
-      {/* Only show Intranet menu if user's permission level is 300 or higher */}
-      {userLevel >= 300 && <IntranetMenuWrapper />}
+      {showIntranet && <IntranetMenuWrapper />}
 
     </MenuBox>
   );

@@ -12,13 +12,13 @@ export { metadata };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Box sx={{backgroundColor: 'red'}} className={`layout ${inter.className}`}>
+    <Box className={`layout ${inter.className}`}>
       <Box component="header">
         <Header />
       </Box>
       <Box
         component="main"
-        sx={{ mt: { xs: '48px', md: '64px' }, maxWidth: '1200px', mx: 'auto' }}
+        sx={{ mt: { xs: '48px', md: '64px' }, width: '100%', maxWidth: '1000px', mx: 'auto' }}
       >
         {children}
       </Box>

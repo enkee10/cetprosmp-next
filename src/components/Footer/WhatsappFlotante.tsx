@@ -2,6 +2,7 @@
 
 import { Box, Button, Fade, Popper, Typography } from '@mui/material';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 const numero = '51015346663';
@@ -21,9 +22,12 @@ const getWhatsAppLink = () =>
     : `https://web.whatsapp.com/send?phone=${numero}&text=${encodedMensaje}`;
 
 const WhatsappFlotante = () => {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLDivElement | null>(null);
   const popperRef = useRef<HTMLDivElement | null>(null);
+
+  const isIntranet = pathname?.startsWith('/intranet');
 
   const handleToggle = () => setOpen((prev) => !prev);
 
@@ -70,6 +74,8 @@ const WhatsappFlotante = () => {
   const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
     `https://wa.me/${numero}?text=${encodedMensaje}`
   )}`;
+
+  if (isIntranet) return null;
 
   return (
     <Box

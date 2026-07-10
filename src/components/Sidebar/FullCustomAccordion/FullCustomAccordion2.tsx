@@ -74,7 +74,7 @@ const StyledListItem = styled(ListItem)(({ theme }) => ({
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
   fontSize: "0.95rem",
-  color: "#333",
+  color: "inherit",
 }));
 
 // Props del componente
@@ -116,7 +116,7 @@ export default function FullCustomAccordion({
   return (
     <StyledAccordion expanded={expanded} onChange={onChange}>
       <StyledAccordionSummary expandIcon={customExpandIcon ?? rotatingIcon}>
-        <StyledTypography fontWeight="bold">{title}</StyledTypography>
+        <StyledTypography as="span" fontWeight="bold">{title}</StyledTypography>
       </StyledAccordionSummary>
       <StyledAccordionDetails>{children}</StyledAccordionDetails>
     </StyledAccordion>

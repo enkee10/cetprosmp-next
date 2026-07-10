@@ -7,9 +7,12 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Box,
 } from '@mui/material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import ArticleIcon from '@mui/icons-material/Article';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -32,16 +35,17 @@ import FullCustomAccordion, {
   CustomList,
 } from '../FullCustomAccordion/FullCustomAccordion2';
 
-type IntranetMenuItem = {
+export type IntranetMenuItem = {
   id: string;
   title: string;
   path: string;
   icon: React.ReactNode;
 };
 
-type IntranetMenuSection = {
+export type IntranetMenuSection = {
   id: string;
   title: string;
+  icon: React.ReactNode;
   items: IntranetMenuItem[];
 };
 
@@ -49,24 +53,25 @@ interface Props {
   openAccordions: string[];
   handleAccordionChange: (id: string, ancestors: string[]) => void;
   showRoot?: boolean;
+  sections?: IntranetMenuSection[];
 }
 
 const rootId = 'intranet';
 
-const menuSections: IntranetMenuSection[] = [
+export const menuSections: IntranetMenuSection[] = [
   {
     id: 'entidades',
     title: 'Entidades',
+    icon: <AccountTreeIcon />,
     items: [
       { id: 'sectores', title: 'Sectores', path: '/intranet/sectores', icon: <FactoryIcon /> },
       { id: 'datos-generales', title: 'Datos Generales', path: '/intranet/datos-generales', icon: <BusinessIcon /> },
       { id: 'familias', title: 'Familias', path: '/intranet/familias', icon: <FamilyRestroomIcon /> },
-      { id: 'act-economicas', title: 'Actividades Económicas', path: '/intranet/act-economicas', icon: <AccountBalanceIcon /> },
+      { id: 'act-economicas', title: 'Actividades Econ\u00f3micas', path: '/intranet/act-economicas', icon: <AccountBalanceIcon /> },
       { id: 'especialidades', title: 'Especialidades', path: '/intranet/especialidades', icon: <AutoStoriesIcon /> },
       { id: 'carreras', title: 'Carreras', path: '/intranet/carreras', icon: <SchoolIcon /> },
       { id: 'planes', title: 'Planes', path: '/intranet/planes', icon: <AssignmentIcon /> },
-      { id: 'modulos', title: 'Módulos', path: '/intranet/modulos', icon: <ViewModuleIcon /> },
-      { id: 'estructura-academica', title: 'Estructura Academica', path: '/intranet/estructura-academica', icon: <AccountTreeIcon /> },
+      { id: 'modulos', title: 'M\u00f3dulos', path: '/intranet/modulos', icon: <ViewModuleIcon /> },
       { id: 'paquetes', title: 'Paquetes', path: '/intranet/paquetes', icon: <Inventory2Icon /> },
       { id: 'grupos', title: 'Grupos', path: '/intranet/grupos', icon: <PeopleIcon /> },
       { id: 'personal', title: 'Personal', path: '/intranet/personal', icon: <PeopleIcon /> },
@@ -74,7 +79,7 @@ const menuSections: IntranetMenuSection[] = [
       { id: 'horarios', title: 'Horarios', path: '/intranet/horarios', icon: <ScheduleIcon /> },
       { id: 'calendarios', title: 'Calendarios', path: '/intranet/calendarios', icon: <EventNoteIcon /> },
       { id: 'eventos', title: 'Eventos', path: '/intranet/eventos', icon: <EventNoteIcon /> },
-      { id: 'unidades-didacticas', title: 'Unidades Didácticas', path: '/intranet/unidades-didacticas', icon: <MenuBookIcon /> },
+      { id: 'unidades-didacticas', title: 'Unidades Did\u00e1cticas', path: '/intranet/unidades-didacticas', icon: <MenuBookIcon /> },
       { id: 'capacidades-terminales', title: 'Capacidades Terminales', path: '/intranet/capacidades-terminales', icon: <TrackChangesIcon /> },
       { id: 'indicadores-capacidad', title: 'Indicador de Capacidad', path: '/intranet/indicadores-capacidad', icon: <FactCheckIcon /> },
       { id: 'aprendizajes', title: 'Aprendizajes', path: '/intranet/aprendizajes', icon: <PsychologyIcon /> },
@@ -83,9 +88,10 @@ const menuSections: IntranetMenuSection[] = [
   },
   {
     id: 'miselanea',
-    title: 'Miselanea',
+    title: 'Miscel\u00e1nea',
+    icon: <CategoryIcon />,
     items: [
-      { id: 'anios', title: 'Años', path: '/intranet/anios', icon: <CalendarMonthIcon /> },
+      { id: 'anios', title: 'A\u00f1os', path: '/intranet/anios', icon: <CalendarMonthIcon /> },
       { id: 'semestres', title: 'Semestres', path: '/intranet/semestres', icon: <ScheduleIcon /> },
       { id: 'tipos-carrera', title: 'Tipos de Carrera', path: '/intranet/tipos-carrera', icon: <CategoryIcon /> },
     ],
@@ -93,8 +99,11 @@ const menuSections: IntranetMenuSection[] = [
   {
     id: 'registros',
     title: 'Registros',
+    icon: <AssignmentIcon />,
     items: [
-      { id: 'matriculas', title: 'MatrÃ­culas', path: '/intranet/matriculas', icon: <AssignmentIcon /> },
+      { id: 'estructura-academica', title: 'Estructura Acad\u00e9mica', path: '/intranet/estructura-academica', icon: <AccountTreeIcon /> },
+      { id: 'matriculas', title: 'Matr\u00edculas', path: '/intranet/matriculas', icon: <AssignmentIcon /> },
+      { id: 'registro-auxiliar', title: 'Registro Auxiliar', path: '/intranet/registro-auxiliar', icon: <FactCheckIcon /> },
       { id: 'users', title: 'Users', path: '/intranet/users', icon: <PeopleIcon /> },
       { id: 'roles', title: 'Roles', path: '/intranet/roles', icon: <LockPersonIcon /> },
     ],
@@ -102,9 +111,35 @@ const menuSections: IntranetMenuSection[] = [
   {
     id: 'reportes',
     title: 'Reportes',
-    items: [],
+    icon: <AssessmentIcon />,
+    items: [
+      { id: 'documentos-reportes', title: 'Actas y N\u00f3minas', path: '/intranet/reportes/documentos', icon: <ArticleIcon /> },
+    ],
   },
 ];
+
+function SectionTitle({ icon, title }: { icon: React.ReactNode; title: string }) {
+  return (
+    <Box
+      component="span"
+      sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, pl: 0.75, fontWeight: 700 }}
+    >
+      <Box
+        component="span"
+        sx={{
+          display: 'flex',
+          color: 'inherit',
+          '& svg': { fontSize: 21.5, fontWeight: 700, stroke: 'currentColor', strokeWidth: 0.3 },
+        }}
+      >
+        {icon}
+      </Box>
+      <Box component="span" sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 700 }}>
+        {title}
+      </Box>
+    </Box>
+  );
+}
 
 function IntranetMenuItems({ items }: { items: IntranetMenuItem[] }) {
   if (items.length === 0) {
@@ -138,19 +173,20 @@ export default function AcordionIntranet({
   openAccordions,
   handleAccordionChange,
   showRoot = true,
+  sections: intranetSections = menuSections,
 }: Props) {
   const rootAncestors = showRoot ? [rootId] : [];
 
   const sections = (
     <>
-      {menuSections.map((section) => {
+      {intranetSections.map((section) => {
         const sectionId = `${rootId}-${section.id}`;
 
         return (
           <FullCustomAccordion
             key={sectionId}
             id={sectionId}
-            title={section.title}
+            title={<SectionTitle icon={section.icon} title={section.title} />}
             ancestors={rootAncestors}
             expanded={openAccordions.includes(sectionId)}
             onChange={() => handleAccordionChange(sectionId, rootAncestors)}

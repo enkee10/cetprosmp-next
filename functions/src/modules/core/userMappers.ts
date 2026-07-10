@@ -363,6 +363,7 @@ export function buildGrupoDataFromInput(input: Record<string, unknown>) {
 
 export function buildGrupoModuloDataFromInput(input: Record<string, unknown>) {
   return compactUndefined({
+    nombre: asNullableString(input.nombre),
     grupoId: toNumber(input.grupoId, 0),
     moduloId: toNumber(input.moduloId, 0),
     orden: toNumberOrNull(input.orden),
@@ -444,6 +445,8 @@ export function buildModuloDataFromInput(input: Record<string, unknown>): DataCo
     descripcion: asNullableString(input.descripcion),
     horas: toNumberOrNull(input.horas),
     creditos: toNumberOrNull(input.creditos),
+    duracionEfsrt: toNumberOrNull(input.duracionEfsrt),
+    creditosEfsrt: toNumberOrNull(input.creditosEfsrt),
     metas: toNumberOrNull(input.metas),
     activo: toBoolean(input.activo),
     slug: asNullableString(input.slug),
@@ -482,6 +485,7 @@ export function buildMatriculaDataFromInput(input: Record<string, unknown>): Dat
 export function buildModuloEstudianteDataFromInput(input: Record<string, unknown>): DataConnectModuloEstudianteInput {
   return compactUndefined({
     promedio: toNumberOrNull(input.promedio),
+    puntaje: toNumberOrNull(input.puntaje),
     matriculaId: toNumber(input.matriculaId, 0),
     moduloId: toNumber(input.moduloId, 0),
     grupoId: toNumberOrNull(input.grupoId),

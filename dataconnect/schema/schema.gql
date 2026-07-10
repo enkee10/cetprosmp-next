@@ -152,6 +152,8 @@ type Modulo @table(name: "modulos") @index(fields: ["carreraId"]) {
   descripcion2: String @col(name: "descripcion_2")
   horas: Int
   creditos: Int
+  duracionEfsrt: Int @col(name: "duracion_efsrt")
+  creditosEfsrt: Int @col(name: "creditos_efsrt")
   metas: Int
   activo: Boolean
   slug: String
@@ -335,6 +337,7 @@ type AspectoEvaluacion @table(name: "aspectos_evaluacion", singular: "aspectoEva
 type ModuloEstudiante @table(name: "modulos_estudiantes", singular: "moduloEstudiante", plural: "modulosEstudiantes") @unique(fields: ["matricula", "modulo"]) {
   id: Int! @col(dataType: "serial")
   promedio: Float
+  puntaje: Float
 
   matricula: Matricula! @ref(fields: "matriculaId", references: "id")
   matriculaId: Int! @col(name: "matricula_id")
@@ -568,6 +571,7 @@ type Grupo @table(name: "grupos") @index(fields: ["calendarioId"]) @index(fields
 
 type GrupoModulo @table(name: "grupo_modulos", singular: "grupoModulo", plural: "grupoModulos") @unique(fields: ["grupo", "modulo"]) {
   id: Int! @col(dataType: "serial")
+  nombre: String
   orden: Int
   obligatorio: Boolean
   inicio: Timestamp
@@ -740,6 +744,7 @@ type PaqueteModulo @table(name: "paquete_modulos", singular: "paqueteModulo", pl
 type Matricula @table(name: "matriculas") {
   id: Int! @col(dataType: "serial")
   recibo: String
+  codigoInscripcion: String @col(name: "codigo_inscripcion", dataType: "varchar(13)")
   fecha: Timestamp
   archivado: Boolean
 

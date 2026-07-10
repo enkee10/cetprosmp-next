@@ -341,6 +341,92 @@ function DetailFields({
   );
 }
 
+function EditableMetricChip({
+  value,
+  target,
+  prefix = '',
+  suffix = '',
+  onSave,
+}: {
+  value: number | null | undefined;
+  target: EditableCellTarget;
+  prefix?: string;
+  suffix?: string;
+  onSave: (target: EditableCellTarget, value: EditableCellValue) => Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(draftFromValue(value));
+  const committingRef = useRef(false);
+
+  useEffect(() => {
+    if (!editing) setDraft(draftFromValue(value));
+  }, [editing, value]);
+
+  const commit = useCallback(async () => {
+    if (committingRef.current) return;
+    committingRef.current = true;
+    try {
+      const nextValue = coerceDraftValue(draft, target.valueType);
+      if (!sameEditableValue(value, nextValue)) {
+        await onSave(target, nextValue);
+      }
+      setEditing(false);
+    } finally {
+      committingRef.current = false;
+    }
+  }, [draft, onSave, target, value]);
+
+  if (editing) {
+    return (
+      <TextField
+        autoFocus
+        size="small"
+        type="number"
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onClick={(event) => event.stopPropagation()}
+        onMouseDown={(event) => event.stopPropagation()}
+        onDoubleClick={(event) => event.stopPropagation()}
+        onBlur={() => void commit()}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            void commit();
+          }
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            setDraft(draftFromValue(value));
+            setEditing(false);
+          }
+        }}
+        sx={{
+          width: 70,
+          '& .MuiInputBase-root': { height: 24, borderRadius: 999 },
+          '& .MuiInputBase-input': { px: 1, py: 0, fontSize: 12, textAlign: 'center' },
+        }}
+      />
+    );
+  }
+
+  return (
+    <Chip
+      size="small"
+      label={`${prefix}${value ?? '-'}${suffix}`}
+      onMouseDown={(event) => event.stopPropagation()}
+      onDoubleClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setEditing(true);
+      }}
+      title="Doble clic para editar"
+      sx={{
+        cursor: 'text',
+        '&:hover': { bgcolor: 'action.selected' },
+      }}
+    />
+  );
+}
+
 function EmptyState({ label }: { label: string }) {
   return (
     <Box sx={{ px: 1.5, py: 2 }}>
@@ -449,7 +535,7 @@ export default function EstructuraAcademicaMasterDetail() {
       setError(null);
     } catch (err) {
       console.error('Error fetching academic structure: ', err);
-      setError('No se pudo cargar la estructura academica. Verifica que tu usuario tenga claim level >= 600.');
+      setError('No se pudo cargar la estructura academica. Verifica que tu usuario tenga permiso administrativo.');
     } finally {
       setLoading(false);
     }
@@ -743,6 +829,18 @@ export default function EstructuraAcademicaMasterDetail() {
                       secondary={
                         <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
                           <Chip size="small" label={`Ord ${unidad.orden ?? '-'}`} />
+                          <EditableMetricChip
+                            value={unidad.duracion}
+                            target={{ entity: 'unidadDidactica', id: unidad.id, field: 'duracion', valueType: 'number' }}
+                            suffix=" hr"
+                            onSave={saveEditableCell}
+                          />
+                          <EditableMetricChip
+                            value={unidad.creditos}
+                            target={{ entity: 'unidadDidactica', id: unidad.id, field: 'creditos', valueType: 'number' }}
+                            prefix="Cr "
+                            onSave={saveEditableCell}
+                          />
                           <Chip size="small" label={`CAP ${unidad.capacidadesTerminales.length}`} />
                           <Chip size="small" label={`IND ${unidad.capacidadesTerminales.reduce((total, capacidad) => total + capacidad.indicadoresCapacidad.length, 0)}`} />
                         </Stack>

@@ -35,6 +35,8 @@ interface ModuloData {
   descripcion: string | null;
   horas: number | null;
   creditos: number | null;
+  duracionEfsrt: number | null;
+  creditosEfsrt: number | null;
   metas: number | null;
   activo: boolean | null;
   slug: string | null;
@@ -75,6 +77,8 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
   const [descripcion, setDescripcion] = useState('');
   const [horas, setHoras] = useState('');
   const [creditos, setCreditos] = useState('');
+  const [duracionEfsrt, setDuracionEfsrt] = useState('');
+  const [creditosEfsrt, setCreditosEfsrt] = useState('');
   const [metas, setMetas] = useState('');
   const [activo, setActivo] = useState(true);
   const [slug, setSlug] = useState('');
@@ -143,6 +147,8 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           setDescripcion(fetched.descripcion || '');
           setHoras(fetched.horas != null ? String(fetched.horas) : '');
           setCreditos(fetched.creditos != null ? String(fetched.creditos) : '');
+          setDuracionEfsrt(fetched.duracionEfsrt != null ? String(fetched.duracionEfsrt) : '');
+          setCreditosEfsrt(fetched.creditosEfsrt != null ? String(fetched.creditosEfsrt) : '');
           setMetas(fetched.metas != null ? String(fetched.metas) : '');
           setActivo(Boolean(fetched.activo));
           setSlug(fetched.slug || '');
@@ -185,6 +191,8 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           descripcion: string;
           horas?: number | null;
           creditos?: number | null;
+          duracionEfsrt?: number | null;
+          creditosEfsrt?: number | null;
           metas?: number | null;
           activo: boolean;
           slug: string;
@@ -201,6 +209,8 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
         descripcion,
         horas: horas ? Number(horas) : null,
         creditos: creditos ? Number(creditos) : null,
+        duracionEfsrt: duracionEfsrt ? Number(duracionEfsrt) : null,
+        creditosEfsrt: creditosEfsrt ? Number(creditosEfsrt) : null,
         metas: metas ? Number(metas) : null,
         activo,
         slug: nextSlug,
@@ -323,12 +333,28 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
             sx={{ gridColumn: { xs: 'auto', md: 'span 3' } }}
           />
           <TextField
+            label="Duracion EFSRT"
+            value={duracionEfsrt}
+            onChange={(e) => setDuracionEfsrt(e.target.value)}
+            fullWidth
+            type="number"
+            sx={{ gridColumn: { xs: 'auto', md: 'span 3' } }}
+          />
+          <TextField
+            label="Creditos EFSRT"
+            value={creditosEfsrt}
+            onChange={(e) => setCreditosEfsrt(e.target.value)}
+            fullWidth
+            type="number"
+            sx={{ gridColumn: { xs: 'auto', md: 'span 3' } }}
+          />
+          <TextField
             label="Metas"
             value={metas}
             onChange={(e) => setMetas(e.target.value)}
             fullWidth
             type="number"
-            sx={{ gridColumn: { xs: 'auto', md: 'span 3' } }}
+            sx={{ gridColumn: { xs: 'auto', md: 'span 6' } }}
           />
 
           <TextField

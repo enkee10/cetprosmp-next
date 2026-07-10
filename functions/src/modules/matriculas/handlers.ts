@@ -1841,6 +1841,7 @@ async function replaceModuloEstudiantesForMatricula(
         moduloId: paqueteModulo.moduloId,
         grupoId: grupoIdByModuloId.get(paqueteModulo.moduloId) ?? fallbackGrupoId,
         promedio: null,
+        puntaje: null,
       });
       return dataConnect.executeGraphql<
         { moduloEstudiante_insert: unknown },
@@ -2672,6 +2673,10 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
 });
 
 export const deleteMatricula = https.onCall(async (data, context) => {
+  const requesterRole = Number(context.auth?.token?.role ?? 0);
+  if (new Set<number>([5, 6, 7]).has(requesterRole)) {
+    throw new https.HttpsError("permission-denied", "No tienes permiso para eliminar matriculas.");
+  }
   requireLevel(context, "delete matricula");
 
   const matriculaId = toNumber(data?.id, -1);

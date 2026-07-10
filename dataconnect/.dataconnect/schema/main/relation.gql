@@ -7192,6 +7192,15 @@ extend type GrupoModulo {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "GrupoModulo.moduloId", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `GrupoModulo` table where the `nombre` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nombre_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "GrupoModulo.nombre", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `GrupoModulo` table where the `obligatorio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   obligatorio_count(
@@ -8572,6 +8581,15 @@ extend type Matricula {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Matricula.archivado", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Matricula` table where the `codigoInscripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  codigoInscripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Matricula.codigoInscripcion", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Matricula` table where the `fecha` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   fecha_count(
@@ -9432,6 +9450,15 @@ extend type Modulo {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Modulo` table where the `creditosEfsrt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  creditosEfsrt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.creditosEfsrt", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Modulo` table where the `creditos` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   creditos_count(
@@ -9458,6 +9485,15 @@ extend type Modulo {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Modulo.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Modulo` table where the `duracionEfsrt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  duracionEfsrt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.duracionEfsrt", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Modulo` table where the `horas` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -9540,6 +9576,15 @@ extend type Modulo {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_SUM)
   """
+  ✨ Sum the `creditosEfsrt` field in the `Modulo` table.
+  """
+  creditosEfsrt_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Modulo.creditosEfsrt", purpose: QUERY_SUM)
+  """
   ✨ Sum the `creditos` field in the `Modulo` table.
   """
   creditos_sum(
@@ -9548,6 +9593,15 @@ extend type Modulo {
     """
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Modulo.creditos", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `duracionEfsrt` field in the `Modulo` table.
+  """
+  duracionEfsrt_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Modulo.duracionEfsrt", purpose: QUERY_SUM)
   """
   ✨ Sum the `horas` field in the `Modulo` table.
   """
@@ -9603,6 +9657,15 @@ extend type Modulo {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_AVG)
   """
+  ✨ Average the `creditosEfsrt` field in the `Modulo` table.
+  """
+  creditosEfsrt_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Modulo.creditosEfsrt", purpose: QUERY_AVG)
+  """
   ✨ Average the `creditos` field in the `Modulo` table.
   """
   creditos_avg(
@@ -9611,6 +9674,15 @@ extend type Modulo {
     """
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Modulo.creditos", purpose: QUERY_AVG)
+  """
+  ✨ Average the `duracionEfsrt` field in the `Modulo` table.
+  """
+  duracionEfsrt_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Modulo.duracionEfsrt", purpose: QUERY_AVG)
   """
   ✨ Average the `horas` field in the `Modulo` table.
   """
@@ -9661,9 +9733,17 @@ extend type Modulo {
   """
   carreraId_min: Int @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `creditosEfsrt` field in the `Modulo` table.
+  """
+  creditosEfsrt_min: Int @fdc_generated(from: "Modulo.creditosEfsrt", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `creditos` field in the `Modulo` table.
   """
   creditos_min: Int @fdc_generated(from: "Modulo.creditos", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `duracionEfsrt` field in the `Modulo` table.
+  """
+  duracionEfsrt_min: Int @fdc_generated(from: "Modulo.duracionEfsrt", purpose: QUERY_MIN)
   """
   ✨ Minimum of the `horas` field in the `Modulo` table.
   """
@@ -9689,9 +9769,17 @@ extend type Modulo {
   """
   carreraId_max: Int @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_MAX)
   """
+  ✨ Maximum of the `creditosEfsrt` field in the `Modulo` table.
+  """
+  creditosEfsrt_max: Int @fdc_generated(from: "Modulo.creditosEfsrt", purpose: QUERY_MAX)
+  """
   ✨ Maximum of the `creditos` field in the `Modulo` table.
   """
   creditos_max: Int @fdc_generated(from: "Modulo.creditos", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `duracionEfsrt` field in the `Modulo` table.
+  """
+  duracionEfsrt_max: Int @fdc_generated(from: "Modulo.duracionEfsrt", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `horas` field in the `Modulo` table.
   """
@@ -9806,6 +9894,15 @@ extend type ModuloEstudiante {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "ModuloEstudiante.promedio", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `ModuloEstudiante` table where the `puntaje` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  puntaje_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ModuloEstudiante.puntaje", purpose: QUERY_COUNT)
+  """
   ✨ Sum the `grupoId` field in the `ModuloEstudiante` table.
   """
   grupoId_sum(
@@ -9850,6 +9947,15 @@ extend type ModuloEstudiante {
     """
     distinct: Boolean = false
   ): Float @fdc_generated(from: "ModuloEstudiante.promedio", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `puntaje` field in the `ModuloEstudiante` table.
+  """
+  puntaje_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ModuloEstudiante.puntaje", purpose: QUERY_SUM)
   """
   ✨ Average the `grupoId` field in the `ModuloEstudiante` table.
   """
@@ -9896,6 +10002,15 @@ extend type ModuloEstudiante {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "ModuloEstudiante.promedio", purpose: QUERY_AVG)
   """
+  ✨ Average the `puntaje` field in the `ModuloEstudiante` table.
+  """
+  puntaje_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ModuloEstudiante.puntaje", purpose: QUERY_AVG)
+  """
   ✨ Minimum of the `grupoId` field in the `ModuloEstudiante` table.
   """
   grupoId_min: Int @fdc_generated(from: "ModuloEstudiante.grupoId", purpose: QUERY_MIN)
@@ -9916,6 +10031,10 @@ extend type ModuloEstudiante {
   """
   promedio_min: Float @fdc_generated(from: "ModuloEstudiante.promedio", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `puntaje` field in the `ModuloEstudiante` table.
+  """
+  puntaje_min: Float @fdc_generated(from: "ModuloEstudiante.puntaje", purpose: QUERY_MIN)
+  """
   ✨ Maximum of the `grupoId` field in the `ModuloEstudiante` table.
   """
   grupoId_max: Int @fdc_generated(from: "ModuloEstudiante.grupoId", purpose: QUERY_MAX)
@@ -9935,6 +10054,10 @@ extend type ModuloEstudiante {
   ✨ Maximum of the `promedio` field in the `ModuloEstudiante` table.
   """
   promedio_max: Float @fdc_generated(from: "ModuloEstudiante.promedio", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `puntaje` field in the `ModuloEstudiante` table.
+  """
+  puntaje_max: Float @fdc_generated(from: "ModuloEstudiante.puntaje", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """

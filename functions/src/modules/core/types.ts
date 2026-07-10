@@ -394,6 +394,7 @@ export interface DataConnectGrupoInput {
 
 export interface DataConnectGrupoModulo {
   id: number;
+  nombre?: string | null;
   orden?: number | null;
   obligatorio?: boolean | null;
   inicio?: string | null;
@@ -407,6 +408,7 @@ export interface DataConnectGrupoModulo {
 }
 
 export interface DataConnectGrupoModuloInput {
+  nombre?: string | null;
   orden?: number | null;
   obligatorio?: boolean;
   inicio?: string | null;
@@ -612,12 +614,17 @@ export interface DataConnectModulo {
   descripcion?: string | null;
   horas?: number | null;
   creditos?: number | null;
+  duracionEfsrt?: number | null;
+  creditosEfsrt?: number | null;
   metas?: number | null;
   activo?: boolean | null;
   slug?: string | null;
   plan?: {
     planEstudio?: string | null;
     carrera?: {
+      nombre?: string | null;
+      titulo?: string | null;
+      tituloComercial?: string | null;
       especialidad?: {
         id?: number | null;
         titulo?: string | null;
@@ -636,6 +643,8 @@ export interface DataConnectModuloInput {
   descripcion?: string | null;
   horas?: number | null;
   creditos?: number | null;
+  duracionEfsrt?: number | null;
+  creditosEfsrt?: number | null;
   metas?: number | null;
   activo?: boolean;
   slug?: string | null;
@@ -693,6 +702,7 @@ export interface DataConnectMatriculaInput {
 
 export interface DataConnectModuloEstudianteInput {
   promedio?: number | null;
+  puntaje?: number | null;
   matriculaId: number;
   moduloId: number;
   grupoId?: number | null;

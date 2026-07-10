@@ -338,6 +338,23 @@ function requireLevel(context: https.CallableContext, action: string) {
   }
 }
 
+const ESTRUCTURA_ACADEMICA_ROLE_IDS = new Set([5, 6, 7, 8, 600]);
+
+function getRequesterRoleId(context: https.CallableContext) {
+  const rawRole = context.auth?.token?.roleId ?? context.auth?.token?.role ?? null;
+  const roleId = Number(rawRole);
+  return Number.isFinite(roleId) ? roleId : 0;
+}
+
+function requireEstructuraAcademicaAccess(context: https.CallableContext, action: string) {
+  if (!context.auth?.uid) {
+    throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
+  }
+  const requesterLevel = Number(context.auth.token.level ?? 0);
+  if (requesterLevel >= 600 || ESTRUCTURA_ACADEMICA_ROLE_IDS.has(getRequesterRoleId(context))) return;
+  throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
+}
+
 type EditableAcademicEntity = "modulo" | "unidadDidactica" | "unidadDidacticaModulo" | "capacidadTerminal" | "indicadorCapacidad";
 type EditableAcademicValueType = "text" | "number" | "boolean";
 
@@ -416,7 +433,7 @@ function parseEditableAcademicValue(entity: EditableAcademicEntity, field: strin
 }
 
 export const updateEstructuraAcademicaCell = https.onCall(async (data, context) => {
-  requireLevel(context, "update academic structure cells");
+  requireEstructuraAcademicaAccess(context, "update academic structure cells");
 
   const entity = parseEditableAcademicEntity(data?.entity);
   const { field, valueType } = parseEditableAcademicField(entity, data?.field);
@@ -510,7 +527,7 @@ function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
 }
 
 export const listEstructuraAcademica = https.onCall(async (_data, context) => {
-  requireLevel(context, "list academic structure");
+  requireEstructuraAcademicaAccess(context, "list academic structure");
 
   try {
     const response = await dataConnect.executeGraphql<

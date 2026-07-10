@@ -28,7 +28,12 @@ const defaultSx: DataGridProps['sx'] = {
   width: '100%',
   minWidth: 0,
   '& .MuiDataGrid-columnHeaders': { borderTop: 0 },
-  '& .MuiDataGrid-cell': { alignItems: 'center' },
+  '& .MuiDataGrid-cell': {
+    display: 'flex',
+    alignItems: 'center',
+    lineHeight: 1.35,
+    whiteSpace: 'normal',
+  },
   '& .MuiDataGrid-main': {
     overflowX: 'auto',
   },
@@ -36,9 +41,15 @@ const defaultSx: DataGridProps['sx'] = {
     whiteSpace: 'nowrap',
   },
   '& .MuiDataGrid-cellContent': {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    display: '-webkit-box !important',
+    WebkitBoxOrient: 'vertical',
+    WebkitLineClamp: 2,
+    lineHeight: 1.35,
+    maxHeight: '2.7em',
+    whiteSpace: 'normal !important',
+    overflow: 'hidden !important',
+    textOverflow: 'ellipsis !important',
+    wordBreak: 'break-word',
   },
 };
 
@@ -62,6 +73,7 @@ export default function IntranetDataGrid<R extends GridValidRowModel = GridValid
   disableRowSelectionOnClick = true,
   localeText = localeTextEs,
   pageSizeOptions = [15, 30, 50, 100],
+  rowHeight = 58,
   sx,
   ...props
 }: IntranetDataGridProps<R>) {
@@ -85,6 +97,7 @@ export default function IntranetDataGrid<R extends GridValidRowModel = GridValid
         disableRowSelectionOnClick={disableRowSelectionOnClick}
         localeText={localeText}
         pageSizeOptions={pageSizeOptions}
+        rowHeight={rowHeight}
         sx={[defaultSx, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
       />
     </Box>

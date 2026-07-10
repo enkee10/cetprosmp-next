@@ -86,6 +86,7 @@ const LIST_GRUPOS_QUERY = `
     }
     grupoModulos(limit: 3000) {
       id
+      nombre
       orden
       obligatorio
       inicio
@@ -192,6 +193,7 @@ const GET_GRUPO_QUERY = `
     }
     grupoModulos(where: { grupoId: { eq: $id } }, limit: 10) {
       id
+      nombre
       orden
       obligatorio
       inicio
@@ -293,6 +295,7 @@ const GET_GRUPO_MODULOS_CALENDARIOS_QUERY = `
   query GetGrupoModulosCalendarios($grupoId: Int!) {
     grupoModulos(where: { grupoId: { eq: $grupoId } }, limit: 50) {
       id
+      nombre
       moduloId
       calendarioId
       inicio
@@ -543,6 +546,33 @@ const normalizeGrupoModuloDetalles = (value: unknown) => {
   return detalles;
 };
 
+function getModuloNombre(modulo?: Pick<DataConnectPaqueteModulo, "modulo">["modulo"] | null) {
+  return String(modulo?.titulo || modulo?.tituloComercial || "").trim();
+}
+
+function buildGrupoModuloNombre(
+  grupoNombre: string | null | undefined,
+  paqueteTitulo: string | null | undefined,
+  moduloNombre: string,
+) {
+  const grupoText = String(grupoNombre ?? "").trim();
+  const moduloText = String(moduloNombre ?? "").trim();
+  if (!grupoText) return moduloText || null;
+  if (!moduloText) return grupoText;
+
+  const paqueteText = String(paqueteTitulo ?? "").trim();
+  if (paqueteText && grupoText.includes(paqueteText)) {
+    return grupoText.replace(paqueteText, moduloText).replace(/\s+/g, " ").trim();
+  }
+
+  const structuredName = grupoText.match(/^(\S+\s+).+?(\s+\[[^\]]+\].*)$/);
+  if (structuredName) {
+    return `${structuredName[1]}${moduloText}${structuredName[2]}`.replace(/\s+/g, " ").trim();
+  }
+
+  return `${grupoText} - ${moduloText}`.replace(/\s+/g, " ").trim();
+}
+
 async function getPaqueteModulosOrThrow(paqueteId: number) {
   const paqueteResponse = await dataConnect.executeGraphql<{
     paquete: { id: number; titulo?: string | null } | null;
@@ -559,6 +589,7 @@ async function getPaqueteModulosOrThrow(paqueteId: number) {
   }
 
   return {
+    paquete: paqueteResponse.data.paquete,
     paqueteModulos,
     unidadDidacticaModulos: paqueteResponse.data.unidadDidacticaModulos ?? [],
   };
@@ -568,8 +599,9 @@ async function syncGrupoModulos(
   grupoId: number,
   paqueteId: number,
   detalleInput: Map<number, GrupoModuloDetalleInput> = new Map(),
+  grupoNombre?: string | null,
 ) {
-  const { paqueteModulos, unidadDidacticaModulos } = await getPaqueteModulosOrThrow(paqueteId);
+  const { paquete, paqueteModulos, unidadDidacticaModulos } = await getPaqueteModulosOrThrow(paqueteId);
   const existingResponse = await dataConnect.executeGraphql<{
     grupoModulos: Array<Pick<DataConnectGrupoModulo, "id" | "moduloId" | "calendarioId" | "inicio" | "fin">>;
     grupoModuloUnidadesDidacticas: DataConnectGrupoModuloUnidadDidactica[];
@@ -610,7 +642,9 @@ async function syncGrupoModulos(
     paqueteModulos.map(async (paqueteModulo, index) => {
       const detalle = detalleInput.get(paqueteModulo.moduloId);
       const previous = previousGrupoModuloByModuloId.get(paqueteModulo.moduloId);
+      const moduloNombre = getModuloNombre(paqueteModulo.modulo);
       const grupoModulo = buildGrupoModuloDataFromInput({
+        nombre: buildGrupoModuloNombre(grupoNombre, paquete?.titulo, moduloNombre),
         grupoId,
         moduloId: paqueteModulo.moduloId,
         orden: detalle?.orden ?? paqueteModulo.orden ?? index + 1,
@@ -791,7 +825,7 @@ export const createOrUpdateGrupo = https.onCall(async (data, context) => {
         { id: number; data: DataConnectGrupoInput }
       >(UPDATE_GRUPO_MUTATION, { variables: { id: grupoId, data: payload } });
 
-      await syncGrupoModulos(grupoId, paqueteId, grupoModuloDetalles);
+      await syncGrupoModulos(grupoId, paqueteId, grupoModuloDetalles, payload.nombreDisplay ?? null);
       const workspaceResult = await syncGrupoToWorkspace({
         email: payload.workspaceCorreo ?? "",
         previousEmail: previousWorkspaceCorreo,
@@ -828,7 +862,7 @@ export const createOrUpdateGrupo = https.onCall(async (data, context) => {
     const createdId = getIdFromKeyOutput(created.data.grupo_insert);
     if (createdId) {
       try {
-        await syncGrupoModulos(createdId, paqueteId, grupoModuloDetalles);
+        await syncGrupoModulos(createdId, paqueteId, grupoModuloDetalles, payload.nombreDisplay ?? null);
         const workspaceResult = await syncGrupoToWorkspace({
           email: payload.workspaceCorreo ?? "",
           previousEmail: null,

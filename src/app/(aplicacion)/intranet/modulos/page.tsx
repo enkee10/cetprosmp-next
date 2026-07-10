@@ -20,12 +20,24 @@ interface Modulo {
   descripcion: string | null;
   horas: number | null;
   creditos: number | null;
+  duracionEfsrt: number | null;
+  creditosEfsrt: number | null;
   metas: number | null;
   activo: boolean | null;
   slug: string | null;
+  carrera?: {
+    id?: number | null;
+    nombre?: string | null;
+    titulo?: string | null;
+    tituloComercial?: string | null;
+  } | null;
   plan: {
     planEstudio: string | null;
+    carreraId?: number | null;
     carrera?: {
+      nombre?: string | null;
+      titulo?: string | null;
+      tituloComercial?: string | null;
       especialidad?: {
         id?: number | null;
         titulo?: string | null;
@@ -35,6 +47,18 @@ interface Modulo {
     } | null;
   } | null;
   planId: number | null;
+}
+
+interface CarreraOption {
+  id: number;
+  nombre: string | null;
+  titulo?: string | null;
+  tituloComercial?: string | null;
+}
+
+interface PlanOption {
+  id: number;
+  carreraId: number | null;
 }
 
 const normalizeOrden = (value: unknown) => {
@@ -51,6 +75,21 @@ const getModuloEspecialidadLabel = (modulo: Modulo) =>
 const getModuloEspecialidadOrden = (modulo: Modulo) =>
   modulo.plan?.carrera?.especialidad?.orden ?? Number.MAX_SAFE_INTEGER;
 
+const normalizeEspecialidad = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+const getModuloCarreraLabel = (modulo: Modulo) =>
+  modulo.carrera?.nombre ||
+  modulo.carrera?.titulo ||
+  modulo.carrera?.tituloComercial ||
+  modulo.plan?.carrera?.nombre ||
+  modulo.plan?.carrera?.titulo ||
+  modulo.plan?.carrera?.tituloComercial ||
+  '';
+
 const sortModulos = (items: Modulo[]) =>
   items
     .slice()
@@ -62,6 +101,24 @@ const sortModulos = (items: Modulo[]) =>
         String(a.titulo ?? '').localeCompare(String(b.titulo ?? ''), 'es', { numeric: true }) ||
         a.id - b.id,
     );
+
+const getModuloEspecialidadRowClassName = (modulo: Modulo) => {
+  const especialidad = normalizeEspecialidad(getModuloEspecialidadLabel(modulo));
+
+  if (especialidad.includes('estetica')) return 'modulo-row-estetica';
+  if (especialidad.includes('confeccion')) return 'modulo-row-confeccion';
+  if (especialidad.includes('cuero')) return 'modulo-row-cuero';
+  if (especialidad.includes('textil')) return 'modulo-row-textil';
+  if (especialidad.includes('computacion')) return 'modulo-row-computacion';
+  if (especialidad.includes('manualidad')) return 'modulo-row-manualidades';
+  if (especialidad.includes('hosteleria')) return 'modulo-row-hosteleria';
+  if (especialidad.includes('electricidad')) return 'modulo-row-electricidad';
+  if (especialidad.includes('construccion') || especialidad.includes('carpinteria')) {
+    return 'modulo-row-construccion-carpinteria';
+  }
+
+  return '';
+};
 
 export default function ModulosPage() {
   const [modulos, setModulos] = useState<Modulo[]>([]);
@@ -79,11 +136,14 @@ export default function ModulosPage() {
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
       numero: true,
+      carrera: true,
       titulo: true,
       orden: true,
       plan: true,
       horas: true,
       creditos: true,
+      duracionEfsrt: true,
+      creditosEfsrt: true,
       actions: true,
     });
 
@@ -96,12 +156,26 @@ export default function ModulosPage() {
       if (auth.currentUser) {
         await auth.currentUser.getIdToken(true);
       }
-      const listModulos = httpsCallable<undefined, { modulos?: Modulo[] }>(
-        functions,
-        'listModulos',
+      const listModulos = httpsCallable<undefined, { modulos?: Modulo[] }>(functions, 'listModulos');
+      const listPlanes = httpsCallable<undefined, { planes?: PlanOption[] }>(functions, 'listPlanes');
+      const listCarreras = httpsCallable<undefined, { carreras?: CarreraOption[] }>(functions, 'listCarreras');
+      const [modulosResult, planesResult, carrerasResult] = await Promise.all([
+        listModulos(),
+        listPlanes(),
+        listCarreras(),
+      ]);
+      const carreraById = new Map((carrerasResult.data.carreras || []).map((carrera) => [carrera.id, carrera]));
+      const carreraIdByPlanId = new Map(
+        (planesResult.data.planes || [])
+          .filter((plan) => plan.carreraId != null)
+          .map((plan) => [plan.id, plan.carreraId as number]),
       );
-      const result = await listModulos();
-      setModulos(sortModulos(result.data.modulos || []));
+      const enrichedModulos = (modulosResult.data.modulos || []).map((modulo) => {
+        const carreraId = modulo.planId != null ? carreraIdByPlanId.get(modulo.planId) : null;
+        const carrera = carreraId != null ? carreraById.get(carreraId) : null;
+        return carrera ? { ...modulo, carrera } : modulo;
+      });
+      setModulos(sortModulos(enrichedModulos));
       setError(null);
     } catch (err) {
       console.error('Error fetching modulos: ', err);
@@ -214,16 +288,24 @@ export default function ModulosPage() {
         headerName: 'Nro.',
         align: 'center',
         headerAlign: 'center',
-        width: 82,
-        minWidth: 82,
+        width: 50,
+        minWidth: 50,
+        maxWidth: 50,
         sortable: false,
         filterable: false,
         disableColumnMenu: true,
         renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
       {
+        field: 'carrera',
+        headerName: 'Carrera',
+        flex: 1,
+        minWidth: 180,
+        valueGetter: (_value, row: Modulo) => getModuloCarreraLabel(row),
+      },
+      {
         field: 'titulo',
-        headerName: 'Titulo',
+        headerName: 'Modulo',
         flex: 1.25,
         minWidth: 190,
         valueGetter: (_value, row: Modulo) => row.titulo || '',
@@ -244,25 +326,46 @@ export default function ModulosPage() {
       {
         field: 'plan',
         headerName: 'Plan',
-        flex: 1,
-        minWidth: 170,
+        width: 100,
+        minWidth: 100,
+        maxWidth: 100,
         valueGetter: (_value, row: Modulo) => row.plan?.planEstudio || '',
       },
       {
         field: 'horas',
         headerName: 'Horas',
         type: 'number',
-        flex: 0.6,
-        minWidth: 95,
+        width: 70,
+        minWidth: 70,
+        maxWidth: 70,
         valueGetter: (_value, row: Modulo) => (row.horas != null ? row.horas : null),
       },
       {
         field: 'creditos',
         headerName: 'Creditos',
         type: 'number',
-        flex: 0.7,
-        minWidth: 110,
+        width: 70,
+        minWidth: 70,
+        maxWidth: 70,
         valueGetter: (_value, row: Modulo) => (row.creditos != null ? row.creditos : null),
+      },
+      {
+        field: 'duracionEfsrt',
+        headerName: 'Dur. EFSRT',
+        type: 'number',
+        width: 95,
+        minWidth: 95,
+        maxWidth: 95,
+        valueGetter: (_value, row: Modulo) => (row.duracionEfsrt != null ? row.duracionEfsrt : null),
+      },
+      {
+        field: 'creditosEfsrt',
+        headerName: 'Cred. EFSRT',
+        type: 'number',
+        width: 95,
+        minWidth: 95,
+        maxWidth: 95,
+        valueGetter: (_value, row: Modulo) => (row.creditosEfsrt != null ? row.creditosEfsrt : null),
       },
       {
         field: 'actions',
@@ -334,6 +437,19 @@ export default function ModulosPage() {
         onPaginationModelChange={setPaginationModel}
         processRowUpdate={handleProcessRowUpdate}
         onProcessRowUpdateError={handleProcessRowUpdateError}
+        getRowClassName={(params) => getModuloEspecialidadRowClassName(params.row as Modulo)}
+        sx={{
+          '& .modulo-row-estetica': { bgcolor: '#f8bfdc' },
+          '& .modulo-row-confeccion': { bgcolor: '#e8d3a8' },
+          '& .modulo-row-cuero': { bgcolor: '#d3d6da' },
+          '& .modulo-row-textil': { bgcolor: '#bfe8c8' },
+          '& .modulo-row-computacion': { bgcolor: '#b8ddf7' },
+          '& .modulo-row-manualidades': { bgcolor: '#ffd7a3' },
+          '& .modulo-row-hosteleria': { bgcolor: '#b6e6a9' },
+          '& .modulo-row-electricidad': { bgcolor: '#fff08a' },
+          '& .modulo-row-construccion-carpinteria': { bgcolor: '#dcc7ff' },
+          '& .MuiDataGrid-row:hover': { filter: 'brightness(0.985)' },
+        }}
       />
 
       <Menu

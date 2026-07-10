@@ -14809,6 +14809,14 @@ input GrupoModulo_Data {
   """
   inicio_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `GrupoModulo`.`nombre` of type `String`
+  """
+  nombre: String
+  """
+  ✨ `_expr` server value variant of `nombre` (✨ Generated from Field `GrupoModulo`.`nombre` of type `String`)
+  """
+  nombre_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `GrupoModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: Boolean
@@ -14894,6 +14902,10 @@ input GrupoModulo_Filter {
   """
   inicio: Timestamp_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`nombre` of type `String`
+  """
+  nombre: String_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: Boolean_Filter
@@ -14975,6 +14987,10 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`moduloId_count` of type `Int!`
   """
   moduloId_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`nombre_count` of type `Int!`
+  """
+  nombre_count: Int_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`obligatorio_count` of type `Int!`
   """
@@ -15147,6 +15163,10 @@ input GrupoModulo_Order {
   """
   inicio: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`nombre` of type `String`
+  """
+  nombre: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: OrderDirection
@@ -15182,6 +15202,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`moduloId_count` of type `Int!`
   """
   moduloId_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`nombre_count` of type `Int!`
+  """
+  nombre_count: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`obligatorio_count` of type `Int!`
   """
@@ -16892,6 +16916,14 @@ input Matricula_Data {
   """
   archivado_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Matricula`.`codigoInscripcion` of type `String`
+  """
+  codigoInscripcion: String
+  """
+  ✨ `_expr` server value variant of `codigoInscripcion` (✨ Generated from Field `Matricula`.`codigoInscripcion` of type `String`)
+  """
+  codigoInscripcion_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Matricula`.`fecha` of type `Timestamp`
   """
   fecha: Timestamp
@@ -17001,6 +17033,10 @@ input Matricula_Filter {
   """
   archivado: Boolean_Filter
   """
+  ✨ Generated from Field `Matricula`.`codigoInscripcion` of type `String`
+  """
+  codigoInscripcion: String_Filter
+  """
   ✨ Generated from Field `Matricula`.`fecha` of type `Timestamp`
   """
   fecha: Timestamp_Filter
@@ -17098,6 +17134,10 @@ input Matricula_Having {
   ✨ Generated from Field `Matricula`.`archivado_count` of type `Int!`
   """
   archivado_count: Int_Filter
+  """
+  ✨ Generated from Field `Matricula`.`codigoInscripcion_count` of type `Int!`
+  """
+  codigoInscripcion_count: Int_Filter
   """
   ✨ Generated from Field `Matricula`.`fecha_count` of type `Int!`
   """
@@ -17258,6 +17298,10 @@ input Matricula_Order {
   """
   archivado: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`codigoInscripcion` of type `String`
+  """
+  codigoInscripcion: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`fecha` of type `Timestamp`
   """
   fecha: OrderDirection
@@ -17273,6 +17317,10 @@ input Matricula_Order {
   ✨ Generated from Field `Matricula`.`archivado_count` of type `Int!`
   """
   archivado_count: OrderDirection
+  """
+  ✨ Generated from Field `Matricula`.`codigoInscripcion_count` of type `Int!`
+  """
+  codigoInscripcion_count: OrderDirection
   """
   ✨ Generated from Field `Matricula`.`fecha_count` of type `Int!`
   """
@@ -18575,6 +18623,18 @@ input Modulo_Data {
   """
   creditos_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt` of type `Int`
+  """
+  creditosEfsrt: Int
+  """
+  ✨ `_expr` server value variant of `creditosEfsrt` (✨ Generated from Field `Modulo`.`creditosEfsrt` of type `Int`)
+  """
+  creditosEfsrt_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `creditosEfsrt` (✨ Generated from Field `Modulo`.`creditosEfsrt` of type `Int`)
+  """
+  creditosEfsrt_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Modulo`.`descripcion` of type `String`
   """
   descripcion: String
@@ -18590,6 +18650,18 @@ input Modulo_Data {
   ✨ `_expr` server value variant of `descripcion2` (✨ Generated from Field `Modulo`.`descripcion2` of type `String`)
   """
   descripcion2_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt` of type `Int`
+  """
+  duracionEfsrt: Int
+  """
+  ✨ `_expr` server value variant of `duracionEfsrt` (✨ Generated from Field `Modulo`.`duracionEfsrt` of type `Int`)
+  """
+  duracionEfsrt_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `duracionEfsrt` (✨ Generated from Field `Modulo`.`duracionEfsrt` of type `Int`)
+  """
+  duracionEfsrt_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Modulo`.`horas` of type `Int`
   """
@@ -18712,6 +18784,10 @@ input Modulo_Filter {
   """
   creditos: Int_Filter
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt` of type `Int`
+  """
+  creditosEfsrt: Int_Filter
+  """
   ✨ Generated from Field `Modulo`.`descripcion` of type `String`
   """
   descripcion: String_Filter
@@ -18719,6 +18795,10 @@ input Modulo_Filter {
   ✨ Generated from Field `Modulo`.`descripcion2` of type `String`
   """
   descripcion2: String_Filter
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt` of type `Int`
+  """
+  duracionEfsrt: Int_Filter
   """
   ✨ Generated from Field `Modulo`.`horas` of type `Int`
   """
@@ -18810,6 +18890,10 @@ input Modulo_Having {
   """
   carreraId_count: Int_Filter
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt_count` of type `Int!`
+  """
+  creditosEfsrt_count: Int_Filter
+  """
   ✨ Generated from Field `Modulo`.`creditos_count` of type `Int!`
   """
   creditos_count: Int_Filter
@@ -18821,6 +18905,10 @@ input Modulo_Having {
   ✨ Generated from Field `Modulo`.`descripcion_count` of type `Int!`
   """
   descripcion_count: Int_Filter
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt_count` of type `Int!`
+  """
+  duracionEfsrt_count: Int_Filter
   """
   ✨ Generated from Field `Modulo`.`horas_count` of type `Int!`
   """
@@ -18858,9 +18946,17 @@ input Modulo_Having {
   """
   carreraId_sum: Int_Filter
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt_sum` of type `Int`
+  """
+  creditosEfsrt_sum: Int_Filter
+  """
   ✨ Generated from Field `Modulo`.`creditos_sum` of type `Int`
   """
   creditos_sum: Int_Filter
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt_sum` of type `Int`
+  """
+  duracionEfsrt_sum: Int_Filter
   """
   ✨ Generated from Field `Modulo`.`horas_sum` of type `Int`
   """
@@ -18886,9 +18982,17 @@ input Modulo_Having {
   """
   carreraId_avg: Float_Filter
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt_avg` of type `Float`
+  """
+  creditosEfsrt_avg: Float_Filter
+  """
   ✨ Generated from Field `Modulo`.`creditos_avg` of type `Float`
   """
   creditos_avg: Float_Filter
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt_avg` of type `Float`
+  """
+  duracionEfsrt_avg: Float_Filter
   """
   ✨ Generated from Field `Modulo`.`horas_avg` of type `Float`
   """
@@ -18914,9 +19018,17 @@ input Modulo_Having {
   """
   carreraId_min: Int_Filter
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt_min` of type `Int`
+  """
+  creditosEfsrt_min: Int_Filter
+  """
   ✨ Generated from Field `Modulo`.`creditos_min` of type `Int`
   """
   creditos_min: Int_Filter
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt_min` of type `Int`
+  """
+  duracionEfsrt_min: Int_Filter
   """
   ✨ Generated from Field `Modulo`.`horas_min` of type `Int`
   """
@@ -18942,9 +19054,17 @@ input Modulo_Having {
   """
   carreraId_max: Int_Filter
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt_max` of type `Int`
+  """
+  creditosEfsrt_max: Int_Filter
+  """
   ✨ Generated from Field `Modulo`.`creditos_max` of type `Int`
   """
   creditos_max: Int_Filter
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt_max` of type `Int`
+  """
+  duracionEfsrt_max: Int_Filter
   """
   ✨ Generated from Field `Modulo`.`horas_max` of type `Int`
   """
@@ -19021,6 +19141,10 @@ input Modulo_Order {
   """
   creditos: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt` of type `Int`
+  """
+  creditosEfsrt: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`descripcion` of type `String`
   """
   descripcion: OrderDirection
@@ -19028,6 +19152,10 @@ input Modulo_Order {
   ✨ Generated from Field `Modulo`.`descripcion2` of type `String`
   """
   descripcion2: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt` of type `Int`
+  """
+  duracionEfsrt: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`horas` of type `Int`
   """
@@ -19065,6 +19193,10 @@ input Modulo_Order {
   """
   carreraId_count: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt_count` of type `Int!`
+  """
+  creditosEfsrt_count: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`creditos_count` of type `Int!`
   """
   creditos_count: OrderDirection
@@ -19076,6 +19208,10 @@ input Modulo_Order {
   ✨ Generated from Field `Modulo`.`descripcion_count` of type `Int!`
   """
   descripcion_count: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt_count` of type `Int!`
+  """
+  duracionEfsrt_count: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`horas_count` of type `Int!`
   """
@@ -19113,9 +19249,17 @@ input Modulo_Order {
   """
   carreraId_sum: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt_sum` of type `Int`
+  """
+  creditosEfsrt_sum: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`creditos_sum` of type `Int`
   """
   creditos_sum: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt_sum` of type `Int`
+  """
+  duracionEfsrt_sum: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`horas_sum` of type `Int`
   """
@@ -19141,9 +19285,17 @@ input Modulo_Order {
   """
   carreraId_avg: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt_avg` of type `Float`
+  """
+  creditosEfsrt_avg: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`creditos_avg` of type `Float`
   """
   creditos_avg: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt_avg` of type `Float`
+  """
+  duracionEfsrt_avg: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`horas_avg` of type `Float`
   """
@@ -19169,9 +19321,17 @@ input Modulo_Order {
   """
   carreraId_min: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt_min` of type `Int`
+  """
+  creditosEfsrt_min: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`creditos_min` of type `Int`
   """
   creditos_min: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt_min` of type `Int`
+  """
+  duracionEfsrt_min: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`horas_min` of type `Int`
   """
@@ -19197,9 +19357,17 @@ input Modulo_Order {
   """
   carreraId_max: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`creditosEfsrt_max` of type `Int`
+  """
+  creditosEfsrt_max: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`creditos_max` of type `Int`
   """
   creditos_max: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`duracionEfsrt_max` of type `Int`
+  """
+  duracionEfsrt_max: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`horas_max` of type `Int`
   """
@@ -19298,6 +19466,18 @@ input ModuloEstudiante_Data {
   """
   promedio_update: [Float_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje` of type `Float`
+  """
+  puntaje: Float
+  """
+  ✨ `_expr` server value variant of `puntaje` (✨ Generated from Field `ModuloEstudiante`.`puntaje` of type `Float`)
+  """
+  puntaje_expr: Float_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `puntaje` (✨ Generated from Field `ModuloEstudiante`.`puntaje` of type `Float`)
+  """
+  puntaje_update: [Float_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `ModuloEstudiante`.`efsrtPppEstudiantes_on_moduloEstudiante` of type `[EfsrtPppEstudiante!]!`
   """
   efsrtPppEstudiantes_on_moduloEstudiante: [EfsrtPppEstudiante_Data!]
@@ -19350,6 +19530,10 @@ input ModuloEstudiante_Filter {
   ✨ Generated from Field `ModuloEstudiante`.`promedio` of type `Float`
   """
   promedio: Float_Filter
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje` of type `Float`
+  """
+  puntaje: Float_Filter
   """
   ✨ Generated from Field `ModuloEstudiante`.`efsrtPppEstudiantes_on_moduloEstudiante` of type `[EfsrtPppEstudiante!]!`
   """
@@ -19413,6 +19597,10 @@ input ModuloEstudiante_Having {
   """
   promedio_count: Int_Filter
   """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje_count` of type `Int!`
+  """
+  puntaje_count: Int_Filter
+  """
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_sum` of type `Int`
   """
   grupoId_sum: Int_Filter
@@ -19432,6 +19620,10 @@ input ModuloEstudiante_Having {
   ✨ Generated from Field `ModuloEstudiante`.`promedio_sum` of type `Float`
   """
   promedio_sum: Float_Filter
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje_sum` of type `Float`
+  """
+  puntaje_sum: Float_Filter
   """
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_avg` of type `Float`
   """
@@ -19453,6 +19645,10 @@ input ModuloEstudiante_Having {
   """
   promedio_avg: Float_Filter
   """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje_avg` of type `Float`
+  """
+  puntaje_avg: Float_Filter
+  """
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_min` of type `Int`
   """
   grupoId_min: Int_Filter
@@ -19473,6 +19669,10 @@ input ModuloEstudiante_Having {
   """
   promedio_min: Float_Filter
   """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje_min` of type `Float`
+  """
+  puntaje_min: Float_Filter
+  """
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_max` of type `Int`
   """
   grupoId_max: Int_Filter
@@ -19492,6 +19692,10 @@ input ModuloEstudiante_Having {
   ✨ Generated from Field `ModuloEstudiante`.`promedio_max` of type `Float`
   """
   promedio_max: Float_Filter
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje_max` of type `Float`
+  """
+  puntaje_max: Float_Filter
 }
 """
 ✨ Generated key input type for table 'ModuloEstudiante'. It represents the primary key fields used to uniquely identify a row in the table.
@@ -19556,6 +19760,10 @@ input ModuloEstudiante_Order {
   """
   promedio: OrderDirection
   """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje` of type `Float`
+  """
+  puntaje: OrderDirection
+  """
   ✨ Generated from Field `ModuloEstudiante`.`_count` of type `Int!`
   """
   _count: OrderDirection
@@ -19580,6 +19788,10 @@ input ModuloEstudiante_Order {
   """
   promedio_count: OrderDirection
   """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje_count` of type `Int!`
+  """
+  puntaje_count: OrderDirection
+  """
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_sum` of type `Int`
   """
   grupoId_sum: OrderDirection
@@ -19599,6 +19811,10 @@ input ModuloEstudiante_Order {
   ✨ Generated from Field `ModuloEstudiante`.`promedio_sum` of type `Float`
   """
   promedio_sum: OrderDirection
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje_sum` of type `Float`
+  """
+  puntaje_sum: OrderDirection
   """
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_avg` of type `Float`
   """
@@ -19620,6 +19836,10 @@ input ModuloEstudiante_Order {
   """
   promedio_avg: OrderDirection
   """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje_avg` of type `Float`
+  """
+  puntaje_avg: OrderDirection
+  """
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_min` of type `Int`
   """
   grupoId_min: OrderDirection
@@ -19640,6 +19860,10 @@ input ModuloEstudiante_Order {
   """
   promedio_min: OrderDirection
   """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje_min` of type `Float`
+  """
+  puntaje_min: OrderDirection
+  """
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_max` of type `Int`
   """
   grupoId_max: OrderDirection
@@ -19659,6 +19883,10 @@ input ModuloEstudiante_Order {
   ✨ Generated from Field `ModuloEstudiante`.`promedio_max` of type `Float`
   """
   promedio_max: OrderDirection
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`puntaje_max` of type `Float`
+  """
+  puntaje_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'ModuloVideo'. It includes all necessary fields for creating or upserting rows into table.

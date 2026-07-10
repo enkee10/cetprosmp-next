@@ -36,12 +36,17 @@ const LIST_MODULOS_QUERY = `
       descripcion
       horas
       creditos
+      duracionEfsrt
+      creditosEfsrt
       metas
       activo
       slug
       plan {
         planEstudio
         carrera {
+          nombre
+          titulo
+          tituloComercial
           especialidad {
             id
             titulo
@@ -65,12 +70,17 @@ const GET_MODULO_QUERY = `
       descripcion
       horas
       creditos
+      duracionEfsrt
+      creditosEfsrt
       metas
       activo
       slug
       plan {
         planEstudio
         carrera {
+          nombre
+          titulo
+          tituloComercial
           especialidad {
             id
             titulo

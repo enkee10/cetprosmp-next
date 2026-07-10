@@ -5,18 +5,20 @@ import { Box } from '@mui/material';
 import { useAuth } from '@/context/AuthContext';
 import AcordionPrincipal from './AcordionPrincipal/AcordionPrincipal';
 import AcordionIntranet from './AcordionIntranet/AcordionIntranet';
+import { canAccessIntranet } from '@/lib/intranetPermissions';
 
 export default function AcordionGeneral() {
   const { user } = useAuth();
+  const hasIntranetAccess = canAccessIntranet(user?.role, user?.level);
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
 
   useEffect(() => {
-    if (user) {
+    if (hasIntranetAccess) {
       setOpenAccordions(['intranet', 'intranet-entidades']);
     } else {
       setOpenAccordions(['principal']);
     }
-  }, [user]);
+  }, [hasIntranetAccess]);
 
   const handleAccordionChange = (id: string, ancestors: string[]) => {
     setOpenAccordions((prev) => {
@@ -42,7 +44,7 @@ export default function AcordionGeneral() {
         />
       </Box>
 
-      {user && (
+      {hasIntranetAccess && (
         <Box
           mb={2}
           mx={1}

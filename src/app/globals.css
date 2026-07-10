@@ -148,8 +148,7 @@ textarea,
 .MuiMenu-list,
 .MuiPopover-paper,
 .MuiAutocomplete-listbox,
-.MuiDialogContent-root,
-.MuiDataGrid-virtualScroller {
+.MuiDialogContent-root {
   overscroll-behavior: contain;
 }
 /*

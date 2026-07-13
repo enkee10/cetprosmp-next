@@ -11,7 +11,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
-import { requirePermission } from "../core/permissions.js";
+import { getRequesterRoleId, requireAuthenticated, requirePermission } from "../core/permissions.js";
 import {
   DataConnectActividad,
   DataConnectActividadInput,
@@ -281,6 +281,146 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
   }
 `;
 
+const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
+  query ListEstructuraAcademicaDocente($uid: String!) {
+    users(where: { documentId: { eq: $uid } }, limit: 1) {
+      id
+    }
+    personals(limit: 10000) {
+      id
+      userId
+    }
+    semestres(limit: 500) {
+      id
+      titulo
+      inicio
+      fin
+    }
+    grupoModulos(limit: 5000, orderBy: [{ orden: ASC }, { id: ASC }]) {
+      id
+      moduloId
+      orden
+      grupo {
+        id
+        personalId
+        semestre {
+          id
+          titulo
+          inicio
+          fin
+        }
+      }
+      modulo {
+        id
+        titulo
+        tituloComercial
+        orden
+        descripcion
+        horas
+        creditos
+        metas
+        activo
+        slug
+        comun
+        planId
+        plan {
+          id
+          planEstudio
+          tituloComercial
+          carrera {
+            id
+            nombre
+            tituloComercial
+            especialidad {
+              id
+              titulo
+              tituloComercial
+              orden
+            }
+          }
+        }
+      }
+    }
+    planModulos(limit: 5000, orderBy: [{ moduloId: ASC }, { orden: ASC }, { planId: ASC }]) {
+      id
+      orden
+      planId
+      moduloId
+      plan {
+        id
+        planEstudio
+        tituloComercial
+        carrera {
+          id
+          nombre
+          tituloComercial
+          especialidad {
+            id
+            titulo
+            tituloComercial
+            orden
+          }
+        }
+      }
+    }
+    unidadDidacticaModulos(limit: 50000, orderBy: [{ moduloId: ASC }, { orden: ASC }, { unidadDidacticaId: ASC }]) {
+      id
+      orden
+      moduloId
+      unidadDidacticaId
+    }
+    unidadesDidacticas(limit: 50000, orderBy: [{ id: ASC }]) {
+      id
+      nombre
+      duracion
+      creditos
+      sigla
+      comun
+    }
+    capacidadesTerminales(limit: 50000, orderBy: [{ unidadDidacticaId: ASC }, { id: ASC }]) {
+      id
+      descripcion
+      sigla
+      unidadDidacticaId
+    }
+    indicadoresCapacidad(limit: 100000, orderBy: [{ capacidadTerminalId: ASC }, { id: ASC }]) {
+      id
+      descripcion
+      sigla
+      capacidadTerminalId
+    }
+  }
+`;
+
+const GET_ESTRUCTURA_ACADEMICA_DOCENTE_MENU_QUERY = `
+  query GetEstructuraAcademicaDocenteMenu($uid: String!) {
+    users(where: { documentId: { eq: $uid } }, limit: 1) {
+      id
+    }
+    personals(limit: 10000) {
+      id
+      userId
+    }
+    semestres(limit: 500) {
+      id
+      titulo
+      inicio
+      fin
+    }
+    grupoModulos(limit: 5000) {
+      id
+      grupo {
+        personalId
+        semestre {
+          titulo
+          inicio
+          fin
+        }
+      }
+    }
+  }
+`;
+
 const LIST_PLAN_MODULO_RELATIONS_BY_PLAN_QUERY = `
   query ListPlanModuloRelationsByPlan($planId: Int!) {
     planModulos(where: { planId: { eq: $planId } }, limit: 1000) {
@@ -312,7 +452,27 @@ interface EstructuraAcademicaQueryResponse {
   indicadoresCapacidad: DataConnectIndicadorCapacidad[];
 }
 
+type EstructuraAcademicaSemestreOption = {
+  id: number;
+  titulo?: string | null;
+  inicio?: string | null;
+  fin?: string | null;
+};
+
+type EstructuraAcademicaDocenteGrupoModulo = {
+  id: number;
+  moduloId: number;
+  orden?: number | null;
+  grupo?: {
+    id?: number | null;
+    personalId?: number | null;
+    semestre?: EstructuraAcademicaSemestreOption | null;
+  } | null;
+  modulo?: EstructuraModulo | null;
+};
+
 type EstructuraAcademicaActionEntity = "modulo" | "unidadDidactica" | "capacidadTerminal" | "indicadorCapacidad";
+const TEACHER_ROLE_ID = 4;
 
 function groupByNumber<T>(items: T[], keySelector: (item: T) => number | null | undefined) {
   const grouped = new Map<number, T[]>();
@@ -350,6 +510,91 @@ function sortPlanModuloRelations(items: DataConnectPlanModulo[]) {
         a.planId - b.planId ||
         a.id - b.id,
     );
+}
+
+function normalizeAcademicText(value: string | null | undefined) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function matchesSemestreTitulo(value: string | null | undefined, expected: string) {
+  return normalizeAcademicText(value) === normalizeAcademicText(expected);
+}
+
+function toTimestamp(value: string | null | undefined) {
+  if (!value) return null;
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function resolveSemestreTituloVigente(
+  semestres: EstructuraAcademicaSemestreOption[],
+  requestedTitulo?: string | null,
+) {
+  const explicitTitulo = String(requestedTitulo ?? "").trim();
+  if (explicitTitulo) return explicitTitulo;
+
+  const now = Date.now();
+  const datedSemestres = semestres
+    .map((semestre) => ({
+      semestre,
+      inicio: toTimestamp(semestre.inicio),
+      fin: toTimestamp(semestre.fin),
+    }))
+    .filter((item) => item.semestre.titulo);
+
+  const active = datedSemestres
+    .filter((item) =>
+      (item.inicio != null || item.fin != null) &&
+      (item.inicio == null || item.inicio <= now) &&
+      (item.fin == null || item.fin >= now),
+    )
+    .sort((a, b) => (b.inicio ?? 0) - (a.inicio ?? 0))[0]?.semestre.titulo;
+  if (active) return active;
+
+  const lastStarted = datedSemestres
+    .filter((item) => item.inicio != null && item.inicio <= now)
+    .sort((a, b) => (b.inicio ?? 0) - (a.inicio ?? 0))[0]?.semestre.titulo;
+  if (lastStarted) return lastStarted;
+
+  return semestres
+    .slice()
+    .sort((a, b) =>
+      String(b.titulo ?? "").localeCompare(String(a.titulo ?? ""), "es", { numeric: true }) ||
+      b.id - a.id,
+    )[0]?.titulo ?? "";
+}
+
+function getSemestreCodigo(titulo: string | null | undefined) {
+  const text = String(titulo ?? "").trim();
+  return text.length <= 4 ? text : text.slice(-4);
+}
+
+function buildEstructuraAcademicaDocenteTitle(semestreTitulo: string | null | undefined) {
+  return ["Estructura Academica", getSemestreCodigo(semestreTitulo)].filter(Boolean).join(" ");
+}
+
+function getPersonalIdsForUserId(
+  userId: number | null | undefined,
+  personals: Array<{ id: number; userId?: number | null }>,
+) {
+  if (!userId) return new Set<number>();
+  return new Set(
+    personals
+      .filter((personal) => personal.userId === userId)
+      .map((personal) => personal.id),
+  );
+}
+
+function requireDocenteEstructuraAcademica(context: https.CallableContext) {
+  requireAuthenticated(context);
+  if (getRequesterRoleId(context) !== TEACHER_ROLE_ID) {
+    throw new https.HttpsError("permission-denied", "Esta vista es solo para docentes.");
+  }
 }
 
 function attachPlanRelationsToModulo(
@@ -658,6 +903,120 @@ export const listEstructuraAcademica = https.onCall(async (_data, context) => {
   } catch (error) {
     console.error("Error in listEstructuraAcademica:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while listing academic structure.");
+  }
+});
+
+export const listEstructuraAcademicaDocente = https.onCall(async (data, context) => {
+  requireDocenteEstructuraAcademica(context);
+
+  const uid = context.auth?.uid;
+  const requestedSemestreTitulo = String(data?.semestreTitulo ?? "").trim();
+  if (!uid) {
+    throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
+  }
+
+  try {
+    const response = await dataConnect.executeGraphql<{
+      users: Array<{ id: number }>;
+      personals: Array<{ id: number; userId?: number | null }>;
+      semestres: EstructuraAcademicaSemestreOption[];
+      grupoModulos: EstructuraAcademicaDocenteGrupoModulo[];
+      planModulos: DataConnectPlanModulo[];
+      unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
+      unidadesDidacticas: DataConnectUnidadDidactica[];
+      capacidadesTerminales: DataConnectCapacidadTerminal[];
+      indicadoresCapacidad: DataConnectIndicadorCapacidad[];
+    }, { uid: string }>(
+      LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY,
+      { variables: { uid } },
+    );
+
+    const semestreTitulo = resolveSemestreTituloVigente(response.data.semestres ?? [], requestedSemestreTitulo);
+    const personalIds = getPersonalIdsForUserId(response.data.users?.[0]?.id, response.data.personals ?? []);
+    const docenteGrupoModulos = (response.data.grupoModulos ?? [])
+      .filter((item) =>
+        Boolean(item.grupo?.personalId && personalIds.has(item.grupo.personalId)) &&
+        matchesSemestreTitulo(item.grupo?.semestre?.titulo, semestreTitulo),
+      )
+      .sort((a, b) =>
+        (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER) ||
+        a.moduloId - b.moduloId ||
+        a.id - b.id,
+      );
+
+    const moduloById = new Map<number, EstructuraModulo>();
+    for (const item of docenteGrupoModulos) {
+      if (!item.modulo) continue;
+      if (!moduloById.has(item.moduloId)) {
+        moduloById.set(item.moduloId, item.modulo);
+      }
+    }
+    const moduloIds = new Set(moduloById.keys());
+    const estructuraResponse: EstructuraAcademicaQueryResponse = {
+      modulos: Array.from(moduloById.values()),
+      planModulos: (response.data.planModulos ?? []).filter((relation) => moduloIds.has(relation.moduloId)),
+      unidadDidacticaModulos: (response.data.unidadDidacticaModulos ?? [])
+        .filter((relation) => moduloIds.has(relation.moduloId)),
+      unidadesDidacticas: response.data.unidadesDidacticas ?? [],
+      capacidadesTerminales: response.data.capacidadesTerminales ?? [],
+      indicadoresCapacidad: response.data.indicadoresCapacidad ?? [],
+    };
+    const title = buildEstructuraAcademicaDocenteTitle(semestreTitulo);
+
+    return {
+      modulos: buildEstructuraAcademica(estructuraResponse),
+      opciones: { modulosComunes: [], unidadesComunes: [] },
+      semestreTitulo,
+      title,
+    };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in listEstructuraAcademicaDocente:", error);
+    throw new https.HttpsError("internal", "No se pudo cargar la estructura academica del docente.");
+  }
+});
+
+export const getEstructuraAcademicaDocenteMenu = https.onCall(async (_data, context) => {
+  requireDocenteEstructuraAcademica(context);
+
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
+  }
+
+  try {
+    const response = await dataConnect.executeGraphql<{
+      users: Array<{ id: number }>;
+      personals: Array<{ id: number; userId?: number | null }>;
+      semestres: EstructuraAcademicaSemestreOption[];
+      grupoModulos: Array<{
+        id: number;
+        grupo?: {
+          personalId?: number | null;
+          semestre?: EstructuraAcademicaSemestreOption | null;
+        } | null;
+      }>;
+    }, { uid: string }>(
+      GET_ESTRUCTURA_ACADEMICA_DOCENTE_MENU_QUERY,
+      { variables: { uid } },
+    );
+
+    const semestreTitulo = resolveSemestreTituloVigente(response.data.semestres ?? []);
+    const personalIds = getPersonalIdsForUserId(response.data.users?.[0]?.id, response.data.personals ?? []);
+    const hasModulos = (response.data.grupoModulos ?? []).some((item) =>
+      Boolean(item.grupo?.personalId && personalIds.has(item.grupo.personalId)) &&
+      matchesSemestreTitulo(item.grupo?.semestre?.titulo, semestreTitulo),
+    );
+
+    return {
+      title: buildEstructuraAcademicaDocenteTitle(semestreTitulo),
+      semestreTitulo,
+      hasModulos,
+    };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in getEstructuraAcademicaDocenteMenu:", error);
+    throw new https.HttpsError("internal", "No se pudo cargar el menu de estructura academica del docente.");
   }
 });
 

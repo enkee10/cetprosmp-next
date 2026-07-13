@@ -106,6 +106,13 @@ export {
   deleteGrupo,
 } from "./grupos/handlers.js";
 export {
+  listGrupoModulos,
+  getGrupoModulo,
+  listGrupoModuloOpciones,
+  createOrUpdateGrupoModulo,
+  deleteGrupoModulo,
+} from "./grupo-modulos/handlers.js";
+export {
   getDatosGeneralesGlobales,
   listDatosGenerales,
   getDatoGeneral,
@@ -146,6 +153,8 @@ export {
 } from "./matriculas/handlers.js";
 export {
   listEstructuraAcademica,
+  listEstructuraAcademicaDocente,
+  getEstructuraAcademicaDocenteMenu,
   createEstructuraAcademicaItem,
   reuseEstructuraAcademicaItem,
   detachEstructuraAcademicaItem,

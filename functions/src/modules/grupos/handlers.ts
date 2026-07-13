@@ -23,6 +23,10 @@ import {
   DataConnectUnidadDidacticaModulo,
 } from "../core/types.js";
 import {
+  buildGrupoModuloNombreRelacional,
+  GrupoModuloNombreContext,
+} from "../core/grupoModuloNombre.js";
+import {
   DELETE_GRUPO_MUTATION,
   DELETE_GRUPO_MODULOS_BY_GRUPO_MUTATION,
   INSERT_GRUPO_MODULO_MUTATION,
@@ -294,6 +298,26 @@ const GET_PAQUETE_MODULOS_FOR_GRUPO_QUERY = `
 
 const GET_GRUPO_MODULOS_CALENDARIOS_QUERY = `
   query GetGrupoModulosCalendarios($grupoId: Int!) {
+    grupo(id: $grupoId) {
+      id
+      turnoNombre
+      semestre {
+        titulo
+      }
+      turno {
+        nombre
+      }
+      horario {
+        nombre
+      }
+      personal {
+        displayName
+        user {
+          username
+          apellidoPaterno
+        }
+      }
+    }
     grupoModulos(where: { grupoId: { eq: $grupoId } }, limit: 50) {
       id
       nombre
@@ -540,33 +564,6 @@ const normalizeGrupoModuloDetalles = (value: unknown) => {
   return detalles;
 };
 
-function getModuloNombre(modulo?: Pick<DataConnectPaqueteModulo, "modulo">["modulo"] | null) {
-  return String(modulo?.titulo || modulo?.tituloComercial || "").trim();
-}
-
-function buildGrupoModuloNombre(
-  grupoNombre: string | null | undefined,
-  paqueteTitulo: string | null | undefined,
-  moduloNombre: string,
-) {
-  const grupoText = String(grupoNombre ?? "").trim();
-  const moduloText = String(moduloNombre ?? "").trim();
-  if (!grupoText) return moduloText || null;
-  if (!moduloText) return grupoText;
-
-  const paqueteText = String(paqueteTitulo ?? "").trim();
-  if (paqueteText && grupoText.includes(paqueteText)) {
-    return grupoText.replace(paqueteText, moduloText).replace(/\s+/g, " ").trim();
-  }
-
-  const structuredName = grupoText.match(/^(\S+\s+).+?(\s+\[[^\]]+\].*)$/);
-  if (structuredName) {
-    return `${structuredName[1]}${moduloText}${structuredName[2]}`.replace(/\s+/g, " ").trim();
-  }
-
-  return `${grupoText} - ${moduloText}`.replace(/\s+/g, " ").trim();
-}
-
 async function getPaqueteModulosOrThrow(paqueteId: number) {
   const paqueteResponse = await dataConnect.executeGraphql<{
     paquete: { id: number; titulo?: string | null } | null;
@@ -593,11 +590,11 @@ async function syncGrupoModulos(
   grupoId: number,
   paqueteId: number,
   detalleInput: Map<number, GrupoModuloDetalleInput> = new Map(),
-  grupoNombre?: string | null,
 ) {
-  const { paquete, paqueteModulos, unidadDidacticaModulos } = await getPaqueteModulosOrThrow(paqueteId);
+  const { paqueteModulos, unidadDidacticaModulos } = await getPaqueteModulosOrThrow(paqueteId);
   const existingResponse = await dataConnect.executeGraphql<{
-    grupoModulos: Array<Pick<DataConnectGrupoModulo, "id" | "moduloId" | "calendarioId" | "inicio" | "fin">>;
+    grupo: GrupoModuloNombreContext;
+    grupoModulos: Array<Pick<DataConnectGrupoModulo, "id" | "nombre" | "moduloId" | "calendarioId" | "inicio" | "fin">>;
     grupoModuloUnidadesDidacticas: DataConnectGrupoModuloUnidadDidactica[];
   }, { grupoId: number }>(
     GET_GRUPO_MODULOS_CALENDARIOS_QUERY,
@@ -605,7 +602,7 @@ async function syncGrupoModulos(
   );
   const previousGrupoModuloByModuloId = new Map<
     number,
-    Pick<DataConnectGrupoModulo, "id" | "moduloId" | "calendarioId" | "inicio" | "fin">
+    Pick<DataConnectGrupoModulo, "id" | "nombre" | "moduloId" | "calendarioId" | "inicio" | "fin">
   >();
   for (const item of existingResponse.data.grupoModulos ?? []) {
     previousGrupoModuloByModuloId.set(item.moduloId, item);
@@ -636,9 +633,8 @@ async function syncGrupoModulos(
     paqueteModulos.map(async (paqueteModulo, index) => {
       const detalle = detalleInput.get(paqueteModulo.moduloId);
       const previous = previousGrupoModuloByModuloId.get(paqueteModulo.moduloId);
-      const moduloNombre = getModuloNombre(paqueteModulo.modulo);
       const grupoModulo = buildGrupoModuloDataFromInput({
-        nombre: buildGrupoModuloNombre(grupoNombre, paquete?.titulo, moduloNombre),
+        nombre: previous?.nombre || buildGrupoModuloNombreRelacional(existingResponse.data.grupo, paqueteModulo.modulo),
         grupoId,
         moduloId: paqueteModulo.moduloId,
         orden: detalle?.orden ?? paqueteModulo.orden ?? index + 1,
@@ -818,7 +814,7 @@ export const createOrUpdateGrupo = https.onCall(async (data, context) => {
         { id: number; data: DataConnectGrupoInput }
       >(UPDATE_GRUPO_MUTATION, { variables: { id: grupoId, data: payload } });
 
-      await syncGrupoModulos(grupoId, paqueteId, grupoModuloDetalles, payload.nombreDisplay ?? null);
+      await syncGrupoModulos(grupoId, paqueteId, grupoModuloDetalles);
       const workspaceResult = await syncGrupoToWorkspace({
         email: payload.workspaceCorreo ?? "",
         previousEmail: previousWorkspaceCorreo,
@@ -855,7 +851,7 @@ export const createOrUpdateGrupo = https.onCall(async (data, context) => {
     const createdId = getIdFromKeyOutput(created.data.grupo_insert);
     if (createdId) {
       try {
-        await syncGrupoModulos(createdId, paqueteId, grupoModuloDetalles, payload.nombreDisplay ?? null);
+        await syncGrupoModulos(createdId, paqueteId, grupoModuloDetalles);
         const workspaceResult = await syncGrupoToWorkspace({
           email: payload.workspaceCorreo ?? "",
           previousEmail: null,

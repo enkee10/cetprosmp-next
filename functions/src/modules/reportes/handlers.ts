@@ -1264,7 +1264,10 @@ function programUnitHeaderColumnWidth(cell: string, value: string, currentWidth:
   const isProgramUnitHeader = (row === 6 || row === 35)
     && currentColumn >= columnIndex("X")
     && currentColumn <= columnIndex("AG");
-  if (!isProgramUnitHeader) return null;
+  const isOpcionCapacidadHeader = (row === 7 || row === 41)
+    && currentColumn >= columnIndex("L")
+    && currentColumn <= columnIndex("U");
+  if (!isProgramUnitHeader && !isOpcionCapacidadHeader) return null;
 
   const normalized = cleanText(value);
   if (!normalized) return currentWidth;
@@ -2161,7 +2164,7 @@ async function generateReporteDocumentoInternal(input: {
     false,
     "9",
     false,
-    isActaPrograma,
+    isActaPrograma || isActaOpcion,
     isActaPrograma,
   );
   const grupoModuloId = reportes[0].grupoModulo.id;

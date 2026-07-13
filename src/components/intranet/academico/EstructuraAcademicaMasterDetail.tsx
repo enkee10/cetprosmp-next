@@ -248,12 +248,14 @@ function EditableValue({
   lines = 2,
   variant = 'caption',
   onSave,
+  readOnly = false,
 }: {
   value: EditableCellValue | undefined;
   target?: EditableCellTarget;
   lines?: number;
   variant?: 'caption' | 'body2';
   onSave: (target: EditableCellTarget, value: EditableCellValue) => Promise<void>;
+  readOnly?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(draftFromValue(value));
@@ -277,15 +279,17 @@ function EditableValue({
     }
   }, [draft, onSave, target, value]);
 
-  if (target && editing) {
+  const activeTarget = readOnly ? undefined : target;
+
+  if (activeTarget && editing) {
     return (
       <TextField
         autoFocus
         fullWidth
-        multiline={lines > 1 && target.valueType === 'text'}
+        multiline={lines > 1 && activeTarget.valueType === 'text'}
         maxRows={Math.max(lines, 2)}
         size="small"
-        type={target.valueType === 'number' ? 'number' : 'text'}
+        type={activeTarget.valueType === 'number' ? 'number' : 'text'}
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
         onClick={(event) => event.stopPropagation()}
@@ -317,12 +321,12 @@ function EditableValue({
       component="span"
       variant={variant}
       onDoubleClick={(event) => {
-        if (!target) return;
+        if (!activeTarget) return;
         event.preventDefault();
         event.stopPropagation();
         setEditing(true);
       }}
-      title={target ? 'Doble clic para editar' : undefined}
+      title={activeTarget ? 'Doble clic para editar' : undefined}
       sx={{
         display: '-webkit-box',
         WebkitBoxOrient: 'vertical',
@@ -330,9 +334,9 @@ function EditableValue({
         overflow: 'hidden',
         wordBreak: 'break-word',
         lineHeight: 1.25,
-        cursor: target ? 'text' : 'inherit',
-        borderBottom: target ? '1px dotted transparent' : undefined,
-        '&:hover': target ? { borderBottomColor: 'text.secondary' } : undefined,
+        cursor: activeTarget ? 'text' : 'inherit',
+        borderBottom: activeTarget ? '1px dotted transparent' : undefined,
+        '&:hover': activeTarget ? { borderBottomColor: 'text.secondary' } : undefined,
       }}
     >
       {displayText(value)}
@@ -343,9 +347,11 @@ function EditableValue({
 function DetailFields({
   rows,
   onSave,
+  readOnly = false,
 }: {
   rows: DetailRow[];
   onSave: (target: EditableCellTarget, value: EditableCellValue) => Promise<void>;
+  readOnly?: boolean;
 }) {
   return (
     <Box
@@ -367,6 +373,7 @@ function DetailFields({
             target={row.target}
             lines={row.lines}
             onSave={onSave}
+            readOnly={readOnly}
           />
         </Box>
       ))}
@@ -380,12 +387,14 @@ function EditableMetricChip({
   prefix = '',
   suffix = '',
   onSave,
+  readOnly = false,
 }: {
   value: number | null | undefined;
   target: EditableCellTarget;
   prefix?: string;
   suffix?: string;
   onSave: (target: EditableCellTarget, value: EditableCellValue) => Promise<void>;
+  readOnly?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(draftFromValue(value));
@@ -408,6 +417,10 @@ function EditableMetricChip({
       committingRef.current = false;
     }
   }, [draft, onSave, target, value]);
+
+  if (readOnly) {
+    return <Chip size="small" label={`${prefix}${value ?? '-'}${suffix}`} />;
+  }
 
   if (editing) {
     return (
@@ -527,9 +540,24 @@ function Panel({
   );
 }
 
-export default function EstructuraAcademicaMasterDetail() {
+type EstructuraAcademicaCallableName = 'listEstructuraAcademica' | 'listEstructuraAcademicaDocente';
+
+export default function EstructuraAcademicaMasterDetail({
+  callableName = 'listEstructuraAcademica',
+  title = 'Estructura Academica',
+  readOnly = false,
+  showSearch = true,
+  errorMessage = 'No se pudo cargar la estructura academica. Verifica que tu usuario tenga permiso administrativo.',
+}: {
+  callableName?: EstructuraAcademicaCallableName;
+  title?: string;
+  readOnly?: boolean;
+  showSearch?: boolean;
+  errorMessage?: string;
+}) {
   const [modulos, setModulos] = useState<ModuloDetalle[]>([]);
   const [opciones, setOpciones] = useState<EstructuraOpciones>({ modulosComunes: [], unidadesComunes: [] });
+  const [resolvedTitle, setResolvedTitle] = useState(title);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -544,6 +572,9 @@ export default function EstructuraAcademicaMasterDetail() {
   const functions = useMemo(() => getFunctions(app), []);
 
   const saveEditableCell = useCallback(async (target: EditableCellTarget, value: EditableCellValue) => {
+    if (readOnly) {
+      throw new Error('La vista del docente es de solo lectura.');
+    }
     try {
       if (auth.currentUser) {
         await auth.currentUser.getIdToken(true);
@@ -560,7 +591,7 @@ export default function EstructuraAcademicaMasterDetail() {
       setError('No se pudo guardar la celda. Verifica tus permisos y el valor ingresado.');
       throw err;
     }
-  }, [auth, functions]);
+  }, [auth, functions, readOnly]);
 
   const fetchEstructura = useCallback(async () => {
     setLoading(true);
@@ -568,21 +599,30 @@ export default function EstructuraAcademicaMasterDetail() {
       if (auth.currentUser) {
         await auth.currentUser.getIdToken(true);
       }
-      const listEstructuraAcademica = httpsCallable<undefined, { modulos?: ModuloDetalle[]; opciones?: EstructuraOpciones }>(
+      const listEstructuraAcademica = httpsCallable<undefined, {
+        modulos?: ModuloDetalle[];
+        opciones?: EstructuraOpciones;
+        title?: string | null;
+      }>(
         functions,
-        'listEstructuraAcademica',
+        callableName,
       );
       const result = await listEstructuraAcademica();
       setModulos(result.data.modulos || []);
       setOpciones(result.data.opciones || { modulosComunes: [], unidadesComunes: [] });
+      setResolvedTitle(result.data.title || title);
       setError(null);
     } catch (err) {
       console.error('Error fetching academic structure: ', err);
-      setError('No se pudo cargar la estructura academica. Verifica que tu usuario tenga permiso administrativo.');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [auth, functions]);
+  }, [auth, callableName, errorMessage, functions, title]);
+
+  useEffect(() => {
+    setResolvedTitle(title);
+  }, [title]);
 
   useEffect(() => {
     void fetchEstructura();
@@ -780,23 +820,25 @@ export default function EstructuraAcademicaMasterDetail() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Estructura Academica"
+      title={resolvedTitle}
       commands={
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25} alignItems={{ sm: 'center' }}>
-          <TextField
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            size="small"
-            placeholder="Buscar"
-            sx={{ minWidth: { xs: '100%', sm: 320 } }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-          />
+          {showSearch ? (
+            <TextField
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              size="small"
+              placeholder="Buscar"
+              sx={{ minWidth: { xs: '100%', sm: 320 } }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          ) : null}
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
@@ -840,7 +882,7 @@ export default function EstructuraAcademicaMasterDetail() {
           <Panel
             title="Modulo"
             count={filteredModulos.length}
-            actions={
+            actions={!readOnly ? (
               <>
                 <IconButton size="small" title="Crear modulo" disabled={actionLoading || !selectedModulo?.planId} onClick={handleCreateModulo}>
                   <AddIcon fontSize="small" />
@@ -857,11 +899,12 @@ export default function EstructuraAcademicaMasterDetail() {
                   <DeleteOutlineIcon fontSize="small" />
                 </IconButton>
               </>
-            }
+            ) : undefined}
             details={
               selectedModulo ? (
                 <DetailFields
                   onSave={saveEditableCell}
+                  readOnly={readOnly}
                   rows={[
                     { label: 'Id', value: selectedModulo.id },
                     {
@@ -935,6 +978,7 @@ export default function EstructuraAcademicaMasterDetail() {
                           lines={2}
                           variant="body2"
                           onSave={saveEditableCell}
+                          readOnly={readOnly}
                         />
                       }
                       secondary={
@@ -959,7 +1003,7 @@ export default function EstructuraAcademicaMasterDetail() {
           <Panel
             title="Unidad Didactica"
             count={unidades.length}
-            actions={
+            actions={!readOnly ? (
               <>
                 <IconButton size="small" title="Crear unidad didactica" disabled={actionLoading || !selectedModulo?.id} onClick={handleCreateUnidad}>
                   <AddIcon fontSize="small" />
@@ -976,11 +1020,12 @@ export default function EstructuraAcademicaMasterDetail() {
                   <DeleteOutlineIcon fontSize="small" />
                 </IconButton>
               </>
-            }
+            ) : undefined}
             details={
               selectedUnidad ? (
                 <DetailFields
                   onSave={saveEditableCell}
+                  readOnly={readOnly}
                   rows={[
                     { label: 'Id', value: selectedUnidad.id },
                     {
@@ -1043,6 +1088,7 @@ export default function EstructuraAcademicaMasterDetail() {
                           lines={2}
                           variant="body2"
                           onSave={saveEditableCell}
+                          readOnly={readOnly}
                         />
                       }
                       secondary={
@@ -1053,12 +1099,14 @@ export default function EstructuraAcademicaMasterDetail() {
                             target={{ entity: 'unidadDidactica', id: unidad.id, field: 'duracion', valueType: 'number' }}
                             suffix=" hr"
                             onSave={saveEditableCell}
+                            readOnly={readOnly}
                           />
                           <EditableMetricChip
                             value={unidad.creditos}
                             target={{ entity: 'unidadDidactica', id: unidad.id, field: 'creditos', valueType: 'number' }}
                             prefix="Cr "
                             onSave={saveEditableCell}
+                            readOnly={readOnly}
                           />
                           <Chip size="small" label={`CAP ${unidad.capacidadesTerminales.length}`} />
                           <Chip size="small" label={`IND ${unidad.capacidadesTerminales.reduce((total, capacidad) => total + capacidad.indicadoresCapacidad.length, 0)}`} />
@@ -1074,7 +1122,7 @@ export default function EstructuraAcademicaMasterDetail() {
           <Panel
             title="Capacidad"
             count={capacidades.length}
-            actions={
+            actions={!readOnly ? (
               <>
                 <IconButton size="small" title="Crear capacidad" disabled={actionLoading || !selectedUnidad?.id} onClick={handleCreateCapacidad}>
                   <AddIcon fontSize="small" />
@@ -1083,11 +1131,12 @@ export default function EstructuraAcademicaMasterDetail() {
                   <DeleteOutlineIcon fontSize="small" />
                 </IconButton>
               </>
-            }
+            ) : undefined}
             details={
               selectedCapacidad ? (
                 <DetailFields
                   onSave={saveEditableCell}
+                  readOnly={readOnly}
                   rows={[
                     { label: 'Id', value: selectedCapacidad.id },
                     {
@@ -1142,6 +1191,7 @@ export default function EstructuraAcademicaMasterDetail() {
                           lines={4}
                           variant="body2"
                           onSave={saveEditableCell}
+                          readOnly={readOnly}
                         />
                       }
                       secondary={
@@ -1160,7 +1210,7 @@ export default function EstructuraAcademicaMasterDetail() {
           <Panel
             title="Criterio / Indicador"
             count={indicadores.length}
-            actions={
+            actions={!readOnly ? (
               <>
                 <IconButton size="small" title="Crear indicador" disabled={actionLoading || !selectedCapacidad?.id} onClick={handleCreateIndicador}>
                   <AddIcon fontSize="small" />
@@ -1169,11 +1219,12 @@ export default function EstructuraAcademicaMasterDetail() {
                   <DeleteOutlineIcon fontSize="small" />
                 </IconButton>
               </>
-            }
+            ) : undefined}
             details={
               selectedCapacidad ? (
                 <DetailFields
                   onSave={saveEditableCell}
+                  readOnly={readOnly}
                   rows={[
                     { label: 'Capacidad', value: selectedCapacidad.id },
                     { label: 'Unidad', value: selectedUnidad?.id },
@@ -1209,6 +1260,7 @@ export default function EstructuraAcademicaMasterDetail() {
                           lines={4}
                           variant="body2"
                           onSave={saveEditableCell}
+                          readOnly={readOnly}
                         />
                       }
                       secondary={
@@ -1236,6 +1288,7 @@ export default function EstructuraAcademicaMasterDetail() {
                               }}
                               lines={1}
                               onSave={saveEditableCell}
+                              readOnly={readOnly}
                             />
                           </Box>
                         </Stack>

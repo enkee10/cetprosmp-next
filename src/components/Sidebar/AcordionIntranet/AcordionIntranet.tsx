@@ -69,6 +69,11 @@ type RegistroAuxiliarDocenteModulo = {
   } | null;
 };
 
+type EstructuraAcademicaDocenteMenu = {
+  title?: string | null;
+  hasModulos?: boolean | null;
+};
+
 interface Props {
   openAccordions: string[];
   handleAccordionChange: (id: string, ancestors: string[]) => void;
@@ -102,6 +107,13 @@ const buildDocenteRegistroItems = (
     };
   });
 
+const buildDocenteEstructuraItem = (title: string | null | undefined): IntranetMenuItem => ({
+  id: 'estructura-academica-docente',
+  title: String(title || '').trim() || 'Estructura Academica',
+  path: '/intranet/estructura-academica-docente',
+  icon: <AccountTreeIcon />,
+});
+
 const isMenuItemActive = (itemPath: string, pathname: string, searchParams: URLSearchParams) => {
   const [itemPathname, itemQuery = ''] = itemPath.split('?');
   const isSamePath = pathname === itemPathname || pathname.startsWith(`${itemPathname}/`);
@@ -133,6 +145,7 @@ export const menuSections: IntranetMenuSection[] = [
       { id: 'modulos', title: 'M\u00f3dulos', path: '/intranet/modulos', icon: <ViewModuleIcon /> },
       { id: 'paquetes', title: 'Paquetes', path: '/intranet/paquetes', icon: <Inventory2Icon /> },
       { id: 'grupos', title: 'Grupos', path: '/intranet/grupos', icon: <PeopleIcon /> },
+      { id: 'grupo-modulos', title: 'Grupo-Modulo', path: '/intranet/grupo-modulos', icon: <AccountTreeIcon /> },
       { id: 'personal', title: 'Personal', path: '/intranet/personal', icon: <PeopleIcon /> },
       { id: 'turnos', title: 'Turnos', path: '/intranet/turnos', icon: <ScheduleIcon /> },
       { id: 'horarios', title: 'Horarios', path: '/intranet/horarios', icon: <ScheduleIcon /> },
@@ -270,6 +283,8 @@ export default function AcordionIntranet({
   const { can, filterSections, loading: loadingPermissions } = useIntranetPermissions();
   const [docenteRegistroItems, setDocenteRegistroItems] = React.useState<IntranetMenuItem[]>([]);
   const [docenteRegistroLoaded, setDocenteRegistroLoaded] = React.useState(false);
+  const [docenteEstructuraItem, setDocenteEstructuraItem] = React.useState<IntranetMenuItem | null>(null);
+  const [docenteEstructuraLoaded, setDocenteEstructuraLoaded] = React.useState(false);
   const isDocente = Number(user?.role ?? 0) === TEACHER_ROLE_ID && Number(user?.level ?? 0) < 600;
   const canViewRegistroAuxiliar = can('registro-auxiliar', 'view');
 
@@ -306,22 +321,80 @@ export default function AcordionIntranet({
     };
   }, [canViewRegistroAuxiliar, isDocente, loadingPermissions]);
 
-  const visibleSections = React.useMemo(
-    () =>
-      filterSections(intranetSections)
-        .map((section) => {
-          if (!isDocente || section.id !== 'registros') return section;
+  React.useEffect(() => {
+    let active = true;
 
-          const items = section.items.flatMap((item) => {
-            if (item.id !== 'registro-auxiliar') return [item];
-            return docenteRegistroLoaded ? docenteRegistroItems : [item];
-          });
+    const loadDocenteEstructuraItem = async () => {
+      if (!isDocente) {
+        setDocenteEstructuraItem(null);
+        setDocenteEstructuraLoaded(false);
+        return;
+      }
 
-          return { ...section, items };
-        })
-        .filter((section) => section.items.length > 0),
-    [docenteRegistroItems, docenteRegistroLoaded, filterSections, intranetSections, isDocente],
-  );
+      setDocenteEstructuraLoaded(false);
+      try {
+        const getEstructuraAcademicaDocenteMenu = httpsCallable<undefined, EstructuraAcademicaDocenteMenu>(
+          functions,
+          'getEstructuraAcademicaDocenteMenu',
+        );
+        const result = await getEstructuraAcademicaDocenteMenu();
+        if (!active) return;
+        setDocenteEstructuraItem(result.data.hasModulos === false ? null : buildDocenteEstructuraItem(result.data.title));
+      } catch (error) {
+        console.error('Error loading docente estructura academica menu:', error);
+        if (active) setDocenteEstructuraItem(null);
+      } finally {
+        if (active) setDocenteEstructuraLoaded(true);
+      }
+    };
+
+    void loadDocenteEstructuraItem();
+    return () => {
+      active = false;
+    };
+  }, [isDocente]);
+
+  const visibleSections = React.useMemo(() => {
+    const filteredSections = filterSections(intranetSections);
+    const docenteSections = isDocente && !filteredSections.some((section) => section.id === 'registros')
+      ? [
+        ...filteredSections,
+        {
+          ...(intranetSections.find((section) => section.id === 'registros') || {
+            id: 'registros',
+            title: 'Registros',
+            icon: <AssignmentIcon />,
+            items: [],
+          }),
+          items: [],
+        },
+      ]
+      : filteredSections;
+
+    return docenteSections
+      .map((section) => {
+        if (!isDocente || section.id !== 'registros') return section;
+
+        const items = section.items.flatMap((item) => {
+          if (item.id !== 'registro-auxiliar') return [item];
+          return docenteRegistroLoaded ? docenteRegistroItems : [item];
+        });
+        const withDocenteEstructura = docenteEstructuraLoaded && docenteEstructuraItem
+          ? [docenteEstructuraItem, ...items.filter((item) => item.id !== 'estructura-academica')]
+          : items;
+
+        return { ...section, items: withDocenteEstructura };
+      })
+      .filter((section) => section.items.length > 0);
+  }, [
+    docenteEstructuraItem,
+    docenteEstructuraLoaded,
+    docenteRegistroItems,
+    docenteRegistroLoaded,
+    filterSections,
+    intranetSections,
+    isDocente,
+  ]);
 
   const sections = (
     <>

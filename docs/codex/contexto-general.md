@@ -19,6 +19,9 @@
   - https://www.googleapis.com/auth/admin.directory.group.member
   - se crearon endpoints para las entidades/tablas carreras, planes, modulos, paquetes, grupos, turnos, horarios, calendarios, eventos, unidades dicaticas, capacidades terminales, indicador de Capacidad, aprendizajes, actividad, con lista y CRUD incluidos.
   - Se crearon endpoints para registro auxiliar, matricula, Estructura Academica
-
+Se creo Sistema de Maticula con formulario
+Se creo Sistema de permisos
+Se creo Sistema de gestion Academica
+Se creo Sistema de generacion de documentos de pdf con google run y open office
 ## Pendientes generales
 

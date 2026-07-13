@@ -274,6 +274,18 @@ export const INSERT_GRUPO_MODULO_MUTATION = `
   }
 `;
 
+export const UPDATE_GRUPO_MODULO_MUTATION = `
+  mutation UpdateGrupoModulo($id: Int!, $data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId")) {
+    grupoModulo_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_GRUPO_MODULO_MUTATION = `
+  mutation DeleteGrupoModulo($id: Int!) {
+    grupoModulo_delete(id: $id)
+  }
+`;
+
 export const INSERT_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION = `
   mutation InsertGrupoModuloUnidadDidactica($data: GrupoModuloUnidadDidactica_Data! @allow(fields: "grupoModuloId unidadDidacticaId orden inicio fin")) {
     grupoModuloUnidadDidactica_insert(data: $data)

@@ -342,6 +342,8 @@ const isSemestreVigente = (semestre: SemestreOption, date: Date) => {
 };
 
 export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: GrupoFormProps) {
+  const [nombreDisplay, setNombreDisplay] = useState('');
+  const [nombreManualEdit, setNombreManualEdit] = useState(false);
   const [descripcion, setDescripcion] = useState('');
   const [turnoNombre, setTurnoNombre] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
@@ -440,6 +442,8 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         const fetched = result.data.grupo;
 
         if (fetched) {
+          setNombreDisplay(fetched.nombreDisplay || '');
+          setNombreManualEdit(Boolean(fetched.nombreDisplay));
           setDescripcion(fetched.descripcion || '');
           setTurnoNombre(fetched.turnoNombre || '');
           setWorkspaceName(fetched.workspaceName || '');
@@ -504,6 +508,12 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       ].filter(Boolean).join(' '),
     [selectedHorario, selectedPaquete, selectedPersonalName, selectedSemestre, selectedTurno],
   );
+  const nombreGrupo = nombreManualEdit ? nombreDisplay : nombreCalculado;
+
+  useEffect(() => {
+    if (nombreManualEdit) return;
+    setNombreDisplay(nombreCalculado);
+  }, [nombreCalculado, nombreManualEdit]);
 
   useEffect(() => {
     if (workspaceManualEdit) return;
@@ -520,6 +530,11 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
     setWorkspaceManualEdit(false);
     setWorkspaceName(buildWorkspaceName(selectedSemestre, selectedPaquete, selectedPersonalName));
     setWorkspaceCorreo(buildWorkspaceCorreo(selectedSemestre, selectedPaquete, selectedPersonalName));
+  };
+
+  const handleRestoreNombreAuto = () => {
+    setNombreManualEdit(false);
+    setNombreDisplay(nombreCalculado);
   };
 
   const updateGrupoModuloFecha = (moduloId: number, field: 'inicio' | 'fin', value: string) => {
@@ -564,7 +579,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       return;
     }
 
-    if (!nombreCalculado.trim()) {
+    if (!nombreGrupo.trim()) {
       setError('El nombre del grupo es obligatorio.');
       setLoading(false);
       return;
@@ -625,7 +640,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
 
       await createOrUpdateGrupo({
         id: grupoId ? Number(grupoId) : undefined,
-        nombreDisplay: nombreCalculado.trim(),
+        nombreDisplay: nombreGrupo.trim(),
         workspaceName,
         workspaceCorreo,
         descripcion,
@@ -706,10 +721,31 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         >
           <TextField
             label="Nombre del grupo"
-            value={nombreCalculado}
+            value={nombreGrupo}
+            onChange={(event) => {
+              setNombreManualEdit(true);
+              setNombreDisplay(event.target.value);
+            }}
             fullWidth
             required
-            disabled
+            InputProps={
+              nombreManualEdit
+                ? {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          aria-label="Restaurar nombre automatico"
+                          onClick={handleRestoreNombreAuto}
+                        >
+                          <AutoFixHighIcon fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }
+                : undefined
+            }
             sx={{ gridColumn: '1 / -1' }}
           />
 

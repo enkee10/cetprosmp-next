@@ -308,10 +308,16 @@ export function DatoGeneralForm({
             <TextField
               key={field.name}
               label={field.label}
+              type="text"
               value={form[field.name] || ''}
               onChange={(event) => handleChange(field.name, event.target.value)}
               fullWidth
               required={field.name === 'nombreInstitucion'}
+              slotProps={{
+                htmlInput: {
+                  inputMode: field.name === 'codigoModular' || field.name === 'ruc' ? 'numeric' : undefined,
+                },
+              }}
               sx={{
                 gridColumn: { xs: '1 / -1', md: field.gridColumn ?? 'span 6' },
               }}

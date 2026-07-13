@@ -20,6 +20,11 @@ import {
 } from "../core/dataConnectCore.js";
 import { deleteMatriculaTree } from "../core/matriculaDeletion.js";
 import {
+  getNextCodigoInscripcionForCurrentYear,
+  regenerateCodigosInscripcionForCurrentYear,
+} from "../core/matriculaCodigoInscripcion.js";
+import { requirePermission, requireSuperUser } from "../core/permissions.js";
+import {
   DataConnectMatriculaInput,
   DataConnectModuloEstudianteInput,
   DataConnectPaquete,
@@ -84,6 +89,7 @@ interface MatriculaRow {
   id: number;
   recibo?: string | null;
   fecha?: string | null;
+  codigoInscripcion?: string | null;
   archivado?: boolean | null;
   paqueteId?: number | null;
   semestreId?: number | null;
@@ -279,6 +285,7 @@ const MATRICULA_FIELDS = `
   id
   recibo
   fecha
+  codigoInscripcion
   archivado
   paqueteId
   semestreId
@@ -398,13 +405,6 @@ const CHECK_DUPLICATE_MATRICULA_QUERY = `
     }
   }
 `;
-
-function requireLevel(context: https.CallableContext, action: string) {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
-  }
-}
 
 const sortPaqueteModulos = (items: DataConnectPaqueteModulo[]) =>
   items
@@ -997,6 +997,16 @@ async function buildDirectCropAvatarImage(params: {
     .toBuffer();
 }
 
+async function buildOriginalPhotoCropImage(params: {
+  sourceBuffer: Buffer;
+  cropBox: AvatarCropBox;
+}): Promise<Buffer> {
+  return sharp(params.sourceBuffer)
+    .extract(params.cropBox)
+    .jpeg({ quality: 94 })
+    .toBuffer();
+}
+
 function isWhiteAvatarBackgroundPixel(data: Buffer, index: number): boolean {
   return data[index] >= 242 && data[index + 1] >= 242 && data[index + 2] >= 242;
 }
@@ -1239,6 +1249,33 @@ async function uploadAvatarImages(params: {
   return { grande, mediano, pequeno };
 }
 
+async function uploadRecorteFotografiaImage(params: {
+  cropBuffer: Buffer;
+  bucketName: string;
+  userId: number;
+  dni: string;
+  jobId: string;
+}): Promise<{ path: string; url: string; bucket: string; contentType: string }> {
+  const safeDni = normalizeDocumentNumber(params.dni) || String(params.userId);
+  const path = `usuarios/avatars/${safeDni}/recorte-fotografia-dni-${params.jobId}.jpg`;
+  const token = randomUUID();
+  const bucket = getStorage().bucket(params.bucketName);
+  const file = bucket.file(path);
+  await file.save(params.cropBuffer, {
+    contentType: "image/jpeg",
+    metadata: {
+      metadata: { firebaseStorageDownloadTokens: token },
+    },
+  });
+
+  return {
+    path,
+    url: buildFirebaseStorageUrl(bucket.name, path, token),
+    bucket: bucket.name,
+    contentType: "image/jpeg",
+  };
+}
+
 async function processMatriculaAvatarExtractionJob(
   jobId: string,
   job: FirebaseFirestore.DocumentData,
@@ -1264,9 +1301,11 @@ async function processMatriculaAvatarExtractionJob(
     const cropBox = await detectAvatarCropBox(buffer);
     const generativeAvatarEnabled = isGenerativeAvatarEnabled();
     const currentAge = calculateCurrentAge(job.fechaNacimiento);
+    const referenceBuffer = await buildAvatarReferenceImage({ sourceBuffer: buffer, cropBox });
+    const recorteFotografiaBuffer = await buildOriginalPhotoCropImage({ sourceBuffer: buffer, cropBox });
     const generatedAvatar = generativeAvatarEnabled
       ? await generateCarnetAvatarImage({
-        referenceBuffer: await buildAvatarReferenceImage({ sourceBuffer: buffer, cropBox }),
+        referenceBuffer,
         currentAge,
       })
       : null;
@@ -1281,15 +1320,23 @@ async function processMatriculaAvatarExtractionJob(
       dni: asCleanString(job.dni) ?? "",
       jobId,
     });
+    const recorteFotografia = await uploadRecorteFotografiaImage({
+      cropBuffer: recorteFotografiaBuffer,
+      bucketName,
+      userId,
+      dni: asCleanString(job.dni) ?? "",
+      jobId,
+    });
     await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
       UPDATE_USER_MUTATION,
-      { variables: { id: userId, data: { avatar: avatar.grande.url } } },
+      { variables: { id: userId, data: { avatar: avatar.grande.url, recorteFotografia: recorteFotografia.url } } },
     );
     await ref.update({
       status: "completed",
       updatedAt: new Date().toISOString(),
       avatar: avatar.grande,
       avatarTamanos: avatar,
+      recorteFotografia,
       cropBox,
       generation: {
         mode: generatedAvatar ? "gemini_carnet_color" : "vision_direct_crop",
@@ -1906,6 +1953,7 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
       userId,
       paqueteId,
       fecha: data.fecha ?? new Date().toISOString(),
+      codigoInscripcion: data.codigoInscripcion ?? await getNextCodigoInscripcionForCurrentYear(),
       archivado: data.archivado ?? false,
     });
 
@@ -1944,7 +1992,7 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
 }
 
 export const listMatriculas = https.onCall(async (_data, context) => {
-  requireLevel(context, "list matriculas");
+  await requirePermission(context, "matriculas", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{
@@ -1965,8 +2013,19 @@ export const listMatriculas = https.onCall(async (_data, context) => {
   }
 });
 
+export const generarCodigosInscripcionMatriculas = https.onCall(async (_data, context) => {
+  requireSuperUser(context, "generar codigos de inscripcion");
+
+  try {
+    return await regenerateCodigosInscripcionForCurrentYear();
+  } catch (error) {
+    console.error("Error in generarCodigosInscripcionMatriculas:", error);
+    throw new https.HttpsError("internal", "No se pudieron generar los codigos de inscripcion.");
+  }
+});
+
 export const getMatricula = https.onCall(async (data, context) => {
-  requireLevel(context, "get matricula");
+  await requirePermission(context, "matriculas", "view");
 
   const matriculaId = toNumber(data?.id, -1);
   if (matriculaId <= 0) {
@@ -1982,7 +2041,7 @@ export const getMatricula = https.onCall(async (data, context) => {
 });
 
 export const verificarDocumentoMatricula = https.onCall(async (data, context) => {
-  requireLevel(context, "verify matricula documents");
+  await requirePermission(context, "matriculas", "view");
 
   const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
   const dni = normalizeDocumentNumber(data?.dni);
@@ -2027,7 +2086,7 @@ export const verificarDocumentoMatricula = https.onCall(async (data, context) =>
 });
 
 export const listMatriculaPaquetesBySemestre = https.onCall(async (data, context) => {
-  requireLevel(context, "list matricula packages");
+  await requirePermission(context, "matriculas", "view");
 
   const semestreId = toNumber(data?.semestreId, -1);
   if (semestreId <= 0) {
@@ -2254,6 +2313,12 @@ async function saveUserForMatricula(
   const authStudent = await ensureStudentAuthForMatricula(existingUser, data);
   const requesterEmail = asCleanString(context.auth?.token?.email);
   const personalEmail = asCleanString(data.email) ?? authStudent.institutionalEmail;
+  const requestedAvatar = asCleanString(data.avatar ?? data.foto);
+  const existingAvatar = asCleanString(existingUser?.avatar) ?? asCleanString(authStudent.authUser.photoURL);
+  const avatarForPersist = requestedAvatar ?? existingAvatar ?? undefined;
+  const avatarForWorkspace = requestedAvatar && requestedAvatar !== existingAvatar
+    ? requestedAvatar
+    : undefined;
   const payload = buildUserDataFromInput({
     ...data,
     tipoDocumento: normalizeDocumentType(data.tipoDocumento),
@@ -2272,8 +2337,11 @@ async function saveUserForMatricula(
     dniImagenFrenteUrl: imageFront.url ?? existingUser?.dniImagenFrenteUrl ?? null,
     dniImagenReversoUrl: imageBack.url ?? existingUser?.dniImagenReversoUrl ?? null,
     rolId: authStudent.roleId,
-    avatar: existingUser?.avatar ?? authStudent.authUser.photoURL ?? null,
+    avatar: avatarForPersist,
   });
+  if (!avatarForPersist && existingUser) {
+    delete payload.avatar;
+  }
 
   let userId: number;
   if (existingUser) {
@@ -2313,7 +2381,7 @@ async function saveUserForMatricula(
           email: workspacePrimaryEmail,
           institutionalEmail: payload.correoInstitucional ?? authStudent.institutionalEmail,
           formEmail: payload.email ?? personalEmail,
-          avatar: payload.avatar ?? null,
+          avatar: avatarForWorkspace,
           password: authStudent.authPassword,
           username: authStudent.username,
           roleId: authStudent.roleId,
@@ -2471,7 +2539,7 @@ async function syncMatriculaWorkspaceGroupChange(params: {
 }
 
 export const crearMatriculaFormulario = https.onCall(async (data, context) => {
-  requireLevel(context, "create matricula form");
+  await requirePermission(context, "matriculas", "create");
 
   const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
   const dni = normalizeDocumentNumber(data?.dni);
@@ -2550,7 +2618,7 @@ export const crearMatriculaFormulario = https.onCall(async (data, context) => {
 });
 
 export const updateMatriculaFormulario = https.onCall(async (data, context) => {
-  requireLevel(context, "update matricula form");
+  await requirePermission(context, "matriculas", "edit");
 
   const matriculaId = toNumber(data?.id, -1);
   const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
@@ -2673,11 +2741,7 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
 });
 
 export const deleteMatricula = https.onCall(async (data, context) => {
-  const requesterRole = Number(context.auth?.token?.role ?? 0);
-  if (new Set<number>([5, 6, 7]).has(requesterRole)) {
-    throw new https.HttpsError("permission-denied", "No tienes permiso para eliminar matriculas.");
-  }
-  requireLevel(context, "delete matricula");
+  await requirePermission(context, "matriculas", "delete");
 
   const matriculaId = toNumber(data?.id, -1);
   if (matriculaId <= 0) {
@@ -2693,7 +2757,7 @@ export const deleteMatricula = https.onCall(async (data, context) => {
 });
 
 export const createMatriculaDesdePaquete = https.onCall(async (data, context) => {
-  requireLevel(context, "create matriculas");
+  await requirePermission(context, "matriculas", "create");
 
   try {
     return await createMatriculaWithModuloEstudiantes(data as Record<string, unknown>);

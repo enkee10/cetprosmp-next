@@ -59,7 +59,7 @@ if ($Full) {
 }
 
 if (($selectedEmulators -split ',') -contains 'functions') {
-  $env:FUNCTIONS_DISCOVERY_TIMEOUT = '60'
+  $env:FUNCTIONS_DISCOVERY_TIMEOUT = '180'
   npm --prefix functions run build
   if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE

@@ -7,6 +7,7 @@ type User @table(name: "users") {
   id: Int! @col(dataType: "serial")
   documentId: String @col(name: "document_id")
   username: String
+  nickName: String @col(name: "nick_name")
   email: String
   provider: String
   confirmed: Boolean
@@ -32,6 +33,7 @@ type User @table(name: "users") {
   fechaModificacion: Timestamp @col(name: "fecha_modificacion")
   emailCreador: String @col(name: "email_creador")
   avatar: String
+  recorteFotografia: String @col(name: "recorte_fotografia", dataType: "text")
   dniImagenFrenteUrl: String @col(name: "dni_imagen_frente_url", dataType: "text")
   dniImagenReversoUrl: String @col(name: "dni_imagen_reverso_url", dataType: "text")
   dniImagenFrenteProcesadaUrl: String @col(name: "dni_imagen_frente_procesada_url", dataType: "text")
@@ -45,6 +47,27 @@ type Rol @table(name: "roles") {
   id: Int! @col(dataType: "serial")
   titulo: String
   scala: Int
+}
+
+type RolePermission @table(name: "role_permissions", singular: "rolePermission", plural: "rolePermissions") @unique(fields: ["role", "entity"]) @index(fields: ["roleId"]) {
+  id: Int! @col(dataType: "serial")
+  entity: String @col(dataType: "varchar(80)")
+  canView: Boolean @col(name: "can_view")
+  canCreate: Boolean @col(name: "can_create")
+  canEdit: Boolean @col(name: "can_edit")
+  canDelete: Boolean @col(name: "can_delete")
+
+  role: Rol @ref(fields: "roleId", references: "id")
+  roleId: Int @col(name: "role_id")
+}
+
+type AppSetting @table(name: "app_settings", singular: "appSetting", plural: "appSettings") @unique(fields: ["settingKey"]) {
+  id: Int! @col(dataType: "serial")
+  settingKey: String @col(name: "setting_key", dataType: "varchar(120)")
+  section: String @col(dataType: "varchar(80)")
+  label: String @col(dataType: "text")
+  boolValue: Boolean @col(name: "bool_value")
+  updatedAt: Timestamp @col(name: "updated_at")
 }
 
 type Sector @table(name: "sectores") {
@@ -157,11 +180,23 @@ type Modulo @table(name: "modulos") @index(fields: ["carreraId"]) {
   metas: Int
   activo: Boolean
   slug: String
+  comun: Boolean @default(value: false)
 
   plan: Plan @ref(fields: "planId", references: "id")
   planId: Int @col(name: "plan_id")
 
   carreraId: Int @col(name: "carrera_id")
+}
+
+type PlanModulo @table(name: "plan_modulos", singular: "planModulo", plural: "planModulos") @unique(fields: ["plan", "modulo"]) @index(fields: ["planId"]) @index(fields: ["moduloId"]) {
+  id: Int! @col(dataType: "serial")
+  orden: Int
+
+  plan: Plan! @ref(fields: "planId", references: "id")
+  planId: Int! @col(name: "plan_id")
+
+  modulo: Modulo! @ref(fields: "moduloId", references: "id")
+  moduloId: Int! @col(name: "modulo_id")
 }
 
 type UnidadDidactica @table(name: "unidades_didacticas", singular: "unidadDidactica", plural: "unidadesDidacticas") {
@@ -170,6 +205,7 @@ type UnidadDidactica @table(name: "unidades_didacticas", singular: "unidadDidact
   duracion: Int
   creditos: Int
   sigla: String
+  comun: Boolean @default(value: false)
 }
 
 type UnidadDidacticaModulo @table(name: "unidad_didactica_modulos", singular: "unidadDidacticaModulo", plural: "unidadDidacticaModulos") @unique(fields: ["unidadDidactica", "modulo"]) @index(fields: ["unidadDidacticaId"]) @index(fields: ["moduloId"]) {
@@ -585,6 +621,19 @@ type GrupoModulo @table(name: "grupo_modulos", singular: "grupoModulo", plural: 
 
   calendario: Calendario @ref(fields: "calendarioId", references: "id")
   calendarioId: Int @col(name: "calendario_id")
+}
+
+type RegistroAcademicoDocumento @table(name: "registro_academico_documentos", singular: "registroAcademicoDocumento", plural: "registroAcademicoDocumentos") @unique(fields: ["tipoDocumento", "grupoModulo"]) @index(fields: ["grupoModuloId"]) {
+  id: Int! @col(dataType: "serial")
+  tipoDocumento: String! @col(name: "tipo_documento")
+  pdfPath: String @col(name: "pdf_path", dataType: "text")
+  pdfUrl: String @col(name: "pdf_url", dataType: "text")
+  excelPath: String @col(name: "excel_path", dataType: "text")
+  excelUrl: String @col(name: "excel_url", dataType: "text")
+  generadoEn: Timestamp @col(name: "generado_en")
+
+  grupoModulo: GrupoModulo! @ref(fields: "grupoModuloId", references: "id")
+  grupoModuloId: Int! @col(name: "grupo_modulo_id")
 }
 
 type GrupoModuloUnidadDidactica @table(name: "grupo_modulo_unidades_didacticas", singular: "grupoModuloUnidadDidactica", plural: "grupoModuloUnidadesDidacticas") @unique(fields: ["grupoModulo", "unidadDidactica"]) @index(fields: ["grupoModuloId"]) @index(fields: ["unidadDidacticaId"]) {

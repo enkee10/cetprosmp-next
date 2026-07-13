@@ -7,6 +7,8 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     libreoffice \
     libreoffice-calc \
+    fonts-crosextra-caladea \
+    fonts-crosextra-carlito \
     fonts-dejavu \
     fonts-liberation \
     fontconfig \

@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectSector, DataConnectSectorInput } from "../core/types.js";
 import {
   DELETE_SECTOR_MUTATION,
@@ -36,10 +37,7 @@ const GET_SECTOR_QUERY = `
 `;
 
 export const listSectors = https.onCall(async (_data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to list sectors.");
-  }
+  await requirePermission(context, "sectores", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ sectors: DataConnectSector[] }, Record<string, never>>(
@@ -57,10 +55,7 @@ export const listSectors = https.onCall(async (_data, context) => {
 });
 
 export const getSector = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to get sectors.");
-  }
+  await requirePermission(context, "sectores", "view");
 
   const sectorId = toNumber(data?.id, -1);
   if (sectorId <= 0) {
@@ -81,17 +76,13 @@ export const getSector = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateSector = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to mutate sectors.");
-  }
-
   const payload = buildSectorDataFromInput(data as Record<string, unknown>);
   if (!payload.titulo) {
     throw new https.HttpsError("invalid-argument", "titulo is required.");
   }
 
   const sectorId = toNumberOrNull(data?.id);
+  await requirePermission(context, "sectores", sectorId ? "edit" : "create");
 
   try {
     if (sectorId) {
@@ -122,10 +113,7 @@ export const createOrUpdateSector = https.onCall(async (data, context) => {
 });
 
 export const deleteSector = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to delete sectors.");
-  }
+  await requirePermission(context, "sectores", "delete");
 
   const sectorId = toNumber(data?.id, -1);
   if (sectorId <= 0) {

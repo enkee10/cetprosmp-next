@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectFamilia, DataConnectFamiliaInput } from "../core/types.js";
 import {
   DELETE_FAMILIA_MUTATION,
@@ -38,10 +39,7 @@ const GET_FAMILIA_QUERY = `
 `;
 
 export const listFamilias = https.onCall(async (_data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to list families.");
-  }
+  await requirePermission(context, "familias", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ familias: DataConnectFamilia[] }, Record<string, never>>(
@@ -59,10 +57,7 @@ export const listFamilias = https.onCall(async (_data, context) => {
 });
 
 export const getFamilia = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to get families.");
-  }
+  await requirePermission(context, "familias", "view");
 
   const familiaId = toNumber(data?.id, -1);
   if (familiaId <= 0) {
@@ -83,17 +78,13 @@ export const getFamilia = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateFamilia = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to mutate families.");
-  }
-
   const payload = buildFamiliaDataFromInput(data as Record<string, unknown>);
   if (!payload.titulo) {
     throw new https.HttpsError("invalid-argument", "titulo is required.");
   }
 
   const familiaId = toNumberOrNull(data?.id);
+  await requirePermission(context, "familias", familiaId ? "edit" : "create");
 
   try {
     if (familiaId) {
@@ -124,10 +115,7 @@ export const createOrUpdateFamilia = https.onCall(async (data, context) => {
 });
 
 export const deleteFamilia = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to delete families.");
-  }
+  await requirePermission(context, "familias", "delete");
 
   const familiaId = toNumber(data?.id, -1);
   if (familiaId <= 0) {

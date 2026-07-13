@@ -10,6 +10,30 @@ export const UPDATE_ROLE_MUTATION = `
   }
 `;
 
+export const INSERT_ROLE_PERMISSION_MUTATION = `
+  mutation InsertRolePermission($data: RolePermission_Data! @allow(fields: "roleId entity canView canCreate canEdit canDelete")) {
+    rolePermission_insert(data: $data)
+  }
+`;
+
+export const DELETE_ROLE_PERMISSIONS_BY_ROLE_MUTATION = `
+  mutation DeleteRolePermissionsByRole($roleId: Int!) {
+    rolePermission_deleteMany(where: { roleId: { eq: $roleId } })
+  }
+`;
+
+export const INSERT_APP_SETTING_MUTATION = `
+  mutation InsertAppSetting($data: AppSetting_Data! @allow(fields: "settingKey section label boolValue updatedAt")) {
+    appSetting_insert(data: $data)
+  }
+`;
+
+export const UPDATE_APP_SETTING_MUTATION = `
+  mutation UpdateAppSetting($id: Int!, $data: AppSetting_Data! @allow(fields: "section label boolValue updatedAt")) {
+    appSetting_update(id: $id, data: $data)
+  }
+`;
+
 export const INSERT_SECTOR_MUTATION = `
   mutation InsertSector($data: Sector_Data! @allow(fields: "titulo descripcion imagenPortadaUrl")) {
     sector_insert(data: $data)
@@ -365,13 +389,13 @@ export const UPDATE_EVENTO_OCURRENCIA_MUTATION = `
 `;
 
 export const INSERT_MODULO_MUTATION = `
-  mutation InsertModulo($data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos duracionEfsrt creditosEfsrt metas activo slug planId")) {
+  mutation InsertModulo($data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos duracionEfsrt creditosEfsrt metas activo slug comun planId")) {
     modulo_insert(data: $data)
   }
 `;
 
 export const UPDATE_MODULO_MUTATION = `
-  mutation UpdateModulo($id: Int!, $data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos duracionEfsrt creditosEfsrt metas activo slug planId")) {
+  mutation UpdateModulo($id: Int!, $data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos duracionEfsrt creditosEfsrt metas activo slug comun planId")) {
     modulo_update(id: $id, data: $data)
   }
 `;
@@ -388,14 +412,44 @@ export const DELETE_MODULO_MUTATION = `
   }
 `;
 
+export const INSERT_PLAN_MODULO_MUTATION = `
+  mutation InsertPlanModulo($data: PlanModulo_Data! @allow(fields: "planId moduloId orden")) {
+    planModulo_insert(data: $data)
+  }
+`;
+
+export const DELETE_PLAN_MODULOS_BY_PLAN_MUTATION = `
+  mutation DeletePlanModulosByPlan($planId: Int!) {
+    planModulo_deleteMany(where: { planId: { eq: $planId } })
+  }
+`;
+
+export const DELETE_PLAN_MODULOS_BY_MODULO_MUTATION = `
+  mutation DeletePlanModulosByModulo($moduloId: Int!) {
+    planModulo_deleteMany(where: { moduloId: { eq: $moduloId } })
+  }
+`;
+
+export const DELETE_PLAN_MODULO_RELATION_MUTATION = `
+  mutation DeletePlanModuloRelation($planId: Int!, $moduloId: Int!) {
+    planModulo_deleteMany(where: { planId: { eq: $planId }, moduloId: { eq: $moduloId } })
+  }
+`;
+
+export const DELETE_PLAN_MODULO_MUTATION = `
+  mutation DeletePlanModulo($id: Int!) {
+    planModulo_delete(id: $id)
+  }
+`;
+
 export const INSERT_UNIDAD_DIDACTICA_MUTATION = `
-  mutation InsertUnidadDidactica($data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla")) {
+  mutation InsertUnidadDidactica($data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla comun")) {
     unidadDidactica_insert(data: $data)
   }
 `;
 
 export const UPDATE_UNIDAD_DIDACTICA_MUTATION = `
-  mutation UpdateUnidadDidactica($id: Int!, $data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla")) {
+  mutation UpdateUnidadDidactica($id: Int!, $data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla comun")) {
     unidadDidactica_update(id: $id, data: $data)
   }
 `;
@@ -421,6 +475,12 @@ export const UPDATE_UNIDAD_DIDACTICA_MODULO_MUTATION = `
 export const DELETE_UNIDAD_DIDACTICA_MODULOS_BY_UNIDAD_MUTATION = `
   mutation DeleteUnidadDidacticaModulosByUnidad($unidadDidacticaId: Int!) {
     unidadDidacticaModulo_deleteMany(where: { unidadDidacticaId: { eq: $unidadDidacticaId } })
+  }
+`;
+
+export const DELETE_UNIDAD_DIDACTICA_MODULO_RELATION_MUTATION = `
+  mutation DeleteUnidadDidacticaModuloRelation($id: Int!) {
+    unidadDidacticaModulo_delete(id: $id)
   }
 `;
 
@@ -457,6 +517,12 @@ export const UPDATE_INDICADOR_CAPACIDAD_MUTATION = `
 export const DELETE_INDICADOR_CAPACIDAD_MUTATION = `
   mutation DeleteIndicadorCapacidad($id: Int!) {
     indicadorCapacidad_delete(id: $id)
+  }
+`;
+
+export const DELETE_INDICADORES_CAPACIDAD_BY_CAPACIDAD_MUTATION = `
+  mutation DeleteIndicadoresCapacidadByCapacidad($capacidadTerminalId: Int!) {
+    indicadorCapacidad_deleteMany(where: { capacidadTerminalId: { eq: $capacidadTerminalId } })
   }
 `;
 
@@ -527,13 +593,13 @@ export const DELETE_PAQUETE_MODULOS_BY_PAQUETE_MUTATION = `
 `;
 
 export const INSERT_MATRICULA_MUTATION = `
-  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha archivado paqueteId semestreId userId")) {
+  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha codigoInscripcion archivado paqueteId semestreId userId")) {
     matricula_insert(data: $data)
   }
 `;
 
 export const UPDATE_MATRICULA_MUTATION = `
-  mutation UpdateMatricula($id: Int!, $data: Matricula_Data! @allow(fields: "recibo fecha archivado paqueteId semestreId userId")) {
+  mutation UpdateMatricula($id: Int!, $data: Matricula_Data! @allow(fields: "recibo fecha codigoInscripcion archivado paqueteId semestreId userId")) {
     matricula_update(id: $id, data: $data)
   }
 `;
@@ -596,13 +662,13 @@ export const DELETE_MODULO_ESTUDIANTES_BY_MATRICULA_MUTATION = `
 `;
 
 export const INSERT_USER_MUTATION = `
-  mutation InsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento fechaVencimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar dniImagenFrenteUrl dniImagenReversoUrl dniImagenFrenteProcesadaUrl dniImagenReversoProcesadaUrl rolId")) {
+  mutation InsertUser($data: User_Data! @allow(fields: "documentId username nickName email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento fechaVencimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar recorteFotografia dniImagenFrenteUrl dniImagenReversoUrl dniImagenFrenteProcesadaUrl dniImagenReversoProcesadaUrl rolId")) {
     user_insert(data: $data)
   }
 `;
 
 export const UPDATE_USER_MUTATION = `
-  mutation UpdateUser($id: Int!, $data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento fechaVencimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar dniImagenFrenteUrl dniImagenReversoUrl dniImagenFrenteProcesadaUrl dniImagenReversoProcesadaUrl rolId")) {
+  mutation UpdateUser($id: Int!, $data: User_Data! @allow(fields: "documentId username nickName email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento fechaVencimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar recorteFotografia dniImagenFrenteUrl dniImagenReversoUrl dniImagenFrenteProcesadaUrl dniImagenReversoProcesadaUrl rolId")) {
     user_update(id: $id, data: $data)
   }
 `;

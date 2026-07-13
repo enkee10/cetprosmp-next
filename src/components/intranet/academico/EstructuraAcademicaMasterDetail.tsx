@@ -8,15 +8,27 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
+  FormControl,
+  IconButton,
   InputAdornment,
+  InputLabel,
   List,
   ListItemButton,
   ListItemText,
+  MenuItem,
+  Select,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import LinkIcon from '@mui/icons-material/Link';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
 import { getAuth } from 'firebase/auth';
@@ -47,6 +59,7 @@ interface UnidadDidacticaDetalle {
   duracion: number | null;
   creditos: number | null;
   sigla: string | null;
+  comun?: boolean | null;
   capacidadesTerminales: CapacidadDetalle[];
 }
 
@@ -61,7 +74,10 @@ interface ModuloDetalle {
   metas: number | null;
   activo: boolean | null;
   slug: string | null;
+  comun: boolean | null;
+  planModuloId?: number | null;
   planId: number | null;
+  planIds?: number[];
   plan: {
     id?: number | null;
     planEstudio?: string | null;
@@ -84,6 +100,23 @@ interface ModuloDetalle {
 type EditableAcademicEntity = 'modulo' | 'unidadDidactica' | 'unidadDidacticaModulo' | 'capacidadTerminal' | 'indicadorCapacidad';
 type EditableValueType = 'text' | 'number' | 'boolean';
 type EditableCellValue = string | number | boolean | null;
+
+interface EstructuraOpciones {
+  modulosComunes: Array<{
+    id: number;
+    titulo: string | null;
+    tituloComercial: string | null;
+    planIds?: number[];
+  }>;
+  unidadesComunes: Array<{
+    id: number;
+    nombre: string | null;
+    sigla: string | null;
+    moduloIds?: number[];
+  }>;
+}
+
+type ReuseDialogKind = 'modulo' | 'unidadDidactica';
 
 interface EditableCellTarget {
   entity: EditableAcademicEntity;
@@ -442,11 +475,13 @@ function Panel({
   count,
   children,
   details,
+  actions,
 }: {
   title: string;
   count: number;
   children: ReactNode;
   details?: ReactNode;
+  actions?: ReactNode;
 }) {
   return (
     <Box
@@ -476,7 +511,10 @@ function Panel({
         <Typography variant="subtitle2" sx={{ minWidth: 0 }}>
           {title}
         </Typography>
-        <Chip size="small" label={count} />
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          {actions}
+          <Chip size="small" label={count} />
+        </Stack>
       </Box>
       <Box sx={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>{children}</Box>
       {details ? (
@@ -491,12 +529,16 @@ function Panel({
 
 export default function EstructuraAcademicaMasterDetail() {
   const [modulos, setModulos] = useState<ModuloDetalle[]>([]);
+  const [opciones, setOpciones] = useState<EstructuraOpciones>({ modulosComunes: [], unidadesComunes: [] });
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedModuloId, setSelectedModuloId] = useState<number | null>(null);
   const [selectedUnidadId, setSelectedUnidadId] = useState<number | null>(null);
   const [selectedCapacidadId, setSelectedCapacidadId] = useState<number | null>(null);
+  const [selectedIndicadorId, setSelectedIndicadorId] = useState<number | null>(null);
+  const [reuseDialog, setReuseDialog] = useState<{ kind: ReuseDialogKind; value: string } | null>(null);
 
   const auth = getAuth(app);
   const functions = useMemo(() => getFunctions(app), []);
@@ -526,12 +568,13 @@ export default function EstructuraAcademicaMasterDetail() {
       if (auth.currentUser) {
         await auth.currentUser.getIdToken(true);
       }
-      const listEstructuraAcademica = httpsCallable<undefined, { modulos?: ModuloDetalle[] }>(
+      const listEstructuraAcademica = httpsCallable<undefined, { modulos?: ModuloDetalle[]; opciones?: EstructuraOpciones }>(
         functions,
         'listEstructuraAcademica',
       );
       const result = await listEstructuraAcademica();
       setModulos(result.data.modulos || []);
+      setOpciones(result.data.opciones || { modulosComunes: [], unidadesComunes: [] });
       setError(null);
     } catch (err) {
       console.error('Error fetching academic structure: ', err);
@@ -577,6 +620,134 @@ export default function EstructuraAcademicaMasterDetail() {
     [capacidades, selectedCapacidadId],
   );
   const indicadores = selectedCapacidad?.indicadoresCapacidad ?? [];
+  const selectedIndicador = useMemo(
+    () => indicadores.find((indicador) => indicador.id === selectedIndicadorId) ?? indicadores[0] ?? null,
+    [indicadores, selectedIndicadorId],
+  );
+
+  const reusableModulos = useMemo(
+    () => opciones.modulosComunes.filter((modulo) => !selectedModulo?.planId || !(modulo.planIds ?? []).includes(selectedModulo.planId)),
+    [opciones.modulosComunes, selectedModulo?.planId],
+  );
+  const reusableUnidades = useMemo(
+    () => opciones.unidadesComunes.filter((unidad) => !selectedModulo?.id || !(unidad.moduloIds ?? []).includes(selectedModulo.id)),
+    [opciones.unidadesComunes, selectedModulo?.id],
+  );
+
+  const runStructureAction = useCallback(async (
+    callableName: 'createEstructuraAcademicaItem' | 'reuseEstructuraAcademicaItem' | 'detachEstructuraAcademicaItem',
+    payload: Record<string, unknown>,
+  ) => {
+    setActionLoading(true);
+    try {
+      if (auth.currentUser) {
+        await auth.currentUser.getIdToken(true);
+      }
+      const callable = httpsCallable<Record<string, unknown>, { id?: number }>(functions, callableName);
+      await callable(payload);
+      await fetchEstructura();
+      setError(null);
+    } catch (err) {
+      console.error(`Error running ${callableName}: `, err);
+      setError('No se pudo completar la accion. Verifica permisos o dependencias del registro.');
+    } finally {
+      setActionLoading(false);
+    }
+  }, [auth, fetchEstructura, functions]);
+
+  const handleCreateModulo = useCallback(() => {
+    if (!selectedModulo?.planId) return;
+    void runStructureAction('createEstructuraAcademicaItem', {
+      entity: 'modulo',
+      planId: selectedModulo.planId,
+    });
+  }, [runStructureAction, selectedModulo?.planId]);
+
+  const handleCreateUnidad = useCallback(() => {
+    if (!selectedModulo?.id) return;
+    void runStructureAction('createEstructuraAcademicaItem', {
+      entity: 'unidadDidactica',
+      moduloId: selectedModulo.id,
+    });
+  }, [runStructureAction, selectedModulo?.id]);
+
+  const handleCreateCapacidad = useCallback(() => {
+    if (!selectedUnidad?.id) return;
+    void runStructureAction('createEstructuraAcademicaItem', {
+      entity: 'capacidadTerminal',
+      unidadDidacticaId: selectedUnidad.id,
+    });
+  }, [runStructureAction, selectedUnidad?.id]);
+
+  const handleCreateIndicador = useCallback(() => {
+    if (!selectedCapacidad?.id) return;
+    void runStructureAction('createEstructuraAcademicaItem', {
+      entity: 'indicadorCapacidad',
+      capacidadTerminalId: selectedCapacidad.id,
+    });
+  }, [runStructureAction, selectedCapacidad?.id]);
+
+  const handleDetachModulo = useCallback(() => {
+    if (!selectedModulo?.id || !selectedModulo.planModuloId) return;
+    if (!window.confirm('Se quitara este modulo del plan actual. Deseas continuar?')) return;
+    void runStructureAction('detachEstructuraAcademicaItem', {
+      entity: 'modulo',
+      moduloId: selectedModulo.id,
+      relacionId: selectedModulo.planModuloId,
+    });
+  }, [runStructureAction, selectedModulo?.id, selectedModulo?.planModuloId]);
+
+  const handleDetachUnidad = useCallback(() => {
+    if (!selectedUnidad?.relacionId) return;
+    if (!window.confirm('Se quitara esta unidad del modulo actual. Deseas continuar?')) return;
+    void runStructureAction('detachEstructuraAcademicaItem', {
+      entity: 'unidadDidactica',
+      relacionId: selectedUnidad.relacionId,
+    });
+  }, [runStructureAction, selectedUnidad?.relacionId]);
+
+  const handleDetachCapacidad = useCallback(() => {
+    if (!selectedCapacidad?.id) return;
+    if (!window.confirm('Se quitara esta capacidad y sus indicadores. Deseas continuar?')) return;
+    void runStructureAction('detachEstructuraAcademicaItem', {
+      entity: 'capacidadTerminal',
+      capacidadTerminalId: selectedCapacidad.id,
+    });
+  }, [runStructureAction, selectedCapacidad?.id]);
+
+  const handleDetachIndicador = useCallback((indicadorId: number) => {
+    if (!window.confirm('Se quitara este indicador. Deseas continuar?')) return;
+    void runStructureAction('detachEstructuraAcademicaItem', {
+      entity: 'indicadorCapacidad',
+      indicadorCapacidadId: indicadorId,
+    });
+  }, [runStructureAction]);
+
+  const handleDetachSelectedIndicador = useCallback(() => {
+    if (!selectedIndicador?.id) return;
+    handleDetachIndicador(selectedIndicador.id);
+  }, [handleDetachIndicador, selectedIndicador?.id]);
+
+  const handleConfirmReuse = useCallback(() => {
+    if (!reuseDialog?.value) return;
+    if (reuseDialog.kind === 'modulo') {
+      if (!selectedModulo?.planId) return;
+      void runStructureAction('reuseEstructuraAcademicaItem', {
+        entity: 'modulo',
+        planId: selectedModulo.planId,
+        moduloId: Number(reuseDialog.value),
+      });
+      setReuseDialog(null);
+      return;
+    }
+    if (!selectedModulo?.id) return;
+    void runStructureAction('reuseEstructuraAcademicaItem', {
+      entity: 'unidadDidactica',
+      moduloId: selectedModulo.id,
+      unidadDidacticaId: Number(reuseDialog.value),
+    });
+    setReuseDialog(null);
+  }, [reuseDialog, runStructureAction, selectedModulo?.id, selectedModulo?.planId]);
 
   useEffect(() => {
     const nextId = selectedModulo?.id ?? null;
@@ -592,6 +763,11 @@ export default function EstructuraAcademicaMasterDetail() {
     const nextId = selectedCapacidad?.id ?? null;
     if (selectedCapacidadId !== nextId) setSelectedCapacidadId(nextId);
   }, [selectedCapacidad?.id, selectedCapacidadId]);
+
+  useEffect(() => {
+    const nextId = selectedIndicador?.id ?? null;
+    if (selectedIndicadorId !== nextId) setSelectedIndicadorId(nextId);
+  }, [selectedIndicador?.id, selectedIndicadorId]);
 
   const totals = useMemo(() => ({
     modulos: modulos.length,
@@ -664,6 +840,24 @@ export default function EstructuraAcademicaMasterDetail() {
           <Panel
             title="Modulo"
             count={filteredModulos.length}
+            actions={
+              <>
+                <IconButton size="small" title="Crear modulo" disabled={actionLoading || !selectedModulo?.planId} onClick={handleCreateModulo}>
+                  <AddIcon fontSize="small" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  title="Reutilizar modulo comun"
+                  disabled={actionLoading || !selectedModulo?.planId || reusableModulos.length === 0}
+                  onClick={() => setReuseDialog({ kind: 'modulo', value: '' })}
+                >
+                  <LinkIcon fontSize="small" />
+                </IconButton>
+                <IconButton size="small" title="Quitar modulo del plan" color="error" disabled={actionLoading || !selectedModulo?.planModuloId} onClick={handleDetachModulo}>
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </>
+            }
             details={
               selectedModulo ? (
                 <DetailFields
@@ -705,6 +899,11 @@ export default function EstructuraAcademicaMasterDetail() {
                       value: selectedModulo.slug,
                       target: { entity: 'modulo', id: selectedModulo.id, field: 'slug', valueType: 'text' },
                     },
+                    {
+                      label: 'Comun',
+                      value: selectedModulo.comun,
+                      target: { entity: 'modulo', id: selectedModulo.id, field: 'comun', valueType: 'boolean' },
+                    },
                     { label: 'Plan', value: planName(selectedModulo) },
                   ]}
                 />
@@ -722,6 +921,7 @@ export default function EstructuraAcademicaMasterDetail() {
                       setSelectedModuloId(modulo.id);
                       setSelectedUnidadId(null);
                       setSelectedCapacidadId(null);
+                      setSelectedIndicadorId(null);
                     }}
                     sx={{ alignItems: 'flex-start', py: 0.9, minHeight: 72 }}
                   >
@@ -759,6 +959,24 @@ export default function EstructuraAcademicaMasterDetail() {
           <Panel
             title="Unidad Didactica"
             count={unidades.length}
+            actions={
+              <>
+                <IconButton size="small" title="Crear unidad didactica" disabled={actionLoading || !selectedModulo?.id} onClick={handleCreateUnidad}>
+                  <AddIcon fontSize="small" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  title="Reutilizar unidad comun"
+                  disabled={actionLoading || !selectedModulo?.id || reusableUnidades.length === 0}
+                  onClick={() => setReuseDialog({ kind: 'unidadDidactica', value: '' })}
+                >
+                  <LinkIcon fontSize="small" />
+                </IconButton>
+                <IconButton size="small" title="Quitar unidad del modulo" color="error" disabled={actionLoading || !selectedUnidad?.relacionId} onClick={handleDetachUnidad}>
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </>
+            }
             details={
               selectedUnidad ? (
                 <DetailFields
@@ -811,6 +1029,7 @@ export default function EstructuraAcademicaMasterDetail() {
                     onClick={() => {
                       setSelectedUnidadId(unidad.id);
                       setSelectedCapacidadId(null);
+                      setSelectedIndicadorId(null);
                     }}
                     sx={{ alignItems: 'flex-start', py: 0.9, minHeight: 68 }}
                   >
@@ -855,6 +1074,16 @@ export default function EstructuraAcademicaMasterDetail() {
           <Panel
             title="Capacidad"
             count={capacidades.length}
+            actions={
+              <>
+                <IconButton size="small" title="Crear capacidad" disabled={actionLoading || !selectedUnidad?.id} onClick={handleCreateCapacidad}>
+                  <AddIcon fontSize="small" />
+                </IconButton>
+                <IconButton size="small" title="Quitar capacidad" color="error" disabled={actionLoading || !selectedCapacidad?.id} onClick={handleDetachCapacidad}>
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </>
+            }
             details={
               selectedCapacidad ? (
                 <DetailFields
@@ -892,7 +1121,10 @@ export default function EstructuraAcademicaMasterDetail() {
                   <ListItemButton
                     key={capacidad.id}
                     selected={selectedCapacidad?.id === capacidad.id}
-                    onClick={() => setSelectedCapacidadId(capacidad.id)}
+                    onClick={() => {
+                      setSelectedCapacidadId(capacidad.id);
+                      setSelectedIndicadorId(null);
+                    }}
                     sx={{ alignItems: 'flex-start', py: 0.95, minHeight: 78 }}
                   >
                     <ListItemText
@@ -928,6 +1160,16 @@ export default function EstructuraAcademicaMasterDetail() {
           <Panel
             title="Criterio / Indicador"
             count={indicadores.length}
+            actions={
+              <>
+                <IconButton size="small" title="Crear indicador" disabled={actionLoading || !selectedCapacidad?.id} onClick={handleCreateIndicador}>
+                  <AddIcon fontSize="small" />
+                </IconButton>
+                <IconButton size="small" title="Quitar indicador" color="error" disabled={actionLoading || !selectedIndicador?.id} onClick={handleDetachSelectedIndicador}>
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </>
+            }
             details={
               selectedCapacidad ? (
                 <DetailFields
@@ -948,8 +1190,9 @@ export default function EstructuraAcademicaMasterDetail() {
                 {indicadores.map((indicador) => (
                   <ListItemButton
                     key={indicador.id}
-                    selected={false}
-                    sx={{ alignItems: 'flex-start', py: 0.95, minHeight: 72, cursor: 'default' }}
+                    selected={selectedIndicador?.id === indicador.id}
+                    onClick={() => setSelectedIndicadorId(indicador.id)}
+                    sx={{ alignItems: 'flex-start', py: 0.95, minHeight: 72 }}
                   >
                     <ListItemText
                       primaryTypographyProps={{ component: 'div' }}
@@ -1005,6 +1248,36 @@ export default function EstructuraAcademicaMasterDetail() {
           </Panel>
         </Box>
       )}
+      <Dialog open={Boolean(reuseDialog)} onClose={() => setReuseDialog(null)} fullWidth maxWidth="sm">
+        <DialogTitle>
+          {reuseDialog?.kind === 'modulo' ? 'Reutilizar modulo comun' : 'Reutilizar unidad didactica comun'}
+        </DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth size="small" sx={{ mt: 1 }}>
+            <InputLabel id="reuse-academic-item-label">Elemento comun</InputLabel>
+            <Select
+              labelId="reuse-academic-item-label"
+              label="Elemento comun"
+              value={reuseDialog?.value ?? ''}
+              onChange={(event) => setReuseDialog((current) => current ? { ...current, value: event.target.value } : current)}
+            >
+              {(reuseDialog?.kind === 'modulo' ? reusableModulos : reusableUnidades).map((item) => (
+                <MenuItem key={item.id} value={String(item.id)}>
+                  {'tituloComercial' in item
+                    ? item.tituloComercial || item.titulo || `Modulo ${item.id}`
+                    : item.nombre || item.sigla || `Unidad ${item.id}`}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setReuseDialog(null)}>Cancelar</Button>
+          <Button variant="contained" disabled={!reuseDialog?.value || actionLoading} onClick={handleConfirmReuse}>
+            Reutilizar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </IntranetListLayout>
   );
 }

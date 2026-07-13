@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectTipoCarrera, DataConnectTipoCarreraInput } from "../core/types.js";
 import {
   DELETE_TIPO_CARRERA_MUTATION,
@@ -32,10 +33,7 @@ const GET_TIPO_CARRERA_QUERY = `
 `;
 
 export const listTiposCarrera = https.onCall(async (_data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to list career types.");
-  }
+  await requirePermission(context, "tipos-carrera", "view");
 
   try {
     const response = await dataConnect.executeGraphql<
@@ -54,10 +52,7 @@ export const listTiposCarrera = https.onCall(async (_data, context) => {
 });
 
 export const getTipoCarrera = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to get career types.");
-  }
+  await requirePermission(context, "tipos-carrera", "view");
 
   const tipoCarreraId = toNumber(data?.id, -1);
   if (tipoCarreraId <= 0) {
@@ -81,17 +76,13 @@ export const getTipoCarrera = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateTipoCarrera = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to mutate career types.");
-  }
-
   const payload = buildTipoCarreraDataFromInput(data as Record<string, unknown>);
   if (!payload.nombre) {
     throw new https.HttpsError("invalid-argument", "nombre is required.");
   }
 
   const tipoCarreraId = toNumberOrNull(data?.id);
+  await requirePermission(context, "tipos-carrera", tipoCarreraId ? "edit" : "create");
 
   try {
     if (tipoCarreraId) {
@@ -122,10 +113,7 @@ export const createOrUpdateTipoCarrera = https.onCall(async (data, context) => {
 });
 
 export const deleteTipoCarrera = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to delete career types.");
-  }
+  await requirePermission(context, "tipos-carrera", "delete");
 
   const tipoCarreraId = toNumber(data?.id, -1);
   if (tipoCarreraId <= 0) {

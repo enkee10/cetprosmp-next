@@ -74,7 +74,9 @@ interface ModuloData {
   metas: number | null;
   activo: boolean | null;
   slug: string | null;
+  comun: boolean | null;
   planId: number | null;
+  planIds?: number[];
 }
 
 interface ModuloDraft {
@@ -89,6 +91,7 @@ interface ModuloDraft {
   metas: string;
   activo: boolean;
   slug: string;
+  planIds: number[];
   deleted?: boolean;
 }
 
@@ -117,6 +120,7 @@ const createEmptyModuloDraft = (): ModuloDraft => ({
   metas: '',
   activo: true,
   slug: '',
+  planIds: [],
 });
 
 const mapModuloToDraft = (modulo: ModuloData): ModuloDraft => ({
@@ -131,6 +135,11 @@ const mapModuloToDraft = (modulo: ModuloData): ModuloDraft => ({
   metas: modulo.metas != null ? String(modulo.metas) : '',
   activo: modulo.activo ?? true,
   slug: modulo.slug || '',
+  planIds: modulo.planIds && modulo.planIds.length > 0
+    ? modulo.planIds
+    : modulo.planId != null
+      ? [modulo.planId]
+      : [],
 });
 
 const hasModuloDraftContent = (modulo: ModuloDraft) =>
@@ -172,7 +181,6 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
   const [periodoVigenciaId, setPeriodoVigenciaId] = useState('');
   const [versionId, setVersionId] = useState('');
   const [modulos, setModulos] = useState<ModuloDraft[]>([]);
-  const [deletedModuloIds, setDeletedModuloIds] = useState<number[]>([]);
   const [carreras, setCarreras] = useState<CarreraOption[]>([]);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -234,11 +242,12 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
           setVersionId(fetched.versionId != null ? String(fetched.versionId) : '');
           setModulos(
             (modulosResult.data.modulos || [])
-              .filter((modulo) => modulo.planId === fetched.id)
+              .filter((modulo) => (modulo.planIds && modulo.planIds.length > 0
+                ? modulo.planIds.includes(fetched.id)
+                : modulo.planId === fetched.id))
               .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || String(a.titulo ?? '').localeCompare(String(b.titulo ?? ''), 'es'))
               .map(mapModuloToDraft),
           );
-          setDeletedModuloIds([]);
         }
       } catch (err) {
         console.error('Error fetching plan: ', err);
@@ -311,7 +320,6 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
   const handleRemoveModulo = (localId: string) => {
     const target = modulos.find((modulo) => modulo.localId === localId);
     if (target?.id) {
-      setDeletedModuloIds((current) => (current.includes(target.id!) ? current : [...current, target.id!]));
       setModulos((prev) => prev.map((modulo) => (modulo.localId === localId ? { ...modulo, deleted: true } : modulo)));
       return;
     }
@@ -392,27 +400,55 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
           activo: boolean;
           slug: string;
           planId?: number | null;
+          planIds?: number[];
         },
         { id: number | null }
       >(functions, 'createOrUpdateModulo');
       const deleteModulo = httpsCallable<{ id: number }, { id: number | null }>(functions, 'deleteModulo');
 
-      await Promise.all(deletedModuloIds.map((id) => deleteModulo({ id })));
+      const deletedModulos = modulos.filter((modulo) => modulo.deleted && modulo.id);
+      await Promise.all(
+        deletedModulos.map((modulo) => {
+          const remainingPlanIds = modulo.planIds.filter((id) => id !== savedPlanId);
+          if (remainingPlanIds.length > 0) {
+            return createOrUpdateModulo({
+              id: modulo.id,
+              titulo: modulo.titulo,
+              tituloComercial: modulo.tituloComercial,
+              orden: modulo.orden ? Number(modulo.orden) : null,
+              descripcion: modulo.descripcion,
+              horas: modulo.horas ? Number(modulo.horas) : null,
+              creditos: modulo.creditos ? Number(modulo.creditos) : null,
+              metas: modulo.metas ? Number(modulo.metas) : null,
+              activo: modulo.activo,
+              slug: modulo.slug,
+              planId: remainingPlanIds[0] ?? null,
+              planIds: remainingPlanIds,
+            });
+          }
+
+          return deleteModulo({ id: modulo.id! });
+        }),
+      );
       await Promise.all(
         modulosToSave.map((modulo) =>
-          createOrUpdateModulo({
-            id: modulo.id,
-            titulo: modulo.titulo,
-            tituloComercial: modulo.tituloComercial,
-            orden: modulo.orden ? Number(modulo.orden) : null,
-            descripcion: modulo.descripcion,
-            horas: modulo.horas ? Number(modulo.horas) : null,
-            creditos: modulo.creditos ? Number(modulo.creditos) : null,
-            metas: modulo.metas ? Number(modulo.metas) : null,
-            activo: modulo.activo,
-            slug: modulo.slug,
-            planId: savedPlanId,
-          }),
+          {
+            const nextPlanIds = Array.from(new Set([...(modulo.planIds || []), savedPlanId]));
+            return createOrUpdateModulo({
+              id: modulo.id,
+              titulo: modulo.titulo,
+              tituloComercial: modulo.tituloComercial,
+              orden: modulo.orden ? Number(modulo.orden) : null,
+              descripcion: modulo.descripcion,
+              horas: modulo.horas ? Number(modulo.horas) : null,
+              creditos: modulo.creditos ? Number(modulo.creditos) : null,
+              metas: modulo.metas ? Number(modulo.metas) : null,
+              activo: modulo.activo,
+              slug: modulo.slug,
+              planId: nextPlanIds[0] ?? null,
+              planIds: nextPlanIds,
+            });
+          },
         ),
       );
 

@@ -18,6 +18,7 @@ import {
   toNumber,
 } from "../core/userMappers.js";
 import { authAdmin, DEFAULT_LEVEL, getInitialClaimsByEmail } from "../core/authCore.js";
+import { requireAuthenticated, requirePermission } from "../core/permissions.js";
 import {
   dataConnect,
   deleteDataConnectUserByDocumentId,
@@ -33,9 +34,11 @@ const LIST_USERS_QUERY = `
       id
       documentId
       username
+      nickName
       email
       blocked
       avatar
+      recorteFotografia
       dniImagenFrenteProcesadaUrl
       dniImagenReversoProcesadaUrl
       nombre
@@ -56,6 +59,26 @@ const LIST_USERS_QUERY = `
       fechaCreacion
       fechaModificacion
       emailCreador
+      rolId
+      rol {
+        titulo
+        scala
+      }
+    }
+  }
+`;
+
+const GET_MY_PROFILE_QUERY = `
+  query GetMyProfileManual($documentId: String!) {
+    users(where: { documentId: { eq: $documentId } }, limit: 1) {
+      id
+      documentId
+      username
+      avatar
+      recorteFotografia
+      nombre
+      apellidoPaterno
+      apellidoMaterno
       rolId
       rol {
         titulo
@@ -163,24 +186,6 @@ async function hydrateProcessedAvatarThumbnails(
   });
 }
 
-function isStudentToTeacherOrHigherTransition(
-  previousRoleId: number | null | undefined,
-  nextRoleId: number | null | undefined,
-): boolean {
-  const previous = Number(previousRoleId ?? 0);
-  const next = Number(nextRoleId ?? 0);
-  return previous >= 1 && previous <= 3 && next >= 4 && next <= 8;
-}
-
-function isTeacherOrStaffToStudentTransition(
-  previousRoleId: number | null | undefined,
-  nextRoleId: number | null | undefined,
-): boolean {
-  const previous = Number(previousRoleId ?? 0);
-  const next = Number(nextRoleId ?? 0);
-  return previous >= 4 && previous <= 8 && next >= 1 && next <= 3;
-}
-
 export const registerUser = https.onCall(async (data) => {
   const { username, email, password } = data;
   if (!username || !email || !password) {
@@ -217,10 +222,7 @@ export const registerUser = https.onCall(async (data) => {
 });
 
 export const listUsers = https.onCall(async (_data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to list users.");
-  }
+  await requirePermission(context, "users", "view");
 
   try {
     const users = (await hydrateProcessedAvatarThumbnails(await executeListUsersQuerySerialized()))
@@ -241,14 +243,63 @@ export const listUsers = https.onCall(async (_data, context) => {
   }
 });
 
-export const createNewUser = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to create new users.");
+export const getMyProfile = https.onCall(async (_data, context) => {
+  requireAuthenticated(context);
+
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
   }
 
+  try {
+    const roleIdFromClaims = toNumber(context.auth?.token?.role, -1);
+    const response = await dataConnect.executeGraphql<{
+      users: Array<Record<string, unknown>>;
+    }, { documentId: string }>(
+      GET_MY_PROFILE_QUERY,
+      { variables: { documentId: uid } },
+    );
+    const profile = response.data.users?.[0] ?? null;
+    if (!profile) {
+      const role = roleIdFromClaims > 0 ? await getRoleById(roleIdFromClaims) : null;
+      return {
+        profile: role
+          ? {
+            rolId: roleIdFromClaims,
+            rolTitulo: role.titulo ?? null,
+            roleTitle: role.titulo ?? null,
+            cargo: role.titulo ?? null,
+          }
+          : null,
+      };
+    }
+
+    const [hydratedProfile] = await hydrateProcessedAvatarThumbnails([profile]);
+    const resolvedProfile = hydratedProfile ?? profile;
+    const roleId = toNumber(resolvedProfile.rolId, roleIdFromClaims);
+    const embeddedRoleTitle = asNullableString((resolvedProfile.rol as { titulo?: unknown } | null)?.titulo);
+    const role = !embeddedRoleTitle && roleId > 0 ? await getRoleById(roleId) : null;
+    const roleTitle = embeddedRoleTitle ?? role?.titulo ?? null;
+
+    return {
+      profile: {
+        ...resolvedProfile,
+        rolTitulo: roleTitle,
+        roleTitle,
+        cargo: roleTitle,
+      },
+    };
+  } catch (error) {
+    console.error("Error in getMyProfile:", error);
+    throw new https.HttpsError("internal", "No se pudo cargar el perfil del usuario.");
+  }
+});
+
+export const createNewUser = https.onCall(async (data, context) => {
+  await requirePermission(context, "users", "create");
+
   const roleId = data?.rolId;
-  const { email, password, username, level, ...otherData } = data;
+  const { email, password, username, ...otherData } = data;
   if (!email || !password || !username || !roleId) {
     throw new https.HttpsError("invalid-argument", "Email, password, username, and roleId are required.");
   }
@@ -271,7 +322,7 @@ export const createNewUser = https.onCall(async (data, context) => {
       throw new https.HttpsError("not-found", `The role ID '${roleId}' does not exist.`);
     }
 
-    const permissionLevel = toNumber(level, role.scala ?? DEFAULT_LEVEL);
+    const permissionLevel = role.scala ?? DEFAULT_LEVEL;
     const blockedForAuth = Boolean(otherData?.bloqueado ?? otherData?.blocked ?? false);
     const nowIso = new Date().toISOString();
     const requesterEmail = asNullableString(context.auth?.token?.email);
@@ -440,10 +491,7 @@ export const createNewUser = https.onCall(async (data, context) => {
 });
 
 export const updateUserProfile = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to update users.");
-  }
+  await requirePermission(context, "users", "edit");
 
   const documentId = asNullableString(data?.documentId ?? data?.uid);
   if (!documentId) {
@@ -463,6 +511,19 @@ export const updateUserProfile = https.onCall(async (data, context) => {
 
     const nowIso = new Date().toISOString();
     const payload = buildUserDataFromInput(data as Record<string, unknown>, { documentId });
+    const requestedAvatar = asNullableString(data?.avatar ?? data?.foto);
+    const fallbackAvatar = asNullableString(data?.previousAvatar)
+      ?? asNullableString(data?.previousAvatarPequeno)
+      ?? asNullableString(data?.previousPhotoURL);
+    const avatarForPersist = requestedAvatar ?? fallbackAvatar;
+    const avatarForWorkspace = requestedAvatar && requestedAvatar !== fallbackAvatar
+      ? requestedAvatar
+      : undefined;
+    if (avatarForPersist) {
+      payload.avatar = avatarForPersist;
+    } else {
+      delete payload.avatar;
+    }
     payload.fechaModificacion = nowIso;
     if (!payload.apellidoMaterno || !payload.celular || !payload.dni) {
       console.warn("updateUserProfile payload has empty critical fields", {
@@ -474,25 +535,9 @@ export const updateUserProfile = https.onCall(async (data, context) => {
     }
     const roleNumberId = toNumber(payload.rolId, -1);
     const previousRoleNumberId = toNumber(data?.previousRolId, -1);
-    if (isStudentToTeacherOrHigherTransition(previousRoleNumberId, roleNumberId)) {
-      throw new https.HttpsError(
-        "failed-precondition",
-        "No se puede cambiar de rol a docente o superior.",
-      );
-    }
-    if (isTeacherOrStaffToStudentTransition(previousRoleNumberId, roleNumberId)) {
-      throw new https.HttpsError(
-        "failed-precondition",
-        "No es posible cambiar a este tipo de rol.",
-      );
-    }
-
     const authUser = await authAdmin
       .getUser(documentId)
       .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
-    if (!payload.avatar && authUser?.photoURL) {
-      payload.avatar = authUser.photoURL;
-    }
     const nextAuthPrimaryEmail = asNullableString(payload.correoInstitucional);
     if (authUser) {
       const authUpdate: {
@@ -572,7 +617,7 @@ export const updateUserProfile = https.onCall(async (data, context) => {
           email: workspaceEmail,
           institutionalEmail: payload.correoInstitucional ?? null,
           formEmail: payload.email ?? previousEmailFromRequest ?? authUser?.email ?? null,
-          avatar: payload.avatar ?? null,
+          avatar: avatarForWorkspace,
           username: workspaceUsername,
           roleId: roleNumberId,
           roleTitle: role?.titulo ?? null,
@@ -647,14 +692,7 @@ export const updateUserProfile = https.onCall(async (data, context) => {
 });
 
 export const deleteUser = https.onCall(async (data, context) => {
-  const requesterRole = Number(context.auth?.token?.role ?? 0);
-  if (new Set<number>([5, 6, 7]).has(requesterRole)) {
-    throw new https.HttpsError("permission-denied", "No tienes permiso para eliminar usuarios.");
-  }
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to delete users.");
-  }
+  await requirePermission(context, "users", "delete");
 
   const uid = asNullableString(data?.uid ?? data?.documentId);
   if (!uid) {

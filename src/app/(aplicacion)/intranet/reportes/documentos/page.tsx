@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
   Button,
   CircularProgress,
   FormControl,
+  IconButton,
   InputLabel,
+  Link,
   Menu,
   MenuItem,
   Paper,
@@ -17,17 +19,34 @@ import {
 } from '@mui/material';
 import ArticleIcon from '@mui/icons-material/Article';
 import DownloadIcon from '@mui/icons-material/Download';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { GridColDef, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { httpsCallable } from 'firebase/functions';
+import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import { functions } from '@/lib/firebase';
-import { useAuth } from '@/context/AuthContext';
-import { isDocenteRole } from '@/lib/intranetPermissions';
+import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
+
+type TipoDocumento = 'acta' | 'nomina';
+type DownloadFormat = 'pdf' | 'excel';
 
 type SemestreOption = {
   id: number;
   titulo?: string | null;
+};
+
+type RegistroAcademicoDocumento = {
+  id: number;
+  tipoDocumento: string;
+  grupoModuloId: number;
+  pdfPath?: string | null;
+  pdfUrl?: string | null;
+  excelPath?: string | null;
+  excelUrl?: string | null;
+  generadoEn?: string | null;
 };
 
 type GrupoModuloOption = {
@@ -43,9 +62,18 @@ type GrupoModuloOption = {
   tipoCarrera?: string | null;
 };
 
+type RegistroAcademicoRow = GrupoModuloOption & {
+  selectionOrder: number | null;
+  label: string;
+  documento?: RegistroAcademicoDocumento | null;
+  generado: boolean;
+  generadoEnText: string;
+};
+
 type ReportOptionsResponse = {
   semestres?: SemestreOption[];
   grupoModulos?: GrupoModuloOption[];
+  documentos?: RegistroAcademicoDocumento[];
 };
 
 type GeneratedFile = {
@@ -55,147 +83,311 @@ type GeneratedFile = {
 };
 
 type GenerateResponse = {
-  tipoDocumento: 'acta' | 'nomina';
+  tipoDocumento: TipoDocumento;
   semestreId: number | null;
   grupoModuloId: number | null;
   totalReportes: number;
   pdf: GeneratedFile;
   excel: GeneratedFile;
+  documento?: RegistroAcademicoDocumento;
 };
 
-const getGrupoModuloLabel = (option: GrupoModuloOption) => {
-  const parts = [
-    option.moduloNombre || option.nombre || `Modulo ${option.id}`,
-    option.turno,
-    option.horario,
-    option.docente,
-  ].filter(Boolean);
-  return parts.join(' - ');
+type DownloadResponse = {
+  formato: DownloadFormat;
+  file: GeneratedFile;
 };
+
+const createEmptySelectionModel = (): GridRowSelectionModel => ({ type: 'include', ids: new Set<GridRowId>() });
 
 const selectMenuProps = {
   disableScrollLock: true,
   PaperProps: {
-    sx: {
-      maxHeight: 360,
-    },
+    sx: { maxHeight: 360 },
   },
 };
 
-export default function ReporteDocumentosPage() {
-  const { user } = useAuth();
+function selectionModelToIds(model: GridRowSelectionModel) {
+  return Array.from(model.ids).map((id) => Number(id)).filter((id) => Number.isFinite(id));
+}
+
+function semestrePrefix(value?: string | null) {
+  const text = String(value || '').trim();
+  const semesterCode = text.match(/\b\d{2}(\d{2}\s*-\s*\d+)\b/)?.[1];
+  if (semesterCode) return semesterCode.replace(/\s+/g, '');
+  const digits = text.replace(/\D/g, '');
+  return digits.slice(-4);
+}
+
+function getGrupoModuloLabel(option: GrupoModuloOption) {
+  const prefix = semestrePrefix(option.semestreTitulo);
+  const modulo = option.moduloNombre || option.nombre || `Modulo ${option.id}`;
+  const turno = option.turno ? `[${option.turno}]` : '';
+  const horario = option.horario || '';
+  const docente = option.docente ? `(${option.docente})` : '';
+  return [prefix, modulo, turno, horario, docente].filter(Boolean).join(' ');
+}
+
+function formatDateTime(value?: string | null) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString('es-PE', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  });
+}
+
+function openUrl(url?: string | null) {
+  if (!url) return;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+export default function RegistroAcademicosPage() {
+  const { can, loading: permissionsLoading } = useIntranetPermissions();
   const [loadingOptions, setLoadingOptions] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState('');
+  const [generatingIds, setGeneratingIds] = useState<Set<number>>(new Set());
+  const [downloading, setDownloading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageSeverity, setMessageSeverity] = useState<'success' | 'error' | 'info'>('info');
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [grupoModulos, setGrupoModulos] = useState<GrupoModuloOption[]>([]);
-  const [tipoDocumento, setTipoDocumento] = useState<'acta' | 'nomina'>('acta');
+  const [documentos, setDocumentos] = useState<RegistroAcademicoDocumento[]>([]);
+  const [tipoDocumento, setTipoDocumento] = useState<TipoDocumento>('acta');
   const [semestreId, setSemestreId] = useState('');
-  const [grupoModuloId, setGrupoModuloId] = useState('');
-  const [generated, setGenerated] = useState<GenerateResponse | null>(null);
-  const [downloadAnchor, setDownloadAnchor] = useState<HTMLElement | null>(null);
+  const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>(createEmptySelectionModel);
+  const [selectionOrder, setSelectionOrder] = useState<number[]>([]);
+  const [rowMenuAnchor, setRowMenuAnchor] = useState<HTMLElement | null>(null);
+  const [activeRowId, setActiveRowId] = useState<number | null>(null);
+  const [toolbarDownloadAnchor, setToolbarDownloadAnchor] = useState<HTMLElement | null>(null);
 
-  const isDocente = isDocenteRole(user?.role);
+  const canViewReportes = can('documentos-reportes', 'view');
+  const canGenerateReportes = can('documentos-reportes', 'create');
+
+  const loadOptions = useCallback(async () => {
+    setLoadingOptions(true);
+    setMessage('');
+    try {
+      const listReporteDocumentosOptions = httpsCallable<undefined, ReportOptionsResponse>(
+        functions,
+        'listReporteDocumentosOptions',
+      );
+      const result = await listReporteDocumentosOptions();
+      const nextSemestres = result.data.semestres || [];
+      setSemestres(nextSemestres);
+      setGrupoModulos(result.data.grupoModulos || []);
+      setDocumentos(result.data.documentos || []);
+      setSemestreId((current) => current || String(nextSemestres[0]?.id || ''));
+    } catch (err) {
+      console.error('Error loading registros academicos options:', err);
+      setMessage('No se pudieron cargar los registros academicos.');
+      setMessageSeverity('error');
+    } finally {
+      setLoadingOptions(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (isDocente) {
+    if (permissionsLoading) return;
+    if (!canViewReportes) {
       setLoadingOptions(false);
       return;
     }
-
-    let active = true;
-    const loadOptions = async () => {
-      setLoadingOptions(true);
-      setError('');
-      try {
-        const listReporteDocumentosOptions = httpsCallable<undefined, ReportOptionsResponse>(
-          functions,
-          'listReporteDocumentosOptions',
-        );
-        const result = await listReporteDocumentosOptions();
-        if (!active) return;
-        const nextSemestres = result.data.semestres || [];
-        setSemestres(nextSemestres);
-        setGrupoModulos(result.data.grupoModulos || []);
-        setSemestreId((current) => current || String(nextSemestres[0]?.id || ''));
-      } catch (err) {
-        console.error('Error loading reporte documentos options:', err);
-        if (active) setError('No se pudieron cargar las opciones de reportes.');
-      } finally {
-        if (active) setLoadingOptions(false);
-      }
-    };
-
     void loadOptions();
-    return () => {
-      active = false;
-    };
-  }, [isDocente]);
-
-  const filteredGrupoModulos = useMemo(
-    () => grupoModulos.filter((item) => String(item.semestreId || '') === semestreId),
-    [grupoModulos, semestreId],
-  );
+  }, [canViewReportes, loadOptions, permissionsLoading]);
 
   useEffect(() => {
-    if (!semestreId) {
-      setGrupoModuloId('');
-      return;
-    }
-    if (filteredGrupoModulos.some((item) => String(item.id) === grupoModuloId)) return;
-    setGrupoModuloId(filteredGrupoModulos[0] ? String(filteredGrupoModulos[0].id) : '');
-    setGenerated(null);
-  }, [filteredGrupoModulos, grupoModuloId, semestreId]);
+    setSelectionModel(createEmptySelectionModel());
+    setSelectionOrder([]);
+  }, [semestreId, tipoDocumento]);
 
+  const documentoByGrupoModuloId = useMemo(() => {
+    const map = new Map<number, RegistroAcademicoDocumento>();
+    documentos
+      .filter((documento) => documento.tipoDocumento === tipoDocumento)
+      .forEach((documento) => map.set(documento.grupoModuloId, documento));
+    return map;
+  }, [documentos, tipoDocumento]);
+
+  const rows = useMemo<RegistroAcademicoRow[]>(() => {
+    const orderById = new Map(selectionOrder.map((id, index) => [id, index + 1]));
+    return grupoModulos
+      .filter((item) => String(item.semestreId || '') === semestreId)
+      .map((item) => {
+        const documento = documentoByGrupoModuloId.get(item.id) ?? null;
+        return {
+          ...item,
+          selectionOrder: orderById.get(item.id) ?? null,
+          label: getGrupoModuloLabel(item),
+          documento,
+          generado: Boolean(documento?.pdfUrl && documento?.excelUrl),
+          generadoEnText: formatDateTime(documento?.generadoEn),
+        };
+      });
+  }, [documentoByGrupoModuloId, grupoModulos, selectionOrder, semestreId]);
+
+  const selectedRows = useMemo(
+    () => selectionOrder.map((id) => rows.find((row) => row.id === id)).filter((row): row is RegistroAcademicoRow => Boolean(row)),
+    [rows, selectionOrder],
+  );
+  const singleSelectedRow = selectedRows.length === 1 ? selectedRows[0] : null;
+  const selectedHasMissingDocuments = selectedRows.some((row) => !row.generado);
+  const activeRow = activeRowId ? rows.find((row) => row.id === activeRowId) ?? null : null;
   const selectedSemestreName = semestres.find((item) => String(item.id) === semestreId)?.titulo || '';
 
-  const handleGenerate = async () => {
-    if (!semestreId || !grupoModuloId) return;
-    setGenerating(true);
-    setError('');
+  const handleSelectionChange = useCallback((model: GridRowSelectionModel) => {
+    const selectedIds = selectionModelToIds(model);
+    setSelectionModel(model);
+    setSelectionOrder((current) => {
+      const kept = current.filter((id) => selectedIds.includes(id));
+      const added = selectedIds.filter((id) => !kept.includes(id));
+      return [...kept, ...added];
+    });
+  }, []);
+
+  const handleGenerate = useCallback(async (ids: number[]) => {
+    if (!ids.length || !canGenerateReportes) return;
+    setGeneratingIds(new Set(ids));
+    setMessage('');
     try {
       const generateReporteDocumento = httpsCallable<
-        { tipoDocumento: 'acta' | 'nomina'; semestreId: number; grupoModuloId: number },
+        { tipoDocumento: TipoDocumento; grupoModuloId: number },
         GenerateResponse
       >(functions, 'generateReporteDocumento');
-      const result = await generateReporteDocumento({
-        tipoDocumento,
-        semestreId: Number(semestreId),
-        grupoModuloId: Number(grupoModuloId),
-      });
-      setGenerated(result.data);
+      for (const id of ids) {
+        await generateReporteDocumento({ tipoDocumento, grupoModuloId: id });
+      }
+      await loadOptions();
+      setMessage(ids.length === 1 ? 'Documento generado.' : 'Documentos generados.');
+      setMessageSeverity('success');
     } catch (err) {
-      console.error('Error generating reporte documento:', err);
-      setError((err as { message?: string } | null)?.message || 'No se pudo generar el documento.');
+      console.error('Error generating registro academico:', err);
+      setMessage((err as { message?: string } | null)?.message || 'No se pudo generar el documento.');
+      setMessageSeverity('error');
     } finally {
-      setGenerating(false);
+      setGeneratingIds(new Set());
+      setRowMenuAnchor(null);
     }
-  };
+  }, [canGenerateReportes, loadOptions, tipoDocumento]);
 
-  const openDownload = (url?: string) => {
-    if (!url) return;
-    window.open(url, '_blank', 'noopener,noreferrer');
-    setDownloadAnchor(null);
-  };
+  const handleDownloadSelected = useCallback(async (formato: DownloadFormat) => {
+    if (!selectedRows.length) return;
+    if (selectedHasMissingDocuments) {
+      setMessage('Todos los grupos seleccionados deben tener documento generado.');
+      setMessageSeverity('info');
+      setToolbarDownloadAnchor(null);
+      return;
+    }
 
-  if (isDocente) {
+    setDownloading(true);
+    setMessage('');
+    try {
+      const descargarRegistrosAcademicosSeleccionados = httpsCallable<
+        { tipoDocumento: TipoDocumento; grupoModuloIds: number[]; formato: DownloadFormat },
+        DownloadResponse
+      >(functions, 'descargarRegistrosAcademicosSeleccionados');
+      const result = await descargarRegistrosAcademicosSeleccionados({
+        tipoDocumento,
+        grupoModuloIds: selectedRows.map((row) => row.id),
+        formato,
+      });
+      openUrl(result.data.file.url);
+    } catch (err) {
+      console.error('Error downloading registros academicos:', err);
+      setMessage((err as { message?: string } | null)?.message || 'No se pudo preparar la descarga.');
+      setMessageSeverity('error');
+    } finally {
+      setDownloading(false);
+      setToolbarDownloadAnchor(null);
+    }
+  }, [selectedHasMissingDocuments, selectedRows, tipoDocumento]);
+
+  const columns = useMemo<GridColDef<RegistroAcademicoRow>[]>(() => [
+    {
+      field: 'label',
+      headerName: 'Modulo',
+      flex: 1,
+      minWidth: 360,
+      renderCell: (params) => (
+        params.row.documento?.pdfUrl ? (
+          <Link
+            component="button"
+            underline="hover"
+            onClick={() => openUrl(params.row.documento?.pdfUrl)}
+            sx={{ textAlign: 'left', color: 'inherit', fontWeight: 600 }}
+          >
+            {params.row.label}
+          </Link>
+        ) : (
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            {params.row.label}
+          </Typography>
+        )
+      ),
+    },
+    {
+      field: 'selectionOrder',
+      headerName: 'Orden',
+      width: 72,
+      align: 'center',
+      headerAlign: 'center',
+      sortable: false,
+      filterable: false,
+      valueGetter: (_value, row) => row.selectionOrder ?? '',
+    },
+    {
+      field: 'generado',
+      headerName: 'Generado',
+      width: 120,
+      valueGetter: (_value, row) => (row.generado ? 'Si' : 'No'),
+    },
+    {
+      field: 'generadoEnText',
+      headerName: 'Fecha generacion',
+      width: 170,
+    },
+    {
+      field: 'actions',
+      headerName: '',
+      width: 56,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      align: 'center',
+      renderCell: (params) => (
+        <IconButton
+          size="small"
+          onClick={(event) => {
+            setActiveRowId(params.row.id);
+            setRowMenuAnchor(event.currentTarget);
+          }}
+        >
+          <MoreHorizIcon fontSize="small" />
+        </IconButton>
+      ),
+    },
+  ], []);
+
+  if (!permissionsLoading && !canViewReportes) {
     return (
-      <Box sx={{ maxWidth: 1000, mx: 'auto' }}>
-        <Alert severity="info">Este apartado esta disponible para administrativos, coordinadores, directivos y superusuario.</Alert>
+      <Box sx={{ maxWidth: 1100, mx: 'auto' }}>
+        <Alert severity="info">No tienes permiso para ver este apartado.</Alert>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 1000, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box sx={{ maxWidth: 1180, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Stack direction="row" spacing={1.25} alignItems="center">
         <ArticleIcon color="primary" />
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Actas y Nominas
+          Nominas y Actas
         </Typography>
       </Stack>
 
-      {error && <Alert severity="error">{error}</Alert>}
+      {message && <Alert severity={messageSeverity}>{message}</Alert>}
+      {selectedHasMissingDocuments && selectedRows.length > 0 ? (
+        <Alert severity="info">La descarga multiple se habilita solo cuando todos los seleccionados ya tienen documento generado.</Alert>
+      ) : null}
 
       <Paper
         elevation={0}
@@ -219,10 +411,7 @@ export default function ReporteDocumentosPage() {
               label="Documento"
               value={tipoDocumento}
               MenuProps={selectMenuProps}
-              onChange={(event) => {
-                setTipoDocumento(event.target.value as 'acta' | 'nomina');
-                setGenerated(null);
-              }}
+              onChange={(event) => setTipoDocumento(event.target.value as TipoDocumento)}
             >
               <MenuItem value="acta">Acta</MenuItem>
               <MenuItem value="nomina">Nomina</MenuItem>
@@ -236,11 +425,7 @@ export default function ReporteDocumentosPage() {
               label="Semestre"
               value={semestreId}
               MenuProps={selectMenuProps}
-              onChange={(event) => {
-                setSemestreId(event.target.value);
-                setGrupoModuloId('');
-                setGenerated(null);
-              }}
+              onChange={(event) => setSemestreId(event.target.value)}
               disabled={loadingOptions}
             >
               {semestres.map((semestre) => (
@@ -251,65 +436,53 @@ export default function ReporteDocumentosPage() {
             </Select>
           </FormControl>
 
-          <FormControl size="small" sx={{ flex: 1, minWidth: 260 }}>
-            <InputLabel id="grupo-modulo-label">Modulos</InputLabel>
-            <Select
-              labelId="grupo-modulo-label"
-              label="Modulos"
-              value={grupoModuloId}
-              MenuProps={selectMenuProps}
-              onChange={(event) => {
-                setGrupoModuloId(event.target.value);
-                setGenerated(null);
-              }}
-              disabled={loadingOptions || !semestreId}
-            >
-              {filteredGrupoModulos.map((option) => (
-                <MenuItem key={option.id} value={String(option.id)}>
-                  {getGrupoModuloLabel(option)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Box sx={{ flex: 1 }} />
 
           <Button
-            variant="contained"
-            startIcon={generating ? <CircularProgress size={18} color="inherit" /> : <VisibilityIcon />}
-            onClick={handleGenerate}
-            disabled={loadingOptions || generating || !semestreId || !grupoModuloId}
-            sx={{ minWidth: 128 }}
+            variant="outlined"
+            startIcon={<VisibilityIcon />}
+            disabled={!singleSelectedRow?.documento?.pdfUrl}
+            onClick={() => openUrl(singleSelectedRow?.documento?.pdfUrl)}
           >
             Visualizar
           </Button>
 
           <Button
+            variant="contained"
+            startIcon={generatingIds.size ? <CircularProgress size={18} color="inherit" /> : <PlayArrowIcon />}
+            disabled={!canGenerateReportes || loadingOptions || generatingIds.size > 0 || selectedRows.length === 0}
+            onClick={() => void handleGenerate(selectedRows.map((row) => row.id))}
+          >
+            Generar
+          </Button>
+
+          <Button
             variant="outlined"
-            startIcon={<DownloadIcon />}
-            onClick={(event) => setDownloadAnchor(event.currentTarget)}
-            disabled={!generated || generating}
-            sx={{ minWidth: 126 }}
+            startIcon={downloading ? <CircularProgress size={18} color="inherit" /> : <DownloadIcon />}
+            disabled={downloading || selectedRows.length === 0 || selectedHasMissingDocuments}
+            onClick={(event) => setToolbarDownloadAnchor(event.currentTarget)}
           >
             Descargar
           </Button>
           <Menu
-            anchorEl={downloadAnchor}
-            open={Boolean(downloadAnchor)}
-            onClose={() => setDownloadAnchor(null)}
+            anchorEl={toolbarDownloadAnchor}
+            open={Boolean(toolbarDownloadAnchor)}
+            onClose={() => setToolbarDownloadAnchor(null)}
             disableScrollLock
           >
-            <MenuItem onClick={() => openDownload(generated?.pdf.url)}>
+            <MenuItem onClick={() => void handleDownloadSelected('pdf')}>
               <PictureAsPdfIcon fontSize="small" sx={{ mr: 1 }} />
-              PDF
+              PDF unido
             </MenuItem>
-            <MenuItem onClick={() => openDownload(generated?.excel.url)}>
+            <MenuItem onClick={() => void handleDownloadSelected('excel')}>
               <TableChartIcon fontSize="small" sx={{ mr: 1 }} />
-              Excel
+              Excel con hojas
             </MenuItem>
           </Menu>
         </Stack>
 
         <Typography variant="caption" sx={{ display: 'block', mt: 1.25, color: 'text.secondary' }}>
-          {selectedSemestreName ? `${selectedSemestreName} - ${filteredGrupoModulos.length} modulos disponibles` : 'Selecciona un semestre'}
+          {selectedSemestreName ? `${selectedSemestreName} - ${rows.length} grupos-modulo` : 'Selecciona un semestre'}
         </Typography>
       </Paper>
 
@@ -319,35 +492,74 @@ export default function ReporteDocumentosPage() {
           border: '1px solid',
           borderColor: 'divider',
           borderRadius: 1,
-          minHeight: 620,
+          bgcolor: 'background.paper',
           overflow: 'hidden',
-          bgcolor: '#f7f3e8',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
         }}
       >
-        {generating ? (
-          <Stack alignItems="center" spacing={1.25}>
-            <CircularProgress />
-            <Typography color="text.secondary">Generando documento...</Typography>
-          </Stack>
-        ) : generated?.pdf.url ? (
-          <Box
-            component="iframe"
-            src={generated.pdf.url}
-            title="Visor PDF de reportes"
-            sx={{
-              width: '100%',
-              height: { xs: 620, md: 720 },
-              border: 0,
-              bgcolor: '#fff',
-            }}
-          />
-        ) : (
-          <Typography color="text.secondary">Selecciona las opciones y pulsa Visualizar.</Typography>
-        )}
+        <IntranetDataGrid
+          rows={rows}
+          columns={columns}
+          checkboxSelection
+          loading={loadingOptions}
+          rowSelectionModel={selectionModel}
+          onRowSelectionModelChange={handleSelectionChange}
+          getRowId={(row) => row.id}
+          initialState={{
+            pagination: { paginationModel: { page: 0, pageSize: 15 } },
+          }}
+          sx={{
+            '& .MuiDataGrid-cell': {
+              alignItems: 'flex-start',
+              py: 0.75,
+            },
+          }}
+        />
       </Paper>
+
+      <Menu
+        anchorEl={rowMenuAnchor}
+        open={Boolean(rowMenuAnchor)}
+        onClose={() => setRowMenuAnchor(null)}
+        disableScrollLock
+      >
+        <MenuItem
+          disabled={!canGenerateReportes || !activeRow || generatingIds.has(activeRow.id)}
+          onClick={() => activeRow && void handleGenerate([activeRow.id])}
+        >
+          <PlayArrowIcon fontSize="small" sx={{ mr: 1 }} />
+          Generar
+        </MenuItem>
+        <MenuItem
+          disabled={!activeRow?.documento?.pdfUrl}
+          onClick={() => {
+            openUrl(activeRow?.documento?.pdfUrl);
+            setRowMenuAnchor(null);
+          }}
+        >
+          <VisibilityIcon fontSize="small" sx={{ mr: 1 }} />
+          Visualizar
+        </MenuItem>
+        <MenuItem
+          disabled={!activeRow?.documento?.pdfUrl}
+          onClick={() => {
+            openUrl(activeRow?.documento?.pdfUrl);
+            setRowMenuAnchor(null);
+          }}
+        >
+          <PictureAsPdfIcon fontSize="small" sx={{ mr: 1 }} />
+          Descargar PDF
+        </MenuItem>
+        <MenuItem
+          disabled={!activeRow?.documento?.excelUrl}
+          onClick={() => {
+            openUrl(activeRow?.documento?.excelUrl);
+            setRowMenuAnchor(null);
+          }}
+        >
+          <TableChartIcon fontSize="small" sx={{ mr: 1 }} />
+          Descargar Excel
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }

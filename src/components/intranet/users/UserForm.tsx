@@ -10,13 +10,14 @@ import { app, functions, storage } from '@/lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
-import { generateUsername } from './userForm_utilities';
+import { generateUserNames } from './userForm_utilities';
 
 const createValidationSchema = (isCreating: boolean) => yup.object().shape({
   apellido_paterno: yup.string().required('El apellido paterno es requerido'),
   apellido_materno: yup.string().required('El apellido materno es requerido'),
   nombre: yup.string().required('El nombre es requerido'),
   username: yup.string().min(3).required('El nombre de usuario es requerido'),
+  nickName: yup.string().nullable(),
   sexo: yup.string().oneOf(['F', 'M']).required(),
   fecha_nacimiento: yup
     .string()
@@ -64,6 +65,7 @@ interface UserFormValues {
   apellido_materno: string;
   nombre: string;
   username: string;
+  nickName: string | null | undefined;
   sexo: 'F' | 'M';
   fecha_nacimiento: string | null | undefined;
   celular: string;
@@ -100,7 +102,6 @@ interface Role {
   scala?: number | null;
 }
 
-const EXCLUDED_ROLE_IDS = new Set<number>([1, 2]);
 const INSTITUTIONAL_DOMAIN = 'cetprosmp.edu.pe';
 
 const normalizeAliasToken = (value: string | null | undefined): string =>
@@ -198,6 +199,7 @@ const UserForm: React.FC<UserFormProps> = ({
       apellido_materno: '',
       nombre: '',
       username: '',
+      nickName: '',
       sexo: 'F',
       fecha_nacimiento: '',
       celular: '',
@@ -228,8 +230,8 @@ const UserForm: React.FC<UserFormProps> = ({
   const rolId = watch('rolId');
 
   useEffect(() => {
-    generateUsername(nombre, apellido_paterno, setValue);
-  }, [nombre, apellido_paterno, setValue]);
+    generateUserNames(nombre, apellido_paterno, apellido_materno, setValue);
+  }, [nombre, apellido_paterno, apellido_materno, setValue]);
 
   useEffect(() => {
     const institutionalEmail = computeInstitutionalEmail({
@@ -260,7 +262,6 @@ const UserForm: React.FC<UserFormProps> = ({
         const result = await listRoles();
         setRoles(
           (result.data.roles || [])
-            .filter((role) => !EXCLUDED_ROLE_IDS.has(Number(role.id)))
             .map((role) => ({
               id: role.id,
               titulo: role.titulo ?? null,
@@ -277,6 +278,18 @@ const UserForm: React.FC<UserFormProps> = ({
   }, []);
 
   const avatarUrl = watch('avatar');
+  const initialAvatar = typeof initialData?.avatar === 'string' ? initialData.avatar.trim() : '';
+  const initialAvatarPequeno = typeof initialData?.avatarPequeno === 'string' ? initialData.avatarPequeno.trim() : '';
+  const initialPhotoURL = typeof initialData?.photoURL === 'string' ? initialData.photoURL.trim() : '';
+  const avatarDebugSource = !avatarUrl
+    ? 'sin URL'
+    : avatarUrl === initialAvatar
+      ? 'Data Connect: avatar'
+      : avatarUrl === initialAvatarPequeno
+        ? 'Storage/extraccion: avatarPequeno'
+        : avatarUrl === initialPhotoURL
+          ? 'Firebase Auth: photoURL'
+          : 'Formulario/subida actual';
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -347,6 +360,7 @@ const UserForm: React.FC<UserFormProps> = ({
       apellido_materno: asString(initialData?.apellido_materno ?? initialData?.apellidoMaterno),
       nombre: asString(initialData?.nombre),
       username: asString(initialData?.username),
+      nickName: asString(initialData?.nickName ?? initialData?.nick_name),
       sexo: asSexo(initialData?.sexo),
       fecha_nacimiento: formattedDob,
       celular: asString(initialData?.celular),
@@ -364,7 +378,7 @@ const UserForm: React.FC<UserFormProps> = ({
         initialData?.rolId != null
           ? String(initialData.rolId)
           : (roles[0]?.id ? String(roles[0].id) : ''),
-      avatar: asString(initialData?.avatar),
+      avatar: asString(initialData?.avatar ?? initialData?.avatarPequeno ?? initialData?.photoURL),
       bloqueado: asBoolean(initialData?.bloqueado ?? initialData?.blocked),
       correo_institucional: asString(initialData?.correo_institucional ?? initialData?.correoInstitucional),
       fecha_creacion: asString(initialData?.fecha_creacion ?? initialData?.fechaCreacion),
@@ -426,7 +440,23 @@ const UserForm: React.FC<UserFormProps> = ({
           }}
         >
             <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' }, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Avatar src={avatarUrl || undefined} sx={{ width: 100, height: 100 }} />
+              <Avatar src={avatarUrl || undefined} title={avatarUrl || 'sin URL'} sx={{ width: 100, height: 100 }} />
+              <Box sx={{ width: '100%', maxWidth: 520, textAlign: 'center' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                  Origen avatar: {avatarDebugSource}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    display: 'block',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  URL avatar: {avatarUrl || 'sin URL'}
+                </Typography>
+              </Box>
               <input type="file" accept="image/*" style={{ display: 'none' }} ref={avatarInputRef} onChange={(e) => handleFileChange(e, 'avatar')} />
               <Button sx={{ mt: 1 }} variant="outlined" onClick={() => avatarInputRef.current?.click()} disabled={isUploading} tabIndex={23}>
                 {isUploading ? <CircularProgress size={24} /> : (avatarUrl ? 'Cambiar Avatar' : 'Subir Avatar')}
@@ -439,6 +469,21 @@ const UserForm: React.FC<UserFormProps> = ({
             <Controller name="apellido_materno" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 2 }} label="Apellido Materno" error={!!errors.apellido_materno} helperText={errors.apellido_materno?.message} fullWidth />} />
             <Controller name="nombre" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 3 }} label="Nombre" error={!!errors.nombre} helperText={errors.nombre?.message} fullWidth />} />
             <Controller name="username" control={control} render={({ field }) => <TextField {...field} label="Username" error={!!errors.username} helperText={errors.username?.message} fullWidth disabled />} />
+            <Controller
+              name="nickName"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Nick name"
+                  error={!!errors.nickName}
+                  helperText={errors.nickName?.message}
+                  fullWidth
+                  disabled
+                  sx={{ opacity: 0.72 }}
+                />
+              )}
+            />
 
             <Controller name="sexo" control={control} render={({ field }) => (
               <FormControl fullWidth>

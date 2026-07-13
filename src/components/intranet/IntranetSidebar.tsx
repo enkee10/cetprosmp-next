@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   Box,
@@ -16,88 +16,20 @@ import {
   Typography,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import FactCheckIcon from '@mui/icons-material/FactCheck';
 import AcordionIntranet, { IntranetMenuSection, menuSections } from '@/components/Sidebar/AcordionIntranet/AcordionIntranet';
-import { useAuth } from '@/context/AuthContext';
-import { functions } from '@/lib/firebase';
-import { isDocenteRole, isStaffRestrictedRole } from '@/lib/intranetPermissions';
-import { httpsCallable } from 'firebase/functions';
-
-type DocenteModulo = {
-  id: number;
-  nombre?: string | null;
-  modulo?: {
-    titulo?: string | null;
-    tituloComercial?: string | null;
-  } | null;
-};
-
-const getDocenteModuloTitle = (modulo: DocenteModulo) =>
-  `Notas ${modulo.nombre || modulo.modulo?.titulo || modulo.modulo?.tituloComercial || `Modulo ${modulo.id}`}`;
+import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
 export default function IntranetSidebar() {
-  const { user } = useAuth();
   const [openAccordions, setOpenAccordions] = useState<string[]>(['intranet-registros']);
   const [collapsed, setCollapsed] = useState(false);
   const [hoveredSectionId, setHoveredSectionId] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [docenteModulos, setDocenteModulos] = useState<DocenteModulo[]>([]);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const isDocente = isDocenteRole(user?.role);
-  const isStaffRestricted = isStaffRestrictedRole(user?.role);
-
-  useEffect(() => {
-    if (!isDocente) {
-      setDocenteModulos([]);
-      return;
-    }
-
-    let active = true;
-    const loadDocenteModulos = async () => {
-      try {
-        const listRegistroAuxiliarDocenteModulos = httpsCallable<
-          { semestreTitulo?: string },
-          { modulos?: DocenteModulo[] }
-        >(functions, 'listRegistroAuxiliarDocenteModulos');
-        const result = await listRegistroAuxiliarDocenteModulos({ semestreTitulo: '2026-1' });
-        if (active) setDocenteModulos(result.data.modulos || []);
-      } catch (error) {
-        console.error('Error loading docente registro auxiliar modulos:', error);
-        if (active) setDocenteModulos([]);
-      }
-    };
-
-    void loadDocenteModulos();
-    return () => {
-      active = false;
-    };
-  }, [isDocente]);
+  const { filterSections } = useIntranetPermissions();
 
   const visibleSections = useMemo<IntranetMenuSection[]>(() => {
-    if (isDocente) {
-      return menuSections
-        .filter((section) => ['registros', 'reportes'].includes(section.id))
-        .map((section) => {
-          if (section.id !== 'registros') return { ...section, items: [] };
-          return {
-            ...section,
-            items: docenteModulos.map((modulo) => ({
-              id: `registro-auxiliar-${modulo.id}`,
-              title: getDocenteModuloTitle(modulo),
-              path: `/intranet/registro-auxiliar?grupoModuloId=${modulo.id}`,
-              icon: <FactCheckIcon />,
-            })),
-          };
-        });
-    }
-
-    if (isStaffRestricted) {
-      return menuSections.filter((section) => ['registros', 'reportes'].includes(section.id));
-    }
-
-    return menuSections;
-  }, [docenteModulos, isDocente, isStaffRestricted]);
+    return filterSections(menuSections);
+  }, [filterSections]);
 
   const hoveredSection = visibleSections.find((section) => section.id === hoveredSectionId) ?? null;
 

@@ -153,6 +153,7 @@ export function buildUserDataFromInput(
   const payload: DataConnectUserInput = {
     documentId: asNullableString(input.documentId) ?? asNullableString(defaults?.documentId) ?? null,
     username: asNullableString(input.username) ?? asNullableString(defaults?.username) ?? null,
+    nickName: asNullableString(input.nickName ?? input.nick_name) ?? null,
     email: asNullableString(input.email) ?? asNullableString(defaults?.email) ?? null,
     provider: asNullableString(input.provider) ?? asNullableString(defaults?.provider) ?? null,
     confirmed: toBoolean(input.confirmed),
@@ -178,6 +179,7 @@ export function buildUserDataFromInput(
     fechaModificacion: asNullableTimestamp(input.fecha_modificacion ?? input.fechaModificacion),
     emailCreador: asNullableString(input.email_creador ?? input.emailCreador),
     avatar: asNullableString(input.avatar ?? input.foto) ?? asNullableString(defaults?.photoURL) ?? null,
+    recorteFotografia: asNullableString(input.recorteFotografia ?? input.recorte_fotografia),
     dniImagenFrenteUrl: asNullableString(input.dniImagenFrenteUrl ?? input.dni_imagen_frente_url),
     dniImagenReversoUrl: asNullableString(input.dniImagenReversoUrl ?? input.dni_imagen_reverso_url),
     dniImagenFrenteProcesadaUrl: asNullableString(
@@ -450,6 +452,7 @@ export function buildModuloDataFromInput(input: Record<string, unknown>): DataCo
     metas: toNumberOrNull(input.metas),
     activo: toBoolean(input.activo),
     slug: asNullableString(input.slug),
+    comun: toBoolean(input.comun),
     planId: toNumberOrNull(input.planId),
   });
 }
@@ -475,6 +478,7 @@ export function buildMatriculaDataFromInput(input: Record<string, unknown>): Dat
   return compactUndefined({
     recibo: asNullableString(input.recibo),
     fecha: asNullableTimestamp(input.fecha),
+    codigoInscripcion: asNullableString(input.codigoInscripcion),
     archivado: toBoolean(input.archivado),
     paqueteId: toNumberOrNull(input.paqueteId),
     semestreId: toNumberOrNull(input.semestreId),
@@ -498,6 +502,7 @@ export function buildUnidadDidacticaDataFromInput(input: Record<string, unknown>
     duracion: toNumberOrNull(input.duracion),
     creditos: toNumberOrNull(input.creditos),
     sigla: asNullableString(input.sigla),
+    comun: toBoolean(input.comun),
   });
 }
 

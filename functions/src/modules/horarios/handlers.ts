@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectHorario, DataConnectHorarioInput } from "../core/types.js";
 import {
   DELETE_HORARIO_MUTATION,
@@ -44,13 +45,6 @@ const GET_HORARIO_QUERY = `
     }
   }
 `;
-
-function requireLevel(context: https.CallableContext, action: string) {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
-  }
-}
 
 const sortHorarios = (items: DataConnectHorario[]) =>
   items
@@ -104,7 +98,7 @@ function buildHorarioRegla(diasSemana: string) {
 }
 
 export const listHorarios = https.onCall(async (_data, context) => {
-  requireLevel(context, "list schedules");
+  await requirePermission(context, "horarios", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ horarios: DataConnectHorario[] }, Record<string, never>>(
@@ -118,7 +112,7 @@ export const listHorarios = https.onCall(async (_data, context) => {
 });
 
 export const getHorario = https.onCall(async (data, context) => {
-  requireLevel(context, "get schedules");
+  await requirePermission(context, "horarios", "view");
 
   const horarioId = toNumber(data?.id, -1);
   if (horarioId <= 0) {
@@ -138,8 +132,6 @@ export const getHorario = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateHorario = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate schedules");
-
   const now = new Date().toISOString();
   const diasSemana = normalizeDiasSemana((data as Record<string, unknown> | null)?.diasSemana as string | null | undefined);
   const payload = buildHorarioDataFromInput({
@@ -161,6 +153,7 @@ export const createOrUpdateHorario = https.onCall(async (data, context) => {
   }
 
   const horarioId = toNumberOrNull(data?.id);
+  await requirePermission(context, "horarios", horarioId ? "edit" : "create");
 
   try {
     if (horarioId) {
@@ -193,7 +186,7 @@ export const createOrUpdateHorario = https.onCall(async (data, context) => {
 });
 
 export const deleteHorario = https.onCall(async (data, context) => {
-  requireLevel(context, "delete schedules");
+  await requirePermission(context, "horarios", "delete");
 
   const horarioId = toNumber(data?.id, -1);
   if (horarioId <= 0) {

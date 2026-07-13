@@ -11,6 +11,16 @@ dist
 # Functions (por ahora no las subiremos)
 functions
 
+# Local emulator exports / backups / generated dumps
+data
+backups
+exportedData
+tmp
+.tmp
+firebase-export-*
+*.zip
+*.log
+
 # Editor / logs
 .vscode
 npm-debug.log*

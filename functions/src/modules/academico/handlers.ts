@@ -4,12 +4,14 @@ import {
   buildAprendizajeDataFromInput,
   buildCapacidadTerminalDataFromInput,
   buildIndicadorCapacidadDataFromInput,
+  buildModuloDataFromInput,
   buildUnidadDidacticaDataFromInput,
   getIdFromKeyOutput,
   toNumber,
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import {
   DataConnectActividad,
   DataConnectActividadInput,
@@ -21,6 +23,8 @@ import {
   DataConnectIndicadorCapacidadInput,
   DataConnectModulo,
   DataConnectModuloInput,
+  DataConnectPlanModulo,
+  DataConnectPlanModuloInput,
   DataConnectUnidadDidactica,
   DataConnectUnidadDidacticaInput,
   DataConnectUnidadDidacticaModulo,
@@ -31,12 +35,18 @@ import {
   DELETE_APRENDIZAJE_MUTATION,
   DELETE_CAPACIDAD_TERMINAL_MUTATION,
   DELETE_INDICADOR_CAPACIDAD_MUTATION,
+  DELETE_INDICADORES_CAPACIDAD_BY_CAPACIDAD_MUTATION,
+  DELETE_PLAN_MODULO_MUTATION,
+  DELETE_PLAN_MODULO_RELATION_MUTATION,
   DELETE_UNIDAD_DIDACTICA_MUTATION,
+  DELETE_UNIDAD_DIDACTICA_MODULO_RELATION_MUTATION,
   DELETE_UNIDAD_DIDACTICA_MODULOS_BY_UNIDAD_MUTATION,
   INSERT_ACTIVIDAD_MUTATION,
   INSERT_APRENDIZAJE_MUTATION,
   INSERT_CAPACIDAD_TERMINAL_MUTATION,
   INSERT_INDICADOR_CAPACIDAD_MUTATION,
+  INSERT_MODULO_MUTATION,
+  INSERT_PLAN_MODULO_MUTATION,
   INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION,
   INSERT_UNIDAD_DIDACTICA_MUTATION,
   UPDATE_ACTIVIDAD_MUTATION,
@@ -56,6 +66,7 @@ const LIST_UNIDADES_DIDACTICAS_QUERY = `
       duracion
       creditos
       sigla
+      comun
     }
     unidadDidacticaModulos(limit: 2000) {
       id
@@ -74,6 +85,7 @@ const GET_UNIDAD_DIDACTICA_QUERY = `
       duracion
       creditos
       sigla
+      comun
     }
     unidadDidacticaModulos(where: { unidadDidacticaId: { eq: $id } }, limit: 2000) {
       id
@@ -199,7 +211,30 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
       metas
       activo
       slug
+      comun
       planId
+      plan {
+        id
+        planEstudio
+        tituloComercial
+        carrera {
+          id
+          nombre
+          tituloComercial
+          especialidad {
+            id
+            titulo
+            tituloComercial
+            orden
+          }
+        }
+      }
+    }
+    planModulos(limit: 5000, orderBy: [{ moduloId: ASC }, { orden: ASC }, { planId: ASC }]) {
+      id
+      orden
+      planId
+      moduloId
       plan {
         id
         planEstudio
@@ -229,6 +264,7 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
       duracion
       creditos
       sigla
+      comun
     }
     capacidadesTerminales(limit: 50000, orderBy: [{ unidadDidacticaId: ASC }, { id: ASC }]) {
       id
@@ -245,13 +281,38 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
   }
 `;
 
+const LIST_PLAN_MODULO_RELATIONS_BY_PLAN_QUERY = `
+  query ListPlanModuloRelationsByPlan($planId: Int!) {
+    planModulos(where: { planId: { eq: $planId } }, limit: 1000) {
+      id
+      orden
+      planId
+      moduloId
+    }
+  }
+`;
+
+const LIST_UNIDAD_RELATIONS_BY_MODULO_QUERY = `
+  query ListUnidadRelationsByModulo($moduloId: Int!) {
+    unidadDidacticaModulos(where: { moduloId: { eq: $moduloId } }, limit: 1000) {
+      id
+      orden
+      moduloId
+      unidadDidacticaId
+    }
+  }
+`;
+
 interface EstructuraAcademicaQueryResponse {
   modulos: EstructuraModulo[];
+  planModulos: DataConnectPlanModulo[];
   unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
   unidadesDidacticas: DataConnectUnidadDidactica[];
   capacidadesTerminales: DataConnectCapacidadTerminal[];
   indicadoresCapacidad: DataConnectIndicadorCapacidad[];
 }
+
+type EstructuraAcademicaActionEntity = "modulo" | "unidadDidactica" | "capacidadTerminal" | "indicadorCapacidad";
 
 function groupByNumber<T>(items: T[], keySelector: (item: T) => number | null | undefined) {
   const grouped = new Map<number, T[]>();
@@ -278,6 +339,38 @@ function sortRelations(items: DataConnectUnidadDidacticaModulo[]) {
         a.unidadDidacticaId - b.unidadDidacticaId ||
         a.id - b.id,
     );
+}
+
+function sortPlanModuloRelations(items: DataConnectPlanModulo[]) {
+  return items
+    .slice()
+    .sort(
+      (a, b) =>
+        (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER) ||
+        a.planId - b.planId ||
+        a.id - b.id,
+    );
+}
+
+function attachPlanRelationsToModulo(
+  modulo: EstructuraModulo,
+  relationsByModuloId: Map<number, DataConnectPlanModulo[]>,
+) {
+  const relations = sortPlanModuloRelations(relationsByModuloId.get(modulo.id) ?? []);
+  const primary = relations[0] ?? null;
+  const legacyPlanIds = modulo.planId != null ? [modulo.planId] : [];
+  const planIds = relations.length > 0
+    ? relations.map((relation) => relation.planId)
+    : legacyPlanIds;
+
+  return {
+    ...modulo,
+    comun: modulo.comun ?? planIds.length > 1,
+    planId: primary?.planId ?? modulo.planId ?? null,
+    plan: primary?.plan ?? modulo.plan ?? null,
+    planIds,
+    planModulos: relations,
+  };
 }
 
 function buildCapacidadesForUnidad(
@@ -321,6 +414,7 @@ function buildUnidadesForModulo(
         duracion: unidad.duracion ?? null,
         creditos: unidad.creditos ?? null,
         sigla: unidad.sigla ?? null,
+        comun: unidad.comun ?? false,
         capacidadesTerminales: buildCapacidadesForUnidad(
           unidad.id,
           capacidadesByUnidadId,
@@ -329,30 +423,6 @@ function buildUnidadesForModulo(
       }
     })
     .filter(Boolean);
-}
-
-function requireLevel(context: https.CallableContext, action: string) {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
-  }
-}
-
-const ESTRUCTURA_ACADEMICA_ROLE_IDS = new Set([5, 6, 7, 8, 600]);
-
-function getRequesterRoleId(context: https.CallableContext) {
-  const rawRole = context.auth?.token?.roleId ?? context.auth?.token?.role ?? null;
-  const roleId = Number(rawRole);
-  return Number.isFinite(roleId) ? roleId : 0;
-}
-
-function requireEstructuraAcademicaAccess(context: https.CallableContext, action: string) {
-  if (!context.auth?.uid) {
-    throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
-  }
-  const requesterLevel = Number(context.auth.token.level ?? 0);
-  if (requesterLevel >= 600 || ESTRUCTURA_ACADEMICA_ROLE_IDS.has(getRequesterRoleId(context))) return;
-  throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
 }
 
 type EditableAcademicEntity = "modulo" | "unidadDidactica" | "unidadDidacticaModulo" | "capacidadTerminal" | "indicadorCapacidad";
@@ -369,12 +439,14 @@ const editableAcademicFields: Record<EditableAcademicEntity, Record<string, Edit
     metas: "number",
     activo: "boolean",
     slug: "text",
+    comun: "boolean",
   },
   unidadDidactica: {
     nombre: "text",
     duracion: "number",
     creditos: "number",
     sigla: "text",
+    comun: "boolean",
   },
   unidadDidacticaModulo: {
     orden: "number",
@@ -433,7 +505,7 @@ function parseEditableAcademicValue(entity: EditableAcademicEntity, field: strin
 }
 
 export const updateEstructuraAcademicaCell = https.onCall(async (data, context) => {
-  requireEstructuraAcademicaAccess(context, "update academic structure cells");
+  await requirePermission(context, "estructura-academica", "edit");
 
   const entity = parseEditableAcademicEntity(data?.entity);
   const { field, valueType } = parseEditableAcademicField(entity, data?.field);
@@ -493,6 +565,7 @@ interface EstructuraModulo extends DataConnectModulo {}
 
 function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
   const unidadesById = new Map((response.unidadesDidacticas ?? []).map((unidad) => [unidad.id, unidad]));
+  const planRelationsByModuloId = groupByNumber(response.planModulos ?? [], (relation) => relation.moduloId);
   const relationsByModuloId = groupByNumber(response.unidadDidacticaModulos ?? [], (relation) => relation.moduloId);
   const capacidadesByUnidadId = groupByNumber(
     response.capacidadesTerminales ?? [],
@@ -503,31 +576,74 @@ function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
     (indicador) => indicador.capacidadTerminalId,
   );
 
-  return (response.modulos ?? []).map((modulo) => ({
-    id: modulo.id,
-    titulo: modulo.titulo ?? null,
-    tituloComercial: modulo.tituloComercial ?? null,
-    orden: modulo.orden ?? null,
-    descripcion: modulo.descripcion ?? null,
-    horas: modulo.horas ?? null,
-    creditos: modulo.creditos ?? null,
-    metas: modulo.metas ?? null,
-    activo: modulo.activo ?? null,
-    slug: modulo.slug ?? null,
-    planId: modulo.planId ?? null,
-    plan: modulo.plan ?? null,
-    unidadesDidacticas: buildUnidadesForModulo(
-      modulo.id,
-      relationsByModuloId,
-      unidadesById,
-      capacidadesByUnidadId,
-      indicadoresByCapacidadId,
-    ),
-  }));
+  return (response.modulos ?? []).map((modulo) => {
+    const moduloWithPlan = attachPlanRelationsToModulo(modulo, planRelationsByModuloId);
+    return {
+      id: moduloWithPlan.id,
+      titulo: moduloWithPlan.titulo ?? null,
+      tituloComercial: moduloWithPlan.tituloComercial ?? null,
+      orden: moduloWithPlan.orden ?? null,
+      descripcion: moduloWithPlan.descripcion ?? null,
+      horas: moduloWithPlan.horas ?? null,
+      creditos: moduloWithPlan.creditos ?? null,
+      metas: moduloWithPlan.metas ?? null,
+      activo: moduloWithPlan.activo ?? null,
+      slug: moduloWithPlan.slug ?? null,
+      comun: moduloWithPlan.comun ?? false,
+      planModuloId: moduloWithPlan.planModulos[0]?.id ?? null,
+      planId: moduloWithPlan.planId ?? null,
+      plan: moduloWithPlan.plan ?? null,
+      planIds: moduloWithPlan.planIds,
+      planModulos: moduloWithPlan.planModulos,
+      unidadesDidacticas: buildUnidadesForModulo(
+        moduloWithPlan.id,
+        relationsByModuloId,
+        unidadesById,
+        capacidadesByUnidadId,
+        indicadoresByCapacidadId,
+      ),
+    };
+  });
+}
+
+function buildEstructuraAcademicaOpciones(response: EstructuraAcademicaQueryResponse) {
+  const planRelationsByModuloId = groupByNumber(response.planModulos ?? [], (relation) => relation.moduloId);
+  const unidadRelationsByUnidadId = groupByNumber(response.unidadDidacticaModulos ?? [], (relation) => relation.unidadDidacticaId);
+
+  const modulosComunes = (response.modulos ?? [])
+    .map((modulo) => attachPlanRelationsToModulo(modulo, planRelationsByModuloId))
+    .filter((modulo) => Boolean(modulo.comun))
+    .map((modulo) => ({
+      id: modulo.id,
+      titulo: modulo.titulo ?? null,
+      tituloComercial: modulo.tituloComercial ?? null,
+      planIds: modulo.planIds ?? [],
+    }))
+    .sort((a, b) => String(a.tituloComercial || a.titulo || "").localeCompare(String(b.tituloComercial || b.titulo || ""), "es"));
+
+  const unidadesComunes = (response.unidadesDidacticas ?? [])
+    .filter((unidad) => Boolean(unidad.comun))
+    .map((unidad) => ({
+      id: unidad.id,
+      nombre: unidad.nombre ?? null,
+      sigla: unidad.sigla ?? null,
+      moduloIds: (unidadRelationsByUnidadId.get(unidad.id) ?? []).map((relation) => relation.moduloId),
+    }))
+    .sort((a, b) => String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"));
+
+  return { modulosComunes, unidadesComunes };
+}
+
+function nextOrder(values: Array<number | null | undefined>) {
+  const max = values.reduce<number>((current, value) => {
+    if (typeof value !== "number" || !Number.isFinite(value)) return current;
+    return Math.max(current, value);
+  }, 0);
+  return max + 1;
 }
 
 export const listEstructuraAcademica = https.onCall(async (_data, context) => {
-  requireEstructuraAcademicaAccess(context, "list academic structure");
+  await requirePermission(context, "estructura-academica", "view");
 
   try {
     const response = await dataConnect.executeGraphql<
@@ -535,10 +651,232 @@ export const listEstructuraAcademica = https.onCall(async (_data, context) => {
       Record<string, never>
     >(LIST_ESTRUCTURA_ACADEMICA_QUERY);
 
-    return { modulos: buildEstructuraAcademica(response.data) };
+    return {
+      modulos: buildEstructuraAcademica(response.data),
+      opciones: buildEstructuraAcademicaOpciones(response.data),
+    };
   } catch (error) {
     console.error("Error in listEstructuraAcademica:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while listing academic structure.");
+  }
+});
+
+function parseEstructuraActionEntity(value: unknown): EstructuraAcademicaActionEntity {
+  const entity = String(value ?? "");
+  if (["modulo", "unidadDidactica", "capacidadTerminal", "indicadorCapacidad"].includes(entity)) {
+    return entity as EstructuraAcademicaActionEntity;
+  }
+  throw new https.HttpsError("invalid-argument", "Entidad no soportada.");
+}
+
+async function nextPlanModuloOrder(planId: number) {
+  const response = await dataConnect.executeGraphql<
+    { planModulos: DataConnectPlanModulo[] },
+    { planId: number }
+  >(LIST_PLAN_MODULO_RELATIONS_BY_PLAN_QUERY, { variables: { planId } });
+  return nextOrder((response.data.planModulos ?? []).map((relation) => relation.orden));
+}
+
+async function nextUnidadModuloOrder(moduloId: number) {
+  const response = await dataConnect.executeGraphql<
+    { unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[] },
+    { moduloId: number }
+  >(LIST_UNIDAD_RELATIONS_BY_MODULO_QUERY, { variables: { moduloId } });
+  return nextOrder((response.data.unidadDidacticaModulos ?? []).map((relation) => relation.orden));
+}
+
+export const createEstructuraAcademicaItem = https.onCall(async (data, context) => {
+  await requirePermission(context, "estructura-academica", "create");
+
+  const entity = parseEstructuraActionEntity(data?.entity);
+
+  try {
+    if (entity === "modulo") {
+      const planId = toNumber(data?.planId, -1);
+      if (planId <= 0) throw new https.HttpsError("invalid-argument", "planId is required.");
+      const orden = await nextPlanModuloOrder(planId);
+      const payload = buildModuloDataFromInput({
+        titulo: data?.titulo ?? "Nuevo modulo",
+        tituloComercial: data?.tituloComercial ?? data?.titulo ?? "Nuevo modulo",
+        orden,
+        activo: true,
+        comun: false,
+        planId,
+      });
+      const created = await dataConnect.executeGraphql<
+        { modulo_insert: unknown },
+        { data: DataConnectModuloInput }
+      >(INSERT_MODULO_MUTATION, { variables: { data: payload } });
+      const moduloId = getIdFromKeyOutput(created.data.modulo_insert);
+      if (!moduloId) throw new Error("No se pudo obtener el id del modulo creado.");
+      await dataConnect.executeGraphql<
+        { planModulo_insert: unknown },
+        { data: DataConnectPlanModuloInput }
+      >(INSERT_PLAN_MODULO_MUTATION, { variables: { data: { planId, moduloId, orden } } });
+      return { id: moduloId };
+    }
+
+    if (entity === "unidadDidactica") {
+      const moduloId = toNumber(data?.moduloId, -1);
+      if (moduloId <= 0) throw new https.HttpsError("invalid-argument", "moduloId is required.");
+      const orden = await nextUnidadModuloOrder(moduloId);
+      const payload = buildUnidadDidacticaDataFromInput({
+        nombre: data?.nombre ?? "Nueva unidad didactica",
+        comun: false,
+      });
+      const created = await dataConnect.executeGraphql<
+        { unidadDidactica_insert: unknown },
+        { data: DataConnectUnidadDidacticaInput }
+      >(INSERT_UNIDAD_DIDACTICA_MUTATION, { variables: { data: payload } });
+      const unidadDidacticaId = getIdFromKeyOutput(created.data.unidadDidactica_insert);
+      if (!unidadDidacticaId) throw new Error("No se pudo obtener el id de la unidad didactica creada.");
+      await dataConnect.executeGraphql<
+        { unidadDidacticaModulo_insert: unknown },
+        { data: DataConnectUnidadDidacticaModuloInput }
+      >(INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION, { variables: { data: { unidadDidacticaId, moduloId, orden } } });
+      return { id: unidadDidacticaId };
+    }
+
+    if (entity === "capacidadTerminal") {
+      const unidadDidacticaId = toNumber(data?.unidadDidacticaId, -1);
+      if (unidadDidacticaId <= 0) throw new https.HttpsError("invalid-argument", "unidadDidacticaId is required.");
+      const payload = buildCapacidadTerminalDataFromInput({
+        descripcion: data?.descripcion ?? "Nueva capacidad terminal",
+        unidadDidacticaId,
+      });
+      const created = await dataConnect.executeGraphql<
+        { capacidadTerminal_insert: unknown },
+        { data: DataConnectCapacidadTerminalInput }
+      >(INSERT_CAPACIDAD_TERMINAL_MUTATION, { variables: { data: payload } });
+      return { id: getIdFromKeyOutput(created.data.capacidadTerminal_insert) };
+    }
+
+    const capacidadTerminalId = toNumber(data?.capacidadTerminalId, -1);
+    if (capacidadTerminalId <= 0) throw new https.HttpsError("invalid-argument", "capacidadTerminalId is required.");
+    const payload = buildIndicadorCapacidadDataFromInput({
+      descripcion: data?.descripcion ?? "Nuevo indicador",
+      capacidadTerminalId,
+    });
+    const created = await dataConnect.executeGraphql<
+      { indicadorCapacidad_insert: unknown },
+      { data: DataConnectIndicadorCapacidadInput }
+    >(INSERT_INDICADOR_CAPACIDAD_MUTATION, { variables: { data: payload } });
+    return { id: getIdFromKeyOutput(created.data.indicadorCapacidad_insert) };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in createEstructuraAcademicaItem:", error);
+    throw new https.HttpsError("internal", "No se pudo crear el elemento academico.");
+  }
+});
+
+export const reuseEstructuraAcademicaItem = https.onCall(async (data, context) => {
+  await requirePermission(context, "estructura-academica", "edit");
+
+  const entity = parseEstructuraActionEntity(data?.entity);
+
+  try {
+    if (entity === "modulo") {
+      const planId = toNumber(data?.planId, -1);
+      const moduloId = toNumber(data?.moduloId, -1);
+      if (planId <= 0 || moduloId <= 0) throw new https.HttpsError("invalid-argument", "planId and moduloId are required.");
+      const orden = await nextPlanModuloOrder(planId);
+      await dataConnect.executeGraphql<
+        { planModulo_insert: unknown },
+        { data: DataConnectPlanModuloInput }
+      >(INSERT_PLAN_MODULO_MUTATION, { variables: { data: { planId, moduloId, orden } } });
+      await dataConnect.executeGraphql<
+        { modulo_update: unknown },
+        { id: number; data: DataConnectModuloInput }
+      >(UPDATE_MODULO_MUTATION, { variables: { id: moduloId, data: { comun: true } } });
+      return { id: moduloId };
+    }
+
+    if (entity === "unidadDidactica") {
+      const moduloId = toNumber(data?.moduloId, -1);
+      const unidadDidacticaId = toNumber(data?.unidadDidacticaId, -1);
+      if (moduloId <= 0 || unidadDidacticaId <= 0) {
+        throw new https.HttpsError("invalid-argument", "moduloId and unidadDidacticaId are required.");
+      }
+      const orden = await nextUnidadModuloOrder(moduloId);
+      await dataConnect.executeGraphql<
+        { unidadDidacticaModulo_insert: unknown },
+        { data: DataConnectUnidadDidacticaModuloInput }
+      >(INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION, { variables: { data: { unidadDidacticaId, moduloId, orden } } });
+      await dataConnect.executeGraphql<
+        { unidadDidactica_update: unknown },
+        { id: number; data: DataConnectUnidadDidacticaInput }
+      >(UPDATE_UNIDAD_DIDACTICA_MUTATION, { variables: { id: unidadDidacticaId, data: { comun: true } } });
+      return { id: unidadDidacticaId };
+    }
+
+    throw new https.HttpsError("invalid-argument", "Solo modulo y unidad didactica se pueden reutilizar.");
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in reuseEstructuraAcademicaItem:", error);
+    throw new https.HttpsError("internal", "No se pudo reutilizar el elemento academico.");
+  }
+});
+
+export const detachEstructuraAcademicaItem = https.onCall(async (data, context) => {
+  await requirePermission(context, "estructura-academica", "delete");
+
+  const entity = parseEstructuraActionEntity(data?.entity);
+
+  try {
+    if (entity === "modulo") {
+      const relacionId = toNumber(data?.relacionId, -1);
+      const planId = toNumber(data?.planId, -1);
+      const moduloId = toNumber(data?.moduloId, -1);
+      if (relacionId > 0) {
+        await dataConnect.executeGraphql<
+          { planModulo_delete: unknown },
+          { id: number }
+        >(DELETE_PLAN_MODULO_MUTATION, { variables: { id: relacionId } });
+        return { id: relacionId };
+      }
+      if (planId <= 0 || moduloId <= 0) throw new https.HttpsError("invalid-argument", "relacionId or planId and moduloId are required.");
+      await dataConnect.executeGraphql<
+        { planModulo_deleteMany: number },
+        { planId: number; moduloId: number }
+      >(DELETE_PLAN_MODULO_RELATION_MUTATION, { variables: { planId, moduloId } });
+      return { id: moduloId };
+    }
+
+    if (entity === "unidadDidactica") {
+      const relacionId = toNumber(data?.relacionId, -1);
+      if (relacionId <= 0) throw new https.HttpsError("invalid-argument", "relacionId is required.");
+      await dataConnect.executeGraphql<
+        { unidadDidacticaModulo_delete: unknown },
+        { id: number }
+      >(DELETE_UNIDAD_DIDACTICA_MODULO_RELATION_MUTATION, { variables: { id: relacionId } });
+      return { id: relacionId };
+    }
+
+    if (entity === "capacidadTerminal") {
+      const capacidadTerminalId = toNumber(data?.capacidadTerminalId, -1);
+      if (capacidadTerminalId <= 0) throw new https.HttpsError("invalid-argument", "capacidadTerminalId is required.");
+      await dataConnect.executeGraphql<
+        { indicadorCapacidad_deleteMany: number },
+        { capacidadTerminalId: number }
+      >(DELETE_INDICADORES_CAPACIDAD_BY_CAPACIDAD_MUTATION, { variables: { capacidadTerminalId } });
+      await dataConnect.executeGraphql<
+        { capacidadTerminal_delete: unknown },
+        { id: number }
+      >(DELETE_CAPACIDAD_TERMINAL_MUTATION, { variables: { id: capacidadTerminalId } });
+      return { id: capacidadTerminalId };
+    }
+
+    const indicadorCapacidadId = toNumber(data?.indicadorCapacidadId, -1);
+    if (indicadorCapacidadId <= 0) throw new https.HttpsError("invalid-argument", "indicadorCapacidadId is required.");
+    await dataConnect.executeGraphql<
+      { indicadorCapacidad_delete: unknown },
+      { id: number }
+    >(DELETE_INDICADOR_CAPACIDAD_MUTATION, { variables: { id: indicadorCapacidadId } });
+    return { id: indicadorCapacidadId };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in detachEstructuraAcademicaItem:", error);
+    throw new https.HttpsError("internal", "No se pudo quitar el elemento academico.");
   }
 });
 
@@ -600,7 +938,7 @@ async function syncUnidadDidacticaModulos(unidadDidacticaId: number, moduloIds: 
 }
 
 export const listUnidadesDidacticas = https.onCall(async (_data, context) => {
-  requireLevel(context, "list didactic units");
+  await requirePermission(context, "unidades-didacticas", "view");
 
   try {
     const response = await dataConnect.executeGraphql<
@@ -625,7 +963,7 @@ export const listUnidadesDidacticas = https.onCall(async (_data, context) => {
 });
 
 export const getUnidadDidactica = https.onCall(async (data, context) => {
-  requireLevel(context, "get didactic units");
+  await requirePermission(context, "unidades-didacticas", "view");
 
   const unidadDidacticaId = toNumber(data?.id, -1);
   if (unidadDidacticaId <= 0) {
@@ -656,8 +994,6 @@ export const getUnidadDidactica = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateUnidadDidactica = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate didactic units");
-
   const payload = buildUnidadDidacticaDataFromInput(data as Record<string, unknown>);
   const moduloIds = parseModuloIds((data as Record<string, unknown>).moduloIds ?? data?.moduloId);
   if (!payload.nombre) {
@@ -668,6 +1004,7 @@ export const createOrUpdateUnidadDidactica = https.onCall(async (data, context) 
   }
 
   const unidadDidacticaId = toNumberOrNull(data?.id);
+  await requirePermission(context, "unidades-didacticas", unidadDidacticaId ? "edit" : "create");
 
   try {
     let savedUnidadDidacticaId = unidadDidacticaId;
@@ -701,7 +1038,7 @@ export const createOrUpdateUnidadDidactica = https.onCall(async (data, context) 
 });
 
 export const deleteUnidadDidactica = https.onCall(async (data, context) => {
-  requireLevel(context, "delete didactic units");
+  await requirePermission(context, "unidades-didacticas", "delete");
 
   const unidadDidacticaId = toNumber(data?.id, -1);
   if (unidadDidacticaId <= 0) {
@@ -727,7 +1064,7 @@ export const deleteUnidadDidactica = https.onCall(async (data, context) => {
 });
 
 export const listCapacidadesTerminales = https.onCall(async (_data, context) => {
-  requireLevel(context, "list terminal capacities");
+  await requirePermission(context, "capacidades-terminales", "view");
 
   try {
     const response = await dataConnect.executeGraphql<
@@ -746,7 +1083,7 @@ export const listCapacidadesTerminales = https.onCall(async (_data, context) => 
 });
 
 export const getCapacidadTerminal = https.onCall(async (data, context) => {
-  requireLevel(context, "get terminal capacities");
+  await requirePermission(context, "capacidades-terminales", "view");
 
   const capacidadTerminalId = toNumber(data?.id, -1);
   if (capacidadTerminalId <= 0) {
@@ -767,8 +1104,6 @@ export const getCapacidadTerminal = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateCapacidadTerminal = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate terminal capacities");
-
   const payload = buildCapacidadTerminalDataFromInput(data as Record<string, unknown>);
   if (!payload.descripcion) {
     throw new https.HttpsError("invalid-argument", "descripcion is required.");
@@ -778,6 +1113,7 @@ export const createOrUpdateCapacidadTerminal = https.onCall(async (data, context
   }
 
   const capacidadTerminalId = toNumberOrNull(data?.id);
+  await requirePermission(context, "capacidades-terminales", capacidadTerminalId ? "edit" : "create");
 
   try {
     if (capacidadTerminalId) {
@@ -802,7 +1138,7 @@ export const createOrUpdateCapacidadTerminal = https.onCall(async (data, context
 });
 
 export const deleteCapacidadTerminal = https.onCall(async (data, context) => {
-  requireLevel(context, "delete terminal capacities");
+  await requirePermission(context, "capacidades-terminales", "delete");
 
   const capacidadTerminalId = toNumber(data?.id, -1);
   if (capacidadTerminalId <= 0) {
@@ -823,7 +1159,7 @@ export const deleteCapacidadTerminal = https.onCall(async (data, context) => {
 });
 
 export const listIndicadoresCapacidad = https.onCall(async (_data, context) => {
-  requireLevel(context, "list capacity indicators");
+  await requirePermission(context, "indicadores-capacidad", "view");
 
   try {
     const response = await dataConnect.executeGraphql<
@@ -842,7 +1178,7 @@ export const listIndicadoresCapacidad = https.onCall(async (_data, context) => {
 });
 
 export const getIndicadorCapacidad = https.onCall(async (data, context) => {
-  requireLevel(context, "get capacity indicators");
+  await requirePermission(context, "indicadores-capacidad", "view");
 
   const indicadorCapacidadId = toNumber(data?.id, -1);
   if (indicadorCapacidadId <= 0) {
@@ -863,8 +1199,6 @@ export const getIndicadorCapacidad = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateIndicadorCapacidad = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate capacity indicators");
-
   const payload = buildIndicadorCapacidadDataFromInput(data as Record<string, unknown>);
   if (!payload.descripcion) {
     throw new https.HttpsError("invalid-argument", "descripcion is required.");
@@ -874,6 +1208,7 @@ export const createOrUpdateIndicadorCapacidad = https.onCall(async (data, contex
   }
 
   const indicadorCapacidadId = toNumberOrNull(data?.id);
+  await requirePermission(context, "indicadores-capacidad", indicadorCapacidadId ? "edit" : "create");
 
   try {
     if (indicadorCapacidadId) {
@@ -898,7 +1233,7 @@ export const createOrUpdateIndicadorCapacidad = https.onCall(async (data, contex
 });
 
 export const deleteIndicadorCapacidad = https.onCall(async (data, context) => {
-  requireLevel(context, "delete capacity indicators");
+  await requirePermission(context, "indicadores-capacidad", "delete");
 
   const indicadorCapacidadId = toNumber(data?.id, -1);
   if (indicadorCapacidadId <= 0) {
@@ -919,7 +1254,7 @@ export const deleteIndicadorCapacidad = https.onCall(async (data, context) => {
 });
 
 export const listAprendizajes = https.onCall(async (_data, context) => {
-  requireLevel(context, "list learning records");
+  await requirePermission(context, "aprendizajes", "view");
 
   try {
     const response = await dataConnect.executeGraphql<
@@ -938,7 +1273,7 @@ export const listAprendizajes = https.onCall(async (_data, context) => {
 });
 
 export const getAprendizaje = https.onCall(async (data, context) => {
-  requireLevel(context, "get learning records");
+  await requirePermission(context, "aprendizajes", "view");
 
   const aprendizajeId = toNumber(data?.id, -1);
   if (aprendizajeId <= 0) {
@@ -959,8 +1294,6 @@ export const getAprendizaje = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateAprendizaje = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate learning records");
-
   const payload = buildAprendizajeDataFromInput(data as Record<string, unknown>);
   if (!payload.descripcion) {
     throw new https.HttpsError("invalid-argument", "descripcion is required.");
@@ -970,6 +1303,7 @@ export const createOrUpdateAprendizaje = https.onCall(async (data, context) => {
   }
 
   const aprendizajeId = toNumberOrNull(data?.id);
+  await requirePermission(context, "aprendizajes", aprendizajeId ? "edit" : "create");
 
   try {
     if (aprendizajeId) {
@@ -994,7 +1328,7 @@ export const createOrUpdateAprendizaje = https.onCall(async (data, context) => {
 });
 
 export const deleteAprendizaje = https.onCall(async (data, context) => {
-  requireLevel(context, "delete learning records");
+  await requirePermission(context, "aprendizajes", "delete");
 
   const aprendizajeId = toNumber(data?.id, -1);
   if (aprendizajeId <= 0) {
@@ -1015,7 +1349,7 @@ export const deleteAprendizaje = https.onCall(async (data, context) => {
 });
 
 export const listActividades = https.onCall(async (_data, context) => {
-  requireLevel(context, "list activities");
+  await requirePermission(context, "actividades", "view");
 
   try {
     const response = await dataConnect.executeGraphql<
@@ -1034,7 +1368,7 @@ export const listActividades = https.onCall(async (_data, context) => {
 });
 
 export const getActividad = https.onCall(async (data, context) => {
-  requireLevel(context, "get activities");
+  await requirePermission(context, "actividades", "view");
 
   const actividadId = toNumber(data?.id, -1);
   if (actividadId <= 0) {
@@ -1055,8 +1389,6 @@ export const getActividad = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateActividad = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate activities");
-
   const payload = buildActividadDataFromInput(data as Record<string, unknown>);
   if (!payload.nombre) {
     throw new https.HttpsError("invalid-argument", "nombre is required.");
@@ -1066,6 +1398,7 @@ export const createOrUpdateActividad = https.onCall(async (data, context) => {
   }
 
   const actividadId = toNumberOrNull(data?.id);
+  await requirePermission(context, "actividades", actividadId ? "edit" : "create");
 
   try {
     if (actividadId) {
@@ -1090,7 +1423,7 @@ export const createOrUpdateActividad = https.onCall(async (data, context) => {
 });
 
 export const deleteActividad = https.onCall(async (data, context) => {
-  requireLevel(context, "delete activities");
+  await requirePermission(context, "actividades", "delete");
 
   const actividadId = toNumber(data?.id, -1);
   if (actividadId <= 0) {

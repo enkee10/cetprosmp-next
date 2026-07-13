@@ -36,6 +36,15 @@ extend type Mutation {
     data: Anio_Data!
   ): Anio_KeyOutput! @fdc_generated(from: "Anio", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `AppSetting` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  appSetting_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: AppSetting_Data!
+  ): AppSetting_KeyOutput! @fdc_generated(from: "AppSetting", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Aprendizaje` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   aprendizaje_insert(
@@ -441,6 +450,15 @@ extend type Mutation {
     data: Plan_Data!
   ): Plan_KeyOutput! @fdc_generated(from: "Plan", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `PlanModulo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  planModulo_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: PlanModulo_Data!
+  ): PlanModulo_KeyOutput! @fdc_generated(from: "PlanModulo", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Post` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   post_insert(
@@ -486,6 +504,15 @@ extend type Mutation {
     data: Recurso_Data!
   ): Recurso_KeyOutput! @fdc_generated(from: "Recurso", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `RegistroAcademicoDocumento` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  registroAcademicoDocumento_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: RegistroAcademicoDocumento_Data!
+  ): RegistroAcademicoDocumento_KeyOutput! @fdc_generated(from: "RegistroAcademicoDocumento", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Rol` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   rol_insert(
@@ -494,6 +521,15 @@ extend type Mutation {
     """
     data: Rol_Data!
   ): Rol_KeyOutput! @fdc_generated(from: "Rol", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `RolePermission` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  rolePermission_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: RolePermission_Data!
+  ): RolePermission_KeyOutput! @fdc_generated(from: "RolePermission", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `Sector` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -629,6 +665,15 @@ extend type Mutation {
     """
     data: [Anio_Data!]!
   ): [Anio_KeyOutput!]! @fdc_generated(from: "Anio", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `AppSetting` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  appSetting_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [AppSetting_Data!]!
+  ): [AppSetting_KeyOutput!]! @fdc_generated(from: "AppSetting", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Aprendizaje` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1035,6 +1080,15 @@ extend type Mutation {
     data: [Plan_Data!]!
   ): [Plan_KeyOutput!]! @fdc_generated(from: "Plan", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `PlanModulo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  planModulo_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [PlanModulo_Data!]!
+  ): [PlanModulo_KeyOutput!]! @fdc_generated(from: "PlanModulo", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Post` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   post_insertMany(
@@ -1080,6 +1134,15 @@ extend type Mutation {
     data: [Recurso_Data!]!
   ): [Recurso_KeyOutput!]! @fdc_generated(from: "Recurso", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `RegistroAcademicoDocumento` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  registroAcademicoDocumento_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [RegistroAcademicoDocumento_Data!]!
+  ): [RegistroAcademicoDocumento_KeyOutput!]! @fdc_generated(from: "RegistroAcademicoDocumento", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Rol` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   rol_insertMany(
@@ -1088,6 +1151,15 @@ extend type Mutation {
     """
     data: [Rol_Data!]!
   ): [Rol_KeyOutput!]! @fdc_generated(from: "Rol", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `RolePermission` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  rolePermission_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [RolePermission_Data!]!
+  ): [RolePermission_KeyOutput!]! @fdc_generated(from: "RolePermission", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Sector` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1223,6 +1295,15 @@ extend type Mutation {
     """
     data: Anio_Data!
   ): Anio_KeyOutput! @fdc_generated(from: "Anio", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `AppSetting` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `AppSetting`.
+  """
+  appSetting_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: AppSetting_Data!
+  ): AppSetting_KeyOutput! @fdc_generated(from: "AppSetting", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `Aprendizaje` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Aprendizaje`.
   """
@@ -1629,6 +1710,15 @@ extend type Mutation {
     data: Plan_Data!
   ): Plan_KeyOutput! @fdc_generated(from: "Plan", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `PlanModulo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PlanModulo`.
+  """
+  planModulo_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: PlanModulo_Data!
+  ): PlanModulo_KeyOutput! @fdc_generated(from: "PlanModulo", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Post` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Post`.
   """
   post_upsert(
@@ -1674,6 +1764,15 @@ extend type Mutation {
     data: Recurso_Data!
   ): Recurso_KeyOutput! @fdc_generated(from: "Recurso", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `RegistroAcademicoDocumento` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `RegistroAcademicoDocumento`.
+  """
+  registroAcademicoDocumento_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: RegistroAcademicoDocumento_Data!
+  ): RegistroAcademicoDocumento_KeyOutput! @fdc_generated(from: "RegistroAcademicoDocumento", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Rol` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Rol`.
   """
   rol_upsert(
@@ -1682,6 +1781,15 @@ extend type Mutation {
     """
     data: Rol_Data!
   ): Rol_KeyOutput! @fdc_generated(from: "Rol", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `RolePermission` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `RolePermission`.
+  """
+  rolePermission_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: RolePermission_Data!
+  ): RolePermission_KeyOutput! @fdc_generated(from: "RolePermission", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `Sector` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Sector`.
   """
@@ -1817,6 +1925,15 @@ extend type Mutation {
     """
     data: [Anio_Data!]!
   ): [Anio_KeyOutput!]! @fdc_generated(from: "Anio", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `AppSetting` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `AppSetting`.
+  """
+  appSetting_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [AppSetting_Data!]!
+  ): [AppSetting_KeyOutput!]! @fdc_generated(from: "AppSetting", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Aprendizaje` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Aprendizaje`.
   """
@@ -2223,6 +2340,15 @@ extend type Mutation {
     data: [Plan_Data!]!
   ): [Plan_KeyOutput!]! @fdc_generated(from: "Plan", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `PlanModulo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PlanModulo`.
+  """
+  planModulo_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [PlanModulo_Data!]!
+  ): [PlanModulo_KeyOutput!]! @fdc_generated(from: "PlanModulo", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Post` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Post`.
   """
   post_upsertMany(
@@ -2268,6 +2394,15 @@ extend type Mutation {
     data: [Recurso_Data!]!
   ): [Recurso_KeyOutput!]! @fdc_generated(from: "Recurso", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `RegistroAcademicoDocumento` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `RegistroAcademicoDocumento`.
+  """
+  registroAcademicoDocumento_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [RegistroAcademicoDocumento_Data!]!
+  ): [RegistroAcademicoDocumento_KeyOutput!]! @fdc_generated(from: "RegistroAcademicoDocumento", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Rol` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Rol`.
   """
   rol_upsertMany(
@@ -2276,6 +2411,15 @@ extend type Mutation {
     """
     data: [Rol_Data!]!
   ): [Rol_KeyOutput!]! @fdc_generated(from: "Rol", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `RolePermission` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `RolePermission`.
+  """
+  rolePermission_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [RolePermission_Data!]!
+  ): [RolePermission_KeyOutput!]! @fdc_generated(from: "RolePermission", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Sector` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Sector`.
   """
@@ -2491,6 +2635,35 @@ extend type Mutation {
     """
     data: Anio_Data!
   ): Anio_KeyOutput @fdc_generated(from: "Anio", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `AppSetting` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `AppSetting` or `null` if not found.
+  """
+  appSetting_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: AppSetting_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: AppSetting_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: AppSetting_Data!
+  ): AppSetting_KeyOutput @fdc_generated(from: "AppSetting", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Aprendizaje` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Aprendizaje` or `null` if not found.
   """
@@ -3747,6 +3920,35 @@ extend type Mutation {
     data: Plan_Data!
   ): Plan_KeyOutput @fdc_generated(from: "Plan", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `PlanModulo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `PlanModulo` or `null` if not found.
+  """
+  planModulo_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: PlanModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PlanModulo_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: PlanModulo_Data!
+  ): PlanModulo_KeyOutput @fdc_generated(from: "PlanModulo", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Post` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Post` or `null` if not found.
   """
   post_update(
@@ -3892,6 +4094,35 @@ extend type Mutation {
     data: Recurso_Data!
   ): Recurso_KeyOutput @fdc_generated(from: "Recurso", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `RegistroAcademicoDocumento` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `RegistroAcademicoDocumento` or `null` if not found.
+  """
+  registroAcademicoDocumento_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: RegistroAcademicoDocumento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: RegistroAcademicoDocumento_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: RegistroAcademicoDocumento_Data!
+  ): RegistroAcademicoDocumento_KeyOutput @fdc_generated(from: "RegistroAcademicoDocumento", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Rol` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Rol` or `null` if not found.
   """
   rol_update(
@@ -3920,6 +4151,35 @@ extend type Mutation {
     """
     data: Rol_Data!
   ): Rol_KeyOutput @fdc_generated(from: "Rol", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `RolePermission` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `RolePermission` or `null` if not found.
+  """
+  rolePermission_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: RolePermission_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: RolePermission_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: RolePermission_Data!
+  ): RolePermission_KeyOutput @fdc_generated(from: "RolePermission", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Sector` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Sector` or `null` if not found.
   """
@@ -4315,6 +4575,25 @@ extend type Mutation {
     """
     data: Anio_Data!
   ): Int! @fdc_generated(from: "Anio", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `AppSetting` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  appSetting_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: AppSetting_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: AppSetting_Data!
+  ): Int! @fdc_generated(from: "AppSetting", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Aprendizaje` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -5171,6 +5450,25 @@ extend type Mutation {
     data: Plan_Data!
   ): Int! @fdc_generated(from: "Plan", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `PlanModulo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  planModulo_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: PlanModulo_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: PlanModulo_Data!
+  ): Int! @fdc_generated(from: "PlanModulo", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Post` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   post_updateMany(
@@ -5266,6 +5564,25 @@ extend type Mutation {
     data: Recurso_Data!
   ): Int! @fdc_generated(from: "Recurso", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `RegistroAcademicoDocumento` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  registroAcademicoDocumento_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: RegistroAcademicoDocumento_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: RegistroAcademicoDocumento_Data!
+  ): Int! @fdc_generated(from: "RegistroAcademicoDocumento", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Rol` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   rol_updateMany(
@@ -5284,6 +5601,25 @@ extend type Mutation {
     """
     data: Rol_Data!
   ): Int! @fdc_generated(from: "Rol", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `RolePermission` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  rolePermission_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: RolePermission_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: RolePermission_Data!
+  ): Int! @fdc_generated(from: "RolePermission", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Sector` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -5589,6 +5925,30 @@ extend type Mutation {
     """
     first: Anio_FirstRow
   ): Anio_KeyOutput @fdc_generated(from: "Anio", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `AppSetting` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  appSetting_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: AppSetting_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: AppSetting_FirstRow
+  ): AppSetting_KeyOutput @fdc_generated(from: "AppSetting", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `Aprendizaje` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -6620,6 +6980,30 @@ extend type Mutation {
     first: Plan_FirstRow
   ): Plan_KeyOutput @fdc_generated(from: "Plan", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `PlanModulo` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  planModulo_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: PlanModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PlanModulo_FirstRow
+  ): PlanModulo_KeyOutput @fdc_generated(from: "PlanModulo", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Post` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   post_delete(
@@ -6740,6 +7124,30 @@ extend type Mutation {
     first: Recurso_FirstRow
   ): Recurso_KeyOutput @fdc_generated(from: "Recurso", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `RegistroAcademicoDocumento` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  registroAcademicoDocumento_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: RegistroAcademicoDocumento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: RegistroAcademicoDocumento_FirstRow
+  ): RegistroAcademicoDocumento_KeyOutput @fdc_generated(from: "RegistroAcademicoDocumento", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Rol` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   rol_delete(
@@ -6763,6 +7171,30 @@ extend type Mutation {
     """
     first: Rol_FirstRow
   ): Rol_KeyOutput @fdc_generated(from: "Rol", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `RolePermission` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  rolePermission_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: RolePermission_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: RolePermission_FirstRow
+  ): RolePermission_KeyOutput @fdc_generated(from: "RolePermission", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `Sector` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -7083,6 +7515,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Anio", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `AppSetting` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  appSetting_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: AppSetting_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "AppSetting", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Aprendizaje` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
@@ -7714,6 +8160,20 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "Plan", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `PlanModulo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  planModulo_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: PlanModulo_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "PlanModulo", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Post` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   post_deleteMany(
@@ -7784,6 +8244,20 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "Recurso", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `RegistroAcademicoDocumento` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  registroAcademicoDocumento_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: RegistroAcademicoDocumento_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "RegistroAcademicoDocumento", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Rol` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   rol_deleteMany(
@@ -7797,6 +8271,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Rol", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `RolePermission` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  rolePermission_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: RolePermission_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "RolePermission", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Sector` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

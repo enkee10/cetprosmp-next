@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectSemestre, DataConnectSemestreInput } from "../core/types.js";
 import {
   DELETE_SEMESTRE_MUTATION,
@@ -68,13 +69,6 @@ const GET_SEMESTRE_QUERY = `
   }
 `;
 
-function requireLevel(context: https.CallableContext, action: string) {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
-  }
-}
-
 const sortSemestres = (items: DataConnectSemestre[]) =>
   items
     .slice()
@@ -97,7 +91,7 @@ const addAnioTitulo = (semestre: DataConnectSemestre): DataConnectSemestre => ({
 });
 
 export const listSemestres = https.onCall(async (_data, context) => {
-  requireLevel(context, "list semesters");
+  await requirePermission(context, "semestres", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ semestres: DataConnectSemestre[] }, Record<string, never>>(
@@ -111,7 +105,7 @@ export const listSemestres = https.onCall(async (_data, context) => {
 });
 
 export const getSemestre = https.onCall(async (data, context) => {
-  requireLevel(context, "get semesters");
+  await requirePermission(context, "semestres", "view");
 
   const semestreId = toNumber(data?.id, -1);
   if (semestreId <= 0) {
@@ -131,14 +125,13 @@ export const getSemestre = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateSemestre = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate semesters");
-
   const payload = buildSemestreDataFromInput(data as Record<string, unknown>) as DataConnectSemestreInput;
   if (!payload.titulo) {
     throw new https.HttpsError("invalid-argument", "titulo is required.");
   }
 
   const semestreId = toNumberOrNull(data?.id);
+  await requirePermission(context, "semestres", semestreId ? "edit" : "create");
 
   try {
     if (semestreId) {
@@ -163,7 +156,7 @@ export const createOrUpdateSemestre = https.onCall(async (data, context) => {
 });
 
 export const deleteSemestre = https.onCall(async (data, context) => {
-  requireLevel(context, "delete semesters");
+  await requirePermission(context, "semestres", "delete");
 
   const semestreId = toNumber(data?.id, -1);
   if (semestreId <= 0) {

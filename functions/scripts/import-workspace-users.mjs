@@ -52,13 +52,13 @@ const LIST_USERS_QUERY = `
 `;
 
 const INSERT_USER_MUTATION = `
-  mutation ImportWorkspaceInsertUser($data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
+  mutation ImportWorkspaceInsertUser($data: User_Data! @allow(fields: "documentId username nickName email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
     user_insert(data: $data)
   }
 `;
 
 const UPDATE_USER_MUTATION = `
-  mutation ImportWorkspaceUpdateUser($id: Int!, $data: User_Data! @allow(fields: "documentId username email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
+  mutation ImportWorkspaceUpdateUser($id: Int!, $data: User_Data! @allow(fields: "documentId username nickName email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo estadoCivil instruccion fechaNacimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar rolId")) {
     user_update(id: $id, data: $data)
   }
 `;
@@ -312,6 +312,7 @@ function extractProfile(workspaceUser, ouPath, roleId, mapping) {
   const familyName = normalizeText(workspaceUser.name?.familyName);
   const { apellidoPaterno, apellidoMaterno } = splitFamilyName(familyName);
   const username = normalizeText(workspaceUser.name?.fullName) || generateUsername(givenName, apellidoPaterno) || primaryEmail;
+  const nickName = generateUsername(givenName, apellidoPaterno) || username;
   const mobile = firstOfType(workspaceUser.phones, ["mobile", "work_mobile", "phone_mobile"]);
   const homePhone = firstOfType(workspaceUser.phones, ["home", "work", "main"]);
   const address = (workspaceUser.addresses || []).find((item) => item.primary) || workspaceUser.addresses?.[0] || {};
@@ -329,6 +330,7 @@ function extractProfile(workspaceUser, ouPath, roleId, mapping) {
 
   return compactUndefined({
     username,
+    nickName,
     email: personalEmail,
     provider: "workspace-import",
     confirmed: true,

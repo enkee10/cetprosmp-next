@@ -24,12 +24,14 @@ import UserForm from '@/components/intranet/users/UserForm';
 import Modal1 from '@/components/Modal1';
 import { useAuth } from '@/context/AuthContext';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
-import { canDeleteIntranetRecords } from '@/lib/intranetPermissions';
+import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 interface User {
   id: number;
   documentId: string;
   username: string;
+  nickName?: string | null;
   email: string;
   nombre: string;
   apellidoPaterno: string;
@@ -40,6 +42,10 @@ interface User {
   bloqueado?: boolean;
   avatar?: string;
   avatarPequeno?: string;
+  photoURL?: string | null;
+  recorteFotografia?: string | null;
+  rolTitulo?: string | null;
+  rolLevel?: number | null;
   tipoDocumento?: string;
   dni?: string;
   nacionalidad?: string;
@@ -95,29 +101,6 @@ const isDeadlineExceededError = (error: unknown) => {
   return code.includes('deadline-exceeded') || message.includes('deadline-exceeded');
 };
 
-const isStudentToTeacherOrHigherTransition = (
-  previousRoleId: number | string | null | undefined,
-  nextRoleId: number | string | null | undefined,
-) => {
-  const previous = Number(previousRoleId ?? 0);
-  const next = Number(nextRoleId ?? 0);
-  return previous >= 1 && previous <= 3 && next >= 4 && next <= 8;
-};
-
-const isTeacherOrStaffToStudentTransition = (
-  previousRoleId: number | string | null | undefined,
-  nextRoleId: number | string | null | undefined,
-) => {
-  const previous = Number(previousRoleId ?? 0);
-  const next = Number(nextRoleId ?? 0);
-  return previous >= 4 && previous <= 8 && next >= 1 && next <= 3;
-};
-
-const BLOCKED_ROLE_CHANGE_MESSAGES = new Set([
-  'No se puede cambiar de rol a docente o superior.',
-  'No es posible cambiar a este tipo de rol.',
-]);
-
 const formatDateAsDayMonthYear = (value: unknown) => {
   const raw = String(value || '').trim();
   if (!raw) return '';
@@ -132,11 +115,17 @@ const formatDateAsDayMonthYear = (value: unknown) => {
 const UserAvatarCell = ({
   avatar,
   avatarPequeno,
+  recorteFotografia,
   nombre,
   apellidoPaterno,
-}: Pick<User, 'avatar' | 'avatarPequeno' | 'nombre' | 'apellidoPaterno'>) => {
+  useRecorteFotografia,
+}: Pick<User, 'avatar' | 'avatarPequeno' | 'recorteFotografia' | 'nombre' | 'apellidoPaterno'> & {
+  useRecorteFotografia: boolean;
+}) => {
   const fallbackSrc = avatar?.trim() || undefined;
-  const preferredSrc = avatarPequeno?.trim() || fallbackSrc;
+  const normalSrc = avatarPequeno?.trim() || fallbackSrc;
+  const recorteSrc = recorteFotografia?.trim() || undefined;
+  const preferredSrc = useRecorteFotografia ? (recorteSrc || normalSrc) : normalSrc;
   const [src, setSrc] = useState(preferredSrc);
 
   useEffect(() => {
@@ -145,10 +134,18 @@ const UserAvatarCell = ({
 
   const initials =
     nombre && apellidoPaterno ? `${nombre[0]}${apellidoPaterno[0]}`.toUpperCase() : null;
+  const debugSource = useRecorteFotografia && recorteSrc
+    ? `recorteFotografia: ${recorteSrc}`
+    : avatarPequeno?.trim()
+      ? `avatarPequeno: ${avatarPequeno.trim()}`
+      : fallbackSrc
+        ? `avatar: ${fallbackSrc}`
+        : 'sin URL';
 
   return (
     <Avatar
       src={src}
+      title={debugSource}
       sx={{
         bgcolor: 'transparent',
         background: 'linear-gradient(180deg, #8fd8ff 0%, #ffffff 100%)',
@@ -157,6 +154,7 @@ const UserAvatarCell = ({
         referrerPolicy: 'no-referrer',
         onError: () => {
           setSrc((current) => {
+            if (current && normalSrc && current !== normalSrc) return normalSrc;
             if (current && fallbackSrc && current !== fallbackSrc) return fallbackSrc;
             return undefined;
           });
@@ -168,9 +166,16 @@ const UserAvatarCell = ({
   );
 };
 
+const isStudentUser = (user: Pick<User, 'rolId' | 'rolTitulo'>) => {
+  const roleTitle = String(user.rolTitulo ?? '').trim().toLowerCase();
+  return Number(user.rolId ?? 0) === 3 || roleTitle.includes('estudiante') || roleTitle.includes('alumno');
+};
+
 const UsersPage = () => {
   const { user, loading: authLoading } = useAuth();
-  const canDeleteRecords = canDeleteIntranetRecords(user?.role, user?.level);
+  const { can } = useIntranetPermissions();
+  const { settings: appSettings } = useAppSettings();
+  const canDeleteRecords = can('users', 'delete');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -190,6 +195,7 @@ const UsersPage = () => {
     useState<GridColumnVisibilityModel>({
       avatar: true,
       username: true,
+      nickName: false,
       correoInstitucional: true,
       email: false,
       sexo: false,
@@ -320,13 +326,6 @@ const UsersPage = () => {
     setFormOpen(false);
   };
 
-  const closeUserFormAfterBlockedRoleChange = useCallback((message: string) => {
-    setFormOpen(false);
-    setSelectedUser(null);
-    setUserFormResetKey((prev) => prev + 1);
-    showTemporaryErrorMessage(message);
-  }, [showTemporaryErrorMessage]);
-
   const handleDeleteUser = async (
     targetUser: Pick<
       User,
@@ -385,15 +384,6 @@ const UsersPage = () => {
         const dataToUpdate = { ...data };
         delete (dataToUpdate as { password?: unknown }).password;
 
-        if (isStudentToTeacherOrHigherTransition(selectedUser.rolId, dataToUpdate.rolId)) {
-          closeUserFormAfterBlockedRoleChange('No se puede cambiar de rol a docente o superior.');
-          return;
-        }
-        if (isTeacherOrStaffToStudentTransition(selectedUser.rolId, dataToUpdate.rolId)) {
-          closeUserFormAfterBlockedRoleChange('No es posible cambiar a este tipo de rol.');
-          return;
-        }
-
         const updateResult = await updateUserProfile({
           documentId: selectedUser.documentId,
           previousEmail: selectedUser.email,
@@ -404,6 +394,9 @@ const UsersPage = () => {
           previousNombre: selectedUser.nombre,
           previousApellidoPaterno: selectedUser.apellidoPaterno,
           previousApellidoMaterno: selectedUser.apellidoMaterno,
+          previousAvatar: selectedUser.avatar ?? null,
+          previousAvatarPequeno: selectedUser.avatarPequeno ?? null,
+          previousPhotoURL: selectedUser.photoURL ?? null,
           ...dataToUpdate,
         }) as { data?: { workspaceWarning?: string | null } };
         workspaceWarning =
@@ -422,10 +415,7 @@ const UsersPage = () => {
         }
       } else {
         const createNewUser = httpsCallable(functions, 'createNewUser');
-        await createNewUser({
-          ...data,
-          level: 0,
-        });
+        await createNewUser(data);
       }
 
       await fetchUsers();
@@ -438,11 +428,7 @@ const UsersPage = () => {
     } catch (error) {
       console.error('Error saving user: ', error);
       const parsedMessage = getCallableErrorMessage(error, 'No se pudo guardar el usuario.');
-      if (BLOCKED_ROLE_CHANGE_MESSAGES.has(parsedMessage)) {
-        closeUserFormAfterBlockedRoleChange(parsedMessage);
-      } else {
-        showTemporaryErrorMessage(parsedMessage);
-      }
+      showTemporaryErrorMessage(parsedMessage);
     } finally {
       setFormSubmitting(false);
       setLoading(false);
@@ -458,28 +444,58 @@ const UsersPage = () => {
         sortable: false,
         filterable: false,
         renderCell: (params) => {
-          const { avatar, avatarPequeno, nombre, apellidoPaterno } = params.row as User;
+          const row = params.row as User;
+          const { avatar, avatarPequeno, recorteFotografia, nombre, apellidoPaterno } = row;
           return (
             <Box
               sx={{
                 width: '100%',
                 height: '100%',
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 justifyContent: 'flex-start',
+                pt: 0.25,
               }}
             >
               <UserAvatarCell
                 avatar={avatar}
                 avatarPequeno={avatarPequeno}
+                recorteFotografia={recorteFotografia}
                 nombre={nombre}
                 apellidoPaterno={apellidoPaterno}
+                useRecorteFotografia={
+                  appSettings.visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes && isStudentUser(row)
+                }
               />
             </Box>
           );
         },
       },
-      { field: 'username', headerName: 'Username', flex: 1, minWidth: 150 },
+      {
+        field: 'username',
+        headerName: 'Username',
+        flex: 1,
+        minWidth: 150,
+        renderCell: (params) => (
+          <Box
+            title={String(params.value ?? '')}
+            sx={{
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 2,
+              lineHeight: 1.35,
+              maxHeight: '2.7em',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+            }}
+          >
+            {String(params.value ?? '')}
+          </Box>
+        ),
+      },
+      { field: 'nickName', headerName: 'Nick name', flex: 1, minWidth: 140 },
       {
         field: 'correoInstitucional',
         headerName: 'Correo Institucional',
@@ -555,7 +571,7 @@ const UsersPage = () => {
         ),
       },
     ],
-    [],
+    [appSettings.visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes],
   );
 
   const columnToggleItems = useMemo(
@@ -598,8 +614,29 @@ const UsersPage = () => {
         onColumnVisibilityModelChange={setColumnVisibilityModel}
         loading={loading}
         getRowId={(row) => row.id}
+        rowHeight={50}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
+        sx={{
+          '& .MuiDataGrid-cell': {
+            alignItems: 'flex-start',
+            overflow: 'hidden',
+            py: 0.5,
+          },
+          '& .MuiDataGrid-cellContent': {
+            display: '-webkit-box !important',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: '2',
+            width: '100%',
+            minWidth: 0,
+            lineHeight: 1.35,
+            maxHeight: '2.7em',
+            whiteSpace: 'normal !important',
+            overflow: 'hidden !important',
+            textOverflow: 'ellipsis !important',
+            wordBreak: 'break-word',
+          },
+        }}
       />
 
       <Menu

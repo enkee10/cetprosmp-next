@@ -1,18 +1,12 @@
 import { https } from "firebase-functions/v1";
 import { buildDatoGeneralDataFromInput } from "../core/userMappers.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectDatoGeneralInput } from "../core/types.js";
 import {
   DATO_GENERAL_SINGLETON_ID,
   getDatosGeneralesGlobales as fetchDatosGeneralesGlobales,
   saveDatosGeneralesGlobales,
 } from "./service.js";
-
-function requireLevel(context: https.CallableContext, action: string) {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
-  }
-}
 
 export const getDatosGeneralesGlobales = https.onCall(async () => {
   try {
@@ -25,7 +19,7 @@ export const getDatosGeneralesGlobales = https.onCall(async () => {
 });
 
 export const listDatosGenerales = https.onCall(async (_data, context) => {
-  requireLevel(context, "list general data");
+  await requirePermission(context, "datos-generales", "view");
 
   try {
     const datoGeneral = await fetchDatosGeneralesGlobales();
@@ -37,7 +31,7 @@ export const listDatosGenerales = https.onCall(async (_data, context) => {
 });
 
 export const getDatoGeneral = https.onCall(async (_data, context) => {
-  requireLevel(context, "get general data");
+  await requirePermission(context, "datos-generales", "view");
 
   try {
     const datoGeneral = await fetchDatosGeneralesGlobales();
@@ -49,7 +43,7 @@ export const getDatoGeneral = https.onCall(async (_data, context) => {
 });
 
 export const createOrUpdateDatoGeneral = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate general data");
+  await requirePermission(context, "datos-generales", "edit");
 
   const payload = buildDatoGeneralDataFromInput(data as Record<string, unknown>) as DataConnectDatoGeneralInput;
   if (!payload.nombreInstitucion) {
@@ -66,7 +60,7 @@ export const createOrUpdateDatoGeneral = https.onCall(async (data, context) => {
 });
 
 export const deleteDatoGeneral = https.onCall(async (_data, context) => {
-  requireLevel(context, "delete general data");
+  await requirePermission(context, "datos-generales", "delete");
   throw new https.HttpsError(
     "failed-precondition",
     "Datos Generales is a singleton and cannot be deleted.",

@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectCarrera, DataConnectCarreraInput } from "../core/types.js";
 import {
   DELETE_CARRERA_MUTATION,
@@ -62,10 +63,7 @@ const GET_CARRERA_QUERY = `
 `;
 
 export const listCarreras = https.onCall(async (_data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to list careers.");
-  }
+  await requirePermission(context, "carreras", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ carreras: DataConnectCarrera[] }, Record<string, never>>(
@@ -83,10 +81,7 @@ export const listCarreras = https.onCall(async (_data, context) => {
 });
 
 export const getCarrera = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to get careers.");
-  }
+  await requirePermission(context, "carreras", "view");
 
   const carreraId = toNumber(data?.id, -1);
   if (carreraId <= 0) {
@@ -107,17 +102,13 @@ export const getCarrera = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateCarrera = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to mutate careers.");
-  }
-
   const payload = buildCarreraDataFromInput(data as Record<string, unknown>);
   if (!payload.nombre) {
     throw new https.HttpsError("invalid-argument", "nombre is required.");
   }
 
   const carreraId = toNumberOrNull(data?.id);
+  await requirePermission(context, "carreras", carreraId ? "edit" : "create");
 
   try {
     if (carreraId) {
@@ -148,10 +139,7 @@ export const createOrUpdateCarrera = https.onCall(async (data, context) => {
 });
 
 export const deleteCarrera = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to delete careers.");
-  }
+  await requirePermission(context, "carreras", "delete");
 
   const carreraId = toNumber(data?.id, -1);
   if (carreraId <= 0) {

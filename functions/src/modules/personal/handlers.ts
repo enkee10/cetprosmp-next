@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectPersonal, DataConnectPersonalInput } from "../core/types.js";
 import {
   DELETE_PERSONAL_MUTATION,
@@ -75,13 +76,6 @@ const GET_PERSONAL_BY_USER_QUERY = `
     }
   }
 `;
-
-function requireLevel(context: https.CallableContext, action: string) {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
-  }
-}
 
 const addDerivedFields = (personal: DataConnectPersonal): DataConnectPersonal => {
   const especialidades = personal.personalEspecialidads_on_personal ?? [];
@@ -186,7 +180,7 @@ async function syncPersonalEspecialidades(personalId: number, especialidadIds: n
 }
 
 export const listPersonal = https.onCall(async (_data, context) => {
-  requireLevel(context, "list personal");
+  await requirePermission(context, "personal", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ personals: DataConnectPersonal[] }, Record<string, never>>(
@@ -217,7 +211,7 @@ export const listPersonal = https.onCall(async (_data, context) => {
 });
 
 export const getPersonal = https.onCall(async (data, context) => {
-  requireLevel(context, "get personal");
+  await requirePermission(context, "personal", "view");
 
   const personalId = toNumber(data?.id, -1);
   if (personalId <= 0) {
@@ -238,14 +232,13 @@ export const getPersonal = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdatePersonal = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate personal");
-
   const payload = buildPersonalDataFromInput(data as Record<string, unknown>) as DataConnectPersonalInput;
   if (!payload.userId) {
     throw new https.HttpsError("invalid-argument", "userId is required.");
   }
 
   const personalId = toNumberOrNull(data?.id);
+  await requirePermission(context, "personal", personalId ? "edit" : "create");
   const especialidadIds = getEspecialidadIds((data as Record<string, unknown> | null)?.especialidadIds);
 
   try {
@@ -294,7 +287,7 @@ export const createOrUpdatePersonal = https.onCall(async (data, context) => {
 });
 
 export const deletePersonal = https.onCall(async (data, context) => {
-  requireLevel(context, "delete personal");
+  await requirePermission(context, "personal", "delete");
 
   const personalId = toNumber(data?.id, -1);
   if (personalId <= 0) {

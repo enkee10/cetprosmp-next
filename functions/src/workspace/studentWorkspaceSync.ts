@@ -348,19 +348,11 @@ async function syncWorkspaceAvatar(
   userKey: string,
   avatar: string | null | undefined,
 ): Promise<void> {
+  if (avatar === undefined || avatar === null) return;
+
   const normalizedAvatar = normalizeAvatarUrl(avatar);
 
   if (!normalizedAvatar) {
-    try {
-      await directory.users.photos.delete({ userKey });
-    } catch (error: unknown) {
-      const { status, reason } = getWorkspaceErrorMeta(error);
-      const notFound =
-        status === 404
-        || reason.includes("notfound")
-        || reason.includes("resource not found");
-      if (!notFound) throw error;
-    }
     return;
   }
 
@@ -744,7 +736,7 @@ export async function syncStudentToWorkspace(
 
   if (!createIfMissing) {
     const updateExisting = async (userKey: string) => {
-      const response = await directory.users.update({
+      const response = await directory.users.patch({
         userKey,
         requestBody: payload,
       });
@@ -786,14 +778,14 @@ export async function syncStudentToWorkspace(
       }
     }
 
-    await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar ?? null);
+    await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar);
     await syncWorkspaceRoleGroupsInternal(directory, currentEmail, context.roleId ?? null);
     return;
   }
 
   try {
     if (shouldRenamePrimaryEmail) {
-      const response = await directory.users.update({
+      const response = await directory.users.patch({
         userKey: previousEmail,
         requestBody: payload,
       });
@@ -825,7 +817,7 @@ export async function syncStudentToWorkspace(
 
       if (notFound) {
         // Si no existe con el correo anterior, intentamos como flujo normal.
-        const response = await directory.users.update({
+        const response = await directory.users.patch({
           userKey: currentEmail,
           requestBody: payload,
         }).catch(async (updateError: unknown) => {
@@ -838,33 +830,33 @@ export async function syncStudentToWorkspace(
           return directory.users.insert({ requestBody: insertPayload });
         });
         effectiveUserKeyForPhoto = response.data.id || response.data.primaryEmail || currentEmail;
-        await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar ?? null);
+        await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar);
         return;
       }
     }
 
     if (!alreadyExists) {
       try {
-        const response = await directory.users.update({
+        const response = await directory.users.patch({
           userKey: currentEmail,
           requestBody: payload,
         });
         effectiveUserKeyForPhoto = response.data.id || response.data.primaryEmail || currentEmail;
-        await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar ?? null);
+        await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar);
         return;
       } catch {
         throw error;
       }
     }
 
-    const response = await directory.users.update({
+    const response = await directory.users.patch({
       userKey: currentEmail,
       requestBody: payload,
     });
     effectiveUserKeyForPhoto = response.data.id || response.data.primaryEmail || currentEmail;
   }
 
-  await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar ?? null);
+  await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar);
   await syncWorkspaceRoleGroupsInternal(directory, currentEmail, context.roleId ?? null);
 }
 

@@ -24,9 +24,9 @@ import SaveIcon from '@mui/icons-material/Save';
 import { useSearchParams } from 'next/navigation';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { app } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
-import { canManageRegistroAuxiliarMatriculas, isDocenteRole } from '@/lib/intranetPermissions';
+import { app } from '@/lib/firebase';
+import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
 type GrupoOption = {
   id: number;
@@ -212,6 +212,7 @@ const MODULE_INFO_LEFT_LABEL_COL = 0;
 const MODULE_INFO_LEFT_VALUE_COL = 1;
 const MODULE_INFO_RIGHT_LABEL_COL = 3;
 const MODULE_INFO_RIGHT_VALUE_COL = 4;
+const TEACHER_ROLE_ID = 4;
 
 const toTitleCase = (value: string | null | undefined) =>
   String(value ?? '')
@@ -354,6 +355,7 @@ const getGrupoModuloLabel = (grupoModulo: GrupoModuloOption) =>
 export default function RegistroAuxiliarPage() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const { can } = useIntranetPermissions();
   const [grupos, setGrupos] = useState<GrupoOption[]>([]);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [datosGenerales, setDatosGenerales] = useState<DatosGenerales | null>(null);
@@ -388,8 +390,11 @@ export default function RegistroAuxiliarPage() {
   const functions = useMemo(() => getFunctions(app), []);
   const directGrupoModuloId = searchParams.get('grupoModuloId') || '';
   const isDirectRegistro = Boolean(directGrupoModuloId);
-  const canEditModuloFechas = !isDocenteRole(user?.role);
-  const canManageRegistroMatriculas = canManageRegistroAuxiliarMatriculas(user?.role, user?.level ?? 0);
+  const isDocente = Number(user?.role ?? 0) === TEACHER_ROLE_ID && Number(user?.level ?? 0) < 600;
+  const canEditRegistro = can('registro-auxiliar', 'edit');
+  const canEditModuloFechas = canEditRegistro;
+  const canCreateRegistroMatriculas = can('registro-auxiliar', 'create');
+  const canDeleteRegistroMatriculas = can('registro-auxiliar', 'delete');
 
   useEffect(() => {
     if (!directGrupoModuloId) return;
@@ -418,15 +423,22 @@ export default function RegistroAuxiliarPage() {
           return;
         }
 
-        const listGrupos = httpsCallable<undefined, { grupos?: GrupoOption[] }>(functions, 'listGrupos');
-        const listSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(functions, 'listSemestres');
-        const [gruposResult, semestresResult, datosResult] = await Promise.all([listGrupos(), listSemestres(), getDatosGeneralesGlobales()]);
-        const nextGrupos = (gruposResult.data.grupos || [])
+        const listRegistroAuxiliarOpciones = httpsCallable<
+          undefined,
+          {
+            grupos?: GrupoOption[];
+            semestres?: SemestreOption[];
+            datoGeneral?: DatosGenerales | null;
+            datosGenerales?: DatosGenerales | null;
+          }
+        >(functions, 'listRegistroAuxiliarOpciones');
+        const opcionesResult = await listRegistroAuxiliarOpciones();
+        const nextGrupos = (opcionesResult.data.grupos || [])
           .filter((grupo) => (grupo.grupoModulos || []).length > 0)
           .sort((a, b) => String(a.nombreDisplay ?? '').localeCompare(String(b.nombreDisplay ?? ''), 'es', { numeric: true }));
         setGrupos(nextGrupos);
-        setSemestres(semestresResult.data.semestres || []);
-        setDatosGenerales(datosResult.data.datoGeneral || datosResult.data.datosGenerales || null);
+        setSemestres(opcionesResult.data.semestres || []);
+        setDatosGenerales(opcionesResult.data.datoGeneral || opcionesResult.data.datosGenerales || null);
       } catch (err) {
         console.error('Error loading registro auxiliar options', err);
         setError('No se pudieron cargar los grupos para el registro auxiliar.');
@@ -472,10 +484,10 @@ export default function RegistroAuxiliarPage() {
   );
 
   useEffect(() => {
-    if (isDirectRegistro) return;
+    if (isDirectRegistro || isDocente) return;
     if (semestreOptions.some((semestre) => String(semestre.id) === semestreId)) return;
     setSemestreId(semestreOptions[0] ? String(semestreOptions[0].id) : '');
-  }, [isDirectRegistro, semestreId, semestreOptions]);
+  }, [isDirectRegistro, isDocente, semestreId, semestreOptions]);
 
   const filteredGrupoModuloOptions = useMemo(
     () =>
@@ -486,10 +498,10 @@ export default function RegistroAuxiliarPage() {
   );
 
   useEffect(() => {
-    if (isDirectRegistro) return;
+    if (isDirectRegistro || isDocente) return;
     if (filteredGrupoModuloOptions.some((option) => String(option.id) === grupoModuloId)) return;
     setGrupoModuloId(filteredGrupoModuloOptions[0] ? String(filteredGrupoModuloOptions[0].id) : '');
-  }, [filteredGrupoModuloOptions, grupoModuloId, isDirectRegistro]);
+  }, [filteredGrupoModuloOptions, grupoModuloId, isDirectRegistro, isDocente]);
 
   const fetchRegistro = useCallback(async () => {
     if (!grupoModuloId) {
@@ -1223,10 +1235,10 @@ export default function RegistroAuxiliarPage() {
         direction={{ xs: 'column', lg: 'row' }}
         spacing={1}
         alignItems={{ xs: 'stretch', lg: 'center' }}
-        justifyContent={isDirectRegistro ? 'flex-end' : 'initial'}
+        justifyContent={isDirectRegistro || isDocente ? 'flex-end' : 'initial'}
         sx={{ mb: 0.75 }}
       >
-        {!isDirectRegistro && (
+        {!isDirectRegistro && !isDocente && (
           <>
             <Typography variant="h6" sx={{ fontWeight: 800, flex: 1, fontSize: 18, lineHeight: 1.15 }}>
               Registro Auxiliar de Evaluacion
@@ -1266,7 +1278,7 @@ export default function RegistroAuxiliarPage() {
         <Button variant="outlined" startIcon={<ContentCopyIcon />} onClick={handleCopyNotas} disabled={!registro}>
           Copiar
         </Button>
-        <Button variant="contained" startIcon={saving ? <CircularProgress size={16} /> : <SaveIcon />} onClick={handleSave} disabled={!registro || saving}>
+        <Button variant="contained" startIcon={saving ? <CircularProgress size={16} /> : <SaveIcon />} onClick={handleSave} disabled={!registro || saving || !canEditRegistro}>
           Guardar
         </Button>
       </Stack>
@@ -1672,7 +1684,7 @@ export default function RegistroAuxiliarPage() {
                           <Box sx={{ flex: 1, minWidth: 0 }}>
                             {getStudentName(student)}
                           </Box>
-                          {canManageRegistroMatriculas ? (
+                          {canDeleteRegistroMatriculas ? (
                             <Tooltip title="Retirar de la matricula">
                               <span>
                                 <IconButton
@@ -1841,15 +1853,15 @@ export default function RegistroAuxiliarPage() {
                     />
                     <Box
                       component="td"
-                      onDoubleClick={() => setEditingNewMatricula(true)}
+                      onDoubleClick={canCreateRegistroMatriculas ? () => setEditingNewMatricula(true) : undefined}
                       sx={{
                         ...cellBaseSx,
                         bgcolor: '#f8fbff',
-                        cursor: 'text',
+                        cursor: canCreateRegistroMatriculas ? 'text' : 'default',
                         minHeight: 30,
                       }}
                     >
-                      {editingNewMatricula ? (
+                      {canCreateRegistroMatriculas && editingNewMatricula ? (
                         <Stack
                           direction="row"
                           spacing={0.75}
@@ -1906,11 +1918,11 @@ export default function RegistroAuxiliarPage() {
                             Cancelar
                           </Button>
                         </Stack>
-                      ) : (
+                      ) : canCreateRegistroMatriculas ? (
                         <Box sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
                           Doble clic para agregar estudiante por DNI
                         </Box>
-                      )}
+                      ) : null}
                     </Box>
                     <Box
                       component="td"
@@ -1923,7 +1935,9 @@ export default function RegistroAuxiliarPage() {
             </Box>
           ) : (
             <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
-              Selecciona un semestre y modulo para cargar el registro.
+              {isDocente
+                ? 'Selecciona un modulo desde el menu Registros.'
+                : 'Selecciona un semestre y modulo para cargar el registro.'}
             </Box>
           )}
         </Box>

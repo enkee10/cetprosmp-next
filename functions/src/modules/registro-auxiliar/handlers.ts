@@ -8,7 +8,7 @@ import {
   getIdFromKeyOutput,
   toNumber,
 } from "../core/userMappers.js";
-import { authAdmin, DEFAULT_LEVEL, STUDENT_ROLE_ID } from "../core/authCore.js";
+import { authAdmin, DEFAULT_LEVEL, STUDENT_ROLE_ID, TEACHER_ROLE_ID } from "../core/authCore.js";
 import { getRoleById, upsertDataConnectUserByDocumentId } from "../core/dataConnectCore.js";
 import {
   INSERT_MATRICULA_MUTATION,
@@ -22,6 +22,9 @@ import {
   DataConnectUserInput,
 } from "../core/types.js";
 import { deleteMatriculaTree } from "../core/matriculaDeletion.js";
+import { getNextCodigoInscripcionForCurrentYear } from "../core/matriculaCodigoInscripcion.js";
+import { getDatosGeneralesGlobales as fetchDatosGeneralesGlobales } from "../datos-generales/service.js";
+import { getRequesterRoleId, isSuperUserContext, PermissionAction, requirePermission } from "../core/permissions.js";
 
 type RegistroAuxiliarNotaInput = {
   matriculaId?: unknown;
@@ -139,13 +142,50 @@ type RegistroAuxiliarDocenteModulo = {
   moduloId: number;
   grupo?: {
     id: number;
+    turnoNombre?: string | null;
+    nombreDisplay?: string | null;
+    semestreId?: number | null;
     personalId?: number | null;
-    semestre?: { titulo?: string | null } | null;
+    semestre?: { id?: number | null; titulo?: string | null; inicio?: string | null; fin?: string | null } | null;
+    personal?: {
+      displayName?: string | null;
+      user?: {
+        username?: string | null;
+        nombre?: string | null;
+        apellidoPaterno?: string | null;
+        apellidoMaterno?: string | null;
+      } | null;
+    } | null;
   } | null;
   modulo?: {
     titulo?: string | null;
     tituloComercial?: string | null;
   } | null;
+};
+
+type RegistroAuxiliarPersonalOption = NonNullable<NonNullable<RegistroAuxiliarDocenteModulo["grupo"]>["personal"]>;
+
+type RegistroAuxiliarSemestreOption = {
+  id: number;
+  titulo?: string | null;
+  inicio?: string | null;
+  fin?: string | null;
+};
+
+type RegistroAuxiliarGrupoOption = {
+  id: number;
+  nombreDisplay?: string | null;
+  semestreId?: number | null;
+  turnoNombre?: string | null;
+  semestre?: { titulo?: string | null; inicio?: string | null; fin?: string | null } | null;
+  personal?: RegistroAuxiliarPersonalOption | null;
+  grupoModulos: Array<{
+    id: number;
+    nombre?: string | null;
+    orden?: number | null;
+    moduloId: number;
+    modulo?: RegistroAuxiliarDocenteModulo["modulo"] | null;
+  }>;
 };
 
 type PeruDevsDniResult = {
@@ -169,23 +209,6 @@ type RegistroAuxiliarUserRow = DataConnectUserInput & {
   id: number;
   documentId?: string | null;
 };
-
-const REGISTRO_ROLE_IDS = {
-  docente: 4,
-  administrativo: 5,
-  coordinador: 6,
-  directivo: 7,
-  superusuario: 8,
-  superadmin: 600,
-};
-
-const GLOBAL_REGISTRO_ROLE_IDS = new Set<number>([
-  REGISTRO_ROLE_IDS.administrativo,
-  REGISTRO_ROLE_IDS.coordinador,
-  REGISTRO_ROLE_IDS.directivo,
-  REGISTRO_ROLE_IDS.superusuario,
-  REGISTRO_ROLE_IDS.superadmin,
-]);
 
 const REGISTRO_AUXILIAR_CONTEXT_QUERY = `
   query RegistroAuxiliarContext($grupoModuloId: Int!) {
@@ -337,6 +360,12 @@ const REGISTRO_AUXILIAR_DOCENTE_MODULOS_QUERY = `
       id
       userId
     }
+    semestres(limit: 500) {
+      id
+      titulo
+      inicio
+      fin
+    }
     grupoModulos(limit: 3000) {
       id
       nombre
@@ -345,9 +374,24 @@ const REGISTRO_AUXILIAR_DOCENTE_MODULOS_QUERY = `
       moduloId
       grupo {
         id
+        turnoNombre
+        nombreDisplay
+        semestreId
         personalId
+        personal {
+          displayName
+          user {
+            username
+            nombre
+            apellidoPaterno
+            apellidoMaterno
+          }
+        }
         semestre {
+          id
           titulo
+          inicio
+          fin
         }
       }
       modulo {
@@ -372,9 +416,6 @@ const REGISTRO_AUXILIAR_ACCESS_QUERY = `
       grupo {
         id
         personalId
-        semestre {
-          titulo
-        }
       }
     }
   }
@@ -583,32 +624,56 @@ const UPDATE_EFSRT_PPP_ESTUDIANTE_MUTATION = `
   }
 `;
 
-function getRequesterRoleId(context: https.CallableContext) {
-  const roleId = Number(context.auth?.token?.role);
-  if (Number.isFinite(roleId)) return roleId;
-  return 0;
+function matchesSemestreTitulo(value: string | null | undefined, expected: string) {
+  return normalizeText(value) === normalizeText(expected);
 }
 
-function getRequesterLevel(context: https.CallableContext) {
-  const level = Number(context.auth?.token?.level);
-  return Number.isFinite(level) ? level : 0;
+function toTimestamp(value: string | null | undefined) {
+  if (!value) return null;
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
 }
 
-function isGlobalRegistroRequester(context: https.CallableContext) {
-  return getRequesterLevel(context) >= 600 || GLOBAL_REGISTRO_ROLE_IDS.has(getRequesterRoleId(context));
+function resolveSemestreTituloVigente(
+  semestres: RegistroAuxiliarSemestreOption[],
+  requestedTitulo?: string | null,
+) {
+  const explicitTitulo = String(requestedTitulo ?? "").trim();
+  if (explicitTitulo) return explicitTitulo;
+
+  const now = Date.now();
+  const datedSemestres = semestres
+    .map((semestre) => ({
+      semestre,
+      inicio: toTimestamp(semestre.inicio),
+      fin: toTimestamp(semestre.fin),
+    }))
+    .filter((item) => item.semestre.titulo);
+
+  const active = datedSemestres
+    .filter((item) =>
+      (item.inicio != null || item.fin != null) &&
+      (item.inicio == null || item.inicio <= now) &&
+      (item.fin == null || item.fin >= now),
+    )
+    .sort((a, b) => (b.inicio ?? 0) - (a.inicio ?? 0))[0]?.semestre.titulo;
+  if (active) return active;
+
+  const lastStarted = datedSemestres
+    .filter((item) => item.inicio != null && item.inicio <= now)
+    .sort((a, b) => (b.inicio ?? 0) - (a.inicio ?? 0))[0]?.semestre.titulo;
+  if (lastStarted) return lastStarted;
+
+  return semestres
+    .slice()
+    .sort((a, b) =>
+      String(b.titulo ?? "").localeCompare(String(a.titulo ?? ""), "es", { numeric: true }) ||
+      b.id - a.id,
+    )[0]?.titulo ?? "";
 }
 
-function isDocenteRequester(context: https.CallableContext) {
-  return getRequesterRoleId(context) === REGISTRO_ROLE_IDS.docente;
-}
-
-function requireRegistroRequester(context: https.CallableContext, action: string) {
-  if (!context.auth?.uid) {
-    throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
-  }
-  if (isGlobalRegistroRequester(context)) return "global" as const;
-  if (isDocenteRequester(context)) return "docente" as const;
-  throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
+function isDocenteRegistroRequester(context: https.CallableContext) {
+  return !isSuperUserContext(context) && getRequesterRoleId(context) === TEACHER_ROLE_ID;
 }
 
 function getPersonalIdsForUserId(
@@ -623,17 +688,90 @@ function getPersonalIdsForUserId(
   );
 }
 
-function matchesSemestreTitulo(value: string | null | undefined, expected: string) {
-  return normalizeText(value) === normalizeText(expected);
+function sortRegistroAuxiliarModulos(items: RegistroAuxiliarDocenteModulo[]) {
+  return items
+    .slice()
+    .sort((a, b) =>
+      String(a.grupo?.semestre?.titulo ?? "").localeCompare(String(b.grupo?.semestre?.titulo ?? ""), "es", { numeric: true }) ||
+      String(a.grupo?.nombreDisplay ?? "").localeCompare(String(b.grupo?.nombreDisplay ?? ""), "es", { numeric: true }) ||
+      String(a.nombre || a.modulo?.titulo || a.modulo?.tituloComercial || "").localeCompare(
+        String(b.nombre || b.modulo?.titulo || b.modulo?.tituloComercial || ""),
+        "es",
+        { numeric: true },
+      ) ||
+      (a.orden ?? 0) - (b.orden ?? 0) ||
+      a.id - b.id,
+    );
+}
+
+function buildRegistroAuxiliarGrupos(modulos: RegistroAuxiliarDocenteModulo[]) {
+  const grupos = new Map<number, RegistroAuxiliarGrupoOption>();
+
+  for (const item of sortRegistroAuxiliarModulos(modulos)) {
+    const grupo = item.grupo;
+    if (!grupo?.id) continue;
+
+    const current: RegistroAuxiliarGrupoOption = grupos.get(grupo.id) ?? {
+      id: grupo.id,
+      nombreDisplay: grupo.nombreDisplay ?? null,
+      semestreId: grupo.semestreId ?? grupo.semestre?.id ?? null,
+      turnoNombre: grupo.turnoNombre ?? null,
+      semestre: grupo.semestre ? {
+        titulo: grupo.semestre.titulo ?? null,
+        inicio: grupo.semestre.inicio ?? null,
+        fin: grupo.semestre.fin ?? null,
+      } : null,
+      personal: grupo.personal ?? null,
+      grupoModulos: [],
+    };
+
+    current.grupoModulos.push({
+      id: item.id,
+      nombre: item.nombre ?? null,
+      orden: item.orden ?? null,
+      moduloId: item.moduloId,
+      modulo: item.modulo ?? null,
+    });
+    grupos.set(grupo.id, current);
+  }
+
+  return Array.from(grupos.values())
+    .sort((a, b) =>
+      String(a.semestre?.titulo ?? "").localeCompare(String(b.semestre?.titulo ?? ""), "es", { numeric: true }) ||
+      String(a.nombreDisplay ?? "").localeCompare(String(b.nombreDisplay ?? ""), "es", { numeric: true }) ||
+      a.id - b.id,
+    );
+}
+
+function filterRegistroAuxiliarModulosForRequester(params: {
+  context: https.CallableContext;
+  userId?: number | null;
+  personals: Array<{ id: number; userId?: number | null }>;
+  modulos: RegistroAuxiliarDocenteModulo[];
+  semestreTitulo?: string | null;
+}) {
+  const semestreTitulo = String(params.semestreTitulo ?? "").trim();
+  const bySemestre = semestreTitulo
+    ? params.modulos.filter((item) => matchesSemestreTitulo(item.grupo?.semestre?.titulo, semestreTitulo))
+    : params.modulos;
+
+  if (!isDocenteRegistroRequester(params.context)) {
+    return bySemestre;
+  }
+
+  const personalIds = getPersonalIdsForUserId(params.userId, params.personals);
+  return bySemestre.filter((item) =>
+    Boolean(item.grupo?.personalId && personalIds.has(item.grupo.personalId)),
+  );
 }
 
 async function ensureRegistroAuxiliarAccess(
   context: https.CallableContext,
   grupoModuloId: number,
-  action: string,
+  action: PermissionAction,
 ) {
-  const requesterKind = requireRegistroRequester(context, action);
-  if (requesterKind === "global") return;
+  await requirePermission(context, "registro-auxiliar", action);
+  if (!isDocenteRegistroRequester(context)) return;
 
   const uid = context.auth?.uid;
   if (!uid) throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
@@ -643,7 +781,7 @@ async function ensureRegistroAuxiliarAccess(
     personals: Array<{ id: number; userId?: number | null }>;
     grupoModulo: {
       id: number;
-      grupo?: { personalId?: number | null; semestre?: { titulo?: string | null } | null } | null;
+      grupo?: { id?: number | null; personalId?: number | null } | null;
     } | null;
   }, { uid: string; grupoModuloId: number }>(
     REGISTRO_AUXILIAR_ACCESS_QUERY,
@@ -652,8 +790,8 @@ async function ensureRegistroAuxiliarAccess(
 
   const userId = response.data.users?.[0]?.id;
   const personalIds = getPersonalIdsForUserId(userId, response.data.personals ?? []);
-  const grupo = response.data.grupoModulo?.grupo;
-  if (!grupo?.personalId || !personalIds.has(grupo.personalId) || !matchesSemestreTitulo(grupo.semestre?.titulo, "2026-1")) {
+  const personalId = response.data.grupoModulo?.grupo?.personalId;
+  if (!personalId || !personalIds.has(personalId)) {
     throw new https.HttpsError("permission-denied", "No tienes permiso para abrir este modulo.");
   }
 }
@@ -1041,58 +1179,91 @@ function buildUnidadIds(response: {
 }
 
 export const listRegistroAuxiliarDocenteModulos = https.onCall(async (data, context) => {
-  requireRegistroRequester(context, "list teacher registro auxiliar modules");
+  await requirePermission(context, "registro-auxiliar", "view");
 
+  const requestedSemestreTitulo = String(data?.semestreTitulo ?? "").trim();
   const uid = context.auth?.uid;
   if (!uid) {
     throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
   }
 
-  const semestreTitulo = String(data?.semestreTitulo || "2026-1");
-
   try {
     const response = await dataConnect.executeGraphql<{
       users: Array<{ id: number }>;
       personals: Array<{ id: number; userId?: number | null }>;
+      semestres: RegistroAuxiliarSemestreOption[];
       grupoModulos: RegistroAuxiliarDocenteModulo[];
     }, { uid: string }>(
       REGISTRO_AUXILIAR_DOCENTE_MODULOS_QUERY,
       { variables: { uid } },
     );
 
-    if (isGlobalRegistroRequester(context)) {
-      const modulos = (response.data.grupoModulos ?? [])
-        .filter((item) => matchesSemestreTitulo(item.grupo?.semestre?.titulo, semestreTitulo))
-        .sort((a, b) =>
-          String(a.nombre || a.modulo?.titulo || a.modulo?.tituloComercial || "").localeCompare(
-            String(b.nombre || b.modulo?.titulo || b.modulo?.tituloComercial || ""),
-            "es",
-            { numeric: true },
-          ) || (a.orden ?? 0) - (b.orden ?? 0),
-        );
-      return { modulos };
-    }
+    const semestreTitulo = resolveSemestreTituloVigente(
+      response.data.semestres ?? [],
+      requestedSemestreTitulo,
+    );
+    const modulos = sortRegistroAuxiliarModulos(filterRegistroAuxiliarModulosForRequester({
+      context,
+      userId: response.data.users?.[0]?.id,
+      personals: response.data.personals ?? [],
+      modulos: response.data.grupoModulos ?? [],
+      semestreTitulo,
+    }));
 
-    const userId = response.data.users?.[0]?.id;
-    const personalIds = getPersonalIdsForUserId(userId, response.data.personals ?? []);
-    const modulos = (response.data.grupoModulos ?? [])
-      .filter((item) =>
-        Boolean(item.grupo?.personalId && personalIds.has(item.grupo.personalId))
-        && matchesSemestreTitulo(item.grupo?.semestre?.titulo, semestreTitulo),
-      )
-      .sort((a, b) =>
-        String(a.nombre || a.modulo?.titulo || a.modulo?.tituloComercial || "").localeCompare(
-          String(b.nombre || b.modulo?.titulo || b.modulo?.tituloComercial || ""),
-          "es",
-          { numeric: true },
-        ) || (a.orden ?? 0) - (b.orden ?? 0),
-      );
-
-    return { modulos };
+    return { modulos, semestreTitulo };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in listRegistroAuxiliarDocenteModulos:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar los modulos del docente.");
+  }
+});
+
+export const listRegistroAuxiliarOpciones = https.onCall(async (_data, context) => {
+  await requirePermission(context, "registro-auxiliar", "view");
+
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
+  }
+
+  try {
+    const [optionsResponse, datoGeneral] = await Promise.all([
+      dataConnect.executeGraphql<{
+        users: Array<{ id: number }>;
+        personals: Array<{ id: number; userId?: number | null }>;
+        semestres: RegistroAuxiliarSemestreOption[];
+        grupoModulos: RegistroAuxiliarDocenteModulo[];
+      }, { uid: string }>(
+        REGISTRO_AUXILIAR_DOCENTE_MODULOS_QUERY,
+        { variables: { uid } },
+      ),
+      fetchDatosGeneralesGlobales(),
+    ]);
+
+    const modulos = filterRegistroAuxiliarModulosForRequester({
+      context,
+      userId: optionsResponse.data.users?.[0]?.id,
+      personals: optionsResponse.data.personals ?? [],
+      modulos: optionsResponse.data.grupoModulos ?? [],
+    });
+    const grupos = buildRegistroAuxiliarGrupos(modulos);
+    const semestreIds = new Set(
+      grupos
+        .map((grupo) => grupo.semestreId)
+        .filter((id): id is number => typeof id === "number" && Number.isFinite(id)),
+    );
+    const semestres = (optionsResponse.data.semestres ?? [])
+      .filter((semestre) => semestreIds.has(semestre.id))
+      .sort((a, b) =>
+        String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es", { numeric: true }) ||
+        a.id - b.id,
+      );
+
+    return { grupos, semestres, datoGeneral, datosGenerales: datoGeneral };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in listRegistroAuxiliarOpciones:", error);
+    throw new https.HttpsError("internal", "No se pudieron cargar las opciones del registro auxiliar.");
   }
 });
 
@@ -1101,7 +1272,7 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
   if (grupoModuloId <= 0) {
     throw new https.HttpsError("invalid-argument", "grupoModuloId is required.");
   }
-  await ensureRegistroAuxiliarAccess(context, grupoModuloId, "get registro auxiliar");
+  await ensureRegistroAuxiliarAccess(context, grupoModuloId, "view");
 
   try {
     const contextResponse = await dataConnect.executeGraphql<
@@ -1203,10 +1374,7 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
 });
 
 export const updateRegistroAuxiliarGrupoModuloFechas = https.onCall(async (data: RegistroAuxiliarFechasInput, context) => {
-  const requesterKind = requireRegistroRequester(context, "update registro auxiliar grupo modulo dates");
-  if (requesterKind !== "global") {
-    throw new https.HttpsError("permission-denied", "No tienes permiso para editar las fechas del modulo.");
-  }
+  await requirePermission(context, "registro-auxiliar", "edit");
 
   const grupoModuloId = toNumber(data?.grupoModuloId, -1);
   if (grupoModuloId <= 0) {
@@ -1260,7 +1428,7 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
     throw new https.HttpsError("invalid-argument", "Ingresa un DNI valido de 8 digitos.");
   }
 
-  await ensureRegistroAuxiliarAccess(context, grupoModuloId, "create registro auxiliar matricula");
+  await ensureRegistroAuxiliarAccess(context, grupoModuloId, "create");
 
   let matriculaId: number | null = null;
   try {
@@ -1314,6 +1482,7 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
     const matriculaPayload = buildMatriculaDataFromInput({
       recibo: null,
       fecha: new Date().toISOString(),
+      codigoInscripcion: await getNextCodigoInscripcionForCurrentYear(),
       archivado: false,
       paqueteId,
       semestreId,
@@ -1366,10 +1535,7 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
 });
 
 export const retireRegistroAuxiliarMatricula = https.onCall(async (data: RegistroAuxiliarRetireMatriculaInput, context) => {
-  const requesterKind = requireRegistroRequester(context, "retire registro auxiliar matricula");
-  if (requesterKind !== "global") {
-    throw new https.HttpsError("permission-denied", "No tienes permiso para retirar matriculas del registro.");
-  }
+  await requirePermission(context, "registro-auxiliar", "delete");
 
   const grupoModuloId = toNumber(data?.grupoModuloId, -1);
   const moduloEstudianteId = toNumber(data?.moduloEstudianteId, -1);
@@ -1457,7 +1623,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
   if (grupoModuloId <= 0) {
     throw new https.HttpsError("invalid-argument", "grupoModuloId is required.");
   }
-  await ensureRegistroAuxiliarAccess(context, grupoModuloId, "save registro auxiliar");
+  await ensureRegistroAuxiliarAccess(context, grupoModuloId, "edit");
 
   const cleanNotas = notas
     .map((item) => ({

@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectActEconomica, DataConnectActEconomicaInput } from "../core/types.js";
 import {
   DELETE_ACT_ECONOMICA_MUTATION,
@@ -38,10 +39,7 @@ const GET_ACT_ECONOMICA_QUERY = `
 `;
 
 export const listActEconomicas = https.onCall(async (_data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to list economic activities.");
-  }
+  await requirePermission(context, "act-economicas", "view");
 
   try {
     const response = await dataConnect.executeGraphql<
@@ -60,10 +58,7 @@ export const listActEconomicas = https.onCall(async (_data, context) => {
 });
 
 export const getActEconomica = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to get economic activities.");
-  }
+  await requirePermission(context, "act-economicas", "view");
 
   const actEconomicaId = toNumber(data?.id, -1);
   if (actEconomicaId <= 0) {
@@ -87,17 +82,13 @@ export const getActEconomica = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateActEconomica = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to mutate economic activities.");
-  }
-
   const payload = buildActEconomicaDataFromInput(data as Record<string, unknown>);
   if (!payload.titulo) {
     throw new https.HttpsError("invalid-argument", "titulo is required.");
   }
 
   const actEconomicaId = toNumberOrNull(data?.id);
+  await requirePermission(context, "act-economicas", actEconomicaId ? "edit" : "create");
 
   try {
     if (actEconomicaId) {
@@ -128,10 +119,7 @@ export const createOrUpdateActEconomica = https.onCall(async (data, context) => 
 });
 
 export const deleteActEconomica = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to delete economic activities.");
-  }
+  await requirePermission(context, "act-economicas", "delete");
 
   const actEconomicaId = toNumber(data?.id, -1);
   if (actEconomicaId <= 0) {

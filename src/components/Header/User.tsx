@@ -70,6 +70,16 @@ const shouldLogAuthError = (error: unknown) => { // + decide si un error debe re
   return !code.startsWith("auth/") && !code.startsWith("functions/"); // + solo deja pasar a consola los errores inesperados que no son validaciones de usuario
 }; // + cierra el filtro para evitar ruido de errores esperados en desarrollo
 
+const getUserRoleLabel = (user: { cargo?: unknown; roleTitle?: unknown; role?: unknown } | null) => {
+  const text = [user?.cargo, user?.roleTitle]
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .find((value) => value.length > 0);
+  if (text) return text;
+
+  const role = typeof user?.role === "string" || typeof user?.role === "number" ? String(user.role).trim() : "";
+  return role ? `Rol ${role}` : "Sin rol asignado";
+};
+
 export default function User() { // define el componente del usuario mostrado en el header
   const { user, loginWithGoogle, loginWithEmail, registerWithEmail, resetPassword, logout } = useAuth(); // + obtiene tambien el metodo para enviar el correo de restablecimiento desde login
   const [open, setOpen] = useState(false); // controla la apertura del popper del usuario autenticado
@@ -94,6 +104,7 @@ export default function User() { // define el componente del usuario mostrado en
   const searchParams = useSearchParams(); // + lee los parametros actuales de la URL para detectar retorno desde verificacion de correo
   const pathname = usePathname(); // + obtiene la ruta actual para limpiar parametros temporales sin cambiar de pagina
   const router = useRouter(); // + permite reemplazar la URL luego de procesar la verificacion de correo
+  const userRoleLabel = getUserRoleLabel(user);
 
   useEffect(() => { // marca el componente como montado en el cliente
     setIsMounted(true); // habilita el render cuando ya existe el entorno cliente
@@ -281,7 +292,7 @@ export default function User() { // define el componente del usuario mostrado en
               </IconButton>
 
               <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.87)", textAlign: "center", fontWeight: "bold" }}>{user.email}</Typography> {/* muestra el correo del usuario autenticado */} 
-              <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.87)", mb: 3, textAlign: "center" }}>-</Typography> {/* muestra un separador visual debajo del correo */} 
+              <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.87)", mb: 3, textAlign: "center" }}>{userRoleLabel}</Typography> {/* muestra el cargo o rol del usuario autenticado */} 
 
               <Box display="flex" flexDirection="column" alignItems="center" mb={2}> {/* agrupa el avatar grande y el saludo del usuario */} 
                 <Avatar src={user.photoURL || undefined} alt={user.displayName || "Usuario"} sx={{ width: 64, height: 64, mb: 1 }} imgProps={{ referrerPolicy: "no-referrer" }} /> {/* muestra el avatar grande dentro del popper */} 

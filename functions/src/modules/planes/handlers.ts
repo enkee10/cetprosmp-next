@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectPlan, DataConnectPlanInput } from "../core/types.js";
 import {
   DELETE_PLAN_MUTATION,
@@ -60,10 +61,7 @@ const GET_PLAN_QUERY = `
 `;
 
 export const listPlanes = https.onCall(async (_data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to list plans.");
-  }
+  await requirePermission(context, "planes", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ planes: DataConnectPlan[] }, Record<string, never>>(
@@ -81,10 +79,7 @@ export const listPlanes = https.onCall(async (_data, context) => {
 });
 
 export const getPlan = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to get plans.");
-  }
+  await requirePermission(context, "planes", "view");
 
   const planId = toNumber(data?.id, -1);
   if (planId <= 0) {
@@ -105,17 +100,13 @@ export const getPlan = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdatePlan = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to mutate plans.");
-  }
-
   const payload = buildPlanDataFromInput(data as Record<string, unknown>);
   if (!payload.tituloComercial && !payload.periodoVigenciaId) {
     throw new https.HttpsError("invalid-argument", "tituloComercial or periodoVigenciaId is required.");
   }
 
   const planId = toNumberOrNull(data?.id);
+  await requirePermission(context, "planes", planId ? "edit" : "create");
 
   try {
     if (planId) {
@@ -146,10 +137,7 @@ export const createOrUpdatePlan = https.onCall(async (data, context) => {
 });
 
 export const deletePlan = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to delete plans.");
-  }
+  await requirePermission(context, "planes", "delete");
 
   const planId = toNumber(data?.id, -1);
   if (planId <= 0) {

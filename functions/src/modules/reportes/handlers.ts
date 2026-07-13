@@ -3,12 +3,17 @@ import { execFile } from "child_process";
 import { mkdtemp, readFile, rm, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { basename, join } from "path";
+import { Readable } from "stream";
 import { promisify } from "util";
 import JSZip from "jszip";
+import ExcelJS from "exceljs";
+import { PDFDocument } from "pdf-lib";
 import { getStorage } from "firebase-admin/storage";
-import { https } from "firebase-functions/v1";
+import { https, runWith } from "firebase-functions/v1";
+import { drive_v3, google } from "googleapis";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { getDatosGeneralesGlobales } from "../datos-generales/service.js";
+import { requirePermission } from "../core/permissions.js";
 
 type ReportDocumentType = "acta" | "nomina";
 
@@ -16,6 +21,13 @@ type ReportInput = {
   tipoDocumento?: unknown;
   semestreId?: unknown;
   grupoModuloId?: unknown;
+  pdfProvider?: unknown;
+};
+
+type DownloadRegistrosAcademicosInput = {
+  tipoDocumento?: unknown;
+  grupoModuloIds?: unknown;
+  formato?: unknown;
 };
 
 type ReporteSemestre = {
@@ -66,6 +78,10 @@ type ReporteGrupoModuloOption = {
     creditosEfsrt?: number | null;
     plan?: {
       planEstudio?: string | null;
+      resolucionTipo?: string | null;
+      nro?: string | null;
+      anio?: number | null;
+      genera?: string | null;
       carrera?: {
         nombre?: string | null;
         titulo?: string | null;
@@ -166,7 +182,23 @@ type SpreadsheetUpdate = {
   values: Array<Array<string | number>>;
 };
 
+type RegistroAcademicoDocumento = {
+  id: number;
+  tipoDocumento: string;
+  grupoModuloId: number;
+  pdfPath?: string | null;
+  pdfUrl?: string | null;
+  excelPath?: string | null;
+  excelUrl?: string | null;
+  generadoEn?: string | null;
+};
+
 type SharedStringWriter = (value: string) => number;
+
+type ReportPdfProvider = "office" | "google" | "auto";
+
+const FONT_XML_REGEX = /<font\b[^>]*\/>|<font\b[^>]*>[\s\S]*?<\/font>/gi;
+const XF_XML_REGEX = /<xf\b[^>]*\/>|<xf\b[^>]*>[\s\S]*?<\/xf>/gi;
 
 type ReportTemplate = {
   name: string;
@@ -174,8 +206,6 @@ type ReportTemplate = {
 };
 
 const execFileAsync = promisify(execFile);
-
-const REPORT_ROLE_IDS = new Set<number>([5, 6, 7, 8, 600]);
 
 const TEMPLATES = {
   actaOpcion: {
@@ -232,6 +262,10 @@ const REPORTE_OPTIONS_QUERY = `
         creditosEfsrt
         plan {
           planEstudio
+          resolucionTipo
+          nro
+          anio
+          genera
           carrera {
             nombre
             titulo
@@ -292,6 +326,10 @@ const REPORTE_DETALLE_QUERY = `
         creditosEfsrt
         plan {
           planEstudio
+          resolucionTipo
+          nro
+          anio
+          genera
           carrera {
             nombre
             titulo
@@ -398,23 +436,47 @@ const REPORTE_DETALLE_QUERY = `
   }
 `;
 
-function roleId(context: https.CallableContext) {
-  const value = Number(context.auth?.token?.role);
-  return Number.isFinite(value) ? value : 0;
-}
-
-function roleLevel(context: https.CallableContext) {
-  const value = Number(context.auth?.token?.level);
-  return Number.isFinite(value) ? value : 0;
-}
-
-function requireReportesAccess(context: https.CallableContext, action: string) {
-  if (!context.auth?.uid) {
-    throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
+const LIST_REGISTROS_ACADEMICOS_DOCUMENTOS_QUERY = `
+  query ListRegistrosAcademicosDocumentosManual {
+    registroAcademicoDocumentos(limit: 10000) {
+      id
+      tipoDocumento
+      grupoModuloId
+      pdfPath
+      pdfUrl
+      excelPath
+      excelUrl
+      generadoEn
+    }
   }
-  if (roleLevel(context) >= 600 || REPORT_ROLE_IDS.has(roleId(context))) return;
-  throw new https.HttpsError("permission-denied", `No tienes permiso para ${action}.`);
-}
+`;
+
+const GET_REGISTRO_ACADEMICO_DOCUMENTO_QUERY = `
+  query GetRegistroAcademicoDocumentoManual($tipoDocumento: String!, $grupoModuloId: Int!) {
+    registroAcademicoDocumentos(where: { tipoDocumento: { eq: $tipoDocumento }, grupoModuloId: { eq: $grupoModuloId } }, limit: 1) {
+      id
+      tipoDocumento
+      grupoModuloId
+      pdfPath
+      pdfUrl
+      excelPath
+      excelUrl
+      generadoEn
+    }
+  }
+`;
+
+const INSERT_REGISTRO_ACADEMICO_DOCUMENTO_MUTATION = `
+  mutation InsertRegistroAcademicoDocumento($data: RegistroAcademicoDocumento_Data! @allow(fields: "tipoDocumento grupoModuloId pdfPath pdfUrl excelPath excelUrl generadoEn")) {
+    registroAcademicoDocumento_insert(data: $data)
+  }
+`;
+
+const UPDATE_REGISTRO_ACADEMICO_DOCUMENTO_MUTATION = `
+  mutation UpdateRegistroAcademicoDocumento($id: Int!, $data: RegistroAcademicoDocumento_Data! @allow(fields: "pdfPath pdfUrl excelPath excelUrl generadoEn")) {
+    registroAcademicoDocumento_update(id: $id, data: $data)
+  }
+`;
 
 function toNumber(value: unknown, fallback = 0) {
   const numeric = Number(value);
@@ -522,6 +584,27 @@ function formatGrade(value: number | null | undefined) {
   return Math.round(value);
 }
 
+function formatHoras(value: unknown) {
+  const text = cleanText(value);
+  if (!text) return "";
+  return normalizeText(text).includes("hora") ? text : `${text} horas`;
+}
+
+function formatPlanResolucion(plan?: {
+  resolucionTipo?: string | null;
+  nro?: string | null;
+  anio?: number | null;
+  genera?: string | null;
+} | null) {
+  if (!plan) return "";
+  return [
+    cleanText(plan.resolucionTipo),
+    cleanText(plan.nro),
+    plan.anio != null ? String(plan.anio) : "",
+    cleanText(plan.genera),
+  ].filter(Boolean).join("_");
+}
+
 function getCondition(promedio: number | null | undefined) {
   if (typeof promedio !== "number" || !Number.isFinite(promedio)) return "";
   return promedio >= 13 ? "A" : "D";
@@ -555,7 +638,7 @@ function computeSection(item: ReporteGrupoModuloOption, allItems: ReporteGrupoMo
     if (candidate.grupo?.semestreId !== semestreId || candidate.moduloId !== item.moduloId) continue;
     if (!uniqueGroups.has(candidate.grupoId)) uniqueGroups.set(candidate.grupoId, candidate);
   }
-  if (uniqueGroups.size <= 1) return "";
+  if (uniqueGroups.size <= 1) return "Unica";
   const ordered = Array.from(uniqueGroups.values()).sort((a, b) =>
     turnoRank(a.grupo?.turno?.nombre || a.grupo?.turnoNombre) - turnoRank(b.grupo?.turno?.nombre || b.grupo?.turnoNombre)
     || cleanText(a.grupo?.nombreDisplay).localeCompare(cleanText(b.grupo?.nombreDisplay), "es", { numeric: true })
@@ -590,6 +673,69 @@ async function uploadBuffer(path: string, buffer: Buffer, contentType: string) {
     url: storageUrl(bucket.name, path, token),
     contentType,
   };
+}
+
+async function downloadStorageBuffer(path: string) {
+  const [buffer] = await getStorage().bucket().file(path).download();
+  return buffer;
+}
+
+async function listRegistrosAcademicosDocumentos() {
+  const response = await dataConnect.executeGraphql<{
+    registroAcademicoDocumentos: RegistroAcademicoDocumento[];
+  }, Record<string, never>>(LIST_REGISTROS_ACADEMICOS_DOCUMENTOS_QUERY);
+  return response.data.registroAcademicoDocumentos ?? [];
+}
+
+async function upsertRegistroAcademicoDocumento(input: {
+  tipoDocumento: ReportDocumentType;
+  grupoModuloId: number;
+  pdf: { path: string; url: string };
+  excel: { path: string; url: string };
+  generadoEn: string;
+}) {
+  const existing = await dataConnect.executeGraphql<{
+    registroAcademicoDocumentos: RegistroAcademicoDocumento[];
+  }, { tipoDocumento: string; grupoModuloId: number }>(
+    GET_REGISTRO_ACADEMICO_DOCUMENTO_QUERY,
+    { variables: { tipoDocumento: input.tipoDocumento, grupoModuloId: input.grupoModuloId } },
+  );
+  const current = existing.data.registroAcademicoDocumentos?.[0] ?? null;
+  const data = {
+    pdfPath: input.pdf.path,
+    pdfUrl: input.pdf.url,
+    excelPath: input.excel.path,
+    excelUrl: input.excel.url,
+    generadoEn: input.generadoEn,
+  };
+
+  if (current?.id) {
+    await dataConnect.executeGraphql<
+      { registroAcademicoDocumento_update: unknown },
+      { id: number; data: typeof data }
+    >(
+      UPDATE_REGISTRO_ACADEMICO_DOCUMENTO_MUTATION,
+      { variables: { id: current.id, data } },
+    );
+    return { ...current, ...data } satisfies RegistroAcademicoDocumento;
+  }
+
+  const insertData = {
+    tipoDocumento: input.tipoDocumento,
+    grupoModuloId: input.grupoModuloId,
+    ...data,
+  };
+  const inserted = await dataConnect.executeGraphql<
+    { registroAcademicoDocumento_insert: unknown },
+    { data: typeof insertData }
+  >(
+    INSERT_REGISTRO_ACADEMICO_DOCUMENTO_MUTATION,
+    { variables: { data: insertData } },
+  );
+  return {
+    id: Number((inserted.data.registroAcademicoDocumento_insert as { id?: number } | null)?.id ?? 0),
+    ...insertData,
+  } satisfies RegistroAcademicoDocumento;
 }
 
 function templateStoragePath(template: ReportTemplate) {
@@ -755,6 +901,121 @@ function setCellStyle(xml: string, ref: string, styleIndex: number) {
   return xml;
 }
 
+function buildLeftIndentStyleXml(baseStyleXml: string, fontId?: number) {
+  const applyAlignmentStyle = (tag: string) => setXmlAttribute(tag, "applyAlignment", "1");
+  const applyFontStyle = (tag: string) => {
+    if (fontId === undefined) return tag;
+    return setXmlAttribute(setXmlAttribute(tag, "applyFont", "1"), "fontId", String(fontId));
+  };
+  const alignmentAttrs = (tag: string) => {
+    const attrs = parseAttributes(tag);
+    attrs.set("horizontal", "left");
+    attrs.set("vertical", "center");
+    attrs.set("textRotation", "0");
+    attrs.delete("indent");
+    return Array.from(attrs.entries())
+      .map(([key, value]) => ` ${key}="${xmlEscape(value)}"`)
+      .join("");
+  };
+
+  if (/\/>\s*$/i.test(baseStyleXml)) {
+    const openTag = applyFontStyle(applyAlignmentStyle(baseStyleXml)).replace(/\/>\s*$/i, ">");
+    return `${openTag}<alignment horizontal="left" vertical="center" textRotation="0"/></xf>`;
+  }
+
+  const openTag = baseStyleXml.match(/^<xf\b[^>]*>/i)?.[0] ?? "<xf>";
+  let nextStyle = baseStyleXml.replace(/^<xf\b[^>]*>/i, applyFontStyle(applyAlignmentStyle(openTag)));
+  if (/<alignment\b[^>]*(?:\/>|>[\s\S]*?<\/alignment>)/i.test(nextStyle)) {
+    return nextStyle.replace(
+      /<alignment\b[^>]*(?:\/>|>[\s\S]*?<\/alignment>)/i,
+      (tag) => `<alignment${alignmentAttrs(tag)}/>`,
+    );
+  }
+  return nextStyle.replace(/<\/xf>\s*$/i, '<alignment horizontal="left" vertical="center" textRotation="0"/></xf>');
+}
+
+function buildFontSizeXml(baseFontXml: string, size: number) {
+  const sizeTag = `<sz val="${xmlEscape(String(size))}"/>`;
+  if (/<sz\b[^>]*(?:\/>|>[\s\S]*?<\/sz>)/i.test(baseFontXml)) {
+    return baseFontXml.replace(/<sz\b[^>]*(?:\/>|>[\s\S]*?<\/sz>)/i, sizeTag);
+  }
+  if (/^<font\b[^>]*\/>\s*$/i.test(baseFontXml)) {
+    return baseFontXml.replace(/\/>\s*$/i, `>${sizeTag}</font>`);
+  }
+  return baseFontXml.replace(/^<font\b[^>]*>/i, (tag) => `${tag}${sizeTag}`);
+}
+
+function addFontSize(stylesXml: string, baseFontIndex: number, size: number) {
+  const fontsMatch = stylesXml.match(/<fonts\b[^>]*>[\s\S]*?<\/fonts>/i);
+  if (!fontsMatch?.[0]) return { xml: stylesXml, fontIndex: undefined };
+
+  const fontTags = fontsMatch[0].match(FONT_XML_REGEX) ?? [];
+  const baseFontXml = fontTags[baseFontIndex];
+  if (!baseFontXml) return { xml: stylesXml, fontIndex: undefined };
+
+  const nextFontIndex = fontTags.length;
+  const nextFontXml = buildFontSizeXml(baseFontXml, size);
+  const nextFonts = fontsMatch[0]
+    .replace(/<fonts\b[^>]*>/i, (tag) => setXmlAttribute(tag, "count", String(nextFontIndex + 1)))
+    .replace(/<\/fonts>\s*$/i, `${nextFontXml}</fonts>`);
+
+  return {
+    xml: `${stylesXml.slice(0, fontsMatch.index)}${nextFonts}${stylesXml.slice((fontsMatch.index ?? 0) + fontsMatch[0].length)}`,
+    fontIndex: nextFontIndex,
+  };
+}
+
+function addLeftIndentStyle(stylesXml: string, baseStyleIndex: number) {
+  const cellXfsMatch = stylesXml.match(/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/i);
+  if (!cellXfsMatch?.[0]) return { xml: stylesXml, styleIndex: baseStyleIndex };
+
+  const xfTags = cellXfsMatch[0].match(XF_XML_REGEX) ?? [];
+  const baseStyleXml = xfTags[baseStyleIndex];
+  if (!baseStyleXml) return { xml: stylesXml, styleIndex: baseStyleIndex };
+
+  let nextStylesXml = stylesXml;
+  const baseFontId = Number(parseAttributes(baseStyleXml.match(/^<xf\b[^>]*>/i)?.[0] ?? "").get("fontId") ?? "0");
+  const fontResult = addFontSize(nextStylesXml, Number.isFinite(baseFontId) ? baseFontId : 0, 9);
+  nextStylesXml = fontResult.xml;
+
+  const nextCellXfsMatch = nextStylesXml.match(/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/i);
+  if (!nextCellXfsMatch?.[0]) return { xml: nextStylesXml, styleIndex: baseStyleIndex };
+  const nextXfTags = nextCellXfsMatch[0].match(XF_XML_REGEX) ?? [];
+  const nextStyleIndex = nextXfTags.length;
+  const nextStyleXml = buildLeftIndentStyleXml(baseStyleXml, fontResult.fontIndex);
+  const nextCellXfs = nextCellXfsMatch[0]
+    .replace(/<cellXfs\b[^>]*>/i, (tag) => setXmlAttribute(tag, "count", String(nextStyleIndex + 1)))
+    .replace(/<\/cellXfs>\s*$/i, `${nextStyleXml}</cellXfs>`);
+
+  return {
+    xml: `${nextStylesXml.slice(0, nextCellXfsMatch.index)}${nextCellXfs}${nextStylesXml.slice((nextCellXfsMatch.index ?? 0) + nextCellXfsMatch[0].length)}`,
+    styleIndex: nextStyleIndex,
+  };
+}
+
+async function createLeftIndentStyleWriter(zip: JSZip) {
+  const stylesFile = zip.file("xl/styles.xml");
+  let stylesXml = await stylesFile?.async("string");
+  const styleCache = new Map<number, number>();
+
+  const ensure = (baseStyleIndex: number | null) => {
+    if (!stylesFile || !stylesXml || baseStyleIndex === null) return baseStyleIndex;
+    const cached = styleCache.get(baseStyleIndex);
+    if (cached !== undefined) return cached;
+    const result = addLeftIndentStyle(stylesXml, baseStyleIndex);
+    stylesXml = result.xml;
+    styleCache.set(baseStyleIndex, result.styleIndex);
+    return result.styleIndex;
+  };
+
+  const save = () => {
+    if (!stylesFile || !stylesXml || styleCache.size === 0) return;
+    zip.file("xl/styles.xml", stylesXml);
+  };
+
+  return { ensure, save };
+}
+
 function parseAttributes(xml: string) {
   const attrs = new Map<string, string>();
   const attrRegex = /([\w:]+)="([^"]*)"/g;
@@ -813,12 +1074,12 @@ function removeXmlAttribute(tag: string, name: string) {
   return tag.replace(new RegExp(`\\s${name}="[^"]*"`, "gi"), "");
 }
 
-function ensureWorksheetPageMargins(xml: string, topCm = 2) {
+function ensureWorksheetPageMargins(xml: string, topCm = 2, horizontalCm = 0.8, bottomCm = 1) {
   const marginAttrs = [
-    `left="${(0.8 / 2.54).toFixed(12)}"`,
-    `right="${(0.8 / 2.54).toFixed(12)}"`,
+    `left="${(horizontalCm / 2.54).toFixed(12)}"`,
+    `right="${(horizontalCm / 2.54).toFixed(12)}"`,
     `top="${(topCm / 2.54).toFixed(12)}"`,
-    `bottom="${(1 / 2.54).toFixed(12)}"`,
+    `bottom="${(bottomCm / 2.54).toFixed(12)}"`,
     `header="0"`,
     `footer="0"`,
   ].join(" ");
@@ -832,25 +1093,63 @@ function ensureWorksheetPageMargins(xml: string, topCm = 2) {
   return xml.replace(/<\/worksheet>$/i, `${marginsTag}</worksheet>`);
 }
 
-function ensureWorksheetPrintSetup(xml: string, maxScale = 83) {
+function ensureWorksheetFitToPagePr(xml: string) {
+  const pageSetupPrTag = '<pageSetUpPr fitToPage="1"/>';
+  if (/<pageSetUpPr\b[^>]*(?:\/>|>[\s\S]*?<\/pageSetUpPr>)/i.test(xml)) {
+    return xml.replace(
+      /<pageSetUpPr\b[^>]*(?:\/>|>[\s\S]*?<\/pageSetUpPr>)/i,
+      (tag) => setXmlAttribute(tag, "fitToPage", "1"),
+    );
+  }
+  if (/<sheetPr\b[^>]*\/>/i.test(xml)) {
+    return xml.replace(/<sheetPr\b[^>]*\/>/i, (tag) => `${tag.replace(/\/>\s*$/i, ">")}${pageSetupPrTag}</sheetPr>`);
+  }
+  if (/<sheetPr\b[^>]*>[\s\S]*?<\/sheetPr>/i.test(xml)) {
+    return xml.replace(/<\/sheetPr>/i, `${pageSetupPrTag}</sheetPr>`);
+  }
+  if (/<dimension\b/i.test(xml)) {
+    return xml.replace(/<dimension\b/i, `<sheetPr>${pageSetupPrTag}</sheetPr><dimension`);
+  }
+  return xml.replace(/<worksheet\b[^>]*>/i, (tag) => `${tag}<sheetPr>${pageSetupPrTag}</sheetPr>`);
+}
+
+function ensureWorksheetPrintSetup(
+  xml: string,
+  scale = 83,
+  orientation?: "landscape" | "portrait",
+  forceScale = false,
+  paperSize = "9",
+  fitToPageWidth = false,
+) {
+  let nextXml = fitToPageWidth ? ensureWorksheetFitToPagePr(xml) : xml;
   const setupRegex = /<pageSetup\b[^>]*(?:\/>|>[\s\S]*?<\/pageSetup>)/i;
-  if (setupRegex.test(xml)) {
-    return xml.replace(setupRegex, (tag) => {
+  if (setupRegex.test(nextXml)) {
+    return nextXml.replace(setupRegex, (tag) => {
+      if (fitToPageWidth) {
+        const withoutScale = removeXmlAttribute(tag, "scale");
+        const withPaper = setXmlAttribute(withoutScale, "paperSize", paperSize);
+        const withFit = setXmlAttribute(setXmlAttribute(withPaper, "fitToWidth", "1"), "fitToHeight", "0");
+        return orientation ? setXmlAttribute(withFit, "orientation", orientation) : withFit;
+      }
       const attrs = parseAttributes(tag);
-      const currentScale = Number(attrs.get("scale"));
+      const currentScale = forceScale ? NaN : Number(attrs.get("scale"));
       const nextScale = Number.isFinite(currentScale) && currentScale > 0
-        ? Math.min(currentScale, maxScale)
-        : maxScale;
+        ? Math.min(currentScale, scale)
+        : scale;
       const withoutFit = removeXmlAttribute(removeXmlAttribute(tag, "fitToWidth"), "fitToHeight");
-      return setXmlAttribute(setXmlAttribute(withoutFit, "scale", String(nextScale)), "paperSize", "9");
+      const withScale = setXmlAttribute(setXmlAttribute(withoutFit, "scale", String(nextScale)), "paperSize", paperSize);
+      return orientation ? setXmlAttribute(withScale, "orientation", orientation) : withScale;
     });
   }
 
-  const pageSetup = `<pageSetup paperSize="9" scale="${maxScale}"/>`;
-  if (/<pageMargins\b/i.test(xml)) {
-    return xml.replace(/(<pageMargins\b[^>]*(?:\/>|>[\s\S]*?<\/pageMargins>))/i, `$1${pageSetup}`);
+  const orientationAttr = orientation ? ` orientation="${orientation}"` : "";
+  const pageSetup = fitToPageWidth
+    ? `<pageSetup paperSize="${xmlEscape(paperSize)}" fitToWidth="1" fitToHeight="0"${orientationAttr}/>`
+    : `<pageSetup paperSize="${xmlEscape(paperSize)}" scale="${scale}"${orientationAttr}/>`;
+  if (/<pageMargins\b/i.test(nextXml)) {
+    return nextXml.replace(/(<pageMargins\b[^>]*(?:\/>|>[\s\S]*?<\/pageMargins>))/i, `$1${pageSetup}`);
   }
-  return xml.replace(/<\/worksheet>$/i, `${pageSetup}</worksheet>`);
+  return nextXml.replace(/<\/worksheet>$/i, `${pageSetup}</worksheet>`);
 }
 
 function printableScaleForDocument(tipoDocumento: ReportDocumentType) {
@@ -861,29 +1160,45 @@ function printableTopMarginForDocument(tipoDocumento: ReportDocumentType) {
   return tipoDocumento === "nomina" ? 1 : 2;
 }
 
-function cellAddress(cell: string) {
-  const { column, row } = cellParts(cell);
-  return { column, columnIndex: columnIndex(column), row };
+function mergeRangeExists(xml: string, range: string) {
+  const normalizedRange = range.toUpperCase();
+  for (const merge of xml.match(/<mergeCell\b[^>]*>/g) ?? []) {
+    if ((parseAttributes(merge).get("ref") || "").toUpperCase() === normalizedRange) return true;
+  }
+  return false;
 }
 
-function mergeRangeForCell(xml: string, cell: string) {
-  const address = cellAddress(cell);
-  for (const merge of xml.match(/<mergeCell\b[^>]*>/g) ?? []) {
-    const ref = parseAttributes(merge).get("ref");
-    if (!ref) continue;
-    const [startRef, endRef = startRef] = ref.split(":");
-    const start = cellAddress(startRef);
-    const end = cellAddress(endRef);
-    if (
-      address.columnIndex >= start.columnIndex
-      && address.columnIndex <= end.columnIndex
-      && address.row >= start.row
-      && address.row <= end.row
-    ) {
-      return { start: start.columnIndex, end: end.columnIndex };
-    }
+function addWorksheetMergeRange(xml: string, range: string) {
+  if (mergeRangeExists(xml, range)) return xml;
+
+  const mergeCell = `<mergeCell ref="${xmlEscape(range.toUpperCase())}"/>`;
+  const mergeCellsRegex = /<mergeCells\b[^>]*>[\s\S]*?<\/mergeCells>/i;
+  const mergeCellsMatch = xml.match(mergeCellsRegex);
+  if (mergeCellsMatch?.[0]) {
+    const currentCount = mergeCellsMatch[0].match(/<mergeCell\b[^>]*>/g)?.length ?? 0;
+    const nextMergeCells = mergeCellsMatch[0]
+      .replace(/<mergeCells\b[^>]*>/i, (tag) => setXmlAttribute(tag, "count", String(currentCount + 1)))
+      .replace(/<\/mergeCells>\s*$/i, `${mergeCell}</mergeCells>`);
+    return `${xml.slice(0, mergeCellsMatch.index)}${nextMergeCells}${xml.slice((mergeCellsMatch.index ?? 0) + mergeCellsMatch[0].length)}`;
   }
-  return { start: address.columnIndex, end: address.columnIndex };
+
+  const mergeCells = `<mergeCells count="1">${mergeCell}</mergeCells>`;
+  if (/<\/sheetData>/i.test(xml)) {
+    return xml.replace(/<\/sheetData>/i, `</sheetData>${mergeCells}`);
+  }
+  return xml.replace(/<\/worksheet>$/i, `${mergeCells}</worksheet>`);
+}
+
+function retiredStudentMergeRange(cell: string) {
+  const { column, row } = cellParts(cell);
+  if (column === "X") return `X${row}:AB${row}`;
+  return `L${row}:Q${row}`;
+}
+
+function retiredStudentMergeCells(cell: string) {
+  const { column, row } = cellParts(cell);
+  if (column === "X") return ["X", "Y", "Z", "AA", "AB"].map((mergeColumn) => `${mergeColumn}${row}`);
+  return ["L", "M", "N", "O", "P", "Q"].map((column) => `${column}${row}`);
 }
 
 function colTag(attrs: Map<string, string>) {
@@ -915,7 +1230,6 @@ function setColumnWidth(xml: string, column: number, width: number) {
     const replacement: string[] = [];
     if (min < column) {
       const before = new Map(attrs);
-      before.set("min", String(min));
       before.set("max", String(column - 1));
       replacement.push(colTag(before));
     }
@@ -931,7 +1245,6 @@ function setColumnWidth(xml: string, column: number, width: number) {
     if (column < max) {
       const after = new Map(attrs);
       after.set("min", String(column + 1));
-      after.set("max", String(max));
       replacement.push(colTag(after));
     }
 
@@ -945,98 +1258,37 @@ function setColumnWidth(xml: string, column: number, width: number) {
   return xml.replace(/<sheetData\b/, `<cols>${newCol}</cols><sheetData`);
 }
 
-function estimateExcelTextWidth(value: string) {
-  const normalized = cleanText(value);
-  if (!normalized) return 0;
-  const longestWord = normalized.split(/\s+/).reduce((max, word) => Math.max(max, word.length), 0);
-  const preferredLine = Math.min(normalized.length, Math.max(18, longestWord + 4));
-  return preferredLine * 1.05 + 2;
-}
-
-function optionCapacityColumnWidth(cell: string, value: string, currentWidth: number) {
-  const { columnIndex: currentColumn, row } = cellAddress(cell);
-  const isOptionCapacity = (row === 7 || row === 41) && currentColumn >= columnIndex("L") && currentColumn <= columnIndex("U");
-  if (!isOptionCapacity) return null;
+function programUnitHeaderColumnWidth(cell: string, value: string, currentWidth: number) {
+  const { column, row } = cellParts(cell);
+  const currentColumn = columnIndex(column);
+  const isProgramUnitHeader = (row === 6 || row === 35)
+    && currentColumn >= columnIndex("X")
+    && currentColumn <= columnIndex("AG");
+  if (!isProgramUnitHeader) return null;
 
   const normalized = cleanText(value);
   if (!normalized) return currentWidth;
   const longestWord = normalized.split(/\s+/).reduce((max, word) => Math.max(max, word.length), 0);
   const pressure = Math.max(
     0,
-    (normalized.length - 30) / 24,
-    (longestWord - 11) / 10,
+    (normalized.length - 68) / 48,
+    (longestWord - 16) / 10,
   );
   if (pressure <= 0) return currentWidth;
 
-  const extraWidth = Math.min(1.2, 0.45 + pressure * 0.45);
-  return Math.min(5.2, Math.max(currentWidth, currentWidth + extraWidth));
+  const extraWidth = Math.min(1.2, pressure * 0.7);
+  return Math.min(5.9, Math.max(currentWidth, currentWidth + extraWidth));
 }
 
-function programUnitColumnWidth(cell: string, value: string, currentWidth: number) {
-  const { columnIndex: currentColumn, row } = cellAddress(cell);
-  const isProgramUnit = (row === 6 || row === 35) && currentColumn >= columnIndex("X") && currentColumn <= columnIndex("AC");
-  if (!isProgramUnit) return null;
-
-  const normalized = cleanText(value);
-  if (!normalized) return currentWidth;
-  const longestWord = normalized.split(/\s+/).reduce((max, word) => Math.max(max, word.length), 0);
-  const pressure = Math.max(
-    0,
-    (normalized.length - 28) / 24,
-    (longestWord - 10) / 10,
-  );
-  if (pressure <= 0) return currentWidth;
-
-  const extraWidth = Math.min(1.05, 0.35 + pressure * 0.4);
-  return Math.min(5.6, Math.max(currentWidth, currentWidth + extraWidth));
-}
-
-function autofitUpdatedTextColumns(
-  xml: string,
-  updates: Array<{ cell: string; value: string }>,
-  maxTotalWidth = 52,
-) {
+function adjustProgramUnitHeaderColumns(xml: string, textUpdates: Array<{ cell: string; value: string }>) {
   let nextXml = xml;
-  for (const update of updates) {
-    const textWidth = estimateExcelTextWidth(update.value);
-    if (textWidth <= 0) continue;
-
-    const range = mergeRangeForCell(nextXml, update.cell);
-    const columnCount = range.end - range.start + 1;
-    let currentTotal = 0;
-    for (let column = range.start; column <= range.end; column += 1) {
-      currentTotal += columnWidth(nextXml, column);
-    }
-
-    const capacityWidth = columnCount === 1
-      ? optionCapacityColumnWidth(update.cell, update.value, currentTotal)
-      : null;
-    if (capacityWidth !== null) {
-      if (capacityWidth > currentTotal + 0.05) {
-        nextXml = setColumnWidth(nextXml, range.start, capacityWidth);
-      }
-      continue;
-    }
-
-    const unitWidth = columnCount === 1
-      ? programUnitColumnWidth(update.cell, update.value, currentTotal)
-      : null;
-    if (unitWidth !== null) {
-      if (unitWidth > currentTotal + 0.05) {
-        nextXml = setColumnWidth(nextXml, range.start, unitWidth);
-      }
-      continue;
-    }
-
-    if (columnCount === 1 && currentTotal < 10) continue;
-    const maxWidth = columnCount > 1 ? maxTotalWidth : Math.min(maxTotalWidth, 28);
-    const targetTotal = Math.min(maxWidth, textWidth);
-    if (targetTotal <= currentTotal + 0.5) continue;
-
-    const increment = (targetTotal - currentTotal) / columnCount;
-    for (let column = range.start; column <= range.end; column += 1) {
-      const current = columnWidth(nextXml, column);
-      nextXml = setColumnWidth(nextXml, column, current + increment);
+  for (const update of textUpdates) {
+    const { column } = cellParts(update.cell);
+    const columnNumber = columnIndex(column);
+    const currentWidth = columnWidth(nextXml, columnNumber);
+    const nextWidth = programUnitHeaderColumnWidth(update.cell, update.value, currentWidth);
+    if (nextWidth !== null && nextWidth > currentWidth + 0.05) {
+      nextXml = setColumnWidth(nextXml, columnNumber, nextWidth);
     }
   }
   return nextXml;
@@ -1100,32 +1352,60 @@ async function applyExcelUpdates(
   printScale = 83,
   topMarginCm = 2,
   normalizeProgramaStyles = false,
+  horizontalMarginCm = 0.8,
+  bottomMarginCm = 1,
+  printOrientation?: "landscape" | "portrait",
+  forcePrintScale = false,
+  paperSize = "9",
+  fitToPageWidth = false,
+  adjustProgramUnitHeaders = false,
+  preservePageLayout = false,
 ) {
   const zip = await JSZip.loadAsync(templateBuffer);
   const worksheet = await getFirstVisibleWorksheet(zip);
   const sharedStrings = await createSharedStringWriter(zip);
+  const leftIndentStyles = await createLeftIndentStyleWriter(zip);
   const sheetFile = zip.file(worksheet.path);
   const originalXml = await sheetFile?.async("string");
   if (!sheetFile || !originalXml) throw new Error(`No se pudo leer la hoja ${worksheet.path}.`);
 
   let nextXml = originalXml;
   const textUpdates: Array<{ cell: string; value: string }> = [];
+  const leftIndentCells: string[] = [];
   for (const update of updates) {
     const cell = a1CellFromRange(update.range);
     const value = update.values[0]?.[0] ?? "";
     nextXml = setSheetCellValue(nextXml, cell, value, sharedStrings.add);
     if (typeof value === "string" && cleanText(value)) {
       textUpdates.push({ cell, value });
+      if (normalizeText(value) === "retirado por inasistencia") {
+        leftIndentCells.push(cell);
+      }
     }
   }
-  nextXml = autofitUpdatedTextColumns(nextXml, textUpdates);
+  for (const cell of leftIndentCells) {
+    const baseStyle = getCellStyle(nextXml, cell);
+    const leftIndentStyle = leftIndentStyles.ensure(baseStyle);
+    if (leftIndentStyle !== null) {
+      for (const mergeCell of retiredStudentMergeCells(cell)) {
+        nextXml = setCellStyle(nextXml, mergeCell, leftIndentStyle);
+      }
+    }
+    nextXml = addWorksheetMergeRange(nextXml, retiredStudentMergeRange(cell));
+  }
+  if (adjustProgramUnitHeaders) {
+    nextXml = adjustProgramUnitHeaderColumns(nextXml, textUpdates);
+  }
   if (normalizeProgramaStyles) {
     nextXml = normalizeProgramaActaStudentStyles(nextXml);
   }
-  nextXml = ensureWorksheetPageMargins(nextXml, topMarginCm);
-  nextXml = ensureWorksheetPrintSetup(nextXml, printScale);
+  nextXml = ensureWorksheetPageMargins(nextXml, topMarginCm, horizontalMarginCm, bottomMarginCm);
+  if (!preservePageLayout) {
+    nextXml = ensureWorksheetPrintSetup(nextXml, printScale, printOrientation, forcePrintScale, paperSize, fitToPageWidth);
+  }
   zip.file(worksheet.path, nextXml);
   sharedStrings.save();
+  leftIndentStyles.save();
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
 
@@ -1150,6 +1430,40 @@ function reportesOfficeConverterUsesIam() {
   return ["1", "true", "yes", "on"].includes(
     String(process.env.REPORTES_OFFICE_CONVERTER_IAM || "").trim().toLowerCase(),
   );
+}
+
+function reportesPdfProvider(input?: unknown): ReportPdfProvider {
+  const value = String(input || process.env.REPORTES_PDF_PROVIDER || "office").trim().toLowerCase();
+  if (value === "google" || value === "drive" || value === "sheets") return "google";
+  if (value === "auto") return "auto";
+  return "office";
+}
+
+function reportesGoogleKeepTempFile() {
+  return ["1", "true", "yes", "on"].includes(
+    String(process.env.REPORTES_GOOGLE_KEEP_TEMP || "").trim().toLowerCase(),
+  );
+}
+
+function reportesGoogleDriveFolderId() {
+  return String(process.env.REPORTES_GOOGLE_DRIVE_FOLDER_ID || "").trim();
+}
+
+function getReportesGoogleAuth(scopes: string[]) {
+  const clientEmail = String(process.env.GOOGLE_CLIENT_EMAIL || "").trim();
+  const privateKey = String(process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
+  const subject = String(process.env.REPORTES_GOOGLE_SUBJECT_EMAIL || "").trim();
+
+  if (!clientEmail || !privateKey) {
+    throw new Error("Faltan GOOGLE_CLIENT_EMAIL o GOOGLE_PRIVATE_KEY para convertir reportes con Google Drive/Sheets.");
+  }
+
+  return new google.auth.JWT({
+    email: clientEmail,
+    key: privateKey,
+    scopes,
+    subject: subject || undefined,
+  });
 }
 
 async function getIdentityToken(audience: string) {
@@ -1188,7 +1502,97 @@ async function convertXlsxToPdfWithService(xlsxBuffer: Buffer, baseName: string,
   return Buffer.from(await response.arrayBuffer());
 }
 
-async function convertXlsxToPdf(xlsxBuffer: Buffer, baseName: string) {
+async function cleanupGoogleTempFile(drive: drive_v3.Drive, fileId: string) {
+  if (reportesGoogleKeepTempFile()) return;
+  try {
+    await drive.files.delete({
+      fileId,
+      supportsAllDrives: true,
+    });
+  } catch (error) {
+    console.warn("No se pudo eliminar el archivo temporal de Google Drive.", {
+      fileId,
+      message: String((error as { message?: string } | null)?.message || error),
+    });
+  }
+}
+
+async function exportGoogleSpreadsheetToPdf(auth: InstanceType<typeof google.auth.JWT>, fileId: string) {
+  const credentials = await auth.authorize();
+  const accessToken = credentials.access_token;
+  if (!accessToken) throw new Error("Google no devolvio access token para exportar el PDF.");
+
+  const params = new URLSearchParams({
+    format: "pdf",
+    size: "A4",
+    portrait: "false",
+    fitw: "false",
+    scale: "1",
+    top_margin: (2 / 2.54).toFixed(12),
+    bottom_margin: (1 / 2.54).toFixed(12),
+    left_margin: (0.8 / 2.54).toFixed(12),
+    right_margin: (0.8 / 2.54).toFixed(12),
+    sheetnames: "false",
+    printtitle: "false",
+    pagenumbers: "false",
+    gridlines: "false",
+    fzr: "false",
+  });
+
+  const response = await fetch(`https://docs.google.com/spreadsheets/d/${encodeURIComponent(fileId)}/export?${params.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!response.ok) {
+    const message = await response.text().catch(() => "");
+    throw new Error(`Google Sheets no pudo exportar el PDF. HTTP ${response.status}: ${message}`);
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.toLowerCase().includes("application/pdf")) {
+    const message = await response.text().catch(() => "");
+    throw new Error(`Google Sheets devolvio un contenido que no es PDF (${contentType}). ${message.slice(0, 500)}`);
+  }
+
+  return Buffer.from(await response.arrayBuffer());
+}
+
+async function convertXlsxToPdfWithGoogle(xlsxBuffer: Buffer, baseName: string) {
+  const auth = getReportesGoogleAuth(["https://www.googleapis.com/auth/drive"]);
+  const drive = google.drive({ version: "v3", auth });
+  const folderId = reportesGoogleDriveFolderId();
+  let fileId = "";
+
+  try {
+    const requestBody: drive_v3.Schema$File = {
+      name: `${baseName}.xlsx`,
+      mimeType: "application/vnd.google-apps.spreadsheet",
+    };
+    if (folderId) requestBody.parents = [folderId];
+
+    const created = await drive.files.create({
+      requestBody,
+      media: {
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        body: Readable.from(xlsxBuffer),
+      },
+      fields: "id",
+      supportsAllDrives: true,
+    });
+
+    fileId = String(created.data.id || "");
+    if (!fileId) throw new Error("Google Drive no devolvio el id del archivo temporal.");
+
+    return await exportGoogleSpreadsheetToPdf(auth, fileId);
+  } catch (error) {
+    throw new Error(`No se pudo convertir el Excel a PDF con Google Drive/Sheets. ${String((error as { message?: string } | null)?.message || error)}`);
+  } finally {
+    if (fileId) await cleanupGoogleTempFile(drive, fileId);
+  }
+}
+
+async function convertXlsxToPdfWithOffice(xlsxBuffer: Buffer, baseName: string) {
   const converterUrl = reportesOfficeConverterUrl();
   if (converterUrl) {
     return convertXlsxToPdfWithService(xlsxBuffer, baseName, converterUrl);
@@ -1220,6 +1624,24 @@ async function convertXlsxToPdf(xlsxBuffer: Buffer, baseName: string) {
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
+}
+
+async function convertXlsxToPdf(xlsxBuffer: Buffer, baseName: string, providerInput?: unknown) {
+  const provider = reportesPdfProvider(providerInput);
+  if (provider === "google") {
+    return convertXlsxToPdfWithGoogle(xlsxBuffer, baseName);
+  }
+  if (provider === "auto") {
+    try {
+      return await convertXlsxToPdfWithGoogle(xlsxBuffer, baseName);
+    } catch (error) {
+      console.warn("Fallo Google Drive/Sheets para PDF; se usara Office.", {
+        message: String((error as { message?: string } | null)?.message || error),
+      });
+      return convertXlsxToPdfWithOffice(xlsxBuffer, baseName);
+    }
+  }
+  return convertXlsxToPdfWithOffice(xlsxBuffer, baseName);
 }
 
 function unidadPromedioMap(data: ReporteDocumentoData) {
@@ -1268,7 +1690,10 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   if (mode === "nomina") {
     if (!data.opcionOcupacional) {
       addCell(updates, sheetName, "A11", "PLAN DE ESTUDIO");
+      addCell(updates, sheetName, "Y7", "NUMERO DOCUMENTO");
     }
+    addCell(updates, sheetName, "F12", modulo);
+    addCell(updates, sheetName, "AB12", formatPlanResolucion(data.grupoModulo.modulo?.plan));
     addCell(updates, sheetName, "R11", carrera.toLocaleUpperCase("es-PE"));
     addCell(updates, sheetName, "AJ12", nivel ? nivel.replace(/\s+/g, "\n").toLocaleUpperCase("es-PE") : "");
     addCell(updates, sheetName, "I13", formatDate(inicio));
@@ -1282,13 +1707,13 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   }
 
   if (data.opcionOcupacional) {
-    addCell(updates, sheetName, "Y6", carrera);
-    addCell(updates, sheetName, "AE7", nivel);
+    addCell(updates, sheetName, "Y6", carrera.toLocaleUpperCase("es-PE"));
+    addCell(updates, sheetName, "AE7", nivel.toLocaleUpperCase("es-PE"));
     addCell(updates, sheetName, "AE8", modulo);
     addCell(updates, sheetName, "Z11", resolucion);
     addCell(updates, sheetName, "AF12", turno);
     addCell(updates, sheetName, "AF13", data.seccion);
-    addCell(updates, sheetName, "AF14", horas);
+    addCell(updates, sheetName, "AF14", formatHoras(horas));
     addCell(updates, sheetName, "AF15", formatDate(inicio));
     addCell(updates, sheetName, "AJ15", formatDate(fin));
     addCell(updates, sheetName, "B67", modulo);
@@ -1299,23 +1724,22 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
     return;
   }
 
-  addCell(updates, sheetName, "AO7", nivel);
+  addCell(updates, sheetName, "AO7", nivel.toLocaleUpperCase("es-PE"));
   addCell(updates, sheetName, "AO8", semestre);
   addCell(updates, sheetName, "AO9", data.seccion);
   addCell(updates, sheetName, "AO10", turno);
   addCell(updates, sheetName, "AO11", formatDate(inicio));
   addCell(updates, sheetName, "AO12", formatDate(fin));
-  addCell(updates, sheetName, "W42", creditos);
-  addCell(updates, sheetName, "W43", horas);
-  addCell(updates, sheetName, "AH12", data.grupoModulo.modulo?.creditosEfsrt ?? "");
-  addCell(updates, sheetName, "AH13", data.grupoModulo.modulo?.duracionEfsrt ?? "");
-  addCell(updates, sheetName, "AG13", "");
-  addCell(updates, sheetName, "AG42", data.grupoModulo.modulo?.creditosEfsrt ?? "");
-  addCell(updates, sheetName, "AG43", data.grupoModulo.modulo?.duracionEfsrt ?? "");
-  addCell(updates, sheetName, "AA71", `${distrito}, ${formatDateLong()}`);
-  addCell(updates, sheetName, "C75", director ? `LIC. ${director}\nDIRECTOR(A)` : "DIRECTOR(A)");
-  addCell(updates, sheetName, "R75", coordinador ? `LIC. ${coordinador}\nCOORDINADOR(A)` : "COORDINADOR(A)");
-  addCell(updates, sheetName, "AI75", docente ? `LIC. ${docente}` : "DOCENTE");
+  addCell(updates, sheetName, "W41", creditos);
+  addCell(updates, sheetName, "W42", horas);
+  addCell(updates, sheetName, "AG12", data.grupoModulo.modulo?.creditosEfsrt ?? "");
+  addCell(updates, sheetName, "AG13", data.grupoModulo.modulo?.duracionEfsrt ?? "");
+  addCell(updates, sheetName, "AG41", data.grupoModulo.modulo?.creditosEfsrt ?? "");
+  addCell(updates, sheetName, "AG42", data.grupoModulo.modulo?.duracionEfsrt ?? "");
+  addCell(updates, sheetName, "AA70", `${distrito}, ${formatDateLong()}`);
+  addCell(updates, sheetName, "C74", director ? `LIC. ${director}\nDIRECTOR` : "LIC. \nDIRECTOR");
+  addCell(updates, sheetName, "R74", coordinador ? `LIC. ${coordinador}\nCOORDINADORA` : "LIC. \nCOORDINADORA");
+  addCell(updates, sheetName, "AI74", docente ? `LIC. ${docente}` : "LIC. ");
 }
 
 const dataHelpers: { datosGenerales: Awaited<ReturnType<typeof getDatosGeneralesGlobales>> } = {
@@ -1325,6 +1749,11 @@ const dataHelpers: { datosGenerales: Awaited<ReturnType<typeof getDatosGenerales
 function fillNomina(updates: SpreadsheetUpdate[], sheetName: string, data: ReporteDocumentoData) {
   fillInstitutionHeader(updates, sheetName, data, "nomina");
   const students = data.estudiantes.slice(0, 30);
+  const isPlanEstudios = !data.opcionOcupacional;
+  if (isPlanEstudios) {
+    addCell(updates, sheetName, "B14", "Documento");
+    addCell(updates, sheetName, "B15", "Identidad");
+  }
   let men = 0;
   let women = 0;
   students.forEach((student, index) => {
@@ -1333,7 +1762,7 @@ function fillNomina(updates: SpreadsheetUpdate[], sheetName: string, data: Repor
     if (sex === "M") men += 1;
     if (sex === "F") women += 1;
     addCell(updates, sheetName, `A${row}`, index + 1);
-    addCell(updates, sheetName, `B${row}`, student.matricula?.codigoInscripcion || "");
+    addCell(updates, sheetName, `B${row}`, isPlanEstudios ? student.matricula?.user?.dni || "" : student.matricula?.codigoInscripcion || "");
     addCell(updates, sheetName, `O${row}`, getStudentName(student));
     addCell(updates, sheetName, `AE${row}`, sex);
     addCell(updates, sheetName, `AG${row}`, calculateAge(student.matricula?.user?.fechaNacimiento));
@@ -1367,24 +1796,32 @@ function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data:
     addCell(updates, sheetName, `${column}12`, unit.creditos ?? "");
     addCell(updates, sheetName, `${column}13`, unit.duracion ?? "");
     addCell(updates, sheetName, `${column}35`, cleanText(unit.sigla || unit.nombre || ""));
-    addCell(updates, sheetName, `${column}42`, unit.creditos ?? "");
-    addCell(updates, sheetName, `${column}43`, unit.duracion ?? "");
+    addCell(updates, sheetName, `${column}41`, unit.creditos ?? "");
+    addCell(updates, sheetName, `${column}42`, unit.duracion ?? "");
   });
 
   const students = data.estudiantes.slice(0, 40);
   students.forEach((student, index) => {
-    const row = index < 20 ? 14 + index : 44 + (index - 20);
+    const row = index < 20 ? 14 + index : 43 + (index - 20);
     addCell(updates, sheetName, `A${row}`, index + 1);
     addCell(updates, sheetName, `B${row}`, student.matricula?.user?.dni || student.matricula?.codigoInscripcion || "");
     addCell(updates, sheetName, `F${row}`, getStudentName(student));
-    units.forEach((unit, unitIndex) => {
-      const promedio = unitMap.get(`${student.matriculaId}:${unit.id}`);
-      addCell(updates, sheetName, `${unitColumns[unitIndex]}${row}`, formatGrade(promedio));
-    });
     const efsrt = efsrtMap.get(student.id);
+    const unitGrades = units.map((unit) => unitMap.get(`${student.matriculaId}:${unit.id}`));
+    const hasUnitGrades = unitGrades.some((grade) => typeof grade === "number" && Number.isFinite(grade));
+    const hasEfsrtGrade = typeof efsrt === "number" && Number.isFinite(efsrt);
+    const hasAnyGrade = hasUnitGrades || hasEfsrtGrade;
+    units.forEach((_unit, unitIndex) => {
+      const column = unitColumns[unitIndex];
+      if (!hasAnyGrade && unitIndex === 0) {
+        addCell(updates, sheetName, `${column}${row}`, "RETIRADO POR INASISTENCIA");
+        return;
+      }
+      addCell(updates, sheetName, `${column}${row}`, hasAnyGrade ? formatGrade(unitGrades[unitIndex]) : "");
+    });
     addCell(updates, sheetName, `AF${row}`, "");
     addCell(updates, sheetName, `AG${row}`, "");
-    addCell(updates, sheetName, `AH${row}`, formatGrade(efsrt));
+    addCell(updates, sheetName, `AH${row}`, hasAnyGrade ? formatGrade(efsrt) : "");
     const approvedUnits = units.filter((unit) => {
       const value = unitMap.get(`${student.matriculaId}:${unit.id}`);
       return typeof value === "number" && value >= 13;
@@ -1402,7 +1839,7 @@ function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data:
   });
 
   for (let index = students.length; index < 40; index += 1) {
-    const row = index < 20 ? 14 + index : 44 + (index - 20);
+    const row = index < 20 ? 14 + index : 43 + (index - 20);
     clearStudentRow(row);
   }
 
@@ -1411,9 +1848,9 @@ function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data:
     const values = data.estudiantes
       .map((student) => unitMap.get(`${student.matriculaId}:${unit.id}`))
       .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
-    addCell(updates, sheetName, `${column}66`, values.filter((value) => value >= 13).length);
-    addCell(updates, sheetName, `${column}67`, values.filter((value) => value < 13).length);
-    addCell(updates, sheetName, `${column}68`, 0);
+    addCell(updates, sheetName, `${column}65`, values.filter((value) => value >= 13).length);
+    addCell(updates, sheetName, `${column}66`, values.filter((value) => value < 13).length);
+    addCell(updates, sheetName, `${column}67`, 0);
   });
 }
 
@@ -1436,9 +1873,15 @@ function fillOpcionActa(updates: SpreadsheetUpdate[], sheetName: string, data: R
     addCell(updates, sheetName, `C${row}`, "G");
     addCell(updates, sheetName, `D${row}`, student.matricula?.codigoInscripcion || "");
     addCell(updates, sheetName, `G${row}`, getStudentName(student));
-    capacidades.forEach((capacidad, capacidadIndex) => {
-      const promedio = capacidadMap.get(`${student.matriculaId}:${capacidad.id}`);
-      addCell(updates, sheetName, `${capacidadColumns[capacidadIndex]}${row}`, formatGrade(promedio));
+    const notas = capacidades.map((capacidad) => capacidadMap.get(`${student.matriculaId}:${capacidad.id}`));
+    const hasNotas = notas.some((nota) => typeof nota === "number" && Number.isFinite(nota));
+    capacidades.forEach((_capacidad, capacidadIndex) => {
+      const column = capacidadColumns[capacidadIndex];
+      if (!hasNotas && capacidadIndex === 0) {
+        addCell(updates, sheetName, `${column}${row}`, "RETIRADO POR INASISTENCIA");
+        return;
+      }
+      addCell(updates, sheetName, `${column}${row}`, hasNotas ? formatGrade(notas[capacidadIndex]) : "");
     });
     addCell(updates, sheetName, `V${row}`, formatGrade(student.puntaje));
     addCell(updates, sheetName, `W${row}`, formatGrade(student.promedio));
@@ -1568,10 +2011,104 @@ function selectTemplate(tipoDocumento: ReportDocumentType, reportes: ReporteDocu
   return first?.opcionOcupacional ? TEMPLATES.actaOpcion : TEMPLATES.actaPrograma;
 }
 
+function safeWorksheetName(value: string, used: Set<string>) {
+  const base = cleanText(value || "Docente")
+    .replace(/[:\\/?*[\]]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 31) || "Docente";
+  let name = base;
+  let index = 2;
+  while (used.has(name.toLocaleLowerCase("es-PE"))) {
+    const suffix = ` ${index}`;
+    name = `${base.slice(0, Math.max(1, 31 - suffix.length))}${suffix}`;
+    index += 1;
+  }
+  used.add(name.toLocaleLowerCase("es-PE"));
+  return name;
+}
+
+async function docenteNameByGrupoModuloId() {
+  const response = await dataConnect.executeGraphql<{
+    grupoModulos: ReporteGrupoModuloOption[];
+  }, Record<string, never>>(
+    `query ReporteGrupoModuloDocentesManual {
+      grupoModulos(limit: 10000) {
+        id
+        grupo {
+          personal {
+            displayName
+            user { username nombre apellidoPaterno apellidoMaterno }
+          }
+        }
+      }
+    }`,
+    {},
+  );
+  return new Map((response.data.grupoModulos ?? []).map((item) => [item.id, getPersonalName(item.grupo?.personal) || "Docente"]));
+}
+
+async function combinePdfBuffers(buffers: Buffer[]) {
+  const target = await PDFDocument.create();
+  for (const buffer of buffers) {
+    const source = await PDFDocument.load(buffer);
+    const pages = await target.copyPages(source, source.getPageIndices());
+    pages.forEach((page) => target.addPage(page));
+  }
+  return Buffer.from(await target.save());
+}
+
+async function combineExcelBuffers(items: Array<{ buffer: Buffer; sheetName: string }>) {
+  const target = new ExcelJS.Workbook();
+  const usedNames = new Set<string>();
+
+  for (const item of items) {
+    const source = new ExcelJS.Workbook();
+    const arrayBuffer = item.buffer.buffer.slice(
+      item.buffer.byteOffset,
+      item.buffer.byteOffset + item.buffer.byteLength,
+    ) as ArrayBuffer;
+    await source.xlsx.load(arrayBuffer);
+    const sourceSheet = source.worksheets[0];
+    if (!sourceSheet) continue;
+
+    const targetSheet = target.addWorksheet(safeWorksheetName(item.sheetName, usedNames));
+    targetSheet.properties = { ...sourceSheet.properties };
+    targetSheet.pageSetup = { ...sourceSheet.pageSetup };
+    targetSheet.views = sourceSheet.views.map((view) => ({ ...view }));
+
+    sourceSheet.columns.forEach((column, index) => {
+      const targetColumn = targetSheet.getColumn(index + 1);
+      if (column.width !== undefined) targetColumn.width = column.width;
+      if (column.hidden !== undefined) targetColumn.hidden = column.hidden;
+      if (column.outlineLevel !== undefined) targetColumn.outlineLevel = column.outlineLevel;
+    });
+
+    sourceSheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+      const nextRow = targetSheet.getRow(rowNumber);
+      nextRow.height = row.height;
+      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        const nextCell = nextRow.getCell(colNumber);
+        nextCell.value = cell.value;
+        nextCell.style = JSON.parse(JSON.stringify(cell.style ?? {}));
+        nextCell.numFmt = cell.numFmt;
+        if (cell.alignment) nextCell.alignment = { ...cell.alignment };
+      });
+      nextRow.commit();
+    });
+
+    const merges = ((sourceSheet as unknown as { model?: { merges?: string[] } }).model?.merges ?? []);
+    for (const merge of merges) targetSheet.mergeCells(merge);
+  }
+
+  return Buffer.from(await target.xlsx.writeBuffer());
+}
+
 async function generateReporteDocumentoInternal(input: {
   tipoDocumento: ReportDocumentType;
   semestreId?: number;
   grupoModuloId?: number;
+  pdfProvider?: ReportPdfProvider;
 }) {
   const grupoModuloIds = input.grupoModuloId
     ? [input.grupoModuloId]
@@ -1606,9 +2143,11 @@ async function generateReporteDocumentoInternal(input: {
   const template = selectTemplate(input.tipoDocumento, reportes);
   const { buffer: templateBuffer } = await ensureTemplateInStorage(template);
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const generatedAt = new Date().toISOString();
   const updates: SpreadsheetUpdate[] = [];
   fillReporte(updates, "Hoja1", input.tipoDocumento, reportes[0]);
+  const isActaOpcion = input.tipoDocumento === "acta" && reportes[0].opcionOcupacional;
+  const isActaPrograma = input.tipoDocumento === "acta" && !reportes[0].opcionOcupacional;
 
   const xlsxBuffer = await applyExcelUpdates(
     templateBuffer,
@@ -1616,26 +2155,43 @@ async function generateReporteDocumentoInternal(input: {
     printableScaleForDocument(input.tipoDocumento),
     printableTopMarginForDocument(input.tipoDocumento),
     input.tipoDocumento === "acta" && !reportes[0].opcionOcupacional,
+    isActaOpcion ? 0.5 : isActaPrograma ? 0.6 : 0.8,
+    isActaPrograma ? 0.6 : 1,
+    undefined,
+    false,
+    "9",
+    false,
+    isActaPrograma,
+    isActaPrograma,
   );
+  const grupoModuloId = reportes[0].grupoModulo.id;
   const semestreTitle = cleanText(reportes[0].semestre?.titulo || String(input.semestreId || ""));
-  const baseName = `${input.tipoDocumento}-${semestreTitle}-${input.grupoModuloId ? reportes[0].grupoModulo.id : "todos"}-${timestamp}`
+  const baseName = `${input.tipoDocumento}-${semestreTitle}-${grupoModuloId}`
     .replace(/[^\w.-]+/g, "-")
     .toLowerCase();
-  const pdfBuffer = await convertXlsxToPdf(xlsxBuffer, baseName);
-  const pdf = await uploadBuffer(`documentos/generados/${baseName}.pdf`, pdfBuffer, "application/pdf");
+  const pdfBuffer = await convertXlsxToPdf(xlsxBuffer, baseName, input.pdfProvider);
+  const pdf = await uploadBuffer(`documentos/registros-academicos/${input.tipoDocumento}-${grupoModuloId}.pdf`, pdfBuffer, "application/pdf");
   const excel = await uploadBuffer(
-    `documentos/generados/${baseName}.xlsx`,
+    `documentos/registros-academicos/${input.tipoDocumento}-${grupoModuloId}.xlsx`,
     xlsxBuffer,
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   );
+  const documento = await upsertRegistroAcademicoDocumento({
+    tipoDocumento: input.tipoDocumento,
+    grupoModuloId,
+    pdf,
+    excel,
+    generadoEn: generatedAt,
+  });
 
   return {
     tipoDocumento: input.tipoDocumento,
     semestreId: input.semestreId ?? reportes[0].grupoModulo.grupo?.semestreId ?? null,
-    grupoModuloId: input.grupoModuloId ?? null,
+    grupoModuloId,
     totalReportes: reportes.length,
     pdf,
     excel,
+    documento,
   };
 }
 
@@ -1647,6 +2203,9 @@ function getReporteGenerationErrorMessage(error: unknown) {
     responseData: (error as { response?: { data?: unknown } } | null)?.response?.data,
   }).toLowerCase();
 
+  if (reason.includes("google drive/sheets") || reason.includes("unauthorized_client") || reason.includes("auth/drive") || reason.includes("drive api")) {
+    return message || "No se pudo convertir el Excel a PDF con Google Drive/Sheets.";
+  }
   if (reason.includes("libreoffice") || reason.includes("openoffice") || reason.includes("soffice") || reason.includes("convertir el excel a pdf")) {
     return "No se pudo convertir el Excel a PDF. Instala LibreOffice/OpenOffice o configura REPORTES_OFFICE_BIN con la ruta de soffice.";
   }
@@ -1654,15 +2213,18 @@ function getReporteGenerationErrorMessage(error: unknown) {
 }
 
 export const listReporteDocumentosOptions = https.onCall(async (_data, context) => {
-  requireReportesAccess(context, "listar reportes");
+  await requirePermission(context, "documentos-reportes", "view");
 
   try {
     await ensureAllTemplatesInStorage();
 
-    const response = await dataConnect.executeGraphql<{
+    const [response, documentos] = await Promise.all([
+      dataConnect.executeGraphql<{
       semestres: Array<ReporteSemestre & { archivado?: boolean | null }>;
       grupoModulos: ReporteGrupoModuloOption[];
-    }, Record<string, never>>(REPORTE_OPTIONS_QUERY, {});
+      }, Record<string, never>>(REPORTE_OPTIONS_QUERY, {}),
+      listRegistrosAcademicosDocumentos(),
+    ]);
 
     const semestres = (response.data.semestres ?? [])
       .filter((semestre) => !semestre.archivado)
@@ -1686,7 +2248,7 @@ export const listReporteDocumentosOptions = https.onCall(async (_data, context) 
         tipoCarrera: item.modulo?.plan?.carrera?.tipoCarrera?.nombre ?? null,
       }));
 
-    return { semestres, grupoModulos };
+    return { semestres, grupoModulos, documentos };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in listReporteDocumentosOptions:", error);
@@ -1694,14 +2256,15 @@ export const listReporteDocumentosOptions = https.onCall(async (_data, context) 
   }
 });
 
-export const generateReporteDocumento = https.onCall(async (data: ReportInput, context) => {
-  requireReportesAccess(context, "generar reportes");
+export const generateReporteDocumento = runWith({ timeoutSeconds: 180, memory: "512MB" }).https.onCall(async (data: ReportInput, context) => {
+  await requirePermission(context, "documentos-reportes", "create");
 
   const tipoDocumento = String(data?.tipoDocumento || "acta").toLowerCase() === "nomina" ? "nomina" : "acta";
   const semestreId = toNumber(data?.semestreId, 0);
   const grupoModuloId = data?.grupoModuloId === "todos" || data?.grupoModuloId === null || data?.grupoModuloId === undefined
     ? 0
     : toNumber(data.grupoModuloId, 0);
+  const pdfProvider = reportesPdfProvider(data?.pdfProvider);
 
   if (!grupoModuloId && !semestreId) {
     throw new https.HttpsError("invalid-argument", "Selecciona un semestre o un grupo-modulo.");
@@ -1712,10 +2275,72 @@ export const generateReporteDocumento = https.onCall(async (data: ReportInput, c
       tipoDocumento,
       semestreId: semestreId > 0 ? semestreId : undefined,
       grupoModuloId: grupoModuloId > 0 ? grupoModuloId : undefined,
+      pdfProvider,
     });
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in generateReporteDocumento:", error);
     throw new https.HttpsError("failed-precondition", getReporteGenerationErrorMessage(error));
+  }
+});
+
+export const descargarRegistrosAcademicosSeleccionados = runWith({ timeoutSeconds: 180, memory: "1GB" }).https.onCall(async (data: DownloadRegistrosAcademicosInput, context) => {
+  await requirePermission(context, "documentos-reportes", "view");
+
+  const tipoDocumento = String(data?.tipoDocumento || "acta").toLowerCase() === "nomina" ? "nomina" : "acta";
+  const formato = String(data?.formato || "pdf").toLowerCase() === "excel" ? "excel" : "pdf";
+  const grupoModuloIds = Array.isArray(data?.grupoModuloIds)
+    ? data.grupoModuloIds.map((value) => toNumber(value, 0)).filter((value) => value > 0)
+    : [];
+
+  if (grupoModuloIds.length === 0) {
+    throw new https.HttpsError("invalid-argument", "Selecciona al menos un grupo-modulo.");
+  }
+
+  try {
+    const [documentos, docentes] = await Promise.all([
+      listRegistrosAcademicosDocumentos(),
+      docenteNameByGrupoModuloId(),
+    ]);
+    const documentoByGrupoModuloId = new Map(
+      documentos
+        .filter((documento) => documento.tipoDocumento === tipoDocumento)
+        .map((documento) => [documento.grupoModuloId, documento]),
+    );
+    const orderedDocuments = grupoModuloIds.map((grupoModuloId) => documentoByGrupoModuloId.get(grupoModuloId) ?? null);
+    const missingIndex = orderedDocuments.findIndex((documento) =>
+      !documento || (formato === "pdf" ? !documento.pdfPath : !documento.excelPath),
+    );
+    if (missingIndex >= 0) {
+      throw new https.HttpsError("failed-precondition", "Todos los grupos seleccionados deben tener documento generado.");
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    if (formato === "pdf") {
+      const buffers = await Promise.all(orderedDocuments.map((documento) => downloadStorageBuffer(documento?.pdfPath ?? "")));
+      const combined = await combinePdfBuffers(buffers);
+      const file = await uploadBuffer(
+        `documentos/registros-academicos/lotes/${tipoDocumento}-${timestamp}.pdf`,
+        combined,
+        "application/pdf",
+      );
+      return { formato, file };
+    }
+
+    const excelItems = await Promise.all(orderedDocuments.map(async (documento) => ({
+      buffer: await downloadStorageBuffer(documento?.excelPath ?? ""),
+      sheetName: docentes.get(documento?.grupoModuloId ?? 0) || "Docente",
+    })));
+    const combined = await combineExcelBuffers(excelItems);
+    const file = await uploadBuffer(
+      `documentos/registros-academicos/lotes/${tipoDocumento}-${timestamp}.xlsx`,
+      combined,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    return { formato, file };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in descargarRegistrosAcademicosSeleccionados:", error);
+    throw new https.HttpsError("internal", "No se pudo preparar la descarga.");
   }
 });

@@ -8,16 +8,21 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import {
   DataConnectModulo,
   DataConnectModuloInput,
   DataConnectPaqueteInput,
   DataConnectPaqueteModulo,
   DataConnectPaqueteModuloInput,
+  DataConnectPlanModulo,
+  DataConnectPlanModuloInput,
 } from "../core/types.js";
 import {
+  DELETE_PLAN_MODULOS_BY_MODULO_MUTATION,
   DELETE_MODULO_MUTATION,
   DELETE_PAQUETE_MUTATION,
+  INSERT_PLAN_MODULO_MUTATION,
   INSERT_PAQUETE_MODULO_MUTATION,
   INSERT_PAQUETE_MUTATION,
   INSERT_MODULO_MUTATION,
@@ -41,9 +46,13 @@ const LIST_MODULOS_QUERY = `
       metas
       activo
       slug
+      comun
       plan {
+        id
         planEstudio
+        tituloComercial
         carrera {
+          id
           nombre
           titulo
           tituloComercial
@@ -56,6 +65,30 @@ const LIST_MODULOS_QUERY = `
         }
       }
       planId
+    }
+    planModulos(limit: 5000) {
+      id
+      orden
+      planId
+      moduloId
+      plan {
+        id
+        planEstudio
+        tituloComercial
+        carreraId
+        carrera {
+          id
+          nombre
+          titulo
+          tituloComercial
+          especialidad {
+            id
+            titulo
+            tituloComercial
+            orden
+          }
+        }
+      }
     }
   }
 `;
@@ -75,9 +108,13 @@ const GET_MODULO_QUERY = `
       metas
       activo
       slug
+      comun
       plan {
+        id
         planEstudio
+        tituloComercial
         carrera {
+          id
           nombre
           titulo
           tituloComercial
@@ -90,6 +127,30 @@ const GET_MODULO_QUERY = `
         }
       }
       planId
+    }
+    planModulos(where: { moduloId: { eq: $id } }, limit: 100) {
+      id
+      orden
+      planId
+      moduloId
+      plan {
+        id
+        planEstudio
+        tituloComercial
+        carreraId
+        carrera {
+          id
+          nombre
+          titulo
+          tituloComercial
+          especialidad {
+            id
+            titulo
+            tituloComercial
+            orden
+          }
+        }
+      }
     }
   }
 `;
@@ -130,6 +191,11 @@ const GET_PAQUETE_MODULOS_WITH_MODULOS_QUERY = `
   }
 `;
 
+interface ModulosQueryResponse {
+  modulos: DataConnectModulo[];
+  planModulos: DataConnectPlanModulo[];
+}
+
 const getModuloLabel = (moduloId: number, modulo?: { titulo?: string | null; tituloComercial?: string | null } | null) =>
   modulo?.tituloComercial || modulo?.titulo || `Modulo ${moduloId}`;
 
@@ -151,6 +217,87 @@ const sortModulos = (items: DataConnectModulo[]) =>
       || String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es", { numeric: true })
       || a.id - b.id,
     );
+
+function parsePlanIdsFromInput(input: Record<string, unknown>): number[] | undefined {
+  const raw = input.planIds !== undefined ? input.planIds : input.planId;
+  if (raw === undefined) return undefined;
+  const rawItems = Array.isArray(raw)
+    ? raw
+    : typeof raw === "string"
+      ? raw.split(",")
+      : raw == null || raw === ""
+        ? []
+        : [raw];
+
+  return [...new Set(
+    rawItems
+      .map((item) => Number(String(item).trim()))
+      .filter((item) => Number.isInteger(item) && item > 0),
+  )];
+}
+
+function sortPlanModuloRelations(items: DataConnectPlanModulo[]) {
+  return items
+    .slice()
+    .sort(
+      (a, b) =>
+        (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER) ||
+        a.planId - b.planId ||
+        a.id - b.id,
+    );
+}
+
+function attachPlanRelationsToModulos(
+  modulos: DataConnectModulo[],
+  planModulos: DataConnectPlanModulo[],
+) {
+  const relationsByModuloId = new Map<number, DataConnectPlanModulo[]>();
+  for (const relation of planModulos) {
+    const current = relationsByModuloId.get(relation.moduloId) ?? [];
+    current.push(relation);
+    relationsByModuloId.set(relation.moduloId, current);
+  }
+
+  return modulos.map((modulo) => {
+    const relations = sortPlanModuloRelations(relationsByModuloId.get(modulo.id) ?? []);
+    const primary = relations[0] ?? null;
+    const legacyPlanId = modulo.planId != null ? [modulo.planId] : [];
+    const planIds = relations.length > 0
+      ? relations.map((relation) => relation.planId)
+      : legacyPlanId;
+
+    return {
+      ...modulo,
+      comun: modulo.comun ?? planIds.length > 1,
+      planId: primary?.planId ?? modulo.planId ?? null,
+      plan: primary?.plan ?? modulo.plan ?? null,
+      planIds,
+      planModulos: relations,
+    };
+  });
+}
+
+async function syncPlanModulos(moduloId: number, planIds: number[], orden?: number | null) {
+  await dataConnect.executeGraphql<
+    { planModulo_deleteMany: number },
+    { moduloId: number }
+  >(DELETE_PLAN_MODULOS_BY_MODULO_MUTATION, { variables: { moduloId } });
+
+  await Promise.all(
+    planIds.map((planId) => {
+      const data: DataConnectPlanModuloInput = {
+        planId,
+        moduloId,
+        orden: orden ?? null,
+      };
+
+      return dataConnect.executeGraphql<
+        { planModulo_insert: unknown },
+        { data: DataConnectPlanModuloInput }
+      >(INSERT_PLAN_MODULO_MUTATION, { variables: { data } });
+    }),
+  );
+}
 
 const buildPaqueteTituloFromModulos = (items: DataConnectPaqueteModulo[]) =>
   items
@@ -265,16 +412,16 @@ async function ensureSingleModulePaquete(moduloId: number, modulo: DataConnectMo
 }
 
 export const listModulos = https.onCall(async (_data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to list modules.");
-  }
+  await requirePermission(context, "modulos", "view");
 
   try {
-    const response = await dataConnect.executeGraphql<{ modulos: DataConnectModulo[] }, Record<string, never>>(
+    const response = await dataConnect.executeGraphql<ModulosQueryResponse, Record<string, never>>(
       LIST_MODULOS_QUERY,
     );
-    const modulos = sortModulos(response.data.modulos ?? []);
+    const modulos = sortModulos(attachPlanRelationsToModulos(
+      response.data.modulos ?? [],
+      response.data.planModulos ?? [],
+    ));
 
     return { modulos };
   } catch (error) {
@@ -284,10 +431,7 @@ export const listModulos = https.onCall(async (_data, context) => {
 });
 
 export const getModulo = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to get modules.");
-  }
+  await requirePermission(context, "modulos", "view");
 
   const moduloId = toNumber(data?.id, -1);
   if (moduloId <= 0) {
@@ -295,12 +439,19 @@ export const getModulo = https.onCall(async (data, context) => {
   }
 
   try {
-    const response = await dataConnect.executeGraphql<{ modulo: DataConnectModulo | null }, { id: number }>(
+    const response = await dataConnect.executeGraphql<
+      { modulo: DataConnectModulo | null; planModulos: DataConnectPlanModulo[] },
+      { id: number }
+    >(
       GET_MODULO_QUERY,
       { variables: { id: moduloId } },
     );
 
-    return { modulo: response.data.modulo ?? null };
+    const modulo = response.data.modulo
+      ? attachPlanRelationsToModulos([response.data.modulo], response.data.planModulos ?? [])[0]
+      : null;
+
+    return { modulo };
   } catch (error) {
     console.error("Error in getModulo:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while getting module.");
@@ -308,17 +459,19 @@ export const getModulo = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateModulo = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to mutate modules.");
+  const input = data as Record<string, unknown>;
+  const payload = buildModuloDataFromInput(input);
+  const planIds = parsePlanIdsFromInput(input);
+  if (planIds !== undefined) {
+    payload.planId = planIds[0] ?? null;
+    payload.comun = planIds.length > 1;
   }
-
-  const payload = buildModuloDataFromInput(data as Record<string, unknown>);
   if (!payload.titulo) {
     throw new https.HttpsError("invalid-argument", "titulo is required.");
   }
 
   const moduloId = toNumberOrNull(data?.id);
+  await requirePermission(context, "modulos", moduloId ? "edit" : "create");
 
   try {
     if (moduloId) {
@@ -329,6 +482,9 @@ export const createOrUpdateModulo = https.onCall(async (data, context) => {
         UPDATE_MODULO_MUTATION,
         { variables: { id: moduloId, data: payload } },
       );
+      if (planIds !== undefined) {
+        await syncPlanModulos(moduloId, planIds, payload.orden);
+      }
       await syncPaquetesTituloForModulo(moduloId);
 
       return { id: getIdFromKeyOutput(updated.data.modulo_update) ?? moduloId };
@@ -349,9 +505,18 @@ export const createOrUpdateModulo = https.onCall(async (data, context) => {
 
     let paqueteId: number;
     try {
+      if (planIds !== undefined) {
+        await syncPlanModulos(createdModuloId, planIds, payload.orden);
+      }
       paqueteId = await ensureSingleModulePaquete(createdModuloId, payload);
       await syncPaquetesTituloForModulo(createdModuloId);
     } catch (error) {
+      if (planIds !== undefined) {
+        await dataConnect.executeGraphql<{ planModulo_deleteMany: number }, { moduloId: number }>(
+          DELETE_PLAN_MODULOS_BY_MODULO_MUTATION,
+          { variables: { moduloId: createdModuloId } },
+        );
+      }
       await dataConnect.executeGraphql<{ modulo_delete: unknown }, { id: number }>(
         DELETE_MODULO_MUTATION,
         { variables: { id: createdModuloId } },
@@ -367,10 +532,7 @@ export const createOrUpdateModulo = https.onCall(async (data, context) => {
 });
 
 export const updateModuloOrden = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to mutate modules.");
-  }
+  await requirePermission(context, "modulos", "edit");
 
   const moduloId = toNumber(data?.id, -1);
   if (moduloId <= 0) {
@@ -397,10 +559,7 @@ export const updateModuloOrden = https.onCall(async (data, context) => {
 });
 
 export const deleteModulo = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to delete modules.");
-  }
+  await requirePermission(context, "modulos", "delete");
 
   const moduloId = toNumber(data?.id, -1);
   if (moduloId <= 0) {
@@ -408,6 +567,11 @@ export const deleteModulo = https.onCall(async (data, context) => {
   }
 
   try {
+    await dataConnect.executeGraphql<{ planModulo_deleteMany: number }, { moduloId: number }>(
+      DELETE_PLAN_MODULOS_BY_MODULO_MUTATION,
+      { variables: { moduloId } },
+    );
+
     const deleted = await dataConnect.executeGraphql<{ modulo_delete: unknown }, { id: number }>(
       DELETE_MODULO_MUTATION,
       { variables: { id: moduloId } },

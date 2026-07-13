@@ -7,6 +7,7 @@ export interface DataConnectRole {
 export interface DataConnectUserInput {
   documentId?: string | null;
   username?: string | null;
+  nickName?: string | null;
   email?: string | null;
   provider?: string | null;
   confirmed?: boolean;
@@ -32,6 +33,7 @@ export interface DataConnectUserInput {
   fechaModificacion?: string | null;
   emailCreador?: string | null;
   avatar?: string | null;
+  recorteFotografia?: string | null;
   dniImagenFrenteUrl?: string | null;
   dniImagenReversoUrl?: string | null;
   dniImagenFrenteProcesadaUrl?: string | null;
@@ -48,6 +50,7 @@ export interface DataConnectPersonal {
     id?: number | null;
     documentId?: string | null;
     username?: string | null;
+    nickName?: string | null;
     nombre?: string | null;
     apellidoPaterno?: string | null;
     email?: string | null;
@@ -87,6 +90,42 @@ export interface DataConnectPersonalInput {
 export interface DataConnectRoleInput {
   titulo?: string | null;
   scala?: number | null;
+}
+
+export interface DataConnectRolePermission {
+  id: number;
+  roleId?: number | null;
+  entity?: string | null;
+  canView?: boolean | null;
+  canCreate?: boolean | null;
+  canEdit?: boolean | null;
+  canDelete?: boolean | null;
+}
+
+export interface DataConnectRolePermissionInput {
+  roleId?: number | null;
+  entity?: string | null;
+  canView?: boolean;
+  canCreate?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
+}
+
+export interface DataConnectAppSetting {
+  id: number;
+  settingKey?: string | null;
+  section?: string | null;
+  label?: string | null;
+  boolValue?: boolean | null;
+  updatedAt?: string | null;
+}
+
+export interface DataConnectAppSettingInput {
+  settingKey?: string | null;
+  section?: string | null;
+  label?: string | null;
+  boolValue?: boolean;
+  updatedAt?: string | null;
 }
 
 export interface DataConnectSector {
@@ -619,9 +658,13 @@ export interface DataConnectModulo {
   metas?: number | null;
   activo?: boolean | null;
   slug?: string | null;
+  comun?: boolean | null;
   plan?: {
+    id?: number | null;
     planEstudio?: string | null;
+    tituloComercial?: string | null;
     carrera?: {
+      id?: number | null;
       nombre?: string | null;
       titulo?: string | null;
       tituloComercial?: string | null;
@@ -634,6 +677,8 @@ export interface DataConnectModulo {
     } | null;
   } | null;
   planId?: number | null;
+  planIds?: number[];
+  planModulos?: DataConnectPlanModulo[];
 }
 
 export interface DataConnectModuloInput {
@@ -648,7 +693,39 @@ export interface DataConnectModuloInput {
   metas?: number | null;
   activo?: boolean;
   slug?: string | null;
+  comun?: boolean;
   planId?: number | null;
+}
+
+export interface DataConnectPlanModulo {
+  id: number;
+  orden?: number | null;
+  planId: number;
+  moduloId: number;
+  plan?: {
+    id?: number | null;
+    planEstudio?: string | null;
+    tituloComercial?: string | null;
+    carreraId?: number | null;
+    carrera?: {
+      id?: number | null;
+      nombre?: string | null;
+      titulo?: string | null;
+      tituloComercial?: string | null;
+      especialidad?: {
+        id?: number | null;
+        titulo?: string | null;
+        tituloComercial?: string | null;
+        orden?: number | null;
+      } | null;
+    } | null;
+  } | null;
+}
+
+export interface DataConnectPlanModuloInput {
+  orden?: number | null;
+  planId: number;
+  moduloId: number;
 }
 
 export interface DataConnectPaquete {
@@ -685,6 +762,7 @@ export interface DataConnectMatricula {
   id: number;
   recibo?: string | null;
   fecha?: string | null;
+  codigoInscripcion?: string | null;
   archivado?: boolean | null;
   paqueteId?: number | null;
   semestreId?: number | null;
@@ -694,6 +772,7 @@ export interface DataConnectMatricula {
 export interface DataConnectMatriculaInput {
   recibo?: string | null;
   fecha?: string | null;
+  codigoInscripcion?: string | null;
   archivado?: boolean;
   paqueteId?: number | null;
   semestreId?: number | null;
@@ -714,6 +793,7 @@ export interface DataConnectUnidadDidactica {
   duracion?: number | null;
   creditos?: number | null;
   sigla?: string | null;
+  comun?: boolean | null;
   moduloIds?: number[];
 }
 
@@ -722,6 +802,7 @@ export interface DataConnectUnidadDidacticaInput {
   duracion?: number | null;
   creditos?: number | null;
   sigla?: string | null;
+  comun?: boolean;
 }
 
 export interface DataConnectUnidadDidacticaModulo {

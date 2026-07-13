@@ -10,6 +10,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import {
   DataConnectGrupo,
   DataConnectGrupoInput,
@@ -364,13 +365,6 @@ const GET_GRUPO_WORKSPACE_CONTEXT_QUERY = `
     }
   }
 `;
-
-function requireLevel(context: https.CallableContext, action: string) {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
-  }
-}
 
 function validateWorkspaceFields(payload: DataConnectGrupoInput) {
   if ((payload.workspaceName ?? "").length > 73) {
@@ -732,7 +726,7 @@ function attachGrupoModulos(
 }
 
 export const listGrupos = https.onCall(async (_data, context) => {
-  requireLevel(context, "list groups");
+  await requirePermission(context, "grupos", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{
@@ -756,7 +750,7 @@ export const listGrupos = https.onCall(async (_data, context) => {
 });
 
 export const getGrupo = https.onCall(async (data, context) => {
-  requireLevel(context, "get groups");
+  await requirePermission(context, "grupos", "view");
 
   const grupoId = toNumber(data?.id, -1);
   if (grupoId <= 0) {
@@ -795,8 +789,6 @@ export const getGrupo = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateGrupo = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate groups");
-
   const now = new Date().toISOString();
   const payload = buildGrupoDataFromInput({
     ...(data as Record<string, unknown>),
@@ -806,6 +798,7 @@ export const createOrUpdateGrupo = https.onCall(async (data, context) => {
   }) as DataConnectGrupoInput;
 
   const grupoId = toNumberOrNull(data?.id);
+  await requirePermission(context, "grupos", grupoId ? "edit" : "create");
   const paqueteId = toNumberOrNull(data?.paqueteId);
   const grupoModuloDetalles = normalizeGrupoModuloDetalles(data?.grupoModulos);
 
@@ -895,7 +888,7 @@ export const createOrUpdateGrupo = https.onCall(async (data, context) => {
 });
 
 export const deleteGrupo = https.onCall(async (data, context) => {
-  requireLevel(context, "delete groups");
+  await requirePermission(context, "grupos", "delete");
 
   const grupoId = toNumber(data?.id, -1);
   if (grupoId <= 0) {

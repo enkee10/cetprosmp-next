@@ -69,11 +69,12 @@ function isNumericColumn<R extends GridValidRowModel>(column: GridColDef<R>, row
 
 export default function IntranetDataGrid<R extends GridValidRowModel = GridValidRowModel>({
   autoHeight = true,
+  columnHeaderHeight = 40,
   disableColumnSelector = true,
   disableRowSelectionOnClick = true,
   localeText = localeTextEs,
   pageSizeOptions = [15, 30, 50, 100],
-  rowHeight = 58,
+  rowHeight = 45,
   sx,
   ...props
 }: IntranetDataGridProps<R>) {
@@ -93,6 +94,7 @@ export default function IntranetDataGrid<R extends GridValidRowModel = GridValid
         {...props}
         columns={columns}
         autoHeight={autoHeight}
+        columnHeaderHeight={columnHeaderHeight}
         disableColumnSelector={disableColumnSelector}
         disableRowSelectionOnClick={disableRowSelectionOnClick}
         localeText={localeText}

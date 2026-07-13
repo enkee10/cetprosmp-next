@@ -2,16 +2,11 @@
   {
     "id": "grupos",
     "titulo": "Grupos",
-    "slug": "grupos"   
+    "slug": "grupos"
   },
   {
-    "id": "inventarios",
-    "titulo": "Inventarios",
-    "slug": "inventarios" 
-  },
-  {
-    "id": "programacion",
-    "titulo": "Programación",
-    "slug": "programacion" 
+    "id": "matriculas",
+    "titulo": "Matriculas",
+    "slug": "matriculas"
   }
 ]

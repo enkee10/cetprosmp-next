@@ -2,6 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { httpsCallable } from 'firebase/functions';
 import {
   ListItem,
   ListItemButton,
@@ -29,8 +31,13 @@ import PeopleIcon from '@mui/icons-material/People';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import SchoolIcon from '@mui/icons-material/School';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import SettingsApplicationsIcon from '@mui/icons-material/SettingsApplications';
+import TuneIcon from '@mui/icons-material/Tune';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import { useAuth } from '@/context/AuthContext';
+import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
+import { functions } from '@/lib/firebase';
 import FullCustomAccordion, {
   CustomList,
 } from '../FullCustomAccordion/FullCustomAccordion2';
@@ -49,6 +56,19 @@ export type IntranetMenuSection = {
   items: IntranetMenuItem[];
 };
 
+type RegistroAuxiliarDocenteModulo = {
+  id: number;
+  nombre?: string | null;
+  moduloId: number;
+  grupo?: {
+    semestre?: { titulo?: string | null } | null;
+  } | null;
+  modulo?: {
+    titulo?: string | null;
+    tituloComercial?: string | null;
+  } | null;
+};
+
 interface Props {
   openAccordions: string[];
   handleAccordionChange: (id: string, ancestors: string[]) => void;
@@ -57,6 +77,45 @@ interface Props {
 }
 
 const rootId = 'intranet';
+const TEACHER_ROLE_ID = 4;
+
+const formatPeriodoMenu = (value: string | null | undefined) => {
+  const text = String(value ?? '').trim();
+  return text.replace(/^20(\d{2})\s*-\s*/, '$1-') || 'Periodo';
+};
+
+const getModuloMenuName = (modulo: RegistroAuxiliarDocenteModulo) =>
+  modulo.modulo?.titulo || modulo.modulo?.tituloComercial || modulo.nombre || `Modulo ${modulo.moduloId}`;
+
+const buildDocenteRegistroItems = (
+  modulos: RegistroAuxiliarDocenteModulo[],
+  semestreTitulo?: string | null,
+): IntranetMenuItem[] =>
+  modulos.map((modulo) => {
+    const periodo = formatPeriodoMenu(modulo.grupo?.semestre?.titulo || semestreTitulo);
+    const moduloName = getModuloMenuName(modulo);
+    return {
+      id: `registro-auxiliar-${modulo.id}`,
+      title: `Notas ${periodo} ${moduloName}`,
+      path: `/intranet/registro-auxiliar?grupoModuloId=${modulo.id}`,
+      icon: <FactCheckIcon />,
+    };
+  });
+
+const isMenuItemActive = (itemPath: string, pathname: string, searchParams: URLSearchParams) => {
+  const [itemPathname, itemQuery = ''] = itemPath.split('?');
+  const isSamePath = pathname === itemPathname || pathname.startsWith(`${itemPathname}/`);
+  if (!isSamePath) return false;
+  if (!itemQuery) return true;
+
+  const itemParams = new URLSearchParams(itemQuery);
+  return Array.from(itemParams.entries()).every(([key, value]) => searchParams.get(key) === value);
+};
+
+const intranetPageIvory = '#fff8e8';
+const intranetMenuTextColor = 'rgba(255, 248, 232, 0.82)';
+const intranetMenuActiveBg = 'rgba(255, 248, 232, 0.12)';
+const intranetMenuHoverBg = 'rgba(255, 248, 232, 0.08)';
 
 export const menuSections: IntranetMenuSection[] = [
   {
@@ -113,7 +172,16 @@ export const menuSections: IntranetMenuSection[] = [
     title: 'Reportes',
     icon: <AssessmentIcon />,
     items: [
-      { id: 'documentos-reportes', title: 'Actas y N\u00f3minas', path: '/intranet/reportes/documentos', icon: <ArticleIcon /> },
+      { id: 'documentos-reportes', title: 'Nominas y Actas', path: '/intranet/reportes/documentos', icon: <ArticleIcon /> },
+    ],
+  },
+  {
+    id: 'mantenimiento',
+    title: 'Mantenimiento',
+    icon: <SettingsApplicationsIcon />,
+    items: [
+      { id: 'permisos', title: 'Permisos', path: '/intranet/mantenimiento/permisos', icon: <LockPersonIcon /> },
+      { id: 'settings', title: 'Settings', path: '/intranet/mantenimiento/settings', icon: <TuneIcon /> },
     ],
   },
 ];
@@ -142,29 +210,51 @@ function SectionTitle({ icon, title }: { icon: React.ReactNode; title: string })
 }
 
 function IntranetMenuItems({ items }: { items: IntranetMenuItem[] }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   if (items.length === 0) {
     return null;
   }
 
   return (
     <CustomList>
-      {items.map((item) => (
-        <ListItem key={item.id} disablePadding>
-          <ListItemButton
-            component={Link}
-            href={item.path}
-            sx={{ minHeight: 40, px: 1, py: 0.5 }}
-          >
-            <ListItemIcon sx={{ minWidth: 34, color: 'text.secondary' }}>
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText
-              primary={item.title}
-              primaryTypographyProps={{ fontSize: 13 }}
-            />
-          </ListItemButton>
-        </ListItem>
-      ))}
+      {items.map((item) => {
+        const active = isMenuItemActive(item.path, pathname, searchParams);
+
+        return (
+          <ListItem key={item.id} disablePadding>
+            <ListItemButton
+              component={Link}
+              href={item.path}
+              selected={active}
+              sx={{
+                minHeight: 40,
+                px: 1,
+                py: 0.5,
+                borderRadius: 1,
+                bgcolor: active ? intranetMenuActiveBg : 'transparent',
+                '&:hover': {
+                  bgcolor: active ? intranetMenuActiveBg : intranetMenuHoverBg,
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 34, color: active ? intranetPageIvory : intranetMenuTextColor }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.title}
+                primaryTypographyProps={{
+                  fontSize: 13,
+                  noWrap: true,
+                  fontWeight: active ? 900 : 400,
+                  color: active ? intranetPageIvory : intranetMenuTextColor,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        );
+      })}
     </CustomList>
   );
 }
@@ -176,10 +266,66 @@ export default function AcordionIntranet({
   sections: intranetSections = menuSections,
 }: Props) {
   const rootAncestors = showRoot ? [rootId] : [];
+  const { user } = useAuth();
+  const { can, filterSections, loading: loadingPermissions } = useIntranetPermissions();
+  const [docenteRegistroItems, setDocenteRegistroItems] = React.useState<IntranetMenuItem[]>([]);
+  const [docenteRegistroLoaded, setDocenteRegistroLoaded] = React.useState(false);
+  const isDocente = Number(user?.role ?? 0) === TEACHER_ROLE_ID && Number(user?.level ?? 0) < 600;
+  const canViewRegistroAuxiliar = can('registro-auxiliar', 'view');
+
+  React.useEffect(() => {
+    let active = true;
+
+    const loadDocenteRegistroItems = async () => {
+      if (!isDocente || loadingPermissions || !canViewRegistroAuxiliar) {
+        setDocenteRegistroItems([]);
+        setDocenteRegistroLoaded(false);
+        return;
+      }
+
+      setDocenteRegistroLoaded(false);
+      try {
+        const listRegistroAuxiliarDocenteModulos = httpsCallable<
+          undefined,
+          { modulos?: RegistroAuxiliarDocenteModulo[]; semestreTitulo?: string | null }
+        >(functions, 'listRegistroAuxiliarDocenteModulos');
+        const result = await listRegistroAuxiliarDocenteModulos();
+        if (!active) return;
+        setDocenteRegistroItems(buildDocenteRegistroItems(result.data.modulos || [], result.data.semestreTitulo));
+      } catch (error) {
+        console.error('Error loading docente registro auxiliar modules:', error);
+        if (active) setDocenteRegistroItems([]);
+      } finally {
+        if (active) setDocenteRegistroLoaded(true);
+      }
+    };
+
+    void loadDocenteRegistroItems();
+    return () => {
+      active = false;
+    };
+  }, [canViewRegistroAuxiliar, isDocente, loadingPermissions]);
+
+  const visibleSections = React.useMemo(
+    () =>
+      filterSections(intranetSections)
+        .map((section) => {
+          if (!isDocente || section.id !== 'registros') return section;
+
+          const items = section.items.flatMap((item) => {
+            if (item.id !== 'registro-auxiliar') return [item];
+            return docenteRegistroLoaded ? docenteRegistroItems : [item];
+          });
+
+          return { ...section, items };
+        })
+        .filter((section) => section.items.length > 0),
+    [docenteRegistroItems, docenteRegistroLoaded, filterSections, intranetSections, isDocente],
+  );
 
   const sections = (
     <>
-      {intranetSections.map((section) => {
+      {visibleSections.map((section) => {
         const sectionId = `${rootId}-${section.id}`;
 
         return (

@@ -1,5 +1,8 @@
 ﻿# Contexto general del proyecto
 
+## comportamiento CODEX
+ - nunca hacer nada que no se te pida explicitamente, sin embargo puedes sugerirlo.
+
 ## Estado actual
 - Estoy desarrollando el sistema CETPRO con Next.js, Firebase, MUI y GitHub y conectado a workspace de google.
 - Como se usa los emuladores de firebase, cualquier consulta sobre estos emuladores y servicios firebase, revisar la documentacion especial para IA en: ./.agents
@@ -15,6 +18,7 @@
 - Se identificó requisito de permisos/scopes en Domain-Wide Delegation para grupos:
   - https://www.googleapis.com/auth/admin.directory.group.member
   - se crearon endpoints para las entidades/tablas carreras, planes, modulos, paquetes, grupos, turnos, horarios, calendarios, eventos, unidades dicaticas, capacidades terminales, indicador de Capacidad, aprendizajes, actividad, con lista y CRUD incluidos.
+  - Se crearon endpoints para registro auxiliar, matricula, Estructura Academica
 
 ## Pendientes generales
 

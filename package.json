@@ -15,7 +15,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy:full": "set FUNCTIONS_DISCOVERY_TIMEOUT=60&& npx -y firebase-tools@latest deploy --project cetprosmp-2026 --force",
+    "deploy:full": "set FUNCTIONS_DISCOVERY_TIMEOUT=180&& npx -y firebase-tools@latest deploy --project cetprosmp-2026 --force",
     "functions:invoker:public": "node scripts/functions-invoker-public.mjs",
     "diagram:gql": "node scripts/gql-to-mermaid.cjs",
     "diagram:gql:watch": "node scripts/gql-to-mermaid.cjs --watch"

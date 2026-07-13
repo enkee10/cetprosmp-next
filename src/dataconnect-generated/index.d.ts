@@ -31,6 +31,11 @@ export interface Anio_Key {
   __typename?: 'Anio_Key';
 }
 
+export interface AppSetting_Key {
+  id: number;
+  __typename?: 'AppSetting_Key';
+}
+
 export interface Aprendizaje_Key {
   id: number;
   __typename?: 'Aprendizaje_Key';
@@ -391,6 +396,11 @@ export interface Personal_Key {
   __typename?: 'Personal_Key';
 }
 
+export interface PlanModulo_Key {
+  id: number;
+  __typename?: 'PlanModulo_Key';
+}
+
 export interface Plan_Key {
   id: number;
   __typename?: 'Plan_Key';
@@ -421,9 +431,19 @@ export interface Recurso_Key {
   __typename?: 'Recurso_Key';
 }
 
+export interface RegistroAcademicoDocumento_Key {
+  id: number;
+  __typename?: 'RegistroAcademicoDocumento_Key';
+}
+
 export interface Rol_Key {
   id: number;
   __typename?: 'Rol_Key';
+}
+
+export interface RolePermission_Key {
+  id: number;
+  __typename?: 'RolePermission_Key';
 }
 
 export interface Sector_Key {

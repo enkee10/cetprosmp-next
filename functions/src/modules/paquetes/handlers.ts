@@ -7,6 +7,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import {
   DataConnectPaquete,
   DataConnectPaqueteInput,
@@ -108,13 +109,6 @@ const GET_PAQUETE_QUERY = `
   }
 `;
 
-function requireLevel(context: https.CallableContext, action: string) {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
-  }
-}
-
 const normalizeModuloIds = (value: unknown): number[] => {
   if (!Array.isArray(value)) return [];
 
@@ -151,7 +145,7 @@ const attachUnidadDidacticasToPaqueteModulos = (
 };
 
 export const listPaquetes = https.onCall(async (_data, context) => {
-  requireLevel(context, "list packages");
+  await requirePermission(context, "paquetes", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{
@@ -190,7 +184,7 @@ export const listPaquetes = https.onCall(async (_data, context) => {
 });
 
 export const getPaquete = https.onCall(async (data, context) => {
-  requireLevel(context, "get packages");
+  await requirePermission(context, "paquetes", "view");
 
   const paqueteId = toNumber(data?.id, -1);
   if (paqueteId <= 0) {
@@ -225,8 +219,6 @@ export const getPaquete = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdatePaquete = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate packages");
-
   const payload = buildPaqueteDataFromInput(data as Record<string, unknown>);
   if (!payload.titulo) {
     throw new https.HttpsError("invalid-argument", "titulo is required.");
@@ -238,6 +230,7 @@ export const createOrUpdatePaquete = https.onCall(async (data, context) => {
   }
 
   const paqueteId = toNumberOrNull(data?.id);
+  await requirePermission(context, "paquetes", paqueteId ? "edit" : "create");
 
   try {
     let savedPaqueteId = paqueteId;
@@ -287,7 +280,7 @@ export const createOrUpdatePaquete = https.onCall(async (data, context) => {
 });
 
 export const deletePaquete = https.onCall(async (data, context) => {
-  requireLevel(context, "delete packages");
+  await requirePermission(context, "paquetes", "delete");
 
   const paqueteId = toNumber(data?.id, -1);
   if (paqueteId <= 0) {

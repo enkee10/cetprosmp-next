@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectAnio, DataConnectAnioInput } from "../core/types.js";
 import {
   DELETE_ANIO_MUTATION,
@@ -33,13 +34,6 @@ const GET_ANIO_QUERY = `
   }
 `;
 
-function requireLevel(context: https.CallableContext, action: string) {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
-  }
-}
-
 const sortAnios = (items: DataConnectAnio[]) =>
   items
     .slice()
@@ -49,7 +43,7 @@ const sortAnios = (items: DataConnectAnio[]) =>
     );
 
 export const listAnios = https.onCall(async (_data, context) => {
-  requireLevel(context, "list years");
+  await requirePermission(context, "anios", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ anios: DataConnectAnio[] }, Record<string, never>>(
@@ -63,7 +57,7 @@ export const listAnios = https.onCall(async (_data, context) => {
 });
 
 export const getAnio = https.onCall(async (data, context) => {
-  requireLevel(context, "get years");
+  await requirePermission(context, "anios", "view");
 
   const anioId = toNumber(data?.id, -1);
   if (anioId <= 0) {
@@ -83,14 +77,13 @@ export const getAnio = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateAnio = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate years");
-
   const payload = buildAnioDataFromInput(data as Record<string, unknown>);
   if (!payload.nombre && !payload.titulo) {
     throw new https.HttpsError("invalid-argument", "nombre or titulo is required.");
   }
 
   const anioId = toNumberOrNull(data?.id);
+  await requirePermission(context, "anios", anioId ? "edit" : "create");
 
   try {
     if (anioId) {
@@ -115,7 +108,7 @@ export const createOrUpdateAnio = https.onCall(async (data, context) => {
 });
 
 export const deleteAnio = https.onCall(async (data, context) => {
-  requireLevel(context, "delete years");
+  await requirePermission(context, "anios", "delete");
 
   const anioId = toNumber(data?.id, -1);
   if (anioId <= 0) {

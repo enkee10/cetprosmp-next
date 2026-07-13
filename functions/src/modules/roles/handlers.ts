@@ -14,6 +14,7 @@ import {
   resolveInitialRoleIdByEmail,
 } from "../core/authCore.js";
 import { dataConnect, findDataConnectUserIdByDocumentId, getRoleById } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectRoleInput, DataConnectUserInput } from "../core/types.js";
 import { INSERT_ROLE_MUTATION, UPDATE_ROLE_MUTATION, UPDATE_USER_MUTATION } from "../../dataconnectOperations.js";
 
@@ -27,10 +28,7 @@ const GET_USER_ROLE_BY_DOCUMENT_ID_QUERY = `
 `;
 
 export const listRoles = https.onCall(async (_data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to list roles.");
-  }
+  await requirePermission(context, "roles", "view");
 
   try {
     const response = await dcListRoles(dataConnect);
@@ -43,10 +41,7 @@ export const listRoles = https.onCall(async (_data, context) => {
 });
 
 export const getRole = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to get roles.");
-  }
+  await requirePermission(context, "roles", "view");
 
   const roleId = toNumber(data?.id, -1);
   if (roleId <= 0) {
@@ -63,17 +58,13 @@ export const getRole = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateRole = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to mutate roles.");
-  }
-
   const payload = buildRoleDataFromInput(data as Record<string, unknown>);
   if (!payload.titulo || payload.scala === null || payload.scala === undefined) {
     throw new https.HttpsError("invalid-argument", "titulo and scala are required.");
   }
 
   const roleId = toNumberOrNull(data?.id);
+  await requirePermission(context, "roles", roleId ? "edit" : "create");
 
   try {
     if (roleId) {
@@ -138,13 +129,10 @@ export const refreshMyClaims = https.onCall(async (_data, context) => {
 });
 
 export const setUserRole = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to change roles.");
-  }
+  await requirePermission(context, "users", "edit");
 
   const roleId = data?.roleId ?? data?.rolId;
-  const { uid, level } = data;
+  const { uid } = data;
   if (!uid || !roleId) {
     throw new https.HttpsError("invalid-argument", "User ID and roleId are required.");
   }
@@ -160,7 +148,7 @@ export const setUserRole = https.onCall(async (data, context) => {
       throw new https.HttpsError("not-found", `The role ID '${roleId}' does not exist.`);
     }
 
-    const newLevel = toNumber(level, role.scala ?? DEFAULT_LEVEL);
+    const newLevel = role.scala ?? DEFAULT_LEVEL;
     await authAdmin.setCustomUserClaims(uid, { role: String(roleNumberId), level: newLevel });
 
     const existingId = await findDataConnectUserIdByDocumentId(uid);

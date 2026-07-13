@@ -8,15 +8,18 @@ const capitalizeWords = (str: string): string => {
     .join(' ');
 };
 
-export const generateUsername = (
+export const generateUserNames = (
   nombre: string | undefined,
   apellido_paterno: string | undefined,
-  setValue: (name: 'username', value: string, options?: { shouldValidate?: boolean }) => void
+  apellido_materno: string | undefined,
+  setValue: (name: 'username' | 'nickName', value: string, options?: { shouldValidate?: boolean }) => void
 ) => {
   const nombrePart = nombre ? nombre.trim().split(/\s+/)[0] || '' : '';
   const apellidoPart = apellido_paterno ? apellido_paterno.trim() : '';
+  const apellidoMaternoPart = apellido_materno ? apellido_materno.trim() : '';
+  const fullName = capitalizeWords([nombre, apellido_paterno, apellido_materno].filter(Boolean).join(' '));
+  const nickName = capitalizeWords(`${nombrePart} ${apellidoPart}`.trim());
 
-  const username = capitalizeWords(`${nombrePart} ${apellidoPart}`.trim());
-    
-  setValue('username', username, { shouldValidate: true });
+  setValue('username', fullName, { shouldValidate: true });
+  setValue('nickName', nickName || fullName || apellidoMaternoPart, { shouldValidate: true });
 };

@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectEspecialidad, DataConnectEspecialidadInput } from "../core/types.js";
 import {
   DELETE_ESPECIALIDAD_MUTATION,
@@ -44,10 +45,7 @@ const GET_ESPECIALIDAD_QUERY = `
 `;
 
 export const listEspecialidades = https.onCall(async (_data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to list specialties.");
-  }
+  await requirePermission(context, "especialidades", "view");
 
   try {
     const response = await dataConnect.executeGraphql<
@@ -70,10 +68,7 @@ export const listEspecialidades = https.onCall(async (_data, context) => {
 });
 
 export const getEspecialidad = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to get specialties.");
-  }
+  await requirePermission(context, "especialidades", "view");
 
   const especialidadId = toNumber(data?.id, -1);
   if (especialidadId <= 0) {
@@ -97,17 +92,13 @@ export const getEspecialidad = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateEspecialidad = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to mutate specialties.");
-  }
-
   const payload = buildEspecialidadDataFromInput(data as Record<string, unknown>);
   if (!payload.titulo) {
     throw new https.HttpsError("invalid-argument", "titulo is required.");
   }
 
   const especialidadId = toNumberOrNull(data?.id);
+  await requirePermission(context, "especialidades", especialidadId ? "edit" : "create");
 
   try {
     if (especialidadId) {
@@ -138,10 +129,7 @@ export const createOrUpdateEspecialidad = https.onCall(async (data, context) => 
 });
 
 export const deleteEspecialidad = https.onCall(async (data, context) => {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", "You do not have permission to delete specialties.");
-  }
+  await requirePermission(context, "especialidades", "delete");
 
   const especialidadId = toNumber(data?.id, -1);
   if (especialidadId <= 0) {

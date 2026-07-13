@@ -13,6 +13,8 @@ interface UserData { // define la forma de los datos del usuario expuestos al re
     displayName: string | null; // guarda el nombre visible del usuario autenticado
     photoURL: string | null; // guarda la foto de perfil del usuario autenticado
     role: string | null; // guarda el rol personalizado del usuario autenticado
+    roleTitle?: string | null; // guarda el nombre legible del rol/cargo del usuario autenticado
+    cargo?: string | null; // mantiene un alias semantico para mostrar el cargo en la interfaz
     level: number; // guarda el nivel numerico del usuario autenticado
     [key: string]: any; // permite exponer campos adicionales almacenados en Firestore
 } // cierra la interfaz de datos del usuario
@@ -35,6 +37,46 @@ const isExpectedAuthError = (error: unknown) => { // + detecta si el error perte
     return code.startsWith('auth/') || code.startsWith('functions/'); // + considera esperados los errores conocidos de autenticacion y functions
 }; // + cierra el detector de errores esperados para evitar ruido en desarrollo
 
+const cleanUrl = (value: unknown): string | null => {
+    const text = typeof value === 'string' ? value.trim() : '';
+    return text || null;
+};
+
+const resolveProfilePhotoURL = (profile: unknown, fallback: string | null): string | null => {
+    const data = profile as {
+        avatarPequeno?: unknown;
+        avatar?: unknown;
+        recorteFotografia?: unknown;
+        recorte_fotografia?: unknown;
+    } | null;
+    return (
+        cleanUrl(data?.avatarPequeno)
+        ?? cleanUrl(data?.avatar)
+        ?? cleanUrl(data?.recorteFotografia ?? data?.recorte_fotografia)
+        ?? cleanUrl(fallback)
+    );
+};
+
+const cleanText = (value: unknown): string | null => {
+    const text = typeof value === 'string' ? value.trim() : '';
+    return text || null;
+};
+
+const resolveProfileRoleTitle = (profile: unknown): string | null => {
+    const data = profile as {
+        rolTitulo?: unknown;
+        roleTitle?: unknown;
+        cargo?: unknown;
+        rol?: { titulo?: unknown } | null;
+    } | null;
+    return (
+        cleanText(data?.cargo)
+        ?? cleanText(data?.roleTitle)
+        ?? cleanText(data?.rolTitulo)
+        ?? cleanText(data?.rol?.titulo)
+    );
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) { // define el proveedor principal de autenticacion para toda la app
     const [user, setUser] = useState<UserData | null>(null); // guarda el usuario autenticado disponible para la interfaz
     const [loading, setLoading] = useState(true); // guarda si el contexto esta resolviendo auth o cargando perfil
@@ -54,14 +96,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                     }
                 }
 
+                let profile: Record<string, unknown> | null = null;
+                try {
+                    const getMyProfile = httpsCallable<undefined, { profile?: Record<string, unknown> | null }>(functions, 'getMyProfile');
+                    const profileResult = await getMyProfile();
+                    profile = profileResult.data.profile ?? null;
+                } catch (error) {
+                    if (!isExpectedAuthError(error)) {
+                        console.error('Error loading auth profile:', error);
+                    }
+                }
+
                 const token = await firebaseUser.getIdTokenResult(true); // obtiene el token actual para leer claims personalizados
                 const claims = token.claims; // extrae los claims del token para rol y nivel
+                const roleTitle = resolveProfileRoleTitle(profile);
                 const userData: UserData = { // construye el usuario con Auth y claims sin dependencia de Firestore
                     uid: firebaseUser.uid, // asegura que el uid venga siempre de Firebase Auth
                     email: firebaseUser.email, // asegura que el correo venga siempre de Firebase Auth
                     displayName: firebaseUser.displayName, // asegura que el nombre visible venga siempre de Firebase Auth
-                    photoURL: firebaseUser.photoURL, // asegura que la foto visible venga siempre de Firebase Auth
+                    photoURL: resolveProfilePhotoURL(profile, firebaseUser.photoURL), // usa primero el avatar guardado en la aplicacion y luego Firebase Auth
                     role: (claims.role as string) || null, // expone el rol personalizado del usuario autenticado
+                    roleTitle, // expone el nombre legible del rol para mostrarlo en la cabecera
+                    cargo: roleTitle, // conserva el mismo valor como cargo visible del usuario
                     level: (claims.level as number) || 0, // expone el nivel numerico personalizado del usuario autenticado
                 };
                 setUser(userData); // guarda el usuario para el resto de la app

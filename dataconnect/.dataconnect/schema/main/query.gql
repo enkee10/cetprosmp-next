@@ -96,6 +96,30 @@ extend type Query {
     first: Anio_FirstRow
   ): Anio @fdc_generated(from: "Anio", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `AppSetting` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  appSetting(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: AppSetting_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: AppSetting_FirstRow
+  ): AppSetting @fdc_generated(from: "AppSetting", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Aprendizaje` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   aprendizaje(
@@ -1126,6 +1150,30 @@ extend type Query {
     first: Plan_FirstRow
   ): Plan @fdc_generated(from: "Plan", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `PlanModulo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  planModulo(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: PlanModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PlanModulo_FirstRow
+  ): PlanModulo @fdc_generated(from: "PlanModulo", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Post` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   post(
@@ -1246,6 +1294,30 @@ extend type Query {
     first: Recurso_FirstRow
   ): Recurso @fdc_generated(from: "Recurso", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `RegistroAcademicoDocumento` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  registroAcademicoDocumento(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: RegistroAcademicoDocumento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: RegistroAcademicoDocumento_FirstRow
+  ): RegistroAcademicoDocumento @fdc_generated(from: "RegistroAcademicoDocumento", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Rol` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   rol(
@@ -1269,6 +1341,30 @@ extend type Query {
     """
     first: Rol_FirstRow
   ): Rol @fdc_generated(from: "Rol", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `RolePermission` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  rolePermission(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: RolePermission_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: RolePermission_FirstRow
+  ): RolePermission @fdc_generated(from: "RolePermission", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `Sector` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -1669,6 +1765,40 @@ extend type Query {
     """
     having: Anio_Having
   ): [Anio!]! @fdc_generated(from: "Anio", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `AppSetting` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  appSettings(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: AppSetting_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [AppSetting_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: AppSetting_Having
+  ): [AppSetting!]! @fdc_generated(from: "AppSetting", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Aprendizaje` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -3200,6 +3330,40 @@ extend type Query {
     having: Plan_Having
   ): [Plan!]! @fdc_generated(from: "Plan", purpose: QUERY_MULTIPLE)
   """
+  ✨ List `PlanModulo` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  planModulos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PlanModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PlanModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PlanModulo_Having
+  ): [PlanModulo!]! @fdc_generated(from: "PlanModulo", purpose: QUERY_MULTIPLE)
+  """
   ✨ List `Post` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   posts(
@@ -3370,6 +3534,40 @@ extend type Query {
     having: Recurso_Having
   ): [Recurso!]! @fdc_generated(from: "Recurso", purpose: QUERY_MULTIPLE)
   """
+  ✨ List `RegistroAcademicoDocumento` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  registroAcademicoDocumentos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: RegistroAcademicoDocumento_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [RegistroAcademicoDocumento_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: RegistroAcademicoDocumento_Having
+  ): [RegistroAcademicoDocumento!]! @fdc_generated(from: "RegistroAcademicoDocumento", purpose: QUERY_MULTIPLE)
+  """
   ✨ List `Rol` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   rols(
@@ -3403,6 +3601,40 @@ extend type Query {
     """
     having: Rol_Having
   ): [Rol!]! @fdc_generated(from: "Rol", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `RolePermission` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  rolePermissions(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: RolePermission_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [RolePermission_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: RolePermission_Having
+  ): [RolePermission!]! @fdc_generated(from: "RolePermission", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Sector` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

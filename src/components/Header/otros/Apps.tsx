@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { IconButton, Menu, Box, Typography, Avatar } from "@mui/material";
+import AppsIcon from "@mui/icons-material/Apps";
 import { googleApps } from "./data/googleApps";
 import { useAuth } from "@/context/AuthContext";
 
@@ -17,8 +18,8 @@ export default function Apps() {
 
   return (
     <>
-      <IconButton color="inherit" onClick={handleOpen}>
-        <span className="material-symbols-outlined">apps</span>
+      <IconButton color="inherit" onClick={handleOpen} aria-label="Aplicaciones">
+        <AppsIcon />
       </IconButton>
 
       <Menu

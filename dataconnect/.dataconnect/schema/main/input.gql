@@ -23,6 +23,12 @@ It has the same format as `Anio_Key`, but is only used as mutation return value.
 """
 scalar Anio_KeyOutput
 """
+✨ `AppSetting_KeyOutput` returns the primary key fields of table type `AppSetting`.
+
+It has the same format as `AppSetting_Key`, but is only used as mutation return value.
+"""
+scalar AppSetting_KeyOutput
+"""
 ✨ `Aprendizaje_KeyOutput` returns the primary key fields of table type `Aprendizaje`.
 
 It has the same format as `Aprendizaje_Key`, but is only used as mutation return value.
@@ -293,6 +299,12 @@ It has the same format as `Plan_Key`, but is only used as mutation return value.
 """
 scalar Plan_KeyOutput
 """
+✨ `PlanModulo_KeyOutput` returns the primary key fields of table type `PlanModulo`.
+
+It has the same format as `PlanModulo_Key`, but is only used as mutation return value.
+"""
+scalar PlanModulo_KeyOutput
+"""
 ✨ `Post_KeyOutput` returns the primary key fields of table type `Post`.
 
 It has the same format as `Post_Key`, but is only used as mutation return value.
@@ -323,11 +335,23 @@ It has the same format as `Recurso_Key`, but is only used as mutation return val
 """
 scalar Recurso_KeyOutput
 """
+✨ `RegistroAcademicoDocumento_KeyOutput` returns the primary key fields of table type `RegistroAcademicoDocumento`.
+
+It has the same format as `RegistroAcademicoDocumento_Key`, but is only used as mutation return value.
+"""
+scalar RegistroAcademicoDocumento_KeyOutput
+"""
 ✨ `Rol_KeyOutput` returns the primary key fields of table type `Rol`.
 
 It has the same format as `Rol_Key`, but is only used as mutation return value.
 """
 scalar Rol_KeyOutput
+"""
+✨ `RolePermission_KeyOutput` returns the primary key fields of table type `RolePermission`.
+
+It has the same format as `RolePermission_Key`, but is only used as mutation return value.
+"""
+scalar RolePermission_KeyOutput
 """
 ✨ `Sector_KeyOutput` returns the primary key fields of table type `Sector`.
 
@@ -1721,6 +1745,305 @@ input Anio_Order {
   ✨ Generated from Field `Anio`.`id_max` of type `Int`
   """
   id_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'AppSetting'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input AppSetting_Data {
+  """
+  ✨ Generated from Field `AppSetting`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `AppSetting`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `AppSetting`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `AppSetting`.`boolValue` of type `Boolean`
+  """
+  boolValue: Boolean
+  """
+  ✨ `_expr` server value variant of `boolValue` (✨ Generated from Field `AppSetting`.`boolValue` of type `Boolean`)
+  """
+  boolValue_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `AppSetting`.`label` of type `String`
+  """
+  label: String
+  """
+  ✨ `_expr` server value variant of `label` (✨ Generated from Field `AppSetting`.`label` of type `String`)
+  """
+  label_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `AppSetting`.`section` of type `String`
+  """
+  section: String
+  """
+  ✨ `_expr` server value variant of `section` (✨ Generated from Field `AppSetting`.`section` of type `String`)
+  """
+  section_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `AppSetting`.`settingKey` of type `String`
+  """
+  settingKey: String
+  """
+  ✨ `_expr` server value variant of `settingKey` (✨ Generated from Field `AppSetting`.`settingKey` of type `String`)
+  """
+  settingKey_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `AppSetting`.`updatedAt` of type `Timestamp`
+  """
+  updatedAt: Timestamp
+  """
+  ✨ `_expr` server value variant of `updatedAt` (✨ Generated from Field `AppSetting`.`updatedAt` of type `Timestamp`)
+  """
+  updatedAt_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `updatedAt` (✨ Generated from Field `AppSetting`.`updatedAt` of type `Timestamp`)
+  """
+  updatedAt_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `updatedAt` (✨ Generated from Field `AppSetting`.`updatedAt` of type `Timestamp`)
+  """
+  updatedAt_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'AppSetting'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input AppSetting_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [AppSetting_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: AppSetting_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [AppSetting_Filter!]
+  """
+  ✨ Generated from Field `AppSetting`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`boolValue` of type `Boolean`
+  """
+  boolValue: Boolean_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`label` of type `String`
+  """
+  label: String_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`section` of type `String`
+  """
+  section: String_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`settingKey` of type `String`
+  """
+  settingKey: String_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`updatedAt` of type `Timestamp`
+  """
+  updatedAt: Timestamp_Filter
+}
+"""
+✨ Generated first-row input type for table 'AppSetting'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input AppSetting_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [AppSetting_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: AppSetting_Filter
+}
+"""
+✨ Generated having input type for table 'AppSetting'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input AppSetting_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [AppSetting_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: AppSetting_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [AppSetting_Having!]
+  """
+  ✨ Generated from Field `AppSetting`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`boolValue_count` of type `Int!`
+  """
+  boolValue_count: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`label_count` of type `Int!`
+  """
+  label_count: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`section_count` of type `Int!`
+  """
+  section_count: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`settingKey_count` of type `Int!`
+  """
+  settingKey_count: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`updatedAt_count` of type `Int!`
+  """
+  updatedAt_count: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`updatedAt_min` of type `Timestamp`
+  """
+  updatedAt_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`updatedAt_max` of type `Timestamp`
+  """
+  updatedAt_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'AppSetting'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input AppSetting_Key {
+  """
+  ✨ Generated from Field `AppSetting`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `AppSetting`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'AppSetting'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input AppSetting_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: AppSetting_Filter
+}
+"""
+✨ Generated order input type for table 'AppSetting'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input AppSetting_Order {
+  """
+  ✨ Generated from Field `AppSetting`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`boolValue` of type `Boolean`
+  """
+  boolValue: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`label` of type `String`
+  """
+  label: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`section` of type `String`
+  """
+  section: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`settingKey` of type `String`
+  """
+  settingKey: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`updatedAt` of type `Timestamp`
+  """
+  updatedAt: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`boolValue_count` of type `Int!`
+  """
+  boolValue_count: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`label_count` of type `Int!`
+  """
+  label_count: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`section_count` of type `Int!`
+  """
+  section_count: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`settingKey_count` of type `Int!`
+  """
+  settingKey_count: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`updatedAt_count` of type `Int!`
+  """
+  updatedAt_count: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`updatedAt_min` of type `Timestamp`
+  """
+  updatedAt_min: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`updatedAt_max` of type `Timestamp`
+  """
+  updatedAt_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'Aprendizaje'. It includes all necessary fields for creating or upserting rows into table.
@@ -14848,6 +15171,10 @@ input GrupoModulo_Data {
   ✨ Generated from Field `GrupoModulo`.`grupoModuloUnidadesDidacticas_on_grupoModulo` of type `[GrupoModuloUnidadDidactica!]!`
   """
   grupoModuloUnidadesDidacticas_on_grupoModulo: [GrupoModuloUnidadDidactica_Data!]
+  """
+  ✨ Generated from Field `GrupoModulo`.`registroAcademicoDocumentos_on_grupoModulo` of type `[RegistroAcademicoDocumento!]!`
+  """
+  registroAcademicoDocumentos_on_grupoModulo: [RegistroAcademicoDocumento_Data!]
 }
 """
 ✨ Generated filter input type for table 'GrupoModulo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -14925,6 +15252,10 @@ input GrupoModulo_Filter {
   ✨ Generated from Field `GrupoModulo`.`grupoModuloUnidadesDidacticas_on_grupoModulo` of type `[GrupoModuloUnidadDidactica!]!`
   """
   grupoModuloUnidadesDidacticas_on_grupoModulo: GrupoModuloUnidadDidactica_ListFilter
+  """
+  ✨ Generated from Field `GrupoModulo`.`registroAcademicoDocumentos_on_grupoModulo` of type `[RegistroAcademicoDocumento!]!`
+  """
+  registroAcademicoDocumentos_on_grupoModulo: RegistroAcademicoDocumento_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'GrupoModulo'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -18611,6 +18942,14 @@ input Modulo_Data {
   """
   carreraId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Modulo`.`comun` of type `Boolean`
+  """
+  comun: Boolean
+  """
+  ✨ `_expr` server value variant of `comun` (✨ Generated from Field `Modulo`.`comun` of type `Boolean`)
+  """
+  comun_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Modulo`.`creditos` of type `Int`
   """
   creditos: Int
@@ -18739,6 +19078,10 @@ input Modulo_Data {
   """
   paqueteModulos_on_modulo: [PaqueteModulo_Data!]
   """
+  ✨ Generated from Field `Modulo`.`planModulos_on_modulo` of type `[PlanModulo!]!`
+  """
+  planModulos_on_modulo: [PlanModulo_Data!]
+  """
   ✨ Generated from Field `Modulo`.`unidadDidacticaModulos_on_modulo` of type `[UnidadDidacticaModulo!]!`
   """
   unidadDidacticaModulos_on_modulo: [UnidadDidacticaModulo_Data!]
@@ -18779,6 +19122,10 @@ input Modulo_Filter {
   ✨ Generated from Field `Modulo`.`carreraId` of type `Int`
   """
   carreraId: Int_Filter
+  """
+  ✨ Generated from Field `Modulo`.`comun` of type `Boolean`
+  """
+  comun: Boolean_Filter
   """
   ✨ Generated from Field `Modulo`.`creditos` of type `Int`
   """
@@ -18840,6 +19187,10 @@ input Modulo_Filter {
   """
   paqueteModulos_on_modulo: PaqueteModulo_ListFilter
   """
+  ✨ Generated from Field `Modulo`.`planModulos_on_modulo` of type `[PlanModulo!]!`
+  """
+  planModulos_on_modulo: PlanModulo_ListFilter
+  """
   ✨ Generated from Field `Modulo`.`unidadDidacticaModulos_on_modulo` of type `[UnidadDidacticaModulo!]!`
   """
   unidadDidacticaModulos_on_modulo: UnidadDidacticaModulo_ListFilter
@@ -18889,6 +19240,10 @@ input Modulo_Having {
   ✨ Generated from Field `Modulo`.`carreraId_count` of type `Int!`
   """
   carreraId_count: Int_Filter
+  """
+  ✨ Generated from Field `Modulo`.`comun_count` of type `Int!`
+  """
+  comun_count: Int_Filter
   """
   ✨ Generated from Field `Modulo`.`creditosEfsrt_count` of type `Int!`
   """
@@ -19137,6 +19492,10 @@ input Modulo_Order {
   """
   carreraId: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`comun` of type `Boolean`
+  """
+  comun: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`creditos` of type `Int`
   """
   creditos: OrderDirection
@@ -19192,6 +19551,10 @@ input Modulo_Order {
   ✨ Generated from Field `Modulo`.`carreraId_count` of type `Int!`
   """
   carreraId_count: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`comun_count` of type `Int!`
+  """
+  comun_count: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`creditosEfsrt_count` of type `Int!`
   """
@@ -22154,6 +22517,10 @@ input Plan_Data {
   ✨ Generated from Field `Plan`.`modulos_on_plan` of type `[Modulo!]!`
   """
   modulos_on_plan: [Modulo_Data!]
+  """
+  ✨ Generated from Field `Plan`.`planModulos_on_plan` of type `[PlanModulo!]!`
+  """
+  planModulos_on_plan: [PlanModulo_Data!]
 }
 """
 ✨ Generated filter input type for table 'Plan'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -22251,6 +22618,10 @@ input Plan_Filter {
   ✨ Generated from Field `Plan`.`modulos_on_plan` of type `[Modulo!]!`
   """
   modulos_on_plan: Modulo_ListFilter
+  """
+  ✨ Generated from Field `Plan`.`planModulos_on_plan` of type `[PlanModulo!]!`
+  """
+  planModulos_on_plan: PlanModulo_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'Plan'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -22720,6 +23091,365 @@ input Plan_Order {
   ✨ Generated from Field `Plan`.`versionId_max` of type `Int`
   """
   versionId_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'PlanModulo'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input PlanModulo_Data {
+  """
+  ✨ Generated from Field `PlanModulo`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `PlanModulo`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `PlanModulo`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId` of type `Int!`
+  """
+  moduloId: Int
+  """
+  ✨ `_expr` server value variant of `moduloId` (✨ Generated from Field `PlanModulo`.`moduloId` of type `Int!`)
+  """
+  moduloId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `moduloId` (✨ Generated from Field `PlanModulo`.`moduloId` of type `Int!`)
+  """
+  moduloId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PlanModulo`.`planId` of type `Int!`
+  """
+  planId: Int
+  """
+  ✨ `_expr` server value variant of `planId` (✨ Generated from Field `PlanModulo`.`planId` of type `Int!`)
+  """
+  planId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `planId` (✨ Generated from Field `PlanModulo`.`planId` of type `Int!`)
+  """
+  planId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PlanModulo`.`modulo` of type `Modulo!`
+  """
+  modulo: Modulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PlanModulo`.`plan` of type `Plan!`
+  """
+  plan: Plan_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PlanModulo`.`orden` of type `Int`
+  """
+  orden: Int
+  """
+  ✨ `_expr` server value variant of `orden` (✨ Generated from Field `PlanModulo`.`orden` of type `Int`)
+  """
+  orden_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `orden` (✨ Generated from Field `PlanModulo`.`orden` of type `Int`)
+  """
+  orden_update: [Int_Update!] @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'PlanModulo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input PlanModulo_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [PlanModulo_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: PlanModulo_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [PlanModulo_Filter!]
+  """
+  ✨ Generated from Field `PlanModulo`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId` of type `Int!`
+  """
+  moduloId: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`planId` of type `Int!`
+  """
+  planId: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`modulo` of type `Modulo!`
+  """
+  modulo: Modulo_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`plan` of type `Plan!`
+  """
+  plan: Plan_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`orden` of type `Int`
+  """
+  orden: Int_Filter
+}
+"""
+✨ Generated first-row input type for table 'PlanModulo'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input PlanModulo_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [PlanModulo_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: PlanModulo_Filter
+}
+"""
+✨ Generated having input type for table 'PlanModulo'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input PlanModulo_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [PlanModulo_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: PlanModulo_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [PlanModulo_Having!]
+  """
+  ✨ Generated from Field `PlanModulo`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId_count` of type `Int!`
+  """
+  moduloId_count: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`orden_count` of type `Int!`
+  """
+  orden_count: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`planId_count` of type `Int!`
+  """
+  planId_count: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId_sum` of type `Int`
+  """
+  moduloId_sum: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`orden_sum` of type `Int`
+  """
+  orden_sum: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`planId_sum` of type `Int`
+  """
+  planId_sum: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId_avg` of type `Float`
+  """
+  moduloId_avg: Float_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`orden_avg` of type `Float`
+  """
+  orden_avg: Float_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`planId_avg` of type `Float`
+  """
+  planId_avg: Float_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId_min` of type `Int`
+  """
+  moduloId_min: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`orden_min` of type `Int`
+  """
+  orden_min: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`planId_min` of type `Int`
+  """
+  planId_min: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId_max` of type `Int`
+  """
+  moduloId_max: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`orden_max` of type `Int`
+  """
+  orden_max: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`planId_max` of type `Int`
+  """
+  planId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'PlanModulo'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input PlanModulo_Key {
+  """
+  ✨ Generated from Field `PlanModulo`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `PlanModulo`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'PlanModulo'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input PlanModulo_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: PlanModulo_Filter
+}
+"""
+✨ Generated order input type for table 'PlanModulo'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input PlanModulo_Order {
+  """
+  ✨ Generated from Field `PlanModulo`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId` of type `Int!`
+  """
+  moduloId: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`planId` of type `Int!`
+  """
+  planId: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`modulo` of type `Modulo!`
+  """
+  modulo: Modulo_Order
+  """
+  ✨ Generated from Field `PlanModulo`.`plan` of type `Plan!`
+  """
+  plan: Plan_Order
+  """
+  ✨ Generated from Field `PlanModulo`.`orden` of type `Int`
+  """
+  orden: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId_count` of type `Int!`
+  """
+  moduloId_count: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`orden_count` of type `Int!`
+  """
+  orden_count: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`planId_count` of type `Int!`
+  """
+  planId_count: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId_sum` of type `Int`
+  """
+  moduloId_sum: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`orden_sum` of type `Int`
+  """
+  orden_sum: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`planId_sum` of type `Int`
+  """
+  planId_sum: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId_avg` of type `Float`
+  """
+  moduloId_avg: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`orden_avg` of type `Float`
+  """
+  orden_avg: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`planId_avg` of type `Float`
+  """
+  planId_avg: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId_min` of type `Int`
+  """
+  moduloId_min: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`orden_min` of type `Int`
+  """
+  orden_min: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`planId_min` of type `Int`
+  """
+  planId_min: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`moduloId_max` of type `Int`
+  """
+  moduloId_max: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`orden_max` of type `Int`
+  """
+  orden_max: OrderDirection
+  """
+  ✨ Generated from Field `PlanModulo`.`planId_max` of type `Int`
+  """
+  planId_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'Post'. It includes all necessary fields for creating or upserting rows into table.
@@ -24953,6 +25683,401 @@ input Recurso_Order {
   id_max: OrderDirection
 }
 """
+✨ Generated data input type for table 'RegistroAcademicoDocumento'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input RegistroAcademicoDocumento_Data {
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `RegistroAcademicoDocumento`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `RegistroAcademicoDocumento`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int
+  """
+  ✨ `_expr` server value variant of `grupoModuloId` (✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoModuloId` (✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`excelPath` of type `String`
+  """
+  excelPath: String
+  """
+  ✨ `_expr` server value variant of `excelPath` (✨ Generated from Field `RegistroAcademicoDocumento`.`excelPath` of type `String`)
+  """
+  excelPath_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`excelUrl` of type `String`
+  """
+  excelUrl: String
+  """
+  ✨ `_expr` server value variant of `excelUrl` (✨ Generated from Field `RegistroAcademicoDocumento`.`excelUrl` of type `String`)
+  """
+  excelUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn` of type `Timestamp`
+  """
+  generadoEn: Timestamp
+  """
+  ✨ `_expr` server value variant of `generadoEn` (✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn` of type `Timestamp`)
+  """
+  generadoEn_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `generadoEn` (✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn` of type `Timestamp`)
+  """
+  generadoEn_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `generadoEn` (✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn` of type `Timestamp`)
+  """
+  generadoEn_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`pdfPath` of type `String`
+  """
+  pdfPath: String
+  """
+  ✨ `_expr` server value variant of `pdfPath` (✨ Generated from Field `RegistroAcademicoDocumento`.`pdfPath` of type `String`)
+  """
+  pdfPath_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`pdfUrl` of type `String`
+  """
+  pdfUrl: String
+  """
+  ✨ `_expr` server value variant of `pdfUrl` (✨ Generated from Field `RegistroAcademicoDocumento`.`pdfUrl` of type `String`)
+  """
+  pdfUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`tipoDocumento` of type `String!`
+  """
+  tipoDocumento: String
+  """
+  ✨ `_expr` server value variant of `tipoDocumento` (✨ Generated from Field `RegistroAcademicoDocumento`.`tipoDocumento` of type `String!`)
+  """
+  tipoDocumento_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'RegistroAcademicoDocumento'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input RegistroAcademicoDocumento_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [RegistroAcademicoDocumento_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: RegistroAcademicoDocumento_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [RegistroAcademicoDocumento_Filter!]
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`excelPath` of type `String`
+  """
+  excelPath: String_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`excelUrl` of type `String`
+  """
+  excelUrl: String_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn` of type `Timestamp`
+  """
+  generadoEn: Timestamp_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`pdfPath` of type `String`
+  """
+  pdfPath: String_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`pdfUrl` of type `String`
+  """
+  pdfUrl: String_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`tipoDocumento` of type `String!`
+  """
+  tipoDocumento: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'RegistroAcademicoDocumento'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input RegistroAcademicoDocumento_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [RegistroAcademicoDocumento_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: RegistroAcademicoDocumento_Filter
+}
+"""
+✨ Generated having input type for table 'RegistroAcademicoDocumento'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input RegistroAcademicoDocumento_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [RegistroAcademicoDocumento_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: RegistroAcademicoDocumento_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [RegistroAcademicoDocumento_Having!]
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`excelPath_count` of type `Int!`
+  """
+  excelPath_count: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`excelUrl_count` of type `Int!`
+  """
+  excelUrl_count: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn_count` of type `Int!`
+  """
+  generadoEn_count: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`pdfPath_count` of type `Int!`
+  """
+  pdfPath_count: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`pdfUrl_count` of type `Int!`
+  """
+  pdfUrl_count: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`tipoDocumento_count` of type `Int!`
+  """
+  tipoDocumento_count: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: Float_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn_min` of type `Timestamp`
+  """
+  generadoEn_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn_max` of type `Timestamp`
+  """
+  generadoEn_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: Int_Filter
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'RegistroAcademicoDocumento'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input RegistroAcademicoDocumento_Key {
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `RegistroAcademicoDocumento`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'RegistroAcademicoDocumento'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input RegistroAcademicoDocumento_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: RegistroAcademicoDocumento_Filter
+}
+"""
+✨ Generated order input type for table 'RegistroAcademicoDocumento'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input RegistroAcademicoDocumento_Order {
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Order
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`excelPath` of type `String`
+  """
+  excelPath: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`excelUrl` of type `String`
+  """
+  excelUrl: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn` of type `Timestamp`
+  """
+  generadoEn: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`pdfPath` of type `String`
+  """
+  pdfPath: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`pdfUrl` of type `String`
+  """
+  pdfUrl: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`tipoDocumento` of type `String!`
+  """
+  tipoDocumento: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`excelPath_count` of type `Int!`
+  """
+  excelPath_count: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`excelUrl_count` of type `Int!`
+  """
+  excelUrl_count: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn_count` of type `Int!`
+  """
+  generadoEn_count: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`pdfPath_count` of type `Int!`
+  """
+  pdfPath_count: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`pdfUrl_count` of type `Int!`
+  """
+  pdfUrl_count: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`tipoDocumento_count` of type `Int!`
+  """
+  tipoDocumento_count: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn_min` of type `Timestamp`
+  """
+  generadoEn_min: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`generadoEn_max` of type `Timestamp`
+  """
+  generadoEn_max: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: OrderDirection
+  """
+  ✨ Generated from Field `RegistroAcademicoDocumento`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+}
+"""
 ✨ Generated data input type for table 'Rol'. It includes all necessary fields for creating or upserting rows into table.
 """
 input Rol_Data {
@@ -24989,6 +26114,10 @@ input Rol_Data {
   """
   titulo_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Rol`.`rolePermissions_on_role` of type `[RolePermission!]!`
+  """
+  rolePermissions_on_role: [RolePermission_Data!]
+  """
   ✨ Generated from Field `Rol`.`users_on_rol` of type `[User!]!`
   """
   users_on_rol: [User_Data!]
@@ -25021,6 +26150,10 @@ input Rol_Filter {
   ✨ Generated from Field `Rol`.`titulo` of type `String`
   """
   titulo: String_Filter
+  """
+  ✨ Generated from Field `Rol`.`rolePermissions_on_role` of type `[RolePermission!]!`
+  """
+  rolePermissions_on_role: RolePermission_ListFilter
   """
   ✨ Generated from Field `Rol`.`users_on_rol` of type `[User!]!`
   """
@@ -25198,6 +26331,353 @@ input Rol_Order {
   ✨ Generated from Field `Rol`.`scala_max` of type `Int`
   """
   scala_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'RolePermission'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input RolePermission_Data {
+  """
+  ✨ Generated from Field `RolePermission`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `RolePermission`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `RolePermission`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RolePermission`.`roleId` of type `Int`
+  """
+  roleId: Int
+  """
+  ✨ `_expr` server value variant of `roleId` (✨ Generated from Field `RolePermission`.`roleId` of type `Int`)
+  """
+  roleId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `roleId` (✨ Generated from Field `RolePermission`.`roleId` of type `Int`)
+  """
+  roleId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RolePermission`.`role` of type `Rol`
+  """
+  role: Rol_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RolePermission`.`canCreate` of type `Boolean`
+  """
+  canCreate: Boolean
+  """
+  ✨ `_expr` server value variant of `canCreate` (✨ Generated from Field `RolePermission`.`canCreate` of type `Boolean`)
+  """
+  canCreate_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RolePermission`.`canDelete` of type `Boolean`
+  """
+  canDelete: Boolean
+  """
+  ✨ `_expr` server value variant of `canDelete` (✨ Generated from Field `RolePermission`.`canDelete` of type `Boolean`)
+  """
+  canDelete_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RolePermission`.`canEdit` of type `Boolean`
+  """
+  canEdit: Boolean
+  """
+  ✨ `_expr` server value variant of `canEdit` (✨ Generated from Field `RolePermission`.`canEdit` of type `Boolean`)
+  """
+  canEdit_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RolePermission`.`canView` of type `Boolean`
+  """
+  canView: Boolean
+  """
+  ✨ `_expr` server value variant of `canView` (✨ Generated from Field `RolePermission`.`canView` of type `Boolean`)
+  """
+  canView_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `RolePermission`.`entity` of type `String`
+  """
+  entity: String
+  """
+  ✨ `_expr` server value variant of `entity` (✨ Generated from Field `RolePermission`.`entity` of type `String`)
+  """
+  entity_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'RolePermission'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input RolePermission_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [RolePermission_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: RolePermission_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [RolePermission_Filter!]
+  """
+  ✨ Generated from Field `RolePermission`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`roleId` of type `Int`
+  """
+  roleId: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`role` of type `Rol`
+  """
+  role: Rol_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`canCreate` of type `Boolean`
+  """
+  canCreate: Boolean_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`canDelete` of type `Boolean`
+  """
+  canDelete: Boolean_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`canEdit` of type `Boolean`
+  """
+  canEdit: Boolean_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`canView` of type `Boolean`
+  """
+  canView: Boolean_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`entity` of type `String`
+  """
+  entity: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'RolePermission'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input RolePermission_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [RolePermission_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: RolePermission_Filter
+}
+"""
+✨ Generated having input type for table 'RolePermission'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input RolePermission_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [RolePermission_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: RolePermission_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [RolePermission_Having!]
+  """
+  ✨ Generated from Field `RolePermission`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`canCreate_count` of type `Int!`
+  """
+  canCreate_count: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`canDelete_count` of type `Int!`
+  """
+  canDelete_count: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`canEdit_count` of type `Int!`
+  """
+  canEdit_count: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`canView_count` of type `Int!`
+  """
+  canView_count: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`entity_count` of type `Int!`
+  """
+  entity_count: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`roleId_count` of type `Int!`
+  """
+  roleId_count: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`roleId_sum` of type `Int`
+  """
+  roleId_sum: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`roleId_avg` of type `Float`
+  """
+  roleId_avg: Float_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`roleId_min` of type `Int`
+  """
+  roleId_min: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `RolePermission`.`roleId_max` of type `Int`
+  """
+  roleId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'RolePermission'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input RolePermission_Key {
+  """
+  ✨ Generated from Field `RolePermission`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `RolePermission`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'RolePermission'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input RolePermission_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: RolePermission_Filter
+}
+"""
+✨ Generated order input type for table 'RolePermission'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input RolePermission_Order {
+  """
+  ✨ Generated from Field `RolePermission`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`roleId` of type `Int`
+  """
+  roleId: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`role` of type `Rol`
+  """
+  role: Rol_Order
+  """
+  ✨ Generated from Field `RolePermission`.`canCreate` of type `Boolean`
+  """
+  canCreate: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`canDelete` of type `Boolean`
+  """
+  canDelete: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`canEdit` of type `Boolean`
+  """
+  canEdit: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`canView` of type `Boolean`
+  """
+  canView: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`entity` of type `String`
+  """
+  entity: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`canCreate_count` of type `Int!`
+  """
+  canCreate_count: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`canDelete_count` of type `Int!`
+  """
+  canDelete_count: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`canEdit_count` of type `Int!`
+  """
+  canEdit_count: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`canView_count` of type `Int!`
+  """
+  canView_count: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`entity_count` of type `Int!`
+  """
+  entity_count: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`roleId_count` of type `Int!`
+  """
+  roleId_count: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`roleId_sum` of type `Int`
+  """
+  roleId_sum: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`roleId_avg` of type `Float`
+  """
+  roleId_avg: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`roleId_min` of type `Int`
+  """
+  roleId_min: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `RolePermission`.`roleId_max` of type `Int`
+  """
+  roleId_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'Sector'. It includes all necessary fields for creating or upserting rows into table.
@@ -26927,6 +28407,14 @@ input UnidadDidactica_Data {
   """
   id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `UnidadDidactica`.`comun` of type `Boolean`
+  """
+  comun: Boolean
+  """
+  ✨ `_expr` server value variant of `comun` (✨ Generated from Field `UnidadDidactica`.`comun` of type `Boolean`)
+  """
+  comun_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `UnidadDidactica`.`creditos` of type `Int`
   """
   creditos: Int
@@ -27004,6 +28492,10 @@ input UnidadDidactica_Filter {
   """
   id: Int_Filter
   """
+  ✨ Generated from Field `UnidadDidactica`.`comun` of type `Boolean`
+  """
+  comun: Boolean_Filter
+  """
   ✨ Generated from Field `UnidadDidactica`.`creditos` of type `Int`
   """
   creditos: Int_Filter
@@ -27073,6 +28565,10 @@ input UnidadDidactica_Having {
   ✨ Generated from Field `UnidadDidactica`.`_count` of type `Int!`
   """
   _count: Int_Filter
+  """
+  ✨ Generated from Field `UnidadDidactica`.`comun_count` of type `Int!`
+  """
+  comun_count: Int_Filter
   """
   ✨ Generated from Field `UnidadDidactica`.`creditos_count` of type `Int!`
   """
@@ -27177,6 +28673,10 @@ input UnidadDidactica_Order {
   """
   id: OrderDirection
   """
+  ✨ Generated from Field `UnidadDidactica`.`comun` of type `Boolean`
+  """
+  comun: OrderDirection
+  """
   ✨ Generated from Field `UnidadDidactica`.`creditos` of type `Int`
   """
   creditos: OrderDirection
@@ -27196,6 +28696,10 @@ input UnidadDidactica_Order {
   ✨ Generated from Field `UnidadDidactica`.`_count` of type `Int!`
   """
   _count: OrderDirection
+  """
+  ✨ Generated from Field `UnidadDidactica`.`comun_count` of type `Int!`
+  """
+  comun_count: OrderDirection
   """
   ✨ Generated from Field `UnidadDidactica`.`creditos_count` of type `Int!`
   """
@@ -28248,6 +29752,14 @@ input User_Data {
   """
   nacionalidad_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `User`.`nickName` of type `String`
+  """
+  nickName: String
+  """
+  ✨ `_expr` server value variant of `nickName` (✨ Generated from Field `User`.`nickName` of type `String`)
+  """
+  nickName_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `User`.`nombre` of type `String`
   """
   nombre: String
@@ -28263,6 +29775,14 @@ input User_Data {
   ✨ `_expr` server value variant of `provider` (✨ Generated from Field `User`.`provider` of type `String`)
   """
   provider_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `User`.`recorteFotografia` of type `String`
+  """
+  recorteFotografia: String
+  """
+  ✨ `_expr` server value variant of `recorteFotografia` (✨ Generated from Field `User`.`recorteFotografia` of type `String`)
+  """
+  recorteFotografia_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`sexo` of type `String`
   """
@@ -28449,6 +29969,10 @@ input User_Filter {
   """
   nacionalidad: String_Filter
   """
+  ✨ Generated from Field `User`.`nickName` of type `String`
+  """
+  nickName: String_Filter
+  """
   ✨ Generated from Field `User`.`nombre` of type `String`
   """
   nombre: String_Filter
@@ -28456,6 +29980,10 @@ input User_Filter {
   ✨ Generated from Field `User`.`provider` of type `String`
   """
   provider: String_Filter
+  """
+  ✨ Generated from Field `User`.`recorteFotografia` of type `String`
+  """
+  recorteFotografia: String_Filter
   """
   ✨ Generated from Field `User`.`sexo` of type `String`
   """
@@ -28643,6 +30171,10 @@ input User_Having {
   """
   nacionalidad_count: Int_Filter
   """
+  ✨ Generated from Field `User`.`nickName_count` of type `Int!`
+  """
+  nickName_count: Int_Filter
+  """
   ✨ Generated from Field `User`.`nombre_count` of type `Int!`
   """
   nombre_count: Int_Filter
@@ -28650,6 +30182,10 @@ input User_Having {
   ✨ Generated from Field `User`.`provider_count` of type `Int!`
   """
   provider_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`recorteFotografia_count` of type `Int!`
+  """
+  recorteFotografia_count: Int_Filter
   """
   ✨ Generated from Field `User`.`rolId_count` of type `Int!`
   """
@@ -28878,6 +30414,10 @@ input User_Order {
   """
   nacionalidad: OrderDirection
   """
+  ✨ Generated from Field `User`.`nickName` of type `String`
+  """
+  nickName: OrderDirection
+  """
   ✨ Generated from Field `User`.`nombre` of type `String`
   """
   nombre: OrderDirection
@@ -28885,6 +30425,10 @@ input User_Order {
   ✨ Generated from Field `User`.`provider` of type `String`
   """
   provider: OrderDirection
+  """
+  ✨ Generated from Field `User`.`recorteFotografia` of type `String`
+  """
+  recorteFotografia: OrderDirection
   """
   ✨ Generated from Field `User`.`sexo` of type `String`
   """
@@ -29010,6 +30554,10 @@ input User_Order {
   """
   nacionalidad_count: OrderDirection
   """
+  ✨ Generated from Field `User`.`nickName_count` of type `Int!`
+  """
+  nickName_count: OrderDirection
+  """
   ✨ Generated from Field `User`.`nombre_count` of type `Int!`
   """
   nombre_count: OrderDirection
@@ -29017,6 +30565,10 @@ input User_Order {
   ✨ Generated from Field `User`.`provider_count` of type `Int!`
   """
   provider_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`recorteFotografia_count` of type `Int!`
+  """
+  recorteFotografia_count: OrderDirection
   """
   ✨ Generated from Field `User`.`rolId_count` of type `Int!`
   """

@@ -1,6 +1,7 @@
 export { assignDefaultRole, syncDataConnectUserOnAuthDelete } from "./triggers/handlers.js";
 export {
   registerUser,
+  getMyProfile,
   listUsers,
   createNewUser,
   updateUserProfile,
@@ -13,6 +14,15 @@ export {
   refreshMyClaims,
   setUserRole,
 } from "./roles/handlers.js";
+export {
+  listPermisos,
+  listMisPermisos,
+  savePermisosRol,
+} from "./permisos/handlers.js";
+export {
+  getAppSettings,
+  saveAppSettings,
+} from "./settings/handlers.js";
 export {
   listSectors,
   getSector,
@@ -125,6 +135,7 @@ export {
   createMatriculaDesdePaquete,
   crearMatriculaFormulario,
   deleteMatricula,
+  generarCodigosInscripcionMatriculas,
   getMatricula,
   listMatriculas,
   listMatriculaPaquetesBySemestre,
@@ -135,6 +146,9 @@ export {
 } from "./matriculas/handlers.js";
 export {
   listEstructuraAcademica,
+  createEstructuraAcademicaItem,
+  reuseEstructuraAcademicaItem,
+  detachEstructuraAcademicaItem,
   updateEstructuraAcademicaCell,
   listUnidadesDidacticas,
   getUnidadDidactica,
@@ -160,12 +174,14 @@ export {
 export {
   createRegistroAuxiliarMatricula,
   getRegistroAuxiliar,
+  listRegistroAuxiliarOpciones,
   listRegistroAuxiliarDocenteModulos,
   retireRegistroAuxiliarMatricula,
   saveRegistroAuxiliar,
   updateRegistroAuxiliarGrupoModuloFechas,
 } from "./registro-auxiliar/handlers.js";
 export {
+  descargarRegistrosAcademicosSeleccionados,
   generateReporteDocumento,
   listReporteDocumentosOptions,
 } from "./reportes/handlers.js";

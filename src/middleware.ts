@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const COOKIE_NAME = "__session";
 const ACCESS_VALUE = "autorizado";
-const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE ?? "true";
+const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE ?? "false";
 
 export function middleware(request: NextRequest) {
   if (process.env.NODE_ENV === "development") {

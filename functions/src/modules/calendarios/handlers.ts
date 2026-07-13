@@ -10,6 +10,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import {
   DataConnectCalendario,
   DataConnectCalendarioInput,
@@ -344,13 +345,6 @@ const GET_SEMESTRE_FOR_RECURRENCIA_QUERY = `
     }
   }
 `;
-
-function requireLevel(context: https.CallableContext, action: string) {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
-  }
-}
 
 const sortByTitle = <T extends { titulo?: string | null; id: number }>(items: T[]) =>
   items.slice().sort((a, b) => String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es") || a.id - b.id);
@@ -796,7 +790,7 @@ async function syncEventoRecurrenciaYOcurrencias(
 }
 
 export const listCalendarios = https.onCall(async (_data, context) => {
-  requireLevel(context, "list calendars");
+  await requirePermission(context, "calendarios", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ calendarios: DataConnectCalendario[] }, Record<string, never>>(
@@ -810,7 +804,7 @@ export const listCalendarios = https.onCall(async (_data, context) => {
 });
 
 export const getCalendario = https.onCall(async (data, context) => {
-  requireLevel(context, "get calendars");
+  await requirePermission(context, "calendarios", "view");
 
   const calendarioId = toNumber(data?.id, -1);
   if (calendarioId <= 0) {
@@ -830,8 +824,6 @@ export const getCalendario = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateCalendario = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate calendars");
-
   const payload = buildCalendarioDataFromInput(data as Record<string, unknown>);
 
   const now = new Date().toISOString();
@@ -841,6 +833,7 @@ export const createOrUpdateCalendario = https.onCall(async (data, context) => {
   }
 
   const calendarioId = toNumberOrNull(data?.id);
+  await requirePermission(context, "calendarios", calendarioId ? "edit" : "create");
 
   try {
     payload.titulo = await buildCalendarioTitulo(payload);
@@ -871,7 +864,7 @@ export const createOrUpdateCalendario = https.onCall(async (data, context) => {
 });
 
 export const deleteCalendario = https.onCall(async (data, context) => {
-  requireLevel(context, "delete calendars");
+  await requirePermission(context, "calendarios", "delete");
 
   const calendarioId = toNumber(data?.id, -1);
   if (calendarioId <= 0) {
@@ -891,7 +884,7 @@ export const deleteCalendario = https.onCall(async (data, context) => {
 });
 
 export const listEventos = https.onCall(async (_data, context) => {
-  requireLevel(context, "list events");
+  await requirePermission(context, "eventos", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ eventos: DataConnectEvento[] }, Record<string, never>>(
@@ -908,7 +901,7 @@ export const listEventos = https.onCall(async (_data, context) => {
 });
 
 export const getEvento = https.onCall(async (data, context) => {
-  requireLevel(context, "get events");
+  await requirePermission(context, "eventos", "view");
 
   const eventoId = toNumber(data?.id, -1);
   if (eventoId <= 0) {
@@ -928,8 +921,6 @@ export const getEvento = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateEvento = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate events");
-
   const payload = buildEventoDataFromInput(data as Record<string, unknown>);
   if (!payload.titulo) {
     throw new https.HttpsError("invalid-argument", "titulo is required.");
@@ -945,6 +936,7 @@ export const createOrUpdateEvento = https.onCall(async (data, context) => {
   }
 
   const eventoId = toNumberOrNull(data?.id);
+  await requirePermission(context, "eventos", eventoId ? "edit" : "create");
 
   try {
     let savedEventoId: number | null = null;
@@ -984,7 +976,7 @@ export const createOrUpdateEvento = https.onCall(async (data, context) => {
 });
 
 export const deleteEvento = https.onCall(async (data, context) => {
-  requireLevel(context, "delete events");
+  await requirePermission(context, "eventos", "delete");
 
   const eventoId = toNumber(data?.id, -1);
   if (eventoId <= 0) {
@@ -1004,7 +996,7 @@ export const deleteEvento = https.onCall(async (data, context) => {
 });
 
 export const listGrupos = https.onCall(async (_data, context) => {
-  requireLevel(context, "list groups");
+  await requirePermission(context, "grupos", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ grupos: DataConnectGrupo[] }, Record<string, never>>(

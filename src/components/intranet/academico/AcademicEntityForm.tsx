@@ -5,8 +5,10 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   CircularProgress,
   FormControl,
+  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
@@ -15,7 +17,7 @@ import {
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 
-export type AcademicFieldType = 'text' | 'number' | 'number-list' | 'textarea' | 'timestamp' | 'date' | 'select';
+export type AcademicFieldType = 'text' | 'number' | 'number-list' | 'textarea' | 'timestamp' | 'date' | 'select' | 'boolean';
 
 export interface AcademicSelectOption {
   value: string | number;
@@ -50,6 +52,7 @@ type EntityData = Record<string, unknown>;
 
 function formatInitialValue(value: unknown, type?: AcademicFieldType) {
   if (value === null || value === undefined) return '';
+  if (type === 'boolean') return value === true ? 'true' : 'false';
   if (type === 'number-list' && Array.isArray(value)) return value.join(', ');
   if (type === 'date' && typeof value === 'string') return value.slice(0, 10);
   if (type === 'timestamp' && typeof value === 'string') return value.slice(0, 16);
@@ -57,7 +60,7 @@ function formatInitialValue(value: unknown, type?: AcademicFieldType) {
 }
 
 function buildPayload(fields: AcademicFieldConfig[], values: Record<string, string>) {
-  return fields.reduce<Record<string, string | number | number[] | null>>((payload, field) => {
+  return fields.reduce<Record<string, string | number | number[] | boolean | null>>((payload, field) => {
     const raw = values[field.name]?.trim() ?? '';
     if (field.type === 'number') {
       payload[field.name] = raw ? Number(raw) : null;
@@ -68,6 +71,8 @@ function buildPayload(fields: AcademicFieldConfig[], values: Record<string, stri
           .map((item) => Number(item.trim()))
           .filter((item) => Number.isFinite(item) && item > 0)
         : [];
+    } else if (field.type === 'boolean') {
+      payload[field.name] = raw === 'true';
     } else if (field.type === 'select' && field.optionValueType === 'number') {
       payload[field.name] = raw ? Number(raw) : null;
     } else {
@@ -263,6 +268,24 @@ export function AcademicEntityForm({
                   ))}
                 </Select>
               </FormControl>
+            );
+          }
+
+          if (field.type === 'boolean') {
+            return (
+              <FormControlLabel
+                key={field.name}
+                sx={{ display: 'block', mt: 2, mb: 1 }}
+                control={
+                  <Checkbox
+                    checked={values[field.name] === 'true'}
+                    onChange={(event) =>
+                      setValues((prev) => ({ ...prev, [field.name]: event.target.checked ? 'true' : 'false' }))
+                    }
+                  />
+                }
+                label={field.label}
+              />
             );
           }
 

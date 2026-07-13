@@ -12,7 +12,9 @@ import {
   FormControl,
   FormControlLabel,
   InputLabel,
+  ListItemText,
   MenuItem,
+  OutlinedInput,
   Select,
   TextField,
   Typography,
@@ -40,7 +42,9 @@ interface ModuloData {
   metas: number | null;
   activo: boolean | null;
   slug: string | null;
+  comun: boolean | null;
   planId: number | null;
+  planIds?: number[];
 }
 
 interface PlanOption {
@@ -82,7 +86,7 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
   const [metas, setMetas] = useState('');
   const [activo, setActivo] = useState(true);
   const [slug, setSlug] = useState('');
-  const [planId, setPlanId] = useState('');
+  const [planIds, setPlanIds] = useState<string[]>([]);
   const [planes, setPlanes] = useState<PlanOption[]>([]);
   const [carreras, setCarreras] = useState<CarreraOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -152,7 +156,14 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           setMetas(fetched.metas != null ? String(fetched.metas) : '');
           setActivo(Boolean(fetched.activo));
           setSlug(fetched.slug || '');
-          setPlanId(fetched.planId != null ? String(fetched.planId) : '');
+          setPlanIds(
+            (fetched.planIds && fetched.planIds.length > 0
+              ? fetched.planIds
+              : fetched.planId != null
+                ? [fetched.planId]
+                : []
+            ).map((id) => String(id)),
+          );
         }
       } catch (err) {
         console.error('Error fetching modulo: ', err);
@@ -168,6 +179,12 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
   const carreraTitleById = new Map(
     carreras.map((carrera) => [carrera.id, carrera.nombre || `Carrera ${carrera.id}`]),
   );
+  const planTitleById = new Map(
+    planes.map((plan) => [String(plan.id), getPlanLabel(plan, carreraTitleById)]),
+  );
+  const selectedPlanNames = planIds
+    .map((id) => planTitleById.get(id) || `Plan ${id}`)
+    .join(' / ');
 
   const handleTituloBlur = () => {
     setSlug(normalizeSlug(titulo));
@@ -197,6 +214,7 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           activo: boolean;
           slug: string;
           planId?: number | null;
+          planIds?: number[];
         },
         { id: number | null }
       >(functions, 'createOrUpdateModulo');
@@ -214,7 +232,8 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
         metas: metas ? Number(metas) : null,
         activo,
         slug: nextSlug,
-        planId: planId ? Number(planId) : null,
+        planId: planIds[0] ? Number(planIds[0]) : null,
+        planIds: planIds.map(Number),
       });
 
       if (onSaved) {
@@ -287,22 +306,32 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           />
 
           <FormControl fullWidth sx={{ gridColumn: '1 / -1' }}>
-            <InputLabel>Titulo del plan</InputLabel>
+            <InputLabel>Planes</InputLabel>
             <Select
-              label="Titulo del plan"
-              value={planId}
-              onChange={(event) => setPlanId(String(event.target.value))}
+              multiple
+              label="Planes"
+              value={planIds}
+              onChange={(event) => {
+                const value = event.target.value;
+                const nextIds = typeof value === 'string' ? value.split(',') : value;
+                setPlanIds(Array.from(new Set(nextIds)));
+              }}
+              input={<OutlinedInput label="Planes" />}
+              renderValue={() => selectedPlanNames || 'Sin plan'}
               disabled={loadingPlanes}
             >
-              <MenuItem value="">Sin plan</MenuItem>
-              {planId && !planes.some((plan) => String(plan.id) === planId) ? (
-                <MenuItem value={planId} disabled>
-                  Plan actual no disponible
-                </MenuItem>
-              ) : null}
+              {planIds
+                .filter((id) => !planes.some((plan) => String(plan.id) === id))
+                .map((id) => (
+                  <MenuItem key={`missing-${id}`} value={id} disabled>
+                    <Checkbox checked />
+                    <ListItemText primary="Plan actual no disponible" />
+                  </MenuItem>
+                ))}
               {planes.map((plan) => (
                 <MenuItem key={plan.id} value={String(plan.id)}>
-                  {getPlanLabel(plan, carreraTitleById)}
+                  <Checkbox checked={planIds.includes(String(plan.id))} />
+                  <ListItemText primary={getPlanLabel(plan, carreraTitleById)} />
                 </MenuItem>
               ))}
             </Select>
@@ -367,6 +396,11 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           <FormControlLabel
             control={<Checkbox checked={activo} onChange={(e) => setActivo(e.target.checked)} />}
             label="Activo"
+            sx={{ gridColumn: { xs: 'auto', md: 'span 3' }, alignSelf: 'center' }}
+          />
+          <FormControlLabel
+            control={<Checkbox checked={planIds.length > 1} disabled />}
+            label="Comun"
             sx={{ gridColumn: { xs: 'auto', md: 'span 3' }, alignSelf: 'center' }}
           />
 

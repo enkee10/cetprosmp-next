@@ -6,6 +6,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { requirePermission } from "../core/permissions.js";
 import { DataConnectTurno, DataConnectTurnoInput } from "../core/types.js";
 import {
   DELETE_TURNO_MUTATION,
@@ -41,20 +42,13 @@ const GET_TURNO_QUERY = `
   }
 `;
 
-function requireLevel(context: https.CallableContext, action: string) {
-  const requesterLevel = context.auth?.token?.level ?? 0;
-  if (requesterLevel < 600) {
-    throw new https.HttpsError("permission-denied", `You do not have permission to ${action}.`);
-  }
-}
-
 const sortTurnos = (items: DataConnectTurno[]) =>
   items
     .slice()
     .sort((a, b) => String(a.nombre ?? "").localeCompare(String(b.nombre ?? ""), "es", { numeric: true }) || a.id - b.id);
 
 export const listTurnos = https.onCall(async (_data, context) => {
-  requireLevel(context, "list shifts");
+  await requirePermission(context, "turnos", "view");
 
   try {
     const response = await dataConnect.executeGraphql<{ turnos: DataConnectTurno[] }, Record<string, never>>(
@@ -68,7 +62,7 @@ export const listTurnos = https.onCall(async (_data, context) => {
 });
 
 export const getTurno = https.onCall(async (data, context) => {
-  requireLevel(context, "get shifts");
+  await requirePermission(context, "turnos", "view");
 
   const turnoId = toNumber(data?.id, -1);
   if (turnoId <= 0) {
@@ -88,8 +82,6 @@ export const getTurno = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateTurno = https.onCall(async (data, context) => {
-  requireLevel(context, "mutate shifts");
-
   const now = new Date().toISOString();
   const payload = buildTurnoDataFromInput({
     ...(data as Record<string, unknown>),
@@ -102,6 +94,7 @@ export const createOrUpdateTurno = https.onCall(async (data, context) => {
   }
 
   const turnoId = toNumberOrNull(data?.id);
+  await requirePermission(context, "turnos", turnoId ? "edit" : "create");
 
   try {
     if (turnoId) {
@@ -134,7 +127,7 @@ export const createOrUpdateTurno = https.onCall(async (data, context) => {
 });
 
 export const deleteTurno = https.onCall(async (data, context) => {
-  requireLevel(context, "delete shifts");
+  await requirePermission(context, "turnos", "delete");
 
   const turnoId = toNumber(data?.id, -1);
   if (turnoId <= 0) {

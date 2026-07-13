@@ -37,8 +37,7 @@ import { app, functions, storage } from '@/lib/firebase';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
-import { useAuth } from '@/context/AuthContext';
-import { canDeleteIntranetRecords } from '@/lib/intranetPermissions';
+import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
 type RecognitionMode = 'gemini' | 'documentAi';
 
@@ -1264,8 +1263,8 @@ function MatriculaForm({
 }
 
 export default function MatriculasPage() {
-  const { user } = useAuth();
-  const canDeleteRecords = canDeleteIntranetRecords(user?.role, user?.level);
+  const { can } = useIntranetPermissions();
+  const canDeleteRecords = can('matriculas', 'delete');
   const [matriculas, setMatriculas] = useState<MatriculaListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -9,6 +9,7 @@ import {
   Avatar,
   ClickAwayListener,
 } from "@mui/material";
+import AppsIcon from "@mui/icons-material/Apps";
 import { googleApps } from "./data/googleApps";
 
 export default function Apps() {
@@ -32,8 +33,8 @@ export default function Apps() {
     <ClickAwayListener onClickAway={handleClose}>
       <Box ref={anchorRef} sx={{ display: "inline-block" }}>
         {/* Botón con el ícono de apps */}
-        <IconButton color="inherit" onClick={handleToggle} component="span">
-          <span className="material-symbols-outlined">apps</span>
+        <IconButton color="inherit" onClick={handleToggle} component="span" aria-label="Aplicaciones">
+          <AppsIcon />
         </IconButton>
 
         {/* Popper con la cuadrícula de aplicaciones */}

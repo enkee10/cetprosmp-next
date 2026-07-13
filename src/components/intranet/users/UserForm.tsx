@@ -278,18 +278,6 @@ const UserForm: React.FC<UserFormProps> = ({
   }, []);
 
   const avatarUrl = watch('avatar');
-  const initialAvatar = typeof initialData?.avatar === 'string' ? initialData.avatar.trim() : '';
-  const initialAvatarPequeno = typeof initialData?.avatarPequeno === 'string' ? initialData.avatarPequeno.trim() : '';
-  const initialPhotoURL = typeof initialData?.photoURL === 'string' ? initialData.photoURL.trim() : '';
-  const avatarDebugSource = !avatarUrl
-    ? 'sin URL'
-    : avatarUrl === initialAvatar
-      ? 'Data Connect: avatar'
-      : avatarUrl === initialAvatarPequeno
-        ? 'Storage/extraccion: avatarPequeno'
-        : avatarUrl === initialPhotoURL
-          ? 'Firebase Auth: photoURL'
-          : 'Formulario/subida actual';
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -440,23 +428,7 @@ const UserForm: React.FC<UserFormProps> = ({
           }}
         >
             <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' }, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Avatar src={avatarUrl || undefined} title={avatarUrl || 'sin URL'} sx={{ width: 100, height: 100 }} />
-              <Box sx={{ width: '100%', maxWidth: 520, textAlign: 'center' }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                  Origen avatar: {avatarDebugSource}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    display: 'block',
-                    overflowWrap: 'anywhere',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  URL avatar: {avatarUrl || 'sin URL'}
-                </Typography>
-              </Box>
+              <Avatar src={avatarUrl || undefined} sx={{ width: 100, height: 100 }} />
               <input type="file" accept="image/*" style={{ display: 'none' }} ref={avatarInputRef} onChange={(e) => handleFileChange(e, 'avatar')} />
               <Button sx={{ mt: 1 }} variant="outlined" onClick={() => avatarInputRef.current?.click()} disabled={isUploading} tabIndex={23}>
                 {isUploading ? <CircularProgress size={24} /> : (avatarUrl ? 'Cambiar Avatar' : 'Subir Avatar')}

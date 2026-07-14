@@ -3,6 +3,7 @@ import {
   buildActividadDataFromInput,
   buildAprendizajeDataFromInput,
   buildCapacidadTerminalDataFromInput,
+  buildGrupoModuloUnidadDidacticaDataFromInput,
   buildIndicadorCapacidadDataFromInput,
   buildModuloDataFromInput,
   buildUnidadDidacticaDataFromInput,
@@ -19,6 +20,9 @@ import {
   DataConnectAprendizajeInput,
   DataConnectCapacidadTerminal,
   DataConnectCapacidadTerminalInput,
+  DataConnectGrupoModulo,
+  DataConnectGrupoModuloUnidadDidactica,
+  DataConnectGrupoModuloUnidadDidacticaInput,
   DataConnectIndicadorCapacidad,
   DataConnectIndicadorCapacidadInput,
   DataConnectModulo,
@@ -44,6 +48,7 @@ import {
   INSERT_ACTIVIDAD_MUTATION,
   INSERT_APRENDIZAJE_MUTATION,
   INSERT_CAPACIDAD_TERMINAL_MUTATION,
+  INSERT_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION,
   INSERT_INDICADOR_CAPACIDAD_MUTATION,
   INSERT_MODULO_MUTATION,
   INSERT_PLAN_MODULO_MUTATION,
@@ -438,6 +443,19 @@ const LIST_UNIDAD_RELATIONS_BY_MODULO_QUERY = `
       id
       orden
       moduloId
+      unidadDidacticaId
+    }
+  }
+`;
+
+const LIST_GRUPO_MODULO_UNIDAD_SYNC_QUERY = `
+  query ListGrupoModuloUnidadSync($moduloId: Int!, $unidadDidacticaId: Int!) {
+    grupoModulos(where: { moduloId: { eq: $moduloId } }, limit: 5000) {
+      id
+      moduloId
+    }
+    grupoModuloUnidadesDidacticas(where: { unidadDidacticaId: { eq: $unidadDidacticaId } }, limit: 5000) {
+      grupoModuloId
       unidadDidacticaId
     }
   }
@@ -1044,6 +1062,47 @@ async function nextUnidadModuloOrder(moduloId: number) {
   return nextOrder((response.data.unidadDidacticaModulos ?? []).map((relation) => relation.orden));
 }
 
+async function syncUnidadDidacticaToExistingGrupoModulos(
+  moduloId: number,
+  unidadDidacticaId: number,
+  orden: number | null | undefined,
+) {
+  const response = await dataConnect.executeGraphql<
+    {
+      grupoModulos: Pick<DataConnectGrupoModulo, "id" | "moduloId">[];
+      grupoModuloUnidadesDidacticas: Array<Pick<
+        DataConnectGrupoModuloUnidadDidactica,
+        "grupoModuloId" | "unidadDidacticaId"
+      >>;
+    },
+    { moduloId: number; unidadDidacticaId: number }
+  >(LIST_GRUPO_MODULO_UNIDAD_SYNC_QUERY, { variables: { moduloId, unidadDidacticaId } });
+
+  const grupoModuloIds = (response.data.grupoModulos ?? [])
+    .filter((grupoModulo) => grupoModulo.moduloId === moduloId)
+    .map((grupoModulo) => grupoModulo.id);
+  const existing = new Set(
+    (response.data.grupoModuloUnidadesDidacticas ?? [])
+      .filter((item) => item.unidadDidacticaId === unidadDidacticaId)
+      .map((item) => item.grupoModuloId),
+  );
+  const missingGrupoModuloIds = grupoModuloIds.filter((grupoModuloId) => !existing.has(grupoModuloId));
+
+  await Promise.all(
+    missingGrupoModuloIds.map((grupoModuloId) => {
+      const data = buildGrupoModuloUnidadDidacticaDataFromInput({
+        grupoModuloId,
+        unidadDidacticaId,
+        orden,
+      });
+      return dataConnect.executeGraphql<
+        { grupoModuloUnidadDidactica_insert: unknown },
+        { data: DataConnectGrupoModuloUnidadDidacticaInput }
+      >(INSERT_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION, { variables: { data } });
+    }),
+  );
+}
+
 export const createEstructuraAcademicaItem = https.onCall(async (data, context) => {
   await requirePermission(context, "estructura-academica", "create");
 
@@ -1093,6 +1152,7 @@ export const createEstructuraAcademicaItem = https.onCall(async (data, context) 
         { unidadDidacticaModulo_insert: unknown },
         { data: DataConnectUnidadDidacticaModuloInput }
       >(INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION, { variables: { data: { unidadDidacticaId, moduloId, orden } } });
+      await syncUnidadDidacticaToExistingGrupoModulos(moduloId, unidadDidacticaId, orden);
       return { id: unidadDidacticaId };
     }
 
@@ -1161,6 +1221,7 @@ export const reuseEstructuraAcademicaItem = https.onCall(async (data, context) =
         { unidadDidacticaModulo_insert: unknown },
         { data: DataConnectUnidadDidacticaModuloInput }
       >(INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION, { variables: { data: { unidadDidacticaId, moduloId, orden } } });
+      await syncUnidadDidacticaToExistingGrupoModulos(moduloId, unidadDidacticaId, orden);
       await dataConnect.executeGraphql<
         { unidadDidactica_update: unknown },
         { id: number; data: DataConnectUnidadDidacticaInput }

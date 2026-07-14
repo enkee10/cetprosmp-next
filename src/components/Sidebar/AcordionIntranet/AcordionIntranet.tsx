@@ -287,6 +287,7 @@ export default function AcordionIntranet({
   const [docenteEstructuraLoaded, setDocenteEstructuraLoaded] = React.useState(false);
   const isDocente = Number(user?.role ?? 0) === TEACHER_ROLE_ID && Number(user?.level ?? 0) < 600;
   const canViewRegistroAuxiliar = can('registro-auxiliar', 'view');
+  const canViewEstructuraAcademica = can('estructura-academica', 'view');
 
   React.useEffect(() => {
     let active = true;
@@ -325,7 +326,7 @@ export default function AcordionIntranet({
     let active = true;
 
     const loadDocenteEstructuraItem = async () => {
-      if (!isDocente) {
+      if (!isDocente || loadingPermissions || !canViewEstructuraAcademica) {
         setDocenteEstructuraItem(null);
         setDocenteEstructuraLoaded(false);
         return;
@@ -352,7 +353,7 @@ export default function AcordionIntranet({
     return () => {
       active = false;
     };
-  }, [isDocente]);
+  }, [canViewEstructuraAcademica, isDocente, loadingPermissions]);
 
   const visibleSections = React.useMemo(() => {
     const filteredSections = filterSections(intranetSections);

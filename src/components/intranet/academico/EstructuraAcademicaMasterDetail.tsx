@@ -546,12 +546,18 @@ export default function EstructuraAcademicaMasterDetail({
   callableName = 'listEstructuraAcademica',
   title = 'Estructura Academica',
   readOnly = false,
+  canCreate = !readOnly,
+  canEdit = !readOnly,
+  canDelete = !readOnly,
   showSearch = true,
   errorMessage = 'No se pudo cargar la estructura academica. Verifica que tu usuario tenga permiso administrativo.',
 }: {
   callableName?: EstructuraAcademicaCallableName;
   title?: string;
   readOnly?: boolean;
+  canCreate?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
   showSearch?: boolean;
   errorMessage?: string;
 }) {
@@ -570,10 +576,13 @@ export default function EstructuraAcademicaMasterDetail({
 
   const auth = getAuth(app);
   const functions = useMemo(() => getFunctions(app), []);
+  const allowEdit = !readOnly && canEdit;
+  const allowCreate = !readOnly && canCreate;
+  const allowDelete = !readOnly && canDelete;
 
   const saveEditableCell = useCallback(async (target: EditableCellTarget, value: EditableCellValue) => {
-    if (readOnly) {
-      throw new Error('La vista del docente es de solo lectura.');
+    if (!allowEdit) {
+      throw new Error('No tienes permiso para editar la estructura academica.');
     }
     try {
       if (auth.currentUser) {
@@ -591,7 +600,7 @@ export default function EstructuraAcademicaMasterDetail({
       setError('No se pudo guardar la celda. Verifica tus permisos y el valor ingresado.');
       throw err;
     }
-  }, [auth, functions, readOnly]);
+  }, [allowEdit, auth, functions]);
 
   const fetchEstructura = useCallback(async () => {
     setLoading(true);
@@ -882,29 +891,35 @@ export default function EstructuraAcademicaMasterDetail({
           <Panel
             title="Modulo"
             count={filteredModulos.length}
-            actions={!readOnly ? (
+            actions={allowCreate || allowEdit || allowDelete ? (
               <>
-                <IconButton size="small" title="Crear modulo" disabled={actionLoading || !selectedModulo?.planId} onClick={handleCreateModulo}>
-                  <AddIcon fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  title="Reutilizar modulo comun"
-                  disabled={actionLoading || !selectedModulo?.planId || reusableModulos.length === 0}
-                  onClick={() => setReuseDialog({ kind: 'modulo', value: '' })}
-                >
-                  <LinkIcon fontSize="small" />
-                </IconButton>
-                <IconButton size="small" title="Quitar modulo del plan" color="error" disabled={actionLoading || !selectedModulo?.planModuloId} onClick={handleDetachModulo}>
-                  <DeleteOutlineIcon fontSize="small" />
-                </IconButton>
+                {allowCreate ? (
+                  <IconButton size="small" title="Crear modulo" disabled={actionLoading || !selectedModulo?.planId} onClick={handleCreateModulo}>
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                ) : null}
+                {allowEdit ? (
+                  <IconButton
+                    size="small"
+                    title="Reutilizar modulo comun"
+                    disabled={actionLoading || !selectedModulo?.planId || reusableModulos.length === 0}
+                    onClick={() => setReuseDialog({ kind: 'modulo', value: '' })}
+                  >
+                    <LinkIcon fontSize="small" />
+                  </IconButton>
+                ) : null}
+                {allowDelete ? (
+                  <IconButton size="small" title="Quitar modulo del plan" color="error" disabled={actionLoading || !selectedModulo?.planModuloId} onClick={handleDetachModulo}>
+                    <DeleteOutlineIcon fontSize="small" />
+                  </IconButton>
+                ) : null}
               </>
             ) : undefined}
             details={
               selectedModulo ? (
                 <DetailFields
                   onSave={saveEditableCell}
-                  readOnly={readOnly}
+                  readOnly={!allowEdit}
                   rows={[
                     { label: 'Id', value: selectedModulo.id },
                     {
@@ -978,7 +993,7 @@ export default function EstructuraAcademicaMasterDetail({
                           lines={2}
                           variant="body2"
                           onSave={saveEditableCell}
-                          readOnly={readOnly}
+                          readOnly={!allowEdit}
                         />
                       }
                       secondary={
@@ -1003,29 +1018,35 @@ export default function EstructuraAcademicaMasterDetail({
           <Panel
             title="Unidad Didactica"
             count={unidades.length}
-            actions={!readOnly ? (
+            actions={allowCreate || allowEdit || allowDelete ? (
               <>
-                <IconButton size="small" title="Crear unidad didactica" disabled={actionLoading || !selectedModulo?.id} onClick={handleCreateUnidad}>
-                  <AddIcon fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  title="Reutilizar unidad comun"
-                  disabled={actionLoading || !selectedModulo?.id || reusableUnidades.length === 0}
-                  onClick={() => setReuseDialog({ kind: 'unidadDidactica', value: '' })}
-                >
-                  <LinkIcon fontSize="small" />
-                </IconButton>
-                <IconButton size="small" title="Quitar unidad del modulo" color="error" disabled={actionLoading || !selectedUnidad?.relacionId} onClick={handleDetachUnidad}>
-                  <DeleteOutlineIcon fontSize="small" />
-                </IconButton>
+                {allowCreate ? (
+                  <IconButton size="small" title="Crear unidad didactica" disabled={actionLoading || !selectedModulo?.id} onClick={handleCreateUnidad}>
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                ) : null}
+                {allowEdit ? (
+                  <IconButton
+                    size="small"
+                    title="Reutilizar unidad comun"
+                    disabled={actionLoading || !selectedModulo?.id || reusableUnidades.length === 0}
+                    onClick={() => setReuseDialog({ kind: 'unidadDidactica', value: '' })}
+                  >
+                    <LinkIcon fontSize="small" />
+                  </IconButton>
+                ) : null}
+                {allowDelete ? (
+                  <IconButton size="small" title="Quitar unidad del modulo" color="error" disabled={actionLoading || !selectedUnidad?.relacionId} onClick={handleDetachUnidad}>
+                    <DeleteOutlineIcon fontSize="small" />
+                  </IconButton>
+                ) : null}
               </>
             ) : undefined}
             details={
               selectedUnidad ? (
                 <DetailFields
                   onSave={saveEditableCell}
-                  readOnly={readOnly}
+                  readOnly={!allowEdit}
                   rows={[
                     { label: 'Id', value: selectedUnidad.id },
                     {
@@ -1088,7 +1109,7 @@ export default function EstructuraAcademicaMasterDetail({
                           lines={2}
                           variant="body2"
                           onSave={saveEditableCell}
-                          readOnly={readOnly}
+                          readOnly={!allowEdit}
                         />
                       }
                       secondary={
@@ -1099,14 +1120,14 @@ export default function EstructuraAcademicaMasterDetail({
                             target={{ entity: 'unidadDidactica', id: unidad.id, field: 'duracion', valueType: 'number' }}
                             suffix=" hr"
                             onSave={saveEditableCell}
-                            readOnly={readOnly}
+                            readOnly={!allowEdit}
                           />
                           <EditableMetricChip
                             value={unidad.creditos}
                             target={{ entity: 'unidadDidactica', id: unidad.id, field: 'creditos', valueType: 'number' }}
                             prefix="Cr "
                             onSave={saveEditableCell}
-                            readOnly={readOnly}
+                            readOnly={!allowEdit}
                           />
                           <Chip size="small" label={`CAP ${unidad.capacidadesTerminales.length}`} />
                           <Chip size="small" label={`IND ${unidad.capacidadesTerminales.reduce((total, capacidad) => total + capacidad.indicadoresCapacidad.length, 0)}`} />
@@ -1122,21 +1143,25 @@ export default function EstructuraAcademicaMasterDetail({
           <Panel
             title="Capacidad"
             count={capacidades.length}
-            actions={!readOnly ? (
+            actions={allowCreate || allowDelete ? (
               <>
-                <IconButton size="small" title="Crear capacidad" disabled={actionLoading || !selectedUnidad?.id} onClick={handleCreateCapacidad}>
-                  <AddIcon fontSize="small" />
-                </IconButton>
-                <IconButton size="small" title="Quitar capacidad" color="error" disabled={actionLoading || !selectedCapacidad?.id} onClick={handleDetachCapacidad}>
-                  <DeleteOutlineIcon fontSize="small" />
-                </IconButton>
+                {allowCreate ? (
+                  <IconButton size="small" title="Crear capacidad" disabled={actionLoading || !selectedUnidad?.id} onClick={handleCreateCapacidad}>
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                ) : null}
+                {allowDelete ? (
+                  <IconButton size="small" title="Quitar capacidad" color="error" disabled={actionLoading || !selectedCapacidad?.id} onClick={handleDetachCapacidad}>
+                    <DeleteOutlineIcon fontSize="small" />
+                  </IconButton>
+                ) : null}
               </>
             ) : undefined}
             details={
               selectedCapacidad ? (
                 <DetailFields
                   onSave={saveEditableCell}
-                  readOnly={readOnly}
+                  readOnly={!allowEdit}
                   rows={[
                     { label: 'Id', value: selectedCapacidad.id },
                     {
@@ -1191,7 +1216,7 @@ export default function EstructuraAcademicaMasterDetail({
                           lines={4}
                           variant="body2"
                           onSave={saveEditableCell}
-                          readOnly={readOnly}
+                          readOnly={!allowEdit}
                         />
                       }
                       secondary={
@@ -1210,21 +1235,25 @@ export default function EstructuraAcademicaMasterDetail({
           <Panel
             title="Criterio / Indicador"
             count={indicadores.length}
-            actions={!readOnly ? (
+            actions={allowCreate || allowDelete ? (
               <>
-                <IconButton size="small" title="Crear indicador" disabled={actionLoading || !selectedCapacidad?.id} onClick={handleCreateIndicador}>
-                  <AddIcon fontSize="small" />
-                </IconButton>
-                <IconButton size="small" title="Quitar indicador" color="error" disabled={actionLoading || !selectedIndicador?.id} onClick={handleDetachSelectedIndicador}>
-                  <DeleteOutlineIcon fontSize="small" />
-                </IconButton>
+                {allowCreate ? (
+                  <IconButton size="small" title="Crear indicador" disabled={actionLoading || !selectedCapacidad?.id} onClick={handleCreateIndicador}>
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                ) : null}
+                {allowDelete ? (
+                  <IconButton size="small" title="Quitar indicador" color="error" disabled={actionLoading || !selectedIndicador?.id} onClick={handleDetachSelectedIndicador}>
+                    <DeleteOutlineIcon fontSize="small" />
+                  </IconButton>
+                ) : null}
               </>
             ) : undefined}
             details={
               selectedCapacidad ? (
                 <DetailFields
                   onSave={saveEditableCell}
-                  readOnly={readOnly}
+                  readOnly={!allowEdit}
                   rows={[
                     { label: 'Capacidad', value: selectedCapacidad.id },
                     { label: 'Unidad', value: selectedUnidad?.id },
@@ -1260,7 +1289,7 @@ export default function EstructuraAcademicaMasterDetail({
                           lines={4}
                           variant="body2"
                           onSave={saveEditableCell}
-                          readOnly={readOnly}
+                          readOnly={!allowEdit}
                         />
                       }
                       secondary={
@@ -1288,7 +1317,7 @@ export default function EstructuraAcademicaMasterDetail({
                               }}
                               lines={1}
                               onSave={saveEditableCell}
-                              readOnly={readOnly}
+                              readOnly={!allowEdit}
                             />
                           </Box>
                         </Stack>

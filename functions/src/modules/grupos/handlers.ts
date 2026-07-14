@@ -634,7 +634,7 @@ async function syncGrupoModulos(
       const detalle = detalleInput.get(paqueteModulo.moduloId);
       const previous = previousGrupoModuloByModuloId.get(paqueteModulo.moduloId);
       const grupoModulo = buildGrupoModuloDataFromInput({
-        nombre: previous?.nombre || buildGrupoModuloNombreRelacional(existingResponse.data.grupo, paqueteModulo.modulo),
+        nombre: buildGrupoModuloNombreRelacional(existingResponse.data.grupo, paqueteModulo.modulo),
         grupoId,
         moduloId: paqueteModulo.moduloId,
         orden: detalle?.orden ?? paqueteModulo.orden ?? index + 1,

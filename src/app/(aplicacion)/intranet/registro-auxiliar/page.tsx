@@ -266,18 +266,45 @@ const isOpcionOcupacionalRegistro = (registro: RegistroAuxiliar | null) =>
 const isProgramaEstudioRegistro = (registro: RegistroAuxiliar | null) =>
   normalizeText(getTipoCarreraName(registro)).includes('programa de estudio');
 
+const getCalendarDatePart = (value: string | null | undefined) => {
+  if (!value) return '';
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value).trim());
+  if (!match) return '';
+  const [, year, month, day] = match;
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getFullYear() !== Number(year) ||
+    date.getMonth() !== Number(month) - 1 ||
+    date.getDate() !== Number(day)
+  ) {
+    return '';
+  }
+  return `${year}-${month}-${day}`;
+};
+
 const formatDate = (value: string | null | undefined) => {
   if (!value) return '';
+  const calendarDate = getCalendarDatePart(value);
+  if (calendarDate) {
+    const [year, month, day] = calendarDate.split('-').map(Number);
+    return new Intl.DateTimeFormat('es-PE').format(new Date(year, month - 1, day));
+  }
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
+  if (Number.isNaN(date.getTime())) return '';
   return date.toLocaleDateString('es-PE');
 };
 
 const formatDateInput = (value: string | null | undefined) => {
   if (!value) return '';
+  const calendarDate = getCalendarDatePart(value);
+  if (calendarDate) return calendarDate;
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
-  return date.toISOString().slice(0, 10);
+  if (Number.isNaN(date.getTime())) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const getTurnoHorarioName = (grupo: RegistroAuxiliar['grupo']) => {
@@ -1474,7 +1501,7 @@ export default function RegistroAuxiliarPage() {
                       component="th"
                       rowSpan={3}
                       {...selectableCellProps(TABLE_HEADER_ROW_START, 1, 3, 1)}
-                      sx={{ ...cellBaseSx, ...selectableCellSx(TABLE_HEADER_ROW_START, 1, 3, 1), bgcolor: '#dbeaf7', width: 85 }}
+                      sx={{ ...cellBaseSx, ...selectableCellSx(TABLE_HEADER_ROW_START, 1, 3, 1), bgcolor: '#dbeaf7', width: 105 }}
                     >
                       Codigo
                     </Box>

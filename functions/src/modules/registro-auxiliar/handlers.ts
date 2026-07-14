@@ -1170,12 +1170,18 @@ function buildUnidadIds(response: {
   grupoModuloUnidadesDidacticas?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
   unidadDidacticaModulos?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
 }) {
-  const groupUnits = (response.grupoModuloUnidadesDidacticas ?? [])
-    .sort((a, b) => (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER));
-  const source = groupUnits.length > 0
-    ? groupUnits
-    : (response.unidadDidacticaModulos ?? []).slice().sort((a, b) => (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER));
-  return Array.from(new Set(source.map((item) => item.unidadDidacticaId)));
+  const moduleUnits = response.unidadDidacticaModulos ?? [];
+  const source = moduleUnits.length > 0 ? moduleUnits : response.grupoModuloUnidadesDidacticas ?? [];
+  const unitsById = new Map<number, { orden?: number | null; unidadDidacticaId: number }>();
+  for (const item of source) {
+    unitsById.set(item.unidadDidacticaId, item);
+  }
+  return Array.from(unitsById.values())
+    .sort((a, b) => (
+      (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER)
+      || a.unidadDidacticaId - b.unidadDidacticaId
+    ))
+    .map((item) => item.unidadDidacticaId);
 }
 
 export const listRegistroAuxiliarDocenteModulos = https.onCall(async (data, context) => {

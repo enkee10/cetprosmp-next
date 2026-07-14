@@ -182,6 +182,8 @@ type SpreadsheetUpdate = {
   values: Array<Array<string | number>>;
 };
 
+type TemplateTokenReplacements = Record<string, string | number | null | undefined>;
+
 type RegistroAcademicoDocumento = {
   id: number;
   tipoDocumento: string;
@@ -531,7 +533,7 @@ function getModuloName(grupoModulo: ReporteGrupoModuloOption) {
 }
 
 function getModuloDocumentName(grupoModulo: ReporteGrupoModuloOption) {
-  return cleanText(grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || "");
+  return cleanText(grupoModulo.nombre || grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || "");
 }
 
 function getCarreraName(grupoModulo: ReporteGrupoModuloOption) {
@@ -545,7 +547,32 @@ function getDateValue(value: string | null | undefined) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function getCalendarDateParts(value: string | null | undefined) {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value).trim());
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+  return { year, month, day };
+}
+
 function formatDate(value: string | null | undefined) {
+  const calendarDate = getCalendarDateParts(value);
+  if (calendarDate) {
+    return new Intl.DateTimeFormat("es-PE").format(
+      new Date(calendarDate.year, calendarDate.month - 1, calendarDate.day),
+    );
+  }
   const date = getDateValue(value);
   return date ? date.toLocaleDateString("es-PE", { timeZone: "America/Lima" }) : "";
 }
@@ -559,7 +586,10 @@ function formatDateLong(value: Date = new Date()) {
 
 function calculateAge(dateValue?: string | null, at = new Date()) {
   if (!dateValue) return "";
-  const birthDate = new Date(dateValue);
+  const calendarDate = getCalendarDateParts(dateValue);
+  const birthDate = calendarDate
+    ? new Date(calendarDate.year, calendarDate.month - 1, calendarDate.day)
+    : new Date(dateValue);
   if (Number.isNaN(birthDate.getTime())) return "";
   let age = at.getFullYear() - birthDate.getFullYear();
   const monthDelta = at.getMonth() - birthDate.getMonth();
@@ -614,13 +644,18 @@ function buildUnidadIds(response: {
   grupoModuloUnidadesDidacticas?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
   unidadDidacticaModulos?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
 }) {
-  const groupUnits = (response.grupoModuloUnidadesDidacticas ?? [])
-    .slice()
-    .sort((a, b) => (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER));
-  const source = groupUnits.length > 0
-    ? groupUnits
-    : (response.unidadDidacticaModulos ?? []).slice().sort((a, b) => (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER));
-  return Array.from(new Set(source.map((item) => item.unidadDidacticaId)));
+  const moduleUnits = response.unidadDidacticaModulos ?? [];
+  const source = moduleUnits.length > 0 ? moduleUnits : response.grupoModuloUnidadesDidacticas ?? [];
+  const unitsById = new Map<number, { orden?: number | null; unidadDidacticaId: number }>();
+  for (const item of source) {
+    unitsById.set(item.unidadDidacticaId, item);
+  }
+  return Array.from(unitsById.values())
+    .sort((a, b) => (
+      (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER)
+      || a.unidadDidacticaId - b.unidadDidacticaId
+    ))
+    .map((item) => item.unidadDidacticaId);
 }
 
 function turnoRank(value: string | null | undefined) {
@@ -786,6 +821,34 @@ function xmlEscape(value: string) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function replaceTemplateTokens(xml: string, tokens: TemplateTokenReplacements) {
+  let nextXml = xml;
+  for (const [token, value] of Object.entries(tokens)) {
+    if (!token) continue;
+    nextXml = nextXml.split(token).join(xmlEscape(value === null || value === undefined ? "" : String(value)));
+  }
+  return nextXml;
+}
+
+async function replaceTemplateTokensInWorkbook(zip: JSZip, tokens: TemplateTokenReplacements) {
+  const entries = Object.entries(tokens).filter(([token]) => token);
+  if (entries.length === 0) return;
+  const replacements = Object.fromEntries(entries);
+  const xmlFiles = Object.keys(zip.files).filter((path) =>
+    path === "xl/sharedStrings.xml" || /^xl\/worksheets\/sheet\d+\.xml$/i.test(path),
+  );
+
+  await Promise.all(
+    xmlFiles.map(async (path) => {
+      const file = zip.file(path);
+      const xml = await file?.async("string");
+      if (!file || !xml) return;
+      const nextXml = replaceTemplateTokens(xml, replacements);
+      if (nextXml !== xml) zip.file(path, nextXml);
+    }),
+  );
 }
 
 function columnIndex(column: string) {
@@ -1363,8 +1426,10 @@ async function applyExcelUpdates(
   fitToPageWidth = false,
   adjustProgramUnitHeaders = false,
   preservePageLayout = false,
+  tokenReplacements: TemplateTokenReplacements = {},
 ) {
   const zip = await JSZip.loadAsync(templateBuffer);
+  await replaceTemplateTokensInWorkbook(zip, tokenReplacements);
   const worksheet = await getFirstVisibleWorksheet(zip);
   const sharedStrings = await createSharedStringWriter(zip);
   const leftIndentStyles = await createLeftIndentStyleWriter(zip);
@@ -1727,6 +1792,8 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
     return;
   }
 
+  addCell(updates, sheetName, "AO5", carrera.toLocaleUpperCase("es-PE"));
+  addCell(updates, sheetName, "AO6", modulo);
   addCell(updates, sheetName, "AO7", nivel.toLocaleUpperCase("es-PE"));
   addCell(updates, sheetName, "AO8", semestre);
   addCell(updates, sheetName, "AO9", data.seccion);
@@ -2166,6 +2233,10 @@ async function generateReporteDocumentoInternal(input: {
     false,
     isActaPrograma || isActaOpcion,
     isActaPrograma,
+    {
+      "[Nombre Carrera]": getCarreraName(reportes[0].grupoModulo),
+      "[Nombre Modulo]": getModuloDocumentName(reportes[0].grupoModulo),
+    },
   );
   const grupoModuloId = reportes[0].grupoModulo.id;
   const semestreTitle = cleanText(reportes[0].semestre?.titulo || String(input.semestreId || ""));

@@ -18,7 +18,36 @@ process.env.GCLOUD_PROJECT ||= PROJECT_ID;
 process.env.GOOGLE_CLOUD_PROJECT ||= PROJECT_ID;
 
 const { dataConnect } = require("../lib/modules/core/dataConnectCore.js");
-const { buildGrupoModuloNombreRelacional } = require("../lib/modules/core/grupoModuloNombre.js");
+const {
+  buildGrupoModuloNombreRelacional,
+  getDocenteNombreForGrupoModulo,
+} = require("../lib/modules/core/grupoModuloNombre.js");
+
+const LIST_GRUPOS_NOMBRE_QUERY = `
+  query ListGruposParaRecalcularNombre {
+    grupos(limit: 10000) {
+      id
+      nombreDisplay
+      paquete {
+        titulo
+      }
+      turnoNombre
+      turno {
+        nombre
+      }
+      horario {
+        nombre
+      }
+      personal {
+        displayName
+        user {
+          username
+          apellidoPaterno
+        }
+      }
+    }
+  }
+`;
 
 const LIST_GRUPO_MODULOS_NOMBRE_QUERY = `
   query ListGrupoModulosParaRecalcularNombre {
@@ -62,13 +91,65 @@ const UPDATE_GRUPO_MODULO_NOMBRE_MUTATION = `
   }
 `;
 
+const UPDATE_GRUPO_NOMBRE_MUTATION = `
+  mutation UpdateGrupoNombre($id: Int!, $data: Grupo_Data! @allow(fields: "nombreDisplay")) {
+    grupo_update(id: $id, data: $data)
+  }
+`;
+
 function normalize(value) {
   return String(value ?? "").trim().replace(/\s+/g, " ");
 }
 
+function buildGrupoNombre(grupo, fallbackModulo) {
+  const paqueteNombre = normalize(
+    grupo?.paquete?.titulo
+      || fallbackModulo?.tituloComercial
+      || fallbackModulo?.titulo
+      || (fallbackModulo?.id ? `Modulo ${fallbackModulo.id}` : ""),
+  );
+  const turnoNombre = normalize(grupo?.turno?.nombre || grupo?.turnoNombre);
+  const horarioNombre = normalize(grupo?.horario?.nombre);
+  const docenteNombre = getDocenteNombreForGrupoModulo(grupo?.personal ?? null);
+
+  return [
+    paqueteNombre,
+    turnoNombre ? `[${turnoNombre}]` : "",
+    horarioNombre,
+    docenteNombre ? `(${docenteNombre})` : "",
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 async function main() {
-  const response = await dataConnect.executeGraphql(LIST_GRUPO_MODULOS_NOMBRE_QUERY);
+  const [gruposResponse, response] = await Promise.all([
+    dataConnect.executeGraphql(LIST_GRUPOS_NOMBRE_QUERY),
+    dataConnect.executeGraphql(LIST_GRUPO_MODULOS_NOMBRE_QUERY),
+  ]);
   const grupoModulos = response.data.grupoModulos ?? [];
+  const fallbackModuloByGrupoId = new Map();
+  for (const item of grupoModulos) {
+    if (!item.grupoId || !item.modulo) continue;
+    if (!fallbackModuloByGrupoId.has(item.grupoId)) {
+      fallbackModuloByGrupoId.set(item.grupoId, item.modulo);
+    }
+  }
+
+  const grupos = gruposResponse.data.grupos ?? [];
+  const grupoChanges = grupos
+    .map((item) => {
+      const nextNombre = normalize(buildGrupoNombre(item, fallbackModuloByGrupoId.get(item.id)));
+      return {
+        id: item.id,
+        previousNombre: normalize(item.nombreDisplay),
+        nextNombre,
+      };
+    })
+    .filter((item) => item.nextNombre && item.previousNombre !== item.nextNombre);
+
   const changes = grupoModulos
     .map((item) => {
       const nextNombre = normalize(buildGrupoModuloNombreRelacional(item.grupo, item.modulo));
@@ -82,15 +163,29 @@ async function main() {
     })
     .filter((item) => item.nextNombre && item.previousNombre !== item.nextNombre);
 
+  console.log(`Grupos leidos: ${grupos.length}`);
+  console.log(`Grupos por actualizar: ${grupoChanges.length}`);
+  for (const item of grupoChanges.slice(0, 10)) {
+    console.log(`Grupo #${item.id}: "${item.previousNombre}" -> "${item.nextNombre}"`);
+  }
   console.log(`Grupo-modulos leidos: ${grupoModulos.length}`);
-  console.log(`Nombres por actualizar: ${changes.length}`);
+  console.log(`Grupo-modulos por actualizar: ${changes.length}`);
   for (const item of changes.slice(0, 10)) {
-    console.log(`#${item.id}: "${item.previousNombre}" -> "${item.nextNombre}"`);
+    console.log(`Grupo-modulo #${item.id}: "${item.previousNombre}" -> "${item.nextNombre}"`);
   }
 
   if (!APPLY) {
     console.log("Modo vista previa. Ejecuta con --apply para aplicar cambios.");
     return;
+  }
+
+  for (const item of grupoChanges) {
+    await dataConnect.executeGraphql(UPDATE_GRUPO_NOMBRE_MUTATION, {
+      variables: {
+        id: item.id,
+        data: { nombreDisplay: item.nextNombre },
+      },
+    });
   }
 
   for (const item of changes) {
@@ -102,7 +197,8 @@ async function main() {
     });
   }
 
-  console.log(`Actualizados: ${changes.length}`);
+  console.log(`Grupos actualizados: ${grupoChanges.length}`);
+  console.log(`Grupo-modulos actualizados: ${changes.length}`);
 }
 
 main().catch((error) => {

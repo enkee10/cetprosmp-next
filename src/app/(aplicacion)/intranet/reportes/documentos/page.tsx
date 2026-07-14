@@ -110,21 +110,8 @@ function selectionModelToIds(model: GridRowSelectionModel) {
   return Array.from(model.ids).map((id) => Number(id)).filter((id) => Number.isFinite(id));
 }
 
-function semestrePrefix(value?: string | null) {
-  const text = String(value || '').trim();
-  const semesterCode = text.match(/\b\d{2}(\d{2}\s*-\s*\d+)\b/)?.[1];
-  if (semesterCode) return semesterCode.replace(/\s+/g, '');
-  const digits = text.replace(/\D/g, '');
-  return digits.slice(-4);
-}
-
 function getGrupoModuloLabel(option: GrupoModuloOption) {
-  const prefix = semestrePrefix(option.semestreTitulo);
-  const modulo = option.moduloNombre || option.nombre || `Modulo ${option.id}`;
-  const turno = option.turno ? `[${option.turno}]` : '';
-  const horario = option.horario || '';
-  const docente = option.docente ? `(${option.docente})` : '';
-  return [prefix, modulo, turno, horario, docente].filter(Boolean).join(' ');
+  return String(option.nombre || option.moduloNombre || `Modulo ${option.id}`).trim();
 }
 
 function formatDateTime(value?: string | null) {

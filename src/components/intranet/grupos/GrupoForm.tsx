@@ -500,13 +500,12 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   const nombreCalculado = useMemo(
     () =>
       [
-        getSemestreCodigo(selectedSemestre?.titulo),
         selectedPaquete?.titulo?.trim() || '',
         selectedTurno?.nombre ? `[${selectedTurno.nombre}]` : '',
         selectedHorario?.nombre?.trim() || '',
         selectedPersonalName ? `(${selectedPersonalName})` : '',
       ].filter(Boolean).join(' '),
-    [selectedHorario, selectedPaquete, selectedPersonalName, selectedSemestre, selectedTurno],
+    [selectedHorario, selectedPaquete, selectedPersonalName, selectedTurno],
   );
   const nombreGrupo = nombreManualEdit ? nombreDisplay : nombreCalculado;
 

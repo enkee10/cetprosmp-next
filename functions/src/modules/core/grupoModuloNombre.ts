@@ -77,14 +77,12 @@ export function buildGrupoModuloNombreRelacional(
   grupo: GrupoModuloNombreContext,
   modulo: GrupoModuloNombreModulo,
 ) {
-  const semestreCodigo = getSemestreCodigoForGrupoModulo(grupo?.semestre?.titulo);
   const moduloNombre = getModuloNombreForGrupoModulo(modulo);
   const turnoNombre = normalizeSpaces(grupo?.turno?.nombre || grupo?.turnoNombre);
   const horarioNombre = normalizeSpaces(grupo?.horario?.nombre);
   const docenteNombre = getDocenteNombreForGrupoModulo(grupo?.personal ?? null);
 
   return [
-    semestreCodigo,
     moduloNombre,
     turnoNombre ? `[${turnoNombre}]` : "",
     horarioNombre,

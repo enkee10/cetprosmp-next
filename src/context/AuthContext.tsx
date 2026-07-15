@@ -6,7 +6,7 @@ import { auth, functions } from '@/lib/firebase'; // importa servicios cliente d
 import { canAccessIntranet } from '@/lib/intranetPermissions'; // centraliza la regla de acceso a intranet por rol/nivel
 import { httpsCallable } from 'firebase/functions'; // importa las utilidades para llamar la function de registro publico
 import { Box, CircularProgress } from '@mui/material'; // importa los componentes visuales del estado de carga global
-import { usePathname, useRouter } from 'next/navigation'; // importa la navegacion del App Router para redirigir tras autenticar
+import { useRouter } from 'next/navigation'; // importa la navegacion del App Router para redirigir tras autenticar
 
 interface UserData { // define la forma de los datos del usuario expuestos al resto de la app
     uid: string; // guarda el identificador unico del usuario autenticado
@@ -87,51 +87,72 @@ const resolveEmailForPasswordLogin = async (identifier: string): Promise<string>
     return result.data.email?.trim() || normalizedIdentifier;
 };
 
+const createIntranetAccessDeniedError = () => {
+    const accessError = new Error('Tu cuenta no tiene acceso a Intranet.') as Error & { code: string };
+    accessError.code = 'auth/intranet-access-denied';
+    return accessError;
+};
+
+const loadUserDataFromFirebaseUser = async (firebaseUser: FirebaseUser): Promise<UserData> => {
+    try {
+        const refreshMyClaims = httpsCallable(functions, 'refreshMyClaims');
+        await refreshMyClaims();
+    } catch (error) {
+        if (!isExpectedAuthError(error)) {
+            console.error('Error refreshing auth claims:', error);
+        }
+    }
+
+    let profile: Record<string, unknown> | null = null;
+    try {
+        const getMyProfile = httpsCallable<undefined, { profile?: Record<string, unknown> | null }>(functions, 'getMyProfile');
+        const profileResult = await getMyProfile();
+        profile = profileResult.data.profile ?? null;
+    } catch (error) {
+        if (!isExpectedAuthError(error)) {
+            console.error('Error loading auth profile:', error);
+        }
+    }
+
+    const token = await firebaseUser.getIdTokenResult(true);
+    const claims = token.claims;
+    const roleTitle = resolveProfileRoleTitle(profile);
+    return {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        photoURL: resolveProfilePhotoURL(profile, firebaseUser.photoURL),
+        role: (claims.role as string) || null,
+        roleTitle,
+        cargo: roleTitle,
+        level: (claims.level as number) || 0,
+    };
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) { // define el proveedor principal de autenticacion para toda la app
     const [user, setUser] = useState<UserData | null>(null); // guarda el usuario autenticado disponible para la interfaz
     const [loading, setLoading] = useState(true); // guarda si el contexto esta resolviendo auth o cargando perfil
     const [authReady, setAuthReady] = useState(false); // + guarda si la verificacion inicial de Firebase Auth ya termino para no desmontar la interfaz en cada accion
     const router = useRouter(); // obtiene el router para redirigir tras login, registro o logout
-    const pathname = usePathname(); // obtiene la ruta actual para evitar redirecciones repetidas dentro de intranet
 
     useEffect(() => { // sincroniza el contexto con el estado real de Firebase Auth
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => { // escucha cambios de sesion del usuario autenticado
             setLoading(true); // activa el estado de carga mientras se resuelve el nuevo estado de sesion
             if (firebaseUser) { // verifica si existe un usuario autenticado en Firebase
                 try {
-                    const refreshMyClaims = httpsCallable(functions, 'refreshMyClaims');
-                    await refreshMyClaims();
+                    const userData = await loadUserDataFromFirebaseUser(firebaseUser); // construye el usuario con Auth, perfil y claims actualizados
+                    if (!canAccessIntranet(userData.role, userData.level, userData.roleTitle)) {
+                        await signOut(auth);
+                        setUser(null);
+                    } else {
+                        setUser(userData); // guarda el usuario para el resto de la app
+                    }
                 } catch (error) {
                     if (!isExpectedAuthError(error)) {
-                        console.error('Error refreshing auth claims:', error);
+                        console.error('Error loading auth user:', error);
                     }
+                    setUser(null);
                 }
-
-                let profile: Record<string, unknown> | null = null;
-                try {
-                    const getMyProfile = httpsCallable<undefined, { profile?: Record<string, unknown> | null }>(functions, 'getMyProfile');
-                    const profileResult = await getMyProfile();
-                    profile = profileResult.data.profile ?? null;
-                } catch (error) {
-                    if (!isExpectedAuthError(error)) {
-                        console.error('Error loading auth profile:', error);
-                    }
-                }
-
-                const token = await firebaseUser.getIdTokenResult(true); // obtiene el token actual para leer claims personalizados
-                const claims = token.claims; // extrae los claims del token para rol y nivel
-                const roleTitle = resolveProfileRoleTitle(profile);
-                const userData: UserData = { // construye el usuario con Auth y claims sin dependencia de Firestore
-                    uid: firebaseUser.uid, // asegura que el uid venga siempre de Firebase Auth
-                    email: firebaseUser.email, // asegura que el correo venga siempre de Firebase Auth
-                    displayName: firebaseUser.displayName, // asegura que el nombre visible venga siempre de Firebase Auth
-                    photoURL: resolveProfilePhotoURL(profile, firebaseUser.photoURL), // usa primero el avatar guardado en la aplicacion y luego Firebase Auth
-                    role: (claims.role as string) || null, // expone el rol personalizado del usuario autenticado
-                    roleTitle, // expone el nombre legible del rol para mostrarlo en la cabecera
-                    cargo: roleTitle, // conserva el mismo valor como cargo visible del usuario
-                    level: (claims.level as number) || 0, // expone el nivel numerico personalizado del usuario autenticado
-                };
-                setUser(userData); // guarda el usuario para el resto de la app
             } else { // maneja el caso en que no exista un usuario autenticado
                 setUser(null); // limpia el usuario del contexto al cerrar sesion
             }
@@ -142,19 +163,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
         return () => unsubscribe(); // libera el listener de auth al desmontar el proveedor
     }, []); // ejecuta la sincronizacion inicial una sola vez
 
-    useEffect(() => { // redirige a intranet a cualquier usuario autenticado con rol permitido
-        if (!authReady || loading || !user) return;
-        if (!canAccessIntranet(user.role, user.level)) return;
-        if (pathname?.startsWith('/intranet')) return;
-
-        router.replace('/intranet');
-    }, [authReady, loading, pathname, router, user]);
-
     const loginWithGoogle = async () => { // define el flujo explicito de autenticacion con Google
         setLoading(true); // activa el estado de carga mientras se abre el popup de Google
         const provider = new GoogleAuthProvider(); // prepara el proveedor de autenticacion de Google
         try {
-            await signInWithPopup(auth, provider); // inicia el popup de Google para autenticar al usuario
+            const credential = await signInWithPopup(auth, provider); // inicia el popup de Google para autenticar al usuario
+            const userData = await loadUserDataFromFirebaseUser(credential.user);
+            if (!canAccessIntranet(userData.role, userData.level, userData.roleTitle)) {
+                await signOut(auth);
+                setUser(null);
+                throw createIntranetAccessDeniedError();
+            }
+            setUser(userData);
             router.push('/intranet'); // redirige al usuario autenticado hacia la intranet
         } catch (error) {
             if (!isExpectedAuthError(error)) { // + evita registrar en consola los errores esperados de autenticacion controlados por la interfaz
@@ -180,6 +200,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                 setUser(null); // limpia el usuario local cuando el correo no esta verificado
                 throw verificationError; // devuelve el error controlado para mostrar el mensaje adecuado en el modal
             }
+            const userData = await loadUserDataFromFirebaseUser(userCredential.user);
+            if (!canAccessIntranet(userData.role, userData.level, userData.roleTitle)) {
+                await signOut(auth);
+                setUser(null);
+                throw createIntranetAccessDeniedError();
+            }
+            setUser(userData);
             router.push('/intranet'); // redirige al usuario autenticado hacia la intranet
         } catch (error) {
             if (!isExpectedAuthError(error)) { // + evita registrar en consola los errores esperados de autenticacion controlados por la interfaz

@@ -44,6 +44,8 @@ const getFirebaseAuthMessage = (error: unknown, fallbackMessage: string) => { //
       return "Ya existe una cuenta con ese correo usando otro metodo de acceso. Intenta con correo y contrasena."; // + orienta al usuario hacia el metodo disponible
     case "auth/email-not-verified": // + contempla el caso controlado donde el correo aun no fue verificado
       return "Debes verificar tu correo antes de iniciar sesion."; // + informa que primero debe confirmar su direccion de correo
+    case "auth/intranet-access-denied": // + contempla cuentas existentes que no tienen acceso a la intranet
+      return "Tu cuenta no tiene acceso a Intranet."; // + informa claramente que el usuario no puede entrar al sistema interno
     case "auth/email-already-in-use": // + contempla cuando el correo ya fue registrado en Firebase Auth
     case "already-exists": // + contempla el codigo emitido por Functions para correo ya existente
     case "functions/already-exists": // + contempla la variante namespaced del mismo error de Functions

@@ -17,7 +17,7 @@ import {
   separarNombreCompleto,
   toNumber,
 } from "../core/userMappers.js";
-import { authAdmin, DEFAULT_LEVEL, getInitialClaimsByEmail } from "../core/authCore.js";
+import { authAdmin, DEFAULT_LEVEL, getInitialClaimsByEmail, isBlockedIntranetRole } from "../core/authCore.js";
 import { requireAuthenticated, requirePermission } from "../core/permissions.js";
 import {
   dataConnect,
@@ -432,7 +432,7 @@ export const createNewUser = https.onCall(async (data, context) => {
       throw new https.HttpsError("not-found", `The role ID '${roleId}' does not exist.`);
     }
 
-    const permissionLevel = role.scala ?? DEFAULT_LEVEL;
+    const permissionLevel = isBlockedIntranetRole(roleNumberId, role.titulo) ? DEFAULT_LEVEL : role.scala ?? DEFAULT_LEVEL;
     const blockedForAuth = Boolean(otherData?.bloqueado ?? otherData?.blocked ?? false);
     const nowIso = new Date().toISOString();
     const requesterEmail = asNullableString(context.auth?.token?.email);

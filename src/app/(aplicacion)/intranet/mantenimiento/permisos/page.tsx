@@ -74,6 +74,10 @@ const emptyPermission = (entity: PermissionEntity): PermissionRow => ({
   canDelete: false,
 });
 
+const selectMenuProps = {
+  disableScrollLock: true,
+};
+
 export default function PermisosPage() {
   const { user } = useAuth();
   const [roles, setRoles] = useState<Role[]>([]);
@@ -248,6 +252,7 @@ export default function PermisosPage() {
               value={selectedRoleId}
               disabled={loading || saving || roles.length === 0}
               onChange={(event) => setSelectedRoleId(Number(event.target.value))}
+              MenuProps={selectMenuProps}
             >
               {roles.map((role) => (
                 <MenuItem key={role.id} value={role.id}>

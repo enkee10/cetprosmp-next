@@ -14,7 +14,7 @@ export default function IntranetLayout({
   }) {
     const { user, loading } = useAuth();
     const router = useRouter();
-    const hasIntranetAccess = canAccessIntranet(user?.role, user?.level);
+    const hasIntranetAccess = canAccessIntranet(user?.role, user?.level, user?.roleTitle);
 
     useEffect(() => {
       // Wait until the authentication state is loaded

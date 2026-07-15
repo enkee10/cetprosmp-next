@@ -14,6 +14,7 @@ import {
   requireSuperUser,
 } from "../core/permissions.js";
 import { getIdFromKeyOutput, toNumber } from "../core/userMappers.js";
+import { isBlockedIntranetRole } from "../core/authCore.js";
 
 const LIST_ROLE_PERMISSIONS_QUERY = `
   query ListRolePermissionsManual {
@@ -60,9 +61,12 @@ function normalizePermission(item: unknown, roleId: number): DataConnectRolePerm
   };
 }
 
-function isEditableRole(role: { titulo?: string | null; scala?: number | null }) {
+function isEditableRole(role: { id?: number | string | null; titulo?: string | null; scala?: number | null }) {
   const title = String(role.titulo ?? "").trim().toLowerCase();
-  return Number(role.scala ?? 0) < 600 && title !== "superusuario" && title !== "superadmin";
+  return Number(role.scala ?? 0) < 600
+    && title !== "superusuario"
+    && title !== "superadmin"
+    && !isBlockedIntranetRole(role.id, role.titulo);
 }
 
 export const listPermisos = https.onCall(async (_data, context) => {
@@ -115,6 +119,11 @@ export const listMisPermisos = https.onCall(async (_data, context) => {
   }
 
   try {
+    const role = await getRoleById(roleId);
+    if (!role || isBlockedIntranetRole(roleId, role.titulo)) {
+      return { entities: PERMISSION_ENTITIES, permissions: [] };
+    }
+
     const response = await dataConnect.executeGraphql<
       { rolePermissions: DataConnectRolePermission[] },
       { roleId: number }

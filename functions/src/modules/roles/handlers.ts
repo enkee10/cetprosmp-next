@@ -10,6 +10,7 @@ import {
   authAdmin,
   DEFAULT_LEVEL,
   getInitialClaimsByEmail,
+  isBlockedIntranetRole,
   isSuperAdminEmail,
   resolveInitialRoleIdByEmail,
 } from "../core/authCore.js";
@@ -117,7 +118,7 @@ export const refreshMyClaims = https.onCall(async (_data, context) => {
       ? fallbackClaims
       : {
         role: String(roleNumberId),
-        level: role?.scala ?? DEFAULT_LEVEL,
+        level: isBlockedIntranetRole(roleNumberId, role?.titulo) ? DEFAULT_LEVEL : role?.scala ?? DEFAULT_LEVEL,
       };
 
     await authAdmin.setCustomUserClaims(uid, nextClaims);
@@ -148,7 +149,7 @@ export const setUserRole = https.onCall(async (data, context) => {
       throw new https.HttpsError("not-found", `The role ID '${roleId}' does not exist.`);
     }
 
-    const newLevel = role.scala ?? DEFAULT_LEVEL;
+    const newLevel = isBlockedIntranetRole(roleNumberId, role.titulo) ? DEFAULT_LEVEL : role.scala ?? DEFAULT_LEVEL;
     await authAdmin.setCustomUserClaims(uid, { role: String(roleNumberId), level: newLevel });
 
     const existingId = await findDataConnectUserIdByDocumentId(uid);

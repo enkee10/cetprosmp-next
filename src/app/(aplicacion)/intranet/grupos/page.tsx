@@ -46,8 +46,6 @@ interface Grupo {
   }>;
 }
 
-const getSemestreCodigo = (value: string | null | undefined) => String(value ?? '').trim().slice(-4);
-
 const getGrupoPersonalUsername = (grupo: Grupo) =>
   getPersonalShortName(
     grupo.personal?.user?.username || grupo.personal?.displayName || '',
@@ -55,14 +53,12 @@ const getGrupoPersonalUsername = (grupo: Grupo) =>
   );
 
 const getGrupoNombre = (grupo: Grupo) => {
-  const semestreCodigo = getSemestreCodigo(grupo.semestre?.titulo);
   const paqueteTitulo = grupo.paquete?.titulo || (grupo.paqueteId ? `Paquete ${grupo.paqueteId}` : '');
   const turnoTitulo = grupo.turno?.nombre || grupo.turnoNombre || '';
   const horarioTitulo = grupo.horario?.nombre || '';
   const personalUsername = getGrupoPersonalUsername(grupo);
 
   return [
-    semestreCodigo,
     paqueteTitulo,
     turnoTitulo ? `[${turnoTitulo}]` : '',
     horarioTitulo,

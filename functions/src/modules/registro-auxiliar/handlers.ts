@@ -13,7 +13,6 @@ import { getRoleById, upsertDataConnectUserByDocumentId } from "../core/dataConn
 import {
   INSERT_MATRICULA_MUTATION,
   INSERT_MODULO_ESTUDIANTE_MUTATION,
-  UPDATE_MATRICULA_MUTATION,
   UPDATE_USER_MUTATION,
 } from "../../dataconnectOperations.js";
 import {
@@ -1586,43 +1585,16 @@ export const retireRegistroAuxiliarMatricula = https.onCall(async (data: Registr
       throw new https.HttpsError("failed-precondition", "La matricula no pertenece a este grupo-modulo.");
     }
 
-    const now = new Date().toISOString();
-    await dataConnect.executeGraphql<
-      { matricula_update: unknown },
-      { id: number; data: DataConnectMatriculaInput }
-    >(
-      UPDATE_MATRICULA_MUTATION,
-      { variables: { id: moduloEstudiante.matriculaId, data: { archivado: true } } },
-    );
-
     const userId = moduloEstudiante.matricula?.user?.id ?? null;
-    const documentId = moduloEstudiante.matricula?.user?.documentId ?? null;
-    if (userId) {
-      await dataConnect.executeGraphql<
-        { user_update: unknown },
-        { id: number; data: DataConnectUserInput }
-      >(
-        UPDATE_USER_MUTATION,
-        { variables: { id: userId, data: { blocked: true, fechaModificacion: now } } },
-      );
-    }
-
-    if (documentId && !documentId.startsWith("matricula:")) {
-      try {
-        await authAdmin.updateUser(documentId, { disabled: true });
-      } catch (error: unknown) {
-        const code = (error as { code?: string } | null)?.code;
-        if (code !== "auth/user-not-found") throw error;
-      }
-    }
+    const deletedMatriculaId = await deleteMatriculaTree(moduloEstudiante.matriculaId);
 
     return {
       grupoModuloId,
       moduloEstudianteId,
-      matriculaId: moduloEstudiante.matriculaId,
+      matriculaId: deletedMatriculaId,
       userId,
-      archived: true,
-      userBlocked: Boolean(userId),
+      deleted: true,
+      userBlocked: false,
     };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;

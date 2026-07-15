@@ -1268,7 +1268,7 @@ export default function RegistroAuxiliarPage() {
     if (!registro?.grupoModulo?.id) return;
     const studentName = getStudentName(student);
     const confirmed = window.confirm(
-      `Se retirara a ${studentName} de esta matricula y el usuario quedara inactivo. Deseas continuar?`,
+      `Se retirara a ${studentName} de esta matricula. Deseas continuar?`,
     );
     if (!confirmed) return;
 
@@ -1284,7 +1284,7 @@ export default function RegistroAuxiliarPage() {
         grupoModuloId: registro.grupoModulo.id,
         moduloEstudianteId: student.id,
       });
-      setMessage('Estudiante retirado de la matricula y usuario marcado como inactivo.');
+      setMessage('Estudiante retirado de la matricula.');
       await fetchRegistro();
     } catch (err) {
       console.error('Error retiring registro auxiliar matricula', err);

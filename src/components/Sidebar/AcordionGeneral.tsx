@@ -9,7 +9,7 @@ import { canAccessIntranet } from '@/lib/intranetPermissions';
 
 export default function AcordionGeneral() {
   const { user } = useAuth();
-  const hasIntranetAccess = canAccessIntranet(user?.role, user?.level);
+  const hasIntranetAccess = canAccessIntranet(user?.role, user?.level, user?.roleTitle);
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
 
   useEffect(() => {

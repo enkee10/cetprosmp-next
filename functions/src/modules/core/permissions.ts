@@ -1,5 +1,6 @@
 import { https } from "firebase-functions/v1";
-import { dataConnect } from "./dataConnectCore.js";
+import { dataConnect, getRoleById } from "./dataConnectCore.js";
+import { isBlockedIntranetRole } from "./authCore.js";
 
 export type PermissionAction = "view" | "create" | "edit" | "delete";
 
@@ -100,6 +101,9 @@ export async function hasPermission(context: https.CallableContext, entity: stri
 
   const roleId = getRequesterRoleId(context);
   if (roleId <= 0) return false;
+
+  const role = await getRoleById(roleId);
+  if (!role || isBlockedIntranetRole(roleId, role.titulo)) return false;
 
   const response = await dataConnect.executeGraphql<{
     rolePermissions: Array<Record<string, unknown>>;

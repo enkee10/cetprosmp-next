@@ -2,14 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, Paper, Stack } from '@mui/material';
-import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
+import { getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signInWithRedirect } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
-import { useAuth } from '@/context/AuthContext';
 
 const WORKSPACE_DOMAIN = 'cetprosmp.edu.pe';
-const SSO_ATTEMPT_KEY = 'cetprosmp.workspaceSso.lastAttempt';
-const RECENT_ATTEMPT_MS = 15000;
+const SSO_PENDING_KEY = 'cetprosmp.workspaceSso.pending';
+const SSO_LEGACY_ATTEMPT_KEY = 'cetprosmp.workspaceSso.lastAttempt';
 
 const getSafeNextPath = () => {
   if (typeof window === 'undefined') return '/intranet';
@@ -18,12 +17,28 @@ const getSafeNextPath = () => {
   return next;
 };
 
+const getWorkspaceLoginHint = () => {
+  if (typeof window === 'undefined') return null;
+  const loginHint = new URL(window.location.href).searchParams.get('login_hint')?.trim() ?? '';
+  return /^[^\s@]+@cetprosmp\.edu\.pe$/i.test(loginHint) ? loginHint : null;
+};
+
 export default function WorkspaceSsoPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
   const startedRef = useRef(false);
+  const redirectCheckStartedRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [retryReady, setRetryReady] = useState(false);
+
+  const clearWorkspaceAttempt = useCallback(() => {
+    window.sessionStorage.removeItem(SSO_PENDING_KEY);
+    window.sessionStorage.removeItem(SSO_LEGACY_ATTEMPT_KEY);
+  }, []);
+
+  const completeWorkspaceSignIn = useCallback(() => {
+    clearWorkspaceAttempt();
+    router.replace(getSafeNextPath());
+  }, [clearWorkspaceAttempt, router]);
 
   const startWorkspaceSignIn = useCallback(async () => {
     setError(null);
@@ -32,38 +47,79 @@ export default function WorkspaceSsoPage() {
 
     try {
       const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ hd: WORKSPACE_DOMAIN });
-      window.sessionStorage.setItem(SSO_ATTEMPT_KEY, String(Date.now()));
+      const loginHint = getWorkspaceLoginHint();
+      provider.setCustomParameters({
+        hd: WORKSPACE_DOMAIN,
+        ...(loginHint ? { login_hint: loginHint } : {}),
+      });
+      window.sessionStorage.setItem(SSO_PENDING_KEY, '1');
+      window.sessionStorage.removeItem(SSO_LEGACY_ATTEMPT_KEY);
       await signInWithRedirect(auth, provider);
     } catch (err) {
       console.error('Error starting Workspace SSO:', err);
-      window.sessionStorage.removeItem(SSO_ATTEMPT_KEY);
+      clearWorkspaceAttempt();
       startedRef.current = false;
       setRetryReady(true);
       setError('No se pudo iniciar el acceso con Google Workspace.');
     }
-  }, []);
+  }, [clearWorkspaceAttempt]);
 
   useEffect(() => {
-    if (loading) return;
+    if (redirectCheckStartedRef.current) return;
 
-    if (user) {
-      window.sessionStorage.removeItem(SSO_ATTEMPT_KEY);
-      router.replace(getSafeNextPath());
-      return;
-    }
+    redirectCheckStartedRef.current = true;
+    let active = true;
 
-    if (startedRef.current) return;
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (!active || !firebaseUser) return;
+      completeWorkspaceSignIn();
+    });
 
-    const lastAttempt = Number(window.sessionStorage.getItem(SSO_ATTEMPT_KEY) || 0);
-    if (lastAttempt && Date.now() - lastAttempt < RECENT_ATTEMPT_MS) {
-      setRetryReady(true);
-      setError('No se completo el acceso automaticamente. Puedes intentarlo nuevamente.');
-      return;
-    }
+    const resolveRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (!active) return;
 
-    void startWorkspaceSignIn();
-  }, [loading, router, startWorkspaceSignIn, user]);
+        if (result?.user || auth.currentUser) {
+          completeWorkspaceSignIn();
+          return;
+        }
+
+        const hasPendingAttempt = Boolean(window.sessionStorage.getItem(SSO_PENDING_KEY) || window.sessionStorage.getItem(SSO_LEGACY_ATTEMPT_KEY));
+        if (hasPendingAttempt) {
+          await auth.authStateReady();
+          if (!active) return;
+          if (auth.currentUser) {
+            completeWorkspaceSignIn();
+            return;
+          }
+
+          clearWorkspaceAttempt();
+          startedRef.current = false;
+          setRetryReady(true);
+          setError('No se pudo completar el acceso con Google Workspace. Puedes intentarlo nuevamente.');
+          return;
+        }
+
+        void startWorkspaceSignIn();
+      } catch (err) {
+        console.error('Error completing Workspace SSO:', err);
+        if (!active) return;
+
+        clearWorkspaceAttempt();
+        startedRef.current = false;
+        setRetryReady(true);
+        setError('No se pudo completar el acceso con Google Workspace.');
+      }
+    };
+
+    void resolveRedirectResult();
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [clearWorkspaceAttempt, completeWorkspaceSignIn, startWorkspaceSignIn]);
 
   if (!error && !retryReady) return null;
 
@@ -94,7 +150,7 @@ export default function WorkspaceSsoPage() {
             <Button
               variant="contained"
               onClick={() => {
-                window.sessionStorage.removeItem(SSO_ATTEMPT_KEY);
+                clearWorkspaceAttempt();
                 void startWorkspaceSignIn();
               }}
             >

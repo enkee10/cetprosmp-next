@@ -32,6 +32,7 @@ interface AuthContextType { // define todos los metodos y estados expuestos por 
 } // cierra la interfaz del contexto de autenticacion
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined); // crea el contexto base que compartira el estado de autenticacion
+const INTRANET_REDIRECT_KEY = 'cetprosmp.auth.intranetRedirectedForUid';
 
 const isExpectedAuthError = (error: unknown) => { // + detecta si el error pertenece a un flujo esperado de validacion de Firebase Auth
     const code = (error as { code?: string } | null)?.code || ''; // + intenta extraer el codigo del error lanzado por Firebase o por el flujo controlado
@@ -92,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
     const [loading, setLoading] = useState(true); // guarda si el contexto esta resolviendo auth o cargando perfil
     const [authReady, setAuthReady] = useState(false); // + guarda si la verificacion inicial de Firebase Auth ya termino para no desmontar la interfaz en cada accion
     const router = useRouter(); // obtiene el router para redirigir tras login, registro o logout
-    const pathname = usePathname(); // obtiene la ruta actual para evitar redirecciones repetidas dentro de intranet
+    const pathname = usePathname(); // obtiene la ruta actual para decidir redirecciones de autenticacion sin secuestrar la navegacion publica
 
     useEffect(() => { // sincroniza el contexto con el estado real de Firebase Auth
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => { // escucha cambios de sesion del usuario autenticado
@@ -142,11 +143,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
         return () => unsubscribe(); // libera el listener de auth al desmontar el proveedor
     }, []); // ejecuta la sincronizacion inicial una sola vez
 
-    useEffect(() => { // redirige a intranet a cualquier usuario autenticado con rol permitido
+    useEffect(() => { // redirige una sola vez a intranet cuando ya existe una sesion valida con acceso
         if (!authReady || loading || !user) return;
         if (!canAccessIntranet(user.role, user.level)) return;
-        if (pathname?.startsWith('/intranet')) return;
+        if (pathname?.startsWith('/intranet')) {
+            window.sessionStorage.setItem(INTRANET_REDIRECT_KEY, user.uid);
+            return;
+        }
+        if (pathname?.startsWith('/sso')) return;
 
+        const redirectedForUid = window.sessionStorage.getItem(INTRANET_REDIRECT_KEY);
+        if (redirectedForUid === user.uid) return;
+
+        window.sessionStorage.setItem(INTRANET_REDIRECT_KEY, user.uid);
         router.replace('/intranet');
     }, [authReady, loading, pathname, router, user]);
 
@@ -155,7 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
         const provider = new GoogleAuthProvider(); // prepara el proveedor de autenticacion de Google
         try {
             await signInWithPopup(auth, provider); // inicia el popup de Google para autenticar al usuario
-            router.push('/intranet'); // redirige al usuario autenticado hacia la intranet
+            router.replace('/intranet'); // redirige al usuario autenticado hacia la intranet
         } catch (error) {
             if (!isExpectedAuthError(error)) { // + evita registrar en consola los errores esperados de autenticacion controlados por la interfaz
                 console.error('Error during Google sign-in:', error); // + registra solo errores inesperados del login con Google para diagnostico real
@@ -180,7 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                 setUser(null); // limpia el usuario local cuando el correo no esta verificado
                 throw verificationError; // devuelve el error controlado para mostrar el mensaje adecuado en el modal
             }
-            router.push('/intranet'); // redirige al usuario autenticado hacia la intranet
+            router.replace('/intranet'); // redirige al usuario autenticado hacia la intranet
         } catch (error) {
             if (!isExpectedAuthError(error)) { // + evita registrar en consola los errores esperados de autenticacion controlados por la interfaz
                 console.error('Error during email sign-in:', error); // + registra solo errores inesperados del login por correo para diagnostico real
@@ -224,6 +233,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
 
     const logout = async () => { // define el flujo de cierre de sesion del usuario actual
         await signOut(auth); // cierra la sesion activa en Firebase Auth
+        window.sessionStorage.removeItem(INTRANET_REDIRECT_KEY); // permite redirigir de nuevo cuando se inicie una sesion nueva
         setUser(null); // limpia el usuario local inmediatamente tras cerrar sesion
         router.push('/'); // redirige al usuario al inicio tras cerrar sesion
     }; // cierra el flujo de logout

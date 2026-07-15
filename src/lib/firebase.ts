@@ -6,9 +6,24 @@ import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 import { connectStorageEmulator, getStorage } from 'firebase/storage';
 
+const PROJECT_AUTH_DOMAIN = 'cetprosmp-2026.firebaseapp.com';
+
+const getFirebaseAuthDomain = () => {
+  const configuredAuthDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN?.trim();
+  if (configuredAuthDomain) return configuredAuthDomain;
+
+  if (typeof window === 'undefined') return PROJECT_AUTH_DOMAIN;
+
+  const hostname = window.location.hostname.toLowerCase();
+  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.localhost');
+  if (isLocalHost) return PROJECT_AUTH_DOMAIN;
+
+  return hostname;
+};
+
 const firebaseConfig = {
   apiKey: 'AIzaSyD77s4vQE_0uRq9uFPvRypMsEEIwNaHCfs',
-  authDomain: 'cetprosmp-2026.firebaseapp.com',
+  authDomain: getFirebaseAuthDomain(),
   projectId: 'cetprosmp-2026',
   storageBucket: 'cetprosmp-2026.firebasestorage.app',
   messagingSenderId: '242152120618',

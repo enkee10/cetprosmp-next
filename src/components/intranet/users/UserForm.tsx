@@ -180,6 +180,7 @@ const UserForm: React.FC<UserFormProps> = ({
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const apellidoPaternoRef = useRef<HTMLInputElement>(null);
   const lastAutoInstitutionalEmailRef = useRef('');
+  const lastAutoPasswordRef = useRef('');
   const dniImagenFrenteProcesadaUrl = getInitialString(
     initialData,
     'dniImagenFrenteProcesadaUrl',
@@ -254,6 +255,26 @@ const UserForm: React.FC<UserFormProps> = ({
     }
     lastAutoInstitutionalEmailRef.current = institutionalEmail;
   }, [rolId, dni, nombre, apellido_paterno, apellido_materno, getValues, setValue]);
+
+  useEffect(() => {
+    if (!isCreating) return;
+
+    const normalizedDni = String(dni || '').trim().replace(/\D+/g, '');
+    if (!/^\d{8}$/.test(normalizedDni)) return;
+
+    const currentPassword = String(getValues('password') || '').trim();
+    const shouldApplyAutoPassword =
+      !currentPassword
+      || currentPassword === lastAutoPasswordRef.current;
+
+    if (shouldApplyAutoPassword) {
+      setValue('password', normalizedDni, {
+        shouldDirty: false,
+        shouldValidate: true,
+      });
+    }
+    lastAutoPasswordRef.current = normalizedDni;
+  }, [dni, getValues, isCreating, setValue]);
 
   useEffect(() => {
     const fetchRoles = async () => {

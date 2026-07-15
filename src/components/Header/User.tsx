@@ -21,9 +21,9 @@ const getFirebaseAuthMessage = (error: unknown, fallbackMessage: string) => { //
       return "Ingresa tu contrasena."; // + informa que falta la contrasena en el formulario
     case "auth/invalid-credential": // + contempla credenciales invalidas en el login por email y contrasena
     case "auth/invalid-login-credentials": // + contempla la variante nueva del mismo error de acceso invalido
-      return "Correo o contrasena incorrectos."; // + informa un error generico cuando Firebase no distingue entre usuario y contrasena
+      return "Usuario/correo o contrasena incorrectos."; // + informa un error generico cuando Firebase no distingue entre usuario y contrasena
     case "auth/user-not-found": // + contempla cuando el correo no corresponde a una cuenta registrada
-      return "No existe una cuenta con ese correo electronico."; // + informa que el usuario no esta registrado en el sistema
+      return "No existe una cuenta con ese usuario o correo."; // + informa que el usuario no esta registrado en el sistema
     case "auth/wrong-password": // + contempla cuando la contrasena ingresada no coincide con la cuenta
       return "La contrasena ingresada no es correcta."; // + informa que la contrasena escrita no coincide con la almacenada
     case "auth/user-disabled": // + contempla cuando la cuenta fue deshabilitada por administracion
@@ -57,6 +57,8 @@ const getFirebaseAuthMessage = (error: unknown, fallbackMessage: string) => { //
     case "functions/invalid-argument": // + contempla errores de validacion enviados por la callable de registro
     case "functions/failed-precondition": // + contempla problemas de configuracion enviados por la callable de registro
     case "functions/resource-exhausted": // + contempla limites o demasiados intentos reportados por la callable
+    case "functions/not-found": // + contempla cuando no se pudo resolver el usuario/correo ingresado
+    case "functions/permission-denied": // + contempla cuando la cuenta esta bloqueada desde el perfil
       return rawMessage || fallbackMessage; // + prioriza el mensaje especifico enviado por el backend para mostrarselo tal cual al usuario
     case "functions/internal": // + contempla errores internos devueltos por la callable cuando el backend no pudo completar el registro
       return rawMessage || "Ocurrio un error interno mientras se procesaba tu solicitud."; // + muestra el detalle del backend si existe o un texto generico si no
@@ -206,7 +208,7 @@ export default function User() { // define el componente del usuario mostrado en
 
   const handleEmailLogin = async () => { // maneja el acceso con correo y contrasena desde el modal
     if (!email.trim() || !password) { // valida que el usuario haya completado ambos campos
-      setLoginError("Ingresa tu correo y contrasena."); // muestra una validacion basica si faltan datos
+      setLoginError("Ingresa tu usuario o correo y contrasena."); // muestra una validacion basica si faltan datos
       return; // corta la ejecucion cuando el formulario esta incompleto
     }
 
@@ -229,7 +231,7 @@ export default function User() { // define el componente del usuario mostrado en
   const handleForgotPassword = async () => { // + maneja el envio del correo para restablecer la contrasena desde el login
     if (!email.trim()) { // + valida que exista un correo escrito antes de solicitar la recuperacion
       setLoginInfo(""); // + limpia mensajes informativos previos cuando falta el dato minimo necesario
-      setLoginError("Ingresa tu correo para restablecer la contrasena."); // + pide primero el correo para poder enviar el enlace de restablecimiento
+      setLoginError("Ingresa tu usuario o correo para restablecer la contrasena."); // + pide primero el correo para poder enviar el enlace de restablecimiento
       return; // + detiene el flujo hasta que el usuario complete su correo
     }
 

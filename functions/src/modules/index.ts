@@ -1,6 +1,7 @@
 export { assignDefaultRole, syncDataConnectUserOnAuthDelete } from "./triggers/handlers.js";
 export {
   registerUser,
+  resolveLoginEmail,
   getMyProfile,
   listUsers,
   createNewUser,
@@ -187,6 +188,7 @@ export {
   listRegistroAuxiliarDocenteModulos,
   retireRegistroAuxiliarMatricula,
   saveRegistroAuxiliar,
+  updateRegistroAuxiliarEstudianteNombre,
   updateRegistroAuxiliarGrupoModuloFechas,
 } from "./registro-auxiliar/handlers.js";
 export {

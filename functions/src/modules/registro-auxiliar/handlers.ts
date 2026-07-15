@@ -59,6 +59,14 @@ type RegistroAuxiliarRetireMatriculaInput = {
   moduloEstudianteId?: unknown;
 };
 
+type RegistroAuxiliarEstudianteNombreInput = {
+  grupoModuloId?: unknown;
+  moduloEstudianteId?: unknown;
+  apellidoPaterno?: unknown;
+  apellidoMaterno?: unknown;
+  nombres?: unknown;
+};
+
 type RegistroAuxiliarRow = {
   id: number;
   promedio?: number | null;
@@ -944,6 +952,7 @@ async function ensureRegistroAuxiliarStudentUser(
   const authUser = existingAuth
     ? await authAdmin.updateUser(existingAuth.uid, {
         email: institutionalEmail,
+        password: dni,
         displayName: username,
         emailVerified: true,
         disabled: false,
@@ -1619,6 +1628,98 @@ export const retireRegistroAuxiliarMatricula = https.onCall(async (data: Registr
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in retireRegistroAuxiliarMatricula:", error);
     throw new https.HttpsError("internal", "No se pudo retirar la matricula del registro.");
+  }
+});
+
+export const updateRegistroAuxiliarEstudianteNombre = https.onCall(async (
+  data: RegistroAuxiliarEstudianteNombreInput,
+  context,
+) => {
+  const grupoModuloId = toNumber(data?.grupoModuloId, -1);
+  const moduloEstudianteId = toNumber(data?.moduloEstudianteId, -1);
+  if (grupoModuloId <= 0 || moduloEstudianteId <= 0) {
+    throw new https.HttpsError("invalid-argument", "grupoModuloId y moduloEstudianteId son requeridos.");
+  }
+
+  await ensureRegistroAuxiliarAccess(context, grupoModuloId, "edit");
+
+  const apellidoPaterno = asCleanString(data?.apellidoPaterno);
+  const apellidoMaterno = asCleanString(data?.apellidoMaterno);
+  const nombres = asCleanString(data?.nombres);
+  if (!apellidoPaterno || !apellidoMaterno || !nombres) {
+    throw new https.HttpsError("invalid-argument", "Apellido paterno, apellido materno y nombres son requeridos.");
+  }
+
+  try {
+    const response = await dataConnect.executeGraphql<{
+      grupoModulo: { id: number; grupoId: number; moduloId: number } | null;
+      moduloEstudiante: {
+        id: number;
+        moduloId: number;
+        grupoId?: number | null;
+        matricula?: {
+          id: number;
+          archivado?: boolean | null;
+          user?: {
+            id: number;
+            documentId?: string | null;
+          } | null;
+        } | null;
+      } | null;
+    }, { grupoModuloId: number; moduloEstudianteId: number }>(
+      REGISTRO_AUXILIAR_RETIRE_MATRICULA_QUERY,
+      { variables: { grupoModuloId, moduloEstudianteId } },
+    );
+    const grupoModulo = response.data.grupoModulo;
+    const moduloEstudiante = response.data.moduloEstudiante;
+    const user = moduloEstudiante?.matricula?.user;
+    if (
+      !grupoModulo ||
+      !moduloEstudiante ||
+      moduloEstudiante.grupoId !== grupoModulo.grupoId ||
+      moduloEstudiante.moduloId !== grupoModulo.moduloId ||
+      moduloEstudiante.matricula?.archivado ||
+      !user?.id
+    ) {
+      throw new https.HttpsError("not-found", "No se encontro el estudiante en este registro.");
+    }
+
+    const username = buildStudentUsername({ nombres, apellidoPaterno, apellidoMaterno });
+    const payload: DataConnectUserInput = {
+      username,
+      nombre: nombres,
+      apellidoPaterno,
+      apellidoMaterno,
+      fechaModificacion: new Date().toISOString(),
+    };
+
+    const updated = await dataConnect.executeGraphql<
+      { user_update: unknown },
+      { id: number; data: DataConnectUserInput }
+    >(UPDATE_USER_MUTATION, { variables: { id: user.id, data: payload } });
+
+    const documentId = asCleanString(user.documentId);
+    if (documentId && !documentId.startsWith("matricula:")) {
+      await authAdmin.updateUser(documentId, { displayName: username }).catch((error: unknown) => {
+        const code = (error as { code?: string } | null)?.code;
+        if (code !== "auth/user-not-found") throw error;
+      });
+    }
+
+    return {
+      id: getIdFromKeyOutput(updated.data.user_update) ?? user.id,
+      user: {
+        id: user.id,
+        username,
+        nombre: nombres,
+        apellidoPaterno,
+        apellidoMaterno,
+      },
+    };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in updateRegistroAuxiliarEstudianteNombre:", error);
+    throw new https.HttpsError("internal", "No se pudo actualizar el nombre del estudiante.");
   }
 });
 

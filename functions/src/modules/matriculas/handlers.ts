@@ -2256,10 +2256,12 @@ async function ensureStudentAuthForMatricula(
   const existingByUid = existingByEmail ? null : await getAuthUserByUidOrNull(existingUser?.documentId);
   const existingAuthUser = existingByEmail ?? existingByUid;
   const permissionLevel = role.scala ?? DEFAULT_LEVEL;
+  const authPassword = normalizeDocumentNumber(data.dni);
 
   if (existingAuthUser) {
     await authAdmin.updateUser(existingAuthUser.uid, {
       email: institutionalEmail,
+      password: authPassword,
       displayName: username,
       emailVerified: true,
       disabled: blockedForAuth,
@@ -2268,7 +2270,7 @@ async function ensureStudentAuthForMatricula(
     await authAdmin.setCustomUserClaims(updated.uid, { role: String(roleId), level: permissionLevel });
     return {
       authUser: updated,
-      authPassword: null,
+      authPassword,
       institutionalEmail,
       roleId,
       roleTitle: role.titulo ?? null,
@@ -2278,7 +2280,6 @@ async function ensureStudentAuthForMatricula(
     };
   }
 
-  const authPassword = normalizeDocumentNumber(data.dni);
   const created = await authAdmin.createUser({
     email: institutionalEmail,
     password: authPassword,

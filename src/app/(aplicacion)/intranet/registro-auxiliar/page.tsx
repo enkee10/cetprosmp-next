@@ -13,6 +13,7 @@ import {
   Paper,
   Select,
   Stack,
+  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -112,6 +113,7 @@ type Estudiante = {
     id: number;
     codigoInscripcion?: string | null;
     user?: {
+      id?: number | null;
       dni?: string | null;
       nombre?: string | null;
       apellidos?: string | null;
@@ -203,6 +205,12 @@ type SelectableColumn = {
   getValue: (student: Estudiante, studentIndex: number) => string;
 };
 
+type StudentNameDraft = {
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  nombres: string;
+};
+
 const UNITS_PER_PAGE = 2;
 const MODULE_INFO_ROW_COUNT = 5;
 const TABLE_HEADER_ONLY_ROW_COUNT = 3;
@@ -232,6 +240,12 @@ const getStudentName = (student: Estudiante) => {
   if (nombres) return toTitleCase(nombres);
   return `Matricula ${student.matriculaId}`;
 };
+
+const studentNameDraftFromStudent = (student: Estudiante): StudentNameDraft => ({
+  apellidoPaterno: String(student.matricula?.user?.apellidoPaterno ?? '').trim(),
+  apellidoMaterno: String(student.matricula?.user?.apellidoMaterno ?? '').trim(),
+  nombres: String(student.matricula?.user?.nombre ?? '').trim(),
+});
 
 const getPersonalName = (grupo: RegistroAuxiliar['grupo']) => {
   const personal = grupo?.personal;
@@ -406,12 +420,20 @@ export default function RegistroAuxiliarPage() {
   const [newMatriculaDni, setNewMatriculaDni] = useState('');
   const [creatingMatricula, setCreatingMatricula] = useState(false);
   const [retiringModuloEstudianteId, setRetiringModuloEstudianteId] = useState<number | null>(null);
+  const [editingStudentNameId, setEditingStudentNameId] = useState<number | null>(null);
+  const [studentNameDraft, setStudentNameDraft] = useState<StudentNameDraft>({
+    apellidoPaterno: '',
+    apellidoMaterno: '',
+    nombres: '',
+  });
+  const [savingStudentNameId, setSavingStudentNameId] = useState<number | null>(null);
   const [cellSelection, setCellSelection] = useState<CellSelection | null>(null);
   const [selectingCells, setSelectingCells] = useState(false);
   const editableCellRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const registroScrollRef = useRef<HTMLDivElement | null>(null);
   const selectionPointerRef = useRef<{ x: number; y: number } | null>(null);
   const autoScrollFrameRef = useRef<number | null>(null);
+  const committingStudentNameRef = useRef(false);
 
   const auth = getAuth(app);
   const functions = useMemo(() => getFunctions(app), []);
@@ -641,6 +663,129 @@ export default function RegistroAuxiliarPage() {
     },
     [focusEditableCell],
   );
+
+  const startEditingStudentName = useCallback((student: Estudiante) => {
+    if (!canEditRegistro || savingStudentNameId) return;
+    setError(null);
+    setMessage(null);
+    setCellSelection(null);
+    setSelectingCells(false);
+    selectionPointerRef.current = null;
+    setEditingStudentNameId(student.id);
+    setStudentNameDraft(studentNameDraftFromStudent(student));
+  }, [canEditRegistro, savingStudentNameId]);
+
+  const cancelEditingStudentName = useCallback(() => {
+    setEditingStudentNameId(null);
+    setStudentNameDraft({ apellidoPaterno: '', apellidoMaterno: '', nombres: '' });
+  }, []);
+
+  const commitEditingStudentName = useCallback(async () => {
+    if (!registro || !editingStudentNameId || committingStudentNameRef.current) return;
+
+    const student = registro.estudiantes.find((item) => item.id === editingStudentNameId);
+    if (!student) {
+      cancelEditingStudentName();
+      return;
+    }
+
+    const nextDraft: StudentNameDraft = {
+      apellidoPaterno: studentNameDraft.apellidoPaterno.trim(),
+      apellidoMaterno: studentNameDraft.apellidoMaterno.trim(),
+      nombres: studentNameDraft.nombres.trim(),
+    };
+    if (!nextDraft.apellidoPaterno || !nextDraft.apellidoMaterno || !nextDraft.nombres) {
+      setError('Completa apellido paterno, apellido materno y nombres.');
+      return;
+    }
+
+    const currentDraft = studentNameDraftFromStudent(student);
+    if (
+      currentDraft.apellidoPaterno === nextDraft.apellidoPaterno &&
+      currentDraft.apellidoMaterno === nextDraft.apellidoMaterno &&
+      currentDraft.nombres === nextDraft.nombres
+    ) {
+      cancelEditingStudentName();
+      return;
+    }
+
+    committingStudentNameRef.current = true;
+    setSavingStudentNameId(student.id);
+    try {
+      if (auth.currentUser) await auth.currentUser.getIdToken(true);
+      const updateRegistroAuxiliarEstudianteNombre = httpsCallable<
+        {
+          grupoModuloId: number;
+          moduloEstudianteId: number;
+          apellidoPaterno: string;
+          apellidoMaterno: string;
+          nombres: string;
+        },
+        {
+          user?: {
+            id?: number | null;
+            username?: string | null;
+            nombre?: string | null;
+            apellidoPaterno?: string | null;
+            apellidoMaterno?: string | null;
+          };
+        }
+      >(functions, 'updateRegistroAuxiliarEstudianteNombre');
+      const result = await updateRegistroAuxiliarEstudianteNombre({
+        grupoModuloId: Number(grupoModuloId),
+        moduloEstudianteId: student.id,
+        apellidoPaterno: nextDraft.apellidoPaterno,
+        apellidoMaterno: nextDraft.apellidoMaterno,
+        nombres: nextDraft.nombres,
+      });
+      const updatedUser = result.data.user;
+      setRegistro((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          estudiantes: current.estudiantes.map((item) => {
+            if (item.id !== student.id) return item;
+            const user = item.matricula?.user ?? {};
+            return {
+              ...item,
+              matricula: item.matricula
+                ? {
+                  ...item.matricula,
+                  user: {
+                    ...user,
+                    id: updatedUser?.id ?? user.id,
+                    username: updatedUser?.username ?? user.username,
+                    nombre: updatedUser?.nombre ?? nextDraft.nombres,
+                    apellidoPaterno: updatedUser?.apellidoPaterno ?? nextDraft.apellidoPaterno,
+                    apellidoMaterno: updatedUser?.apellidoMaterno ?? nextDraft.apellidoMaterno,
+                  },
+                }
+                : item.matricula,
+            };
+          }),
+        };
+      });
+      setMessage('Nombre del estudiante actualizado.');
+      setError(null);
+      cancelEditingStudentName();
+    } catch (err) {
+      console.error('Error updating student name', err);
+      setError('No se pudo actualizar el nombre del estudiante.');
+    } finally {
+      committingStudentNameRef.current = false;
+      setSavingStudentNameId(null);
+    }
+  }, [
+    auth,
+    cancelEditingStudentName,
+    editingStudentNameId,
+    functions,
+    grupoModuloId,
+    registro,
+    studentNameDraft.apellidoMaterno,
+    studentNameDraft.apellidoPaterno,
+    studentNameDraft.nombres,
+  ]);
 
   const getNotaValue = useCallback(
     (matriculaId: number, indicadorId: number) => parseNota(notas[notaKey(matriculaId, indicadorId)]),
@@ -1708,9 +1853,96 @@ export default function RegistroAuxiliarPage() {
                         sx={{ ...cellBaseSx, ...selectableCellSx(tableRowIndex, 2), bgcolor: '#fff', fontWeight: focusedCell?.estudianteIndex === studentIndex ? 700 : 400 }}
                       >
                         <Stack direction="row" spacing={0.5} alignItems="center" sx={{ minWidth: 0 }}>
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            {getStudentName(student)}
-                          </Box>
+                          {editingStudentNameId === student.id ? (
+                            <Stack
+                              direction={{ xs: 'column', md: 'row' }}
+                              spacing={0.5}
+                              tabIndex={-1}
+                              onMouseDown={(event) => event.stopPropagation()}
+                              onDoubleClick={(event) => event.stopPropagation()}
+                              onBlur={(event) => {
+                                const nextTarget = event.relatedTarget as Node | null;
+                                if (nextTarget && event.currentTarget.contains(nextTarget)) return;
+                                void commitEditingStudentName();
+                              }}
+                              sx={{ flex: 1, minWidth: 0, py: 0.35 }}
+                            >
+                              <TextField
+                                autoFocus
+                                size="small"
+                                label="Apellido paterno"
+                                value={studentNameDraft.apellidoPaterno}
+                                disabled={savingStudentNameId === student.id}
+                                onChange={(event) => setStudentNameDraft((current) => ({ ...current, apellidoPaterno: event.target.value }))}
+                                onKeyDown={(event) => {
+                                  if (event.key === 'Enter') {
+                                    event.preventDefault();
+                                    void commitEditingStudentName();
+                                  }
+                                  if (event.key === 'Escape') {
+                                    event.preventDefault();
+                                    cancelEditingStudentName();
+                                  }
+                                }}
+                                sx={{ minWidth: { xs: 120, md: 145 }, '& .MuiInputBase-input': { py: 0.55, fontSize: 12 } }}
+                              />
+                              <TextField
+                                size="small"
+                                label="Apellido materno"
+                                value={studentNameDraft.apellidoMaterno}
+                                disabled={savingStudentNameId === student.id}
+                                onChange={(event) => setStudentNameDraft((current) => ({ ...current, apellidoMaterno: event.target.value }))}
+                                onKeyDown={(event) => {
+                                  if (event.key === 'Enter') {
+                                    event.preventDefault();
+                                    void commitEditingStudentName();
+                                  }
+                                  if (event.key === 'Escape') {
+                                    event.preventDefault();
+                                    cancelEditingStudentName();
+                                  }
+                                }}
+                                sx={{ minWidth: { xs: 120, md: 145 }, '& .MuiInputBase-input': { py: 0.55, fontSize: 12 } }}
+                              />
+                              <TextField
+                                size="small"
+                                label="Nombres"
+                                value={studentNameDraft.nombres}
+                                disabled={savingStudentNameId === student.id}
+                                onChange={(event) => setStudentNameDraft((current) => ({ ...current, nombres: event.target.value }))}
+                                onKeyDown={(event) => {
+                                  if (event.key === 'Enter') {
+                                    event.preventDefault();
+                                    void commitEditingStudentName();
+                                  }
+                                  if (event.key === 'Escape') {
+                                    event.preventDefault();
+                                    cancelEditingStudentName();
+                                  }
+                                }}
+                                sx={{ minWidth: { xs: 140, md: 180 }, '& .MuiInputBase-input': { py: 0.55, fontSize: 12 } }}
+                              />
+                            </Stack>
+                          ) : (
+                            <Box
+                              onDoubleClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                startEditingStudentName(student);
+                              }}
+                              title={canEditRegistro ? 'Doble clic para editar nombres' : undefined}
+                              sx={{
+                                flex: 1,
+                                minWidth: 0,
+                                cursor: canEditRegistro ? 'text' : 'inherit',
+                                borderBottom: canEditRegistro ? '1px dotted transparent' : undefined,
+                                '&:hover': canEditRegistro ? { borderBottomColor: 'text.secondary' } : undefined,
+                              }}
+                            >
+                              {getStudentName(student)}
+                            </Box>
+                          )}
+                          {savingStudentNameId === student.id ? <CircularProgress size={14} /> : null}
                           {canDeleteRegistroMatriculas ? (
                             <Tooltip title="Retirar de la matricula">
                               <span>

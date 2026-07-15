@@ -3,9 +3,10 @@
 import { createContext, useContext, useEffect, useState } from 'react'; // importa las utilidades base de React para el contexto de autenticacion
 import { GoogleAuthProvider, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut, User as FirebaseUser } from 'firebase/auth'; // + importa tambien la utilidad para enviar correos de restablecimiento de contrasena
 import { auth, functions } from '@/lib/firebase'; // importa servicios cliente de Firebase ya configurados
+import { canAccessIntranet } from '@/lib/intranetPermissions'; // centraliza la regla de acceso a intranet por rol/nivel
 import { httpsCallable } from 'firebase/functions'; // importa las utilidades para llamar la function de registro publico
 import { Box, CircularProgress } from '@mui/material'; // importa los componentes visuales del estado de carga global
-import { useRouter } from 'next/navigation'; // importa la navegacion del App Router para redirigir tras autenticar
+import { usePathname, useRouter } from 'next/navigation'; // importa la navegacion del App Router para redirigir tras autenticar
 
 interface UserData { // define la forma de los datos del usuario expuestos al resto de la app
     uid: string; // guarda el identificador unico del usuario autenticado
@@ -24,9 +25,9 @@ interface AuthContextType { // define todos los metodos y estados expuestos por 
     loading: boolean; // expone si el contexto esta resolviendo una accion de autenticacion
     login: () => Promise<void>; // mantiene el metodo de login legado usando Google
     loginWithGoogle: () => Promise<void>; // expone el inicio de sesion con Google para el modal login
-    loginWithEmail: (email: string, password: string) => Promise<void>; // expone el inicio de sesion con correo y contrasena
+    loginWithEmail: (identifier: string, password: string) => Promise<void>; // expone el inicio de sesion con usuario/correo y contrasena
     registerWithEmail: (username: string, email: string, password: string) => Promise<void>; // expone el registro publico con login automatico
-    resetPassword: (email: string) => Promise<void>; // + expone el envio del correo de restablecimiento de contrasena
+    resetPassword: (identifier: string) => Promise<void>; // + expone el envio del correo de restablecimiento de contrasena
     logout: () => Promise<void>; // expone el cierre de sesion del usuario actual
 } // cierra la interfaz del contexto de autenticacion
 
@@ -77,11 +78,21 @@ const resolveProfileRoleTitle = (profile: unknown): string | null => {
     );
 };
 
+const resolveEmailForPasswordLogin = async (identifier: string): Promise<string> => {
+    const normalizedIdentifier = identifier.trim();
+    if (!normalizedIdentifier) return normalizedIdentifier;
+
+    const resolveLoginEmail = httpsCallable<{ identifier: string }, { email?: string | null }>(functions, 'resolveLoginEmail');
+    const result = await resolveLoginEmail({ identifier: normalizedIdentifier });
+    return result.data.email?.trim() || normalizedIdentifier;
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) { // define el proveedor principal de autenticacion para toda la app
     const [user, setUser] = useState<UserData | null>(null); // guarda el usuario autenticado disponible para la interfaz
     const [loading, setLoading] = useState(true); // guarda si el contexto esta resolviendo auth o cargando perfil
     const [authReady, setAuthReady] = useState(false); // + guarda si la verificacion inicial de Firebase Auth ya termino para no desmontar la interfaz en cada accion
     const router = useRouter(); // obtiene el router para redirigir tras login, registro o logout
+    const pathname = usePathname(); // obtiene la ruta actual para evitar redirecciones repetidas dentro de intranet
 
     useEffect(() => { // sincroniza el contexto con el estado real de Firebase Auth
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => { // escucha cambios de sesion del usuario autenticado
@@ -131,6 +142,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
         return () => unsubscribe(); // libera el listener de auth al desmontar el proveedor
     }, []); // ejecuta la sincronizacion inicial una sola vez
 
+    useEffect(() => { // redirige a intranet a cualquier usuario autenticado con rol permitido
+        if (!authReady || loading || !user) return;
+        if (!canAccessIntranet(user.role, user.level)) return;
+        if (pathname?.startsWith('/intranet')) return;
+
+        router.replace('/intranet');
+    }, [authReady, loading, pathname, router, user]);
+
     const loginWithGoogle = async () => { // define el flujo explicito de autenticacion con Google
         setLoading(true); // activa el estado de carga mientras se abre el popup de Google
         const provider = new GoogleAuthProvider(); // prepara el proveedor de autenticacion de Google
@@ -148,10 +167,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
         }
     }; // cierra el flujo de login con Google
 
-    const loginWithEmail = async (email: string, password: string) => { // define el flujo de autenticacion por correo y contrasena
+    const loginWithEmail = async (identifier: string, password: string) => { // define el flujo de autenticacion por usuario/correo y contrasena
         setLoading(true); // activa el estado de carga mientras se valida el acceso por correo
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password); // autentica al usuario con las credenciales ingresadas
+            const resolvedEmail = await resolveEmailForPasswordLogin(identifier); // traduce DNI/usuario/correo al correo principal de Firebase Auth
+            const userCredential = await signInWithEmailAndPassword(auth, resolvedEmail, password); // autentica al usuario con las credenciales ingresadas
             await userCredential.user.reload(); // recarga el estado del usuario para obtener el valor actualizado de emailVerified
             if (!auth.currentUser?.emailVerified) { // bloquea el acceso si el correo aun no fue verificado
                 const verificationError = new Error('Debes verificar tu correo antes de iniciar sesion.') as Error & { code: string }; // crea un error controlado para informar que falta verificar el correo
@@ -195,8 +215,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
         }
     }; // cierra el flujo de registro publico
 
-    const resetPassword = async (email: string) => { // + define el flujo que envia el correo de restablecimiento de contrasena
-        await sendPasswordResetEmail(auth, email); // + solicita a Firebase enviar el correo de recuperacion al email indicado
+    const resetPassword = async (identifier: string) => { // + define el flujo que envia el correo de restablecimiento de contrasena
+        const resolvedEmail = await resolveEmailForPasswordLogin(identifier); // + traduce usuario/DNI/correo al correo real de Firebase Auth
+        await sendPasswordResetEmail(auth, resolvedEmail); // + solicita a Firebase enviar el correo de recuperacion al email indicado
     }; // + cierra el flujo de restablecimiento de contrasena
 
     const login = async () => loginWithGoogle(); // mantiene la API anterior reutilizando el login con Google

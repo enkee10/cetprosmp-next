@@ -88,6 +88,21 @@ const GET_MY_PROFILE_QUERY = `
   }
 `;
 
+const LIST_LOGIN_USERS_QUERY = `
+  query ListLoginUsersManual {
+    users(limit: 10000) {
+      id
+      documentId
+      username
+      nickName
+      email
+      correoInstitucional
+      dni
+      blocked
+    }
+  }
+`;
+
 const isTransientDataConnectSqlError = (error: unknown): boolean => {
   const message = [
     String((error as { message?: string } | null)?.message || ""),
@@ -107,6 +122,36 @@ const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(
 
 let listUsersQueryQueue: Promise<unknown> = Promise.resolve();
 const MATRICULA_AVATAR_EXTRACTION_COLLECTION = "matriculaAvatarExtractionJobs";
+
+const normalizeLoginText = (value: unknown): string => String(value || "").trim().toLowerCase();
+
+const normalizeComparableLoginText = (value: unknown): string => (
+  normalizeLoginText(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+);
+
+const getEmailLocalPart = (value: unknown): string => {
+  const email = normalizeLoginText(value);
+  const atIndex = email.indexOf("@");
+  return atIndex > 0 ? email.slice(0, atIndex) : "";
+};
+
+async function resolveExistingAuthEmail(candidates: Array<unknown>): Promise<string | null> {
+  const normalizedCandidates = Array.from(
+    new Set(candidates.map(normalizeLoginText).filter((value) => value.includes("@"))),
+  );
+
+  for (const email of normalizedCandidates) {
+    const authUser = await authAdmin
+      .getUserByEmail(email)
+      .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)));
+    if (authUser?.email) return authUser.email;
+  }
+
+  return null;
+}
 
 async function executeListUsersQuery(): Promise<Array<Record<string, unknown>>> {
   let lastError: unknown;
@@ -218,6 +263,71 @@ export const registerUser = https.onCall(async (data) => {
 
     console.error("Error in registerUser:", error);
     throw new https.HttpsError("internal", "Ocurrio un error inesperado mientras se registraba el usuario.");
+  }
+});
+
+export const resolveLoginEmail = https.onCall(async (data) => {
+  const identifier = normalizeLoginText(data?.identifier ?? data?.email ?? data?.username);
+  if (!identifier) {
+    throw new https.HttpsError("invalid-argument", "Ingresa tu usuario o correo electronico.");
+  }
+
+  const directCandidates = identifier.includes("@")
+    ? [identifier]
+    : [`${identifier}@cetprosmp.edu.pe`];
+  const directAuthEmail = await resolveExistingAuthEmail(directCandidates);
+  if (directAuthEmail) return { email: directAuthEmail };
+
+  try {
+    const response = await dataConnect.executeGraphql<{
+      users: Array<Record<string, unknown>>;
+    }, Record<string, never>>(LIST_LOGIN_USERS_QUERY);
+
+    const comparableIdentifier = normalizeComparableLoginText(identifier);
+    const matchedUser = (response.data.users ?? []).find((user) => {
+      const values = [
+        user.username,
+        user.nickName,
+        user.email,
+        user.correoInstitucional,
+        user.dni,
+        getEmailLocalPart(user.email),
+        getEmailLocalPart(user.correoInstitucional),
+      ].map(normalizeComparableLoginText);
+
+      return values.some((value) => value.length > 0 && value === comparableIdentifier);
+    });
+
+    if (!matchedUser) {
+      throw new https.HttpsError("not-found", "No existe una cuenta con ese usuario o correo.");
+    }
+
+    if (matchedUser.blocked === true) {
+      throw new https.HttpsError("permission-denied", "Tu cuenta se encuentra suspendida.");
+    }
+
+    const authUserByDocumentId = normalizeLoginText(matchedUser.documentId)
+      ? await authAdmin
+        .getUser(String(matchedUser.documentId))
+        .catch((error: unknown) => ((error as { code?: string } | null)?.code === "auth/user-not-found" ? null : Promise.reject(error)))
+      : null;
+    if (authUserByDocumentId?.email) return { email: authUserByDocumentId.email };
+
+    const resolvedEmail = await resolveExistingAuthEmail([
+      matchedUser.correoInstitucional,
+      matchedUser.email,
+      `${normalizeLoginText(matchedUser.dni)}@cetprosmp.edu.pe`,
+    ]);
+
+    if (!resolvedEmail) {
+      throw new https.HttpsError("not-found", "No se encontro una cuenta de autenticacion para este usuario.");
+    }
+
+    return { email: resolvedEmail };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in resolveLoginEmail:", error);
+    throw new https.HttpsError("internal", "No se pudo resolver el usuario para iniciar sesion.");
   }
 });
 

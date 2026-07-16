@@ -101,6 +101,7 @@ const GET_MODULO_QUERY = `
       tituloComercial
       orden
       descripcion
+      competencia
       horas
       creditos
       duracionEfsrt

@@ -173,7 +173,7 @@ function sameEditableValue(a: EditableCellValue | undefined, b: EditableCellValu
 }
 
 function moduloName(modulo: ModuloDetalle | null | undefined) {
-  return modulo?.tituloComercial || modulo?.titulo || `Modulo ${modulo?.id ?? ''}`;
+  return modulo?.titulo || modulo?.tituloComercial || `Modulo ${modulo?.id ?? ''}`;
 }
 
 function planName(modulo: ModuloDetalle | null | undefined) {
@@ -240,6 +240,30 @@ function applyEditableCellUpdate(
       }),
     };
   });
+}
+
+function isCommonUnidadTarget(items: ModuloDetalle[], target: EditableCellTarget) {
+  for (const modulo of items) {
+    for (const unidad of modulo.unidadesDidacticas) {
+      if (!unidad.comun) continue;
+
+      if (target.entity === 'unidadDidactica' && unidad.id === target.id) return true;
+      if (target.entity === 'unidadDidacticaModulo' && unidad.relacionId === target.id) return true;
+
+      for (const capacidad of unidad.capacidadesTerminales) {
+        if (target.entity === 'capacidadTerminal' && capacidad.id === target.id) return true;
+
+        if (
+          target.entity === 'indicadorCapacidad' &&
+          capacidad.indicadoresCapacidad.some((indicador) => indicador.id === target.id)
+        ) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
 }
 
 function EditableValue({
@@ -584,6 +608,9 @@ export default function EstructuraAcademicaMasterDetail({
     if (!allowEdit) {
       throw new Error('No tienes permiso para editar la estructura academica.');
     }
+    if (isCommonUnidadTarget(modulos, target)) {
+      throw new Error('Las unidades didacticas comunes no se pueden editar desde esta vista.');
+    }
     try {
       if (auth.currentUser) {
         await auth.currentUser.getIdToken(true);
@@ -600,7 +627,7 @@ export default function EstructuraAcademicaMasterDetail({
       setError('No se pudo guardar la celda. Verifica tus permisos y el valor ingresado.');
       throw err;
     }
-  }, [allowEdit, auth, functions]);
+  }, [allowEdit, auth, functions, modulos]);
 
   const fetchEstructura = useCallback(async () => {
     setLoading(true);
@@ -663,6 +690,7 @@ export default function EstructuraAcademicaMasterDetail({
     () => unidades.find((unidad) => unidad.id === selectedUnidadId) ?? unidades[0] ?? null,
     [selectedUnidadId, unidades],
   );
+  const selectedUnidadIsComun = Boolean(selectedUnidad?.comun);
   const capacidades = selectedUnidad?.capacidadesTerminales ?? [];
   const selectedCapacidad = useMemo(
     () => capacidades.find((capacidad) => capacidad.id === selectedCapacidadId) ?? capacidades[0] ?? null,
@@ -721,20 +749,20 @@ export default function EstructuraAcademicaMasterDetail({
   }, [runStructureAction, selectedModulo?.id]);
 
   const handleCreateCapacidad = useCallback(() => {
-    if (!selectedUnidad?.id) return;
+    if (!selectedUnidad?.id || selectedUnidadIsComun) return;
     void runStructureAction('createEstructuraAcademicaItem', {
       entity: 'capacidadTerminal',
       unidadDidacticaId: selectedUnidad.id,
     });
-  }, [runStructureAction, selectedUnidad?.id]);
+  }, [runStructureAction, selectedUnidad?.id, selectedUnidadIsComun]);
 
   const handleCreateIndicador = useCallback(() => {
-    if (!selectedCapacidad?.id) return;
+    if (!selectedCapacidad?.id || selectedUnidadIsComun) return;
     void runStructureAction('createEstructuraAcademicaItem', {
       entity: 'indicadorCapacidad',
       capacidadTerminalId: selectedCapacidad.id,
     });
-  }, [runStructureAction, selectedCapacidad?.id]);
+  }, [runStructureAction, selectedCapacidad?.id, selectedUnidadIsComun]);
 
   const handleDetachModulo = useCallback(() => {
     if (!selectedModulo?.id || !selectedModulo.planModuloId) return;
@@ -756,21 +784,22 @@ export default function EstructuraAcademicaMasterDetail({
   }, [runStructureAction, selectedUnidad?.relacionId]);
 
   const handleDetachCapacidad = useCallback(() => {
-    if (!selectedCapacidad?.id) return;
+    if (!selectedCapacidad?.id || selectedUnidadIsComun) return;
     if (!window.confirm('Se quitara esta capacidad y sus indicadores. Deseas continuar?')) return;
     void runStructureAction('detachEstructuraAcademicaItem', {
       entity: 'capacidadTerminal',
       capacidadTerminalId: selectedCapacidad.id,
     });
-  }, [runStructureAction, selectedCapacidad?.id]);
+  }, [runStructureAction, selectedCapacidad?.id, selectedUnidadIsComun]);
 
   const handleDetachIndicador = useCallback((indicadorId: number) => {
+    if (selectedUnidadIsComun) return;
     if (!window.confirm('Se quitara este indicador. Deseas continuar?')) return;
     void runStructureAction('detachEstructuraAcademicaItem', {
       entity: 'indicadorCapacidad',
       indicadorCapacidadId: indicadorId,
     });
-  }, [runStructureAction]);
+  }, [runStructureAction, selectedUnidadIsComun]);
 
   const handleDetachSelectedIndicador = useCallback(() => {
     if (!selectedIndicador?.id) return;
@@ -921,21 +950,10 @@ export default function EstructuraAcademicaMasterDetail({
                   onSave={saveEditableCell}
                   readOnly={!allowEdit}
                   rows={[
-                    { label: 'Id', value: selectedModulo.id },
                     {
                       label: 'Titulo',
                       value: selectedModulo.titulo,
                       target: { entity: 'modulo', id: selectedModulo.id, field: 'titulo', valueType: 'text' },
-                    },
-                    {
-                      label: 'Comercial',
-                      value: selectedModulo.tituloComercial,
-                      target: { entity: 'modulo', id: selectedModulo.id, field: 'tituloComercial', valueType: 'text' },
-                    },
-                    {
-                      label: 'Orden',
-                      value: selectedModulo.orden,
-                      target: { entity: 'modulo', id: selectedModulo.id, field: 'orden', valueType: 'number' },
                     },
                     {
                       label: 'Horas',
@@ -952,17 +970,6 @@ export default function EstructuraAcademicaMasterDetail({
                       value: selectedModulo.metas,
                       target: { entity: 'modulo', id: selectedModulo.id, field: 'metas', valueType: 'number' },
                     },
-                    {
-                      label: 'Slug',
-                      value: selectedModulo.slug,
-                      target: { entity: 'modulo', id: selectedModulo.id, field: 'slug', valueType: 'text' },
-                    },
-                    {
-                      label: 'Comun',
-                      value: selectedModulo.comun,
-                      target: { entity: 'modulo', id: selectedModulo.id, field: 'comun', valueType: 'boolean' },
-                    },
-                    { label: 'Plan', value: planName(selectedModulo) },
                   ]}
                 />
               ) : undefined
@@ -989,7 +996,7 @@ export default function EstructuraAcademicaMasterDetail({
                       primary={
                         <EditableValue
                           value={moduloName(modulo)}
-                          target={{ entity: 'modulo', id: modulo.id, field: 'tituloComercial', valueType: 'text' }}
+                          target={{ entity: 'modulo', id: modulo.id, field: 'titulo', valueType: 'text' }}
                           lines={2}
                           variant="body2"
                           onSave={saveEditableCell}
@@ -1046,9 +1053,8 @@ export default function EstructuraAcademicaMasterDetail({
               selectedUnidad ? (
                 <DetailFields
                   onSave={saveEditableCell}
-                  readOnly={!allowEdit}
+                  readOnly={!allowEdit || selectedUnidadIsComun}
                   rows={[
-                    { label: 'Id', value: selectedUnidad.id },
                     {
                       label: 'Orden',
                       value: selectedUnidad.orden,
@@ -1074,11 +1080,6 @@ export default function EstructuraAcademicaMasterDetail({
                       value: selectedUnidad.creditos,
                       target: { entity: 'unidadDidactica', id: selectedUnidad.id, field: 'creditos', valueType: 'number' },
                     },
-                    {
-                      label: 'Sigla',
-                      value: selectedUnidad.sigla,
-                      target: { entity: 'unidadDidactica', id: selectedUnidad.id, field: 'sigla', valueType: 'text' },
-                    },
                   ]}
                 />
               ) : undefined
@@ -1088,54 +1089,74 @@ export default function EstructuraAcademicaMasterDetail({
               <EmptyState label="Sin unidades." />
             ) : (
               <List dense disablePadding>
-                {unidades.map((unidad) => (
-                  <ListItemButton
-                    key={`${unidad.relacionId}-${unidad.id}`}
-                    selected={selectedUnidad?.id === unidad.id}
-                    onClick={() => {
-                      setSelectedUnidadId(unidad.id);
-                      setSelectedCapacidadId(null);
-                      setSelectedIndicadorId(null);
-                    }}
-                    sx={{ alignItems: 'flex-start', py: 0.9, minHeight: 68 }}
-                  >
-                    <ListItemText
-                      primaryTypographyProps={{ component: 'div' }}
-                      secondaryTypographyProps={{ component: 'div' }}
-                      primary={
-                        <EditableValue
-                          value={unidad.nombre || `Unidad ${unidad.id}`}
-                          target={{ entity: 'unidadDidactica', id: unidad.id, field: 'nombre', valueType: 'text' }}
-                          lines={2}
-                          variant="body2"
-                          onSave={saveEditableCell}
-                          readOnly={!allowEdit}
-                        />
-                      }
-                      secondary={
-                        <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
-                          <Chip size="small" label={`Ord ${unidad.orden ?? '-'}`} />
-                          <EditableMetricChip
-                            value={unidad.duracion}
-                            target={{ entity: 'unidadDidactica', id: unidad.id, field: 'duracion', valueType: 'number' }}
-                            suffix=" hr"
+                {unidades.map((unidad) => {
+                  const unidadComun = Boolean(unidad.comun);
+                  const unidadReadOnly = !allowEdit || unidadComun;
+
+                  return (
+                    <ListItemButton
+                      key={`${unidad.relacionId}-${unidad.id}`}
+                      selected={selectedUnidad?.id === unidad.id}
+                      onClick={() => {
+                        setSelectedUnidadId(unidad.id);
+                        setSelectedCapacidadId(null);
+                        setSelectedIndicadorId(null);
+                      }}
+                      sx={{
+                        alignItems: 'flex-start',
+                        py: 0.9,
+                        minHeight: 68,
+                        bgcolor: unidadComun ? 'rgba(244, 143, 177, 0.16)' : undefined,
+                        '&:hover': {
+                          bgcolor: unidadComun ? 'rgba(244, 143, 177, 0.24)' : undefined,
+                        },
+                        '&.Mui-selected': {
+                          bgcolor: unidadComun ? 'rgba(244, 143, 177, 0.30)' : undefined,
+                        },
+                        '&.Mui-selected:hover': {
+                          bgcolor: unidadComun ? 'rgba(244, 143, 177, 0.36)' : undefined,
+                        },
+                      }}
+                    >
+                      <ListItemText
+                        primaryTypographyProps={{ component: 'div' }}
+                        secondaryTypographyProps={{ component: 'div' }}
+                        primary={
+                          <EditableValue
+                            value={unidad.nombre || `Unidad ${unidad.id}`}
+                            target={{ entity: 'unidadDidactica', id: unidad.id, field: 'nombre', valueType: 'text' }}
+                            lines={2}
+                            variant="body2"
                             onSave={saveEditableCell}
-                            readOnly={!allowEdit}
+                            readOnly={unidadReadOnly}
                           />
-                          <EditableMetricChip
-                            value={unidad.creditos}
-                            target={{ entity: 'unidadDidactica', id: unidad.id, field: 'creditos', valueType: 'number' }}
-                            prefix="Cr "
-                            onSave={saveEditableCell}
-                            readOnly={!allowEdit}
-                          />
-                          <Chip size="small" label={`CAP ${unidad.capacidadesTerminales.length}`} />
-                          <Chip size="small" label={`IND ${unidad.capacidadesTerminales.reduce((total, capacidad) => total + capacidad.indicadoresCapacidad.length, 0)}`} />
-                        </Stack>
-                      }
-                    />
-                  </ListItemButton>
-                ))}
+                        }
+                        secondary={
+                          <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
+                            <Chip size="small" label={`Ord ${unidad.orden ?? '-'}`} />
+                            {unidadComun ? <Chip size="small" label="Comun" color="secondary" variant="outlined" /> : null}
+                            <EditableMetricChip
+                              value={unidad.duracion}
+                              target={{ entity: 'unidadDidactica', id: unidad.id, field: 'duracion', valueType: 'number' }}
+                              suffix=" hr"
+                              onSave={saveEditableCell}
+                              readOnly={unidadReadOnly}
+                            />
+                            <EditableMetricChip
+                              value={unidad.creditos}
+                              target={{ entity: 'unidadDidactica', id: unidad.id, field: 'creditos', valueType: 'number' }}
+                              prefix="Cr "
+                              onSave={saveEditableCell}
+                              readOnly={unidadReadOnly}
+                            />
+                            <Chip size="small" label={`CAP ${unidad.capacidadesTerminales.length}`} />
+                            <Chip size="small" label={`IND ${unidad.capacidadesTerminales.reduce((total, capacidad) => total + capacidad.indicadoresCapacidad.length, 0)}`} />
+                          </Stack>
+                        }
+                      />
+                    </ListItemButton>
+                  );
+                })}
               </List>
             )}
           </Panel>
@@ -1146,12 +1167,12 @@ export default function EstructuraAcademicaMasterDetail({
             actions={allowCreate || allowDelete ? (
               <>
                 {allowCreate ? (
-                  <IconButton size="small" title="Crear capacidad" disabled={actionLoading || !selectedUnidad?.id} onClick={handleCreateCapacidad}>
+                  <IconButton size="small" title="Crear capacidad" disabled={actionLoading || !selectedUnidad?.id || selectedUnidadIsComun} onClick={handleCreateCapacidad}>
                     <AddIcon fontSize="small" />
                   </IconButton>
                 ) : null}
                 {allowDelete ? (
-                  <IconButton size="small" title="Quitar capacidad" color="error" disabled={actionLoading || !selectedCapacidad?.id} onClick={handleDetachCapacidad}>
+                  <IconButton size="small" title="Quitar capacidad" color="error" disabled={actionLoading || !selectedCapacidad?.id || selectedUnidadIsComun} onClick={handleDetachCapacidad}>
                     <DeleteOutlineIcon fontSize="small" />
                   </IconButton>
                 ) : null}
@@ -1161,26 +1182,9 @@ export default function EstructuraAcademicaMasterDetail({
               selectedCapacidad ? (
                 <DetailFields
                   onSave={saveEditableCell}
-                  readOnly={!allowEdit}
+                  readOnly={!allowEdit || selectedUnidadIsComun}
                   rows={[
-                    { label: 'Id', value: selectedCapacidad.id },
-                    {
-                      label: 'Descripcion',
-                      value: selectedCapacidad.descripcion,
-                      lines: 3,
-                      target: {
-                        entity: 'capacidadTerminal',
-                        id: selectedCapacidad.id,
-                        field: 'descripcion',
-                        valueType: 'text',
-                      },
-                    },
-                    {
-                      label: 'Sigla',
-                      value: selectedCapacidad.sigla,
-                      target: { entity: 'capacidadTerminal', id: selectedCapacidad.id, field: 'sigla', valueType: 'text' },
-                    },
-                    { label: 'Unidad', value: selectedCapacidad.unidadDidacticaId },
+                    { label: 'Unidad', value: selectedUnidad?.nombre || (selectedUnidad ? `Unidad ${selectedUnidad.id}` : '-') },
                     { label: 'Indicadores', value: selectedCapacidad.indicadoresCapacidad.length },
                   ]}
                 />
@@ -1216,7 +1220,7 @@ export default function EstructuraAcademicaMasterDetail({
                           lines={4}
                           variant="body2"
                           onSave={saveEditableCell}
-                          readOnly={!allowEdit}
+                          readOnly={!allowEdit || selectedUnidadIsComun}
                         />
                       }
                       secondary={
@@ -1238,12 +1242,12 @@ export default function EstructuraAcademicaMasterDetail({
             actions={allowCreate || allowDelete ? (
               <>
                 {allowCreate ? (
-                  <IconButton size="small" title="Crear indicador" disabled={actionLoading || !selectedCapacidad?.id} onClick={handleCreateIndicador}>
+                  <IconButton size="small" title="Crear indicador" disabled={actionLoading || !selectedCapacidad?.id || selectedUnidadIsComun} onClick={handleCreateIndicador}>
                     <AddIcon fontSize="small" />
                   </IconButton>
                 ) : null}
                 {allowDelete ? (
-                  <IconButton size="small" title="Quitar indicador" color="error" disabled={actionLoading || !selectedIndicador?.id} onClick={handleDetachSelectedIndicador}>
+                  <IconButton size="small" title="Quitar indicador" color="error" disabled={actionLoading || !selectedIndicador?.id || selectedUnidadIsComun} onClick={handleDetachSelectedIndicador}>
                     <DeleteOutlineIcon fontSize="small" />
                   </IconButton>
                 ) : null}
@@ -1255,9 +1259,7 @@ export default function EstructuraAcademicaMasterDetail({
                   onSave={saveEditableCell}
                   readOnly={!allowEdit}
                   rows={[
-                    { label: 'Capacidad', value: selectedCapacidad.id },
-                    { label: 'Unidad', value: selectedUnidad?.id },
-                    { label: 'Modulo', value: selectedModulo?.id },
+                    { label: 'Capacidad', value: selectedCapacidad.descripcion || `Capacidad ${selectedCapacidad.id}`, lines: 3 },
                   ]}
                 />
               ) : undefined
@@ -1289,7 +1291,7 @@ export default function EstructuraAcademicaMasterDetail({
                           lines={4}
                           variant="body2"
                           onSave={saveEditableCell}
-                          readOnly={!allowEdit}
+                          readOnly={!allowEdit || selectedUnidadIsComun}
                         />
                       }
                       secondary={
@@ -1317,7 +1319,7 @@ export default function EstructuraAcademicaMasterDetail({
                               }}
                               lines={1}
                               onSave={saveEditableCell}
-                              readOnly={!allowEdit}
+                              readOnly={!allowEdit || selectedUnidadIsComun}
                             />
                           </Box>
                         </Stack>
@@ -1346,7 +1348,7 @@ export default function EstructuraAcademicaMasterDetail({
               {(reuseDialog?.kind === 'modulo' ? reusableModulos : reusableUnidades).map((item) => (
                 <MenuItem key={item.id} value={String(item.id)}>
                   {'tituloComercial' in item
-                    ? item.tituloComercial || item.titulo || `Modulo ${item.id}`
+                    ? item.titulo || item.tituloComercial || `Modulo ${item.id}`
                     : item.nombre || item.sigla || `Unidad ${item.id}`}
                 </MenuItem>
               ))}

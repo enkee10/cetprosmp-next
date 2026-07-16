@@ -73,6 +73,11 @@ export interface Carrera_Key {
   __typename?: 'Carrera_Key';
 }
 
+export interface CertificadoTituloDocumento_Key {
+  id: number;
+  __typename?: 'CertificadoTituloDocumento_Key';
+}
+
 export interface CreatePostData {
   post_insert: Post_Key;
 }

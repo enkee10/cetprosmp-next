@@ -205,7 +205,7 @@ const GET_ACTIVIDAD_QUERY = `
 
 const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
   query ListEstructuraAcademicaManual {
-    modulos(limit: 1000, orderBy: [{ planId: ASC }, { orden: ASC }, { tituloComercial: ASC }]) {
+    modulos(limit: 1000, orderBy: [{ planId: ASC }, { orden: ASC }, { titulo: ASC }]) {
       id
       titulo
       tituloComercial
@@ -882,7 +882,7 @@ function buildEstructuraAcademicaOpciones(response: EstructuraAcademicaQueryResp
       tituloComercial: modulo.tituloComercial ?? null,
       planIds: modulo.planIds ?? [],
     }))
-    .sort((a, b) => String(a.tituloComercial || a.titulo || "").localeCompare(String(b.tituloComercial || b.titulo || ""), "es"));
+    .sort((a, b) => String(a.titulo || a.tituloComercial || "").localeCompare(String(b.titulo || b.tituloComercial || ""), "es"));
 
   const unidadesComunes = (response.unidadesDidacticas ?? [])
     .filter((unidad) => Boolean(unidad.comun))

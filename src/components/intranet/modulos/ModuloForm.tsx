@@ -35,6 +35,7 @@ interface ModuloData {
   tituloComercial: string | null;
   orden: number | null;
   descripcion: string | null;
+  competencia: string | null;
   horas: number | null;
   creditos: number | null;
   duracionEfsrt: number | null;
@@ -79,6 +80,7 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
   const [tituloComercial, setTituloComercial] = useState('');
   const [orden, setOrden] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [competencia, setCompetencia] = useState('');
   const [horas, setHoras] = useState('');
   const [creditos, setCreditos] = useState('');
   const [duracionEfsrt, setDuracionEfsrt] = useState('');
@@ -149,6 +151,7 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           setTituloComercial(fetched.tituloComercial || '');
           setOrden(fetched.orden != null ? String(fetched.orden) : '');
           setDescripcion(fetched.descripcion || '');
+          setCompetencia(fetched.competencia || '');
           setHoras(fetched.horas != null ? String(fetched.horas) : '');
           setCreditos(fetched.creditos != null ? String(fetched.creditos) : '');
           setDuracionEfsrt(fetched.duracionEfsrt != null ? String(fetched.duracionEfsrt) : '');
@@ -206,6 +209,7 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           tituloComercial: string;
           orden?: number | null;
           descripcion: string;
+          competencia: string;
           horas?: number | null;
           creditos?: number | null;
           duracionEfsrt?: number | null;
@@ -225,6 +229,7 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
         tituloComercial,
         orden: orden ? Number(orden) : null,
         descripcion,
+        competencia,
         horas: horas ? Number(horas) : null,
         creditos: creditos ? Number(creditos) : null,
         duracionEfsrt: duracionEfsrt ? Number(duracionEfsrt) : null,
@@ -410,6 +415,16 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
             onChange={(e) => setDescripcion(e.target.value)}
             fullWidth
             minRows={3}
+            multiline
+            sx={{ gridColumn: '1 / -1' }}
+          />
+
+          <TextField
+            label="Competencia"
+            value={competencia}
+            onChange={(e) => setCompetencia(e.target.value)}
+            fullWidth
+            minRows={4}
             multiline
             sx={{ gridColumn: '1 / -1' }}
           />

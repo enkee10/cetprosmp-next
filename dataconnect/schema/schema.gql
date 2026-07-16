@@ -173,6 +173,7 @@ type Modulo @table(name: "modulos") @index(fields: ["carreraId"]) {
   orden: Int
   descripcion: String
   descripcion2: String @col(name: "descripcion_2")
+  competencia: String @col(dataType: "text")
   horas: Int
   creditos: Int
   duracionEfsrt: Int @col(name: "duracion_efsrt")
@@ -634,6 +635,23 @@ type RegistroAcademicoDocumento @table(name: "registro_academico_documentos", si
 
   grupoModulo: GrupoModulo! @ref(fields: "grupoModuloId", references: "id")
   grupoModuloId: Int! @col(name: "grupo_modulo_id")
+}
+
+type CertificadoTituloDocumento @table(name: "certificado_titulo_documentos", singular: "certificadoTituloDocumento", plural: "certificadoTituloDocumentos") @unique(fields: ["tipoDocumento", "grupoModulo", "moduloEstudiante"]) @index(fields: ["grupoModuloId"]) @index(fields: ["moduloEstudianteId"]) {
+  id: Int! @col(dataType: "serial")
+  tipoDocumento: String! @col(name: "tipo_documento")
+  semestreCodigo: String @col(name: "semestre_codigo", dataType: "varchar(10)")
+  pdfPath: String @col(name: "pdf_path", dataType: "text")
+  pdfUrl: String @col(name: "pdf_url", dataType: "text")
+  excelPath: String @col(name: "excel_path", dataType: "text")
+  excelUrl: String @col(name: "excel_url", dataType: "text")
+  generadoEn: Timestamp @col(name: "generado_en")
+
+  grupoModulo: GrupoModulo! @ref(fields: "grupoModuloId", references: "id")
+  grupoModuloId: Int! @col(name: "grupo_modulo_id")
+
+  moduloEstudiante: ModuloEstudiante! @ref(fields: "moduloEstudianteId", references: "id")
+  moduloEstudianteId: Int! @col(name: "modulo_estudiante_id")
 }
 
 type GrupoModuloUnidadDidactica @table(name: "grupo_modulo_unidades_didacticas", singular: "grupoModuloUnidadDidactica", plural: "grupoModuloUnidadesDidacticas") @unique(fields: ["grupoModulo", "unidadDidactica"]) @index(fields: ["grupoModuloId"]) @index(fields: ["unidadDidacticaId"]) {

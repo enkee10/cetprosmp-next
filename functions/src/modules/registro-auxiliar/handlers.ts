@@ -809,6 +809,23 @@ function average(values: Array<number | null | undefined>) {
   return Math.round(valid.reduce((sum, value) => sum + value, 0) / valid.length);
 }
 
+function weightedAverage(values: Array<{ value: number | null | undefined; weight: number | null | undefined }>) {
+  let weightedSum = 0;
+  let totalWeight = 0;
+  const rawValues: Array<number | null | undefined> = [];
+
+  for (const item of values) {
+    rawValues.push(item.value);
+    if (typeof item.value !== "number" || !Number.isFinite(item.value)) continue;
+    if (typeof item.weight !== "number" || !Number.isFinite(item.weight) || item.weight <= 0) continue;
+    weightedSum += item.value * item.weight;
+    totalWeight += item.weight;
+  }
+
+  if (totalWeight <= 0) return average(rawValues);
+  return Math.round(weightedSum / totalWeight);
+}
+
 function roundPromedio(value: number | null | undefined) {
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
   return Math.round(value);
@@ -1764,6 +1781,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
     const contextResponse = await dataConnect.executeGraphql<{
       grupoModuloUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
       unidadDidacticaModulos: Array<{ orden?: number | null; unidadDidacticaId: number }>;
+      unidadesDidacticas: Array<Pick<RegistroAuxiliarUnidad, "id" | "creditos">>;
       capacidadesTerminales: RegistroAuxiliarCapacidad[];
       indicadoresCapacidad: RegistroAuxiliarIndicador[];
       modulosEstudiantes: Array<{ id: number }>;
@@ -1777,6 +1795,10 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
           unidadDidacticaModulos(where: { moduloId: { eq: $moduloId } }, limit: 500) {
             orden
             unidadDidacticaId
+          }
+          unidadesDidacticas(limit: 50000) {
+            id
+            creditos
           }
           capacidadesTerminales(limit: 50000) {
             id
@@ -1800,6 +1822,11 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
 
     const unidadIds = buildUnidadIds(contextResponse.data);
     const unidadIdSet = new Set(unidadIds);
+    const unidadCreditoById = new Map(
+      (contextResponse.data.unidadesDidacticas ?? [])
+        .filter((unidad) => unidadIdSet.has(unidad.id))
+        .map((unidad) => [unidad.id, unidad.creditos ?? null]),
+    );
     const capacidades = (contextResponse.data.capacidadesTerminales ?? [])
       .filter((capacidad) => capacidad.unidadDidacticaId && unidadIdSet.has(capacidad.unidadDidacticaId));
     const capacidadById = new Map(capacidades.map((capacidad) => [capacidad.id, capacidad]));
@@ -1846,7 +1873,12 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
         matriculaId,
         moduloId,
         grupoId,
-        average(unidadIds.map((unidadId) => unidadPromedios.get(unidadId))),
+        opcionOcupacional
+          ? average(unidadIds.map((unidadId) => unidadPromedios.get(unidadId)))
+          : weightedAverage(unidadIds.map((unidadId) => ({
+            value: unidadPromedios.get(unidadId),
+            weight: unidadCreditoById.get(unidadId),
+          }))),
         sum(indicadores.map((indicador) => notasByIndicador.get(indicador.id))),
       );
       if (moduloEstudianteId && !opcionOcupacional) {

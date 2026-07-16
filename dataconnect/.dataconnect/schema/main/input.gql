@@ -77,6 +77,12 @@ It has the same format as `Carrera_Key`, but is only used as mutation return val
 """
 scalar Carrera_KeyOutput
 """
+✨ `CertificadoTituloDocumento_KeyOutput` returns the primary key fields of table type `CertificadoTituloDocumento`.
+
+It has the same format as `CertificadoTituloDocumento_Key`, but is only used as mutation return value.
+"""
+scalar CertificadoTituloDocumento_KeyOutput
+"""
 ✨ `DatoGeneral_KeyOutput` returns the primary key fields of table type `DatoGeneral`.
 
 It has the same format as `DatoGeneral_Key`, but is only used as mutation return value.
@@ -5812,6 +5818,497 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`tipoCarreraId_max` of type `Int`
   """
   tipoCarreraId_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'CertificadoTituloDocumento'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input CertificadoTituloDocumento_Data {
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `CertificadoTituloDocumento`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `CertificadoTituloDocumento`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int
+  """
+  ✨ `_expr` server value variant of `grupoModuloId` (✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoModuloId` (✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId` of type `Int!`
+  """
+  moduloEstudianteId: Int
+  """
+  ✨ `_expr` server value variant of `moduloEstudianteId` (✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId` of type `Int!`)
+  """
+  moduloEstudianteId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `moduloEstudianteId` (✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId` of type `Int!`)
+  """
+  moduloEstudianteId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudiante` of type `ModuloEstudiante!`
+  """
+  moduloEstudiante: ModuloEstudiante_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`excelPath` of type `String`
+  """
+  excelPath: String
+  """
+  ✨ `_expr` server value variant of `excelPath` (✨ Generated from Field `CertificadoTituloDocumento`.`excelPath` of type `String`)
+  """
+  excelPath_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`excelUrl` of type `String`
+  """
+  excelUrl: String
+  """
+  ✨ `_expr` server value variant of `excelUrl` (✨ Generated from Field `CertificadoTituloDocumento`.`excelUrl` of type `String`)
+  """
+  excelUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn` of type `Timestamp`
+  """
+  generadoEn: Timestamp
+  """
+  ✨ `_expr` server value variant of `generadoEn` (✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn` of type `Timestamp`)
+  """
+  generadoEn_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `generadoEn` (✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn` of type `Timestamp`)
+  """
+  generadoEn_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `generadoEn` (✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn` of type `Timestamp`)
+  """
+  generadoEn_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`pdfPath` of type `String`
+  """
+  pdfPath: String
+  """
+  ✨ `_expr` server value variant of `pdfPath` (✨ Generated from Field `CertificadoTituloDocumento`.`pdfPath` of type `String`)
+  """
+  pdfPath_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`pdfUrl` of type `String`
+  """
+  pdfUrl: String
+  """
+  ✨ `_expr` server value variant of `pdfUrl` (✨ Generated from Field `CertificadoTituloDocumento`.`pdfUrl` of type `String`)
+  """
+  pdfUrl_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`semestreCodigo` of type `String`
+  """
+  semestreCodigo: String
+  """
+  ✨ `_expr` server value variant of `semestreCodigo` (✨ Generated from Field `CertificadoTituloDocumento`.`semestreCodigo` of type `String`)
+  """
+  semestreCodigo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`tipoDocumento` of type `String!`
+  """
+  tipoDocumento: String
+  """
+  ✨ `_expr` server value variant of `tipoDocumento` (✨ Generated from Field `CertificadoTituloDocumento`.`tipoDocumento` of type `String!`)
+  """
+  tipoDocumento_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'CertificadoTituloDocumento'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input CertificadoTituloDocumento_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [CertificadoTituloDocumento_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: CertificadoTituloDocumento_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [CertificadoTituloDocumento_Filter!]
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId` of type `Int!`
+  """
+  moduloEstudianteId: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudiante` of type `ModuloEstudiante!`
+  """
+  moduloEstudiante: ModuloEstudiante_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`excelPath` of type `String`
+  """
+  excelPath: String_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`excelUrl` of type `String`
+  """
+  excelUrl: String_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn` of type `Timestamp`
+  """
+  generadoEn: Timestamp_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`pdfPath` of type `String`
+  """
+  pdfPath: String_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`pdfUrl` of type `String`
+  """
+  pdfUrl: String_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`semestreCodigo` of type `String`
+  """
+  semestreCodigo: String_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`tipoDocumento` of type `String!`
+  """
+  tipoDocumento: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'CertificadoTituloDocumento'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input CertificadoTituloDocumento_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [CertificadoTituloDocumento_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: CertificadoTituloDocumento_Filter
+}
+"""
+✨ Generated having input type for table 'CertificadoTituloDocumento'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input CertificadoTituloDocumento_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [CertificadoTituloDocumento_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: CertificadoTituloDocumento_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [CertificadoTituloDocumento_Having!]
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`excelPath_count` of type `Int!`
+  """
+  excelPath_count: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`excelUrl_count` of type `Int!`
+  """
+  excelUrl_count: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn_count` of type `Int!`
+  """
+  generadoEn_count: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId_count` of type `Int!`
+  """
+  moduloEstudianteId_count: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`pdfPath_count` of type `Int!`
+  """
+  pdfPath_count: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`pdfUrl_count` of type `Int!`
+  """
+  pdfUrl_count: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`semestreCodigo_count` of type `Int!`
+  """
+  semestreCodigo_count: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`tipoDocumento_count` of type `Int!`
+  """
+  tipoDocumento_count: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId_sum` of type `Int`
+  """
+  moduloEstudianteId_sum: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: Float_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId_avg` of type `Float`
+  """
+  moduloEstudianteId_avg: Float_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn_min` of type `Timestamp`
+  """
+  generadoEn_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId_min` of type `Int`
+  """
+  moduloEstudianteId_min: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn_max` of type `Timestamp`
+  """
+  generadoEn_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId_max` of type `Int`
+  """
+  moduloEstudianteId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'CertificadoTituloDocumento'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input CertificadoTituloDocumento_Key {
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `CertificadoTituloDocumento`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'CertificadoTituloDocumento'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input CertificadoTituloDocumento_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: CertificadoTituloDocumento_Filter
+}
+"""
+✨ Generated order input type for table 'CertificadoTituloDocumento'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input CertificadoTituloDocumento_Order {
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId` of type `Int!`
+  """
+  moduloEstudianteId: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Order
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudiante` of type `ModuloEstudiante!`
+  """
+  moduloEstudiante: ModuloEstudiante_Order
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`excelPath` of type `String`
+  """
+  excelPath: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`excelUrl` of type `String`
+  """
+  excelUrl: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn` of type `Timestamp`
+  """
+  generadoEn: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`pdfPath` of type `String`
+  """
+  pdfPath: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`pdfUrl` of type `String`
+  """
+  pdfUrl: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`semestreCodigo` of type `String`
+  """
+  semestreCodigo: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`tipoDocumento` of type `String!`
+  """
+  tipoDocumento: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`excelPath_count` of type `Int!`
+  """
+  excelPath_count: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`excelUrl_count` of type `Int!`
+  """
+  excelUrl_count: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn_count` of type `Int!`
+  """
+  generadoEn_count: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId_count` of type `Int!`
+  """
+  moduloEstudianteId_count: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`pdfPath_count` of type `Int!`
+  """
+  pdfPath_count: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`pdfUrl_count` of type `Int!`
+  """
+  pdfUrl_count: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`semestreCodigo_count` of type `Int!`
+  """
+  semestreCodigo_count: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`tipoDocumento_count` of type `Int!`
+  """
+  tipoDocumento_count: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId_sum` of type `Int`
+  """
+  moduloEstudianteId_sum: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId_avg` of type `Float`
+  """
+  moduloEstudianteId_avg: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn_min` of type `Timestamp`
+  """
+  generadoEn_min: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId_min` of type `Int`
+  """
+  moduloEstudianteId_min: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`generadoEn_max` of type `Timestamp`
+  """
+  generadoEn_max: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `CertificadoTituloDocumento`.`moduloEstudianteId_max` of type `Int`
+  """
+  moduloEstudianteId_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'DatoGeneral'. It includes all necessary fields for creating or upserting rows into table.
@@ -15160,6 +15657,10 @@ input GrupoModulo_Data {
   """
   orden_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `GrupoModulo`.`certificadoTituloDocumentos_on_grupoModulo` of type `[CertificadoTituloDocumento!]!`
+  """
+  certificadoTituloDocumentos_on_grupoModulo: [CertificadoTituloDocumento_Data!]
+  """
   ✨ Generated from Field `GrupoModulo`.`efsrtPppEstudiantes_on_grupoModulo` of type `[EfsrtPppEstudiante!]!`
   """
   efsrtPppEstudiantes_on_grupoModulo: [EfsrtPppEstudiante_Data!]
@@ -15240,6 +15741,10 @@ input GrupoModulo_Filter {
   ✨ Generated from Field `GrupoModulo`.`orden` of type `Int`
   """
   orden: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`certificadoTituloDocumentos_on_grupoModulo` of type `[CertificadoTituloDocumento!]!`
+  """
+  certificadoTituloDocumentos_on_grupoModulo: CertificadoTituloDocumento_ListFilter
   """
   ✨ Generated from Field `GrupoModulo`.`efsrtPppEstudiantes_on_grupoModulo` of type `[EfsrtPppEstudiante!]!`
   """
@@ -18942,6 +19447,14 @@ input Modulo_Data {
   """
   carreraId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Modulo`.`competencia` of type `String`
+  """
+  competencia: String
+  """
+  ✨ `_expr` server value variant of `competencia` (✨ Generated from Field `Modulo`.`competencia` of type `String`)
+  """
+  competencia_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Modulo`.`comun` of type `Boolean`
   """
   comun: Boolean
@@ -19123,6 +19636,10 @@ input Modulo_Filter {
   """
   carreraId: Int_Filter
   """
+  ✨ Generated from Field `Modulo`.`competencia` of type `String`
+  """
+  competencia: String_Filter
+  """
   ✨ Generated from Field `Modulo`.`comun` of type `Boolean`
   """
   comun: Boolean_Filter
@@ -19240,6 +19757,10 @@ input Modulo_Having {
   ✨ Generated from Field `Modulo`.`carreraId_count` of type `Int!`
   """
   carreraId_count: Int_Filter
+  """
+  ✨ Generated from Field `Modulo`.`competencia_count` of type `Int!`
+  """
+  competencia_count: Int_Filter
   """
   ✨ Generated from Field `Modulo`.`comun_count` of type `Int!`
   """
@@ -19492,6 +20013,10 @@ input Modulo_Order {
   """
   carreraId: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`competencia` of type `String`
+  """
+  competencia: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`comun` of type `Boolean`
   """
   comun: OrderDirection
@@ -19551,6 +20076,10 @@ input Modulo_Order {
   ✨ Generated from Field `Modulo`.`carreraId_count` of type `Int!`
   """
   carreraId_count: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`competencia_count` of type `Int!`
+  """
+  competencia_count: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`comun_count` of type `Int!`
   """
@@ -19841,6 +20370,10 @@ input ModuloEstudiante_Data {
   """
   puntaje_update: [Float_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `ModuloEstudiante`.`certificadoTituloDocumentos_on_moduloEstudiante` of type `[CertificadoTituloDocumento!]!`
+  """
+  certificadoTituloDocumentos_on_moduloEstudiante: [CertificadoTituloDocumento_Data!]
+  """
   ✨ Generated from Field `ModuloEstudiante`.`efsrtPppEstudiantes_on_moduloEstudiante` of type `[EfsrtPppEstudiante!]!`
   """
   efsrtPppEstudiantes_on_moduloEstudiante: [EfsrtPppEstudiante_Data!]
@@ -19897,6 +20430,10 @@ input ModuloEstudiante_Filter {
   ✨ Generated from Field `ModuloEstudiante`.`puntaje` of type `Float`
   """
   puntaje: Float_Filter
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`certificadoTituloDocumentos_on_moduloEstudiante` of type `[CertificadoTituloDocumento!]!`
+  """
+  certificadoTituloDocumentos_on_moduloEstudiante: CertificadoTituloDocumento_ListFilter
   """
   ✨ Generated from Field `ModuloEstudiante`.`efsrtPppEstudiantes_on_moduloEstudiante` of type `[EfsrtPppEstudiante!]!`
   """

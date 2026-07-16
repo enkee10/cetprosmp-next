@@ -143,7 +143,10 @@ export {
   saveRegistroAuxiliar,
   updateRegistroAuxiliarEstudianteNombre,
   updateRegistroAuxiliarGrupoModuloFechas,
+  descargarCertificadosTitulosSeleccionados,
   descargarRegistrosAcademicosSeleccionados,
+  generateCertificadosTitulos,
   generateReporteDocumento,
+  listCertificadosTitulosOptions,
   listReporteDocumentosOptions,
 } from "./modules/index.js";

@@ -192,7 +192,10 @@ export {
   updateRegistroAuxiliarGrupoModuloFechas,
 } from "./registro-auxiliar/handlers.js";
 export {
+  descargarCertificadosTitulosSeleccionados,
   descargarRegistrosAcademicosSeleccionados,
+  generateCertificadosTitulos,
   generateReporteDocumento,
+  listCertificadosTitulosOptions,
   listReporteDocumentosOptions,
 } from "./reportes/handlers.js";

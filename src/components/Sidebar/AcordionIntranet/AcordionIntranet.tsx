@@ -186,6 +186,7 @@ export const menuSections: IntranetMenuSection[] = [
     icon: <AssessmentIcon />,
     items: [
       { id: 'documentos-reportes', title: 'Nominas y Actas', path: '/intranet/reportes/documentos', icon: <ArticleIcon /> },
+      { id: 'certificados-titulos', title: 'Certificados y Titulos', path: '/intranet/reportes/certificados-titulos', icon: <SchoolIcon /> },
     ],
   },
   {

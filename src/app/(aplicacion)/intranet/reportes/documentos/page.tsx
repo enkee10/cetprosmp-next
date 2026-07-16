@@ -111,7 +111,7 @@ function selectionModelToIds(model: GridRowSelectionModel) {
 }
 
 function getGrupoModuloLabel(option: GrupoModuloOption) {
-  return String(option.nombre || option.moduloNombre || `Modulo ${option.id}`).trim();
+  return String(option.moduloNombre || option.nombre || `Modulo ${option.id}`).trim();
 }
 
 function formatDateTime(value?: string | null) {

@@ -43,6 +43,7 @@ export const PERMISSION_ENTITIES: PermissionEntity[] = [
   { id: "users", title: "Users", section: "Registros" },
   { id: "roles", title: "Roles", section: "Registros" },
   { id: "documentos-reportes", title: "Actas y Nominas", section: "Reportes" },
+  { id: "certificados-titulos", title: "Certificados y Titulos", section: "Reportes" },
   { id: "post", title: "Publicaciones", section: "Mantenimiento" },
 ];
 

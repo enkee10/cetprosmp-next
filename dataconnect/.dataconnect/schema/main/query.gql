@@ -312,6 +312,30 @@ extend type Query {
     first: Carrera_FirstRow
   ): Carrera @fdc_generated(from: "Carrera", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `CertificadoTituloDocumento` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  certificadoTituloDocumento(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CertificadoTituloDocumento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CertificadoTituloDocumento_FirstRow
+  ): CertificadoTituloDocumento @fdc_generated(from: "CertificadoTituloDocumento", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `DatoGeneral` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   datoGeneral(
@@ -2071,6 +2095,40 @@ extend type Query {
     """
     having: Carrera_Having
   ): [Carrera!]! @fdc_generated(from: "Carrera", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `CertificadoTituloDocumento` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  certificadoTituloDocumentos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: CertificadoTituloDocumento_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [CertificadoTituloDocumento_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: CertificadoTituloDocumento_Having
+  ): [CertificadoTituloDocumento!]! @fdc_generated(from: "CertificadoTituloDocumento", purpose: QUERY_MULTIPLE)
   """
   ✨ List `DatoGeneral` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

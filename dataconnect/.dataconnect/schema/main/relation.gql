@@ -2515,6 +2515,196 @@ extend type Carrera {
   """
   _id: ID! @fdc_generated(from: "Carrera.id", purpose: ENTITY_ID)
 }
+extend type CertificadoTituloDocumento {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "CertificadoTituloDocumento", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `CertificadoTituloDocumento` table.
+  """
+  _count: Int! @fdc_generated(from: "CertificadoTituloDocumento.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CertificadoTituloDocumento` table where the `excelPath` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  excelPath_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CertificadoTituloDocumento.excelPath", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CertificadoTituloDocumento` table where the `excelUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  excelUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CertificadoTituloDocumento.excelUrl", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CertificadoTituloDocumento` table where the `generadoEn` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  generadoEn_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CertificadoTituloDocumento.generadoEn", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CertificadoTituloDocumento` table where the `grupoModuloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoModuloId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CertificadoTituloDocumento.grupoModuloId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CertificadoTituloDocumento` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CertificadoTituloDocumento.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CertificadoTituloDocumento` table where the `moduloEstudianteId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  moduloEstudianteId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CertificadoTituloDocumento.moduloEstudianteId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CertificadoTituloDocumento` table where the `pdfPath` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  pdfPath_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CertificadoTituloDocumento.pdfPath", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CertificadoTituloDocumento` table where the `pdfUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  pdfUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CertificadoTituloDocumento.pdfUrl", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CertificadoTituloDocumento` table where the `semestreCodigo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  semestreCodigo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CertificadoTituloDocumento.semestreCodigo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CertificadoTituloDocumento` table where the `tipoDocumento` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tipoDocumento_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CertificadoTituloDocumento.tipoDocumento", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `grupoModuloId` field in the `CertificadoTituloDocumento` table.
+  """
+  grupoModuloId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "CertificadoTituloDocumento.grupoModuloId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `CertificadoTituloDocumento` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "CertificadoTituloDocumento.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `moduloEstudianteId` field in the `CertificadoTituloDocumento` table.
+  """
+  moduloEstudianteId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "CertificadoTituloDocumento.moduloEstudianteId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `grupoModuloId` field in the `CertificadoTituloDocumento` table.
+  """
+  grupoModuloId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "CertificadoTituloDocumento.grupoModuloId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `CertificadoTituloDocumento` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "CertificadoTituloDocumento.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `moduloEstudianteId` field in the `CertificadoTituloDocumento` table.
+  """
+  moduloEstudianteId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "CertificadoTituloDocumento.moduloEstudianteId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `generadoEn` field in the `CertificadoTituloDocumento` table.
+  """
+  generadoEn_min: Timestamp @fdc_generated(from: "CertificadoTituloDocumento.generadoEn", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `grupoModuloId` field in the `CertificadoTituloDocumento` table.
+  """
+  grupoModuloId_min: Int @fdc_generated(from: "CertificadoTituloDocumento.grupoModuloId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `CertificadoTituloDocumento` table.
+  """
+  id_min: Int @fdc_generated(from: "CertificadoTituloDocumento.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `moduloEstudianteId` field in the `CertificadoTituloDocumento` table.
+  """
+  moduloEstudianteId_min: Int @fdc_generated(from: "CertificadoTituloDocumento.moduloEstudianteId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `generadoEn` field in the `CertificadoTituloDocumento` table.
+  """
+  generadoEn_max: Timestamp @fdc_generated(from: "CertificadoTituloDocumento.generadoEn", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `grupoModuloId` field in the `CertificadoTituloDocumento` table.
+  """
+  grupoModuloId_max: Int @fdc_generated(from: "CertificadoTituloDocumento.grupoModuloId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `CertificadoTituloDocumento` table.
+  """
+  id_max: Int @fdc_generated(from: "CertificadoTituloDocumento.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `moduloEstudianteId` field in the `CertificadoTituloDocumento` table.
+  """
+  moduloEstudianteId_max: Int @fdc_generated(from: "CertificadoTituloDocumento.moduloEstudianteId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "CertificadoTituloDocumento.id", purpose: ENTITY_ID)
+}
 extend type DatoGeneral {
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
@@ -7130,6 +7320,40 @@ extend type Grupo {
 }
 extend type GrupoModulo {
   """
+  ✨ List `CertificadoTituloDocumento` objects in a one-to-many relationship (where `CertificadoTituloDocumento`.`grupoModulo` is this object).
+  """
+  certificadoTituloDocumentos_on_grupoModulo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: CertificadoTituloDocumento_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [CertificadoTituloDocumento_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: CertificadoTituloDocumento_Having
+  ): [CertificadoTituloDocumento!]! @fdc_generated(from: "CertificadoTituloDocumento.grupoModulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `EfsrtPppEstudiante` objects in a one-to-many relationship (where `EfsrtPppEstudiante`.`grupoModulo` is this object).
   """
   efsrtPppEstudiantes_on_grupoModulo(
@@ -9620,6 +9844,15 @@ extend type Modulo {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Modulo` table where the `competencia` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  competencia_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Modulo.competencia", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Modulo` table where the `comun` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   comun_count(
@@ -9985,6 +10218,40 @@ extend type Modulo {
   _id: ID! @fdc_generated(from: "Modulo.id", purpose: ENTITY_ID)
 }
 extend type ModuloEstudiante {
+  """
+  ✨ List `CertificadoTituloDocumento` objects in a one-to-many relationship (where `CertificadoTituloDocumento`.`moduloEstudiante` is this object).
+  """
+  certificadoTituloDocumentos_on_moduloEstudiante(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: CertificadoTituloDocumento_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [CertificadoTituloDocumento_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: CertificadoTituloDocumento_Having
+  ): [CertificadoTituloDocumento!]! @fdc_generated(from: "CertificadoTituloDocumento.moduloEstudiante", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `EfsrtPppEstudiante` objects in a one-to-many relationship (where `EfsrtPppEstudiante`.`moduloEstudiante` is this object).
   """

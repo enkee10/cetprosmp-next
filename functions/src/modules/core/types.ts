@@ -651,6 +651,7 @@ export interface DataConnectModulo {
   tituloComercial?: string | null;
   orden?: number | null;
   descripcion?: string | null;
+  competencia?: string | null;
   horas?: number | null;
   creditos?: number | null;
   duracionEfsrt?: number | null;
@@ -686,6 +687,7 @@ export interface DataConnectModuloInput {
   tituloComercial?: string | null;
   orden?: number | null;
   descripcion?: string | null;
+  competencia?: string | null;
   horas?: number | null;
   creditos?: number | null;
   duracionEfsrt?: number | null;

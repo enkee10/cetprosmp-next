@@ -401,13 +401,13 @@ export const UPDATE_EVENTO_OCURRENCIA_MUTATION = `
 `;
 
 export const INSERT_MODULO_MUTATION = `
-  mutation InsertModulo($data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos duracionEfsrt creditosEfsrt metas activo slug comun planId")) {
+  mutation InsertModulo($data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion competencia horas creditos duracionEfsrt creditosEfsrt metas activo slug comun planId")) {
     modulo_insert(data: $data)
   }
 `;
 
 export const UPDATE_MODULO_MUTATION = `
-  mutation UpdateModulo($id: Int!, $data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos duracionEfsrt creditosEfsrt metas activo slug comun planId")) {
+  mutation UpdateModulo($id: Int!, $data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion competencia horas creditos duracionEfsrt creditosEfsrt metas activo slug comun planId")) {
     modulo_update(id: $id, data: $data)
   }
 `;

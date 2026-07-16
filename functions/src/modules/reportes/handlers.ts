@@ -6,8 +6,8 @@ import { basename, join } from "path";
 import { Readable } from "stream";
 import { promisify } from "util";
 import JSZip from "jszip";
-import ExcelJS from "exceljs";
 import { PDFDocument } from "pdf-lib";
+import sharp from "sharp";
 import { getStorage } from "firebase-admin/storage";
 import { https, runWith } from "firebase-functions/v1";
 import { drive_v3, google } from "googleapis";
@@ -27,6 +27,23 @@ type ReportInput = {
 type DownloadRegistrosAcademicosInput = {
   tipoDocumento?: unknown;
   grupoModuloIds?: unknown;
+  formato?: unknown;
+};
+
+type CertificadoTituloItemInput = {
+  grupoModuloId?: unknown;
+  moduloEstudianteId?: unknown;
+};
+
+type CertificadoTituloInput = {
+  tipoDocumento?: unknown;
+  items?: unknown;
+  pdfProvider?: unknown;
+};
+
+type DownloadCertificadosTitulosInput = {
+  tipoDocumento?: unknown;
+  items?: unknown;
   formato?: unknown;
 };
 
@@ -72,6 +89,7 @@ type ReporteGrupoModuloOption = {
     id: number;
     titulo?: string | null;
     tituloComercial?: string | null;
+    competencia?: string | null;
     horas?: number | null;
     creditos?: number | null;
     duracionEfsrt?: number | null;
@@ -130,6 +148,7 @@ type ReporteEstudiante = {
       dni?: string | null;
       sexo?: string | null;
       fechaNacimiento?: string | null;
+      avatar?: string | null;
     } | null;
   } | null;
 };
@@ -195,6 +214,37 @@ type RegistroAcademicoDocumento = {
   generadoEn?: string | null;
 };
 
+type CertificadoTituloTipo = "certificado" | "titulo";
+
+type CertificadoTituloDocumento = {
+  id: number;
+  tipoDocumento: string;
+  semestreCodigo?: string | null;
+  grupoModuloId: number;
+  moduloEstudianteId: number;
+  pdfPath?: string | null;
+  pdfUrl?: string | null;
+  excelPath?: string | null;
+  excelUrl?: string | null;
+  generadoEn?: string | null;
+};
+
+type CertificadoTituloRow = {
+  id: string;
+  grupoModuloId: number;
+  moduloEstudianteId: number;
+  matriculaId: number;
+  semestreId: number | null;
+  semestreTitulo: string | null;
+  semestreCodigo: string;
+  estudianteNombre: string;
+  apellidoPaterno: string;
+  dni: string;
+  grupoModuloNombre: string;
+  moduloNombre: string;
+  promedioFinal: number;
+};
+
 type SharedStringWriter = (value: string) => number;
 
 type ReportPdfProvider = "office" | "google" | "auto";
@@ -221,6 +271,10 @@ const TEMPLATES = {
   nomina: {
     name: "Nomina - todos",
     storageName: "nomina-todos",
+  },
+  certificadoPlanEstudios: {
+    name: "Certificado - Plan de Estudios",
+    storageName: "certificados-plan-estudios",
   },
 };
 
@@ -258,6 +312,7 @@ const REPORTE_OPTIONS_QUERY = `
         id
         titulo
         tituloComercial
+        competencia
         horas
         creditos
         duracionEfsrt
@@ -322,6 +377,7 @@ const REPORTE_DETALLE_QUERY = `
         id
         titulo
         tituloComercial
+        competencia
         horas
         creditos
         duracionEfsrt
@@ -403,6 +459,7 @@ const REPORTE_DETALLE_QUERY = `
           dni
           sexo
           fechaNacimiento
+          avatar
         }
       }
     }
@@ -480,6 +537,137 @@ const UPDATE_REGISTRO_ACADEMICO_DOCUMENTO_MUTATION = `
   }
 `;
 
+const CERTIFICADOS_TITULOS_OPTIONS_QUERY = `
+  query CertificadosTitulosOptions {
+    semestres(limit: 200) {
+      id
+      titulo
+      inicio
+      fin
+      archivado
+    }
+    efsrtPppEstudiantes(limit: 20000) {
+      promedioFinal
+      grupoModuloId
+      moduloEstudianteId
+      grupoModulo {
+        id
+        nombre
+        grupo {
+          id
+          nombreDisplay
+          turnoNombre
+          semestreId
+          semestre { id titulo }
+          personal {
+            displayName
+            user { username nombre apellidoPaterno apellidoMaterno }
+          }
+          turno { nombre }
+          horario { nombre diasSemana }
+        }
+        modulo {
+          id
+          titulo
+          tituloComercial
+          plan {
+            carrera {
+              nombre
+              titulo
+              tituloComercial
+              tipoCarrera { nombre }
+              especialidad { titulo tituloComercial }
+            }
+          }
+        }
+      }
+      moduloEstudiante {
+        id
+        matriculaId
+        matricula {
+          id
+          archivado
+          codigoInscripcion
+          user {
+            id
+            username
+            nombre
+            apellidos
+            apellidoPaterno
+            apellidoMaterno
+            dni
+          }
+        }
+      }
+    }
+    certificadoTituloDocumentos(limit: 20000) {
+      id
+      tipoDocumento
+      semestreCodigo
+      grupoModuloId
+      moduloEstudianteId
+      pdfPath
+      pdfUrl
+      excelPath
+      excelUrl
+      generadoEn
+    }
+  }
+`;
+
+const GET_CERTIFICADO_TITULO_DOCUMENTO_QUERY = `
+  query GetCertificadoTituloDocumentoManual($tipoDocumento: String!, $grupoModuloId: Int!, $moduloEstudianteId: Int!) {
+    certificadoTituloDocumentos(
+      where: {
+        tipoDocumento: { eq: $tipoDocumento },
+        grupoModuloId: { eq: $grupoModuloId },
+        moduloEstudianteId: { eq: $moduloEstudianteId }
+      },
+      limit: 1
+    ) {
+      id
+      tipoDocumento
+      semestreCodigo
+      grupoModuloId
+      moduloEstudianteId
+      pdfPath
+      pdfUrl
+      excelPath
+      excelUrl
+      generadoEn
+    }
+  }
+`;
+
+const LIST_CERTIFICADO_TITULO_DOCUMENTOS_QUERY = `
+  query ListCertificadoTituloDocumentosManual {
+    certificadoTituloDocumentos(limit: 20000) {
+      id
+      tipoDocumento
+      semestreCodigo
+      grupoModuloId
+      moduloEstudianteId
+      pdfPath
+      pdfUrl
+      excelPath
+      excelUrl
+      generadoEn
+    }
+  }
+`;
+
+const INSERT_CERTIFICADO_TITULO_DOCUMENTO_MUTATION = `
+  mutation InsertCertificadoTituloDocumento($data: CertificadoTituloDocumento_Data! @allow(fields: "tipoDocumento semestreCodigo grupoModuloId moduloEstudianteId pdfPath pdfUrl excelPath excelUrl generadoEn")) {
+    certificadoTituloDocumento_insert(data: $data)
+  }
+`;
+
+const UPDATE_CERTIFICADO_TITULO_DOCUMENTO_MUTATION = `
+  mutation UpdateCertificadoTituloDocumento($id: Int!, $data: CertificadoTituloDocumento_Data! @allow(fields: "semestreCodigo pdfPath pdfUrl excelPath excelUrl generadoEn")) {
+    certificadoTituloDocumento_update(id: $id, data: $data)
+  }
+`;
+
 function toNumber(value: unknown, fallback = 0) {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : fallback;
@@ -528,12 +716,62 @@ function getStudentName(student: ReporteEstudiante) {
   return `Matricula ${student.matriculaId}`;
 }
 
+function getUserDisplayName(user?: {
+  username?: string | null;
+  nombre?: string | null;
+  apellidos?: string | null;
+  apellidoPaterno?: string | null;
+  apellidoMaterno?: string | null;
+} | null) {
+  const apellidos = [user?.apellidoPaterno, user?.apellidoMaterno].filter(Boolean).join(" ");
+  const nombres = cleanText(user?.nombre || user?.apellidos || user?.username || "");
+  if (apellidos && nombres) return `${cleanText(apellidos).toLocaleUpperCase("es-PE")}, ${toTitleCase(nombres)}`;
+  if (apellidos) return cleanText(apellidos).toLocaleUpperCase("es-PE");
+  if (nombres) return toTitleCase(nombres);
+  return "";
+}
+
+function semestreCodigo(value?: string | null) {
+  const text = cleanText(value);
+  return text.length > 4 ? text.slice(-4) : text;
+}
+
+function grupoModuloDisplayName(grupoModulo: ReporteGrupoModuloOption) {
+  return cleanText(grupoModulo.nombre || getModuloDocumentName(grupoModulo) || `Grupo-modulo ${grupoModulo.id}`);
+}
+
+function certificadoGrupoModuloLabel(grupoModulo: ReporteGrupoModuloOption) {
+  const codigo = semestreCodigo(grupoModulo.grupo?.semestre?.titulo);
+  return cleanText([codigo, grupoModuloDisplayName(grupoModulo)].filter(Boolean).join(" "));
+}
+
+function certificadoSheetName(value: { apellidoPaterno?: string | null; dni?: string | null }, used: Set<string>) {
+  const apellido = cleanText(value.apellidoPaterno || "Estudiante").split(/\s+/)[0] || "Estudiante";
+  const dni = cleanText(value.dni);
+  const baseRaw = [apellido, dni].filter(Boolean).join("-");
+  const base = baseRaw
+    .replace(/[:\\/?*[\]]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 31) || "Estudiante";
+  let name = base;
+  let index = 2;
+  while (used.has(name.toLocaleLowerCase("es-PE"))) {
+    const suffix = `${index}`;
+    const prefix = apellido.slice(0, Math.max(1, 31 - suffix.length - (dni ? dni.length + 1 : 0)));
+    name = [prefix ? `${prefix}${suffix}` : `Estudiante${suffix}`, dni].filter(Boolean).join("-").slice(0, 31);
+    index += 1;
+  }
+  used.add(name.toLocaleLowerCase("es-PE"));
+  return name;
+}
+
 function getModuloName(grupoModulo: ReporteGrupoModuloOption) {
   return cleanText(grupoModulo.nombre || grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || "");
 }
 
 function getModuloDocumentName(grupoModulo: ReporteGrupoModuloOption) {
-  return cleanText(grupoModulo.nombre || grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || "");
+  return cleanText(grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || grupoModulo.nombre || "");
 }
 
 function getCarreraName(grupoModulo: ReporteGrupoModuloOption) {
@@ -773,6 +1011,67 @@ async function upsertRegistroAcademicoDocumento(input: {
   } satisfies RegistroAcademicoDocumento;
 }
 
+async function upsertCertificadoTituloDocumento(input: {
+  tipoDocumento: CertificadoTituloTipo;
+  semestreCodigo: string;
+  grupoModuloId: number;
+  moduloEstudianteId: number;
+  pdf: { path: string; url: string };
+  excel: { path: string; url: string };
+  generadoEn: string;
+}) {
+  const existing = await dataConnect.executeGraphql<{
+    certificadoTituloDocumentos: CertificadoTituloDocumento[];
+  }, { tipoDocumento: string; grupoModuloId: number; moduloEstudianteId: number }>(
+    GET_CERTIFICADO_TITULO_DOCUMENTO_QUERY,
+    {
+      variables: {
+        tipoDocumento: input.tipoDocumento,
+        grupoModuloId: input.grupoModuloId,
+        moduloEstudianteId: input.moduloEstudianteId,
+      },
+    },
+  );
+  const current = existing.data.certificadoTituloDocumentos?.[0] ?? null;
+  const data = {
+    semestreCodigo: input.semestreCodigo,
+    pdfPath: input.pdf.path,
+    pdfUrl: input.pdf.url,
+    excelPath: input.excel.path,
+    excelUrl: input.excel.url,
+    generadoEn: input.generadoEn,
+  };
+
+  if (current?.id) {
+    await dataConnect.executeGraphql<
+      { certificadoTituloDocumento_update: unknown },
+      { id: number; data: typeof data }
+    >(
+      UPDATE_CERTIFICADO_TITULO_DOCUMENTO_MUTATION,
+      { variables: { id: current.id, data } },
+    );
+    return { ...current, ...data } satisfies CertificadoTituloDocumento;
+  }
+
+  const insertData = {
+    tipoDocumento: input.tipoDocumento,
+    grupoModuloId: input.grupoModuloId,
+    moduloEstudianteId: input.moduloEstudianteId,
+    ...data,
+  };
+  const inserted = await dataConnect.executeGraphql<
+    { certificadoTituloDocumento_insert: unknown },
+    { data: typeof insertData }
+  >(
+    INSERT_CERTIFICADO_TITULO_DOCUMENTO_MUTATION,
+    { variables: { data: insertData } },
+  );
+  return {
+    id: Number((inserted.data.certificadoTituloDocumento_insert as { id?: number } | null)?.id ?? 0),
+    ...insertData,
+  } satisfies CertificadoTituloDocumento;
+}
+
 function templateStoragePath(template: ReportTemplate) {
   return `documentos/${template.storageName}.xlsx`;
 }
@@ -797,6 +1096,7 @@ async function ensureAllTemplatesInStorage() {
     ensureTemplateInStorage(TEMPLATES.actaOpcion),
     ensureTemplateInStorage(TEMPLATES.actaPrograma),
     ensureTemplateInStorage(TEMPLATES.nomina),
+    ensureTemplateInStorage(TEMPLATES.certificadoPlanEstudios),
   ]);
 }
 
@@ -1093,7 +1393,16 @@ function normalizeZipPath(basePath: string, target: string) {
   const normalizedTarget = target.startsWith("/") ? target.slice(1) : target;
   if (normalizedTarget.startsWith("xl/")) return normalizedTarget;
   const baseDir = basePath.includes("/") ? basePath.slice(0, basePath.lastIndexOf("/") + 1) : "";
-  return `${baseDir}${normalizedTarget}`.replace(/\/\.\//g, "/");
+  const parts: string[] = [];
+  for (const part of `${baseDir}${normalizedTarget}`.split("/")) {
+    if (!part || part === ".") continue;
+    if (part === "..") {
+      parts.pop();
+      continue;
+    }
+    parts.push(part);
+  }
+  return parts.join("/");
 }
 
 async function getFirstVisibleWorksheet(zip: JSZip) {
@@ -1250,6 +1559,80 @@ function addWorksheetMergeRange(xml: string, range: string) {
     return xml.replace(/<\/sheetData>/i, `</sheetData>${mergeCells}`);
   }
   return xml.replace(/<\/worksheet>$/i, `${mergeCells}</worksheet>`);
+}
+
+function shiftCellRefsInXmlFragment(xml: string, startRow: number, offset: number) {
+  if (offset === 0) return xml;
+  return xml.replace(/(\$?[A-Z]{1,3}\$?)(\d+)/g, (match, column: string, rowValue: string) => {
+    const row = Number(rowValue);
+    if (!Number.isFinite(row) || row < startRow) return match;
+    return `${column}${row + offset}`;
+  });
+}
+
+function shiftWorksheetRows(xml: string, startRow: number, offset: number) {
+  if (offset <= 0) return xml;
+  let nextXml = xml.replace(/<row\b[^>]*(?:\/>|>[\s\S]*?<\/row>)/gi, (rowXml) => {
+    const rowTag = rowXml.match(/^<row\b[^>]*>/i)?.[0] ?? rowXml.match(/^<row\b[^>]*\/>/i)?.[0] ?? "";
+    const row = Number(parseAttributes(rowTag).get("r"));
+    if (!Number.isFinite(row) || row < startRow) return rowXml;
+    const nextRowXml = shiftCellRefsInXmlFragment(rowXml, startRow, offset);
+    return nextRowXml.replace(/^<row\b[^>]*>/i, (tag) => setXmlAttribute(tag, "r", String(row + offset)));
+  });
+
+  nextXml = nextXml.replace(/<mergeCells\b[^>]*>[\s\S]*?<\/mergeCells>/i, (section) =>
+    shiftCellRefsInXmlFragment(section, startRow, offset),
+  );
+  nextXml = nextXml.replace(/<dimension\b[^>]*\/>/i, (tag) =>
+    shiftCellRefsInXmlFragment(tag, startRow, offset),
+  );
+  return nextXml;
+}
+
+function rowXmlByNumber(xml: string, row: number) {
+  const regex = new RegExp(`<row\\b[^>]*\\br="${row}"[^>]*(?:/>|>[\\s\\S]*?</row>)`, "i");
+  return xml.match(regex)?.[0] ?? null;
+}
+
+function cloneRowXml(rowXml: string, fromRow: number, toRow: number) {
+  const shifted = shiftCellRefsInXmlFragment(rowXml, fromRow, toRow - fromRow);
+  return shifted.replace(/^<row\b[^>]*>/i, (tag) => setXmlAttribute(tag, "r", String(toRow)));
+}
+
+function insertRowsAfter(xml: string, afterRow: number, rows: string[]) {
+  if (rows.length === 0) return xml;
+  const existingRow = rowXmlByNumber(xml, afterRow);
+  if (!existingRow) return xml.replace(/<\/sheetData>/i, `${rows.join("")}</sheetData>`);
+  const index = xml.indexOf(existingRow);
+  const insertAt = index + existingRow.length;
+  return `${xml.slice(0, insertAt)}${rows.join("")}${xml.slice(insertAt)}`;
+}
+
+function removeWorksheetMergeRanges(xml: string, predicate: (range: string) => boolean) {
+  const mergeCellsRegex = /<mergeCells\b[^>]*>[\s\S]*?<\/mergeCells>/i;
+  const match = xml.match(mergeCellsRegex);
+  if (!match?.[0]) return xml;
+  const kept = (match[0].match(/<mergeCell\b[^>]*\/>/gi) ?? [])
+    .filter((tag) => !predicate((parseAttributes(tag).get("ref") || "").toUpperCase()));
+  if (kept.length === 0) {
+    return `${xml.slice(0, match.index)}${xml.slice((match.index ?? 0) + match[0].length)}`;
+  }
+  const nextSection = `<mergeCells count="${kept.length}">${kept.join("")}</mergeCells>`;
+  return `${xml.slice(0, match.index)}${nextSection}${xml.slice((match.index ?? 0) + match[0].length)}`;
+}
+
+function setRowHeight(xml: string, row: number, heightPoints: number) {
+  const normalizedHeight = Math.max(1, heightPoints);
+  const regex = new RegExp(`<row\\b[^>]*\\br="${row}"[^>]*(?:/>|>[\\s\\S]*?</row>)`, "i");
+  if (regex.test(xml)) {
+    return xml.replace(regex, (rowXml) =>
+      rowXml.replace(/^<row\b[^>]*(?:\/>|>)/i, (tag) =>
+        setXmlAttribute(setXmlAttribute(tag, "ht", normalizedHeight.toFixed(2)), "customHeight", "1"),
+      ),
+    );
+  }
+  const newRow = `<row r="${row}" ht="${normalizedHeight.toFixed(2)}" customHeight="1"/>`;
+  return xml.replace(/<\/sheetData>/i, `${newRow}</sheetData>`);
 }
 
 function retiredStudentMergeRange(cell: string) {
@@ -1412,6 +1795,103 @@ async function createSharedStringWriter(zip: JSZip) {
   return { add, save };
 }
 
+function nextRelationshipId(relsXml: string) {
+  let max = 0;
+  for (const rel of relsXml.match(/<Relationship\b[^>]*>/g) ?? []) {
+    const id = parseAttributes(rel).get("Id") || "";
+    const number = Number(/^rId(\d+)$/i.exec(id)?.[1] ?? 0);
+    if (Number.isFinite(number)) max = Math.max(max, number);
+  }
+  return `rId${max + 1}`;
+}
+
+function nextDrawingObjectId(drawingXml: string) {
+  let max = 0;
+  for (const tag of drawingXml.match(/<xdr:cNvPr\b[^>]*>/g) ?? []) {
+    const id = Number(parseAttributes(tag).get("id") ?? 0);
+    if (Number.isFinite(id)) max = Math.max(max, id);
+  }
+  return max + 1;
+}
+
+function nextMediaImagePath(zip: JSZip, extension = "png") {
+  let max = 0;
+  for (const filePath of Object.keys(zip.files)) {
+    const number = Number(new RegExp(`^xl/media/image(\\d+)\\.${extension}$`, "i").exec(filePath)?.[1] ?? 0);
+    if (Number.isFinite(number)) max = Math.max(max, number);
+  }
+  return `xl/media/image${max + 1}.${extension}`;
+}
+
+async function fetchImageBuffer(url: string) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`No se pudo descargar la imagen. HTTP ${response.status}`);
+  }
+  return Buffer.from(await response.arrayBuffer());
+}
+
+async function prepareContainedPng(buffer: Buffer, widthPx: number, heightPx: number) {
+  return sharp(buffer)
+    .rotate()
+    .resize(widthPx, heightPx, {
+      fit: "contain",
+      background: { r: 255, g: 255, b: 255, alpha: 0 },
+    })
+    .png()
+    .toBuffer();
+}
+
+async function addCertificateAvatarImage(zip: JSZip, avatarUrl: string) {
+  const cleanUrl = cleanText(avatarUrl);
+  if (!cleanUrl) return;
+
+  const drawingPath = "xl/drawings/drawing1.xml";
+  const drawingRelsPath = "xl/drawings/_rels/drawing1.xml.rels";
+  const drawingFile = zip.file(drawingPath);
+  const relsFile = zip.file(drawingRelsPath);
+  let drawingXml = await drawingFile?.async("string");
+  let relsXml = await relsFile?.async("string");
+  if (!drawingFile || !relsFile || !drawingXml || !relsXml) return;
+
+  const shapeAnchor = drawingXml.match(/<xdr:oneCellAnchor>[\s\S]*?<xdr:sp\b[\s\S]*?<\/xdr:oneCellAnchor>/i)?.[0];
+  const from = shapeAnchor?.match(/<xdr:from>[\s\S]*?<\/xdr:from>/i)?.[0];
+  const ext = shapeAnchor?.match(/<xdr:ext\b[^>]*\/>/i)?.[0];
+  const transform = shapeAnchor?.match(/<a:xfrm>[\s\S]*?<\/a:xfrm>/i)?.[0];
+  if (!shapeAnchor || !from || !ext) return;
+
+  const extAttrs = parseAttributes(ext);
+  const widthEmu = Number(extAttrs.get("cx"));
+  const heightEmu = Number(extAttrs.get("cy"));
+  if (!Number.isFinite(widthEmu) || !Number.isFinite(heightEmu) || widthEmu <= 0 || heightEmu <= 0) return;
+
+  try {
+    const imageBuffer = await fetchImageBuffer(cleanUrl);
+    const widthPx = Math.max(1, Math.round(widthEmu / 9525));
+    const heightPx = Math.max(1, Math.round(heightEmu / 9525));
+    const pngBuffer = await prepareContainedPng(imageBuffer, widthPx, heightPx);
+    const mediaPath = nextMediaImagePath(zip, "png");
+    const relId = nextRelationshipId(relsXml);
+    const objectId = nextDrawingObjectId(drawingXml);
+
+    zip.file(mediaPath, pngBuffer);
+    const target = `../media/${basename(mediaPath)}`;
+    const rel = `<Relationship Id="${relId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="${xmlEscape(target)}"/>`;
+    relsXml = relsXml.replace(/<\/Relationships>\s*$/i, `${rel}</Relationships>`);
+
+    const xfrm = transform || `<a:xfrm><a:off x="0" y="0"/><a:ext cx="${widthEmu}" cy="${heightEmu}"/></a:xfrm>`;
+    const pic = `<xdr:oneCellAnchor>${from}${ext}<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${objectId}" name="avatar-certificado.png"/><xdr:cNvPicPr preferRelativeResize="0"/></xdr:nvPicPr><xdr:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${relId}" cstate="print"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr>${xfrm}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></xdr:spPr></xdr:pic><xdr:clientData fLocksWithSheet="0"/></xdr:oneCellAnchor>`;
+    drawingXml = drawingXml.replace(/<\/xdr:wsDr>\s*$/i, `${pic}</xdr:wsDr>`);
+
+    zip.file(drawingPath, drawingXml);
+    zip.file(drawingRelsPath, relsXml);
+  } catch (error) {
+    console.warn("No se pudo insertar el avatar en el certificado.", {
+      message: String((error as { message?: string } | null)?.message || error),
+    });
+  }
+}
+
 async function applyExcelUpdates(
   templateBuffer: Buffer,
   updates: SpreadsheetUpdate[],
@@ -1474,6 +1954,85 @@ async function applyExcelUpdates(
   zip.file(worksheet.path, nextXml);
   sharedStrings.save();
   leftIndentStyles.save();
+  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
+}
+
+async function applyCertificatePlanEstudiosUpdates(
+  templateBuffer: Buffer,
+  tokenReplacements: TemplateTokenReplacements,
+  unitRows: CertificateUnitTableRow[],
+  avatarUrl: string,
+) {
+  const zip = await JSZip.loadAsync(templateBuffer);
+  await replaceTemplateTokensInWorkbook(zip, tokenReplacements);
+  await addCertificateAvatarImage(zip, avatarUrl);
+
+  const worksheet = await getFirstVisibleWorksheet(zip);
+  const sharedStrings = await createSharedStringWriter(zip);
+  const sheetFile = zip.file(worksheet.path);
+  const originalXml = await sheetFile?.async("string");
+  if (!sheetFile || !originalXml) throw new Error(`No se pudo leer la hoja ${worksheet.path}.`);
+
+  const baseRows = 3;
+  const rowCount = Math.max(baseRows, unitRows.length || 1);
+  const extraRows = Math.max(0, rowCount - baseRows);
+  const firstDataRow = 39;
+  const lastDataRow = firstDataRow + rowCount - 1;
+  const totalsRow = lastDataRow + 1;
+  let nextXml = extraRows > 0 ? shiftWorksheetRows(originalXml, 42, extraRows) : originalXml;
+
+  if (extraRows > 0) {
+    const templateRow = rowXmlByNumber(nextXml, 41);
+    const rowsToInsert = templateRow
+      ? Array.from({ length: extraRows }, (_, index) => cloneRowXml(templateRow, 41, 42 + index))
+      : [];
+    nextXml = insertRowsAfter(nextXml, 41, rowsToInsert);
+  }
+
+  nextXml = removeWorksheetMergeRanges(nextXml, (range) => /^A39:A\d+$/i.test(range));
+  nextXml = addWorksheetMergeRange(nextXml, `A39:A${totalsRow}`);
+  for (let row = firstDataRow; row <= lastDataRow; row += 1) {
+    nextXml = addWorksheetMergeRange(nextXml, `B${row}:C${row}`);
+    nextXml = addWorksheetMergeRange(nextXml, `F${row}:H${row}`);
+  }
+
+  const weights = Array.from({ length: rowCount }, (_, index) => certificateRowWeight(unitRows[index] ?? {
+    competencia: "",
+    unidad: "",
+    creditos: "",
+    horas: "",
+    capacidades: "",
+    nota: "",
+  }));
+  const totalWeight = weights.reduce((sum, value) => sum + value, 0) || 1;
+  const totalHeightPoints = 450 * 0.75;
+  for (let index = 0; index < rowCount; index += 1) {
+    nextXml = setRowHeight(nextXml, firstDataRow + index, totalHeightPoints * (weights[index] / totalWeight));
+  }
+
+  const competencia = cleanText(unitRows[0]?.competencia);
+  for (let index = 0; index < rowCount; index += 1) {
+    const row = firstDataRow + index;
+    const item = unitRows[index] ?? {
+      competencia,
+      unidad: "",
+      creditos: "",
+      horas: "",
+      capacidades: "",
+      nota: "",
+    };
+
+    nextXml = setSheetCellValue(nextXml, `A${row}`, index === 0 ? competencia : "", sharedStrings.add);
+    nextXml = setSheetCellValue(nextXml, `B${row}`, item.unidad, sharedStrings.add);
+    nextXml = setSheetCellValue(nextXml, `D${row}`, item.creditos, sharedStrings.add);
+    nextXml = setSheetCellValue(nextXml, `E${row}`, item.horas, sharedStrings.add);
+    nextXml = setSheetCellValue(nextXml, `F${row}`, item.capacidades, sharedStrings.add);
+    nextXml = setSheetCellValue(nextXml, `I${row}`, item.nota, sharedStrings.add);
+  }
+
+  nextXml = ensureWorksheetPrintSetup(nextXml, 95, "landscape", true, "9", false);
+  zip.file(worksheet.path, nextXml);
+  sharedStrings.save();
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
 
@@ -1976,6 +2535,235 @@ function fillReporte(updates: SpreadsheetUpdate[], sheetName: string, tipoDocume
   }
 }
 
+function certificadoTituloTipo(input?: unknown): CertificadoTituloTipo {
+  return String(input || "certificado").toLowerCase() === "titulo" ? "titulo" : "certificado";
+}
+
+function certificadoItemKey(item: { grupoModuloId: number; moduloEstudianteId: number }) {
+  return `${item.grupoModuloId}:${item.moduloEstudianteId}`;
+}
+
+function certificadoTituloStorageBase(tipoDocumento: CertificadoTituloTipo, grupoModuloId: number, moduloEstudianteId: number) {
+  return `documentos/certificados-titulos/${tipoDocumento}-${grupoModuloId}-${moduloEstudianteId}`;
+}
+
+type CertificateUnitTableRow = {
+  competencia: string;
+  unidad: string;
+  creditos: string | number;
+  horas: string | number;
+  capacidades: string;
+  nota: string | number;
+};
+
+function buildCertificateUnitRows(data: ReporteDocumentoData, student: ReporteEstudiante): CertificateUnitTableRow[] {
+  const unitMap = unidadPromedioMap(data);
+  const capacitiesByUnit = new Map<number, string[]>();
+  for (const capacidad of data.capacidades) {
+    if (!capacidad.unidadDidacticaId) continue;
+    const current = capacitiesByUnit.get(capacidad.unidadDidacticaId) ?? [];
+    const description = cleanText(capacidad.descripcion || capacidad.sigla || "");
+    if (description) current.push(description);
+    capacitiesByUnit.set(capacidad.unidadDidacticaId, current);
+  }
+
+  const competencia = cleanText(data.grupoModulo.modulo?.competencia);
+  return data.unidades.map((unit) => ({
+    competencia,
+    unidad: cleanText(unit.nombre || unit.sigla || ""),
+    creditos: unit.creditos ?? "",
+    horas: unit.duracion ?? "",
+    capacidades: (capacitiesByUnit.get(unit.id) ?? []).map((value) => `• ${value}`).join("\n\n"),
+    nota: formatGrade(unitMap.get(`${student.matriculaId}:${unit.id}`)),
+  }));
+}
+
+function certificateRowWeight(row: CertificateUnitTableRow) {
+  const text = cleanText(row.capacidades);
+  const lineCount = row.capacidades.split(/\n+/).filter((line) => cleanText(line)).length;
+  return Math.max(1, text.length / 90, lineCount * 0.9);
+}
+
+function buildCertificateTokens(data: ReporteDocumentoData, student: ReporteEstudiante, promedioFinal: number) {
+  const unitMap = unidadPromedioMap(data);
+  const capacitiesByUnit = new Map<number, string[]>();
+  for (const capacidad of data.capacidades) {
+    if (!capacidad.unidadDidacticaId) continue;
+    const current = capacitiesByUnit.get(capacidad.unidadDidacticaId) ?? [];
+    current.push(cleanText(capacidad.descripcion || capacidad.sigla || ""));
+    capacitiesByUnit.set(capacidad.unidadDidacticaId, current);
+  }
+  const units = data.unidades;
+  const creditos = units.map((unit) => unit.creditos ?? "");
+  const horas = units.map((unit) => unit.duracion ?? "");
+  const sumaCreditos = units.reduce<number>((sum, unit) => sum + toNumber(unit.creditos, 0), 0);
+  const sumaHoras = units.reduce<number>((sum, unit) => sum + toNumber(unit.duracion, 0), 0);
+  const notas = units.map((unit) => formatGrade(unitMap.get(`${student.matriculaId}:${unit.id}`)));
+  const capacidades = units.map((unit) => (capacitiesByUnit.get(unit.id) ?? []).filter(Boolean).join("; "));
+
+  return {
+    "[APELLIDO PATERNO APELLIDO MATERNO, Nombres]": getStudentName(student),
+    "[codigo inscripcion]": cleanText(student.matricula?.codigoInscripcion || student.matricula?.user?.dni || ""),
+    "[NOMBRE MODULO]": getModuloDocumentName(data.grupoModulo).toLocaleUpperCase("es-PE"),
+    "[CARRERA]": getCarreraName(data.grupoModulo).toLocaleUpperCase("es-PE"),
+    "[INICIO MODULO]": formatDate(data.grupoModulo.inicio || data.semestre?.inicio),
+    "[FIN MODULO]": formatDate(data.grupoModulo.fin || data.semestre?.fin),
+    "[CREDITOS MODULO]": data.grupoModulo.modulo?.creditos ?? "",
+    "[HORAS MODULO]": data.grupoModulo.modulo?.horas ?? "",
+    "[fecha actual larga]": formatDateLong(),
+    "[director]": getPersonalName(data.semestre?.director),
+    "[UNIDAD DE COMPETENCIA]": cleanText(data.grupoModulo.modulo?.competencia),
+    "[UNIDAD DIDACTICA 1]": units.map((unit) => cleanText(unit.nombre || unit.sigla || "")).join("\n"),
+    "[suma creditos]": sumaCreditos,
+    "[suma horas]": sumaHoras,
+    "[PROMEDIO]": formatGrade(promedioFinal),
+    "[creditos unidad didactica]": creditos.join("\n"),
+    "[horas unidad didactica]": horas.join("\n"),
+    "[nota unidad didactica]": notas.join("\n"),
+    "[Capacidades de la unidad]": capacidades.join("\n"),
+    "[avatar]": cleanText(student.matricula?.user?.avatar || ""),
+  };
+}
+
+async function buildCertificadoTituloRows() {
+  const response = await dataConnect.executeGraphql<{
+    semestres: ReporteSemestre[];
+    efsrtPppEstudiantes: Array<{
+      promedioFinal?: number | null;
+      grupoModuloId: number;
+      moduloEstudianteId: number;
+      grupoModulo: ReporteGrupoModuloOption | null;
+      moduloEstudiante: {
+        id: number;
+        matriculaId: number;
+        matricula?: {
+          id: number;
+          archivado?: boolean | null;
+          codigoInscripcion?: string | null;
+          user?: {
+            id: number;
+            username?: string | null;
+            nombre?: string | null;
+            apellidos?: string | null;
+            apellidoPaterno?: string | null;
+            apellidoMaterno?: string | null;
+            dni?: string | null;
+          } | null;
+        } | null;
+      } | null;
+    }>;
+    certificadoTituloDocumentos: CertificadoTituloDocumento[];
+  }, Record<string, never>>(CERTIFICADOS_TITULOS_OPTIONS_QUERY);
+
+  const rows: CertificadoTituloRow[] = [];
+  const grupoModuloById = new Map<number, {
+    id: number;
+    nombre: string;
+    semestreId: number | null;
+    semestreTitulo: string | null;
+    moduloNombre: string;
+  }>();
+
+  for (const item of response.data.efsrtPppEstudiantes ?? []) {
+    const promedioFinal = Number(item.promedioFinal);
+    if (!Number.isFinite(promedioFinal) || promedioFinal < 13) continue;
+    if (!item.grupoModulo || !item.moduloEstudiante || item.moduloEstudiante.matricula?.archivado) continue;
+
+    const grupoModulo = item.grupoModulo;
+    const semestreTitulo = grupoModulo.grupo?.semestre?.titulo ?? null;
+    const codigo = semestreCodigo(semestreTitulo);
+    const user = item.moduloEstudiante.matricula?.user ?? null;
+    const moduloNombre = getModuloDocumentName(grupoModulo);
+    const grupoNombre = certificadoGrupoModuloLabel(grupoModulo);
+    grupoModuloById.set(grupoModulo.id, {
+      id: grupoModulo.id,
+      nombre: grupoNombre,
+      semestreId: grupoModulo.grupo?.semestreId ?? null,
+      semestreTitulo,
+      moduloNombre,
+    });
+    rows.push({
+      id: certificadoItemKey({ grupoModuloId: item.grupoModuloId, moduloEstudianteId: item.moduloEstudianteId }),
+      grupoModuloId: item.grupoModuloId,
+      moduloEstudianteId: item.moduloEstudianteId,
+      matriculaId: item.moduloEstudiante.matriculaId,
+      semestreId: grupoModulo.grupo?.semestreId ?? null,
+      semestreTitulo,
+      semestreCodigo: codigo,
+      estudianteNombre: getUserDisplayName(user) || `Matricula ${item.moduloEstudiante.matriculaId}`,
+      apellidoPaterno: cleanText(user?.apellidoPaterno),
+      dni: cleanText(user?.dni),
+      grupoModuloNombre: grupoNombre,
+      moduloNombre,
+      promedioFinal,
+    });
+  }
+
+  rows.sort((a, b) =>
+    cleanText(a.semestreTitulo).localeCompare(cleanText(b.semestreTitulo), "es", { numeric: true })
+    || cleanText(a.grupoModuloNombre).localeCompare(cleanText(b.grupoModuloNombre), "es", { numeric: true })
+    || cleanText(a.estudianteNombre).localeCompare(cleanText(b.estudianteNombre), "es", { numeric: true }),
+  );
+
+  return {
+    semestres: response.data.semestres ?? [],
+    grupoModulos: Array.from(grupoModuloById.values()).sort((a, b) =>
+      cleanText(a.semestreTitulo).localeCompare(cleanText(b.semestreTitulo), "es", { numeric: true })
+      || cleanText(a.nombre).localeCompare(cleanText(b.nombre), "es", { numeric: true }),
+    ),
+    estudiantes: rows,
+    documentos: response.data.certificadoTituloDocumentos ?? [],
+  };
+}
+
+async function generateCertificadoPlanEstudios(input: {
+  grupoModuloId: number;
+  moduloEstudianteId: number;
+  pdfProvider?: ReportPdfProvider;
+}) {
+  dataHelpers.datosGenerales = await getDatosGeneralesGlobales();
+  const data = await buildReporteData(input.grupoModuloId);
+  if (data.opcionOcupacional) {
+    throw new https.HttpsError("failed-precondition", "Por ahora el certificado esta configurado para Programas de Estudios.");
+  }
+  const student = data.estudiantes.find((item) => item.id === input.moduloEstudianteId);
+  if (!student) {
+    throw new https.HttpsError("not-found", "No se encontro el estudiante en el grupo-modulo.");
+  }
+  const promedioFinal = efsrtPromedioMap(data).get(input.moduloEstudianteId);
+  if (typeof promedioFinal !== "number" || !Number.isFinite(promedioFinal) || promedioFinal < 13) {
+    throw new https.HttpsError("failed-precondition", "El estudiante no tiene promedio aprobatorio para generar certificado.");
+  }
+
+  const { buffer: templateBuffer } = await ensureTemplateInStorage(TEMPLATES.certificadoPlanEstudios);
+  const xlsxBuffer = await applyCertificatePlanEstudiosUpdates(
+    templateBuffer,
+    buildCertificateTokens(data, student, promedioFinal),
+    buildCertificateUnitRows(data, student),
+    cleanText(student.matricula?.user?.avatar || ""),
+  );
+
+  const baseName = `certificado-${input.grupoModuloId}-${input.moduloEstudianteId}`;
+  const pdfBuffer = await convertXlsxToPdf(xlsxBuffer, baseName, input.pdfProvider);
+  const storageBase = certificadoTituloStorageBase("certificado", input.grupoModuloId, input.moduloEstudianteId);
+  const pdf = await uploadBuffer(`${storageBase}.pdf`, pdfBuffer, "application/pdf");
+  const excel = await uploadBuffer(
+    `${storageBase}.xlsx`,
+    xlsxBuffer,
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  );
+  const documento = await upsertCertificadoTituloDocumento({
+    tipoDocumento: "certificado",
+    semestreCodigo: semestreCodigo(data.semestre?.titulo || data.grupoModulo.grupo?.semestre?.titulo),
+    grupoModuloId: input.grupoModuloId,
+    moduloEstudianteId: input.moduloEstudianteId,
+    pdf,
+    excel,
+    generadoEn: new Date().toISOString(),
+  });
+  return { pdf, excel, documento };
+}
+
 async function buildReporteData(grupoModuloId: number) {
   const contextResponse = await dataConnect.executeGraphql<{
     grupoModulo: Pick<ReporteGrupoModuloOption, "id" | "grupoId" | "moduloId" | "grupo"> | null;
@@ -2082,7 +2870,8 @@ function selectTemplate(tipoDocumento: ReportDocumentType, reportes: ReporteDocu
 }
 
 function safeWorksheetName(value: string, used: Set<string>) {
-  const base = cleanText(value || "Docente")
+  const firstName = cleanText(value || "Docente").split(/\s+/)[0] || "Docente";
+  const base = firstName
     .replace(/[:\\/?*[\]]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
@@ -2090,7 +2879,7 @@ function safeWorksheetName(value: string, used: Set<string>) {
   let name = base;
   let index = 2;
   while (used.has(name.toLocaleLowerCase("es-PE"))) {
-    const suffix = ` ${index}`;
+    const suffix = `${index}`;
     name = `${base.slice(0, Math.max(1, 31 - suffix.length))}${suffix}`;
     index += 1;
   }
@@ -2128,50 +2917,416 @@ async function combinePdfBuffers(buffers: Buffer[]) {
   return Buffer.from(await target.save());
 }
 
-async function combineExcelBuffers(items: Array<{ buffer: Buffer; sheetName: string }>) {
-  const target = new ExcelJS.Workbook();
-  const usedNames = new Set<string>();
+function replaceXmlPart(xml: string, partRegex: RegExp, nextPart: string) {
+  const match = xml.match(partRegex);
+  if (!match?.[0]) return xml;
+  return `${xml.slice(0, match.index)}${nextPart}${xml.slice((match.index ?? 0) + match[0].length)}`;
+}
 
-  for (const item of items) {
-    const source = new ExcelJS.Workbook();
-    const arrayBuffer = item.buffer.buffer.slice(
-      item.buffer.byteOffset,
-      item.buffer.byteOffset + item.buffer.byteLength,
-    ) as ArrayBuffer;
-    await source.xlsx.load(arrayBuffer);
-    const sourceSheet = source.worksheets[0];
-    if (!sourceSheet) continue;
+function updateXmlCountTag(sectionXml: string, count: number) {
+  return sectionXml.replace(/^<\w+\b[^>]*>/i, (tag) => setXmlAttribute(tag, "count", String(count)));
+}
 
-    const targetSheet = target.addWorksheet(safeWorksheetName(item.sheetName, usedNames));
-    targetSheet.properties = { ...sourceSheet.properties };
-    targetSheet.pageSetup = { ...sourceSheet.pageSetup };
-    targetSheet.views = sourceSheet.views.map((view) => ({ ...view }));
+function childTags(sectionXml: string, regex: RegExp) {
+  return sectionXml.match(new RegExp(regex.source, "gi")) ?? [];
+}
 
-    sourceSheet.columns.forEach((column, index) => {
-      const targetColumn = targetSheet.getColumn(index + 1);
-      if (column.width !== undefined) targetColumn.width = column.width;
-      if (column.hidden !== undefined) targetColumn.hidden = column.hidden;
-      if (column.outlineLevel !== undefined) targetColumn.outlineLevel = column.outlineLevel;
-    });
+function parseSharedStringItems(xml: string | undefined): string[] {
+  if (!xml) return [];
+  return xml.match(/<si\b[^>]*>[\s\S]*?<\/si>/gi) ?? [];
+}
 
-    sourceSheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
-      const nextRow = targetSheet.getRow(rowNumber);
-      nextRow.height = row.height;
-      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-        const nextCell = nextRow.getCell(colNumber);
-        nextCell.value = cell.value;
-        nextCell.style = JSON.parse(JSON.stringify(cell.style ?? {}));
-        nextCell.numFmt = cell.numFmt;
-        if (cell.alignment) nextCell.alignment = { ...cell.alignment };
-      });
-      nextRow.commit();
-    });
+function writeSharedStringItems(zip: JSZip, items: string[]) {
+  const current = zip.file("xl/sharedStrings.xml");
+  const content = current
+    ? undefined
+    : '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="0" uniqueCount="0"></sst>';
 
-    const merges = ((sourceSheet as unknown as { model?: { merges?: string[] } }).model?.merges ?? []);
-    for (const merge of merges) targetSheet.mergeCells(merge);
+  return (async () => {
+    const originalXml = await current?.async("string") ?? content ?? "";
+    const nextXml = originalXml
+      .replace(/<sst\b[^>]*>/i, (tag) =>
+        setXmlAttribute(setXmlAttribute(tag, "count", String(items.length)), "uniqueCount", String(items.length)),
+      )
+      .replace(/<si\b[^>]*>[\s\S]*?<\/si>/gi, "")
+      .replace(/<\/sst>\s*$/i, `${items.join("")}</sst>`);
+    zip.file("xl/sharedStrings.xml", nextXml);
+  })();
+}
+
+function remapSharedStringIndexes(sheetXml: string, indexMap: Map<number, number>) {
+  return sheetXml.replace(/(<c\b[^>]*\bt="s"[^>]*>[\s\S]*?<v>)(\d+)(<\/v>[\s\S]*?<\/c>)/gi, (_match, start, rawIndex, end) => {
+    const nextIndex = indexMap.get(Number(rawIndex));
+    return `${start}${nextIndex ?? rawIndex}${end}`;
+  });
+}
+
+function nextWorkbookRelId(relsXml: string) {
+  let max = 0;
+  for (const rel of relsXml.match(/<Relationship\b[^>]*>/g) ?? []) {
+    const id = parseAttributes(rel).get("Id") ?? "";
+    const numeric = Number(/^rId(\d+)$/i.exec(id)?.[1] ?? 0);
+    if (numeric > max) max = numeric;
+  }
+  return `rId${max + 1}`;
+}
+
+function nextWorksheetNumber(zip: JSZip) {
+  let max = 0;
+  for (const path of Object.keys(zip.files)) {
+    const numeric = Number(/^xl\/worksheets\/sheet(\d+)\.xml$/i.exec(path)?.[1] ?? 0);
+    if (numeric > max) max = numeric;
+  }
+  return max + 1;
+}
+
+function maxSheetId(workbookXml: string) {
+  let max = 0;
+  for (const sheet of workbookXml.match(/<sheet\b[^>]*>/g) ?? []) {
+    const numeric = Number(parseAttributes(sheet).get("sheetId") ?? 0);
+    if (numeric > max) max = numeric;
+  }
+  return max;
+}
+
+function sheetCount(workbookXml: string) {
+  return workbookXml.match(/<sheet\b[^>]*>/g)?.length ?? 0;
+}
+
+function xmlUnescape(value: string) {
+  return value
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+function definedNameRangeOnly(formula: string) {
+  const cleanFormula = xmlUnescape(formula).trim();
+  const separatorIndex = cleanFormula.indexOf("!");
+  return separatorIndex >= 0 ? cleanFormula.slice(separatorIndex + 1) : cleanFormula;
+}
+
+function getWorkbookPrintArea(workbookXml: string) {
+  for (const definedName of workbookXml.match(/<definedName\b[^>]*>[\s\S]*?<\/definedName>/gi) ?? []) {
+    const startTag = definedName.match(/^<definedName\b[^>]*>/i)?.[0] ?? "";
+    const attrs = parseAttributes(startTag);
+    if (attrs.get("name") !== "_xlnm.Print_Area") continue;
+    const value = definedName.replace(/^<definedName\b[^>]*>/i, "").replace(/<\/definedName>\s*$/i, "");
+    return definedNameRangeOnly(value);
+  }
+  return "";
+}
+
+function upsertWorkbookPrintArea(workbookXml: string, sheetName: string, localSheetId: number, printAreaRange: string) {
+  if (!printAreaRange) return workbookXml;
+  const formula = `${quoteSheetName(sheetName)}!${printAreaRange}`;
+  const entry = `<definedName name="_xlnm.Print_Area" localSheetId="${localSheetId}">${xmlEscape(formula)}</definedName>`;
+  let replaced = false;
+  const nextXml = workbookXml.replace(/<definedName\b[^>]*>[\s\S]*?<\/definedName>/gi, (definedName) => {
+    const startTag = definedName.match(/^<definedName\b[^>]*>/i)?.[0] ?? "";
+    const attrs = parseAttributes(startTag);
+    const currentLocalSheetId = attrs.get("localSheetId") ?? "0";
+    if (attrs.get("name") !== "_xlnm.Print_Area" || currentLocalSheetId !== String(localSheetId)) return definedName;
+    replaced = true;
+    return entry;
+  });
+  if (replaced) return nextXml;
+  if (/<definedNames\b[^>]*>/i.test(workbookXml)) {
+    return workbookXml.replace(/<\/definedNames>/i, `${entry}</definedNames>`);
+  }
+  return workbookXml.replace(/<\/sheets>/i, `</sheets><definedNames>${entry}</definedNames>`);
+}
+
+function ensureWorksheetContentType(contentTypesXml: string, sheetPath: string) {
+  const partName = `/${sheetPath}`;
+  if (contentTypesXml.includes(`PartName="${partName}"`)) return contentTypesXml;
+  const override = `<Override PartName="${xmlEscape(partName)}" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`;
+  return contentTypesXml.replace(/<\/Types>\s*$/i, `${override}</Types>`);
+}
+
+function contentTypeForPart(contentTypesXml: string, path: string) {
+  const partName = `/${path}`;
+  for (const override of contentTypesXml.match(/<Override\b[^>]*>/g) ?? []) {
+    const attrs = parseAttributes(override);
+    if (attrs.get("PartName") === partName) return { contentType: attrs.get("ContentType") ?? "", override: true };
+  }
+  const extension = path.includes(".") ? path.slice(path.lastIndexOf(".") + 1).toLowerCase() : "";
+  for (const defaultType of contentTypesXml.match(/<Default\b[^>]*>/g) ?? []) {
+    const attrs = parseAttributes(defaultType);
+    if ((attrs.get("Extension") ?? "").toLowerCase() === extension) return { contentType: attrs.get("ContentType") ?? "", override: false };
+  }
+  return null;
+}
+
+function ensurePartContentType(contentTypesXml: string, path: string, sourceInfo: { contentType: string; override: boolean } | null) {
+  if (!sourceInfo?.contentType) return contentTypesXml;
+  const partName = `/${path}`;
+  if (contentTypesXml.includes(`PartName="${partName}"`)) return contentTypesXml;
+  if (!sourceInfo.override) {
+    const extension = path.includes(".") ? path.slice(path.lastIndexOf(".") + 1).toLowerCase() : "";
+    const hasDefault = (contentTypesXml.match(/<Default\b[^>]*>/g) ?? []).some((defaultType) =>
+      (parseAttributes(defaultType).get("Extension") ?? "").toLowerCase() === extension,
+    );
+    if (hasDefault) return contentTypesXml;
+    const defaultType = `<Default Extension="${xmlEscape(extension)}" ContentType="${xmlEscape(sourceInfo.contentType)}"/>`;
+    return contentTypesXml.replace(/<Override\b/i, `${defaultType}<Override`);
+  }
+  const override = `<Override PartName="${xmlEscape(partName)}" ContentType="${xmlEscape(sourceInfo.contentType)}"/>`;
+  return contentTypesXml.replace(/<\/Types>\s*$/i, `${override}</Types>`);
+}
+
+function getRelationTargets(relsXml: string, relsPath: string) {
+  const targets: Array<{ id: string; target: string; normalized: string }> = [];
+  for (const rel of relsXml.match(/<Relationship\b[^>]*>/g) ?? []) {
+    const attrs = parseAttributes(rel);
+    const id = attrs.get("Id");
+    const target = attrs.get("Target");
+    if (!id || !target || target.startsWith("http://") || target.startsWith("https://")) continue;
+    targets.push({ id, target, normalized: normalizeZipPath(relsPath.replace("/_rels/", "/").replace(/\.rels$/i, ""), target) });
+  }
+  return targets;
+}
+
+function remapWorksheetStyleIndexes(sheetXml: string, styleMap: Map<number, number>) {
+  return sheetXml.replace(/<c\b[^>]*>/gi, (tag) => {
+    const attrs = parseAttributes(tag);
+    const style = attrs.get("s");
+    if (style === undefined) return tag;
+    const nextStyle = styleMap.get(Number(style));
+    return nextStyle === undefined ? tag : setXmlAttribute(tag, "s", String(nextStyle));
+  });
+}
+
+function xmlSection(xml: string, name: string) {
+  return xml.match(new RegExp(`<${name}\\b[^>]*>[\\s\\S]*?<\\/${name}>`, "i"))?.[0] ?? "";
+}
+
+function appendStyleSection(
+  targetStylesXml: string,
+  sourceStylesXml: string,
+  sectionName: string,
+  tagRegex: RegExp,
+  transform: (tag: string, index: number) => string = (tag) => tag,
+) {
+  const targetSection = xmlSection(targetStylesXml, sectionName);
+  const sourceSection = xmlSection(sourceStylesXml, sectionName);
+  const targetTags = childTags(targetSection, tagRegex);
+  const sourceTags = childTags(sourceSection, tagRegex);
+  const offset = targetTags.length;
+  const map = new Map<number, number>();
+  sourceTags.forEach((_tag, index) => map.set(index, offset + index));
+  if (!targetSection || sourceTags.length === 0) return { xml: targetStylesXml, map };
+  const additions = sourceTags.map(transform).join("");
+  const nextSection = updateXmlCountTag(
+    targetSection.replace(new RegExp(`</${sectionName}>\\s*$`, "i"), `${additions}</${sectionName}>`),
+    targetTags.length + sourceTags.length,
+  );
+  return { xml: replaceXmlPart(targetStylesXml, new RegExp(`<${sectionName}\\b[^>]*>[\\s\\S]*?<\\/${sectionName}>`, "i"), nextSection), map };
+}
+
+function appendNumFmts(targetStylesXml: string, sourceStylesXml: string) {
+  const targetSection = xmlSection(targetStylesXml, "numFmts");
+  const sourceSection = xmlSection(sourceStylesXml, "numFmts");
+  const targetTags = targetSection.match(/<numFmt\b[^>]*\/>/gi) ?? [];
+  const sourceTags = sourceSection.match(/<numFmt\b[^>]*\/>/gi) ?? [];
+  const formatByCode = new Map<string, number>();
+  let maxId = 163;
+  for (const tag of targetTags) {
+    const attrs = parseAttributes(tag);
+    const id = Number(attrs.get("numFmtId") ?? 0);
+    const code = attrs.get("formatCode") ?? "";
+    if (id > maxId) maxId = id;
+    if (code) formatByCode.set(code, id);
+  }
+  const map = new Map<number, number>();
+  const additions: string[] = [];
+  for (const tag of sourceTags) {
+    const attrs = parseAttributes(tag);
+    const oldId = Number(attrs.get("numFmtId") ?? 0);
+    const code = attrs.get("formatCode") ?? "";
+    if (!oldId || !code) continue;
+    const existing = formatByCode.get(code);
+    if (existing) {
+      map.set(oldId, existing);
+      continue;
+    }
+    maxId += 1;
+    map.set(oldId, maxId);
+    formatByCode.set(code, maxId);
+    additions.push(setXmlAttribute(tag, "numFmtId", String(maxId)));
+  }
+  if (additions.length === 0) return { xml: targetStylesXml, map };
+  if (!targetSection) {
+    const section = `<numFmts count="${additions.length}">${additions.join("")}</numFmts>`;
+    return { xml: targetStylesXml.replace(/<fonts\b/i, `${section}<fonts`), map };
+  }
+  const nextSection = updateXmlCountTag(
+    targetSection.replace(/<\/numFmts>\s*$/i, `${additions.join("")}</numFmts>`),
+    targetTags.length + additions.length,
+  );
+  return { xml: replaceXmlPart(targetStylesXml, /<numFmts\b[^>]*>[\s\S]*?<\/numFmts>/i, nextSection), map };
+}
+
+async function mergeWorkbookStyles(targetZip: JSZip, sourceZip: JSZip) {
+  let targetStylesXml = await targetZip.file("xl/styles.xml")?.async("string");
+  const sourceStylesXml = await sourceZip.file("xl/styles.xml")?.async("string");
+  if (!targetStylesXml || !sourceStylesXml) return new Map<number, number>();
+
+  const numFmtResult = appendNumFmts(targetStylesXml, sourceStylesXml);
+  targetStylesXml = numFmtResult.xml;
+
+  const fonts = appendStyleSection(targetStylesXml, sourceStylesXml, "fonts", FONT_XML_REGEX);
+  targetStylesXml = fonts.xml;
+  const fills = appendStyleSection(targetStylesXml, sourceStylesXml, "fills", /<fill\b[^>]*\/>|<fill\b[^>]*>[\s\S]*?<\/fill>/gi);
+  targetStylesXml = fills.xml;
+  const borders = appendStyleSection(targetStylesXml, sourceStylesXml, "borders", /<border\b[^>]*\/>|<border\b[^>]*>[\s\S]*?<\/border>/gi);
+  targetStylesXml = borders.xml;
+  const cellStyleXfs = appendStyleSection(targetStylesXml, sourceStylesXml, "cellStyleXfs", XF_XML_REGEX);
+  targetStylesXml = cellStyleXfs.xml;
+
+  const cellXfs = appendStyleSection(targetStylesXml, sourceStylesXml, "cellXfs", XF_XML_REGEX, (xf) => {
+    let nextXf = xf;
+    const attrs = parseAttributes(xf.match(/^<xf\b[^>]*>/i)?.[0] ?? xf);
+    const fontId = attrs.get("fontId");
+    const fillId = attrs.get("fillId");
+    const borderId = attrs.get("borderId");
+    const xfId = attrs.get("xfId");
+    const numFmtId = attrs.get("numFmtId");
+    if (fontId !== undefined) nextXf = setXmlAttribute(nextXf, "fontId", String(fonts.map.get(Number(fontId)) ?? fontId));
+    if (fillId !== undefined) nextXf = setXmlAttribute(nextXf, "fillId", String(fills.map.get(Number(fillId)) ?? fillId));
+    if (borderId !== undefined) nextXf = setXmlAttribute(nextXf, "borderId", String(borders.map.get(Number(borderId)) ?? borderId));
+    if (xfId !== undefined) nextXf = setXmlAttribute(nextXf, "xfId", String(cellStyleXfs.map.get(Number(xfId)) ?? xfId));
+    if (numFmtId !== undefined) nextXf = setXmlAttribute(nextXf, "numFmtId", String(numFmtResult.map.get(Number(numFmtId)) ?? numFmtId));
+    return nextXf;
+  });
+  targetStylesXml = cellXfs.xml;
+  targetZip.file("xl/styles.xml", targetStylesXml);
+  return cellXfs.map;
+}
+
+async function copyWorksheetRels(
+  targetZip: JSZip,
+  sourceZip: JSZip,
+  sourceSheetPath: string,
+  targetSheetPath: string,
+  targetSheetNumber: number,
+  contentTypesXml: string,
+) {
+  const sourceRelsPath = sourceSheetPath.replace("xl/worksheets/", "xl/worksheets/_rels/") + ".rels";
+  const sourceRelsXml = await sourceZip.file(sourceRelsPath)?.async("string");
+  if (!sourceRelsXml) return contentTypesXml;
+  const sourceContentTypesXml = await sourceZip.file("[Content_Types].xml")?.async("string") ?? "";
+
+  let nextRelsXml = sourceRelsXml;
+  for (const relation of getRelationTargets(sourceRelsXml, sourceRelsPath)) {
+    const sourceFile = sourceZip.file(relation.normalized);
+    const sourceBuffer = await sourceFile?.async("nodebuffer");
+    if (!sourceFile || !sourceBuffer) continue;
+
+    const extension = relation.normalized.includes(".") ? relation.normalized.slice(relation.normalized.lastIndexOf(".")) : "";
+    let targetPath = relation.normalized;
+    if (/^xl\/drawings\/drawing\d+\.xml$/i.test(relation.normalized)) {
+      targetPath = `xl/drawings/drawing${targetSheetNumber}${extension}`;
+    } else if (/^xl\/printerSettings\/printerSettings\d+\.bin$/i.test(relation.normalized)) {
+      targetPath = `xl/printerSettings/printerSettings${targetSheetNumber}${extension}`;
+    } else if (/^xl\/media\/image\d+\./i.test(relation.normalized)) {
+      targetPath = `xl/media/image${targetSheetNumber}-${basename(relation.normalized)}`;
+    }
+    targetZip.file(targetPath, sourceBuffer);
+    contentTypesXml = ensurePartContentType(contentTypesXml, targetPath, contentTypeForPart(sourceContentTypesXml, relation.normalized));
+    nextRelsXml = nextRelsXml.replace(`Target="${relation.target}"`, `Target="${targetPath.startsWith("xl/") ? `../${targetPath.slice(3)}` : targetPath}"`);
+
+    const nestedRelsPath = relation.normalized.replace(/\/([^/]+)$/i, "/_rels/$1.rels");
+    const nestedRelsXml = await sourceZip.file(nestedRelsPath)?.async("string");
+    if (nestedRelsXml) {
+      let nextNestedRelsXml = nestedRelsXml;
+      for (const nestedRelation of getRelationTargets(nestedRelsXml, nestedRelsPath)) {
+        const nestedSourceFile = sourceZip.file(nestedRelation.normalized);
+        const nestedSourceBuffer = await nestedSourceFile?.async("nodebuffer");
+        if (!nestedSourceFile || !nestedSourceBuffer) continue;
+        const nestedTargetPath = /^xl\/media\/image\d+\./i.test(nestedRelation.normalized)
+          ? `xl/media/image${targetSheetNumber}-${basename(nestedRelation.normalized)}`
+          : nestedRelation.normalized;
+        targetZip.file(nestedTargetPath, nestedSourceBuffer);
+        contentTypesXml = ensurePartContentType(contentTypesXml, nestedTargetPath, contentTypeForPart(sourceContentTypesXml, nestedRelation.normalized));
+        nextNestedRelsXml = nextNestedRelsXml.replace(
+          `Target="${nestedRelation.target}"`,
+          `Target="${nestedTargetPath.startsWith("xl/") ? `../${nestedTargetPath.slice(3)}` : nestedTargetPath}"`,
+        );
+      }
+      const targetNestedRelsPath = targetPath.replace(/\/([^/]+)$/i, "/_rels/$1.rels");
+      targetZip.file(targetNestedRelsPath, nextNestedRelsXml);
+    }
   }
 
-  return Buffer.from(await target.xlsx.writeBuffer());
+  const targetRelsPath = targetSheetPath.replace("xl/worksheets/", "xl/worksheets/_rels/") + ".rels";
+  targetZip.file(targetRelsPath, nextRelsXml);
+  return contentTypesXml;
+}
+
+async function combineExcelBuffers(items: Array<{ buffer: Buffer; sheetName: string }>) {
+  if (items.length === 0) {
+    throw new https.HttpsError("invalid-argument", "No hay archivos Excel para combinar.");
+  }
+
+  const target = await JSZip.loadAsync(items[0].buffer);
+  const usedNames = new Set<string>();
+  const targetSharedStrings: string[] = parseSharedStringItems(await target.file("xl/sharedStrings.xml")?.async("string"));
+  let workbookXml = await target.file("xl/workbook.xml")?.async("string");
+  let workbookRelsXml = await target.file("xl/_rels/workbook.xml.rels")?.async("string");
+  let contentTypesXml = await target.file("[Content_Types].xml")?.async("string");
+  if (!workbookXml || !workbookRelsXml || !contentTypesXml) {
+    throw new Error("El Excel base no tiene estructura valida.");
+  }
+
+  const firstName = safeWorksheetName(items[0].sheetName, usedNames);
+  const firstPrintArea = getWorkbookPrintArea(workbookXml);
+  workbookXml = workbookXml.replace(/<sheet\b[^>]*>/i, (sheetTag) => setXmlAttribute(sheetTag, "name", firstName));
+  workbookXml = upsertWorkbookPrintArea(workbookXml, firstName, 0, firstPrintArea);
+
+  for (const item of items.slice(1)) {
+    const source = await JSZip.loadAsync(item.buffer);
+    const sourceSheet = await getFirstVisibleWorksheet(source);
+    const sourceSheetXml = await source.file(sourceSheet.path)?.async("string");
+    if (!sourceSheetXml) continue;
+    const sourceWorkbookXml = await source.file("xl/workbook.xml")?.async("string");
+    const sourcePrintArea = sourceWorkbookXml ? getWorkbookPrintArea(sourceWorkbookXml) : "";
+
+    const sourceSharedStrings = parseSharedStringItems(await source.file("xl/sharedStrings.xml")?.async("string"));
+    const sharedStringMap = new Map<number, number>();
+    sourceSharedStrings.forEach((sharedString, index) => {
+      sharedStringMap.set(index, targetSharedStrings.length);
+      targetSharedStrings.push(sharedString);
+    });
+
+    const styleMap = await mergeWorkbookStyles(target, source);
+    const sheetNumber: number = nextWorksheetNumber(target);
+    const sheetPath: string = `xl/worksheets/sheet${sheetNumber}.xml`;
+    const sheetRelId: string = nextWorkbookRelId(workbookRelsXml);
+    const sheetId: number = maxSheetId(workbookXml) + 1;
+    const localSheetId: number = sheetCount(workbookXml);
+    const sheetName: string = safeWorksheetName(item.sheetName, usedNames);
+    const nextSheetXml: string = remapWorksheetStyleIndexes(remapSharedStringIndexes(sourceSheetXml, sharedStringMap), styleMap);
+
+    target.file(sheetPath, nextSheetXml);
+    contentTypesXml = await copyWorksheetRels(target, source, sourceSheet.path, sheetPath, sheetNumber, contentTypesXml);
+
+    const sheetEntry: string = `<sheet name="${xmlEscape(sheetName)}" sheetId="${sheetId}" r:id="${sheetRelId}"/>`;
+    workbookXml = workbookXml.replace(/<\/sheets>/i, `${sheetEntry}</sheets>`);
+    workbookXml = upsertWorkbookPrintArea(workbookXml, sheetName, localSheetId, sourcePrintArea);
+    const relEntry = `<Relationship Id="${sheetRelId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${sheetNumber}.xml"/>`;
+    workbookRelsXml = workbookRelsXml.replace(/<\/Relationships>\s*$/i, `${relEntry}</Relationships>`);
+    contentTypesXml = ensureWorksheetContentType(contentTypesXml, sheetPath);
+  }
+
+  target.file("xl/workbook.xml", workbookXml);
+  target.file("xl/_rels/workbook.xml.rels", workbookRelsXml);
+  target.file("[Content_Types].xml", contentTypesXml);
+  if (targetSharedStrings.length > 0) await writeSharedStringItems(target, targetSharedStrings);
+
+  return target.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
 
 async function generateReporteDocumentoInternal(input: {
@@ -2286,6 +3441,22 @@ function getReporteGenerationErrorMessage(error: unknown) {
   return message || "No se pudo generar el documento.";
 }
 
+function parseCertificadoTituloItems(input: unknown) {
+  if (!Array.isArray(input)) return [];
+  const seen = new Set<string>();
+  const items: Array<{ grupoModuloId: number; moduloEstudianteId: number }> = [];
+  for (const item of input as CertificadoTituloItemInput[]) {
+    const grupoModuloId = toNumber(item?.grupoModuloId, 0);
+    const moduloEstudianteId = toNumber(item?.moduloEstudianteId, 0);
+    if (grupoModuloId <= 0 || moduloEstudianteId <= 0) continue;
+    const key = certificadoItemKey({ grupoModuloId, moduloEstudianteId });
+    if (seen.has(key)) continue;
+    seen.add(key);
+    items.push({ grupoModuloId, moduloEstudianteId });
+  }
+  return items;
+}
+
 export const listReporteDocumentosOptions = https.onCall(async (_data, context) => {
   await requirePermission(context, "documentos-reportes", "view");
 
@@ -2327,6 +3498,115 @@ export const listReporteDocumentosOptions = https.onCall(async (_data, context) 
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in listReporteDocumentosOptions:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar las opciones de reportes.");
+  }
+});
+
+export const listCertificadosTitulosOptions = https.onCall(async (_data, context) => {
+  await requirePermission(context, "certificados-titulos", "view");
+
+  try {
+    await ensureTemplateInStorage(TEMPLATES.certificadoPlanEstudios);
+    return await buildCertificadoTituloRows();
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in listCertificadosTitulosOptions:", error);
+    throw new https.HttpsError("internal", "No se pudieron cargar los certificados y titulos.");
+  }
+});
+
+export const generateCertificadosTitulos = runWith({ timeoutSeconds: 180, memory: "1GB" }).https.onCall(async (data: CertificadoTituloInput, context) => {
+  await requirePermission(context, "certificados-titulos", "create");
+
+  const tipoDocumento = certificadoTituloTipo(data?.tipoDocumento);
+  const items = parseCertificadoTituloItems(data?.items);
+  const pdfProvider = reportesPdfProvider(data?.pdfProvider);
+  if (items.length === 0) {
+    throw new https.HttpsError("invalid-argument", "Selecciona al menos un estudiante.");
+  }
+  if (tipoDocumento === "titulo") {
+    throw new https.HttpsError("failed-precondition", "La plantilla de titulos aun no esta configurada.");
+  }
+
+  try {
+    const documentos: CertificadoTituloDocumento[] = [];
+    for (const item of items) {
+      const result = await generateCertificadoPlanEstudios({ ...item, pdfProvider });
+      documentos.push(result.documento);
+    }
+    return { tipoDocumento, total: documentos.length, documentos };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in generateCertificadosTitulos:", error);
+    throw new https.HttpsError("failed-precondition", getReporteGenerationErrorMessage(error));
+  }
+});
+
+export const descargarCertificadosTitulosSeleccionados = runWith({ timeoutSeconds: 180, memory: "1GB" }).https.onCall(async (data: DownloadCertificadosTitulosInput, context) => {
+  await requirePermission(context, "certificados-titulos", "view");
+
+  const tipoDocumento = certificadoTituloTipo(data?.tipoDocumento);
+  const formato = String(data?.formato || "pdf").toLowerCase() === "excel" ? "excel" : "pdf";
+  const items = parseCertificadoTituloItems(data?.items);
+  if (items.length === 0) {
+    throw new https.HttpsError("invalid-argument", "Selecciona al menos un estudiante.");
+  }
+
+  try {
+    const [documentsResponse, options] = await Promise.all([
+      dataConnect.executeGraphql<{ certificadoTituloDocumentos: CertificadoTituloDocumento[] }, Record<string, never>>(
+        LIST_CERTIFICADO_TITULO_DOCUMENTOS_QUERY,
+      ),
+      buildCertificadoTituloRows(),
+    ]);
+    const documentoByKey = new Map(
+      (documentsResponse.data.certificadoTituloDocumentos ?? [])
+        .filter((documento) => documento.tipoDocumento === tipoDocumento)
+        .map((documento) => [certificadoItemKey(documento), documento]),
+    );
+    const rowByKey = new Map(options.estudiantes.map((row) => [row.id, row]));
+    const orderedDocuments = items.map((item) => documentoByKey.get(certificadoItemKey(item)) ?? null);
+    const missingIndex = orderedDocuments.findIndex((documento) =>
+      !documento || (formato === "pdf" ? !documento.pdfPath : !documento.excelPath),
+    );
+    if (missingIndex >= 0) {
+      throw new https.HttpsError("failed-precondition", "Todos los estudiantes seleccionados deben tener documento generado.");
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    if (formato === "pdf") {
+      const buffers = await Promise.all(orderedDocuments.map((documento) => downloadStorageBuffer(documento?.pdfPath ?? "")));
+      const combined = await combinePdfBuffers(buffers);
+      const file = await uploadBuffer(
+        `documentos/certificados-titulos/lotes/${tipoDocumento}-${timestamp}.pdf`,
+        combined,
+        "application/pdf",
+      );
+      return { formato, file };
+    }
+
+    const usedNames = new Set<string>();
+    const excelItems = await Promise.all(orderedDocuments.map(async (documento) => {
+      const key = certificadoItemKey({
+        grupoModuloId: documento?.grupoModuloId ?? 0,
+        moduloEstudianteId: documento?.moduloEstudianteId ?? 0,
+      });
+      const row = rowByKey.get(key);
+      return {
+        buffer: await downloadStorageBuffer(documento?.excelPath ?? ""),
+        sheetName: certificadoSheetName({ apellidoPaterno: row?.apellidoPaterno, dni: row?.dni }, usedNames),
+      };
+    }));
+    const combined = await combineExcelBuffers(excelItems);
+    const file = await uploadBuffer(
+      `documentos/certificados-titulos/lotes/${tipoDocumento}-${timestamp}.xlsx`,
+      combined,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    return { formato, file };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in descargarCertificadosTitulosSeleccionados:", error);
+    throw new https.HttpsError("internal", "No se pudo preparar la descarga.");
   }
 });
 

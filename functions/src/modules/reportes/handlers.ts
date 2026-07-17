@@ -1561,6 +1561,51 @@ function addWorksheetMergeRange(xml: string, range: string) {
   return xml.replace(/<\/worksheet>$/i, `${mergeCells}</worksheet>`);
 }
 
+function drawingMarkerXml(kind: "from" | "to", marker: { col: number; colOff: number; row: number; rowOff: number }) {
+  return `<xdr:${kind}><xdr:col>${marker.col}</xdr:col><xdr:colOff>${marker.colOff}</xdr:colOff><xdr:row>${marker.row}</xdr:row><xdr:rowOff>${marker.rowOff}</xdr:rowOff></xdr:${kind}>`;
+}
+
+function replaceDrawingMarker(anchorXml: string, kind: "from" | "to", marker: { col: number; colOff: number; row: number; rowOff: number }) {
+  const regex = new RegExp(`<xdr:${kind}>[\\s\\S]*?<\\/xdr:${kind}>`, "i");
+  return anchorXml.replace(regex, drawingMarkerXml(kind, marker));
+}
+
+function removeDrawingAnchorByName(xml: string, name: string) {
+  return xml.replace(/<xdr:(?:twoCellAnchor|oneCellAnchor|absoluteAnchor)>[\s\S]*?<\/xdr:(?:twoCellAnchor|oneCellAnchor|absoluteAnchor)>/gi, (anchor) =>
+    new RegExp(`<xdr:cNvPr\\b[^>]*\\bname="${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`, "i").test(anchor) ? "" : anchor,
+  );
+}
+
+function adjustProgramaStudentClosureLineAnchor(xml: string, studentCount: number) {
+  const count = Math.min(Math.max(0, studentCount), 40);
+  if (count <= 0 || count === 20 || count === 40) {
+    return removeDrawingAnchorByName(xml, "Grupo 8");
+  }
+
+  const firstPage = count < 20;
+  const nextStudentRow = firstPage ? 14 + count : 43 + (count - 20);
+  const pageEndRow = firstPage ? 33 : 62;
+  const rowHeightPx = firstPage ? 38 : 27;
+  const rowMiddleOff = Math.round(((rowHeightPx / 2) - (firstPage ? 0 : 3)) * 9525);
+  const from = { col: 1, colOff: 7620, row: nextStudentRow - 1, rowOff: rowMiddleOff };
+  const to = { col: 47, colOff: 0, row: pageEndRow, rowOff: 0 };
+
+  return xml.replace(/<xdr:twoCellAnchor>[\s\S]*?<xdr:cNvPr\b[^>]*\bname="Grupo 8"[\s\S]*?<\/xdr:twoCellAnchor>/i, (anchor) =>
+    replaceDrawingMarker(replaceDrawingMarker(anchor, "from", from), "to", to),
+  );
+}
+
+async function adjustProgramaStudentClosureLine(zip: JSZip, studentCount?: number | null) {
+  if (typeof studentCount !== "number" || !Number.isFinite(studentCount)) return;
+  const drawingPaths = Object.keys(zip.files).filter((path) => /^xl\/drawings\/drawing\d+\.xml$/i.test(path));
+  for (const drawingPath of drawingPaths) {
+    const file = zip.file(drawingPath);
+    const xml = await file?.async("string");
+    if (!file || !xml || !/<xdr:cNvPr\b[^>]*\bname="Grupo 8"/i.test(xml)) continue;
+    zip.file(drawingPath, adjustProgramaStudentClosureLineAnchor(xml, studentCount));
+  }
+}
+
 function shiftCellRefsInXmlFragment(xml: string, startRow: number, offset: number) {
   if (offset === 0) return xml;
   return xml.replace(/(\$?[A-Z]{1,3}\$?)(\d+)/g, (match, column: string, rowValue: string) => {
@@ -1587,6 +1632,14 @@ function shiftWorksheetRows(xml: string, startRow: number, offset: number) {
     shiftCellRefsInXmlFragment(tag, startRow, offset),
   );
   return nextXml;
+}
+
+function expandPrintAreaRows(printAreaRange: string, rowOffset: number) {
+  if (rowOffset <= 0 || !printAreaRange) return printAreaRange;
+  return printAreaRange.replace(/(\$?[A-Z]{1,3}\$?)(\d+)\s*$/i, (match, column: string, rowValue: string) => {
+    const row = Number(rowValue);
+    return Number.isFinite(row) ? `${column}${row + rowOffset}` : match;
+  });
 }
 
 function rowXmlByNumber(xml: string, row: number) {
@@ -1907,9 +1960,11 @@ async function applyExcelUpdates(
   adjustProgramUnitHeaders = false,
   preservePageLayout = false,
   tokenReplacements: TemplateTokenReplacements = {},
+  programaActaStudentCount?: number | null,
 ) {
   const zip = await JSZip.loadAsync(templateBuffer);
   await replaceTemplateTokensInWorkbook(zip, tokenReplacements);
+  await adjustProgramaStudentClosureLine(zip, programaActaStudentCount);
   const worksheet = await getFirstVisibleWorksheet(zip);
   const sharedStrings = await createSharedStringWriter(zip);
   const leftIndentStyles = await createLeftIndentStyleWriter(zip);
@@ -2005,7 +2060,7 @@ async function applyCertificatePlanEstudiosUpdates(
     nota: "",
   }));
   const totalWeight = weights.reduce((sum, value) => sum + value, 0) || 1;
-  const totalHeightPoints = 450 * 0.75;
+  const totalHeightPoints = 400 * 0.75;
   for (let index = 0; index < rowCount; index += 1) {
     nextXml = setRowHeight(nextXml, firstDataRow + index, totalHeightPoints * (weights[index] / totalWeight));
   }
@@ -2032,6 +2087,14 @@ async function applyCertificatePlanEstudiosUpdates(
 
   nextXml = ensureWorksheetPrintSetup(nextXml, 95, "landscape", true, "9", false);
   zip.file(worksheet.path, nextXml);
+  if (extraRows > 0) {
+    const workbookXml = await zip.file("xl/workbook.xml")?.async("string");
+    if (workbookXml) {
+      const printArea = getWorkbookPrintArea(workbookXml);
+      const expandedPrintArea = expandPrintAreaRows(printArea, extraRows);
+      zip.file("xl/workbook.xml", upsertWorkbookPrintArea(workbookXml, worksheet.name, 0, expandedPrintArea));
+    }
+  }
   sharedStrings.save();
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
@@ -2313,6 +2376,7 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   const resolucion = cleanText(datos.rd || "");
   const horas = data.grupoModulo.modulo?.horas ?? "";
   const creditos = data.grupoModulo.modulo?.creditos ?? "";
+  const codigoModular = cleanText(datos.codigoModular || "");
 
   if (mode === "nomina") {
     if (!data.opcionOcupacional) {
@@ -2351,6 +2415,7 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
     return;
   }
 
+  addCell(updates, sheetName, "F6", codigoModular);
   addCell(updates, sheetName, "AO5", carrera.toLocaleUpperCase("es-PE"));
   addCell(updates, sheetName, "AO6", modulo);
   addCell(updates, sheetName, "AO7", nivel.toLocaleUpperCase("es-PE"));
@@ -2414,7 +2479,7 @@ function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data:
   const efsrtMap = efsrtPromedioMap(data);
   const units = data.unidades.slice(0, unitColumns.length);
   const clearStudentRow = (row: number) => {
-    ["A", "B", "F", ...unitColumns, "AF", "AG", "AH", "AI", "AJ", "AK", "AM", "AO"].forEach((column) => {
+    ["B", "F", ...unitColumns, "AF", "AG", "AH", "AI", "AJ", "AK", "AM", "AO"].forEach((column) => {
       addCell(updates, sheetName, `${column}${row}`, "");
     });
   };
@@ -2432,7 +2497,6 @@ function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data:
   const students = data.estudiantes.slice(0, 40);
   students.forEach((student, index) => {
     const row = index < 20 ? 14 + index : 43 + (index - 20);
-    addCell(updates, sheetName, `A${row}`, index + 1);
     addCell(updates, sheetName, `B${row}`, student.matricula?.user?.dni || student.matricula?.codigoInscripcion || "");
     addCell(updates, sheetName, `F${row}`, getStudentName(student));
     const efsrt = efsrtMap.get(student.id);
@@ -3392,6 +3456,7 @@ async function generateReporteDocumentoInternal(input: {
       "[Nombre Carrera]": getCarreraName(reportes[0].grupoModulo),
       "[Nombre Modulo]": getModuloDocumentName(reportes[0].grupoModulo),
     },
+    isActaPrograma ? Math.min(reportes[0].estudiantes.length, 40) : null,
   );
   const grupoModuloId = reportes[0].grupoModulo.id;
   const semestreTitle = cleanText(reportes[0].semestre?.titulo || String(input.semestreId || ""));

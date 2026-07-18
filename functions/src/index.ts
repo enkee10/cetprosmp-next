@@ -104,6 +104,7 @@ export {
   reuseEstructuraAcademicaItem,
   detachEstructuraAcademicaItem,
   updateEstructuraAcademicaCell,
+  reorderEstructuraAcademicaItems,
   createMatriculaDesdePaquete,
   crearMatriculaFormulario,
   deleteMatricula,

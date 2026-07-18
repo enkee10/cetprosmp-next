@@ -1940,6 +1940,15 @@ extend type CapacidadTerminal {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "CapacidadTerminal.id", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `CapacidadTerminal` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  orden_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CapacidadTerminal.orden", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `CapacidadTerminal` table where the `sigla` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   sigla_count(
@@ -1967,6 +1976,15 @@ extend type CapacidadTerminal {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "CapacidadTerminal.id", purpose: QUERY_SUM)
   """
+  ✨ Sum the `orden` field in the `CapacidadTerminal` table.
+  """
+  orden_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "CapacidadTerminal.orden", purpose: QUERY_SUM)
+  """
   ✨ Sum the `unidadDidacticaId` field in the `CapacidadTerminal` table.
   """
   unidadDidacticaId_sum(
@@ -1985,6 +2003,15 @@ extend type CapacidadTerminal {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "CapacidadTerminal.id", purpose: QUERY_AVG)
   """
+  ✨ Average the `orden` field in the `CapacidadTerminal` table.
+  """
+  orden_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "CapacidadTerminal.orden", purpose: QUERY_AVG)
+  """
   ✨ Average the `unidadDidacticaId` field in the `CapacidadTerminal` table.
   """
   unidadDidacticaId_avg(
@@ -1998,6 +2025,10 @@ extend type CapacidadTerminal {
   """
   id_min: Int @fdc_generated(from: "CapacidadTerminal.id", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `orden` field in the `CapacidadTerminal` table.
+  """
+  orden_min: Int @fdc_generated(from: "CapacidadTerminal.orden", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `unidadDidacticaId` field in the `CapacidadTerminal` table.
   """
   unidadDidacticaId_min: Int @fdc_generated(from: "CapacidadTerminal.unidadDidacticaId", purpose: QUERY_MIN)
@@ -2005,6 +2036,10 @@ extend type CapacidadTerminal {
   ✨ Maximum of the `id` field in the `CapacidadTerminal` table.
   """
   id_max: Int @fdc_generated(from: "CapacidadTerminal.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `orden` field in the `CapacidadTerminal` table.
+  """
+  orden_max: Int @fdc_generated(from: "CapacidadTerminal.orden", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `unidadDidacticaId` field in the `CapacidadTerminal` table.
   """
@@ -8295,6 +8330,15 @@ extend type IndicadorCapacidad {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "IndicadorCapacidad.id", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `IndicadorCapacidad` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  orden_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "IndicadorCapacidad.orden", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `IndicadorCapacidad` table where the `sigla` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   sigla_count(
@@ -8322,6 +8366,15 @@ extend type IndicadorCapacidad {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "IndicadorCapacidad.id", purpose: QUERY_SUM)
   """
+  ✨ Sum the `orden` field in the `IndicadorCapacidad` table.
+  """
+  orden_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "IndicadorCapacidad.orden", purpose: QUERY_SUM)
+  """
   ✨ Average the `capacidadTerminalId` field in the `IndicadorCapacidad` table.
   """
   capacidadTerminalId_avg(
@@ -8340,6 +8393,15 @@ extend type IndicadorCapacidad {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "IndicadorCapacidad.id", purpose: QUERY_AVG)
   """
+  ✨ Average the `orden` field in the `IndicadorCapacidad` table.
+  """
+  orden_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "IndicadorCapacidad.orden", purpose: QUERY_AVG)
+  """
   ✨ Minimum of the `capacidadTerminalId` field in the `IndicadorCapacidad` table.
   """
   capacidadTerminalId_min: Int @fdc_generated(from: "IndicadorCapacidad.capacidadTerminalId", purpose: QUERY_MIN)
@@ -8348,6 +8410,10 @@ extend type IndicadorCapacidad {
   """
   id_min: Int @fdc_generated(from: "IndicadorCapacidad.id", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `orden` field in the `IndicadorCapacidad` table.
+  """
+  orden_min: Int @fdc_generated(from: "IndicadorCapacidad.orden", purpose: QUERY_MIN)
+  """
   ✨ Maximum of the `capacidadTerminalId` field in the `IndicadorCapacidad` table.
   """
   capacidadTerminalId_max: Int @fdc_generated(from: "IndicadorCapacidad.capacidadTerminalId", purpose: QUERY_MAX)
@@ -8355,6 +8421,10 @@ extend type IndicadorCapacidad {
   ✨ Maximum of the `id` field in the `IndicadorCapacidad` table.
   """
   id_max: Int @fdc_generated(from: "IndicadorCapacidad.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `orden` field in the `IndicadorCapacidad` table.
+  """
+  orden_max: Int @fdc_generated(from: "IndicadorCapacidad.orden", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """

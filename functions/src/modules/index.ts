@@ -160,6 +160,7 @@ export {
   reuseEstructuraAcademicaItem,
   detachEstructuraAcademicaItem,
   updateEstructuraAcademicaCell,
+  reorderEstructuraAcademicaItems,
   listUnidadesDidacticas,
   getUnidadDidactica,
   createOrUpdateUnidadDidactica,

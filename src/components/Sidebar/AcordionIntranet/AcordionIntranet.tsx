@@ -89,8 +89,17 @@ const formatPeriodoMenu = (value: string | null | undefined) => {
   return text.replace(/^20(\d{2})\s*-\s*/, '$1-') || 'Periodo';
 };
 
+const getGrupoModuloMenuName = (value: string | null | undefined) => {
+  const text = String(value ?? '').trim();
+  if (!text) return '';
+  return text.split('[')[0]?.trim() || text;
+};
+
 const getModuloMenuName = (modulo: RegistroAuxiliarDocenteModulo) =>
-  modulo.modulo?.titulo || modulo.modulo?.tituloComercial || modulo.nombre || `Modulo ${modulo.moduloId}`;
+  getGrupoModuloMenuName(modulo.nombre) ||
+  modulo.modulo?.titulo ||
+  modulo.modulo?.tituloComercial ||
+  `Modulo ${modulo.moduloId}`;
 
 const buildDocenteRegistroItems = (
   modulos: RegistroAuxiliarDocenteModulo[],
@@ -244,6 +253,7 @@ function IntranetMenuItems({ items }: { items: IntranetMenuItem[] }) {
               selected={active}
               sx={{
                 minHeight: 40,
+                alignItems: 'flex-start',
                 px: 1,
                 py: 0.5,
                 borderRadius: 1,
@@ -260,9 +270,14 @@ function IntranetMenuItems({ items }: { items: IntranetMenuItem[] }) {
                 primary={item.title}
                 primaryTypographyProps={{
                   fontSize: 13,
-                  noWrap: true,
                   fontWeight: active ? 900 : 400,
                   color: active ? intranetPageIvory : intranetMenuTextColor,
+                  sx: {
+                    whiteSpace: 'normal',
+                    overflow: 'visible',
+                    textOverflow: 'clip',
+                    lineHeight: 1.25,
+                  },
                 }}
               />
             </ListItemButton>

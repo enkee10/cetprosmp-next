@@ -224,6 +224,7 @@ type CapacidadTerminal @table(name: "capacidades_terminales", singular: "capacid
   id: Int! @col(dataType: "serial")
   descripcion: String
   sigla: String
+  orden: Int
 
   unidadDidactica: UnidadDidactica! @ref(fields: "unidadDidacticaId", references: "id")
   unidadDidacticaId: Int! @col(name: "unidad_didactica_id")
@@ -233,6 +234,7 @@ type IndicadorCapacidad @table(name: "indicadores_capacidad", singular: "indicad
   id: Int! @col(dataType: "serial")
   descripcion: String
   sigla: String
+  orden: Int
 
   capacidadTerminal: CapacidadTerminal! @ref(fields: "capacidadTerminalId", references: "id")
   capacidadTerminalId: Int! @col(name: "capacidad_terminal_id")

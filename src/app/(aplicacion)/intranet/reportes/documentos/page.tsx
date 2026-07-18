@@ -36,6 +36,8 @@ type DownloadFormat = 'pdf' | 'excel';
 type SemestreOption = {
   id: number;
   titulo?: string | null;
+  inicio?: string | null;
+  fin?: string | null;
 };
 
 type RegistroAcademicoDocumento = {
@@ -129,6 +131,32 @@ function openUrl(url?: string | null) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
+function toTimestamp(value?: string | null) {
+  if (!value) return null;
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function getDefaultSemestreId(semestres: SemestreOption[], current: string) {
+  if (current && semestres.some((semestre) => String(semestre.id) === current)) return current;
+  const now = Date.now();
+  const dated = semestres.map((semestre) => ({
+    semestre,
+    inicio: toTimestamp(semestre.inicio),
+    fin: toTimestamp(semestre.fin),
+  }));
+  const active = dated.find((item) =>
+    (item.inicio != null || item.fin != null) &&
+    (item.inicio == null || item.inicio <= now) &&
+    (item.fin == null || item.fin >= now),
+  )?.semestre.id;
+  if (active) return String(active);
+  const lastStarted = dated
+    .filter((item) => item.inicio != null && item.inicio <= now)
+    .sort((a, b) => (b.inicio ?? 0) - (a.inicio ?? 0))[0]?.semestre.id;
+  return String(lastStarted || semestres[0]?.id || '');
+}
+
 export default function RegistroAcademicosPage() {
   const { can, loading: permissionsLoading } = useIntranetPermissions();
   const [loadingOptions, setLoadingOptions] = useState(true);
@@ -163,7 +191,7 @@ export default function RegistroAcademicosPage() {
       setSemestres(nextSemestres);
       setGrupoModulos(result.data.grupoModulos || []);
       setDocumentos(result.data.documentos || []);
-      setSemestreId((current) => current || String(nextSemestres[0]?.id || ''));
+      setSemestreId((current) => getDefaultSemestreId(nextSemestres, current));
     } catch (err) {
       console.error('Error loading registros academicos options:', err);
       setMessage('No se pudieron cargar los registros academicos.');
@@ -496,8 +524,11 @@ export default function RegistroAcademicosPage() {
           }}
           sx={{
             '& .MuiDataGrid-cell': {
-              alignItems: 'flex-start',
+              alignItems: 'center',
               py: 0.75,
+            },
+            '& .MuiDataGrid-cellContent': {
+              alignItems: 'center',
             },
           }}
         />

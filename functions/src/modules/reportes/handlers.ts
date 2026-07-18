@@ -124,6 +124,7 @@ type ReporteCapacidad = {
   id: number;
   descripcion?: string | null;
   sigla?: string | null;
+  orden?: number | null;
   unidadDidacticaId?: number | null;
 };
 
@@ -436,6 +437,7 @@ const REPORTE_DETALLE_QUERY = `
       id
       descripcion
       sigla
+      orden
       unidadDidacticaId
     }
     modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
@@ -682,8 +684,9 @@ function normalizeText(value: unknown) {
     .trim();
 }
 
-function isOpcionOcupacional(value: unknown) {
-  return normalizeText(value).includes("opcion ocupacional");
+function usesOpcionOcupacionalRules(value: unknown) {
+  const normalized = normalizeText(value);
+  return normalized.includes("opcion ocupacional") || normalized.includes("modulo ocupacional");
 }
 
 function cleanText(value: unknown) {
@@ -890,10 +893,14 @@ function buildUnidadIds(response: {
   }
   return Array.from(unitsById.values())
     .sort((a, b) => (
-      (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER)
+      (a.orden ?? a.unidadDidacticaId) - (b.orden ?? b.unidadDidacticaId)
       || a.unidadDidacticaId - b.unidadDidacticaId
     ))
     .map((item) => item.unidadDidacticaId);
+}
+
+function getAcademicOrder(item: { id: number; orden?: number | null }) {
+  return item.orden ?? item.id;
 }
 
 function turnoRank(value: string | null | undefined) {
@@ -1576,33 +1583,95 @@ function removeDrawingAnchorByName(xml: string, name: string) {
   );
 }
 
-function adjustProgramaStudentClosureLineAnchor(xml: string, studentCount: number) {
-  const count = Math.min(Math.max(0, studentCount), 40);
-  if (count <= 0 || count === 20 || count === 40) {
-    return removeDrawingAnchorByName(xml, "Grupo 8");
+type ActaClosureLineConfig = {
+  name: string;
+  maxStudents: number;
+  firstPageLimit: number;
+  firstPageStartRow: number;
+  secondPageStartRow: number;
+  firstPageEndRow: number;
+  secondPageEndRow: number;
+  firstPageRowHeightPx: number;
+  secondPageRowHeightPx: number;
+  secondPageRowMiddleAdjustmentPx?: number;
+  fromCol: number;
+  fromColOff: number;
+  toCol: number;
+  toColOff: number;
+};
+
+type ActaClosureLineAdjustment = {
+  kind: "programa" | "opcion";
+  studentCount: number;
+};
+
+const ACTA_CLOSURE_LINE_CONFIGS: Record<ActaClosureLineAdjustment["kind"], ActaClosureLineConfig> = {
+  programa: {
+    name: "Grupo 8",
+    maxStudents: 40,
+    firstPageLimit: 20,
+    firstPageStartRow: 14,
+    secondPageStartRow: 43,
+    firstPageEndRow: 33,
+    secondPageEndRow: 62,
+    firstPageRowHeightPx: 38,
+    secondPageRowHeightPx: 27,
+    secondPageRowMiddleAdjustmentPx: 3,
+    fromCol: 1,
+    fromColOff: 7620,
+    toCol: 47,
+    toColOff: 0,
+  },
+  opcion: {
+    name: "Grupo 6",
+    maxStudents: 30,
+    firstPageLimit: 20,
+    firstPageStartRow: 19,
+    secondPageStartRow: 54,
+    firstPageEndRow: 37,
+    secondPageEndRow: 62,
+    firstPageRowHeightPx: 22,
+    secondPageRowHeightPx: 23,
+    fromCol: 2,
+    fromColOff: 1,
+    toCol: 37,
+    toColOff: 4646,
+  },
+};
+
+function adjustActaStudentClosureLineAnchor(xml: string, studentCount: number, config: ActaClosureLineConfig) {
+  const count = Math.min(Math.max(0, studentCount), config.maxStudents);
+  if (count <= 0 || count === config.maxStudents) {
+    return removeDrawingAnchorByName(xml, config.name);
   }
 
-  const firstPage = count < 20;
-  const nextStudentRow = firstPage ? 14 + count : 43 + (count - 20);
-  const pageEndRow = firstPage ? 33 : 62;
-  const rowHeightPx = firstPage ? 38 : 27;
-  const rowMiddleOff = Math.round(((rowHeightPx / 2) - (firstPage ? 0 : 3)) * 9525);
-  const from = { col: 1, colOff: 7620, row: nextStudentRow - 1, rowOff: rowMiddleOff };
-  const to = { col: 47, colOff: 0, row: pageEndRow, rowOff: 0 };
+  const firstPage = count < config.firstPageLimit;
+  const nextStudentRow = firstPage
+    ? config.firstPageStartRow + count
+    : config.secondPageStartRow + (count - config.firstPageLimit);
+  const pageEndRow = firstPage ? config.firstPageEndRow : config.secondPageEndRow;
+  const rowHeightPx = firstPage ? config.firstPageRowHeightPx : config.secondPageRowHeightPx;
+  const rowMiddleAdjustmentPx = firstPage ? 0 : config.secondPageRowMiddleAdjustmentPx ?? 0;
+  const rowMiddleOff = Math.round(((rowHeightPx / 2) - rowMiddleAdjustmentPx) * 9525);
+  const from = { col: config.fromCol, colOff: config.fromColOff, row: nextStudentRow - 1, rowOff: rowMiddleOff };
+  const to = { col: config.toCol, colOff: config.toColOff, row: pageEndRow, rowOff: 0 };
 
-  return xml.replace(/<xdr:twoCellAnchor>[\s\S]*?<xdr:cNvPr\b[^>]*\bname="Grupo 8"[\s\S]*?<\/xdr:twoCellAnchor>/i, (anchor) =>
+  const escapedName = config.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const anchorRegex = new RegExp(`<xdr:twoCellAnchor>[\\s\\S]*?<xdr:cNvPr\\b[^>]*\\bname="${escapedName}"[\\s\\S]*?<\\/xdr:twoCellAnchor>`, "i");
+  return xml.replace(anchorRegex, (anchor) =>
     replaceDrawingMarker(replaceDrawingMarker(anchor, "from", from), "to", to),
   );
 }
 
-async function adjustProgramaStudentClosureLine(zip: JSZip, studentCount?: number | null) {
-  if (typeof studentCount !== "number" || !Number.isFinite(studentCount)) return;
+async function adjustActaStudentClosureLine(zip: JSZip, adjustment?: ActaClosureLineAdjustment | null) {
+  if (!adjustment || typeof adjustment.studentCount !== "number" || !Number.isFinite(adjustment.studentCount)) return;
+  const config = ACTA_CLOSURE_LINE_CONFIGS[adjustment.kind];
   const drawingPaths = Object.keys(zip.files).filter((path) => /^xl\/drawings\/drawing\d+\.xml$/i.test(path));
   for (const drawingPath of drawingPaths) {
     const file = zip.file(drawingPath);
     const xml = await file?.async("string");
-    if (!file || !xml || !/<xdr:cNvPr\b[^>]*\bname="Grupo 8"/i.test(xml)) continue;
-    zip.file(drawingPath, adjustProgramaStudentClosureLineAnchor(xml, studentCount));
+    if (!file || !xml || !new RegExp(`<xdr:cNvPr\\b[^>]*\\bname="${config.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`, "i").test(xml)) continue;
+    zip.file(drawingPath, adjustActaStudentClosureLineAnchor(xml, adjustment.studentCount, config));
   }
 }
 
@@ -1960,11 +2029,11 @@ async function applyExcelUpdates(
   adjustProgramUnitHeaders = false,
   preservePageLayout = false,
   tokenReplacements: TemplateTokenReplacements = {},
-  programaActaStudentCount?: number | null,
+  actaClosureLineAdjustment?: ActaClosureLineAdjustment | null,
 ) {
   const zip = await JSZip.loadAsync(templateBuffer);
   await replaceTemplateTokensInWorkbook(zip, tokenReplacements);
-  await adjustProgramaStudentClosureLine(zip, programaActaStudentCount);
+  await adjustActaStudentClosureLine(zip, actaClosureLineAdjustment);
   const worksheet = await getFirstVisibleWorksheet(zip);
   const sharedStrings = await createSharedStringWriter(zip);
   const leftIndentStyles = await createLeftIndentStyleWriter(zip);
@@ -2875,7 +2944,11 @@ async function buildReporteData(grupoModuloId: number) {
     .filter((unidad): unidad is ReporteUnidad => Boolean(unidad));
   const capacidades = (response.data.capacidadesTerminales ?? [])
     .filter((capacidad) => capacidad.unidadDidacticaId && unidadIdSet.has(capacidad.unidadDidacticaId))
-    .sort((a, b) => a.id - b.id);
+    .sort((a, b) =>
+      unidadIds.indexOf(a.unidadDidacticaId ?? -1) - unidadIds.indexOf(b.unidadDidacticaId ?? -1) ||
+      getAcademicOrder(a) - getAcademicOrder(b) ||
+      a.id - b.id,
+    );
   const estudiantes = (response.data.modulosEstudiantes ?? [])
     .filter((student) => !student.matricula?.archivado)
     .sort((a, b) => getStudentName(a).localeCompare(getStudentName(b), "es", { numeric: true }));
@@ -2896,7 +2969,7 @@ async function buildReporteData(grupoModuloId: number) {
     promediosEfsrt: (response.data.efsrtPppEstudiantes ?? [])
       .filter((item) => moduloEstudianteIds.has(item.moduloEstudianteId)),
     seccion: computeSection(grupoModulo, response.data.grupoModulos ?? []),
-    opcionOcupacional: isOpcionOcupacional(grupoModulo.modulo?.plan?.carrera?.tipoCarrera?.nombre),
+    opcionOcupacional: usesOpcionOcupacionalRules(grupoModulo.modulo?.plan?.carrera?.tipoCarrera?.nombre),
   } satisfies ReporteDocumentoData;
 }
 
@@ -3456,7 +3529,11 @@ async function generateReporteDocumentoInternal(input: {
       "[Nombre Carrera]": getCarreraName(reportes[0].grupoModulo),
       "[Nombre Modulo]": getModuloDocumentName(reportes[0].grupoModulo),
     },
-    isActaPrograma ? Math.min(reportes[0].estudiantes.length, 40) : null,
+    isActaPrograma
+      ? { kind: "programa", studentCount: Math.min(reportes[0].estudiantes.length, 40) }
+      : isActaOpcion
+        ? { kind: "opcion", studentCount: Math.min(reportes[0].estudiantes.length, 30) }
+        : null,
   );
   const grupoModuloId = reportes[0].grupoModulo.id;
   const semestreTitle = cleanText(reportes[0].semestre?.titulo || String(input.semestreId || ""));
@@ -3536,8 +3613,13 @@ export const listReporteDocumentosOptions = https.onCall(async (_data, context) 
       listRegistrosAcademicosDocumentos(),
     ]);
 
+    const semestreIdsWithGrupoModulo = new Set(
+      (response.data.grupoModulos ?? [])
+        .map((item) => item.grupo?.semestreId)
+        .filter((id): id is number => typeof id === "number" && Number.isFinite(id)),
+    );
     const semestres = (response.data.semestres ?? [])
-      .filter((semestre) => !semestre.archivado)
+      .filter((semestre) => !semestre.archivado && semestreIdsWithGrupoModulo.has(semestre.id))
       .sort((a, b) => cleanText(b.titulo).localeCompare(cleanText(a.titulo), "es", { numeric: true }));
     const grupoModulos = (response.data.grupoModulos ?? [])
       .sort((a, b) =>

@@ -497,13 +497,13 @@ export const DELETE_UNIDAD_DIDACTICA_MODULO_RELATION_MUTATION = `
 `;
 
 export const INSERT_CAPACIDAD_TERMINAL_MUTATION = `
-  mutation InsertCapacidadTerminal($data: CapacidadTerminal_Data! @allow(fields: "descripcion sigla unidadDidacticaId")) {
+  mutation InsertCapacidadTerminal($data: CapacidadTerminal_Data! @allow(fields: "descripcion sigla orden unidadDidacticaId")) {
     capacidadTerminal_insert(data: $data)
   }
 `;
 
 export const UPDATE_CAPACIDAD_TERMINAL_MUTATION = `
-  mutation UpdateCapacidadTerminal($id: Int!, $data: CapacidadTerminal_Data! @allow(fields: "descripcion sigla unidadDidacticaId")) {
+  mutation UpdateCapacidadTerminal($id: Int!, $data: CapacidadTerminal_Data! @allow(fields: "descripcion sigla orden unidadDidacticaId")) {
     capacidadTerminal_update(id: $id, data: $data)
   }
 `;
@@ -515,13 +515,13 @@ export const DELETE_CAPACIDAD_TERMINAL_MUTATION = `
 `;
 
 export const INSERT_INDICADOR_CAPACIDAD_MUTATION = `
-  mutation InsertIndicadorCapacidad($data: IndicadorCapacidad_Data! @allow(fields: "descripcion sigla capacidadTerminalId")) {
+  mutation InsertIndicadorCapacidad($data: IndicadorCapacidad_Data! @allow(fields: "descripcion sigla orden capacidadTerminalId")) {
     indicadorCapacidad_insert(data: $data)
   }
 `;
 
 export const UPDATE_INDICADOR_CAPACIDAD_MUTATION = `
-  mutation UpdateIndicadorCapacidad($id: Int!, $data: IndicadorCapacidad_Data! @allow(fields: "descripcion sigla capacidadTerminalId")) {
+  mutation UpdateIndicadorCapacidad($id: Int!, $data: IndicadorCapacidad_Data! @allow(fields: "descripcion sigla orden capacidadTerminalId")) {
     indicadorCapacidad_update(id: $id, data: $data)
   }
 `;

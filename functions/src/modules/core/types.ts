@@ -825,12 +825,14 @@ export interface DataConnectCapacidadTerminal {
   id: number;
   descripcion?: string | null;
   sigla?: string | null;
+  orden?: number | null;
   unidadDidacticaId?: number | null;
 }
 
 export interface DataConnectCapacidadTerminalInput {
   descripcion?: string | null;
   sigla?: string | null;
+  orden?: number | null;
   unidadDidacticaId?: number | null;
 }
 
@@ -838,12 +840,14 @@ export interface DataConnectIndicadorCapacidad {
   id: number;
   descripcion?: string | null;
   sigla?: string | null;
+  orden?: number | null;
   capacidadTerminalId?: number | null;
 }
 
 export interface DataConnectIndicadorCapacidadInput {
   descripcion?: string | null;
   sigla?: string | null;
+  orden?: number | null;
   capacidadTerminalId?: number | null;
 }
 

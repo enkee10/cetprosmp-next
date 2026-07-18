@@ -274,11 +274,22 @@ const normalizeText = (value: string | null | undefined) =>
 const getTipoCarreraName = (registro: RegistroAuxiliar | null) =>
   registro?.grupoModulo?.modulo?.plan?.carrera?.tipoCarrera?.nombre || '';
 
-const isOpcionOcupacionalRegistro = (registro: RegistroAuxiliar | null) =>
-  normalizeText(getTipoCarreraName(registro)).includes('opcion ocupacional');
+const usesOpcionOcupacionalRulesRegistro = (registro: RegistroAuxiliar | null) => {
+  const normalized = normalizeText(getTipoCarreraName(registro));
+  return normalized.includes('opcion ocupacional') || normalized.includes('modulo ocupacional');
+};
 
 const isProgramaEstudioRegistro = (registro: RegistroAuxiliar | null) =>
   normalizeText(getTipoCarreraName(registro)).includes('programa de estudio');
+
+const getTipoCarreraRegistroLabel = (registro: RegistroAuxiliar | null) => {
+  const tipoCarrera = getTipoCarreraName(registro);
+  const normalized = normalizeText(tipoCarrera);
+  if (normalized.includes('programa de estudio')) return 'PLAN DE ESTUDIOS';
+  if (normalized.includes('opcion ocupacional')) return 'OPCION OCUPACIONAL';
+  if (normalized.includes('modulo ocupacional')) return 'MODULO OCUPACIONAL';
+  return tipoCarrera ? tipoCarrera.toLocaleUpperCase('es-PE') : 'PLAN DE ESTUDIOS';
+};
 
 const getCalendarDatePart = (value: string | null | undefined) => {
   if (!value) return '';
@@ -622,9 +633,10 @@ export default function RegistroAuxiliarPage() {
   );
 
   const visibleIndicatorColumns = useMemo(() => buildIndicatorColumns(visibleUnits), [visibleUnits]);
-  const isOpcionOcupacional = useMemo(() => isOpcionOcupacionalRegistro(registro), [registro]);
+  const usesOcupacionalRules = useMemo(() => usesOpcionOcupacionalRulesRegistro(registro), [registro]);
   const isProgramaEstudio = useMemo(() => isProgramaEstudioRegistro(registro), [registro]);
-  const showEfsrtPpp = !isOpcionOcupacional;
+  const tipoCarreraRegistroLabel = useMemo(() => getTipoCarreraRegistroLabel(registro), [registro]);
+  const showEfsrtPpp = !usesOcupacionalRules;
   const editableColumnCount = visibleIndicatorColumns.length + (showEfsrtPpp ? 1 : 0);
 
   const focusEditableCell = useCallback(
@@ -795,13 +807,13 @@ export default function RegistroAuxiliarPage() {
   const getCapacidadAverage = useCallback(
     (matriculaId: number, capacidad: Capacidad) => {
       const indicadores = capacidad.indicadoresCapacidad || [];
-      if (isOpcionOcupacional) {
+      if (usesOcupacionalRules) {
         const lastIndicador = indicadores[indicadores.length - 1];
         return lastIndicador ? roundPromedio(getNotaValue(matriculaId, lastIndicador.id)) : null;
       }
       return average(indicadores.map((indicador) => getNotaValue(matriculaId, indicador.id)));
     },
-    [getNotaValue, isOpcionOcupacional],
+    [getNotaValue, usesOcupacionalRules],
   );
 
   const getUnidadAverage = useCallback(
@@ -975,7 +987,7 @@ export default function RegistroAuxiliarPage() {
     setValue(moduleRows[1], MODULE_INFO_LEFT_VALUE_COL, datosGenerales?.nombreInstitucion || 'San Martin De Porres');
     setValue(moduleRows[1], MODULE_INFO_RIGHT_LABEL_COL, 'DOCENTE');
     setValue(moduleRows[1], MODULE_INFO_RIGHT_VALUE_COL, getPersonalName(registro.grupo).toUpperCase());
-    setValue(moduleRows[2], MODULE_INFO_LEFT_LABEL_COL, isOpcionOcupacional ? 'OPCION OCUPACIONAL' : 'PLAN DE ESTUDIOS');
+    setValue(moduleRows[2], MODULE_INFO_LEFT_LABEL_COL, tipoCarreraRegistroLabel);
     setValue(moduleRows[2], MODULE_INFO_LEFT_VALUE_COL, getPlanEstudioName(registro).toUpperCase());
     setValue(moduleRows[2], MODULE_INFO_RIGHT_LABEL_COL, 'INICIO / TERMINO');
     setValue(moduleRows[2], MODULE_INFO_RIGHT_VALUE_COL, [formatDate(registro.grupoModulo?.inicio), formatDate(registro.grupoModulo?.fin)].filter(Boolean).join(' al '));
@@ -1022,11 +1034,11 @@ export default function RegistroAuxiliarPage() {
   }, [
     datosGenerales?.nombreInstitucion,
     headerSpans,
-    isOpcionOcupacional,
     isProgramaEstudio,
     registro,
     selectableColumnIndexByKey,
     selectableColumns,
+    tipoCarreraRegistroLabel,
     visibleUnits,
   ]);
 
@@ -1528,7 +1540,7 @@ export default function RegistroAuxiliarPage() {
                   {...selectableCellProps(2, MODULE_INFO_LEFT_LABEL_COL)}
                   sx={{ ...cellBaseSx, ...selectableCellSx(2, MODULE_INFO_LEFT_LABEL_COL), fontWeight: 800, whiteSpace: 'nowrap' }}
                 >
-                  {isOpcionOcupacional ? 'OPCION OCUPACIONAL' : 'PLAN DE ESTUDIOS'}
+                  {tipoCarreraRegistroLabel}
                 </Box>
                 <Box
                   {...selectableCellProps(2, MODULE_INFO_LEFT_VALUE_COL, 1, moduleInfoLeftValueSpan)}

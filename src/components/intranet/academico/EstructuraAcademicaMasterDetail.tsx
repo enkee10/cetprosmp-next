@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { DragEvent, ReactNode } from 'react';
 import {
   Alert,
   Box,
@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import LinkIcon from '@mui/icons-material/Link';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
@@ -40,6 +41,7 @@ interface IndicadorDetalle {
   id: number;
   descripcion: string | null;
   sigla: string | null;
+  orden: number | null;
   capacidadTerminalId: number | null;
 }
 
@@ -47,6 +49,7 @@ interface CapacidadDetalle {
   id: number;
   descripcion: string | null;
   sigla: string | null;
+  orden: number | null;
   unidadDidacticaId: number | null;
   indicadoresCapacidad: IndicadorDetalle[];
 }
@@ -69,6 +72,7 @@ interface ModuloDetalle {
   tituloComercial: string | null;
   orden: number | null;
   descripcion: string | null;
+  competencia: string | null;
   horas: number | null;
   creditos: number | null;
   metas: number | null;
@@ -100,6 +104,7 @@ interface ModuloDetalle {
 type EditableAcademicEntity = 'modulo' | 'unidadDidactica' | 'unidadDidacticaModulo' | 'capacidadTerminal' | 'indicadorCapacidad';
 type EditableValueType = 'text' | 'number' | 'boolean';
 type EditableCellValue = string | number | boolean | null;
+type ReorderAcademicEntity = 'unidadDidacticaModulo' | 'capacidadTerminal' | 'indicadorCapacidad';
 
 interface EstructuraOpciones {
   modulosComunes: Array<{
@@ -131,6 +136,17 @@ interface DetailRow {
   lines?: number;
   target?: EditableCellTarget;
 }
+
+type DragState = {
+  entity: ReorderAcademicEntity;
+  id: number;
+};
+
+type DropPosition = 'before' | 'after';
+
+type DropIndicatorState = DragState & {
+  position: DropPosition;
+};
 
 function normalizeText(value: unknown) {
   return String(value ?? '')
@@ -196,6 +212,66 @@ function countIndicadores(unidades: UnidadDidacticaDetalle[]) {
         0,
       ),
     0,
+  );
+}
+
+function moveItem<T>(items: T[], fromIndex: number, toIndex: number, position: DropPosition) {
+  if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return items;
+  const next = items.slice();
+  const [moved] = next.splice(fromIndex, 1);
+  let insertionIndex = position === 'after' ? toIndex + 1 : toIndex;
+  if (fromIndex < insertionIndex) insertionIndex -= 1;
+  insertionIndex = Math.max(0, Math.min(insertionIndex, next.length));
+  next.splice(insertionIndex, 0, moved);
+  return next;
+}
+
+function withSequentialOrder<T extends { orden: number | null }>(items: T[]) {
+  return items.map((item, index) => ({ ...item, orden: index + 1 }));
+}
+
+function reorderById<T>(
+  items: T[],
+  sourceId: number,
+  targetId: number,
+  position: DropPosition,
+  getId: (item: T) => number,
+) {
+  const fromIndex = items.findIndex((item) => getId(item) === sourceId);
+  const toIndex = items.findIndex((item) => getId(item) === targetId);
+  return moveItem(items, fromIndex, toIndex, position);
+}
+
+function getDropPosition(event: DragEvent<HTMLElement>): DropPosition {
+  const rect = event.currentTarget.getBoundingClientRect();
+  return event.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
+}
+
+function DragHandle({
+  enabled,
+  onDragStart,
+}: {
+  enabled: boolean;
+  onDragStart: (event: DragEvent<HTMLElement>) => void;
+}) {
+  return (
+    <Box
+      component="span"
+      aria-hidden
+      draggable={enabled}
+      onDragStart={enabled ? onDragStart : undefined}
+      sx={{
+        width: 18,
+        minWidth: 18,
+        mt: 0.1,
+        display: 'inline-flex',
+        justifyContent: 'center',
+        color: enabled ? 'text.secondary' : 'action.disabled',
+        cursor: enabled ? 'grab' : 'default',
+      }}
+    >
+      <DragIndicatorIcon fontSize="small" />
+    </Box>
   );
 }
 
@@ -597,6 +673,10 @@ export default function EstructuraAcademicaMasterDetail({
   const [selectedCapacidadId, setSelectedCapacidadId] = useState<number | null>(null);
   const [selectedIndicadorId, setSelectedIndicadorId] = useState<number | null>(null);
   const [reuseDialog, setReuseDialog] = useState<{ kind: ReuseDialogKind; value: string } | null>(null);
+  const [dragState, setDragState] = useState<DragState | null>(null);
+  const [dropIndicator, setDropIndicator] = useState<DropIndicatorState | null>(null);
+  const dragStateRef = useRef<DragState | null>(null);
+  const dropIndicatorRef = useRef<DropIndicatorState | null>(null);
 
   const auth = getAuth(app);
   const functions = useMemo(() => getFunctions(app), []);
@@ -731,6 +811,167 @@ export default function EstructuraAcademicaMasterDetail({
       setActionLoading(false);
     }
   }, [auth, fetchEstructura, functions]);
+
+  const beginDrag = useCallback((event: DragEvent<HTMLElement>, nextDragState: DragState) => {
+    dragStateRef.current = nextDragState;
+    setDragState(nextDragState);
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', `${nextDragState.entity}:${nextDragState.id}`);
+  }, []);
+
+  const endDrag = useCallback(() => {
+    dragStateRef.current = null;
+    dropIndicatorRef.current = null;
+    setDragState(null);
+    setDropIndicator(null);
+  }, []);
+
+  const updateDropIndicator = useCallback((
+    event: DragEvent<HTMLElement>,
+    entity: ReorderAcademicEntity,
+    id: number,
+    enabled: boolean,
+  ) => {
+    const currentDrag = dragStateRef.current;
+    if (!enabled || currentDrag?.entity !== entity) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    const nextIndicator: DropIndicatorState = { entity, id, position: getDropPosition(event) };
+    const currentIndicator = dropIndicatorRef.current;
+    if (
+      currentIndicator?.entity !== nextIndicator.entity ||
+      currentIndicator.id !== nextIndicator.id ||
+      currentIndicator.position !== nextIndicator.position
+    ) {
+      dropIndicatorRef.current = nextIndicator;
+      setDropIndicator(nextIndicator);
+    }
+  }, []);
+
+  const clearDropIndicator = useCallback((entity: ReorderAcademicEntity, id: number) => {
+    const currentIndicator = dropIndicatorRef.current;
+    if (currentIndicator?.entity !== entity || currentIndicator.id !== id) return;
+    dropIndicatorRef.current = null;
+    setDropIndicator(null);
+  }, []);
+
+  const dropIndicatorSx = useCallback((entity: ReorderAcademicEntity, id: number) => {
+    const active = dropIndicator?.entity === entity && dropIndicator.id === id;
+    return {
+      position: 'relative' as const,
+      '&::before': active && dropIndicator.position === 'before'
+        ? {
+            content: '""',
+            position: 'absolute' as const,
+            left: 8,
+            right: 8,
+            top: 0,
+            height: 4,
+            bgcolor: 'common.black',
+            borderRadius: 999,
+            zIndex: 2,
+          }
+        : undefined,
+      '&::after': active && dropIndicator.position === 'after'
+        ? {
+            content: '""',
+            position: 'absolute' as const,
+            left: 8,
+            right: 8,
+            bottom: 0,
+            height: 4,
+            bgcolor: 'common.black',
+            borderRadius: 999,
+            zIndex: 2,
+          }
+        : undefined,
+    };
+  }, [dropIndicator]);
+
+  const persistReorder = useCallback(async (
+    entity: ReorderAcademicEntity,
+    items: Array<{ id: number; orden: number | null }>,
+  ) => {
+    if (!allowEdit) return;
+    setActionLoading(true);
+    try {
+      if (auth.currentUser) {
+        await auth.currentUser.getIdToken(true);
+      }
+      const reorderEstructuraAcademicaItems = httpsCallable<
+        { entity: ReorderAcademicEntity; items: Array<{ id: number; orden: number }> },
+        { updated: number }
+      >(functions, 'reorderEstructuraAcademicaItems');
+      await reorderEstructuraAcademicaItems({
+        entity,
+        items: items.map((item, index) => ({ id: item.id, orden: item.orden ?? index + 1 })),
+      });
+      setError(null);
+    } catch (err) {
+      console.error('Error reordering academic structure: ', err);
+      setError('No se pudo guardar el nuevo orden.');
+      await fetchEstructura();
+    } finally {
+      setActionLoading(false);
+    }
+  }, [allowEdit, auth, fetchEstructura, functions]);
+
+  const handleUnidadDrop = useCallback((targetRelacionId: number, position: DropPosition) => {
+    const currentDrag = dragStateRef.current;
+    if (!selectedModulo?.id || !currentDrag || currentDrag.entity !== 'unidadDidacticaModulo') return;
+    if (currentDrag.id === targetRelacionId) return;
+    const source = unidades.find((unidad) => unidad.relacionId === currentDrag.id);
+    const target = unidades.find((unidad) => unidad.relacionId === targetRelacionId);
+    if (!source || !target || source.comun || target.comun) return;
+    const ordered = withSequentialOrder(reorderById(
+      unidades,
+      currentDrag.id,
+      targetRelacionId,
+      position,
+      (unidad) => unidad.relacionId,
+    ));
+    setModulos((current) => current.map((modulo) => (
+      modulo.id === selectedModulo.id ? { ...modulo, unidadesDidacticas: ordered } : modulo
+    )));
+    void persistReorder('unidadDidacticaModulo', ordered.map((unidad) => ({ id: unidad.relacionId, orden: unidad.orden })));
+  }, [persistReorder, selectedModulo?.id, unidades]);
+
+  const handleCapacidadDrop = useCallback((targetCapacidadId: number, position: DropPosition) => {
+    const currentDrag = dragStateRef.current;
+    if (!selectedModulo?.id || !selectedUnidad?.id || !currentDrag || currentDrag.entity !== 'capacidadTerminal') return;
+    if (currentDrag.id === targetCapacidadId || selectedUnidadIsComun) return;
+    const ordered = withSequentialOrder(reorderById(capacidades, currentDrag.id, targetCapacidadId, position, (capacidad) => capacidad.id));
+    setModulos((current) => current.map((modulo) => (
+      modulo.id !== selectedModulo.id ? modulo : {
+        ...modulo,
+        unidadesDidacticas: modulo.unidadesDidacticas.map((unidad) => (
+          unidad.id === selectedUnidad.id ? { ...unidad, capacidadesTerminales: ordered } : unidad
+        )),
+      }
+    )));
+    void persistReorder('capacidadTerminal', ordered.map((capacidad) => ({ id: capacidad.id, orden: capacidad.orden })));
+  }, [capacidades, persistReorder, selectedModulo?.id, selectedUnidad?.id, selectedUnidadIsComun]);
+
+  const handleIndicadorDrop = useCallback((targetIndicadorId: number, position: DropPosition) => {
+    const currentDrag = dragStateRef.current;
+    if (!selectedModulo?.id || !selectedUnidad?.id || !selectedCapacidad?.id || !currentDrag || currentDrag.entity !== 'indicadorCapacidad') return;
+    if (currentDrag.id === targetIndicadorId || selectedUnidadIsComun) return;
+    const ordered = withSequentialOrder(reorderById(indicadores, currentDrag.id, targetIndicadorId, position, (indicador) => indicador.id));
+    setModulos((current) => current.map((modulo) => (
+      modulo.id !== selectedModulo.id ? modulo : {
+        ...modulo,
+        unidadesDidacticas: modulo.unidadesDidacticas.map((unidad) => (
+          unidad.id !== selectedUnidad.id ? unidad : {
+            ...unidad,
+            capacidadesTerminales: unidad.capacidadesTerminales.map((capacidad) => (
+              capacidad.id === selectedCapacidad.id ? { ...capacidad, indicadoresCapacidad: ordered } : capacidad
+            )),
+          }
+        )),
+      }
+    )));
+    void persistReorder('indicadorCapacidad', ordered.map((indicador) => ({ id: indicador.id, orden: indicador.orden })));
+  }, [indicadores, persistReorder, selectedCapacidad?.id, selectedModulo?.id, selectedUnidad?.id, selectedUnidadIsComun]);
 
   const handleCreateModulo = useCallback(() => {
     if (!selectedModulo?.planId) return;
@@ -899,13 +1140,13 @@ export default function EstructuraAcademicaMasterDetail({
           <CircularProgress size={28} />
         </Box>
       ) : filteredModulos.length === 0 ? (
-        <Box sx={{ px: 2, pb: 2 }}>
+        <Box sx={{ px: 1, pb: 2 }}>
           <Alert severity="info">No hay registros para mostrar.</Alert>
         </Box>
       ) : (
         <Box
           sx={{
-            px: 2,
+            px: 1,
             pb: 2,
             display: 'grid',
             gridTemplateColumns: {
@@ -954,6 +1195,12 @@ export default function EstructuraAcademicaMasterDetail({
                       label: 'Titulo',
                       value: selectedModulo.titulo,
                       target: { entity: 'modulo', id: selectedModulo.id, field: 'titulo', valueType: 'text' },
+                    },
+                    {
+                      label: 'Unidad de Competencia',
+                      value: selectedModulo.competencia,
+                      lines: 4,
+                      target: { entity: 'modulo', id: selectedModulo.id, field: 'competencia', valueType: 'text' },
                     },
                     {
                       label: 'Horas',
@@ -1056,16 +1303,6 @@ export default function EstructuraAcademicaMasterDetail({
                   readOnly={!allowEdit || selectedUnidadIsComun}
                   rows={[
                     {
-                      label: 'Orden',
-                      value: selectedUnidad.orden,
-                      target: {
-                        entity: 'unidadDidacticaModulo',
-                        id: selectedUnidad.relacionId,
-                        field: 'orden',
-                        valueType: 'number',
-                      },
-                    },
-                    {
                       label: 'Nombre',
                       value: selectedUnidad.nombre,
                       target: { entity: 'unidadDidactica', id: selectedUnidad.id, field: 'nombre', valueType: 'text' },
@@ -1092,10 +1329,24 @@ export default function EstructuraAcademicaMasterDetail({
                 {unidades.map((unidad) => {
                   const unidadComun = Boolean(unidad.comun);
                   const unidadReadOnly = !allowEdit || unidadComun;
+                  const canDragUnidad = allowEdit && !unidadComun && !actionLoading;
 
                   return (
                     <ListItemButton
                       key={`${unidad.relacionId}-${unidad.id}`}
+                      onDragOver={(event) => updateDropIndicator(
+                        event,
+                        'unidadDidacticaModulo',
+                        unidad.relacionId,
+                        canDragUnidad,
+                      )}
+                      onDragLeave={() => clearDropIndicator('unidadDidacticaModulo', unidad.relacionId)}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        handleUnidadDrop(unidad.relacionId, dropIndicatorRef.current?.position ?? getDropPosition(event));
+                        endDrag();
+                      }}
+                      onDragEnd={endDrag}
                       selected={selectedUnidad?.id === unidad.id}
                       onClick={() => {
                         setSelectedUnidadId(unidad.id);
@@ -1104,8 +1355,10 @@ export default function EstructuraAcademicaMasterDetail({
                       }}
                       sx={{
                         alignItems: 'flex-start',
+                        px: 1,
                         py: 0.9,
                         minHeight: 68,
+                        ...dropIndicatorSx('unidadDidacticaModulo', unidad.relacionId),
                         bgcolor: unidadComun ? 'rgba(244, 143, 177, 0.16)' : undefined,
                         '&:hover': {
                           bgcolor: unidadComun ? 'rgba(244, 143, 177, 0.24)' : undefined,
@@ -1122,18 +1375,26 @@ export default function EstructuraAcademicaMasterDetail({
                         primaryTypographyProps={{ component: 'div' }}
                         secondaryTypographyProps={{ component: 'div' }}
                         primary={
-                          <EditableValue
-                            value={unidad.nombre || `Unidad ${unidad.id}`}
-                            target={{ entity: 'unidadDidactica', id: unidad.id, field: 'nombre', valueType: 'text' }}
-                            lines={2}
-                            variant="body2"
-                            onSave={saveEditableCell}
-                            readOnly={unidadReadOnly}
-                          />
+                          <Stack direction="row" spacing={0.5} alignItems="flex-start">
+                            <DragHandle
+                              enabled={canDragUnidad}
+                              onDragStart={(event) => beginDrag(event, {
+                                entity: 'unidadDidacticaModulo',
+                                id: unidad.relacionId,
+                              })}
+                            />
+                            <EditableValue
+                              value={unidad.nombre || `Unidad ${unidad.id}`}
+                              target={{ entity: 'unidadDidactica', id: unidad.id, field: 'nombre', valueType: 'text' }}
+                              lines={2}
+                              variant="body2"
+                              onSave={saveEditableCell}
+                              readOnly={unidadReadOnly}
+                            />
+                          </Stack>
                         }
                         secondary={
                           <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
-                            <Chip size="small" label={`Ord ${unidad.orden ?? '-'}`} />
                             {unidadComun ? <Chip size="small" label="Comun" color="secondary" variant="outlined" /> : null}
                             <EditableMetricChip
                               value={unidad.duracion}
@@ -1195,33 +1456,63 @@ export default function EstructuraAcademicaMasterDetail({
               <EmptyState label="Sin capacidades." />
             ) : (
               <List dense disablePadding>
-                {capacidades.map((capacidad) => (
+                {capacidades.map((capacidad) => {
+                  const canDragCapacidad = allowEdit && !selectedUnidadIsComun && !actionLoading;
+                  return (
                   <ListItemButton
                     key={capacidad.id}
+                    onDragOver={(event) => updateDropIndicator(
+                      event,
+                      'capacidadTerminal',
+                      capacidad.id,
+                      canDragCapacidad,
+                    )}
+                    onDragLeave={() => clearDropIndicator('capacidadTerminal', capacidad.id)}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      handleCapacidadDrop(capacidad.id, dropIndicatorRef.current?.position ?? getDropPosition(event));
+                      endDrag();
+                    }}
+                    onDragEnd={endDrag}
                     selected={selectedCapacidad?.id === capacidad.id}
                     onClick={() => {
                       setSelectedCapacidadId(capacidad.id);
                       setSelectedIndicadorId(null);
                     }}
-                    sx={{ alignItems: 'flex-start', py: 0.95, minHeight: 78 }}
+                    sx={{
+                      alignItems: 'flex-start',
+                      px: 1,
+                      py: 0.95,
+                      minHeight: 78,
+                      ...dropIndicatorSx('capacidadTerminal', capacidad.id),
+                    }}
                   >
                     <ListItemText
                       primaryTypographyProps={{ component: 'div' }}
                       secondaryTypographyProps={{ component: 'div' }}
                       primary={
-                        <EditableValue
-                          value={capacidad.descripcion || `Capacidad ${capacidad.id}`}
-                          target={{
-                            entity: 'capacidadTerminal',
-                            id: capacidad.id,
-                            field: 'descripcion',
-                            valueType: 'text',
-                          }}
-                          lines={4}
-                          variant="body2"
-                          onSave={saveEditableCell}
-                          readOnly={!allowEdit || selectedUnidadIsComun}
-                        />
+                        <Stack direction="row" spacing={0.5} alignItems="flex-start">
+                          <DragHandle
+                            enabled={canDragCapacidad}
+                            onDragStart={(event) => beginDrag(event, {
+                              entity: 'capacidadTerminal',
+                              id: capacidad.id,
+                            })}
+                          />
+                          <EditableValue
+                            value={capacidad.descripcion || `Capacidad ${capacidad.id}`}
+                            target={{
+                              entity: 'capacidadTerminal',
+                              id: capacidad.id,
+                              field: 'descripcion',
+                              valueType: 'text',
+                            }}
+                            lines={4}
+                            variant="body2"
+                            onSave={saveEditableCell}
+                            readOnly={!allowEdit || selectedUnidadIsComun}
+                          />
+                        </Stack>
                       }
                       secondary={
                         <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
@@ -1231,7 +1522,8 @@ export default function EstructuraAcademicaMasterDetail({
                       }
                     />
                   </ListItemButton>
-                ))}
+                );
+                })}
               </List>
             )}
           </Panel>
@@ -1269,30 +1561,60 @@ export default function EstructuraAcademicaMasterDetail({
               <EmptyState label="Sin indicadores." />
             ) : (
               <List dense disablePadding>
-                {indicadores.map((indicador) => (
+                {indicadores.map((indicador) => {
+                  const canDragIndicador = allowEdit && !selectedUnidadIsComun && !actionLoading;
+                  return (
                   <ListItemButton
                     key={indicador.id}
+                    onDragOver={(event) => updateDropIndicator(
+                      event,
+                      'indicadorCapacidad',
+                      indicador.id,
+                      canDragIndicador,
+                    )}
+                    onDragLeave={() => clearDropIndicator('indicadorCapacidad', indicador.id)}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      handleIndicadorDrop(indicador.id, dropIndicatorRef.current?.position ?? getDropPosition(event));
+                      endDrag();
+                    }}
+                    onDragEnd={endDrag}
                     selected={selectedIndicador?.id === indicador.id}
                     onClick={() => setSelectedIndicadorId(indicador.id)}
-                    sx={{ alignItems: 'flex-start', py: 0.95, minHeight: 72 }}
+                    sx={{
+                      alignItems: 'flex-start',
+                      px: 1,
+                      py: 0.95,
+                      minHeight: 72,
+                      ...dropIndicatorSx('indicadorCapacidad', indicador.id),
+                    }}
                   >
                     <ListItemText
                       primaryTypographyProps={{ component: 'div' }}
                       secondaryTypographyProps={{ component: 'div' }}
                       primary={
-                        <EditableValue
-                          value={indicador.descripcion || `Indicador ${indicador.id}`}
-                          target={{
-                            entity: 'indicadorCapacidad',
-                            id: indicador.id,
-                            field: 'descripcion',
-                            valueType: 'text',
-                          }}
-                          lines={4}
-                          variant="body2"
-                          onSave={saveEditableCell}
-                          readOnly={!allowEdit || selectedUnidadIsComun}
-                        />
+                        <Stack direction="row" spacing={0.5} alignItems="flex-start">
+                          <DragHandle
+                            enabled={canDragIndicador}
+                            onDragStart={(event) => beginDrag(event, {
+                              entity: 'indicadorCapacidad',
+                              id: indicador.id,
+                            })}
+                          />
+                          <EditableValue
+                            value={indicador.descripcion || `Indicador ${indicador.id}`}
+                            target={{
+                              entity: 'indicadorCapacidad',
+                              id: indicador.id,
+                              field: 'descripcion',
+                              valueType: 'text',
+                            }}
+                            lines={4}
+                            variant="body2"
+                            onSave={saveEditableCell}
+                            readOnly={!allowEdit || selectedUnidadIsComun}
+                          />
+                        </Stack>
                       }
                       secondary={
                         <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
@@ -1326,7 +1648,8 @@ export default function EstructuraAcademicaMasterDetail({
                       }
                     />
                   </ListItemButton>
-                ))}
+                );
+                })}
               </List>
             )}
           </Panel>

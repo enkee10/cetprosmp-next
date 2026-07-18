@@ -81,6 +81,7 @@ type RegistroAuxiliarIndicador = {
   id: number;
   descripcion?: string | null;
   sigla?: string | null;
+  orden?: number | null;
   capacidadTerminalId?: number | null;
 };
 
@@ -88,6 +89,7 @@ type RegistroAuxiliarCapacidad = {
   id: number;
   descripcion?: string | null;
   sigla?: string | null;
+  orden?: number | null;
   unidadDidacticaId?: number | null;
 };
 
@@ -301,12 +303,14 @@ const REGISTRO_AUXILIAR_DETAIL_QUERY = `
       id
       descripcion
       sigla
+      orden
       unidadDidacticaId
     }
     indicadoresCapacidad(limit: 100000) {
       id
       descripcion
       sigla
+      orden
       capacidadTerminalId
     }
     modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
@@ -852,8 +856,9 @@ function normalizeText(value: unknown) {
     .trim();
 }
 
-function isOpcionOcupacional(value: unknown) {
-  return normalizeText(value).includes("opcion ocupacional");
+function usesOpcionOcupacionalRules(value: unknown) {
+  const normalized = normalizeText(value);
+  return normalized.includes("opcion ocupacional") || normalized.includes("modulo ocupacional");
 }
 
 function asCleanString(value: unknown) {
@@ -1203,10 +1208,14 @@ function buildUnidadIds(response: {
   }
   return Array.from(unitsById.values())
     .sort((a, b) => (
-      (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER)
+      (a.orden ?? a.unidadDidacticaId) - (b.orden ?? b.unidadDidacticaId)
       || a.unidadDidacticaId - b.unidadDidacticaId
     ))
     .map((item) => item.unidadDidacticaId);
+}
+
+function getAcademicOrder(item: { id: number; orden?: number | null }) {
+  return item.orden ?? item.id;
 }
 
 export const listRegistroAuxiliarDocenteModulos = https.onCall(async (data, context) => {
@@ -1357,10 +1366,12 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
         ...unidad,
         capacidadesTerminales: (capacidadByUnidad.get(unidad.id) ?? [])
           .slice()
-          .sort((a, b) => a.id - b.id)
+          .sort((a, b) => getAcademicOrder(a) - getAcademicOrder(b) || a.id - b.id)
           .map((capacidad) => ({
             ...capacidad,
-            indicadoresCapacidad: (indicadorByCapacidad.get(capacidad.id) ?? []).slice().sort((a, b) => a.id - b.id),
+            indicadoresCapacidad: (indicadorByCapacidad.get(capacidad.id) ?? [])
+              .slice()
+              .sort((a, b) => getAcademicOrder(a) - getAcademicOrder(b) || a.id - b.id),
           })),
       }));
 
@@ -1776,7 +1787,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
       throw new https.HttpsError("not-found", "No se encontro el grupo-modulo solicitado.");
     }
     const { grupoId, moduloId } = grupoModulo;
-    const opcionOcupacional = isOpcionOcupacional(grupoModulo.modulo?.plan?.carrera?.tipoCarrera?.nombre);
+    const usesOcupacionalRules = usesOpcionOcupacionalRules(grupoModulo.modulo?.plan?.carrera?.tipoCarrera?.nombre);
 
     const contextResponse = await dataConnect.executeGraphql<{
       grupoModuloUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
@@ -1804,12 +1815,14 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
             id
             descripcion
             sigla
+            orden
             unidadDidacticaId
           }
           indicadoresCapacidad(limit: 100000) {
             id
             descripcion
             sigla
+            orden
             capacidadTerminalId
           }
           modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
@@ -1828,11 +1841,19 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
         .map((unidad) => [unidad.id, unidad.creditos ?? null]),
     );
     const capacidades = (contextResponse.data.capacidadesTerminales ?? [])
-      .filter((capacidad) => capacidad.unidadDidacticaId && unidadIdSet.has(capacidad.unidadDidacticaId));
+      .filter((capacidad) => capacidad.unidadDidacticaId && unidadIdSet.has(capacidad.unidadDidacticaId))
+      .sort((a, b) =>
+        unidadIds.indexOf(a.unidadDidacticaId ?? -1) - unidadIds.indexOf(b.unidadDidacticaId ?? -1) ||
+        getAcademicOrder(a) - getAcademicOrder(b) ||
+        a.id - b.id,
+      );
     const capacidadById = new Map(capacidades.map((capacidad) => [capacidad.id, capacidad]));
     const indicadores = (contextResponse.data.indicadoresCapacidad ?? [])
       .filter((indicador) => indicador.capacidadTerminalId && capacidadById.has(indicador.capacidadTerminalId))
-      .sort((a, b) => a.id - b.id);
+      .sort((a, b) =>
+        getAcademicOrder(a) - getAcademicOrder(b) ||
+        a.id - b.id,
+      );
     const indicadorById = new Map(indicadores.map((indicador) => [indicador.id, indicador]));
     const moduloEstudianteIds = new Set((contextResponse.data.modulosEstudiantes ?? []).map((item) => item.id));
     const notasByMatricula = new Map<number, Map<number, number | null>>();
@@ -1853,7 +1874,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
         const indicadorIds = indicadores
           .filter((indicador) => indicador.capacidadTerminalId === capacidad.id)
           .map((indicador) => indicador.id);
-        const promedio = opcionOcupacional
+        const promedio = usesOcupacionalRules
           ? roundPromedio(indicadorIds.length > 0 ? notasByIndicador.get(indicadorIds[indicadorIds.length - 1]) : null)
           : average(indicadorIds.map((indicadorId) => notasByIndicador.get(indicadorId)));
         capacidadPromedios.set(capacidad.id, promedio);
@@ -1873,7 +1894,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
         matriculaId,
         moduloId,
         grupoId,
-        opcionOcupacional
+        usesOcupacionalRules
           ? average(unidadIds.map((unidadId) => unidadPromedios.get(unidadId)))
           : weightedAverage(unidadIds.map((unidadId) => ({
             value: unidadPromedios.get(unidadId),
@@ -1881,13 +1902,13 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
           }))),
         sum(indicadores.map((indicador) => notasByIndicador.get(indicador.id))),
       );
-      if (moduloEstudianteId && !opcionOcupacional) {
+      if (moduloEstudianteId && !usesOcupacionalRules) {
         await ensureEfsrtPppEstudiante(grupoModuloId, moduloEstudianteId);
       }
     }
 
     let efsrtPppSaved = 0;
-    if (!opcionOcupacional) {
+    if (!usesOcupacionalRules) {
       for (const promedio of cleanEfsrtPppPromedios) {
         if (!moduloEstudianteIds.has(promedio.moduloEstudianteId)) continue;
         await upsertEfsrtPppPromedio(grupoModuloId, promedio.moduloEstudianteId, promedio.promedioFinal);

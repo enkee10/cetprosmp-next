@@ -511,6 +511,7 @@ export function buildCapacidadTerminalDataFromInput(input: Record<string, unknow
   return compactUndefined({
     descripcion: asNullableString(input.descripcion),
     sigla: asNullableString(input.sigla),
+    orden: toNumberOrNull(input.orden),
     unidadDidacticaId: toNumberOrNull(input.unidadDidacticaId),
   });
 }
@@ -519,6 +520,7 @@ export function buildIndicadorCapacidadDataFromInput(input: Record<string, unkno
   return compactUndefined({
     descripcion: asNullableString(input.descripcion),
     sigla: asNullableString(input.sigla),
+    orden: toNumberOrNull(input.orden),
     capacidadTerminalId: toNumberOrNull(input.capacidadTerminalId),
   });
 }

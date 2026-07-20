@@ -1,189 +1,216 @@
 'use client';
-// src/components/Header/MenuPrincipal/IntranetMenuWrapper.tsx
 
-import React, { useEffect, useRef, useState } from "react";
-import { Box, Button, Popper } from "@mui/material";
-import ArrowRightIcon from "@mui/icons-material/ArrowRight";
-import Link from "next/link";
-import NextLink from "next/link";
-import { cerrarTodosLosMenus } from "@/components/Header/MenuPrincipal/_otros/CerrarTodoMenus";
-
+import React, { useEffect, useMemo, useState } from 'react';
+import { httpsCallable } from 'firebase/functions';
+import { FlyoutMenuTree, type MenuTreeNode } from '@/components/MenuTree/MenuTree';
 import {
-  MenuContainer,
-  MenuItemBox,
-  MenuText,
-} from "@/components/Header/MenuPrincipal/FullCustomMenu/FullCustomMenu";
+  menuSections,
+  type IntranetMenuItem,
+  type IntranetMenuSection,
+} from '@/components/Sidebar/AcordionIntranet/AcordionIntranet';
+import { useAuth } from '@/context/AuthContext';
+import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
+import { functions } from '@/lib/firebase';
 
-type SubItem = {
+type RegistroAuxiliarDocenteModulo = {
   id: number;
-  titulo: string;
-  slug: string;
+  nombre?: string | null;
+  moduloId: number;
+  grupo?: {
+    semestre?: { titulo?: string | null } | null;
+  } | null;
+  modulo?: {
+    titulo?: string | null;
+    tituloComercial?: string | null;
+  } | null;
 };
 
-type Item = {
-  id: number;
-  titulo: string;
-  slug: string;
-  contenido?: SubItem[];
+type EstructuraAcademicaDocenteMenu = {
+  title?: string | null;
+  hasModulos?: boolean | null;
 };
+
+const TEACHER_ROLE_ID = 4;
+
+const formatPeriodoMenu = (value: string | null | undefined) => {
+  const text = String(value ?? '').trim();
+  return text.replace(/^20(\d{2})\s*-\s*/, '$1-') || 'Periodo';
+};
+
+const getGrupoModuloMenuName = (value: string | null | undefined) => {
+  const text = String(value ?? '').trim();
+  if (!text) return '';
+  return text.split('[')[0]?.trim() || text;
+};
+
+const getModuloMenuName = (modulo: RegistroAuxiliarDocenteModulo) =>
+  getGrupoModuloMenuName(modulo.nombre) ||
+  modulo.modulo?.titulo ||
+  modulo.modulo?.tituloComercial ||
+  `Modulo ${modulo.moduloId}`;
+
+const buildDocenteRegistroItems = (
+  modulos: RegistroAuxiliarDocenteModulo[],
+  semestreTitulo?: string | null,
+): IntranetMenuItem[] =>
+  modulos.map((modulo) => {
+    const periodo = formatPeriodoMenu(modulo.grupo?.semestre?.titulo || semestreTitulo);
+    const moduloName = getModuloMenuName(modulo);
+    return {
+      id: `registro-auxiliar-${modulo.id}`,
+      title: `Notas ${periodo} ${moduloName}`,
+      path: `/intranet/registro-auxiliar?grupoModuloId=${modulo.id}`,
+      icon: null,
+    };
+  });
+
+const buildDocenteEstructuraItem = (title: string | null | undefined): IntranetMenuItem => ({
+  id: 'estructura-academica-docente',
+  title: String(title || '').trim() || 'Estructura Academica',
+  path: '/intranet/estructura-academica-docente',
+  icon: null,
+});
+
+const buildIntranetNodes = (sections: IntranetMenuSection[]): MenuTreeNode[] =>
+  sections.map((section) => ({
+    id: section.id,
+    title: section.title,
+    children: section.items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      href: item.path,
+    })),
+  }));
 
 export default function IntranetMenuWrapper() {
-  const anchoMenu = "156px";
+  const { user } = useAuth();
+  const { can, filterSections, loading: loadingPermissions } = useIntranetPermissions();
+  const [docenteRegistroItems, setDocenteRegistroItems] = useState<IntranetMenuItem[]>([]);
+  const [docenteRegistroLoaded, setDocenteRegistroLoaded] = useState(false);
+  const [docenteEstructuraItem, setDocenteEstructuraItem] = useState<IntranetMenuItem | null>(null);
+  const [docenteEstructuraLoaded, setDocenteEstructuraLoaded] = useState(false);
 
-  const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<Item[]>([]);
-  const [subItems, setSubItems] = useState<SubItem[] | null>(null);
-
-  const [anchorSubMenu, setAnchorSubMenu] = useState<HTMLElement | null>(null);
-
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const anchorRef = useRef<HTMLAnchorElement | null>(null);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const res = await fetch("/intranet.json");
-      const data: Item[] = await res.json();
-
-      const withContent = data
-        .filter((item) => item.contenido && item.contenido.length > 0)
-        .sort((a, b) => a.id - b.id);
-
-      const withoutContent = data
-        .filter((item) => !item.contenido || item.contenido.length === 0)
-        .sort((a, b) => a.id - b.id);
-
-      setItems([...withContent, ...withoutContent]);
-    };
-
-    fetchData();
-  }, []);
+  const isDocente = Number(user?.role ?? 0) === TEACHER_ROLE_ID && Number(user?.level ?? 0) < 600;
+  const canViewRegistroAuxiliar = can('registro-auxiliar', 'view');
+  const canViewEstructuraAcademica = can('estructura-academica', 'view');
 
   useEffect(() => {
-    const handleCerrarMenus = () => {
-      setOpen(false);
-      setSubItems(null);
-      setAnchorSubMenu(null);
+    let active = true;
+
+    const loadDocenteRegistroItems = async () => {
+      if (!isDocente || loadingPermissions || !canViewRegistroAuxiliar) {
+        setDocenteRegistroItems([]);
+        setDocenteRegistroLoaded(false);
+        return;
+      }
+
+      setDocenteRegistroLoaded(false);
+      try {
+        const listRegistroAuxiliarDocenteModulos = httpsCallable<
+          undefined,
+          { modulos?: RegistroAuxiliarDocenteModulo[]; semestreTitulo?: string | null }
+        >(functions, 'listRegistroAuxiliarDocenteModulos');
+        const result = await listRegistroAuxiliarDocenteModulos();
+        if (!active) return;
+        setDocenteRegistroItems(buildDocenteRegistroItems(result.data.modulos || [], result.data.semestreTitulo));
+      } catch (error) {
+        console.error('Error loading docente registro auxiliar modules:', error);
+        if (active) setDocenteRegistroItems([]);
+      } finally {
+        if (active) setDocenteRegistroLoaded(true);
+      }
     };
 
-    window.addEventListener("cerrar-todos-los-menus", handleCerrarMenus);
-
+    void loadDocenteRegistroItems();
     return () => {
-      window.removeEventListener("cerrar-todos-los-menus", handleCerrarMenus);
+      active = false;
     };
-  }, []);
+  }, [canViewRegistroAuxiliar, isDocente, loadingPermissions]);
 
-  const startCloseTimer = () => {
-    closeTimer.current = setTimeout(() => {
-      setOpen(false);
-      setSubItems(null);
-      setAnchorSubMenu(null);
-    }, 150);
-  };
+  useEffect(() => {
+    let active = true;
 
-  const cancelCloseTimer = () => {
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-  };
+    const loadDocenteEstructuraItem = async () => {
+      if (!isDocente || loadingPermissions || !canViewEstructuraAcademica) {
+        setDocenteEstructuraItem(null);
+        setDocenteEstructuraLoaded(false);
+        return;
+      }
 
-  const handleItemEnter = (
-    e: React.MouseEvent<HTMLDivElement>,
-    contenido?: SubItem[]
-  ) => {
-    if (contenido && contenido.length > 0) {
-      setAnchorSubMenu(e.currentTarget);
-      setSubItems([...contenido].sort((a, b) => a.id - b.id));
-    } else {
-      setSubItems(null);
-      setAnchorSubMenu(null);
-    }
-  };
+      setDocenteEstructuraLoaded(false);
+      try {
+        const getEstructuraAcademicaDocenteMenu = httpsCallable<undefined, EstructuraAcademicaDocenteMenu>(
+          functions,
+          'getEstructuraAcademicaDocenteMenu',
+        );
+        const result = await getEstructuraAcademicaDocenteMenu();
+        if (!active) return;
+        setDocenteEstructuraItem(result.data.hasModulos === false ? null : buildDocenteEstructuraItem(result.data.title));
+      } catch (error) {
+        console.error('Error loading docente estructura academica menu:', error);
+        if (active) setDocenteEstructuraItem(null);
+      } finally {
+        if (active) setDocenteEstructuraLoaded(true);
+      }
+    };
+
+    void loadDocenteEstructuraItem();
+    return () => {
+      active = false;
+    };
+  }, [canViewEstructuraAcademica, isDocente, loadingPermissions]);
+
+  const visibleSections = useMemo(() => {
+    const filteredSections = filterSections(menuSections);
+    const docenteSections = isDocente && !filteredSections.some((section) => section.id === 'registros')
+      ? [
+        ...filteredSections,
+        {
+          ...(menuSections.find((section) => section.id === 'registros') || {
+            id: 'registros',
+            title: 'Registros',
+            icon: null,
+            items: [],
+          }),
+          items: [],
+        },
+      ]
+      : filteredSections;
+
+    return docenteSections
+      .map((section) => {
+        if (!isDocente || section.id !== 'registros') return section;
+
+        const items = section.items.flatMap((item) => {
+          if (item.id !== 'registro-auxiliar') return [item];
+          return docenteRegistroLoaded ? docenteRegistroItems : [item];
+        });
+        const withDocenteEstructura = docenteEstructuraLoaded && docenteEstructuraItem
+          ? [docenteEstructuraItem, ...items.filter((item) => item.id !== 'estructura-academica')]
+          : items;
+
+        return { ...section, items: withDocenteEstructura };
+      })
+      .filter((section) => section.items.length > 0);
+  }, [
+    docenteEstructuraItem,
+    docenteEstructuraLoaded,
+    docenteRegistroItems,
+    docenteRegistroLoaded,
+    filterSections,
+    isDocente,
+  ]);
+
+  const nodes = useMemo(() => buildIntranetNodes(visibleSections), [visibleSections]);
 
   return (
-    <Box
-      ref={wrapperRef}
-      sx={{ display: { xs: "none", md: "block" } }}
-      onMouseEnter={() => {
-        cancelCloseTimer();
-        if (items.length > 0) {
-          setOpen(true);
-        }
-      }}
-      onMouseLeave={startCloseTimer}
-    >
-      <Button
-        color="inherit"
-        href="/intranet"
-        component={NextLink}
-        ref={anchorRef}
-      >
-        Intranet
-      </Button>
-
-      {items.length > 0 && (
-        <Popper
-          open={open}
-          anchorEl={anchorRef.current}
-          placement="bottom-start"
-          sx={{ zIndex: 1300 }}
-        >
-          <MenuContainer ancho={anchoMenu} sx={{ ml: -5 }}>
-            {items.map((item) =>
-              item.contenido && item.contenido.length > 0 ? (
-                <MenuItemBox
-                  key={item.id}
-                  onMouseEnter={(e) => handleItemEnter(e, item.contenido)}
-                  iconRight={
-                    <ArrowRightIcon
-                      fontSize="small"
-                      sx={{ mt: 0.5, alignSelf: "flex-start" }}
-                    />
-                  }
-                >
-                  <MenuText>{item.titulo}</MenuText>
-                </MenuItemBox>
-              ) : (
-                <Link
-                  key={item.id}
-                  href={`/intranet/${item.slug}`}
-                  onClick={cerrarTodosLosMenus}
-                  style={{ textDecoration: "none" }}
-                >
-                  <MenuItemBox
-                    onMouseEnter={(e) => handleItemEnter(e, item.contenido)}
-                  >
-                    <MenuText>{item.titulo}</MenuText>
-                  </MenuItemBox>
-                </Link>
-              )
-            )}
-          </MenuContainer>
-        </Popper>
-      )}
-
-      <Popper
-        open={Boolean(subItems)}
-        anchorEl={anchorSubMenu}
-        placement="right-start"
-        sx={{ zIndex: 1300 }}
-      >
-        <MenuContainer ancho={anchoMenu} sx={{ mt: 0 }}>
-          {subItems?.map((sub) => (
-            <Link
-              key={sub.id}
-              href={`/intranet/${sub.slug}`}
-              onClick={cerrarTodosLosMenus}
-              style={{ textDecoration: "none" }}
-            >
-              <MenuItemBox>
-                <MenuText>{sub.titulo}</MenuText>
-              </MenuItemBox>
-            </Link>
-          ))}
-        </MenuContainer>
-      </Popper>
-    </Box>
+    <FlyoutMenuTree
+      label="Intranet"
+      href="/intranet"
+      nodes={nodes}
+      width="230px"
+      rootMenuSx={{ ml: -8 }}
+      sx={{ display: { xs: 'none', md: 'block' } }}
+    />
   );
 }

@@ -117,6 +117,7 @@ export interface DataConnectAppSetting {
   section?: string | null;
   label?: string | null;
   boolValue?: boolean | null;
+  intValue?: number | null;
   updatedAt?: string | null;
 }
 
@@ -125,6 +126,7 @@ export interface DataConnectAppSettingInput {
   section?: string | null;
   label?: string | null;
   boolValue?: boolean;
+  intValue?: number | null;
   updatedAt?: string | null;
 }
 
@@ -769,6 +771,8 @@ export interface DataConnectMatricula {
   paqueteId?: number | null;
   semestreId?: number | null;
   userId?: number | null;
+  responsableId?: number | null;
+  responsableUserId?: number | null;
 }
 
 export interface DataConnectMatriculaInput {
@@ -779,6 +783,8 @@ export interface DataConnectMatriculaInput {
   paqueteId?: number | null;
   semestreId?: number | null;
   userId?: number | null;
+  responsableId?: number | null;
+  responsableUserId?: number | null;
 }
 
 export interface DataConnectModuloEstudianteInput {

@@ -45,6 +45,7 @@ export const PERMISSION_ENTITIES: PermissionEntity[] = [
   { id: "documentos-reportes", title: "Actas y Nominas", section: "Reportes" },
   { id: "certificados-titulos", title: "Certificados y Titulos", section: "Reportes" },
   { id: "post", title: "Publicaciones", section: "Mantenimiento" },
+  { id: "settings", title: "Settings", section: "Mantenimiento" },
 ];
 
 const entityIds = new Set(PERMISSION_ENTITIES.map((entity) => entity.id));

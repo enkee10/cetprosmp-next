@@ -717,6 +717,15 @@ extend type AppSetting {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "AppSetting.id", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `AppSetting` table where the `intValue` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  intValue_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "AppSetting.intValue", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `AppSetting` table where the `label` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   label_count(
@@ -762,6 +771,15 @@ extend type AppSetting {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "AppSetting.id", purpose: QUERY_SUM)
   """
+  ✨ Sum the `intValue` field in the `AppSetting` table.
+  """
+  intValue_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "AppSetting.intValue", purpose: QUERY_SUM)
+  """
   ✨ Average the `id` field in the `AppSetting` table.
   """
   id_avg(
@@ -771,9 +789,22 @@ extend type AppSetting {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "AppSetting.id", purpose: QUERY_AVG)
   """
+  ✨ Average the `intValue` field in the `AppSetting` table.
+  """
+  intValue_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "AppSetting.intValue", purpose: QUERY_AVG)
+  """
   ✨ Minimum of the `id` field in the `AppSetting` table.
   """
   id_min: Int @fdc_generated(from: "AppSetting.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `intValue` field in the `AppSetting` table.
+  """
+  intValue_min: Int @fdc_generated(from: "AppSetting.intValue", purpose: QUERY_MIN)
   """
   ✨ Minimum of the `updatedAt` field in the `AppSetting` table.
   """
@@ -782,6 +813,10 @@ extend type AppSetting {
   ✨ Maximum of the `id` field in the `AppSetting` table.
   """
   id_max: Int @fdc_generated(from: "AppSetting.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `intValue` field in the `AppSetting` table.
+  """
+  intValue_max: Int @fdc_generated(from: "AppSetting.intValue", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `updatedAt` field in the `AppSetting` table.
   """
@@ -9056,6 +9091,24 @@ extend type Matricula {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Matricula.recibo", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Matricula` table where the `responsableId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  responsableId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Matricula.responsableId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Matricula` table where the `responsableUserId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  responsableUserId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Matricula.responsableUserId", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Matricula` table where the `semestreId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   semestreId_count(
@@ -9091,6 +9144,24 @@ extend type Matricula {
     """
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Matricula.paqueteId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `responsableId` field in the `Matricula` table.
+  """
+  responsableId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Matricula.responsableId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `responsableUserId` field in the `Matricula` table.
+  """
+  responsableUserId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Matricula.responsableUserId", purpose: QUERY_SUM)
   """
   ✨ Sum the `semestreId` field in the `Matricula` table.
   """
@@ -9128,6 +9199,24 @@ extend type Matricula {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Matricula.paqueteId", purpose: QUERY_AVG)
   """
+  ✨ Average the `responsableId` field in the `Matricula` table.
+  """
+  responsableId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Matricula.responsableId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `responsableUserId` field in the `Matricula` table.
+  """
+  responsableUserId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Matricula.responsableUserId", purpose: QUERY_AVG)
+  """
   ✨ Average the `semestreId` field in the `Matricula` table.
   """
   semestreId_avg(
@@ -9158,6 +9247,14 @@ extend type Matricula {
   """
   paqueteId_min: Int @fdc_generated(from: "Matricula.paqueteId", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `responsableId` field in the `Matricula` table.
+  """
+  responsableId_min: Int @fdc_generated(from: "Matricula.responsableId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `responsableUserId` field in the `Matricula` table.
+  """
+  responsableUserId_min: Int @fdc_generated(from: "Matricula.responsableUserId", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `semestreId` field in the `Matricula` table.
   """
   semestreId_min: Int @fdc_generated(from: "Matricula.semestreId", purpose: QUERY_MIN)
@@ -9177,6 +9274,14 @@ extend type Matricula {
   ✨ Maximum of the `paqueteId` field in the `Matricula` table.
   """
   paqueteId_max: Int @fdc_generated(from: "Matricula.paqueteId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `responsableId` field in the `Matricula` table.
+  """
+  responsableId_max: Int @fdc_generated(from: "Matricula.responsableId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `responsableUserId` field in the `Matricula` table.
+  """
+  responsableUserId_max: Int @fdc_generated(from: "Matricula.responsableUserId", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `semestreId` field in the `Matricula` table.
   """
@@ -11408,6 +11513,40 @@ extend type Personal {
     """
     having: Grupo_Having
   ): [Grupo!]! @fdc_generated(from: "Grupo.personal", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Matricula` objects in a one-to-many relationship (where `Matricula`.`responsable` is this object).
+  """
+  matriculas_on_responsable(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Matricula_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Matricula_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Matricula_Having
+  ): [Matricula!]! @fdc_generated(from: "Matricula.responsable", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `PersonalEspecialidad` objects in a one-to-many relationship (where `PersonalEspecialidad`.`personal` is this object).
   """
@@ -15393,6 +15532,40 @@ extend type User {
     """
     having: EfsrtPppNota_Having
   ): [EfsrtPppNota!]! @fdc_generated(from: "EfsrtPppNota.registradoPor", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Matricula` objects in a one-to-many relationship (where `Matricula`.`responsableUser` is this object).
+  """
+  matriculas_on_responsableUser(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Matricula_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Matricula_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Matricula_Having
+  ): [Matricula!]! @fdc_generated(from: "Matricula.responsableUser", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `Matricula` objects in a one-to-many relationship (where `Matricula`.`user` is this object).
   """

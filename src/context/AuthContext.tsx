@@ -64,6 +64,19 @@ const cleanText = (value: unknown): string | null => {
     return text || null;
 };
 
+const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const timeoutPromise = new Promise<T>((_resolve, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(`${label} no respondio a tiempo.`)), timeoutMs);
+    });
+
+    try {
+        return await Promise.race([promise, timeoutPromise]);
+    } finally {
+        if (timeoutId) clearTimeout(timeoutId);
+    }
+};
+
 const resolveProfileRoleTitle = (profile: unknown): string | null => {
     const data = profile as {
         rolTitulo?: unknown;
@@ -96,8 +109,8 @@ const createIntranetAccessDeniedError = () => {
 
 const loadUserDataFromFirebaseUser = async (firebaseUser: FirebaseUser): Promise<UserData> => {
     try {
-        const refreshMyClaims = httpsCallable(functions, 'refreshMyClaims');
-        await refreshMyClaims();
+        const refreshMyClaims = httpsCallable(functions, 'refreshMyClaims', { timeout: 10000 });
+        await withTimeout(refreshMyClaims(), 12000, 'refreshMyClaims');
     } catch (error) {
         if (!isExpectedAuthError(error)) {
             console.error('Error refreshing auth claims:', error);
@@ -106,8 +119,12 @@ const loadUserDataFromFirebaseUser = async (firebaseUser: FirebaseUser): Promise
 
     let profile: Record<string, unknown> | null = null;
     try {
-        const getMyProfile = httpsCallable<undefined, { profile?: Record<string, unknown> | null }>(functions, 'getMyProfile');
-        const profileResult = await getMyProfile();
+        const getMyProfile = httpsCallable<undefined, { profile?: Record<string, unknown> | null }>(
+            functions,
+            'getMyProfile',
+            { timeout: 10000 },
+        );
+        const profileResult = await withTimeout(getMyProfile(), 12000, 'getMyProfile');
         profile = profileResult.data.profile ?? null;
     } catch (error) {
         if (!isExpectedAuthError(error)) {
@@ -115,7 +132,7 @@ const loadUserDataFromFirebaseUser = async (firebaseUser: FirebaseUser): Promise
         }
     }
 
-    const token = await firebaseUser.getIdTokenResult(true);
+    const token = await withTimeout(firebaseUser.getIdTokenResult(true), 12000, 'getIdTokenResult');
     const claims = token.claims;
     const roleTitle = resolveProfileRoleTitle(profile);
     return {
@@ -173,6 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
             return;
         }
         if (pathname?.startsWith('/sso')) return;
+        if (pathname?.startsWith('/matricula')) return;
 
         const redirectedForUid = window.sessionStorage.getItem(INTRANET_REDIRECT_KEY);
         if (redirectedForUid === user.uid) return;
@@ -274,7 +292,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
         router.push('/'); // redirige al usuario al inicio tras cerrar sesion
     }; // cierra el flujo de logout
 
-    if (!authReady) { // + muestra una pantalla de carga solo durante la sincronizacion inicial de autenticacion
+    const contextValue = { user, loading, login, loginWithGoogle, loginWithEmail, registerWithEmail, resetPassword, logout };
+    const bypassInitialAuthGate = pathname?.startsWith('/sso') || pathname?.startsWith('/matricula');
+
+    if (!authReady && !bypassInitialAuthGate) { // + muestra una pantalla de carga solo durante la sincronizacion inicial de autenticacion
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}> {/* + centra el indicador de carga en toda la pantalla */} 
                 <CircularProgress /> {/* + muestra el spinner mientras la autenticacion esta cargando */} 
@@ -283,7 +304,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
     }
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, loginWithEmail, registerWithEmail, resetPassword, logout }}> {/* + expone tambien el metodo de restablecer contrasena a toda la aplicacion */} 
+        <AuthContext.Provider value={contextValue}> {/* + expone tambien el metodo de restablecer contrasena a toda la aplicacion */} 
             {children}
         </AuthContext.Provider>
     );

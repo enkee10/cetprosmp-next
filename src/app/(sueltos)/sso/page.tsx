@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Box, Button, Paper, Stack } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Paper, Stack } from '@mui/material';
 import { getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signInWithRedirect } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
@@ -23,10 +23,22 @@ const getWorkspaceLoginHint = () => {
   return /^[^\s@]+@cetprosmp\.edu\.pe$/i.test(loginHint) ? loginHint : null;
 };
 
+const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<T>((_resolve, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`${label} no respondio a tiempo.`)), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
+
 export default function WorkspaceSsoPage() {
   const router = useRouter();
   const startedRef = useRef(false);
-  const redirectCheckStartedRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [retryReady, setRetryReady] = useState(false);
 
@@ -50,6 +62,7 @@ export default function WorkspaceSsoPage() {
       const loginHint = getWorkspaceLoginHint();
       provider.setCustomParameters({
         hd: WORKSPACE_DOMAIN,
+        prompt: 'select_account',
         ...(loginHint ? { login_hint: loginHint } : {}),
       });
       window.sessionStorage.setItem(SSO_PENDING_KEY, '1');
@@ -62,12 +75,9 @@ export default function WorkspaceSsoPage() {
       setRetryReady(true);
       setError('No se pudo iniciar el acceso con Google Workspace.');
     }
-  }, [clearWorkspaceAttempt]);
+  }, [clearWorkspaceAttempt, completeWorkspaceSignIn]);
 
   useEffect(() => {
-    if (redirectCheckStartedRef.current) return;
-
-    redirectCheckStartedRef.current = true;
     let active = true;
 
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -77,7 +87,7 @@ export default function WorkspaceSsoPage() {
 
     const resolveRedirectResult = async () => {
       try {
-        const result = await getRedirectResult(auth);
+        const result = await withTimeout(getRedirectResult(auth), 12000, 'getRedirectResult');
         if (!active) return;
 
         if (result?.user || auth.currentUser) {
@@ -87,7 +97,7 @@ export default function WorkspaceSsoPage() {
 
         const hasPendingAttempt = Boolean(window.sessionStorage.getItem(SSO_PENDING_KEY) || window.sessionStorage.getItem(SSO_LEGACY_ATTEMPT_KEY));
         if (hasPendingAttempt) {
-          await auth.authStateReady();
+          await withTimeout(auth.authStateReady(), 12000, 'authStateReady');
           if (!active) return;
           if (auth.currentUser) {
             completeWorkspaceSignIn();
@@ -121,7 +131,7 @@ export default function WorkspaceSsoPage() {
     };
   }, [clearWorkspaceAttempt, completeWorkspaceSignIn, startWorkspaceSignIn]);
 
-  if (!error && !retryReady) return null;
+  const isLoading = !error && !retryReady;
 
   return (
     <Box
@@ -133,32 +143,36 @@ export default function WorkspaceSsoPage() {
         px: 2,
       }}
     >
-      <Paper
-        elevation={0}
-        sx={{
-          width: '100%',
-          maxWidth: 420,
-          border: '1px solid rgba(90, 57, 41, 0.16)',
-          borderRadius: 1,
-          p: 3,
-          bgcolor: '#fffaf0',
-        }}
-      >
-        <Stack spacing={2.25} alignItems="center" textAlign="center">
-          {error ? <Alert severity="warning" sx={{ width: '100%', textAlign: 'left' }}>{error}</Alert> : null}
-          {retryReady ? (
-            <Button
-              variant="contained"
-              onClick={() => {
-                clearWorkspaceAttempt();
-                void startWorkspaceSignIn();
-              }}
-            >
-              Intentar nuevamente
-            </Button>
-          ) : null}
-        </Stack>
-      </Paper>
+      {isLoading ? (
+        <CircularProgress size={28} />
+      ) : (
+        <Paper
+          elevation={0}
+          sx={{
+            width: '100%',
+            maxWidth: 420,
+            border: '1px solid rgba(90, 57, 41, 0.16)',
+            borderRadius: 1,
+            p: 3,
+            bgcolor: '#fffaf0',
+          }}
+        >
+          <Stack spacing={2.25} alignItems="center" textAlign="center">
+            {error ? <Alert severity="warning" sx={{ width: '100%', textAlign: 'left' }}>{error}</Alert> : null}
+            {retryReady ? (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  clearWorkspaceAttempt();
+                  void startWorkspaceSignIn();
+                }}
+              >
+                Intentar nuevamente
+              </Button>
+            ) : null}
+          </Stack>
+        </Paper>
+      )}
     </Box>
   );
 }

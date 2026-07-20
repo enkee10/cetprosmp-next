@@ -8,6 +8,11 @@ import { functions } from '@/lib/firebase';
 export type AppSettings = {
   general: {
     usarAvataresEnCertificadosTitulos: boolean;
+    formularioMatriculaAceptaRespuestas: boolean;
+  };
+  formularioMatricula: {
+    aceptaRespuestas: boolean;
+    semestreId: number | null;
   };
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: boolean;
@@ -17,6 +22,11 @@ export type AppSettings = {
 export const defaultAppSettings: AppSettings = {
   general: {
     usarAvataresEnCertificadosTitulos: false,
+    formularioMatriculaAceptaRespuestas: false,
+  },
+  formularioMatricula: {
+    aceptaRespuestas: false,
+    semestreId: null,
   },
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: false,
@@ -28,6 +38,17 @@ const normalizeSettings = (value: Partial<AppSettings> | undefined | null): AppS
     usarAvataresEnCertificadosTitulos: Boolean(
       value?.general?.usarAvataresEnCertificadosTitulos,
     ),
+    formularioMatriculaAceptaRespuestas: Boolean(
+      value?.formularioMatricula?.aceptaRespuestas ?? value?.general?.formularioMatriculaAceptaRespuestas,
+    ),
+  },
+  formularioMatricula: {
+    aceptaRespuestas: Boolean(
+      value?.formularioMatricula?.aceptaRespuestas ?? value?.general?.formularioMatriculaAceptaRespuestas,
+    ),
+    semestreId: Number(value?.formularioMatricula?.semestreId) > 0
+      ? Number(value?.formularioMatricula?.semestreId)
+      : null,
   },
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: Boolean(

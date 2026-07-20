@@ -7,7 +7,11 @@ import {
   Button,
   CircularProgress,
   Divider,
+  FormControl,
   FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   Switch,
   Typography,
@@ -16,24 +20,89 @@ import NumbersIcon from '@mui/icons-material/Numbers';
 import SaveIcon from '@mui/icons-material/Save';
 import { httpsCallable } from 'firebase/functions';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
-import { useAuth } from '@/context/AuthContext';
 import { functions } from '@/lib/firebase';
 import { AppSettings, defaultAppSettings, useAppSettings } from '@/hooks/useAppSettings';
+import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
+
+type SemestreOption = {
+  id: number;
+  titulo?: string | null;
+  nombre?: string | null;
+  inicio?: string | null;
+  fin?: string | null;
+};
+
+const normalizeDraftSettings = (value: Partial<AppSettings> | null | undefined): AppSettings => {
+  const aceptaRespuestas = Boolean(
+    value?.formularioMatricula?.aceptaRespuestas ?? value?.general?.formularioMatriculaAceptaRespuestas,
+  );
+  const semestreId = Number(value?.formularioMatricula?.semestreId);
+
+  return {
+    general: {
+      ...defaultAppSettings.general,
+      ...value?.general,
+      formularioMatriculaAceptaRespuestas: aceptaRespuestas,
+    },
+    formularioMatricula: {
+      ...defaultAppSettings.formularioMatricula,
+      ...value?.formularioMatricula,
+      aceptaRespuestas,
+      semestreId: Number.isFinite(semestreId) && semestreId > 0 ? semestreId : null,
+    },
+    visualizaciones: {
+      ...defaultAppSettings.visualizaciones,
+      ...value?.visualizaciones,
+    },
+  };
+};
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { can, loading: loadingPermissions } = useIntranetPermissions();
   const { settings, loading, reload } = useAppSettings();
   const [draft, setDraft] = useState<AppSettings>(defaultAppSettings);
   const [saving, setSaving] = useState(false);
   const [generatingCodes, setGeneratingCodes] = useState(false);
+  const [semestres, setSemestres] = useState<SemestreOption[]>([]);
+  const [loadingSemestres, setLoadingSemestres] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageSeverity, setMessageSeverity] = useState<'success' | 'error' | 'info'>('info');
 
-  const isSuperUser = Number(user?.level ?? 0) >= 600;
+  const canViewSettings = can('settings', 'view');
+  const canEditSettings = can('settings', 'edit');
+  const safeDraft = normalizeDraftSettings(draft);
 
   useEffect(() => {
-    setDraft(settings);
+    setDraft(normalizeDraftSettings(settings));
   }, [settings]);
+
+  useEffect(() => {
+    if (loadingPermissions || !canViewSettings) return;
+    let active = true;
+
+    const loadSemestres = async () => {
+      setLoadingSemestres(true);
+      try {
+        const listMatriculaSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(
+          functions,
+          'listMatriculaSemestres',
+        );
+        const result = await listMatriculaSemestres();
+        if (active) setSemestres(result.data.semestres || []);
+      } catch (error) {
+        console.error('Error loading matricula semestres for settings:', error);
+        if (active) setMessage('No se pudieron cargar los semestres de matricula.');
+        if (active) setMessageSeverity('error');
+      } finally {
+        if (active) setLoadingSemestres(false);
+      }
+    };
+
+    void loadSemestres();
+    return () => {
+      active = false;
+    };
+  }, [canViewSettings, loadingPermissions]);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
@@ -43,9 +112,9 @@ export default function SettingsPage() {
         functions,
         'saveAppSettings',
       );
-      const result = await saveAppSettings(draft);
+      const result = await saveAppSettings(safeDraft);
       if (result.data.settings) {
-        setDraft(result.data.settings);
+        setDraft(normalizeDraftSettings(result.data.settings));
       }
       await reload();
       setMessage('Configuraciones guardadas.');
@@ -57,7 +126,7 @@ export default function SettingsPage() {
     } finally {
       setSaving(false);
     }
-  }, [draft, reload]);
+  }, [reload, safeDraft]);
 
   const handleGenerateInscriptionCodes = useCallback(async () => {
     const confirmed = window.confirm(
@@ -97,11 +166,11 @@ export default function SettingsPage() {
     }
   }, []);
 
-  if (!isSuperUser) {
+  if (!loadingPermissions && !canViewSettings) {
     return (
       <IntranetListLayout title="Settings">
         <Box sx={{ px: 2, pb: 2 }}>
-          <Alert severity="error">Solo el superusuario puede administrar settings.</Alert>
+          <Alert severity="error">No tienes permiso para ver settings.</Alert>
         </Box>
       </IntranetListLayout>
     );
@@ -116,7 +185,7 @@ export default function SettingsPage() {
         <Button
           variant="contained"
           startIcon={saving ? <CircularProgress color="inherit" size={18} /> : <SaveIcon />}
-          disabled={loading || saving}
+          disabled={loading || loadingPermissions || saving || !canEditSettings}
           onClick={handleSave}
         >
           Guardar
@@ -136,7 +205,7 @@ export default function SettingsPage() {
             <Button
               variant="outlined"
               startIcon={generatingCodes ? <CircularProgress color="inherit" size={18} /> : <NumbersIcon />}
-              disabled={loading || saving || generatingCodes}
+              disabled={loading || saving || generatingCodes || !canEditSettings}
               onClick={handleGenerateInscriptionCodes}
             >
               Generar codigos de inscripcion
@@ -146,13 +215,13 @@ export default function SettingsPage() {
           <FormControlLabel
             control={
               <Switch
-                checked={draft.general.usarAvataresEnCertificadosTitulos}
-                disabled={loading || saving}
+                checked={safeDraft.general.usarAvataresEnCertificadosTitulos}
+                disabled={loading || saving || !canEditSettings}
                 onChange={(event) =>
                   setDraft((current) => ({
                     ...current,
                     general: {
-                      ...current.general,
+                      ...normalizeDraftSettings(current).general,
                       usarAvataresEnCertificadosTitulos: event.target.checked,
                     },
                   }))
@@ -164,6 +233,57 @@ export default function SettingsPage() {
 
           <Box>
             <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+              Formulario de matricula
+            </Typography>
+            <Divider />
+          </Box>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={safeDraft.formularioMatricula.aceptaRespuestas}
+                disabled={loading || saving || !canEditSettings}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    ...normalizeDraftSettings(current),
+                    formularioMatricula: {
+                      ...normalizeDraftSettings(current).formularioMatricula,
+                      aceptaRespuestas: event.target.checked,
+                    },
+                  }))
+                }
+              />
+            }
+            label="El formulario acepta respuestas"
+          />
+
+          <FormControl fullWidth size="small" disabled={loading || saving || loadingSemestres || !canEditSettings}>
+            <InputLabel>Definir semestre de matricula</InputLabel>
+            <Select
+              label="Definir semestre de matricula"
+              value={safeDraft.formularioMatricula.semestreId ? String(safeDraft.formularioMatricula.semestreId) : ''}
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...normalizeDraftSettings(current),
+                  formularioMatricula: {
+                    ...normalizeDraftSettings(current).formularioMatricula,
+                    semestreId: Number(event.target.value) || null,
+                  },
+                }))
+              }
+            >
+              <MenuItem value="">Sin definir</MenuItem>
+              {semestres.map((semestre) => (
+                <MenuItem key={semestre.id} value={String(semestre.id)}>
+                  {semestre.titulo || semestre.nombre || `Semestre ${semestre.id}`}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Box>
+            <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
               Visualizaciones
             </Typography>
             <Divider />
@@ -172,13 +292,13 @@ export default function SettingsPage() {
           <FormControlLabel
             control={
               <Switch
-                checked={draft.visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes}
-                disabled={loading || saving}
+                checked={safeDraft.visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes}
+                disabled={loading || saving || !canEditSettings}
                 onChange={(event) =>
                   setDraft((current) => ({
                     ...current,
                     visualizaciones: {
-                      ...current.visualizaciones,
+                      ...normalizeDraftSettings(current).visualizaciones,
                       usarRecorteFotografiaComoAvatarEstudiantes: event.target.checked,
                     },
                   }))

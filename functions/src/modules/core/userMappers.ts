@@ -484,6 +484,8 @@ export function buildMatriculaDataFromInput(input: Record<string, unknown>): Dat
     paqueteId: toNumberOrNull(input.paqueteId),
     semestreId: toNumberOrNull(input.semestreId),
     userId: toNumberOrNull(input.userId),
+    responsableId: toNumberOrNull(input.responsableId),
+    responsableUserId: toNumberOrNull(input.responsableUserId),
   });
 }
 

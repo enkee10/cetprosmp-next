@@ -23,13 +23,13 @@ export const DELETE_ROLE_PERMISSIONS_BY_ROLE_MUTATION = `
 `;
 
 export const INSERT_APP_SETTING_MUTATION = `
-  mutation InsertAppSetting($data: AppSetting_Data! @allow(fields: "settingKey section label boolValue updatedAt")) {
+  mutation InsertAppSetting($data: AppSetting_Data! @allow(fields: "settingKey section label boolValue intValue updatedAt")) {
     appSetting_insert(data: $data)
   }
 `;
 
 export const UPDATE_APP_SETTING_MUTATION = `
-  mutation UpdateAppSetting($id: Int!, $data: AppSetting_Data! @allow(fields: "section label boolValue updatedAt")) {
+  mutation UpdateAppSetting($id: Int!, $data: AppSetting_Data! @allow(fields: "section label boolValue intValue updatedAt")) {
     appSetting_update(id: $id, data: $data)
   }
 `;
@@ -605,7 +605,7 @@ export const DELETE_PAQUETE_MODULOS_BY_PAQUETE_MUTATION = `
 `;
 
 export const INSERT_MATRICULA_MUTATION = `
-  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha codigoInscripcion archivado paqueteId semestreId userId")) {
+  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha codigoInscripcion archivado paqueteId semestreId userId responsableId responsableUserId")) {
     matricula_insert(data: $data)
   }
 `;

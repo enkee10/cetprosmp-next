@@ -3,8 +3,10 @@
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
@@ -26,7 +28,11 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import ClearIcon from '@mui/icons-material/Clear';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {
   GridColDef,
   GridColumnVisibilityModel,
@@ -35,11 +41,13 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
+import { useSearchParams } from 'next/navigation';
 import { app, functions, storage } from '@/lib/firebase';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
 type RecognitionMode = 'gemini' | 'documentAi';
@@ -57,6 +65,7 @@ interface PaqueteOption {
   id: number;
   titulo?: string | null;
   descripcion?: string | null;
+  grupoModuloTitulo?: string | null;
   grupoIds?: number[];
 }
 
@@ -90,6 +99,31 @@ interface MatriculaUser {
   dniImagenReversoProcesadaUrl?: string | null;
 }
 
+interface MatriculaResponsable {
+  id: number;
+  displayName?: string | null;
+  userId?: number | null;
+  user?: {
+    id?: number | null;
+    username?: string | null;
+    nombre?: string | null;
+    apellidoPaterno?: string | null;
+    apellidoMaterno?: string | null;
+    email?: string | null;
+    correoInstitucional?: string | null;
+  } | null;
+}
+
+interface MatriculaResponsableUser {
+  id: number;
+  username?: string | null;
+  nombre?: string | null;
+  apellidoPaterno?: string | null;
+  apellidoMaterno?: string | null;
+  email?: string | null;
+  correoInstitucional?: string | null;
+}
+
 interface MatriculaListItem {
   id: number;
   recibo?: string | null;
@@ -98,9 +132,25 @@ interface MatriculaListItem {
   paqueteId?: number | null;
   semestreId?: number | null;
   userId?: number | null;
+  responsableId?: number | null;
+  responsableUserId?: number | null;
   user?: MatriculaUser | null;
+  responsable?: MatriculaResponsable | null;
+  responsableUser?: MatriculaResponsableUser | null;
   paquete?: PaqueteOption | null;
   semestre?: SemestreOption | null;
+}
+
+interface MatriculaFormProps {
+  matriculaId?: string;
+  isOpen: boolean;
+  onCancel: () => void;
+  onSaved: () => void;
+  defaultSemestreId?: number | null;
+  formVariant?: 'intranet' | 'standalone';
+  hideSemestreControl?: boolean;
+  hideRecognitionModeControl?: boolean;
+  disableRecognitionModeControl?: boolean;
 }
 
 interface MatriculaFormValues {
@@ -220,7 +270,7 @@ const initialValues: MatriculaFormValues = {
   apellidoMaterno: '',
   nombre: '',
   sexo: '',
-  nacionalidad: '',
+  nacionalidad: 'PERUANA',
   fechaNacimiento: '',
   fechaVencimiento: '',
   estadoCivil: '',
@@ -316,6 +366,19 @@ const wait = (ms: number) => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });
 
+const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<T>((_resolve, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`${label} no respondio a tiempo.`)), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
+
 const parseGeminiJson = (text: string): GeminiMatriculaResult => {
   const trimmed = text.trim();
   if (!trimmed) {
@@ -354,6 +417,22 @@ const normalizeDateInput = (value: unknown) => {
   if (slash) return `${slash[3]}-${slash[2].padStart(2, '0')}-${slash[1].padStart(2, '0')}`;
   return '';
 };
+
+const RECIBO_OPTIONS = ['CONADIS', 'BECADO'] as const;
+
+const normalizeReciboInputValue = (value: unknown) => {
+  const text = String(value ?? '').toUpperCase().replace(/\s+/g, '');
+  if (/^\d+$/.test(text)) return text.slice(0, 5);
+  return text;
+};
+
+const isValidReciboValue = (value: unknown) => {
+  const text = normalizeReciboInputValue(value);
+  return Boolean(text && (RECIBO_OPTIONS.includes(text as typeof RECIBO_OPTIONS[number]) || /^\d{1,5}$/.test(text)));
+};
+
+const getPaqueteOptionLabel = (paquete: PaqueteOption) =>
+  paquete.grupoModuloTitulo || paquete.titulo || `Modulo ${paquete.id}`;
 
 const parseDateOnly = (value: unknown) => {
   const normalized = normalizeDateInput(value);
@@ -671,6 +750,27 @@ Formato exacto:
 const fullName = (user?: MatriculaUser | null) =>
   [user?.apellidoPaterno, user?.apellidoMaterno, user?.nombre].filter(Boolean).join(' ').trim();
 
+const responsableName = (responsable?: MatriculaResponsable | null) =>
+  responsable?.displayName
+  || responsable?.user?.username
+  || [responsable?.user?.apellidoPaterno, responsable?.user?.apellidoMaterno, responsable?.user?.nombre]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+  || responsable?.user?.correoInstitucional
+  || responsable?.user?.email
+  || '';
+
+const responsableUserName = (user?: MatriculaResponsableUser | null) =>
+  user?.username
+  || [user?.apellidoPaterno, user?.apellidoMaterno, user?.nombre]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+  || user?.correoInstitucional
+  || user?.email
+  || '';
+
 const formatDate = (value?: string | null) => {
   if (!value) return '';
   const date = new Date(value);
@@ -688,7 +788,7 @@ function valuesFromMatricula(matricula: MatriculaListItem): MatriculaFormValues 
     apellidoMaterno: user?.apellidoMaterno || '',
     nombre: user?.nombre || '',
     sexo: user?.sexo === 'M' ? 'M' : user?.sexo === 'F' ? 'F' : '',
-    nacionalidad: user?.nacionalidad || '',
+    nacionalidad: user?.nacionalidad || 'PERUANA',
     fechaNacimiento: asString(user?.fechaNacimiento).split('T')[0],
     fechaVencimiento: asString(user?.fechaVencimiento).split('T')[0],
     estadoCivil: normalizeAiCivilStatus(user?.estadoCivil) || '',
@@ -703,18 +803,19 @@ function valuesFromMatricula(matricula: MatriculaListItem): MatriculaFormValues 
   };
 }
 
-function MatriculaForm({
+export function MatriculaForm({
   matriculaId,
   isOpen,
   onCancel,
   onSaved,
-}: {
-  matriculaId?: string;
-  isOpen: boolean;
-  onCancel: () => void;
-  onSaved: () => void;
-}) {
+  defaultSemestreId,
+  formVariant = 'intranet',
+  hideSemestreControl = false,
+  hideRecognitionModeControl = false,
+  disableRecognitionModeControl = true,
+}: MatriculaFormProps) {
   const isEditing = Boolean(matriculaId);
+  const isStandalone = formVariant === 'standalone';
   const dniInputRef = useRef<HTMLInputElement | null>(null);
   const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
@@ -730,6 +831,8 @@ function MatriculaForm({
     reverso?: string | null;
   }>({});
   const [documentAnalysisMetadata, setDocumentAnalysisMetadata] = useState<DocumentoAnalisisTemporal | null>(null);
+  const [responsable, setResponsable] = useState<MatriculaResponsable | null>(null);
+  const [responsableUser, setResponsableUser] = useState<MatriculaResponsableUser | null>(null);
   const [recognitionMode, setRecognitionMode] = useState<RecognitionMode>('gemini');
   const [documentVerified, setDocumentVerified] = useState(false);
   const [isExistingUserWithImages, setIsExistingUserWithImages] = useState(false);
@@ -743,17 +846,15 @@ function MatriculaForm({
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const selectedSemestreId = Number(values.semestreId || 0);
-  const selectedSemestreLabel = useMemo(() => {
-    const semestre = semestres.find((item) => String(item.id) === values.semestreId);
-    return semestre?.titulo || semestre?.nombre || (semestre?.id ? `Semestre ${semestre.id}` : '');
-  }, [semestres, values.semestreId]);
 
   const updateValue = useCallback(<K extends keyof MatriculaFormValues>(key: K, value: MatriculaFormValues[K]) => {
     setValues((prev) => ({ ...prev, [key]: value, ...(key === 'semestreId' ? { paqueteId: '' } : {}) }));
     setMessage(null);
     setSuccessMessage(null);
+    setTouched((prev) => ({ ...prev, [key]: false }));
     if (key === 'tipoDocumento' || key === 'dni') {
       setDocumentVerified(false);
       setIsExistingUserWithImages(false);
@@ -781,6 +882,11 @@ function MatriculaForm({
     setShouldPersistDocumentImages(true);
     setMessage(null);
     setSuccessMessage(null);
+    setTouched((prev) => ({ ...prev, [side === 'frente' ? 'frontFile' : 'backFile']: Boolean(file) }));
+  }, []);
+
+  const markTouched = useCallback((key: string) => {
+    setTouched((prev) => ({ ...prev, [key]: true }));
   }, []);
 
   const stopCameraCapture = useCallback(() => {
@@ -915,9 +1021,15 @@ function MatriculaForm({
     let mounted = true;
     const loadInitialData = async () => {
       setLoadingOptions(true);
+      setResponsable(null);
+      setResponsableUser(null);
       try {
-        const listSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(functions, 'listSemestres');
-        const semestresResult = await listSemestres();
+        const listMatriculaSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(
+          functions,
+          'listMatriculaSemestres',
+          { timeout: 12000 },
+        );
+        const semestresResult = await withTimeout(listMatriculaSemestres(), 14000, 'listMatriculaSemestres');
         if (!mounted) return;
         const nextSemestres = semestresResult.data.semestres || [];
         setSemestres(nextSemestres);
@@ -926,8 +1038,9 @@ function MatriculaForm({
           const getMatricula = httpsCallable<{ id: number }, { matricula?: MatriculaListItem | null }>(
             functions,
             'getMatricula',
+            { timeout: 12000 },
           );
-          const result = await getMatricula({ id: Number(matriculaId) });
+          const result = await withTimeout(getMatricula({ id: Number(matriculaId) }), 14000, 'getMatricula');
           if (!mounted) return;
           const matricula = result.data.matricula;
           if (!matricula) {
@@ -935,6 +1048,8 @@ function MatriculaForm({
             return;
           }
           setValues(valuesFromMatricula(matricula));
+          setResponsable(matricula.responsable ?? null);
+          setResponsableUser(matricula.responsableUser ?? null);
           setProcessedDocumentImages({
             frente: matricula.user?.dniImagenFrenteProcesadaUrl || null,
             reverso: matricula.user?.dniImagenReversoProcesadaUrl || null,
@@ -942,10 +1057,26 @@ function MatriculaForm({
           setDocumentVerified(true);
           setIsExistingUserWithImages(Boolean(matricula.user?.dniImagenFrenteUrl && matricula.user?.dniImagenReversoUrl));
         } else {
-          const currentSemestre = getCurrentSemestre(nextSemestres);
-          if (currentSemestre) {
-            setValues((prev) => ({ ...prev, semestreId: String(currentSemestre.id), paqueteId: '' }));
-          }
+          const configuredSemestre = defaultSemestreId
+            ? nextSemestres.find((semestre) => semestre.id === defaultSemestreId)
+            : null;
+          setValues((prev) => ({
+            ...prev,
+            semestreId: configuredSemestre ? String(configuredSemestre.id) : '',
+            paqueteId: '',
+          }));
+          const getMatriculaResponsableActual = httpsCallable<
+            undefined,
+            { responsable?: MatriculaResponsable | null; responsableUser?: MatriculaResponsableUser | null }
+          >(functions, 'getMatriculaResponsableActual', { timeout: 12000 });
+          const responsableResult = await withTimeout(
+            getMatriculaResponsableActual(),
+            14000,
+            'getMatriculaResponsableActual',
+          );
+          if (!mounted) return;
+          setResponsable(responsableResult.data.responsable ?? null);
+          setResponsableUser(responsableResult.data.responsableUser ?? null);
         }
       } catch (error) {
         if (mounted) setMessage(getCallableErrorMessage(error, 'No se pudieron cargar los datos de matricula.'));
@@ -957,7 +1088,7 @@ function MatriculaForm({
     return () => {
       mounted = false;
     };
-  }, [matriculaId]);
+  }, [defaultSemestreId, matriculaId]);
 
   useEffect(() => {
     let mounted = true;
@@ -970,8 +1101,13 @@ function MatriculaForm({
         const listPaquetes = httpsCallable<{ semestreId: number }, { paquetes?: PaqueteOption[] }>(
           functions,
           'listMatriculaPaquetesBySemestre',
+          { timeout: 12000 },
         );
-        const result = await listPaquetes({ semestreId: selectedSemestreId });
+        const result = await withTimeout(
+          listPaquetes({ semestreId: selectedSemestreId }),
+          14000,
+          'listMatriculaPaquetesBySemestre',
+        );
         if (mounted) setPaquetes(result.data.paquetes || []);
       } catch (error) {
         if (mounted) setMessage(getCallableErrorMessage(error, 'No se pudieron cargar los modulos del periodo.'));
@@ -1030,12 +1166,58 @@ function MatriculaForm({
     if (!values.semestreId) return 'Selecciona un periodo.';
     if (!values.tipoDocumento) return 'Selecciona el tipo de documento.';
     if (!normalizeDocumentNumber(values.dni)) return 'Ingresa el numero de documento.';
+    if (!frontFile) return 'Sube la imagen del DNI frente.';
+    if (!backFile) return 'Sube la imagen del DNI reverso.';
     return null;
   };
+
+  const getFieldError = useCallback((key: string) => {
+    if (!touched[key]) return '';
+    if (key === 'semestreId' && !values.semestreId) return 'Esta pregunta es obligatoria.';
+    if (key === 'dni') {
+      const dni = normalizeDocumentNumber(values.dni);
+      if (!dni) return 'Esta pregunta es obligatoria.';
+      if (values.tipoDocumento === 'DNI' && !/^\d{8}$/.test(dni)) return 'El numero tiene que tener 8 digitos.';
+    }
+    if (key === 'frontFile' && !frontFile) return 'Esta pregunta es obligatoria.';
+    if (key === 'backFile' && !backFile) return 'Esta pregunta es obligatoria.';
+    const requiredLabels: Partial<Record<keyof MatriculaFormValues, string>> = {
+      apellidoPaterno: 'Esta pregunta es obligatoria.',
+      apellidoMaterno: 'Esta pregunta es obligatoria.',
+      nombre: 'Esta pregunta es obligatoria.',
+      sexo: 'Esta pregunta es obligatoria.',
+      nacionalidad: 'Esta pregunta es obligatoria.',
+      fechaNacimiento: 'Esta pregunta es obligatoria.',
+      estadoCivil: 'Esta pregunta es obligatoria.',
+      instruccion: 'Esta pregunta es obligatoria.',
+      direccion: 'Esta pregunta es obligatoria.',
+      distrito: 'Esta pregunta es obligatoria.',
+      celular: 'Esta pregunta es obligatoria.',
+      recibo: 'Esta pregunta es obligatoria.',
+      paqueteId: 'Esta pregunta es obligatoria.',
+    };
+    if (key in requiredLabels && !String(values[key as keyof MatriculaFormValues] || '').trim()) {
+      return requiredLabels[key as keyof MatriculaFormValues] || '';
+    }
+    if (key === 'celular' && values.celular.trim() && !/^\d{9}$/.test(values.celular.trim())) {
+      return 'El celular debe tener 9 digitos.';
+    }
+    if (key === 'recibo' && values.recibo.trim() && !isValidReciboValue(values.recibo)) {
+      return 'Ingresa hasta 5 digitos o selecciona CONADIS/BECADO.';
+    }
+    return '';
+  }, [backFile, frontFile, touched, values]);
 
   const handleVerifyDocument = async () => {
     const sectionError = validateSectionOne();
     if (sectionError) {
+      setTouched((prev) => ({
+        ...prev,
+        semestreId: true,
+        dni: true,
+        frontFile: true,
+        backFile: true,
+      }));
       setMessage(sectionError);
       return;
     }
@@ -1284,6 +1466,7 @@ function MatriculaForm({
     const missing = required.find(([key]) => !String(values[key] || '').trim());
     if (missing) return `Completa ${missing[1]}.`;
     if (!/^\d{9}$/.test(values.celular.trim())) return 'El celular debe tener 9 digitos.';
+    if (!isValidReciboValue(values.recibo)) return 'El recibo debe ser CONADIS, BECADO o hasta 5 digitos.';
     return null;
   };
 
@@ -1294,10 +1477,26 @@ function MatriculaForm({
     }
     const sectionTwoError = validateSectionTwo();
     if (sectionTwoError) {
+      setTouched((prev) => ({
+        ...prev,
+        apellidoPaterno: true,
+        apellidoMaterno: true,
+        nombre: true,
+        sexo: true,
+        nacionalidad: true,
+        fechaNacimiento: true,
+        estadoCivil: true,
+        instruccion: true,
+        direccion: true,
+        distrito: true,
+        celular: true,
+        recibo: true,
+      }));
       setMessage(sectionTwoError);
       return;
     }
     if (!values.paqueteId) {
+      markTouched('paqueteId');
       setMessage('Selecciona un modulo.');
       return;
     }
@@ -1335,25 +1534,304 @@ function MatriculaForm({
   const handleFileChange = (side: 'frente' | 'reverso') => (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     setDocumentFile(side, file);
+    event.target.value = '';
+  };
+
+  const openFilePreview = useCallback((file: File | null, image: UploadedImage | null) => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+      return;
+    }
+    if (image?.url) {
+      window.open(image.url, '_blank', 'noopener,noreferrer');
+    }
+  }, []);
+
+  const renderDocumentFileControl = (
+    side: 'frente' | 'reverso',
+    file: File | null,
+    image: UploadedImage | null,
+    title: React.ReactNode,
+  ) => {
+    const errorKey = side === 'frente' ? 'frontFile' : 'backFile';
+    const error = getFieldError(errorKey);
+    const hasFile = Boolean(file || image?.url);
+
+    return (
+      <Box sx={isStandalone ? standaloneCardSx(errorKey) : undefined}>
+        {isStandalone ? (
+          <>
+            <Typography variant="subtitle1" sx={{ color: 'text.primary', mb: 1.25 }}>
+              {title}
+            </Typography>
+            <Box
+              component="img"
+              src={`/media/matricula/${side === 'frente' ? 'dni-frente.jpg' : 'dni-reverso.jpg'}`}
+              alt={side === 'frente' ? 'Ejemplo DNI frente' : 'Ejemplo DNI reverso'}
+              sx={{
+                display: 'block',
+                width: 160,
+                maxWidth: '100%',
+                height: 'auto',
+                borderRadius: 1,
+                mb: 1.5,
+              }}
+            />
+          </>
+        ) : null}
+        <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+          {hasFile ? (
+            <Button
+              variant="outlined"
+              startIcon={<InsertDriveFileIcon />}
+              onClick={() => openFilePreview(file, image)}
+              disabled={loading}
+              sx={{
+                flex: 1,
+                maxWidth: '100%',
+                justifyContent: 'space-between',
+                textTransform: 'none',
+                overflow: 'hidden',
+                ...(isStandalone ? { flex: '0 1 auto' } : {}),
+                '& .MuiButton-endIcon': { ml: 1 },
+              }}
+              endIcon={
+                <Box
+                  component="span"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setDocumentFile(side, null);
+                    markTouched(side === 'frente' ? 'frontFile' : 'backFile');
+                  }}
+                  sx={{ display: 'inline-flex', color: 'text.secondary' }}
+                >
+                  <ClearIcon fontSize="small" />
+                </Box>
+              }
+            >
+              <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {file?.name || (side === 'frente' ? 'dni-frente' : 'dni-reverso')}
+              </Box>
+            </Button>
+          ) : (
+            <Button
+              component="label"
+              variant="outlined"
+              startIcon={isStandalone ? <UploadFileIcon /> : undefined}
+              disabled={loading}
+              sx={{
+                flex: isStandalone ? '0 0 auto' : 1,
+                justifyContent: 'flex-start',
+                textTransform: 'none',
+              }}
+            >
+              {isStandalone ? 'Agregar archivo' : title}
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                capture="environment"
+                hidden
+                onBlur={() => markTouched(side === 'frente' ? 'frontFile' : 'backFile')}
+                onChange={handleFileChange(side)}
+              />
+            </Button>
+          )}
+          <Button
+            variant="outlined"
+            startIcon={<CameraAltIcon />}
+            disabled={loading}
+            onClick={() => openCameraCapture(side)}
+            sx={{ display: { xs: 'none', md: 'inline-flex' }, ml: 'auto' }}
+          >
+            Camara
+          </Button>
+        </Stack>
+        {isStandalone ? renderFieldError(errorKey) : error ? (
+          <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.75 }}>
+            {error}
+          </Typography>
+        ) : null}
+      </Box>
+    );
   };
 
   const lockedUntilVerified = !documentVerified || loading;
   const courseLocked = !documentVerified || loadingOptions || loading;
+  const responsableLabel = responsableName(responsable)
+    || responsableUserName(responsableUser)
+    || (isEditing ? 'Sin responsable registrado' : 'Cargando responsable...');
+  const requiredLabel = (label: string) => (
+    isStandalone
+      ? (
+        <Box component="span">
+          {label} <Box component="span" sx={{ color: 'error.main' }}>*</Box>
+        </Box>
+      )
+      : `${label} (*)`
+  );
+  const optionalLabel = (label: string) => (isStandalone ? `${label} (Opcional)` : label);
+  const textFieldVariant = isStandalone ? 'standard' : 'outlined';
+  const renderFieldError = (key: string) => {
+    const error = getFieldError(key);
+    if (!error) return null;
+    return (
+      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.25, color: 'error.main' }}>
+        <ErrorOutlineIcon sx={{ fontSize: 19 }} />
+        <Typography variant="caption" sx={{ color: 'error.main' }}>
+          {error}
+        </Typography>
+      </Stack>
+    );
+  };
+  const questionCardSx = isStandalone
+    ? {
+      p: { xs: 2.25, md: 2.75 },
+      bgcolor: '#fff',
+      border: '1px solid #dadce0',
+      borderRadius: 2,
+      boxShadow: '0 1px 2px rgba(60, 64, 67, 0.12)',
+    }
+    : {};
+  const standaloneCardSx = (errorKey?: string) => ({
+    ...questionCardSx,
+    ...(errorKey && getFieldError(errorKey)
+      ? {
+        borderColor: 'error.main',
+      }
+      : {}),
+    '& .MuiFormLabel-root.Mui-error, & .MuiInputLabel-root.Mui-error': {
+      color: 'text.primary',
+    },
+  });
+  const standaloneHelperText = (key: string) => (
+    isStandalone ? renderFieldError(key) : getFieldError(key)
+  );
+  const standaloneRadioSx = (errorKey?: string) => (
+    isStandalone
+      ? {
+        ...standaloneCardSx(errorKey),
+        '& .MuiFormLabel-root': {
+          color: 'text.primary',
+          fontSize: 16,
+          mb: 1.1,
+        },
+        '& .MuiFormLabel-root.Mui-focused, & .MuiFormLabel-root.Mui-error': {
+          color: 'text.primary',
+        },
+      }
+      : undefined
+  );
+  const textFieldSx = (errorKey?: string) => (
+    isStandalone
+      ? {
+        ...standaloneCardSx(errorKey),
+        ...inputLineSx,
+      }
+      : undefined
+  );
+  const inputLineSx = isStandalone
+    ? {
+      '& .MuiInputBase-root': {
+        width: { xs: '100%', sm: '50%' },
+      },
+      '& .MuiInputBase-input': {
+        px: 0,
+      },
+      '& .MuiInput-root:before': {
+        borderBottomColor: 'rgba(0, 0, 0, 0.24)',
+      },
+      '& .MuiInput-root:hover:not(.Mui-disabled):before': {
+        borderBottomColor: 'rgba(0, 0, 0, 0.54)',
+      },
+      '& .MuiFormLabel-root': {
+        color: 'text.primary',
+        fontSize: 16,
+        transform: 'none',
+        position: 'static',
+        mb: 1.1,
+      },
+      '& .MuiFormLabel-root.Mui-focused, & .MuiFormLabel-root.Mui-error': {
+        color: 'text.primary',
+      },
+      '& .MuiFormHelperText-root': {
+        mx: 0,
+      },
+    }
+    : undefined;
+  const selectLineSx = isStandalone
+    ? {
+      '& .MuiInputBase-root': {
+        width: { xs: '100%', sm: '50%' },
+      },
+      '& .MuiFormLabel-root': {
+        color: 'text.primary',
+        fontSize: 16,
+        transform: 'none',
+        position: 'static',
+        mb: 1.1,
+      },
+      '& .MuiFormLabel-root.Mui-focused, & .MuiFormLabel-root.Mui-error': {
+        color: 'text.primary',
+      },
+    }
+    : undefined;
+  const gridSx = {
+    display: 'grid',
+    gridTemplateColumns: { xs: '1fr', md: isStandalone ? '1fr' : 'repeat(2, minmax(0, 1fr))' },
+    gap: isStandalone ? 1.5 : 2,
+  };
+  const renderReciboField = (disabled: boolean) => {
+    const input = (
+      <Autocomplete
+        freeSolo
+        options={[...RECIBO_OPTIONS]}
+        value={values.recibo || null}
+        inputValue={values.recibo}
+        disabled={disabled}
+        onInputChange={(_event, nextValue) => updateValue('recibo', normalizeReciboInputValue(nextValue))}
+        onChange={(_event, nextValue) => updateValue('recibo', normalizeReciboInputValue(nextValue))}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={requiredLabel('Numero de recibo')}
+            variant={textFieldVariant}
+            placeholder={isStandalone ? 'Tu respuesta' : undefined}
+            sx={isStandalone ? inputLineSx : undefined}
+            onBlur={() => markTouched('recibo')}
+            error={Boolean(getFieldError('recibo'))}
+            helperText={standaloneHelperText('recibo')}
+            fullWidth
+          />
+        )}
+      />
+    );
+
+    return isStandalone ? <Box sx={standaloneCardSx('recibo')}>{input}</Box> : input;
+  };
 
   return (
-    <Stack spacing={2.5}>
-      <Box>
-        <Typography variant="subtitle1" fontWeight={700}>
-          {isEditing ? 'Editar Matricula' : 'Nueva Matricula'}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {selectedSemestreLabel || 'Selecciona un periodo para iniciar.'}
-        </Typography>
-      </Box>
-
+    <Stack spacing={isStandalone ? 1.5 : 2.5}>
       {loading && <LinearProgress />}
       <AutoDismissAlert message={message} severity="error" sx={{ whiteSpace: 'pre-wrap' }} />
       <AutoDismissAlert message={successMessage} severity="success" sx={{ whiteSpace: 'pre-wrap' }} />
+      <Box sx={questionCardSx}>
+        <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+          Responsable del llenado de la matricula
+        </Typography>
+        <FormControlLabel
+          control={<Checkbox checked disabled />}
+          label={responsableLabel}
+          sx={{
+            m: 0,
+            '& .MuiFormControlLabel-label': {
+              color: 'text.primary',
+              fontWeight: 600,
+            },
+          }}
+        />
+      </Box>
       {(processedDocumentImages.frente || processedDocumentImages.reverso) && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'flex-start' }}>
           {processedDocumentImages.frente && (
@@ -1386,11 +1864,14 @@ function MatriculaForm({
       )}
 
       <Stack spacing={1.5}>
-        <Typography variant="subtitle2" fontWeight={700}>
-          Documento de Identidad
-        </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
-          <FormControl fullWidth>
+        {!isStandalone ? (
+          <Typography variant="subtitle2" fontWeight={700}>
+            Documento de Identidad
+          </Typography>
+        ) : null}
+        <Box sx={gridSx}>
+          {!hideRecognitionModeControl ? (
+          <FormControl fullWidth variant={isStandalone ? 'standard' : 'outlined'} sx={selectLineSx}>
             <InputLabel>Motor de lectura</InputLabel>
             <Select
               label="Motor de lectura"
@@ -1402,18 +1883,22 @@ function MatriculaForm({
                 setMessage(null);
                 setSuccessMessage(null);
               }}
-              disabled={loading}
+              disabled={loading || disableRecognitionModeControl}
             >
               <MenuItem value="gemini">Gemini 2.5 Flash</MenuItem>
               <MenuItem value="documentAi">Document AI OCR</MenuItem>
             </Select>
           </FormControl>
-          <FormControl fullWidth>
-            <InputLabel>Periodo</InputLabel>
+          ) : null}
+          {!hideSemestreControl ? (
+          <FormControl fullWidth error={Boolean(getFieldError('semestreId'))} variant={isStandalone ? 'standard' : 'outlined'} sx={selectLineSx}>
+            <InputLabel>{requiredLabel('Periodo')}</InputLabel>
             <Select
-              label="Periodo"
+              label={isStandalone ? undefined : 'Periodo (*)'}
+              variant={isStandalone ? 'standard' : 'outlined'}
               value={values.semestreId}
               onChange={(event) => updateValue('semestreId', String(event.target.value))}
+              onBlur={() => markTouched('semestreId')}
               disabled={loadingOptions || loading}
             >
               {semestres.map((semestre) => (
@@ -1422,58 +1907,54 @@ function MatriculaForm({
                 </MenuItem>
               ))}
             </Select>
+            {getFieldError('semestreId') ? (
+              <Typography variant="caption" color="error" sx={{ mt: 0.75 }}>
+                {getFieldError('semestreId')}
+              </Typography>
+            ) : null}
           </FormControl>
-          <FormControl fullWidth>
-            <InputLabel>Tipo documento</InputLabel>
-            <Select
-              label="Tipo documento"
-              value={values.tipoDocumento}
-              onChange={(event) => updateValue('tipoDocumento', event.target.value === 'CE' ? 'CE' : 'DNI')}
-              disabled={loading}
-            >
-              <MenuItem value="DNI">DNI</MenuItem>
-              <MenuItem value="CE">CE</MenuItem>
-            </Select>
+          ) : null}
+          <FormControl fullWidth variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx() : selectLineSx}>
+            {isStandalone ? <FormLabel>{requiredLabel('Tipo documento')}</FormLabel> : <InputLabel>{requiredLabel('Tipo documento')}</InputLabel>}
+            {isStandalone ? (
+              <RadioGroup
+                value={values.tipoDocumento}
+                onChange={(event) => updateValue('tipoDocumento', event.target.value === 'CE' ? 'CE' : 'DNI')}
+              >
+                <FormControlLabel value="DNI" control={<Radio />} label="DNI" />
+                <FormControlLabel value="CE" control={<Radio />} label="Carnet de Extranjeria" />
+              </RadioGroup>
+            ) : (
+              <Select
+                label="Tipo documento (*)"
+                value={values.tipoDocumento}
+                onChange={(event) => updateValue('tipoDocumento', event.target.value === 'CE' ? 'CE' : 'DNI')}
+                disabled={loading}
+              >
+                <MenuItem value="DNI">DNI</MenuItem>
+                <MenuItem value="CE">CE</MenuItem>
+              </Select>
+            )}
           </FormControl>
           <TextField
-            label="Numero de DNI"
+            label={requiredLabel('Numero de DNI')}
+            variant={textFieldVariant}
+            placeholder={isStandalone ? 'Tu respuesta' : undefined}
+            sx={textFieldSx('dni')}
             value={values.dni}
             onChange={(event) => updateValue('dni', normalizeDocumentNumber(event.target.value))}
+            onBlur={() => markTouched('dni')}
+            error={Boolean(getFieldError('dni'))}
+            helperText={standaloneHelperText('dni')}
             disabled={loading}
             inputRef={dniInputRef}
             autoFocus={!isEditing}
             fullWidth
           />
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-            <Button component="label" variant="outlined" disabled={loading} sx={{ flex: 1 }}>
-              {frontFile ? frontFile.name : isExistingUserWithImages ? 'Archivo frente guardado' : 'Archivo dni frente'}
-              <input type="file" accept="image/*,application/pdf" capture="environment" hidden onChange={handleFileChange('frente')} />
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<CameraAltIcon />}
-              disabled={loading}
-              onClick={() => openCameraCapture('frente')}
-            >
-              Camara
-            </Button>
-          </Stack>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-            <Button component="label" variant="outlined" disabled={loading} sx={{ flex: 1 }}>
-              {backFile ? backFile.name : isExistingUserWithImages ? 'Archivo reverso guardado' : 'Archivo dni reverso'}
-              <input type="file" accept="image/*,application/pdf" capture="environment" hidden onChange={handleFileChange('reverso')} />
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<CameraAltIcon />}
-              disabled={loading}
-              onClick={() => openCameraCapture('reverso')}
-            >
-              Camara
-            </Button>
-          </Stack>
-          <Box sx={{ gridColumn: { xs: 'span 1', md: 'span 2' }, display: 'flex', justifyContent: 'space-between' }}>
-            <Button onClick={onCancel} disabled={loading}>Cancelar</Button>
+          {renderDocumentFileControl('frente', frontFile, frontImage, requiredLabel('Imagen DNI ó Documento de Extranjeria (De Frente)'))}
+          {renderDocumentFileControl('reverso', backFile, backImage, requiredLabel('Imagen DNI ó Documento de Extranjeria (De Reverso)'))}
+          <Box className="matricula-actions" sx={{ gridColumn: { xs: 'span 1', md: isStandalone ? 'span 1' : 'span 2' }, display: 'flex', justifyContent: isStandalone ? 'flex-end' : 'space-between' }}>
+            {!isStandalone ? <Button onClick={onCancel} disabled={loading}>Cancelar</Button> : null}
             <Stack direction="row" spacing={1}>
               {showReniecVerification ? (
                 <Button color="success" variant="contained" onClick={handleVerifyWithReniec} disabled={loading}>
@@ -1500,46 +1981,80 @@ function MatriculaForm({
           opacity: lockedUntilVerified ? 0.55 : 1,
         }}
       >
-        <Typography variant="subtitle2" fontWeight={700}>
-          Datos de Usuario
-        </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
-          <TextField disabled={lockedUntilVerified} label="Apellido Paterno" value={values.apellidoPaterno} onChange={(event) => updateValue('apellidoPaterno', event.target.value)} fullWidth />
-          <TextField disabled={lockedUntilVerified} label="Apellido Materno" value={values.apellidoMaterno} onChange={(event) => updateValue('apellidoMaterno', event.target.value)} fullWidth />
-          <TextField disabled={lockedUntilVerified} label="Nombres" value={values.nombre} onChange={(event) => updateValue('nombre', event.target.value)} fullWidth />
-          <FormControl disabled={lockedUntilVerified}>
-            <FormLabel>Sexo</FormLabel>
-            <RadioGroup row value={values.sexo} onChange={(event) => updateValue('sexo', event.target.value === 'M' ? 'M' : 'F')}>
+        {!isStandalone ? (
+          <Typography variant="subtitle2" fontWeight={700}>
+            Datos de Usuario
+          </Typography>
+        ) : null}
+        <Box sx={gridSx}>
+          <TextField disabled={lockedUntilVerified} label={requiredLabel('Apellido Paterno')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('apellidoPaterno')} value={values.apellidoPaterno} onChange={(event) => updateValue('apellidoPaterno', event.target.value)} onBlur={() => markTouched('apellidoPaterno')} error={Boolean(getFieldError('apellidoPaterno'))} helperText={standaloneHelperText('apellidoPaterno')} fullWidth />
+          <TextField disabled={lockedUntilVerified} label={requiredLabel('Apellido Materno')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('apellidoMaterno')} value={values.apellidoMaterno} onChange={(event) => updateValue('apellidoMaterno', event.target.value)} onBlur={() => markTouched('apellidoMaterno')} error={Boolean(getFieldError('apellidoMaterno'))} helperText={standaloneHelperText('apellidoMaterno')} fullWidth />
+          <TextField disabled={lockedUntilVerified} label={requiredLabel('Nombres')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('nombre')} value={values.nombre} onChange={(event) => updateValue('nombre', event.target.value)} onBlur={() => markTouched('nombre')} error={Boolean(getFieldError('nombre'))} helperText={standaloneHelperText('nombre')} fullWidth />
+          <FormControl disabled={lockedUntilVerified} error={Boolean(getFieldError('sexo'))} onBlur={() => markTouched('sexo')} sx={standaloneRadioSx('sexo')}>
+            <FormLabel>{requiredLabel('Sexo')}</FormLabel>
+            <RadioGroup row={!isStandalone} value={values.sexo} onChange={(event) => updateValue('sexo', event.target.value === 'M' ? 'M' : 'F')}>
               <FormControlLabel value="F" control={<Radio />} label="Femenino" />
               <FormControlLabel value="M" control={<Radio />} label="Masculino" />
             </RadioGroup>
+            {isStandalone ? renderFieldError('sexo') : getFieldError('sexo') ? <Typography variant="caption" color="error">{getFieldError('sexo')}</Typography> : null}
           </FormControl>
-          <TextField disabled={lockedUntilVerified} label="Nacionalidad" value={values.nacionalidad} onChange={(event) => updateValue('nacionalidad', event.target.value)} fullWidth />
-          <TextField disabled={lockedUntilVerified} label="Fecha de Nacimiento" type="date" value={values.fechaNacimiento} onChange={(event) => updateValue('fechaNacimiento', event.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-          <TextField disabled={lockedUntilVerified} label="Fecha de Vencimiento" type="date" value={values.fechaVencimiento} onChange={(event) => updateValue('fechaVencimiento', event.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-          <FormControl fullWidth disabled={lockedUntilVerified}>
-            <InputLabel>Estado Civil</InputLabel>
-            <Select label="Estado Civil" value={values.estadoCivil} onChange={(event) => updateValue('estadoCivil', String(event.target.value))}>
-              <MenuItem value="Soltero(a)">Soltero(a)</MenuItem>
-              <MenuItem value="Casado(a)">Casado(a)</MenuItem>
-              <MenuItem value="Viudo(a)">Viudo(a)</MenuItem>
-              <MenuItem value="Divorciado(a)">Divorciado(a)</MenuItem>
-            </Select>
+          <TextField disabled={lockedUntilVerified} label={requiredLabel('Nacionalidad')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('nacionalidad')} value={values.nacionalidad} onChange={(event) => updateValue('nacionalidad', event.target.value)} onBlur={() => markTouched('nacionalidad')} error={Boolean(getFieldError('nacionalidad'))} helperText={standaloneHelperText('nacionalidad')} fullWidth />
+          <TextField disabled={lockedUntilVerified} label={requiredLabel('Fecha de Nacimiento')} variant={textFieldVariant} sx={textFieldSx('fechaNacimiento')} type="date" value={values.fechaNacimiento} onChange={(event) => updateValue('fechaNacimiento', event.target.value)} onBlur={() => markTouched('fechaNacimiento')} error={Boolean(getFieldError('fechaNacimiento'))} helperText={standaloneHelperText('fechaNacimiento')} InputLabelProps={{ shrink: true }} fullWidth />
+          {!isStandalone ? <TextField disabled={lockedUntilVerified} label="Fecha de Vencimiento" variant={textFieldVariant} sx={textFieldSx()} type="date" value={values.fechaVencimiento} onChange={(event) => updateValue('fechaVencimiento', event.target.value)} InputLabelProps={{ shrink: true }} fullWidth /> : null}
+          <FormControl fullWidth disabled={lockedUntilVerified} error={Boolean(getFieldError('estadoCivil'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('estadoCivil') : selectLineSx}>
+            {isStandalone ? (
+              <>
+                <FormLabel>{requiredLabel('Estado Civil')}</FormLabel>
+                <RadioGroup value={values.estadoCivil} onChange={(event) => updateValue('estadoCivil', String(event.target.value))} onBlur={() => markTouched('estadoCivil')}>
+                  <FormControlLabel value="Soltero(a)" control={<Radio />} label="Soltero(a)" />
+                  <FormControlLabel value="Casado(a)" control={<Radio />} label="Casado(a)" />
+                  <FormControlLabel value="Viudo(a)" control={<Radio />} label="Viudo(a)" />
+                  <FormControlLabel value="Divorciado(a)" control={<Radio />} label="Divorciado(a)" />
+                </RadioGroup>
+                {renderFieldError('estadoCivil')}
+              </>
+            ) : (
+              <>
+                <InputLabel>{requiredLabel('Estado Civil')}</InputLabel>
+                <Select label="Estado Civil (*)" value={values.estadoCivil} onChange={(event) => updateValue('estadoCivil', String(event.target.value))} onBlur={() => markTouched('estadoCivil')}>
+                  <MenuItem value="Soltero(a)">Soltero(a)</MenuItem>
+                  <MenuItem value="Casado(a)">Casado(a)</MenuItem>
+                  <MenuItem value="Viudo(a)">Viudo(a)</MenuItem>
+                  <MenuItem value="Divorciado(a)">Divorciado(a)</MenuItem>
+                </Select>
+                {getFieldError('estadoCivil') ? <Typography variant="caption" color="error" sx={{ mt: 0.75 }}>{getFieldError('estadoCivil')}</Typography> : null}
+              </>
+            )}
           </FormControl>
-          <FormControl fullWidth disabled={lockedUntilVerified}>
-            <InputLabel>Grado de Instruccion</InputLabel>
-            <Select label="Grado de Instruccion" value={values.instruccion} onChange={(event) => updateValue('instruccion', String(event.target.value))}>
-              <MenuItem value="Primaria">Primaria</MenuItem>
-              <MenuItem value="Secundaria">Secundaria</MenuItem>
-              <MenuItem value="Superior">Superior</MenuItem>
-            </Select>
+          <FormControl fullWidth disabled={lockedUntilVerified} error={Boolean(getFieldError('instruccion'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('instruccion') : selectLineSx}>
+            {isStandalone ? (
+              <>
+                <FormLabel>{requiredLabel('Grado de Instruccion')}</FormLabel>
+                <RadioGroup value={values.instruccion} onChange={(event) => updateValue('instruccion', String(event.target.value))} onBlur={() => markTouched('instruccion')}>
+                  <FormControlLabel value="Primaria" control={<Radio />} label="Primaria" />
+                  <FormControlLabel value="Secundaria" control={<Radio />} label="Secundaria" />
+                  <FormControlLabel value="Superior" control={<Radio />} label="Superior" />
+                </RadioGroup>
+                {renderFieldError('instruccion')}
+              </>
+            ) : (
+              <>
+                <InputLabel>{requiredLabel('Grado de Instruccion')}</InputLabel>
+                <Select label="Grado de Instruccion (*)" value={values.instruccion} onChange={(event) => updateValue('instruccion', String(event.target.value))} onBlur={() => markTouched('instruccion')}>
+                  <MenuItem value="Primaria">Primaria</MenuItem>
+                  <MenuItem value="Secundaria">Secundaria</MenuItem>
+                  <MenuItem value="Superior">Superior</MenuItem>
+                </Select>
+                {getFieldError('instruccion') ? <Typography variant="caption" color="error" sx={{ mt: 0.75 }}>{getFieldError('instruccion')}</Typography> : null}
+              </>
+            )}
           </FormControl>
-          <TextField disabled={lockedUntilVerified} label="Domicilio Direccion" value={values.direccion} onChange={(event) => updateValue('direccion', event.target.value)} fullWidth />
-          <TextField disabled={lockedUntilVerified} label="Domicilio Distrito" value={values.distrito} onChange={(event) => updateValue('distrito', event.target.value)} fullWidth />
-          <TextField disabled={lockedUntilVerified} label="Numero de Celular" value={values.celular} onChange={(event) => updateValue('celular', event.target.value.replace(/\D/g, '').slice(0, 9))} fullWidth />
-          <TextField disabled={lockedUntilVerified} label="Numero de Telefono Fijo" value={values.telefono} onChange={(event) => updateValue('telefono', event.target.value)} fullWidth />
-          <TextField disabled={lockedUntilVerified} label="Correo Electronico" type="email" value={values.email} onChange={(event) => updateValue('email', event.target.value)} fullWidth />
-          <TextField disabled={lockedUntilVerified} label="Numero de recibo" value={values.recibo} onChange={(event) => updateValue('recibo', event.target.value)} fullWidth />
+          <TextField disabled={lockedUntilVerified} label={requiredLabel('Domicilio Direccion')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('direccion')} value={values.direccion} onChange={(event) => updateValue('direccion', event.target.value)} onBlur={() => markTouched('direccion')} error={Boolean(getFieldError('direccion'))} helperText={standaloneHelperText('direccion')} fullWidth />
+          <TextField disabled={lockedUntilVerified} label={requiredLabel('Domicilio Distrito')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('distrito')} value={values.distrito} onChange={(event) => updateValue('distrito', event.target.value)} onBlur={() => markTouched('distrito')} error={Boolean(getFieldError('distrito'))} helperText={standaloneHelperText('distrito')} fullWidth />
+          <TextField disabled={lockedUntilVerified} label={requiredLabel('Numero de Celular')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('celular')} value={values.celular} onChange={(event) => updateValue('celular', event.target.value.replace(/\D/g, '').slice(0, 9))} onBlur={() => markTouched('celular')} error={Boolean(getFieldError('celular'))} helperText={standaloneHelperText('celular')} fullWidth />
+          <TextField disabled={lockedUntilVerified} label={optionalLabel('Numero de Telefono Fijo')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx()} value={values.telefono} onChange={(event) => updateValue('telefono', event.target.value)} fullWidth />
+          <TextField disabled={lockedUntilVerified} label={optionalLabel('Correo Electronico')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx()} type="email" value={values.email} onChange={(event) => updateValue('email', event.target.value)} fullWidth />
+          {!isStandalone ? renderReciboField(lockedUntilVerified) : null}
         </Box>
       </Stack>
 
@@ -1555,31 +2070,63 @@ function MatriculaForm({
           opacity: courseLocked ? 0.55 : 1,
         }}
       >
-        <Typography variant="subtitle2" fontWeight={700}>
-          Datos de los Cursos
-        </Typography>
+        {!isStandalone ? (
+          <Typography variant="subtitle2" fontWeight={700}>
+            Datos de los Cursos
+          </Typography>
+        ) : null}
         <Stack spacing={2}>
-          <FormControl fullWidth>
-            <InputLabel>Seleccione un Modulo</InputLabel>
-            <Select
-              label="Seleccione un Modulo"
-              value={values.paqueteId}
-              onChange={(event) => updateValue('paqueteId', String(event.target.value))}
-              disabled={courseLocked}
-            >
-              {paquetes.map((paquete) => (
-                <MenuItem key={paquete.id} value={String(paquete.id)}>
-                  {paquete.titulo || `Modulo ${paquete.id}`}
-                </MenuItem>
-              ))}
-            </Select>
+          <FormControl fullWidth error={Boolean(getFieldError('paqueteId'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('paqueteId') : undefined}>
+            {isStandalone ? (
+              <>
+                <FormLabel>{requiredLabel('Seleccione un Modulo')}</FormLabel>
+                <RadioGroup
+                  value={values.paqueteId}
+                  onChange={(event) => updateValue('paqueteId', String(event.target.value))}
+                  onBlur={() => markTouched('paqueteId')}
+                >
+                  {paquetes.map((paquete) => (
+                    <FormControlLabel
+                      key={paquete.id}
+                      value={String(paquete.id)}
+                      control={<Radio />}
+                      label={getPaqueteOptionLabel(paquete)}
+                    />
+                  ))}
+                </RadioGroup>
+                {renderFieldError('paqueteId')}
+              </>
+            ) : (
+              <>
+                <InputLabel>{requiredLabel('Seleccione un Modulo')}</InputLabel>
+                <Select
+                  label="Seleccione un Modulo (*)"
+                  value={values.paqueteId}
+                  onChange={(event) => updateValue('paqueteId', String(event.target.value))}
+                  onBlur={() => markTouched('paqueteId')}
+                  disabled={courseLocked}
+                >
+                  {paquetes.map((paquete) => (
+                    <MenuItem key={paquete.id} value={String(paquete.id)}>
+                      {getPaqueteOptionLabel(paquete)}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {getFieldError('paqueteId') ? <Typography variant="caption" color="error" sx={{ mt: 0.75 }}>{getFieldError('paqueteId')}</Typography> : null}
+              </>
+            )}
           </FormControl>
           {paquetes.length === 0 && values.semestreId && !loadingOptions && (
             <Alert severity="warning">No hay modulos disponibles para este periodo.</Alert>
           )}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button onClick={onCancel} disabled={loading}>Cancelar</Button>
-            <Button variant="contained" onClick={handleSubmit} disabled={courseLocked || paquetes.length === 0}>
+          {isStandalone ? renderReciboField(courseLocked) : null}
+          <Box sx={{ display: 'flex', justifyContent: isStandalone ? 'flex-end' : 'space-between' }}>
+            {!isStandalone ? <Button onClick={onCancel} disabled={loading}>Cancelar</Button> : null}
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              disabled={courseLocked || paquetes.length === 0 || (!isEditing && !responsable && !responsableUser)}
+            >
               {isEditing ? 'Guardar Cambios' : 'Registrar Matricula'}
             </Button>
           </Box>
@@ -1652,6 +2199,9 @@ function MatriculaForm({
 
 export default function MatriculasPage() {
   const { can } = useIntranetPermissions();
+  const { settings } = useAppSettings();
+  const searchParams = useSearchParams();
+  const grupoModuloId = Number(searchParams.get('grupoModuloId') || 0) || null;
   const canDeleteRecords = can('matriculas', 'delete');
   const [matriculas, setMatriculas] = useState<MatriculaListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1681,8 +2231,11 @@ export default function MatriculasPage() {
   const fetchMatriculas = useCallback(async () => {
     setLoading(true);
     try {
-      const listMatriculas = httpsCallable<undefined, { matriculas?: MatriculaListItem[] }>(functions, 'listMatriculas');
-      const result = await listMatriculas();
+      const listMatriculas = httpsCallable<
+        { grupoModuloId?: number | null },
+        { matriculas?: MatriculaListItem[] }
+      >(functions, 'listMatriculas');
+      const result = await listMatriculas({ grupoModuloId });
       setMatriculas(result.data.matriculas || []);
       setError(null);
     } catch (err) {
@@ -1691,7 +2244,7 @@ export default function MatriculasPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [grupoModuloId]);
 
   useEffect(() => {
     void fetchMatriculas();
@@ -1913,7 +2466,7 @@ export default function MatriculasPage() {
         open={openMatriculaModal}
         onClose={handleDismissModal}
         title={editingMatriculaId ? 'Editar Matricula' : 'Nueva Matricula'}
-        maxWidth="lg"
+        maxWidth="md"
         disableAutoFocus
       >
         <MatriculaForm
@@ -1922,6 +2475,8 @@ export default function MatriculasPage() {
           isOpen={openMatriculaModal}
           onCancel={handleDismissModal}
           onSaved={handleSaved}
+          defaultSemestreId={settings.formularioMatricula.semestreId}
+          disableRecognitionModeControl
         />
       </Modal1>
     </IntranetListLayout>

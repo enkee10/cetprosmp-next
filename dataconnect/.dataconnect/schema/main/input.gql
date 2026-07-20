@@ -1777,6 +1777,18 @@ input AppSetting_Data {
   """
   boolValue_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `AppSetting`.`intValue` of type `Int`
+  """
+  intValue: Int
+  """
+  ✨ `_expr` server value variant of `intValue` (✨ Generated from Field `AppSetting`.`intValue` of type `Int`)
+  """
+  intValue_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `intValue` (✨ Generated from Field `AppSetting`.`intValue` of type `Int`)
+  """
+  intValue_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `AppSetting`.`label` of type `String`
   """
   label: String
@@ -1842,6 +1854,10 @@ input AppSetting_Filter {
   """
   boolValue: Boolean_Filter
   """
+  ✨ Generated from Field `AppSetting`.`intValue` of type `Int`
+  """
+  intValue: Int_Filter
+  """
   ✨ Generated from Field `AppSetting`.`label` of type `String`
   """
   label: String_Filter
@@ -1904,6 +1920,10 @@ input AppSetting_Having {
   """
   id_count: Int_Filter
   """
+  ✨ Generated from Field `AppSetting`.`intValue_count` of type `Int!`
+  """
+  intValue_count: Int_Filter
+  """
   ✨ Generated from Field `AppSetting`.`label_count` of type `Int!`
   """
   label_count: Int_Filter
@@ -1924,13 +1944,25 @@ input AppSetting_Having {
   """
   id_sum: Int_Filter
   """
+  ✨ Generated from Field `AppSetting`.`intValue_sum` of type `Int`
+  """
+  intValue_sum: Int_Filter
+  """
   ✨ Generated from Field `AppSetting`.`id_avg` of type `Float`
   """
   id_avg: Float_Filter
   """
+  ✨ Generated from Field `AppSetting`.`intValue_avg` of type `Float`
+  """
+  intValue_avg: Float_Filter
+  """
   ✨ Generated from Field `AppSetting`.`id_min` of type `Int`
   """
   id_min: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`intValue_min` of type `Int`
+  """
+  intValue_min: Int_Filter
   """
   ✨ Generated from Field `AppSetting`.`updatedAt_min` of type `Timestamp`
   """
@@ -1939,6 +1971,10 @@ input AppSetting_Having {
   ✨ Generated from Field `AppSetting`.`id_max` of type `Int`
   """
   id_max: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`intValue_max` of type `Int`
+  """
+  intValue_max: Int_Filter
   """
   ✨ Generated from Field `AppSetting`.`updatedAt_max` of type `Timestamp`
   """
@@ -1983,6 +2019,10 @@ input AppSetting_Order {
   """
   boolValue: OrderDirection
   """
+  ✨ Generated from Field `AppSetting`.`intValue` of type `Int`
+  """
+  intValue: OrderDirection
+  """
   ✨ Generated from Field `AppSetting`.`label` of type `String`
   """
   label: OrderDirection
@@ -2011,6 +2051,10 @@ input AppSetting_Order {
   """
   id_count: OrderDirection
   """
+  ✨ Generated from Field `AppSetting`.`intValue_count` of type `Int!`
+  """
+  intValue_count: OrderDirection
+  """
   ✨ Generated from Field `AppSetting`.`label_count` of type `Int!`
   """
   label_count: OrderDirection
@@ -2031,13 +2075,25 @@ input AppSetting_Order {
   """
   id_sum: OrderDirection
   """
+  ✨ Generated from Field `AppSetting`.`intValue_sum` of type `Int`
+  """
+  intValue_sum: OrderDirection
+  """
   ✨ Generated from Field `AppSetting`.`id_avg` of type `Float`
   """
   id_avg: OrderDirection
   """
+  ✨ Generated from Field `AppSetting`.`intValue_avg` of type `Float`
+  """
+  intValue_avg: OrderDirection
+  """
   ✨ Generated from Field `AppSetting`.`id_min` of type `Int`
   """
   id_min: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`intValue_min` of type `Int`
+  """
+  intValue_min: OrderDirection
   """
   ✨ Generated from Field `AppSetting`.`updatedAt_min` of type `Timestamp`
   """
@@ -2046,6 +2102,10 @@ input AppSetting_Order {
   ✨ Generated from Field `AppSetting`.`id_max` of type `Int`
   """
   id_max: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`intValue_max` of type `Int`
+  """
+  intValue_max: OrderDirection
   """
   ✨ Generated from Field `AppSetting`.`updatedAt_max` of type `Timestamp`
   """
@@ -17828,6 +17888,30 @@ input Matricula_Data {
   """
   paqueteId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Matricula`.`responsableId` of type `Int`
+  """
+  responsableId: Int
+  """
+  ✨ `_expr` server value variant of `responsableId` (✨ Generated from Field `Matricula`.`responsableId` of type `Int`)
+  """
+  responsableId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `responsableId` (✨ Generated from Field `Matricula`.`responsableId` of type `Int`)
+  """
+  responsableId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId` of type `Int`
+  """
+  responsableUserId: Int
+  """
+  ✨ `_expr` server value variant of `responsableUserId` (✨ Generated from Field `Matricula`.`responsableUserId` of type `Int`)
+  """
+  responsableUserId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `responsableUserId` (✨ Generated from Field `Matricula`.`responsableUserId` of type `Int`)
+  """
+  responsableUserId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Matricula`.`semestreId` of type `Int`
   """
   semestreId: Int
@@ -17855,6 +17939,14 @@ input Matricula_Data {
   ✨ Generated from Field `Matricula`.`paquete` of type `Paquete`
   """
   paquete: Paquete_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Matricula`.`responsable` of type `Personal`
+  """
+  responsable: Personal_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Matricula`.`responsableUser` of type `User`
+  """
+  responsableUser: User_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Matricula`.`semestre` of type `Semestre`
   """
@@ -17965,6 +18057,14 @@ input Matricula_Filter {
   """
   paqueteId: Int_Filter
   """
+  ✨ Generated from Field `Matricula`.`responsableId` of type `Int`
+  """
+  responsableId: Int_Filter
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId` of type `Int`
+  """
+  responsableUserId: Int_Filter
+  """
   ✨ Generated from Field `Matricula`.`semestreId` of type `Int`
   """
   semestreId: Int_Filter
@@ -17976,6 +18076,14 @@ input Matricula_Filter {
   ✨ Generated from Field `Matricula`.`paquete` of type `Paquete`
   """
   paquete: Paquete_Filter
+  """
+  ✨ Generated from Field `Matricula`.`responsable` of type `Personal`
+  """
+  responsable: Personal_Filter
+  """
+  ✨ Generated from Field `Matricula`.`responsableUser` of type `User`
+  """
+  responsableUser: User_Filter
   """
   ✨ Generated from Field `Matricula`.`semestre` of type `Semestre`
   """
@@ -18111,6 +18219,14 @@ input Matricula_Having {
   """
   recibo_count: Int_Filter
   """
+  ✨ Generated from Field `Matricula`.`responsableId_count` of type `Int!`
+  """
+  responsableId_count: Int_Filter
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId_count` of type `Int!`
+  """
+  responsableUserId_count: Int_Filter
+  """
   ✨ Generated from Field `Matricula`.`semestreId_count` of type `Int!`
   """
   semestreId_count: Int_Filter
@@ -18127,6 +18243,14 @@ input Matricula_Having {
   """
   paqueteId_sum: Int_Filter
   """
+  ✨ Generated from Field `Matricula`.`responsableId_sum` of type `Int`
+  """
+  responsableId_sum: Int_Filter
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId_sum` of type `Int`
+  """
+  responsableUserId_sum: Int_Filter
+  """
   ✨ Generated from Field `Matricula`.`semestreId_sum` of type `Int`
   """
   semestreId_sum: Int_Filter
@@ -18142,6 +18266,14 @@ input Matricula_Having {
   ✨ Generated from Field `Matricula`.`paqueteId_avg` of type `Float`
   """
   paqueteId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Matricula`.`responsableId_avg` of type `Float`
+  """
+  responsableId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId_avg` of type `Float`
+  """
+  responsableUserId_avg: Float_Filter
   """
   ✨ Generated from Field `Matricula`.`semestreId_avg` of type `Float`
   """
@@ -18163,6 +18295,14 @@ input Matricula_Having {
   """
   paqueteId_min: Int_Filter
   """
+  ✨ Generated from Field `Matricula`.`responsableId_min` of type `Int`
+  """
+  responsableId_min: Int_Filter
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId_min` of type `Int`
+  """
+  responsableUserId_min: Int_Filter
+  """
   ✨ Generated from Field `Matricula`.`semestreId_min` of type `Int`
   """
   semestreId_min: Int_Filter
@@ -18182,6 +18322,14 @@ input Matricula_Having {
   ✨ Generated from Field `Matricula`.`paqueteId_max` of type `Int`
   """
   paqueteId_max: Int_Filter
+  """
+  ✨ Generated from Field `Matricula`.`responsableId_max` of type `Int`
+  """
+  responsableId_max: Int_Filter
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId_max` of type `Int`
+  """
+  responsableUserId_max: Int_Filter
   """
   ✨ Generated from Field `Matricula`.`semestreId_max` of type `Int`
   """
@@ -18230,6 +18378,14 @@ input Matricula_Order {
   """
   paqueteId: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`responsableId` of type `Int`
+  """
+  responsableId: OrderDirection
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId` of type `Int`
+  """
+  responsableUserId: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`semestreId` of type `Int`
   """
   semestreId: OrderDirection
@@ -18241,6 +18397,14 @@ input Matricula_Order {
   ✨ Generated from Field `Matricula`.`paquete` of type `Paquete`
   """
   paquete: Paquete_Order
+  """
+  ✨ Generated from Field `Matricula`.`responsable` of type `Personal`
+  """
+  responsable: Personal_Order
+  """
+  ✨ Generated from Field `Matricula`.`responsableUser` of type `User`
+  """
+  responsableUser: User_Order
   """
   ✨ Generated from Field `Matricula`.`semestre` of type `Semestre`
   """
@@ -18294,6 +18458,14 @@ input Matricula_Order {
   """
   recibo_count: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`responsableId_count` of type `Int!`
+  """
+  responsableId_count: OrderDirection
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId_count` of type `Int!`
+  """
+  responsableUserId_count: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`semestreId_count` of type `Int!`
   """
   semestreId_count: OrderDirection
@@ -18310,6 +18482,14 @@ input Matricula_Order {
   """
   paqueteId_sum: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`responsableId_sum` of type `Int`
+  """
+  responsableId_sum: OrderDirection
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId_sum` of type `Int`
+  """
+  responsableUserId_sum: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`semestreId_sum` of type `Int`
   """
   semestreId_sum: OrderDirection
@@ -18325,6 +18505,14 @@ input Matricula_Order {
   ✨ Generated from Field `Matricula`.`paqueteId_avg` of type `Float`
   """
   paqueteId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Matricula`.`responsableId_avg` of type `Float`
+  """
+  responsableId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId_avg` of type `Float`
+  """
+  responsableUserId_avg: OrderDirection
   """
   ✨ Generated from Field `Matricula`.`semestreId_avg` of type `Float`
   """
@@ -18346,6 +18534,14 @@ input Matricula_Order {
   """
   paqueteId_min: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`responsableId_min` of type `Int`
+  """
+  responsableId_min: OrderDirection
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId_min` of type `Int`
+  """
+  responsableUserId_min: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`semestreId_min` of type `Int`
   """
   semestreId_min: OrderDirection
@@ -18365,6 +18561,14 @@ input Matricula_Order {
   ✨ Generated from Field `Matricula`.`paqueteId_max` of type `Int`
   """
   paqueteId_max: OrderDirection
+  """
+  ✨ Generated from Field `Matricula`.`responsableId_max` of type `Int`
+  """
+  responsableId_max: OrderDirection
+  """
+  ✨ Generated from Field `Matricula`.`responsableUserId_max` of type `Int`
+  """
+  responsableUserId_max: OrderDirection
   """
   ✨ Generated from Field `Matricula`.`semestreId_max` of type `Int`
   """
@@ -22369,6 +22573,10 @@ input Personal_Data {
   """
   grupos_on_personal: [Grupo_Data!]
   """
+  ✨ Generated from Field `Personal`.`matriculas_on_responsable` of type `[Matricula!]!`
+  """
+  matriculas_on_responsable: [Matricula_Data!]
+  """
   ✨ Generated from Field `Personal`.`personalEspecialidads_on_personal` of type `[PersonalEspecialidad!]!`
   """
   personalEspecialidads_on_personal: [PersonalEspecialidad_Data!]
@@ -22425,6 +22633,10 @@ input Personal_Filter {
   ✨ Generated from Field `Personal`.`grupos_on_personal` of type `[Grupo!]!`
   """
   grupos_on_personal: Grupo_ListFilter
+  """
+  ✨ Generated from Field `Personal`.`matriculas_on_responsable` of type `[Matricula!]!`
+  """
+  matriculas_on_responsable: Matricula_ListFilter
   """
   ✨ Generated from Field `Personal`.`personalEspecialidads_on_personal` of type `[PersonalEspecialidad!]!`
   """
@@ -30485,6 +30697,10 @@ input User_Data {
   """
   efsrtPppNotas_on_registradoPor: [EfsrtPppNota_Data!]
   """
+  ✨ Generated from Field `User`.`matriculas_on_responsableUser` of type `[Matricula!]!`
+  """
+  matriculas_on_responsableUser: [Matricula_Data!]
+  """
   ✨ Generated from Field `User`.`matriculas_on_user` of type `[Matricula!]!`
   """
   matriculas_on_user: [Matricula_Data!]
@@ -30669,6 +30885,10 @@ input User_Filter {
   ✨ Generated from Field `User`.`efsrtPppNotas_on_registradoPor` of type `[EfsrtPppNota!]!`
   """
   efsrtPppNotas_on_registradoPor: EfsrtPppNota_ListFilter
+  """
+  ✨ Generated from Field `User`.`matriculas_on_responsableUser` of type `[Matricula!]!`
+  """
+  matriculas_on_responsableUser: Matricula_ListFilter
   """
   ✨ Generated from Field `User`.`matriculas_on_user` of type `[Matricula!]!`
   """

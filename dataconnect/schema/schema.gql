@@ -67,6 +67,7 @@ type AppSetting @table(name: "app_settings", singular: "appSetting", plural: "ap
   section: String @col(dataType: "varchar(80)")
   label: String @col(dataType: "text")
   boolValue: Boolean @col(name: "bool_value")
+  intValue: Int @col(name: "int_value")
   updatedAt: Timestamp @col(name: "updated_at")
 }
 
@@ -825,6 +826,12 @@ type Matricula @table(name: "matriculas") {
 
   user: User @ref(fields: "userId", references: "id")
   userId: Int @col(name: "user_id")
+
+  responsable: Personal @ref(fields: "responsableId", references: "id")
+  responsableId: Int @col(name: "responsable_id")
+
+  responsableUser: User @ref(fields: "responsableUserId", references: "id")
+  responsableUserId: Int @col(name: "responsable_user_id")
 }
 
 type MatriculaUser @table(name: "matricula_users", key: ["matricula", "user"], singular: "matriculaUser", plural: "matriculaUsers") {

@@ -69,6 +69,19 @@ type RegistroAuxiliarDocenteModulo = {
   } | null;
 };
 
+type MatriculaDocenteGrupoModulo = {
+  id: number;
+  nombre?: string | null;
+  moduloId: number;
+  grupo?: {
+    semestre?: { titulo?: string | null } | null;
+  } | null;
+  modulo?: {
+    titulo?: string | null;
+    tituloComercial?: string | null;
+  } | null;
+};
+
 type EstructuraAcademicaDocenteMenu = {
   title?: string | null;
   hasModulos?: boolean | null;
@@ -114,6 +127,24 @@ const buildDocenteRegistroItems = (
       title: `Notas ${periodo} ${moduloName}`,
       path: `/intranet/registro-auxiliar?grupoModuloId=${modulo.id}`,
       icon: <FactCheckIcon />,
+    };
+  });
+
+const buildDocenteMatriculaItems = (
+  modulos: MatriculaDocenteGrupoModulo[],
+  semestreTitulo?: string | null,
+): IntranetMenuItem[] =>
+  modulos.map((modulo) => {
+    const periodo = formatPeriodoMenu(modulo.grupo?.semestre?.titulo || semestreTitulo);
+    const moduloName = getGrupoModuloMenuName(modulo.nombre)
+      || modulo.modulo?.titulo
+      || modulo.modulo?.tituloComercial
+      || `Modulo ${modulo.moduloId}`;
+    return {
+      id: `matriculas-${modulo.id}`,
+      title: `Lista ${periodo} ${moduloName}`,
+      path: `/intranet/matriculas?grupoModuloId=${modulo.id}`,
+      icon: <AssignmentIcon />,
     };
   });
 
@@ -315,11 +346,14 @@ export default function AcordionIntranet({
   const { can, filterSections, loading: loadingPermissions } = useIntranetPermissions();
   const [docenteRegistroItems, setDocenteRegistroItems] = React.useState<IntranetMenuItem[]>([]);
   const [docenteRegistroLoaded, setDocenteRegistroLoaded] = React.useState(false);
+  const [docenteMatriculaItems, setDocenteMatriculaItems] = React.useState<IntranetMenuItem[]>([]);
+  const [docenteMatriculaLoaded, setDocenteMatriculaLoaded] = React.useState(false);
   const [docenteEstructuraItem, setDocenteEstructuraItem] = React.useState<IntranetMenuItem | null>(null);
   const [docenteEstructuraLoaded, setDocenteEstructuraLoaded] = React.useState(false);
   const isDocente = Number(user?.role ?? 0) === TEACHER_ROLE_ID && Number(user?.level ?? 0) < 600;
   const canViewRegistroAuxiliar = can('registro-auxiliar', 'view');
   const canViewEstructuraAcademica = can('estructura-academica', 'view');
+  const canViewMatriculas = can('matriculas', 'view');
 
   React.useEffect(() => {
     let active = true;
@@ -353,6 +387,39 @@ export default function AcordionIntranet({
       active = false;
     };
   }, [canViewRegistroAuxiliar, isDocente, loadingPermissions]);
+
+  React.useEffect(() => {
+    let active = true;
+
+    const loadDocenteMatriculaItems = async () => {
+      if (!isDocente || loadingPermissions || !canViewMatriculas) {
+        setDocenteMatriculaItems([]);
+        setDocenteMatriculaLoaded(false);
+        return;
+      }
+
+      setDocenteMatriculaLoaded(false);
+      try {
+        const listMatriculaDocenteGrupos = httpsCallable<
+          undefined,
+          { grupoModulos?: MatriculaDocenteGrupoModulo[]; semestreTitulo?: string | null }
+        >(functions, 'listMatriculaDocenteGrupos');
+        const result = await listMatriculaDocenteGrupos();
+        if (!active) return;
+        setDocenteMatriculaItems(buildDocenteMatriculaItems(result.data.grupoModulos || [], result.data.semestreTitulo));
+      } catch (error) {
+        console.error('Error loading docente matricula groups:', error);
+        if (active) setDocenteMatriculaItems([]);
+      } finally {
+        if (active) setDocenteMatriculaLoaded(true);
+      }
+    };
+
+    void loadDocenteMatriculaItems();
+    return () => {
+      active = false;
+    };
+  }, [canViewMatriculas, isDocente, loadingPermissions]);
 
   React.useEffect(() => {
     let active = true;
@@ -409,6 +476,7 @@ export default function AcordionIntranet({
         if (!isDocente || section.id !== 'registros') return section;
 
         const items = section.items.flatMap((item) => {
+          if (item.id === 'matriculas') return docenteMatriculaLoaded ? docenteMatriculaItems : [item];
           if (item.id !== 'registro-auxiliar') return [item];
           return docenteRegistroLoaded ? docenteRegistroItems : [item];
         });
@@ -422,6 +490,8 @@ export default function AcordionIntranet({
   }, [
     docenteEstructuraItem,
     docenteEstructuraLoaded,
+    docenteMatriculaItems,
+    docenteMatriculaLoaded,
     docenteRegistroItems,
     docenteRegistroLoaded,
     filterSections,

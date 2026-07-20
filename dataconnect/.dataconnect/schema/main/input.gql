@@ -27880,6 +27880,54 @@ input Semestre_Data {
   """
   descripcion_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Semestre`.`fechaActa` of type `Date`
+  """
+  fechaActa: Date
+  """
+  ✨ `_date` server value variant of `fechaActa` (✨ Generated from Field `Semestre`.`fechaActa` of type `Date`)
+  """
+  fechaActa_date: Date_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_expr` server value variant of `fechaActa` (✨ Generated from Field `Semestre`.`fechaActa` of type `Date`)
+  """
+  fechaActa_expr: Date_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaActa` (✨ Generated from Field `Semestre`.`fechaActa` of type `Date`)
+  """
+  fechaActa_update: [Date_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Semestre`.`fechaCertificado` of type `Date`
+  """
+  fechaCertificado: Date
+  """
+  ✨ `_date` server value variant of `fechaCertificado` (✨ Generated from Field `Semestre`.`fechaCertificado` of type `Date`)
+  """
+  fechaCertificado_date: Date_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_expr` server value variant of `fechaCertificado` (✨ Generated from Field `Semestre`.`fechaCertificado` of type `Date`)
+  """
+  fechaCertificado_expr: Date_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaCertificado` (✨ Generated from Field `Semestre`.`fechaCertificado` of type `Date`)
+  """
+  fechaCertificado_update: [Date_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Semestre`.`fechaNomina` of type `Date`
+  """
+  fechaNomina: Date
+  """
+  ✨ `_date` server value variant of `fechaNomina` (✨ Generated from Field `Semestre`.`fechaNomina` of type `Date`)
+  """
+  fechaNomina_date: Date_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_expr` server value variant of `fechaNomina` (✨ Generated from Field `Semestre`.`fechaNomina` of type `Date`)
+  """
+  fechaNomina_expr: Date_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaNomina` (✨ Generated from Field `Semestre`.`fechaNomina` of type `Date`)
+  """
+  fechaNomina_update: [Date_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Semestre`.`fin` of type `Timestamp`
   """
   fin: Timestamp
@@ -28005,6 +28053,18 @@ input Semestre_Filter {
   """
   descripcion: String_Filter
   """
+  ✨ Generated from Field `Semestre`.`fechaActa` of type `Date`
+  """
+  fechaActa: Date_Filter
+  """
+  ✨ Generated from Field `Semestre`.`fechaCertificado` of type `Date`
+  """
+  fechaCertificado: Date_Filter
+  """
+  ✨ Generated from Field `Semestre`.`fechaNomina` of type `Date`
+  """
+  fechaNomina: Date_Filter
+  """
   ✨ Generated from Field `Semestre`.`fin` of type `Timestamp`
   """
   fin: Timestamp_Filter
@@ -28103,6 +28163,18 @@ input Semestre_Having {
   """
   directorId_count: Int_Filter
   """
+  ✨ Generated from Field `Semestre`.`fechaActa_count` of type `Int!`
+  """
+  fechaActa_count: Int_Filter
+  """
+  ✨ Generated from Field `Semestre`.`fechaCertificado_count` of type `Int!`
+  """
+  fechaCertificado_count: Int_Filter
+  """
+  ✨ Generated from Field `Semestre`.`fechaNomina_count` of type `Int!`
+  """
+  fechaNomina_count: Int_Filter
+  """
   ✨ Generated from Field `Semestre`.`fin_count` of type `Int!`
   """
   fin_count: Int_Filter
@@ -28175,6 +28247,18 @@ input Semestre_Having {
   """
   directorId_min: Int_Filter
   """
+  ✨ Generated from Field `Semestre`.`fechaActa_min` of type `Date`
+  """
+  fechaActa_min: Date_Filter
+  """
+  ✨ Generated from Field `Semestre`.`fechaCertificado_min` of type `Date`
+  """
+  fechaCertificado_min: Date_Filter
+  """
+  ✨ Generated from Field `Semestre`.`fechaNomina_min` of type `Date`
+  """
+  fechaNomina_min: Date_Filter
+  """
   ✨ Generated from Field `Semestre`.`fin_min` of type `Timestamp`
   """
   fin_min: Timestamp_Filter
@@ -28202,6 +28286,18 @@ input Semestre_Having {
   ✨ Generated from Field `Semestre`.`directorId_max` of type `Int`
   """
   directorId_max: Int_Filter
+  """
+  ✨ Generated from Field `Semestre`.`fechaActa_max` of type `Date`
+  """
+  fechaActa_max: Date_Filter
+  """
+  ✨ Generated from Field `Semestre`.`fechaCertificado_max` of type `Date`
+  """
+  fechaCertificado_max: Date_Filter
+  """
+  ✨ Generated from Field `Semestre`.`fechaNomina_max` of type `Date`
+  """
+  fechaNomina_max: Date_Filter
   """
   ✨ Generated from Field `Semestre`.`fin_max` of type `Timestamp`
   """
@@ -28290,6 +28386,18 @@ input Semestre_Order {
   """
   descripcion: OrderDirection
   """
+  ✨ Generated from Field `Semestre`.`fechaActa` of type `Date`
+  """
+  fechaActa: OrderDirection
+  """
+  ✨ Generated from Field `Semestre`.`fechaCertificado` of type `Date`
+  """
+  fechaCertificado: OrderDirection
+  """
+  ✨ Generated from Field `Semestre`.`fechaNomina` of type `Date`
+  """
+  fechaNomina: OrderDirection
+  """
   ✨ Generated from Field `Semestre`.`fin` of type `Timestamp`
   """
   fin: OrderDirection
@@ -28329,6 +28437,18 @@ input Semestre_Order {
   ✨ Generated from Field `Semestre`.`directorId_count` of type `Int!`
   """
   directorId_count: OrderDirection
+  """
+  ✨ Generated from Field `Semestre`.`fechaActa_count` of type `Int!`
+  """
+  fechaActa_count: OrderDirection
+  """
+  ✨ Generated from Field `Semestre`.`fechaCertificado_count` of type `Int!`
+  """
+  fechaCertificado_count: OrderDirection
+  """
+  ✨ Generated from Field `Semestre`.`fechaNomina_count` of type `Int!`
+  """
+  fechaNomina_count: OrderDirection
   """
   ✨ Generated from Field `Semestre`.`fin_count` of type `Int!`
   """
@@ -28402,6 +28522,18 @@ input Semestre_Order {
   """
   directorId_min: OrderDirection
   """
+  ✨ Generated from Field `Semestre`.`fechaActa_min` of type `Date`
+  """
+  fechaActa_min: OrderDirection
+  """
+  ✨ Generated from Field `Semestre`.`fechaCertificado_min` of type `Date`
+  """
+  fechaCertificado_min: OrderDirection
+  """
+  ✨ Generated from Field `Semestre`.`fechaNomina_min` of type `Date`
+  """
+  fechaNomina_min: OrderDirection
+  """
   ✨ Generated from Field `Semestre`.`fin_min` of type `Timestamp`
   """
   fin_min: OrderDirection
@@ -28429,6 +28561,18 @@ input Semestre_Order {
   ✨ Generated from Field `Semestre`.`directorId_max` of type `Int`
   """
   directorId_max: OrderDirection
+  """
+  ✨ Generated from Field `Semestre`.`fechaActa_max` of type `Date`
+  """
+  fechaActa_max: OrderDirection
+  """
+  ✨ Generated from Field `Semestre`.`fechaCertificado_max` of type `Date`
+  """
+  fechaCertificado_max: OrderDirection
+  """
+  ✨ Generated from Field `Semestre`.`fechaNomina_max` of type `Date`
+  """
+  fechaNomina_max: OrderDirection
   """
   ✨ Generated from Field `Semestre`.`fin_max` of type `Timestamp`
   """

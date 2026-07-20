@@ -179,13 +179,13 @@ export const DELETE_ANIO_MUTATION = `
 `;
 
 export const INSERT_SEMESTRE_MUTATION = `
-  mutation InsertSemestre($data: Semestre_Data! @allow(fields: "titulo descripcion inicio fin archivado anioId directorId coordinador1Id coordinador2Id")) {
+  mutation InsertSemestre($data: Semestre_Data! @allow(fields: "titulo descripcion inicio fin fechaActa fechaCertificado fechaNomina archivado anioId directorId coordinador1Id coordinador2Id")) {
     semestre_insert(data: $data)
   }
 `;
 
 export const UPDATE_SEMESTRE_MUTATION = `
-  mutation UpdateSemestre($id: Int!, $data: Semestre_Data! @allow(fields: "titulo descripcion inicio fin archivado anioId directorId coordinador1Id coordinador2Id")) {
+  mutation UpdateSemestre($id: Int!, $data: Semestre_Data! @allow(fields: "titulo descripcion inicio fin fechaActa fechaCertificado fechaNomina archivado anioId directorId coordinador1Id coordinador2Id")) {
     semestre_update(id: $id, data: $data)
   }
 `;

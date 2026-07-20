@@ -313,6 +313,9 @@ const MATRICULA_DOCUMENT_PROCESSING_COLLECTION = "matriculaDocumentoProcessingJo
 const MATRICULA_AVATAR_EXTRACTION_COLLECTION = "matriculaAvatarExtractionJobs";
 const DEFAULT_AVATAR_IMAGE_MODEL = "gemini-3.1-flash-image";
 const DEFAULT_AVATAR_IMAGE_LOCATION = "global";
+const FORMULARIO_MATRICULA_ACEPTA_RESPUESTAS_KEY = "formularioMatricula.aceptaRespuestas";
+const FORMULARIO_MATRICULA_ACEPTA_RESPUESTAS_LEGACY_KEY = "general.formularioMatriculaAceptaRespuestas";
+const FORMULARIO_MATRICULA_SEMESTRE_ID_KEY = "formularioMatricula.semestreId";
 
 const USER_FIELDS = `
   id
@@ -559,6 +562,17 @@ const LIST_MATRICULA_SEMESTRES_QUERY = `
         nombre
         titulo
       }
+    }
+  }
+`;
+
+const GET_FORMULARIO_MATRICULA_SETTING_QUERY = `
+  query GetFormularioMatriculaSetting($settingKey: String!) {
+    appSettings(where: { settingKey: { eq: $settingKey } }, limit: 1) {
+      id
+      settingKey
+      boolValue
+      intValue
     }
   }
 `;
@@ -814,6 +828,70 @@ async function requireMatriculaSemestreAccess(context: https.CallableContext) {
   throw new https.HttpsError("permission-denied", "No tienes permiso para cargar periodos de matricula.");
 }
 
+async function hasMatriculaPermissionSafe(context: https.CallableContext, action: "view" | "create" | "edit" | "delete") {
+  try {
+    return await hasPermission(context, "matriculas", action);
+  } catch (error) {
+    if (error instanceof https.HttpsError && error.code === "unauthenticated") return false;
+    throw error;
+  }
+}
+
+async function requireFormularioMatriculaAccess(context: https.CallableContext) {
+  await getMatriculaResponsableFromContext(context);
+}
+
+async function requireMatriculaPermissionOrFormularioAccess(context: https.CallableContext, action: "view" | "create") {
+  if (await hasMatriculaPermissionSafe(context, action)) return;
+  await requireFormularioMatriculaAccess(context);
+}
+
+async function requireFormularioMatriculaOpen() {
+  const response = await dataConnect.executeGraphql<{
+    appSettings: Array<{ id: number; boolValue?: boolean | null }>;
+  }, { settingKey: string }>(
+    GET_FORMULARIO_MATRICULA_SETTING_QUERY,
+    { variables: { settingKey: FORMULARIO_MATRICULA_ACEPTA_RESPUESTAS_KEY } },
+  );
+  if (!Boolean(response.data.appSettings?.[0]?.boolValue)) {
+    throw new https.HttpsError("failed-precondition", "El formulario no acepta respuestas en este momento.");
+  }
+}
+
+async function getFormularioMatriculaSettingsData() {
+  const [acceptsResponse, legacyAcceptsResponse, semestreResponse] = await Promise.all([
+    dataConnect.executeGraphql<{
+      appSettings: Array<{ id: number; boolValue?: boolean | null }>;
+    }, { settingKey: string }>(
+      GET_FORMULARIO_MATRICULA_SETTING_QUERY,
+      { variables: { settingKey: FORMULARIO_MATRICULA_ACEPTA_RESPUESTAS_KEY } },
+    ),
+    dataConnect.executeGraphql<{
+      appSettings: Array<{ id: number; boolValue?: boolean | null }>;
+    }, { settingKey: string }>(
+      GET_FORMULARIO_MATRICULA_SETTING_QUERY,
+      { variables: { settingKey: FORMULARIO_MATRICULA_ACEPTA_RESPUESTAS_LEGACY_KEY } },
+    ),
+    dataConnect.executeGraphql<{
+      appSettings: Array<{ id: number; intValue?: number | null }>;
+    }, { settingKey: string }>(
+      GET_FORMULARIO_MATRICULA_SETTING_QUERY,
+      { variables: { settingKey: FORMULARIO_MATRICULA_SEMESTRE_ID_KEY } },
+    ),
+  ]);
+  const acceptsResponses = acceptsResponse.data.appSettings?.length
+    ? Boolean(acceptsResponse.data.appSettings[0]?.boolValue)
+    : Boolean(legacyAcceptsResponse.data.appSettings?.[0]?.boolValue);
+  const semestreId = Number(semestreResponse.data.appSettings?.[0]?.intValue);
+
+  return {
+    formularioMatricula: {
+      aceptaRespuestas: acceptsResponses,
+      semestreId: Number.isFinite(semestreId) && semestreId > 0 ? semestreId : null,
+    },
+  };
+}
+
 function toTimestamp(value: string | null | undefined) {
   if (!value) return null;
   const timestamp = new Date(value).getTime();
@@ -1016,6 +1094,49 @@ export const getMatriculaResponsableActual = https.onCall(async (_data, context)
   }
 });
 
+export const getFormularioMatriculaResponsableActual = https.onCall(async (_data, context) => {
+  try {
+    const { responsable, responsableUser } = await getMatriculaResponsableFromContext(context);
+    return {
+      responsable: responsable ? {
+        ...responsable,
+        displayName: getResponsableDisplayName(responsable),
+      } : null,
+      responsableUser: {
+        ...responsableUser,
+        username: getResponsableUserDisplayName(responsableUser),
+      },
+    };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in getFormularioMatriculaResponsableActual:", error);
+    throw new https.HttpsError("internal", "No se pudo cargar el responsable de la matricula.");
+  }
+});
+
+export const getFormularioMatriculaConfiguracion = https.onCall(async (_data, context) => {
+  await requireFormularioMatriculaAccess(context);
+
+  try {
+    const [settings, semestresResponse] = await Promise.all([
+      getFormularioMatriculaSettingsData(),
+      dataConnect.executeGraphql<{
+        semestres: MatriculaSemestreOption[];
+      }, Record<string, never>>(
+        LIST_MATRICULA_SEMESTRES_QUERY,
+      ),
+    ]);
+
+    return {
+      settings,
+      semestres: sortMatriculaSemestres(semestresResponse.data.semestres ?? []).map(addMatriculaSemestreDerivedFields),
+    };
+  } catch (error) {
+    console.error("Error in getFormularioMatriculaConfiguracion:", error);
+    throw new https.HttpsError("internal", "No se pudo cargar la configuracion del formulario de matricula.");
+  }
+});
+
 export const listMatriculaSemestres = https.onCall(async (_data, context) => {
   await requireMatriculaSemestreAccess(context);
 
@@ -1030,6 +1151,24 @@ export const listMatriculaSemestres = https.onCall(async (_data, context) => {
     };
   } catch (error) {
     console.error("Error in listMatriculaSemestres:", error);
+    throw new https.HttpsError("internal", "No se pudieron cargar los periodos de matricula.");
+  }
+});
+
+export const listFormularioMatriculaSemestres = https.onCall(async (_data, context) => {
+  await requireFormularioMatriculaAccess(context);
+
+  try {
+    const response = await dataConnect.executeGraphql<{
+      semestres: MatriculaSemestreOption[];
+    }, Record<string, never>>(
+      LIST_MATRICULA_SEMESTRES_QUERY,
+    );
+    return {
+      semestres: sortMatriculaSemestres(response.data.semestres ?? []).map(addMatriculaSemestreDerivedFields),
+    };
+  } catch (error) {
+    console.error("Error in listFormularioMatriculaSemestres:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar los periodos de matricula.");
   }
 });
@@ -2688,7 +2827,7 @@ export const getMatricula = https.onCall(async (data, context) => {
 });
 
 export const verificarDocumentoMatricula = https.onCall(async (data, context) => {
-  await requirePermission(context, "matriculas", "view");
+  await requireMatriculaPermissionOrFormularioAccess(context, "view");
 
   const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
   const dni = normalizeDocumentNumber(data?.dni);
@@ -2725,7 +2864,7 @@ export const verificarDocumentoMatricula = https.onCall(async (data, context) =>
 });
 
 export const getMatriculaDocumentoEstado = https.onCall(async (data, context) => {
-  await requirePermission(context, "matriculas", "view");
+  await requireMatriculaPermissionOrFormularioAccess(context, "view");
 
   const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
   const dni = normalizeDocumentNumber(data?.dni);
@@ -2747,7 +2886,7 @@ export const getMatriculaDocumentoEstado = https.onCall(async (data, context) =>
 });
 
 export const verificarMatriculaReniec = https.onCall(async (data, context) => {
-  await requirePermission(context, "matriculas", "view");
+  await requireMatriculaPermissionOrFormularioAccess(context, "view");
 
   const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
   const dni = normalizeDocumentNumber(data?.dni).replace(/\D/g, "").slice(0, 8);
@@ -2793,10 +2932,7 @@ export const verificarMatriculaReniec = https.onCall(async (data, context) => {
   }
 });
 
-export const listMatriculaPaquetesBySemestre = https.onCall(async (data, context) => {
-  await requirePermission(context, "matriculas", "view");
-
-  const semestreId = toNumber(data?.semestreId, -1);
+async function listMatriculaPaquetesBySemestreData(semestreId: number) {
   if (semestreId <= 0) {
     throw new https.HttpsError("invalid-argument", "Selecciona un periodo.");
   }
@@ -2899,6 +3035,16 @@ export const listMatriculaPaquetesBySemestre = https.onCall(async (data, context
     console.error("Error in listMatriculaPaquetesBySemestre:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar los modulos del periodo.");
   }
+}
+
+export const listMatriculaPaquetesBySemestre = https.onCall(async (data, context) => {
+  await requirePermission(context, "matriculas", "view");
+  return listMatriculaPaquetesBySemestreData(toNumber(data?.semestreId, -1));
+});
+
+export const listFormularioMatriculaPaquetesBySemestre = https.onCall(async (data, context) => {
+  await requireFormularioMatriculaAccess(context);
+  return listMatriculaPaquetesBySemestreData(toNumber(data?.semestreId, -1));
 });
 
 async function getGrupoModuloMapping(semestreId: number, paqueteId: number): Promise<GrupoModuloMapping> {
@@ -3310,9 +3456,7 @@ async function syncMatriculaWorkspaceGroupChange(params: {
   };
 }
 
-export const crearMatriculaFormulario = https.onCall(async (data, context) => {
-  await requirePermission(context, "matriculas", "create");
-
+async function crearMatriculaFormularioData(data: any, context: https.CallableContext) {
   const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
   const dni = normalizeDocumentNumber(data?.dni);
   const semestreId = toNumber(data?.semestreId, -1);
@@ -3392,6 +3536,17 @@ export const crearMatriculaFormulario = https.onCall(async (data, context) => {
     console.error("Error in crearMatriculaFormulario:", error);
     throw new https.HttpsError("internal", "No se pudo registrar la matricula.");
   }
+}
+
+export const crearMatriculaFormulario = https.onCall(async (data, context) => {
+  await requirePermission(context, "matriculas", "create");
+  return crearMatriculaFormularioData(data, context);
+});
+
+export const crearMatriculaFormularioSuelto = https.onCall(async (data, context) => {
+  await requireFormularioMatriculaAccess(context);
+  await requireFormularioMatriculaOpen();
+  return crearMatriculaFormularioData(data, context);
 });
 
 export const updateMatriculaFormulario = https.onCall(async (data, context) => {

@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
+import { getDateOnlyLocalDate, toDateOnlyInputValue } from '@/lib/dateOnly';
 
 interface CalendarioFormProps {
   calendarioId?: string;
@@ -66,10 +67,7 @@ interface HorarioOption {
 }
 
 const isoToDateInput = (value: string | null | undefined) => {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toISOString().slice(0, 10);
+  return toDateOnlyInputValue(value);
 };
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -82,9 +80,7 @@ const normalizeHorarioNombre = (value: string | null | undefined) =>
   String(value ?? '').trim().replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').toLowerCase();
 
 const getDateOrNull = (value: string | null | undefined) => {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
+  return getDateOnlyLocalDate(value);
 };
 
 const getDatePartsOrNull = (value: string | null | undefined) => {

@@ -31,6 +31,7 @@ import { GridColDef, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { httpsCallable } from 'firebase/functions';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
+import { dateOnlyTimestamp } from '@/lib/dateOnly';
 import { functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
@@ -138,9 +139,7 @@ function renderSelectedNames(ids: number[], options: Array<{ id: number; nombre?
 }
 
 function semesterDateTime(value?: string | null) {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.getTime();
+  return dateOnlyTimestamp(value);
 }
 
 function currentOrLatestSemester(semestres: SemestreOption[]) {

@@ -512,6 +512,9 @@ type Semestre @table(name: "semestres") {
   descripcion: String
   inicio: Timestamp
   fin: Timestamp
+  fechaActa: Date @col(name: "fecha_acta")
+  fechaCertificado: Date @col(name: "fecha_certificado")
+  fechaNomina: Date @col(name: "fecha_nomina")
   archivado: Boolean
 
   anio: Anio @ref(fields: "anioId", references: "id")

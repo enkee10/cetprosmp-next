@@ -28,6 +28,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import { useAuth } from '@/context/AuthContext';
 import { app } from '@/lib/firebase';
+import { formatDateOnly, toDateOnlyInputValue } from '@/lib/dateOnly';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
 type GrupoOption = {
@@ -292,45 +293,12 @@ const getTipoCarreraRegistroLabel = (registro: RegistroAuxiliar | null) => {
   return tipoCarrera ? tipoCarrera.toLocaleUpperCase('es-PE') : 'PLAN DE ESTUDIOS';
 };
 
-const getCalendarDatePart = (value: string | null | undefined) => {
-  if (!value) return '';
-  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value).trim());
-  if (!match) return '';
-  const [, year, month, day] = match;
-  const date = new Date(Number(year), Number(month) - 1, Number(day));
-  if (
-    Number.isNaN(date.getTime()) ||
-    date.getFullYear() !== Number(year) ||
-    date.getMonth() !== Number(month) - 1 ||
-    date.getDate() !== Number(day)
-  ) {
-    return '';
-  }
-  return `${year}-${month}-${day}`;
-};
-
 const formatDate = (value: string | null | undefined) => {
-  if (!value) return '';
-  const calendarDate = getCalendarDatePart(value);
-  if (calendarDate) {
-    const [year, month, day] = calendarDate.split('-').map(Number);
-    return new Intl.DateTimeFormat('es-PE').format(new Date(year, month - 1, day));
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('es-PE');
+  return formatDateOnly(value);
 };
 
 const formatDateInput = (value: string | null | undefined) => {
-  if (!value) return '';
-  const calendarDate = getCalendarDatePart(value);
-  if (calendarDate) return calendarDate;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return toDateOnlyInputValue(value);
 };
 
 const getTurnoHorarioName = (grupo: RegistroAuxiliar['grupo']) => {

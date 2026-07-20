@@ -20,6 +20,9 @@ const SEMESTRE_FIELDS = `
   descripcion
   inicio
   fin
+  fechaActa
+  fechaCertificado
+  fechaNomina
   archivado
   anioId
   directorId

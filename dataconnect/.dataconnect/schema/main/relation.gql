@@ -14223,6 +14223,33 @@ extend type Semestre {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Semestre.directorId", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Semestre` table where the `fechaActa` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaActa_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Semestre.fechaActa", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Semestre` table where the `fechaCertificado` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaCertificado_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Semestre.fechaCertificado", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Semestre` table where the `fechaNomina` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaNomina_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Semestre.fechaNomina", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Semestre` table where the `fin` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   fin_count(
@@ -14365,6 +14392,18 @@ extend type Semestre {
   """
   directorId_min: Int @fdc_generated(from: "Semestre.directorId", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `fechaActa` field in the `Semestre` table.
+  """
+  fechaActa_min: Date @fdc_generated(from: "Semestre.fechaActa", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaCertificado` field in the `Semestre` table.
+  """
+  fechaCertificado_min: Date @fdc_generated(from: "Semestre.fechaCertificado", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaNomina` field in the `Semestre` table.
+  """
+  fechaNomina_min: Date @fdc_generated(from: "Semestre.fechaNomina", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `fin` field in the `Semestre` table.
   """
   fin_min: Timestamp @fdc_generated(from: "Semestre.fin", purpose: QUERY_MIN)
@@ -14392,6 +14431,18 @@ extend type Semestre {
   ✨ Maximum of the `directorId` field in the `Semestre` table.
   """
   directorId_max: Int @fdc_generated(from: "Semestre.directorId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaActa` field in the `Semestre` table.
+  """
+  fechaActa_max: Date @fdc_generated(from: "Semestre.fechaActa", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaCertificado` field in the `Semestre` table.
+  """
+  fechaCertificado_max: Date @fdc_generated(from: "Semestre.fechaCertificado", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaNomina` field in the `Semestre` table.
+  """
+  fechaNomina_max: Date @fdc_generated(from: "Semestre.fechaNomina", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `fin` field in the `Semestre` table.
   """

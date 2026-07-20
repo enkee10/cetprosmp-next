@@ -55,6 +55,9 @@ type ReporteSemestre = {
   titulo?: string | null;
   inicio?: string | null;
   fin?: string | null;
+  fechaActa?: string | null;
+  fechaCertificado?: string | null;
+  fechaNomina?: string | null;
   director?: ReportePersonal | null;
   coordinador1?: ReportePersonal | null;
 };
@@ -289,6 +292,9 @@ const REPORTE_OPTIONS_QUERY = `
       titulo
       inicio
       fin
+      fechaActa
+      fechaCertificado
+      fechaNomina
       archivado
     }
     grupoModulos(limit: 5000) {
@@ -361,6 +367,9 @@ const REPORTE_DETALLE_QUERY = `
           titulo
           inicio
           fin
+          fechaActa
+          fechaCertificado
+          fechaNomina
           director {
             displayName
             user { username nombre apellidoPaterno apellidoMaterno }
@@ -488,6 +497,9 @@ const REPORTE_DETALLE_QUERY = `
       titulo
       inicio
       fin
+      fechaActa
+      fechaCertificado
+      fechaNomina
       director {
         displayName
         user { username nombre apellidoPaterno apellidoMaterno }
@@ -549,6 +561,9 @@ const CERTIFICADOS_TITULOS_OPTIONS_QUERY = `
       titulo
       inicio
       fin
+      fechaActa
+      fechaCertificado
+      fechaNomina
       archivado
     }
     efsrtPppEstudiantes(limit: 20000) {
@@ -727,15 +742,21 @@ async function getBooleanAppSetting(settingKey: string, defaultValue = false) {
 function toTitleCase(value: string | null | undefined) {
   return cleanText(value)
     .toLocaleLowerCase("es-PE")
-    .replace(/\b([\p{L}])/gu, (letter) => letter.toLocaleUpperCase("es-PE"));
+    .replace(/(^|[^\p{L}\p{N}])(\p{L})/gu, (match, prefix: string, letter: string) =>
+      `${prefix}${letter.toLocaleUpperCase("es-PE")}`,
+    );
 }
 
 function getPersonalName(personal?: ReportePersonal | null) {
   const user = personal?.user;
+  const userFullName = [user?.nombre, user?.apellidoPaterno, user?.apellidoMaterno]
+    .map((value) => cleanText(value))
+    .filter(Boolean)
+    .join(" ");
   return cleanText(
-    personal?.displayName
-      || [user?.nombre, user?.apellidoPaterno, user?.apellidoMaterno].filter(Boolean).join(" ")
+    userFullName
       || user?.username
+      || personal?.displayName
       || "",
   );
 }
@@ -849,11 +870,50 @@ function formatDate(value: string | null | undefined) {
   return date ? date.toLocaleDateString("es-PE", { timeZone: "America/Lima" }) : "";
 }
 
-function formatDateLong(value: Date = new Date()) {
-  const day = value.toLocaleDateString("es-PE", { day: "numeric", timeZone: "America/Lima" });
-  const month = value.toLocaleDateString("es-PE", { month: "long", timeZone: "America/Lima" });
-  const year = value.toLocaleDateString("es-PE", { year: "numeric", timeZone: "America/Lima" });
-  return `${day} de ${month} del ${year}`;
+function getCivilDatePartsFromValue(value: string | Date | null | undefined) {
+  const calendarDate = typeof value === "string" ? getCalendarDateParts(value) : null;
+  if (calendarDate) return calendarDate;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return { year: value.getUTCFullYear(), month: value.getUTCMonth() + 1, day: value.getUTCDate() };
+  }
+  return null;
+}
+
+const MONTH_NAMES_ES_PE = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+];
+
+function formatDateLong(value: string | Date | null | undefined = new Date()) {
+  const date = getCivilDatePartsFromValue(value);
+  if (date) {
+    return `${date.day} de ${MONTH_NAMES_ES_PE[date.month - 1] ?? ""} del ${date.year}`;
+  }
+  return new Date().toLocaleDateString("es-PE", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "America/Lima",
+  }).replace(" de ", " de ").replace(/ de (\d{4})$/, " del $1");
+}
+
+function getDocumentDateLong(data: ReporteDocumentoData, type: "acta" | "certificado" | "nomina") {
+  const configuredDate = type === "acta"
+    ? data.semestre?.fechaActa
+    : type === "certificado"
+      ? data.semestre?.fechaCertificado
+      : data.semestre?.fechaNomina;
+  return formatDateLong(configuredDate);
 }
 
 function calculateAge(dateValue?: string | null, at = new Date()) {
@@ -2540,7 +2600,7 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
     addCell(updates, sheetName, "AJ15", formatDate(fin));
     addCell(updates, sheetName, "B67", modulo);
     addCell(updates, sheetName, "J67", docente);
-    addCell(updates, sheetName, "C77", `${distrito}, ${formatDateLong()}`);
+    addCell(updates, sheetName, "C77", `${distrito}, ${getDocumentDateLong(data, "acta")}`);
     addCell(updates, sheetName, "L78", docente);
     addCell(updates, sheetName, "W78", director);
     return;
@@ -2557,11 +2617,11 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   addCell(updates, sheetName, "AO12", formatDate(fin));
   addCell(updates, sheetName, "W41", creditos);
   addCell(updates, sheetName, "W42", horas);
-  addCell(updates, sheetName, "AG12", data.grupoModulo.modulo?.creditosEfsrt ?? "");
-  addCell(updates, sheetName, "AG13", data.grupoModulo.modulo?.duracionEfsrt ?? "");
-  addCell(updates, sheetName, "AG41", data.grupoModulo.modulo?.creditosEfsrt ?? "");
-  addCell(updates, sheetName, "AG42", data.grupoModulo.modulo?.duracionEfsrt ?? "");
-  addCell(updates, sheetName, "AA70", `${distrito}, ${formatDateLong()}`);
+  addCell(updates, sheetName, "AH12", data.grupoModulo.modulo?.creditosEfsrt ?? "");
+  addCell(updates, sheetName, "AH13", data.grupoModulo.modulo?.duracionEfsrt ?? "");
+  addCell(updates, sheetName, "AH41", data.grupoModulo.modulo?.creditosEfsrt ?? "");
+  addCell(updates, sheetName, "AH42", data.grupoModulo.modulo?.duracionEfsrt ?? "");
+  addCell(updates, sheetName, "AA70", `${distrito}, ${getDocumentDateLong(data, "acta")}`);
   addCell(updates, sheetName, "C74", director ? `LIC. ${director}\nDIRECTOR` : "LIC. \nDIRECTOR");
   addCell(updates, sheetName, "R74", coordinador ? `LIC. ${coordinador}\nCOORDINADORA` : "LIC. \nCOORDINADORA");
   addCell(updates, sheetName, "AI74", docente ? `LIC. ${docente}` : "LIC. ");
@@ -2600,7 +2660,7 @@ function fillNomina(updates: SpreadsheetUpdate[], sheetName: string, data: Repor
   addCell(updates, sheetName, "V49", 0);
   addCell(updates, sheetName, "W49", 0);
   addCell(updates, sheetName, "Y49", students.length);
-  addCell(updates, sheetName, "E51", `S.M.P., ${formatDateLong()}`);
+  addCell(updates, sheetName, "E51", `S.M.P., ${getDocumentDateLong(data, "nomina")}`);
 }
 
 function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data: ReporteDocumentoData) {
@@ -2656,7 +2716,7 @@ function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data:
     }).length;
     addCell(updates, sheetName, `AI${row}`, approvedUnits);
     addCell(updates, sheetName, `AJ${row}`, disapprovedUnits);
-    const condition: string = getCondition(student.promedio);
+    const condition: string = !hasAnyGrade ? "R" : disapprovedUnits > 0 ? "D" : "A";
     addCell(updates, sheetName, `AK${row}`, condition === "A" ? "X" : "");
     addCell(updates, sheetName, `AM${row}`, condition === "D" ? "X" : "");
     addCell(updates, sheetName, `AO${row}`, condition === "R" ? "X" : "");
@@ -2788,7 +2848,6 @@ function certificateRowWeight(row: CertificateUnitTableRow) {
 function buildCertificateTokens(
   data: ReporteDocumentoData,
   student: ReporteEstudiante,
-  promedioFinal: number,
   avatarUrl: string,
 ) {
   const unitMap = unidadPromedioMap(data);
@@ -2816,13 +2875,12 @@ function buildCertificateTokens(
     "[FIN MODULO]": formatDate(data.grupoModulo.fin || data.semestre?.fin),
     "[CREDITOS MODULO]": data.grupoModulo.modulo?.creditos ?? "",
     "[HORAS MODULO]": data.grupoModulo.modulo?.horas ?? "",
-    "[fecha actual larga]": formatDateLong(),
+    "[fecha actual larga]": getDocumentDateLong(data, "certificado"),
     "[director]": getPersonalName(data.semestre?.director),
     "[UNIDAD DE COMPETENCIA]": cleanText(data.grupoModulo.modulo?.competencia),
     "[UNIDAD DIDACTICA 1]": units.map((unit) => cleanText(unit.nombre || unit.sigla || "")).join("\n"),
     "[suma creditos]": sumaCreditos,
     "[suma horas]": sumaHoras,
-    "[PROMEDIO]": formatGrade(promedioFinal),
     "[creditos unidad didactica]": creditos.join("\n"),
     "[horas unidad didactica]": horas.join("\n"),
     "[nota unidad didactica]": notas.join("\n"),
@@ -2946,7 +3004,7 @@ async function generateCertificadoPlanEstudios(input: {
   const avatarUrl = useAvatars ? cleanText(student.matricula?.user?.avatar || "") : "";
   const xlsxBuffer = await applyCertificatePlanEstudiosUpdates(
     templateBuffer,
-    buildCertificateTokens(data, student, promedioFinal, avatarUrl),
+    buildCertificateTokens(data, student, avatarUrl),
     buildCertificateUnitRows(data, student),
     avatarUrl,
   );

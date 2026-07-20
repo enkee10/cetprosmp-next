@@ -84,6 +84,29 @@ export function asNullableTimestamp(value: unknown): string | null | undefined {
   return null;
 }
 
+export function asNullableDate(value: unknown): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (year < 1900 || year > 2100) return null;
+  const date = new Date(year, month - 1, day);
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+  return `${match[1]}-${match[2]}-${match[3]}`;
+}
+
 export function toBoolean(value: unknown): boolean | undefined {
   if (value === undefined) return undefined;
   return Boolean(value);
@@ -294,6 +317,9 @@ export function buildSemestreDataFromInput(input: Record<string, unknown>) {
     descripcion: asNullableString(input.descripcion),
     inicio: asNullableTimestamp(input.inicio),
     fin: asNullableTimestamp(input.fin),
+    fechaActa: asNullableDate(input.fechaActa),
+    fechaCertificado: asNullableDate(input.fechaCertificado),
+    fechaNomina: asNullableDate(input.fechaNomina),
     archivado: toBoolean(input.archivado),
     anioId: toNumberOrNull(input.anioId),
     directorId: toNumberOrNull(input.directorId),

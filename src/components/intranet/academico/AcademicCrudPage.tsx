@@ -10,6 +10,7 @@ import { app } from '@/lib/firebase';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
+import { formatDateOnly } from '@/lib/dateOnly';
 import { AcademicEntityForm, AcademicFieldConfig } from './AcademicEntityForm';
 
 type AcademicRow = Record<string, unknown> & { id: number };
@@ -60,9 +61,7 @@ function renderTimestampCellValue(value: unknown) {
 
 function renderDateCellValue(value: unknown) {
   if (typeof value !== 'string' || !value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('es-PE', { dateStyle: 'short' }).format(date);
+  return formatDateOnly(value, { dateStyle: 'short' }) || value;
 }
 
 export function AcademicCrudPage({

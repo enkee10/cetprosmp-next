@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Paper, Stack, Typography } from '@mui/material';
+import { getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signInWithRedirect, signOut, User as FirebaseUser } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
-import { useRouter } from 'next/navigation';
 import { MatriculaForm } from '@/app/(aplicacion)/intranet/matriculas/page';
-import { useAuth } from '@/context/AuthContext';
-import { useAppSettings } from '@/hooks/useAppSettings';
-import { functions } from '@/lib/firebase';
+import { AppSettings, defaultAppSettings } from '@/hooks/useAppSettings';
+import { formatDateOnly } from '@/lib/dateOnly';
+import { auth, functions } from '@/lib/firebase';
 
 interface SemestreOption {
   id: number;
@@ -17,16 +17,11 @@ interface SemestreOption {
   fin?: string | null;
 }
 
-const parseSemestreDate = (value?: string | null) => {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-};
+const WORKSPACE_DOMAIN = 'cetprosmp.edu.pe';
+const FORM_AUTH_PENDING_KEY = 'cetprosmp.formularioMatricula.googleAuthPending';
 
 const formatDate = (value?: string | null) => {
-  const date = parseSemestreDate(value);
-  if (!date) return '';
-  return new Intl.DateTimeFormat('es-PE', { dateStyle: 'long' }).format(date);
+  return formatDateOnly(value, { dateStyle: 'long' });
 };
 
 const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
@@ -42,93 +37,176 @@ const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, label: st
   }
 };
 
+const normalizeStandaloneSettings = (value: Partial<AppSettings> | undefined | null): AppSettings => {
+  const acceptsResponses = Boolean(
+    value?.formularioMatricula?.aceptaRespuestas ?? value?.general?.formularioMatriculaAceptaRespuestas,
+  );
+  const semestreId = Number(value?.formularioMatricula?.semestreId);
+
+  return {
+    general: {
+      ...defaultAppSettings.general,
+      ...value?.general,
+      formularioMatriculaAceptaRespuestas: acceptsResponses,
+    },
+    formularioMatricula: {
+      ...defaultAppSettings.formularioMatricula,
+      ...value?.formularioMatricula,
+      aceptaRespuestas: acceptsResponses,
+      semestreId: Number.isFinite(semestreId) && semestreId > 0 ? semestreId : null,
+    },
+    visualizaciones: {
+      ...defaultAppSettings.visualizaciones,
+      ...value?.visualizaciones,
+    },
+  };
+};
+
 export default function MatriculaSueltaPage() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-  const { settings, loading: settingsLoading } = useAppSettings();
+  const redirectStartedRef = useRef(false);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [settings, setSettings] = useState<AppSettings>(defaultAppSettings);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
-  const [loadingSemestres, setLoadingSemestres] = useState(true);
-  const [checkingResponsible, setCheckingResponsible] = useState(true);
+  const [loadingAccess, setLoadingAccess] = useState(false);
   const [responsibleAllowed, setResponsibleAllowed] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [authRedirectLoading, setAuthRedirectLoading] = useState(true);
   const [formKey, setFormKey] = useState(0);
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.replace('/sso?next=/matricula');
-    }
-  }, [authLoading, router, user]);
+    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
+      setFirebaseUser(nextUser);
+      setAuthReady(true);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
+    if (firebaseUser) {
+      window.sessionStorage.removeItem(FORM_AUTH_PENDING_KEY);
+      setLoginError(null);
+      setAuthRedirectLoading(false);
+    }
+  }, [firebaseUser]);
+
+  useEffect(() => {
+    if (!authReady || firebaseUser || redirectStartedRef.current || loginError) return;
+
     let active = true;
-    const loadSemestres = async () => {
-      if (!user) {
-        setLoadingSemestres(false);
-        return;
-      }
-      setLoadingSemestres(true);
-      setError(null);
+    const startGoogleRedirect = async () => {
+      redirectStartedRef.current = true;
+      setAuthRedirectLoading(true);
+      setLoginError(null);
       try {
-        const listMatriculaSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(
-          functions,
-          'listMatriculaSemestres',
-          { timeout: 12000 },
-        );
-        const result = await withTimeout(listMatriculaSemestres(), 14000, 'listMatriculaSemestres');
-        if (active) setSemestres(result.data.semestres || []);
+        const result = await withTimeout(getRedirectResult(auth), 14000, 'getRedirectResult');
+        if (!active) return;
+
+        if (result?.user || auth.currentUser) {
+          window.sessionStorage.removeItem(FORM_AUTH_PENDING_KEY);
+          setAuthRedirectLoading(false);
+          return;
+        }
+
+        const hadPendingAttempt = Boolean(window.sessionStorage.getItem(FORM_AUTH_PENDING_KEY));
+        if (hadPendingAttempt) {
+          await withTimeout(auth.authStateReady(), 12000, 'authStateReady');
+          if (!active) return;
+          if (auth.currentUser) {
+            window.sessionStorage.removeItem(FORM_AUTH_PENDING_KEY);
+            setAuthRedirectLoading(false);
+            return;
+          }
+
+          window.sessionStorage.removeItem(FORM_AUTH_PENDING_KEY);
+          setAuthRedirectLoading(false);
+          setLoginError('No se pudo completar el acceso con Google. Vuelve a abrir el formulario para intentarlo nuevamente.');
+          return;
+        }
+
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({
+          hd: WORKSPACE_DOMAIN,
+          prompt: 'select_account',
+        });
+        window.sessionStorage.setItem(FORM_AUTH_PENDING_KEY, '1');
+        await signInWithRedirect(auth, provider);
       } catch (nextError) {
-        console.error('Error loading semestres for matricula form:', nextError);
-        if (active) setError('No se pudo cargar el periodo de matricula.');
-      } finally {
-        if (active) setLoadingSemestres(false);
+        console.error('Error signing in to standalone matricula form:', nextError);
+        if (!active) return;
+        window.sessionStorage.removeItem(FORM_AUTH_PENDING_KEY);
+        setAuthRedirectLoading(false);
+        setLoginError('No se pudo iniciar el acceso con Google.');
       }
     };
 
-    void loadSemestres();
+    void startGoogleRedirect();
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [authReady, firebaseUser, loginError]);
 
   useEffect(() => {
     let active = true;
-    const checkResponsible = async () => {
-      if (!user) {
-        setCheckingResponsible(false);
+    const loadAccessData = async () => {
+      if (!firebaseUser) {
+        setSettings(defaultAppSettings);
+        setSemestres([]);
         setResponsibleAllowed(false);
+        setError(null);
+        setLoadingAccess(false);
         return;
       }
-      setCheckingResponsible(true);
+
+      setLoadingAccess(true);
+      setError(null);
       try {
-        const getMatriculaResponsableActual = httpsCallable(functions, 'getMatriculaResponsableActual', { timeout: 12000 });
-        await withTimeout(getMatriculaResponsableActual(), 14000, 'getMatriculaResponsableActual');
-        if (active) setResponsibleAllowed(true);
+        const getFormularioMatriculaConfiguracion = httpsCallable<undefined, {
+          settings?: Partial<AppSettings>;
+          semestres?: SemestreOption[];
+        }>(
+          functions,
+          'getFormularioMatriculaConfiguracion',
+          { timeout: 12000 },
+        );
+        const getResponsable = httpsCallable(
+          functions,
+          'getFormularioMatriculaResponsableActual',
+          { timeout: 12000 },
+        );
+        const [configuracionResult] = await Promise.all([
+          withTimeout(getFormularioMatriculaConfiguracion(), 14000, 'getFormularioMatriculaConfiguracion'),
+          withTimeout(getResponsable(), 14000, 'getFormularioMatriculaResponsableActual'),
+        ]);
+        if (!active) return;
+        setSettings(normalizeStandaloneSettings(configuracionResult.data.settings));
+        setSemestres(configuracionResult.data.semestres || []);
+        setResponsibleAllowed(true);
       } catch (nextError) {
-        console.error('Error checking matricula responsible:', nextError);
+        console.error('Error loading standalone matricula form:', nextError);
         if (active) {
           setResponsibleAllowed(false);
           setError('Solo personal o superusuario puede llenar este formulario.');
         }
       } finally {
-        if (active) setCheckingResponsible(false);
+        if (active) setLoadingAccess(false);
       }
     };
 
-    void checkResponsible();
+    void loadAccessData();
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [firebaseUser]);
 
   const selectedSemestre = useMemo(
     () => semestres.find((semestre) => semestre.id === settings.formularioMatricula?.semestreId) ?? null,
     [semestres, settings.formularioMatricula?.semestreId],
   );
   const acceptsResponses = Boolean(settings.formularioMatricula?.aceptaRespuestas);
-  const waitingForLoginRedirect = !authLoading && !user;
-  const pageLoading = authLoading || waitingForLoginRedirect || settingsLoading || loadingSemestres || checkingResponsible;
+  const pageLoading = !authReady || Boolean(firebaseUser && loadingAccess) || Boolean(!firebaseUser && authRedirectLoading && !loginError);
 
   const handleSaved = useCallback(() => {
     setFormKey((current) => current + 1);
@@ -140,6 +218,14 @@ export default function MatriculaSueltaPage() {
     setSubmitted(false);
     setFormKey((current) => current + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleSwitchAccount = useCallback(async () => {
+    setError(null);
+    setLoginError(null);
+    redirectStartedRef.current = false;
+    window.sessionStorage.removeItem(FORM_AUTH_PENDING_KEY);
+    await signOut(auth);
   }, []);
 
   return (
@@ -188,10 +274,24 @@ export default function MatriculaSueltaPage() {
           <Box sx={{ py: 4, textAlign: 'center' }}>
             <CircularProgress />
           </Box>
+        ) : !firebaseUser ? (
+          <Alert severity={loginError ? 'warning' : 'info'}>
+            {loginError || 'Abriendo el acceso con Google institucional...'}
+          </Alert>
         ) : error ? (
-          <Alert severity="error">{error}</Alert>
+          <Stack spacing={1.5}>
+            <Alert severity="error">{error}</Alert>
+            <Button variant="outlined" onClick={handleSwitchAccount} sx={{ alignSelf: 'flex-start' }}>
+              Usar otra cuenta
+            </Button>
+          </Stack>
         ) : !acceptsResponses ? (
-          <Alert severity="info">El formulario no acepta respuestas en este momento.</Alert>
+          <Stack spacing={1.5}>
+            <Alert severity="info">El formulario no acepta respuestas en este momento.</Alert>
+            <Button variant="outlined" onClick={handleSwitchAccount} sx={{ alignSelf: 'flex-start' }}>
+              Usar otra cuenta
+            </Button>
+          </Stack>
         ) : !selectedSemestre ? (
           <Alert severity="error">No se ha definido el semestre de matricula.</Alert>
         ) : !responsibleAllowed ? (
@@ -212,7 +312,7 @@ export default function MatriculaSueltaPage() {
             <MatriculaForm
               key={`matricula-suelta-${formKey}`}
               isOpen
-              onCancel={() => router.push('/intranet')}
+              onCancel={handleSwitchAccount}
               onSaved={handleSaved}
               defaultSemestreId={selectedSemestre.id}
               formVariant="standalone"

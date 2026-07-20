@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { Publicacion } from '@/types/publicaciones';
+import { formatDateOnly } from '@/lib/dateOnly';
 
 const rutaPublicaciones = path.join(process.cwd(), 'public', 'data', 'publicaciones.json');
 
@@ -27,8 +28,5 @@ export async function getPublicacionBySlug(slug: string): Promise<Publicacion | 
 }
 
 export function formatFecha(iso?: string | null) {
-    if (!iso) return '';
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '';
-    return new Intl.DateTimeFormat('es-PE', { dateStyle: 'long', timeZone: 'America/Lima' }).format(d);
+    return formatDateOnly(iso, { dateStyle: 'long' });
 }

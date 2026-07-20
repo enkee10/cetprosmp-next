@@ -43,6 +43,7 @@ import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage
 import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
 import { useSearchParams } from 'next/navigation';
 import { app, functions, storage } from '@/lib/firebase';
+import { formatDateOnly, getDateOnlyLocalDate } from '@/lib/dateOnly';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
@@ -306,9 +307,7 @@ const detectDocumentContentType = (file: File) => {
 };
 
 const parseSemestreDate = (value?: string | null) => {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
+  return getDateOnlyLocalDate(value);
 };
 
 const startOfDay = (date: Date) => {
@@ -772,10 +771,7 @@ const responsableUserName = (user?: MatriculaResponsableUser | null) =>
   || '';
 
 const formatDate = (value?: string | null) => {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('es-PE', { dateStyle: 'short' }).format(date);
+  return formatDateOnly(value, { dateStyle: 'short' }) || value || '';
 };
 
 function valuesFromMatricula(matricula: MatriculaListItem): MatriculaFormValues {
@@ -1026,10 +1022,14 @@ export function MatriculaForm({
       try {
         const listMatriculaSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(
           functions,
-          'listMatriculaSemestres',
+          isStandalone ? 'listFormularioMatriculaSemestres' : 'listMatriculaSemestres',
           { timeout: 12000 },
         );
-        const semestresResult = await withTimeout(listMatriculaSemestres(), 14000, 'listMatriculaSemestres');
+        const semestresResult = await withTimeout(
+          listMatriculaSemestres(),
+          14000,
+          isStandalone ? 'listFormularioMatriculaSemestres' : 'listMatriculaSemestres',
+        );
         if (!mounted) return;
         const nextSemestres = semestresResult.data.semestres || [];
         setSemestres(nextSemestres);
@@ -1068,11 +1068,11 @@ export function MatriculaForm({
           const getMatriculaResponsableActual = httpsCallable<
             undefined,
             { responsable?: MatriculaResponsable | null; responsableUser?: MatriculaResponsableUser | null }
-          >(functions, 'getMatriculaResponsableActual', { timeout: 12000 });
+          >(functions, isStandalone ? 'getFormularioMatriculaResponsableActual' : 'getMatriculaResponsableActual', { timeout: 12000 });
           const responsableResult = await withTimeout(
             getMatriculaResponsableActual(),
             14000,
-            'getMatriculaResponsableActual',
+            isStandalone ? 'getFormularioMatriculaResponsableActual' : 'getMatriculaResponsableActual',
           );
           if (!mounted) return;
           setResponsable(responsableResult.data.responsable ?? null);
@@ -1088,7 +1088,7 @@ export function MatriculaForm({
     return () => {
       mounted = false;
     };
-  }, [defaultSemestreId, matriculaId]);
+  }, [defaultSemestreId, isStandalone, matriculaId]);
 
   useEffect(() => {
     let mounted = true;
@@ -1100,13 +1100,13 @@ export function MatriculaForm({
       try {
         const listPaquetes = httpsCallable<{ semestreId: number }, { paquetes?: PaqueteOption[] }>(
           functions,
-          'listMatriculaPaquetesBySemestre',
+          isStandalone ? 'listFormularioMatriculaPaquetesBySemestre' : 'listMatriculaPaquetesBySemestre',
           { timeout: 12000 },
         );
         const result = await withTimeout(
           listPaquetes({ semestreId: selectedSemestreId }),
           14000,
-          'listMatriculaPaquetesBySemestre',
+          isStandalone ? 'listFormularioMatriculaPaquetesBySemestre' : 'listMatriculaPaquetesBySemestre',
         );
         if (mounted) setPaquetes(result.data.paquetes || []);
       } catch (error) {
@@ -1119,7 +1119,7 @@ export function MatriculaForm({
     return () => {
       mounted = false;
     };
-  }, [selectedSemestreId]);
+  }, [isStandalone, selectedSemestreId]);
 
   const uploadDocumentImage = async (file: File, side: 'frente' | 'reverso'): Promise<UploadedImage> => {
     const cleanDni = normalizeDocumentNumber(values.dni);
@@ -1505,7 +1505,11 @@ export function MatriculaForm({
     setMessage(null);
     setSuccessMessage(null);
     try {
-      const callableName = isEditing ? 'updateMatriculaFormulario' : 'crearMatriculaFormulario';
+      const callableName = isEditing
+        ? 'updateMatriculaFormulario'
+        : isStandalone
+          ? 'crearMatriculaFormularioSuelto'
+          : 'crearMatriculaFormulario';
       const saveMatricula = httpsCallable<Record<string, unknown>, { id?: number }>(
         functions,
         callableName,

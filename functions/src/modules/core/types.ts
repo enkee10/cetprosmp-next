@@ -279,6 +279,9 @@ export interface DataConnectSemestre {
   descripcion?: string | null;
   inicio?: string | null;
   fin?: string | null;
+  fechaActa?: string | null;
+  fechaCertificado?: string | null;
+  fechaNomina?: string | null;
   archivado?: boolean | null;
   anioId?: number | null;
   directorId?: number | null;
@@ -299,6 +302,9 @@ export interface DataConnectSemestreInput {
   descripcion?: string | null;
   inicio?: string | null;
   fin?: string | null;
+  fechaActa?: string | null;
+  fechaCertificado?: string | null;
+  fechaNomina?: string | null;
   archivado?: boolean | null;
   anioId?: number | null;
   directorId?: number | null;

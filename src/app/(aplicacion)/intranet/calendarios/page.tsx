@@ -11,6 +11,7 @@ import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
 import { CalendarioForm } from '@/components/intranet/calendarios/CalendarioForm';
+import { formatDateOnly, getDateOnlyLocalDate } from '@/lib/dateOnly';
 
 interface Calendario {
   id: number;
@@ -44,14 +45,11 @@ interface HorarioOption {
 }
 
 const formatDate = (value: string | null) => {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('es-PE', {
+  return formatDateOnly(value, {
     day: '2-digit',
     month: '2-digit',
     year: '2-digit',
-  }).format(date);
+  });
 };
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -64,9 +62,7 @@ const normalizeHorarioNombre = (value: string | null | undefined) =>
   String(value ?? '').trim().replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').toLowerCase();
 
 const getDateOrNull = (value: string | null | undefined) => {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
+  return getDateOnlyLocalDate(value);
 };
 
 const getDatePartsOrNull = (value: string | null | undefined) => {

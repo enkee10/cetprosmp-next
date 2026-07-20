@@ -28,6 +28,7 @@ import { GridColDef, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { httpsCallable } from 'firebase/functions';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
+import { dateOnlyTimestamp } from '@/lib/dateOnly';
 import { functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
@@ -133,9 +134,7 @@ function openUrl(url?: string | null) {
 }
 
 function toTimestamp(value?: string | null) {
-  if (!value) return null;
-  const timestamp = new Date(value).getTime();
-  return Number.isFinite(timestamp) ? timestamp : null;
+  return dateOnlyTimestamp(value);
 }
 
 function getDefaultSemestreId(semestres: SemestreOption[], current: string) {

@@ -10,6 +10,7 @@ import { app, functions, storage } from '@/lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
+import { toDateOnlyInputValue } from '@/lib/dateOnly';
 import { generateUserNames } from './userForm_utilities';
 
 const createValidationSchema = (isCreating: boolean) => yup.object().shape({
@@ -381,9 +382,9 @@ const UserForm: React.FC<UserFormProps> = ({
     let formattedDob = '';
 
     if (dob && typeof dob === 'object' && 'toDate' in dob && typeof dob.toDate === 'function') {
-      formattedDob = dob.toDate().toISOString().split('T')[0];
+      formattedDob = toDateOnlyInputValue(dob.toDate().toISOString());
     } else if (typeof dob === 'string') {
-      formattedDob = dob.split('T')[0];
+      formattedDob = toDateOnlyInputValue(dob);
     }
 
     const defaultValues: UserFormValues = {

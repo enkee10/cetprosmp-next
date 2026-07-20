@@ -24,6 +24,7 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { useRouter } from 'next/navigation';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
+import { getDateOnlyLocalDate, toDateOnlyInputValue } from '@/lib/dateOnly';
 import { getPersonalShortName } from './personalName';
 
 interface GrupoFormProps {
@@ -269,10 +270,7 @@ const buildGrupoModulosFromPaquete = (
 };
 
 const toDateInputValue = (value: string | null | undefined) => {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
-  return date.toISOString().slice(0, 10);
+  return toDateOnlyInputValue(value) || String(value ?? '').slice(0, 10);
 };
 
 const getModuloLabel = (modulo: GrupoModuloDetalle) =>
@@ -284,9 +282,7 @@ const getUnidadLabel = (unidad: GrupoModuloUnidadDidacticaDetalle) =>
     : unidad.unidadDidactica?.nombre || `Unidad ${unidad.unidadDidacticaId}`;
 
 const getDateOrNull = (value: string | null | undefined) => {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
+  return getDateOnlyLocalDate(value);
 };
 
 const getPersonalUsername = (personal: PersonalOption | null | undefined) =>

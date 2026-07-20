@@ -17,6 +17,9 @@ import { requirePermission } from "../core/permissions.js";
 
 type ReportDocumentType = "acta" | "nomina";
 
+const USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY =
+  "general.usarAvataresEnCertificadosTitulos";
+
 type ReportInput = {
   tipoDocumento?: unknown;
   semestreId?: unknown;
@@ -670,6 +673,14 @@ const UPDATE_CERTIFICADO_TITULO_DOCUMENTO_MUTATION = `
   }
 `;
 
+const GET_BOOLEAN_APP_SETTING_QUERY = `
+  query GetBooleanAppSettingManual($settingKey: String!) {
+    appSettings(where: { settingKey: { eq: $settingKey } }, limit: 1) {
+      boolValue
+    }
+  }
+`;
+
 function toNumber(value: unknown, fallback = 0) {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : fallback;
@@ -691,6 +702,26 @@ function usesOpcionOcupacionalRules(value: unknown) {
 
 function cleanText(value: unknown) {
   return String(value ?? "").replace(/\s+/g, " ").trim();
+}
+
+async function getBooleanAppSetting(settingKey: string, defaultValue = false) {
+  try {
+    const response = await dataConnect.executeGraphql<
+      { appSettings: Array<{ boolValue?: boolean | null }> },
+      { settingKey: string }
+    >(
+      GET_BOOLEAN_APP_SETTING_QUERY,
+      { variables: { settingKey } },
+    );
+    const value = response.data.appSettings?.[0]?.boolValue;
+    return typeof value === "boolean" ? value : defaultValue;
+  } catch (error) {
+    console.warn("No se pudo leer una configuracion de la app.", {
+      settingKey,
+      message: String((error as { message?: string } | null)?.message || error),
+    });
+    return defaultValue;
+  }
 }
 
 function toTitleCase(value: string | null | undefined) {
@@ -1577,14 +1608,9 @@ function replaceDrawingMarker(anchorXml: string, kind: "from" | "to", marker: { 
   return anchorXml.replace(regex, drawingMarkerXml(kind, marker));
 }
 
-function removeDrawingAnchorByName(xml: string, name: string) {
-  return xml.replace(/<xdr:(?:twoCellAnchor|oneCellAnchor|absoluteAnchor)>[\s\S]*?<\/xdr:(?:twoCellAnchor|oneCellAnchor|absoluteAnchor)>/gi, (anchor) =>
-    new RegExp(`<xdr:cNvPr\\b[^>]*\\bname="${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`, "i").test(anchor) ? "" : anchor,
-  );
-}
-
 type ActaClosureLineConfig = {
-  name: string;
+  name?: string;
+  detectTemplateGroup?: boolean;
   maxStudents: number;
   firstPageLimit: number;
   firstPageStartRow: number;
@@ -1593,6 +1619,7 @@ type ActaClosureLineConfig = {
   secondPageEndRow: number;
   firstPageRowHeightPx: number;
   secondPageRowHeightPx: number;
+  firstPageRowMiddleAdjustmentPx?: number;
   secondPageRowMiddleAdjustmentPx?: number;
   fromCol: number;
   fromColOff: number;
@@ -1601,7 +1628,7 @@ type ActaClosureLineConfig = {
 };
 
 type ActaClosureLineAdjustment = {
-  kind: "programa" | "opcion";
+  kind: "programa" | "opcion" | "nomina";
   studentCount: number;
 };
 
@@ -1623,26 +1650,57 @@ const ACTA_CLOSURE_LINE_CONFIGS: Record<ActaClosureLineAdjustment["kind"], ActaC
     toColOff: 0,
   },
   opcion: {
-    name: "Grupo 6",
+    detectTemplateGroup: true,
     maxStudents: 30,
     firstPageLimit: 20,
     firstPageStartRow: 19,
     secondPageStartRow: 54,
-    firstPageEndRow: 37,
-    secondPageEndRow: 62,
-    firstPageRowHeightPx: 22,
-    secondPageRowHeightPx: 23,
+    firstPageEndRow: 38,
+    secondPageEndRow: 63,
+    firstPageRowHeightPx: 27,
+    secondPageRowHeightPx: 28,
+    firstPageRowMiddleAdjustmentPx: 5,
+    secondPageRowMiddleAdjustmentPx: 5,
     fromCol: 2,
-    fromColOff: 1,
+    fromColOff: 0,
     toCol: 37,
-    toColOff: 4646,
+    toColOff: 0,
+  },
+  nomina: {
+    name: "Grupo 86",
+    maxStudents: 30,
+    firstPageLimit: 30,
+    firstPageStartRow: 16,
+    secondPageStartRow: 16,
+    firstPageEndRow: 45,
+    secondPageEndRow: 45,
+    firstPageRowHeightPx: 22,
+    secondPageRowHeightPx: 22,
+    fromCol: 1,
+    fromColOff: 0,
+    toCol: 36,
+    toColOff: 0,
   },
 };
 
+function isActaClosureLineAnchor(anchor: string, config: ActaClosureLineConfig) {
+  if (config.name) {
+    return new RegExp(`<xdr:cNvPr\\b[^>]*\\bname="${config.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`, "i").test(anchor);
+  }
+  if (!config.detectTemplateGroup) return false;
+  return /<xdr:grpSp\b/i.test(anchor) && (anchor.match(/<xdr:cxnSp\b/gi)?.length ?? 0) >= 2;
+}
+
+function removeActaClosureLineAnchor(xml: string, config: ActaClosureLineConfig) {
+  return xml.replace(/<xdr:(?:twoCellAnchor|oneCellAnchor|absoluteAnchor)>[\s\S]*?<\/xdr:(?:twoCellAnchor|oneCellAnchor|absoluteAnchor)>/gi, (anchor) =>
+    isActaClosureLineAnchor(anchor, config) ? "" : anchor,
+  );
+}
+
 function adjustActaStudentClosureLineAnchor(xml: string, studentCount: number, config: ActaClosureLineConfig) {
   const count = Math.min(Math.max(0, studentCount), config.maxStudents);
-  if (count <= 0 || count === config.maxStudents) {
-    return removeDrawingAnchorByName(xml, config.name);
+  if (count <= 0 || count === config.firstPageLimit || count === config.maxStudents) {
+    return removeActaClosureLineAnchor(xml, config);
   }
 
   const firstPage = count < config.firstPageLimit;
@@ -1651,16 +1709,19 @@ function adjustActaStudentClosureLineAnchor(xml: string, studentCount: number, c
     : config.secondPageStartRow + (count - config.firstPageLimit);
   const pageEndRow = firstPage ? config.firstPageEndRow : config.secondPageEndRow;
   const rowHeightPx = firstPage ? config.firstPageRowHeightPx : config.secondPageRowHeightPx;
-  const rowMiddleAdjustmentPx = firstPage ? 0 : config.secondPageRowMiddleAdjustmentPx ?? 0;
+  const rowMiddleAdjustmentPx = firstPage
+    ? config.firstPageRowMiddleAdjustmentPx ?? 0
+    : config.secondPageRowMiddleAdjustmentPx ?? 0;
   const rowMiddleOff = Math.round(((rowHeightPx / 2) - rowMiddleAdjustmentPx) * 9525);
   const from = { col: config.fromCol, colOff: config.fromColOff, row: nextStudentRow - 1, rowOff: rowMiddleOff };
   const to = { col: config.toCol, colOff: config.toColOff, row: pageEndRow, rowOff: 0 };
 
-  const escapedName = config.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const anchorRegex = new RegExp(`<xdr:twoCellAnchor>[\\s\\S]*?<xdr:cNvPr\\b[^>]*\\bname="${escapedName}"[\\s\\S]*?<\\/xdr:twoCellAnchor>`, "i");
-  return xml.replace(anchorRegex, (anchor) =>
-    replaceDrawingMarker(replaceDrawingMarker(anchor, "from", from), "to", to),
-  );
+  let adjusted = false;
+  return xml.replace(/<xdr:twoCellAnchor>[\s\S]*?<\/xdr:twoCellAnchor>/gi, (anchor) => {
+    if (adjusted || !isActaClosureLineAnchor(anchor, config)) return anchor;
+    adjusted = true;
+    return replaceDrawingMarker(replaceDrawingMarker(anchor, "from", from), "to", to);
+  });
 }
 
 async function adjustActaStudentClosureLine(zip: JSZip, adjustment?: ActaClosureLineAdjustment | null) {
@@ -1670,8 +1731,9 @@ async function adjustActaStudentClosureLine(zip: JSZip, adjustment?: ActaClosure
   for (const drawingPath of drawingPaths) {
     const file = zip.file(drawingPath);
     const xml = await file?.async("string");
-    if (!file || !xml || !new RegExp(`<xdr:cNvPr\\b[^>]*\\bname="${config.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`, "i").test(xml)) continue;
-    zip.file(drawingPath, adjustActaStudentClosureLineAnchor(xml, adjustment.studentCount, config));
+    if (!file || !xml || !/<xdr:twoCellAnchor>/i.test(xml)) continue;
+    const nextXml = adjustActaStudentClosureLineAnchor(xml, adjustment.studentCount, config);
+    if (nextXml !== xml) zip.file(drawingPath, nextXml);
   }
 }
 
@@ -2535,8 +2597,8 @@ function fillNomina(updates: SpreadsheetUpdate[], sheetName: string, data: Repor
   addCell(updates, sheetName, "E49", women);
   addCell(updates, sheetName, "M49", students.length);
   addCell(updates, sheetName, "R49", students.length);
-  addCell(updates, sheetName, "V49", "");
-  addCell(updates, sheetName, "W49", "");
+  addCell(updates, sheetName, "V49", 0);
+  addCell(updates, sheetName, "W49", 0);
   addCell(updates, sheetName, "Y49", students.length);
   addCell(updates, sheetName, "E51", `S.M.P., ${formatDateLong()}`);
 }
@@ -2652,6 +2714,12 @@ function fillOpcionActa(updates: SpreadsheetUpdate[], sheetName: string, data: R
     addCell(updates, sheetName, `Z${row}`, condition === "D" ? "X" : "");
     addCell(updates, sheetName, `AC${row}`, condition === "R" ? "X" : "");
   });
+  for (let index = students.length; index < 30; index += 1) {
+    const row = index < 20 ? 19 + index : 54 + (index - 20);
+    ["C", "D", "G", ...capacidadColumns, "V", "W", "X", "Z", "AC"].forEach((column) => {
+      addCell(updates, sheetName, `${column}${row}`, "");
+    });
+  }
   addCell(updates, sheetName, "AH42", students.length);
   addCell(updates, sheetName, "AH44", students.filter((student) => getCondition(student.promedio) === "A").length);
   addCell(updates, sheetName, "AH46", students.filter((student) => getCondition(student.promedio) === "D").length);
@@ -2717,7 +2785,12 @@ function certificateRowWeight(row: CertificateUnitTableRow) {
   return Math.max(1, text.length / 90, lineCount * 0.9);
 }
 
-function buildCertificateTokens(data: ReporteDocumentoData, student: ReporteEstudiante, promedioFinal: number) {
+function buildCertificateTokens(
+  data: ReporteDocumentoData,
+  student: ReporteEstudiante,
+  promedioFinal: number,
+  avatarUrl: string,
+) {
   const unitMap = unidadPromedioMap(data);
   const capacitiesByUnit = new Map<number, string[]>();
   for (const capacidad of data.capacidades) {
@@ -2754,7 +2827,7 @@ function buildCertificateTokens(data: ReporteDocumentoData, student: ReporteEstu
     "[horas unidad didactica]": horas.join("\n"),
     "[nota unidad didactica]": notas.join("\n"),
     "[Capacidades de la unidad]": capacidades.join("\n"),
-    "[avatar]": cleanText(student.matricula?.user?.avatar || ""),
+    "[avatar]": cleanText(avatarUrl),
   };
 }
 
@@ -2869,11 +2942,13 @@ async function generateCertificadoPlanEstudios(input: {
   }
 
   const { buffer: templateBuffer } = await ensureTemplateInStorage(TEMPLATES.certificadoPlanEstudios);
+  const useAvatars = await getBooleanAppSetting(USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY, false);
+  const avatarUrl = useAvatars ? cleanText(student.matricula?.user?.avatar || "") : "";
   const xlsxBuffer = await applyCertificatePlanEstudiosUpdates(
     templateBuffer,
-    buildCertificateTokens(data, student, promedioFinal),
+    buildCertificateTokens(data, student, promedioFinal, avatarUrl),
     buildCertificateUnitRows(data, student),
-    cleanText(student.matricula?.user?.avatar || ""),
+    avatarUrl,
   );
 
   const baseName = `certificado-${input.grupoModuloId}-${input.moduloEstudianteId}`;
@@ -3510,6 +3585,7 @@ async function generateReporteDocumentoInternal(input: {
   fillReporte(updates, "Hoja1", input.tipoDocumento, reportes[0]);
   const isActaOpcion = input.tipoDocumento === "acta" && reportes[0].opcionOcupacional;
   const isActaPrograma = input.tipoDocumento === "acta" && !reportes[0].opcionOcupacional;
+  const isNomina = input.tipoDocumento === "nomina";
 
   const xlsxBuffer = await applyExcelUpdates(
     templateBuffer,
@@ -3533,7 +3609,9 @@ async function generateReporteDocumentoInternal(input: {
       ? { kind: "programa", studentCount: Math.min(reportes[0].estudiantes.length, 40) }
       : isActaOpcion
         ? { kind: "opcion", studentCount: Math.min(reportes[0].estudiantes.length, 30) }
-        : null,
+        : isNomina
+          ? { kind: "nomina", studentCount: Math.min(reportes[0].estudiantes.length, 30) }
+          : null,
   );
   const grupoModuloId = reportes[0].grupoModulo.id;
   const semestreTitle = cleanText(reportes[0].semestre?.titulo || String(input.semestreId || ""));
@@ -3636,7 +3714,7 @@ export const listReporteDocumentosOptions = https.onCall(async (_data, context) 
         turno: item.grupo?.turno?.nombre || item.grupo?.turnoNombre || null,
         horario: item.grupo?.horario?.nombre || item.grupo?.horario?.diasSemana || null,
         docente: getPersonalName(item.grupo?.personal),
-        moduloNombre: getModuloDocumentName(item),
+        moduloNombre: grupoModuloDisplayName(item),
         tipoCarrera: item.modulo?.plan?.carrera?.tipoCarrera?.nombre ?? null,
       }));
 

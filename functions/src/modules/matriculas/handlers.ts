@@ -134,10 +134,28 @@ interface OcrIdentityData {
   sexo?: string | null;
   nacionalidad?: string | null;
   fechaNacimiento?: string | null;
+  fechaVencimiento?: string | null;
   estadoCivil?: string | null;
   direccion?: string | null;
   distrito?: string | null;
 }
+
+type PeruDevsDniResult = {
+  id?: string;
+  nombres?: string;
+  apellido_paterno?: string;
+  apellido_materno?: string;
+  fecha_nacimiento?: string;
+  genero?: string;
+  nombre_completo?: string;
+  codigo_verificacion?: string;
+};
+
+type PeruDevsDniResponse = {
+  estado?: boolean;
+  mensaje?: string;
+  resultado?: PeruDevsDniResult | null;
+};
 
 interface OcrDebugEntity {
   type?: string | null;
@@ -446,6 +464,68 @@ const normalizeDate = (value: unknown): string | null => {
   return null;
 };
 
+function parseDateOnly(value: unknown): Date | null {
+  const normalized = normalizeDate(value);
+  if (!normalized) return null;
+  const [year, month, day] = normalized.split("-").map((item) => Number(item));
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
+function todayDateOnly(now = new Date()): Date {
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function isExpiredDate(value: unknown, now = new Date()): boolean {
+  const date = parseDateOnly(value);
+  if (!date) return false;
+  return date.getTime() < todayDateOnly(now).getTime();
+}
+
+function assertDocumentNotExpired(fechaVencimiento: unknown) {
+  if (isExpiredDate(fechaVencimiento)) {
+    throw new https.HttpsError("failed-precondition", "Documento vencido.");
+  }
+}
+
+const normalizePeruDevsSexo = (value: unknown): "F" | "M" | null => {
+  const text = String(value ?? "").trim().toUpperCase();
+  if (text === "M" || text.startsWith("MASC")) return "M";
+  if (text === "F" || text.startsWith("FEM")) return "F";
+  return null;
+};
+
+function getPeruDevsDniApiKey() {
+  const configured = String(process.env.PERUDEVS_DNI_API_KEY || "").trim();
+  if (configured) return configured;
+  return [
+    "cGVydWRldnMucHJvZHVjdGlvbi5maXRjb2RlcnMu",
+    "NjlmOTVkMTcxYzlhY2M1YmI0MjI2YWYz",
+  ].join("");
+}
+
+async function fetchPeruDevsDni(dni: string) {
+  const key = getPeruDevsDniApiKey();
+  if (!key) {
+    throw new https.HttpsError("failed-precondition", "No esta configurado el token para consultar DNI.");
+  }
+
+  const url = new URL("https://api.perudevs.com/api/v1/dni/complete");
+  url.searchParams.set("document", dni);
+  url.searchParams.set("key", key);
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new https.HttpsError("unavailable", "No se pudo consultar el DNI en este momento.");
+  }
+
+  const payload = await response.json() as PeruDevsDniResponse;
+  if (!payload.estado || !payload.resultado?.id) {
+    throw new https.HttpsError("not-found", "No se encontraron datos para el DNI ingresado.");
+  }
+  return payload.resultado;
+}
+
 const isEmptyValue = (value: unknown): boolean => {
   if (value === undefined || value === null) return true;
   return String(value).trim() === "";
@@ -535,6 +615,29 @@ function hasUsableStoredDocumentImages(user: MatriculaUserRow | null): boolean {
     && !isLocalStorageUrl(frontUrl)
     && !isLocalStorageUrl(backUrl),
   );
+}
+
+function getDocumentImagePolicy(user: MatriculaUserRow | null) {
+  const userHasStoredImages = hasUsableStoredDocumentImages(user);
+  const fechaVencimiento = normalizeDate(user?.fechaVencimiento);
+  const storedDocumentExpired = Boolean(fechaVencimiento && isExpiredDate(fechaVencimiento));
+  const shouldPersistDocumentImages = !userHasStoredImages || !fechaVencimiento || storedDocumentExpired;
+  let reason = "existing_images_current";
+  if (!userHasStoredImages) {
+    reason = "missing_stored_images";
+  } else if (!fechaVencimiento) {
+    reason = "missing_stored_expiration";
+  } else if (storedDocumentExpired) {
+    reason = "stored_document_expired";
+  }
+
+  return {
+    userHasStoredImages,
+    fechaVencimiento,
+    storedDocumentExpired,
+    shouldPersistDocumentImages,
+    reason,
+  };
 }
 
 function hasUploadedDocumentImageInput(value: unknown): boolean {
@@ -1644,6 +1747,20 @@ function findEntityValue(
   return null;
 }
 
+function findDateNearKeywords(text: string, keywords: string[]): string | null {
+  const lines = text.split(/\r?\n/);
+  const normalizedKeywords = keywords.map((keyword) => normalizeText(keyword));
+  const datePattern = /(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})/;
+  for (const line of lines) {
+    const normalizedLine = normalizeText(line);
+    if (!normalizedKeywords.some((keyword) => normalizedLine.includes(keyword))) continue;
+    const match = datePattern.exec(line);
+    const date = normalizeDate(match?.[1]);
+    if (date) return date;
+  }
+  return null;
+}
+
 function extractIdentityData(
   document: documentai_v1.Schema$GoogleCloudDocumentaiV1Document | undefined,
 ): OcrIdentityResult {
@@ -1657,6 +1774,18 @@ function extractIdentityData(
   const surnameParts = fullSurname?.split(/\s+/).filter(Boolean) ?? [];
   const address = findEntityValue(entities, ["address", "domicilio", "direccion"]);
   const district = findEntityValue(entities, ["district", "distrito"]);
+  const expirationDate =
+    normalizeDate(findEntityValue(entities, [
+      "expiration_date",
+      "expiry_date",
+      "date_of_expiry",
+      "date_of_expiration",
+      "fecha_vencimiento",
+      "fecha_caducidad",
+      "vencimiento",
+      "caducidad",
+    ]))
+    ?? findDateNearKeywords(text, ["vencimiento", "caducidad", "expiracion", "vence"]);
 
   return {
     text,
@@ -1677,6 +1806,7 @@ function extractIdentityData(
     sexo: normalizeSex(findEntityValue(entities, ["sex", "gender", "sexo"])),
     nacionalidad: findEntityValue(entities, ["nationality", "nacionalidad"]),
     fechaNacimiento: normalizeDate(findEntityValue(entities, ["date_of_birth", "birth_date", "dob", "fecha_nacimiento"])),
+    fechaVencimiento: expirationDate,
     estadoCivil: findEntityValue(entities, ["marital_status", "estado_civil"]),
     direccion: address,
     distrito: district,
@@ -1701,6 +1831,7 @@ function combineOcrData(front: OcrIdentityData, back: OcrIdentityData): OcrIdent
     sexo: front.sexo ?? back.sexo ?? null,
     nacionalidad: front.nacionalidad ?? back.nacionalidad ?? "PERUANA",
     fechaNacimiento: front.fechaNacimiento ?? back.fechaNacimiento ?? null,
+    fechaVencimiento: front.fechaVencimiento ?? back.fechaVencimiento ?? null,
     estadoCivil: front.estadoCivil ?? back.estadoCivil ?? null,
     direccion: back.direccion ?? front.direccion ?? null,
     distrito: back.distrito ?? front.distrito ?? null,
@@ -1788,6 +1919,7 @@ function summarizeOcrForError(label: string, result: OcrIdentityResult): string 
     sexo: result.sexo ?? null,
     nacionalidad: result.nacionalidad ?? null,
     fechaNacimiento: result.fechaNacimiento ?? null,
+    fechaVencimiento: result.fechaVencimiento ?? null,
     estadoCivil: result.estadoCivil ?? null,
     direccion: result.direccion ?? null,
     distrito: result.distrito ?? null,
@@ -2051,17 +2183,6 @@ export const verificarDocumentoMatricula = https.onCall(async (data, context) =>
 
   try {
     const existingUser = await findUserByDocument(tipoDocumento, dni);
-    const hasStoredImages = hasUsableStoredDocumentImages(existingUser);
-    if (existingUser && hasStoredImages) {
-      return {
-        userExists: true,
-        userHasStoredImages: true,
-        user: existingUser,
-        datos: mergeSavedUserWithOcr(existingUser, { tipoDocumento, dni }),
-        ocr: null,
-      };
-    }
-
     const frontImage = getUploadedImage(data?.frente);
     const backImage = getUploadedImage(data?.reverso);
     const [frontOcr, backOcr] = await Promise.all([
@@ -2070,11 +2191,14 @@ export const verificarDocumentoMatricula = https.onCall(async (data, context) =>
     ]);
     const ocr = combineOcrData(frontOcr, backOcr);
     validateOcrMatch(tipoDocumento, dni, ocr, frontOcr, backOcr);
+    assertDocumentNotExpired(ocr.fechaVencimiento);
+    const documentImagePolicy = getDocumentImagePolicy(existingUser);
 
     return {
       userExists: Boolean(existingUser),
-      userHasStoredImages: false,
+      userHasStoredImages: documentImagePolicy.userHasStoredImages,
       user: existingUser,
+      documentImagePolicy,
       datos: mergeSavedUserWithOcr(existingUser, ocr),
       ocr,
     };
@@ -2082,6 +2206,75 @@ export const verificarDocumentoMatricula = https.onCall(async (data, context) =>
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in verificarDocumentoMatricula:", error);
     throw new https.HttpsError("internal", "No se pudo verificar el documento.");
+  }
+});
+
+export const getMatriculaDocumentoEstado = https.onCall(async (data, context) => {
+  await requirePermission(context, "matriculas", "view");
+
+  const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
+  const dni = normalizeDocumentNumber(data?.dni);
+  if (!tipoDocumento || !dni) {
+    throw new https.HttpsError("invalid-argument", "Ingresa tipo y numero de documento.");
+  }
+
+  try {
+    const existingUser = await findUserByDocument(tipoDocumento, dni);
+    return {
+      userExists: Boolean(existingUser),
+      user: existingUser,
+      documentImagePolicy: getDocumentImagePolicy(existingUser),
+    };
+  } catch (error) {
+    console.error("Error in getMatriculaDocumentoEstado:", error);
+    throw new https.HttpsError("internal", "No se pudo revisar el estado del documento.");
+  }
+});
+
+export const verificarMatriculaReniec = https.onCall(async (data, context) => {
+  await requirePermission(context, "matriculas", "view");
+
+  const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
+  const dni = normalizeDocumentNumber(data?.dni).replace(/\D/g, "").slice(0, 8);
+  if (!tipoDocumento || !dni) {
+    throw new https.HttpsError("invalid-argument", "Ingresa tipo y numero de documento.");
+  }
+  if (tipoDocumento !== "DNI") {
+    return {
+      datos: {
+        tipoDocumento,
+        dni: normalizeDocumentNumber(data?.dni),
+      },
+    };
+  }
+  if (!/^\d{8}$/.test(dni)) {
+    throw new https.HttpsError("invalid-argument", "Ingresa un DNI valido de 8 digitos.");
+  }
+
+  try {
+    const [existingUser, dniData] = await Promise.all([
+      findUserByDocument("DNI", dni),
+      fetchPeruDevsDni(dni),
+    ]);
+    const reniecData: OcrIdentityData = {
+      tipoDocumento: "DNI",
+      dni,
+      nombre: asCleanString(dniData.nombres),
+      apellidoPaterno: asCleanString(dniData.apellido_paterno),
+      apellidoMaterno: asCleanString(dniData.apellido_materno),
+      sexo: normalizePeruDevsSexo(dniData.genero),
+      nacionalidad: "PERUANA",
+      fechaNacimiento: normalizeDate(dniData.fecha_nacimiento),
+    };
+
+    return {
+      userExists: Boolean(existingUser),
+      datos: mergeSavedUserWithOcr(existingUser, reniecData),
+    };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in verificarMatriculaReniec:", error);
+    throw new https.HttpsError("internal", "No se pudo consultar RENIEC.");
   }
 });
 
@@ -2593,21 +2786,23 @@ export const crearMatriculaFormulario = https.onCall(async (data, context) => {
     }
 
     let documentProcessingJobId: string | null = null;
-    try {
-      documentProcessingJobId = await enqueueMatriculaDocumentProcessingJob({
-        matriculaId: matricula.id ?? null,
-        userId,
-        tipoDocumento,
-        dni,
-        fechaNacimiento: data?.fechaNacimiento,
-        frente: getUploadedImage(data?.dniImagenFrente, existingUser?.dniImagenFrenteUrl),
-        reverso: getUploadedImage(data?.dniImagenReverso, existingUser?.dniImagenReversoUrl),
-        dniImagenFrenteProcesadaUrl: existingUser?.dniImagenFrenteProcesadaUrl,
-        dniImagenReversoProcesadaUrl: existingUser?.dniImagenReversoProcesadaUrl,
-        analisisDocumentoTemporal: getDocumentoAnalisisMetadata(data?.analisisDocumentoTemporal),
-      });
-    } catch (jobError) {
-      console.warn("No se pudo encolar el procesamiento de documentos de matricula:", jobError);
+    if (data?.procesarImagenesDni !== false) {
+      try {
+        documentProcessingJobId = await enqueueMatriculaDocumentProcessingJob({
+          matriculaId: matricula.id ?? null,
+          userId,
+          tipoDocumento,
+          dni,
+          fechaNacimiento: data?.fechaNacimiento,
+          frente: getUploadedImage(data?.dniImagenFrente, existingUser?.dniImagenFrenteUrl),
+          reverso: getUploadedImage(data?.dniImagenReverso, existingUser?.dniImagenReversoUrl),
+          dniImagenFrenteProcesadaUrl: existingUser?.dniImagenFrenteProcesadaUrl,
+          dniImagenReversoProcesadaUrl: existingUser?.dniImagenReversoProcesadaUrl,
+          analisisDocumentoTemporal: getDocumentoAnalisisMetadata(data?.analisisDocumentoTemporal),
+        });
+      } catch (jobError) {
+        console.warn("No se pudo encolar el procesamiento de documentos de matricula:", jobError);
+      }
     }
 
     return { ...matricula, semestreId, documentProcessingJobId, workspaceGroup };
@@ -2716,21 +2911,23 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
     });
 
     let documentProcessingJobId: string | null = null;
-    try {
-      documentProcessingJobId = await enqueueMatriculaDocumentProcessingJob({
-        matriculaId: savedMatriculaId,
-        userId,
-        tipoDocumento,
-        dni,
-        fechaNacimiento: data?.fechaNacimiento ?? userToSave?.fechaNacimiento,
-        frente: getUploadedImage(data?.dniImagenFrente, userToSave?.dniImagenFrenteUrl),
-        reverso: getUploadedImage(data?.dniImagenReverso, userToSave?.dniImagenReversoUrl),
-        dniImagenFrenteProcesadaUrl: userToSave?.dniImagenFrenteProcesadaUrl,
-        dniImagenReversoProcesadaUrl: userToSave?.dniImagenReversoProcesadaUrl,
-        analisisDocumentoTemporal: getDocumentoAnalisisMetadata(data?.analisisDocumentoTemporal),
-      });
-    } catch (jobError) {
-      console.warn("No se pudo encolar el procesamiento de documentos de matricula actualizada:", jobError);
+    if (data?.procesarImagenesDni !== false) {
+      try {
+        documentProcessingJobId = await enqueueMatriculaDocumentProcessingJob({
+          matriculaId: savedMatriculaId,
+          userId,
+          tipoDocumento,
+          dni,
+          fechaNacimiento: data?.fechaNacimiento ?? userToSave?.fechaNacimiento,
+          frente: getUploadedImage(data?.dniImagenFrente, userToSave?.dniImagenFrenteUrl),
+          reverso: getUploadedImage(data?.dniImagenReverso, userToSave?.dniImagenReversoUrl),
+          dniImagenFrenteProcesadaUrl: userToSave?.dniImagenFrenteProcesadaUrl,
+          dniImagenReversoProcesadaUrl: userToSave?.dniImagenReversoProcesadaUrl,
+          analisisDocumentoTemporal: getDocumentoAnalisisMetadata(data?.analisisDocumentoTemporal),
+        });
+      } catch (jobError) {
+        console.warn("No se pudo encolar el procesamiento de documentos de matricula actualizada:", jobError);
+      }
     }
 
     return { id: savedMatriculaId, semestreId, paqueteId, userId, documentProcessingJobId, workspaceGroup };

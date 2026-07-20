@@ -2,11 +2,11 @@
 
 import React from 'react';
 import {
-  Alert,
   Box,
   Typography,
 } from '@mui/material';
 import type { AlertColor } from '@mui/material';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import ColumnVisibilityControl, {
   type ColumnToggleItem,
 } from '@/components/intranet/ColumnVisibilityControl';
@@ -40,13 +40,13 @@ const IntranetListLayout: React.FC<IntranetListLayoutProps> = ({
         bgcolor: 'background.paper',
       }}
     >
-      {message ? (
-        <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider', minHeight: 56 }}>
-          <Alert severity={messageSeverity}>{message}</Alert>
-        </Box>
-      ) : null}
+      <AutoDismissAlert
+        message={message}
+        severity={messageSeverity}
+        containerSx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider', minHeight: 56 }}
+      />
 
-      <Box sx={{ px: 2, py: 1.5 }}>
+      <Box sx={{ p: { xs: '6px' }, px: { md: 2 }, py: { md: 1.5 } }}>
         {typeof title === 'string' ? (
           <Typography variant="h4" component="h1" sx={{ lineHeight: 1.1 }}>
             {title}

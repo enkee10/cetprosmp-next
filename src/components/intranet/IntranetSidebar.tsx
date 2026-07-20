@@ -63,6 +63,7 @@ export default function IntranetSidebar() {
   return (
     <Box
       sx={{
+        display: { xs: 'none', md: 'block' },
         bgcolor: '#5a3929',
         color: '#f7f0df',
         minHeight: '100vh',

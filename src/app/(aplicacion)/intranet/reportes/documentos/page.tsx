@@ -26,6 +26,7 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { GridColDef, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { httpsCallable } from 'firebase/functions';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import { functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
@@ -399,7 +400,7 @@ export default function RegistroAcademicosPage() {
         </Typography>
       </Stack>
 
-      {message && <Alert severity={messageSeverity}>{message}</Alert>}
+      <AutoDismissAlert message={message} severity={messageSeverity} />
       {selectedHasMissingDocuments && selectedRows.length > 0 ? (
         <Alert severity="info">La descarga multiple se habilita solo cuando todos los seleccionados ya tienen documento generado.</Alert>
       ) : null}

@@ -145,12 +145,14 @@ export {
   deleteMatricula,
   generarCodigosInscripcionMatriculas,
   getMatricula,
+  getMatriculaDocumentoEstado,
   listMatriculas,
   listMatriculaPaquetesBySemestre,
   onMatriculaAvatarExtractionJobCreated,
   onMatriculaDocumentoProcessingJobCreated,
   updateMatriculaFormulario,
   verificarDocumentoMatricula,
+  verificarMatriculaReniec,
 } from "./matriculas/handlers.js";
 export {
   listEstructuraAcademica,

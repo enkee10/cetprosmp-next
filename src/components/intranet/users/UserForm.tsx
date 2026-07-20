@@ -4,7 +4,7 @@ import { useForm, Controller, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { TextField, Button, Box, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Avatar, CircularProgress, Typography, IconButton, InputAdornment } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { DeleteOutline, Visibility, VisibilityOff } from '@mui/icons-material';
 import { getAuth } from 'firebase/auth';
 import { app, functions, storage } from '@/lib/firebase';
 import { httpsCallable } from 'firebase/functions';
@@ -53,6 +53,7 @@ const createValidationSchema = (isCreating: boolean) => yup.object().shape({
   distrito: yup.string().nullable(),
   rolId: yup.string().required('El rol es requerido'),
   avatar: yup.string().url('Debe ser una URL válida').nullable(),
+  avatarRemoved: yup.boolean(),
   bloqueado: yup.boolean(),
   correo_institucional: yup.string().nullable(),
   fecha_creacion: yup.string().nullable(),
@@ -81,6 +82,7 @@ interface UserFormValues {
   distrito: string | null | undefined;
   rolId: string;
   avatar: string | null | undefined;
+  avatarRemoved?: boolean;
   bloqueado: boolean | undefined;
   correo_institucional: string | null | undefined;
   fecha_creacion: string | null | undefined;
@@ -216,6 +218,7 @@ const UserForm: React.FC<UserFormProps> = ({
       distrito: '',
       rolId: '',
       avatar: '',
+      avatarRemoved: false,
       bloqueado: false,
       correo_institucional: '',
       fecha_creacion: '',
@@ -333,6 +336,10 @@ const UserForm: React.FC<UserFormProps> = ({
         shouldValidate: true,
         shouldDirty: true,
       });
+      setValue('avatarRemoved', false, {
+        shouldValidate: false,
+        shouldDirty: true,
+      });
     } catch (error: unknown) {
       const parsedError = error as { code?: string; message?: string };
       console.error('Error uploading file:', error);
@@ -343,6 +350,21 @@ const UserForm: React.FC<UserFormProps> = ({
       }
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setUploadError(null);
+    setValue('avatar', '', {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue('avatarRemoved', true, {
+      shouldValidate: false,
+      shouldDirty: true,
+    });
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = '';
     }
   };
 
@@ -388,6 +410,7 @@ const UserForm: React.FC<UserFormProps> = ({
           ? String(initialData.rolId)
           : (roles[0]?.id ? String(roles[0].id) : ''),
       avatar: asString(initialData?.avatar ?? initialData?.avatarPequeno ?? initialData?.photoURL),
+      avatarRemoved: false,
       bloqueado: asBoolean(initialData?.bloqueado ?? initialData?.blocked),
       correo_institucional: asString(initialData?.correo_institucional ?? initialData?.correoInstitucional),
       fecha_creacion: asString(initialData?.fecha_creacion ?? initialData?.fechaCreacion),
@@ -451,9 +474,22 @@ const UserForm: React.FC<UserFormProps> = ({
             <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' }, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 1 }}>
               <Avatar src={avatarUrl || undefined} sx={{ width: 100, height: 100 }} />
               <input type="file" accept="image/*" style={{ display: 'none' }} ref={avatarInputRef} onChange={(e) => handleFileChange(e, 'avatar')} />
-              <Button sx={{ mt: 1 }} variant="outlined" onClick={() => avatarInputRef.current?.click()} disabled={isUploading} tabIndex={23}>
-                {isUploading ? <CircularProgress size={24} /> : (avatarUrl ? 'Cambiar Avatar' : 'Subir Avatar')}
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <Button variant="outlined" onClick={() => avatarInputRef.current?.click()} disabled={isUploading} tabIndex={23}>
+                  {isUploading ? <CircularProgress size={24} /> : (avatarUrl ? 'Cambiar Avatar' : 'Subir Avatar')}
+                </Button>
+                {avatarUrl ? (
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    startIcon={<DeleteOutline />}
+                    onClick={handleRemoveAvatar}
+                    disabled={isUploading}
+                  >
+                    Quitar Avatar
+                  </Button>
+                ) : null}
+              </Box>
               {errors.avatar && <Typography color="error" variant="caption">{errors.avatar.message as string}</Typography>}
               {uploadError && <Typography color="error" variant="caption" sx={{ mt: 1 }}>{uploadError}</Typography>}
             </Box>

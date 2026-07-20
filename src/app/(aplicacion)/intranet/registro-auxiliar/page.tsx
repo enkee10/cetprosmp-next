@@ -25,6 +25,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import { useSearchParams } from 'next/navigation';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import { useAuth } from '@/context/AuthContext';
 import { app } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
@@ -612,12 +613,6 @@ export default function RegistroAuxiliarPage() {
   useEffect(() => {
     setUnitPage(0);
   }, [grupoModuloId]);
-
-  useEffect(() => {
-    if (!message) return;
-    const timeoutId = window.setTimeout(() => setMessage(null), 5000);
-    return () => window.clearTimeout(timeoutId);
-  }, [message]);
 
   const indicatorColumns = useMemo(() => buildIndicatorColumns(registro?.estructura || []), [registro]);
 
@@ -1468,7 +1463,7 @@ export default function RegistroAuxiliarPage() {
       </Stack>
 
       {error && <Alert severity="error" sx={{ mb: 1.5 }}>{error}</Alert>}
-      {message && <Alert severity="success" sx={{ mb: 1.5 }}>{message}</Alert>}
+      <AutoDismissAlert message={message} severity="success" sx={{ mb: 1.5 }} />
 
       <Paper sx={{ overflow: 'hidden', borderRadius: 1, border: '1px solid #2d2d2d' }}>
         <Box

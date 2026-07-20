@@ -143,6 +143,25 @@ export default function SettingsPage() {
             </Button>
           </Box>
 
+          <FormControlLabel
+            control={
+              <Switch
+                checked={draft.general.usarAvataresEnCertificadosTitulos}
+                disabled={loading || saving}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    general: {
+                      ...current.general,
+                      usarAvataresEnCertificadosTitulos: event.target.checked,
+                    },
+                  }))
+                }
+              />
+            }
+            label="Usar avatares en certificados y titulos"
+          />
+
           <Box>
             <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
               Visualizaciones
@@ -157,6 +176,7 @@ export default function SettingsPage() {
                 disabled={loading || saving}
                 onChange={(event) =>
                   setDraft((current) => ({
+                    ...current,
                     visualizaciones: {
                       ...current.visualizaciones,
                       usarRecorteFotografiaComoAvatarEstudiantes: event.target.checked,

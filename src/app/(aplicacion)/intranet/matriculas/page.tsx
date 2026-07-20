@@ -5,6 +5,10 @@ import {
   Alert,
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -17,13 +21,11 @@ import {
   RadioGroup,
   Select,
   Stack,
-  Step,
-  StepLabel,
-  Stepper,
   TextField,
   Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import {
   GridColDef,
@@ -31,9 +33,10 @@ import {
   GridPaginationModel,
 } from '@mui/x-data-grid';
 import { httpsCallable } from 'firebase/functions';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
 import { app, functions, storage } from '@/lib/firebase';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
@@ -125,6 +128,27 @@ interface MatriculaFormValues {
 interface VerificarDocumentoResponse {
   userExists?: boolean;
   userHasStoredImages?: boolean;
+  user?: MatriculaUser | null;
+  documentImagePolicy?: DocumentImagePolicy | null;
+  datos?: Partial<MatriculaFormValues>;
+}
+
+interface DocumentImagePolicy {
+  userHasStoredImages?: boolean;
+  fechaVencimiento?: string | null;
+  storedDocumentExpired?: boolean;
+  shouldPersistDocumentImages?: boolean;
+  reason?: string | null;
+}
+
+interface MatriculaDocumentoEstadoResponse {
+  userExists?: boolean;
+  user?: MatriculaUser | null;
+  documentImagePolicy?: DocumentImagePolicy | null;
+}
+
+interface VerificarReniecResponse {
+  userExists?: boolean;
   datos?: Partial<MatriculaFormValues>;
 }
 
@@ -209,8 +233,6 @@ const initialValues: MatriculaFormValues = {
   recibo: '',
   paqueteId: '',
 };
-
-const steps = ['Documento de Identidad', 'Datos de Usuario', 'Datos de los Cursos'];
 
 const getCallableErrorMessage = (error: unknown, fallback: string) => {
   const message = (error as { message?: string } | null)?.message;
@@ -331,6 +353,25 @@ const normalizeDateInput = (value: unknown) => {
   const slash = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/.exec(text);
   if (slash) return `${slash[3]}-${slash[2].padStart(2, '0')}-${slash[1].padStart(2, '0')}`;
   return '';
+};
+
+const parseDateOnly = (value: unknown) => {
+  const normalized = normalizeDateInput(value);
+  if (!normalized) return null;
+  const [year, month, day] = normalized.split('-').map((item) => Number(item));
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+};
+
+const todayDateOnly = () => {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+};
+
+const isExpiredDate = (value: unknown) => {
+  const date = parseDateOnly(value);
+  if (!date) return false;
+  return date.getTime() < todayDateOnly().getTime();
 };
 
 const normalizeAiGender = (value: unknown): 'F' | 'M' | null => {
@@ -675,7 +716,8 @@ function MatriculaForm({
 }) {
   const isEditing = Boolean(matriculaId);
   const dniInputRef = useRef<HTMLInputElement | null>(null);
-  const [activeStep, setActiveStep] = useState(0);
+  const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
   const [values, setValues] = useState<MatriculaFormValues>(initialValues);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [paquetes, setPaquetes] = useState<PaqueteOption[]>([]);
@@ -691,6 +733,12 @@ function MatriculaForm({
   const [recognitionMode, setRecognitionMode] = useState<RecognitionMode>('gemini');
   const [documentVerified, setDocumentVerified] = useState(false);
   const [isExistingUserWithImages, setIsExistingUserWithImages] = useState(false);
+  const [shouldPersistDocumentImages, setShouldPersistDocumentImages] = useState(true);
+  const [verificationFailureCount, setVerificationFailureCount] = useState(0);
+  const [cameraSide, setCameraSide] = useState<'frente' | 'reverso' | null>(null);
+  const [cameraStarting, setCameraStarting] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraPreview, setCameraPreview] = useState<{ file: File; url: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
@@ -709,12 +757,151 @@ function MatriculaForm({
     if (key === 'tipoDocumento' || key === 'dni') {
       setDocumentVerified(false);
       setIsExistingUserWithImages(false);
+      setShouldPersistDocumentImages(true);
       setDocumentAnalysisMetadata(null);
     }
   }, []);
 
+  const showReniecVerification = verificationFailureCount >= 3 && !documentVerified;
+
+  const registerVerificationFailure = useCallback(() => {
+    setVerificationFailureCount((current) => current + 1);
+  }, []);
+
+  const setDocumentFile = useCallback((side: 'frente' | 'reverso', file: File | null) => {
+    if (side === 'frente') {
+      setFrontFile(file);
+      setFrontImage(null);
+    } else {
+      setBackFile(file);
+      setBackImage(null);
+    }
+    setDocumentVerified(false);
+    setDocumentAnalysisMetadata(null);
+    setShouldPersistDocumentImages(true);
+    setMessage(null);
+    setSuccessMessage(null);
+  }, []);
+
+  const stopCameraCapture = useCallback(() => {
+    cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+    cameraStreamRef.current = null;
+    if (cameraVideoRef.current) {
+      cameraVideoRef.current.srcObject = null;
+    }
+    setCameraPreview((current) => {
+      if (current?.url) URL.revokeObjectURL(current.url);
+      return null;
+    });
+    setCameraSide(null);
+    setCameraStarting(false);
+    setCameraError(null);
+  }, []);
+
+  const openCameraCapture = useCallback((side: 'frente' | 'reverso') => {
+    setCameraPreview((current) => {
+      if (current?.url) URL.revokeObjectURL(current.url);
+      return null;
+    });
+    setCameraError(null);
+    setCameraSide(side);
+  }, []);
+
   useEffect(() => {
-    if (!isOpen || isEditing || activeStep !== 0) return;
+    if (!cameraSide) return undefined;
+    let cancelled = false;
+
+    const startCamera = async () => {
+      setCameraStarting(true);
+      setCameraError(null);
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error('Tu navegador no permite abrir la camara desde esta pagina.');
+        }
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false,
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        cameraStreamRef.current = stream;
+        if (cameraVideoRef.current) {
+          cameraVideoRef.current.srcObject = stream;
+          await cameraVideoRef.current.play().catch(() => undefined);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setCameraError(getCallableErrorMessage(error, 'No se pudo abrir la camara.'));
+        }
+      } finally {
+        if (!cancelled) setCameraStarting(false);
+      }
+    };
+
+    void startCamera();
+    return () => {
+      cancelled = true;
+      cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+      cameraStreamRef.current = null;
+    };
+  }, [cameraSide]);
+
+  useEffect(() => {
+    if (!cameraSide || cameraPreview || !cameraStreamRef.current || !cameraVideoRef.current) return;
+    cameraVideoRef.current.srcObject = cameraStreamRef.current;
+    void cameraVideoRef.current.play().catch(() => undefined);
+  }, [cameraPreview, cameraSide]);
+
+  const handleCaptureCameraImage = useCallback(async () => {
+    const side = cameraSide;
+    const video = cameraVideoRef.current;
+    if (!side || !video || !video.videoWidth || !video.videoHeight) {
+      setCameraError('La camara todavia no esta lista.');
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      setCameraError('No se pudo capturar la imagen.');
+      return;
+    }
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+    if (!blob) {
+      setCameraError('No se pudo generar la imagen.');
+      return;
+    }
+
+    const file = new File([blob], `dni-${side}-${Date.now()}.jpg`, { type: 'image/jpeg' });
+    const url = URL.createObjectURL(file);
+    setCameraPreview((current) => {
+      if (current?.url) URL.revokeObjectURL(current.url);
+      return { file, url };
+    });
+  }, [cameraSide]);
+
+  const handleRetakeCameraImage = useCallback(() => {
+    setCameraPreview((current) => {
+      if (current?.url) URL.revokeObjectURL(current.url);
+      return null;
+    });
+    setCameraError(null);
+  }, []);
+
+  const handleAcceptCameraImage = useCallback(() => {
+    if (!cameraSide || !cameraPreview) return;
+    setDocumentFile(cameraSide, cameraPreview.file);
+    stopCameraCapture();
+  }, [cameraPreview, cameraSide, setDocumentFile, stopCameraCapture]);
+
+  useEffect(() => {
+    if (!isOpen || isEditing) return;
 
     const timer = window.setTimeout(() => {
       dniInputRef.current?.focus();
@@ -722,7 +909,7 @@ function MatriculaForm({
     }, 250);
 
     return () => window.clearTimeout(timer);
-  }, [activeStep, isEditing, isOpen]);
+  }, [isEditing, isOpen]);
 
   useEffect(() => {
     let mounted = true;
@@ -754,7 +941,6 @@ function MatriculaForm({
           });
           setDocumentVerified(true);
           setIsExistingUserWithImages(Boolean(matricula.user?.dniImagenFrenteUrl && matricula.user?.dniImagenReversoUrl));
-          setActiveStep(1);
         } else {
           const currentSemestre = getCurrentSemestre(nextSemestres);
           if (currentSemestre) {
@@ -814,6 +1000,32 @@ function MatriculaForm({
     return { path, url, contentType };
   };
 
+  const deleteUploadedDocumentImage = async (image: UploadedImage | null) => {
+    if (!image?.path) return;
+    await deleteObject(ref(storage, image.path)).catch((error) => {
+      console.warn('No se pudo eliminar la imagen temporal de matricula:', error);
+    });
+  };
+
+  const getMatriculaDocumentoPolicy = async () => {
+    const getMatriculaDocumentoEstado = httpsCallable<
+      { tipoDocumento: string; dni: string },
+      MatriculaDocumentoEstadoResponse
+    >(functions, 'getMatriculaDocumentoEstado');
+    const result = await getMatriculaDocumentoEstado({
+      tipoDocumento: values.tipoDocumento,
+      dni: normalizeDocumentNumber(values.dni),
+    });
+    return result.data.documentImagePolicy ?? null;
+  };
+
+  const applyDocumentImagePolicy = (policy?: DocumentImagePolicy | null) => {
+    const shouldPersist = policy?.shouldPersistDocumentImages !== false;
+    setIsExistingUserWithImages(Boolean(policy?.userHasStoredImages));
+    setShouldPersistDocumentImages(shouldPersist);
+    return shouldPersist;
+  };
+
   const validateSectionOne = () => {
     if (!values.semestreId) return 'Selecciona un periodo.';
     if (!values.tipoDocumento) return 'Selecciona el tipo de documento.';
@@ -836,6 +1048,7 @@ function MatriculaForm({
       if (recognitionMode === 'gemini') {
         const files = [frontFile, backFile].filter((file): file is File => Boolean(file));
         if (files.length === 0) {
+          registerVerificationFailure();
           setMessage('Sube al menos un archivo del documento para analizarlo con Gemini.');
           return;
         }
@@ -858,6 +1071,7 @@ function MatriculaForm({
         };
 
         if (!documentMatches || !aiResult.contieneReverso || fileClassification.reverseIndex === null) {
+          registerVerificationFailure();
           setMessage([
             'Gemini no pudo validar el documento con los datos ingresados.',
             JSON.stringify({
@@ -868,10 +1082,19 @@ function MatriculaForm({
           return;
         }
 
-        const uploadedFront = fileClassification.frontIndex !== null
+        const detectedExpiration = normalizeDateInput(aiResult.fechaVencimiento);
+        if (isExpiredDate(detectedExpiration)) {
+          registerVerificationFailure();
+          setMessage('Documento vencido.');
+          return;
+        }
+
+        const documentPolicy = await getMatriculaDocumentoPolicy();
+        const shouldPersist = applyDocumentImagePolicy(documentPolicy);
+        const uploadedFront = shouldPersist && fileClassification.frontIndex !== null
           ? await uploadDocumentImage(files[fileClassification.frontIndex], 'frente')
           : null;
-        const uploadedBack = fileClassification.reverseIndex !== null
+        const uploadedBack = shouldPersist && fileClassification.reverseIndex !== null
           ? await uploadDocumentImage(files[fileClassification.reverseIndex], 'reverso')
           : null;
         setFrontImage(uploadedFront);
@@ -887,15 +1110,14 @@ function MatriculaForm({
           sexo: normalizeAiGender(aiResult.sexo) || prev.sexo,
           nacionalidad: detectedType === 'DNI' ? 'PERUANA' : asString(aiResult.nacionalidad) || prev.nacionalidad,
           fechaNacimiento: normalizeDateInput(aiResult.fechaNacimiento) || prev.fechaNacimiento,
-          fechaVencimiento: normalizeDateInput(aiResult.fechaVencimiento) || prev.fechaVencimiento,
+          fechaVencimiento: detectedExpiration || prev.fechaVencimiento,
           estadoCivil: normalizeAiCivilStatus(aiResult.estadoCivil) || prev.estadoCivil,
           direccion: asString(aiResult.direccion) || prev.direccion,
           distrito: asString(aiResult.distrito) || prev.distrito,
         }));
         setDocumentVerified(true);
-        setIsExistingUserWithImages(false);
+        setVerificationFailureCount(0);
         setDocumentAnalysisMetadata(analysisMetadata);
-        setActiveStep(1);
         setSuccessMessage([
           'Documento verificado con Gemini. Revisa y completa los datos del usuario.',
           '',
@@ -936,6 +1158,19 @@ function MatriculaForm({
         reverso: uploadedBack,
       });
       const datos = result.data.datos || {};
+      const documentPolicy = result.data.documentImagePolicy ?? null;
+      const shouldPersist = applyDocumentImagePolicy(documentPolicy);
+      if (!shouldPersist) {
+        await Promise.all([
+          deleteUploadedDocumentImage(uploadedFront),
+          deleteUploadedDocumentImage(uploadedBack),
+        ]);
+        setFrontImage(null);
+        setBackImage(null);
+      } else {
+        setFrontImage(uploadedFront);
+        setBackImage(uploadedBack);
+      }
       setValues((prev) => ({
         ...prev,
         tipoDocumento: datos.tipoDocumento === 'CE' ? 'CE' : prev.tipoDocumento,
@@ -948,22 +1183,84 @@ function MatriculaForm({
           ? 'PERUANA'
           : asString(datos.nacionalidad) || prev.nacionalidad,
         fechaNacimiento: asString(datos.fechaNacimiento).split('T')[0] || prev.fechaNacimiento,
-        fechaVencimiento: prev.fechaVencimiento,
+        fechaVencimiento: asString(datos.fechaVencimiento).split('T')[0] || prev.fechaVencimiento,
         estadoCivil: normalizeAiCivilStatus(datos.estadoCivil) || prev.estadoCivil,
         instruccion: asString(datos.instruccion) || prev.instruccion,
         direccion: asString(datos.direccion) || prev.direccion,
         distrito: asString(datos.distrito) || prev.distrito,
       }));
       setDocumentVerified(true);
-      setIsExistingUserWithImages(Boolean(result.data.userExists && result.data.userHasStoredImages));
-      setActiveStep(1);
+      setVerificationFailureCount(0);
       setSuccessMessage(
         result.data.userExists
           ? 'Documento verificado. Se cargaron los datos guardados del usuario.'
           : 'Documento verificado. Revisa y completa los datos del usuario.',
       );
     } catch (error) {
+      registerVerificationFailure();
       setMessage(getCallableErrorMessage(error, 'No se pudo verificar el documento.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyWithReniec = async () => {
+    const sectionError = validateSectionOne();
+    if (sectionError) {
+      setMessage(sectionError);
+      return;
+    }
+
+    setLoading(true);
+    setMessage(null);
+    setSuccessMessage(null);
+    setDocumentAnalysisMetadata(null);
+    setFrontFile(null);
+    setBackFile(null);
+    setFrontImage(null);
+    setBackImage(null);
+    setProcessedDocumentImages({});
+    setIsExistingUserWithImages(false);
+    setShouldPersistDocumentImages(false);
+
+    try {
+      if (values.tipoDocumento === 'CE') {
+        setDocumentVerified(true);
+        setSuccessMessage('Documento habilitado. Completa los datos del usuario.');
+        return;
+      }
+
+      const verificarMatriculaReniec = httpsCallable<
+        { tipoDocumento: string; dni: string },
+        VerificarReniecResponse
+      >(functions, 'verificarMatriculaReniec', { timeout: 60000 });
+      const result = await verificarMatriculaReniec({
+        tipoDocumento: values.tipoDocumento,
+        dni: normalizeDocumentNumber(values.dni),
+      });
+      const datos = result.data.datos || {};
+      setValues((prev) => ({
+        ...prev,
+        tipoDocumento: datos.tipoDocumento === 'CE' ? 'CE' : 'DNI',
+        dni: asString(datos.dni) || prev.dni,
+        apellidoPaterno: asString(datos.apellidoPaterno) || prev.apellidoPaterno,
+        apellidoMaterno: asString(datos.apellidoMaterno) || prev.apellidoMaterno,
+        nombre: asString(datos.nombre) || prev.nombre,
+        sexo: datos.sexo === 'M' ? 'M' : datos.sexo === 'F' ? 'F' : prev.sexo,
+        nacionalidad: asString(datos.nacionalidad) || prev.nacionalidad,
+        fechaNacimiento: asString(datos.fechaNacimiento).split('T')[0] || prev.fechaNacimiento,
+        estadoCivil: normalizeAiCivilStatus(datos.estadoCivil) || prev.estadoCivil,
+        direccion: asString(datos.direccion) || prev.direccion,
+        distrito: asString(datos.distrito) || prev.distrito,
+      }));
+      setDocumentVerified(true);
+      setSuccessMessage(
+        result.data.userExists
+          ? 'Datos cargados con RENIEC y registros guardados. Completa la matricula.'
+          : 'Datos cargados con RENIEC. Completa la matricula.',
+      );
+    } catch (error) {
+      setMessage(getCallableErrorMessage(error, 'No se pudo consultar RENIEC.'));
     } finally {
       setLoading(false);
     }
@@ -990,26 +1287,14 @@ function MatriculaForm({
     return null;
   };
 
-  const handleGoToCourses = () => {
-    const sectionError = validateSectionTwo();
-    if (sectionError) {
-      setMessage(sectionError);
-      return;
-    }
-    setMessage(null);
-    setActiveStep(2);
-  };
-
   const handleSubmit = async () => {
     if (!documentVerified) {
       setMessage('Primero verifica el documento de identidad.');
-      setActiveStep(0);
       return;
     }
     const sectionTwoError = validateSectionTwo();
     if (sectionTwoError) {
       setMessage(sectionTwoError);
-      setActiveStep(1);
       return;
     }
     if (!values.paqueteId) {
@@ -1033,8 +1318,9 @@ function MatriculaForm({
         dni: normalizeDocumentNumber(values.dni),
         semestreId: Number(values.semestreId),
         paqueteId: Number(values.paqueteId),
-        dniImagenFrente: isExistingUserWithImages ? null : frontImage,
-        dniImagenReverso: isExistingUserWithImages ? null : backImage,
+        dniImagenFrente: shouldPersistDocumentImages ? frontImage : null,
+        dniImagenReverso: shouldPersistDocumentImages ? backImage : null,
+        procesarImagenesDni: shouldPersistDocumentImages,
         analisisDocumentoTemporal: documentAnalysisMetadata,
       });
       setSuccessMessage(isEditing ? 'Matricula actualizada correctamente.' : 'Matricula registrada correctamente.');
@@ -1048,16 +1334,11 @@ function MatriculaForm({
 
   const handleFileChange = (side: 'frente' | 'reverso') => (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
-    if (side === 'frente') {
-      setFrontFile(file);
-      setFrontImage(null);
-    } else {
-      setBackFile(file);
-      setBackImage(null);
-    }
-    setDocumentVerified(false);
-    setDocumentAnalysisMetadata(null);
+    setDocumentFile(side, file);
   };
+
+  const lockedUntilVerified = !documentVerified || loading;
+  const courseLocked = !documentVerified || loadingOptions || loading;
 
   return (
     <Stack spacing={2.5}>
@@ -1070,17 +1351,9 @@ function MatriculaForm({
         </Typography>
       </Box>
 
-      <Stepper activeStep={activeStep} alternativeLabel>
-        {steps.map((label) => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-
       {loading && <LinearProgress />}
-      {message && <Alert severity="error" sx={{ whiteSpace: 'pre-wrap' }}>{message}</Alert>}
-      {successMessage && <Alert severity="success" sx={{ whiteSpace: 'pre-wrap' }}>{successMessage}</Alert>}
+      <AutoDismissAlert message={message} severity="error" sx={{ whiteSpace: 'pre-wrap' }} />
+      <AutoDismissAlert message={successMessage} severity="success" sx={{ whiteSpace: 'pre-wrap' }} />
       {(processedDocumentImages.frente || processedDocumentImages.reverso) && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'flex-start' }}>
           {processedDocumentImages.frente && (
@@ -1112,7 +1385,10 @@ function MatriculaForm({
         </Box>
       )}
 
-      {activeStep === 0 && (
+      <Stack spacing={1.5}>
+        <Typography variant="subtitle2" fontWeight={700}>
+          Documento de Identidad
+        </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
           <FormControl fullWidth>
             <InputLabel>Motor de lectura</InputLabel>
@@ -1168,39 +1444,80 @@ function MatriculaForm({
             autoFocus={!isEditing}
             fullWidth
           />
-          <Button component="label" variant="outlined" disabled={loading}>
-            {frontFile ? frontFile.name : isExistingUserWithImages ? 'Archivo frente guardado' : 'Archivo dni frente'}
-            <input type="file" accept="image/*,application/pdf" hidden onChange={handleFileChange('frente')} />
-          </Button>
-          <Button component="label" variant="outlined" disabled={loading}>
-            {backFile ? backFile.name : isExistingUserWithImages ? 'Archivo reverso guardado' : 'Archivo dni reverso'}
-            <input type="file" accept="image/*,application/pdf" hidden onChange={handleFileChange('reverso')} />
-          </Button>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+            <Button component="label" variant="outlined" disabled={loading} sx={{ flex: 1 }}>
+              {frontFile ? frontFile.name : isExistingUserWithImages ? 'Archivo frente guardado' : 'Archivo dni frente'}
+              <input type="file" accept="image/*,application/pdf" capture="environment" hidden onChange={handleFileChange('frente')} />
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<CameraAltIcon />}
+              disabled={loading}
+              onClick={() => openCameraCapture('frente')}
+            >
+              Camara
+            </Button>
+          </Stack>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+            <Button component="label" variant="outlined" disabled={loading} sx={{ flex: 1 }}>
+              {backFile ? backFile.name : isExistingUserWithImages ? 'Archivo reverso guardado' : 'Archivo dni reverso'}
+              <input type="file" accept="image/*,application/pdf" capture="environment" hidden onChange={handleFileChange('reverso')} />
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<CameraAltIcon />}
+              disabled={loading}
+              onClick={() => openCameraCapture('reverso')}
+            >
+              Camara
+            </Button>
+          </Stack>
           <Box sx={{ gridColumn: { xs: 'span 1', md: 'span 2' }, display: 'flex', justifyContent: 'space-between' }}>
             <Button onClick={onCancel} disabled={loading}>Cancelar</Button>
-            <Button variant="contained" onClick={handleVerifyDocument} disabled={loading}>
-              Verificar y continuar
-            </Button>
+            <Stack direction="row" spacing={1}>
+              {showReniecVerification ? (
+                <Button color="success" variant="contained" onClick={handleVerifyWithReniec} disabled={loading}>
+                  Verificar con RENIEC
+                </Button>
+              ) : null}
+              <Button variant="contained" onClick={handleVerifyDocument} disabled={loading}>
+                Verificar y continuar
+              </Button>
+            </Stack>
           </Box>
         </Box>
-      )}
+      </Stack>
 
-      {activeStep === 1 && (
+      <Stack
+        component="fieldset"
+        disabled={lockedUntilVerified}
+        spacing={1.5}
+        sx={{
+          m: 0,
+          p: 0,
+          border: 0,
+          minWidth: 0,
+          opacity: lockedUntilVerified ? 0.55 : 1,
+        }}
+      >
+        <Typography variant="subtitle2" fontWeight={700}>
+          Datos de Usuario
+        </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
-          <TextField label="Apellido Paterno" value={values.apellidoPaterno} onChange={(event) => updateValue('apellidoPaterno', event.target.value)} fullWidth />
-          <TextField label="Apellido Materno" value={values.apellidoMaterno} onChange={(event) => updateValue('apellidoMaterno', event.target.value)} fullWidth />
-          <TextField label="Nombres" value={values.nombre} onChange={(event) => updateValue('nombre', event.target.value)} fullWidth />
-          <FormControl>
+          <TextField disabled={lockedUntilVerified} label="Apellido Paterno" value={values.apellidoPaterno} onChange={(event) => updateValue('apellidoPaterno', event.target.value)} fullWidth />
+          <TextField disabled={lockedUntilVerified} label="Apellido Materno" value={values.apellidoMaterno} onChange={(event) => updateValue('apellidoMaterno', event.target.value)} fullWidth />
+          <TextField disabled={lockedUntilVerified} label="Nombres" value={values.nombre} onChange={(event) => updateValue('nombre', event.target.value)} fullWidth />
+          <FormControl disabled={lockedUntilVerified}>
             <FormLabel>Sexo</FormLabel>
             <RadioGroup row value={values.sexo} onChange={(event) => updateValue('sexo', event.target.value === 'M' ? 'M' : 'F')}>
               <FormControlLabel value="F" control={<Radio />} label="Femenino" />
               <FormControlLabel value="M" control={<Radio />} label="Masculino" />
             </RadioGroup>
           </FormControl>
-          <TextField label="Nacionalidad" value={values.nacionalidad} onChange={(event) => updateValue('nacionalidad', event.target.value)} fullWidth />
-          <TextField label="Fecha de Nacimiento" type="date" value={values.fechaNacimiento} onChange={(event) => updateValue('fechaNacimiento', event.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-          <TextField label="Fecha de Vencimiento" type="date" value={values.fechaVencimiento} onChange={(event) => updateValue('fechaVencimiento', event.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-          <FormControl fullWidth>
+          <TextField disabled={lockedUntilVerified} label="Nacionalidad" value={values.nacionalidad} onChange={(event) => updateValue('nacionalidad', event.target.value)} fullWidth />
+          <TextField disabled={lockedUntilVerified} label="Fecha de Nacimiento" type="date" value={values.fechaNacimiento} onChange={(event) => updateValue('fechaNacimiento', event.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
+          <TextField disabled={lockedUntilVerified} label="Fecha de Vencimiento" type="date" value={values.fechaVencimiento} onChange={(event) => updateValue('fechaVencimiento', event.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
+          <FormControl fullWidth disabled={lockedUntilVerified}>
             <InputLabel>Estado Civil</InputLabel>
             <Select label="Estado Civil" value={values.estadoCivil} onChange={(event) => updateValue('estadoCivil', String(event.target.value))}>
               <MenuItem value="Soltero(a)">Soltero(a)</MenuItem>
@@ -1209,7 +1526,7 @@ function MatriculaForm({
               <MenuItem value="Divorciado(a)">Divorciado(a)</MenuItem>
             </Select>
           </FormControl>
-          <FormControl fullWidth>
+          <FormControl fullWidth disabled={lockedUntilVerified}>
             <InputLabel>Grado de Instruccion</InputLabel>
             <Select label="Grado de Instruccion" value={values.instruccion} onChange={(event) => updateValue('instruccion', String(event.target.value))}>
               <MenuItem value="Primaria">Primaria</MenuItem>
@@ -1217,20 +1534,30 @@ function MatriculaForm({
               <MenuItem value="Superior">Superior</MenuItem>
             </Select>
           </FormControl>
-          <TextField label="Domicilio Direccion" value={values.direccion} onChange={(event) => updateValue('direccion', event.target.value)} fullWidth />
-          <TextField label="Domicilio Distrito" value={values.distrito} onChange={(event) => updateValue('distrito', event.target.value)} fullWidth />
-          <TextField label="Numero de Celular" value={values.celular} onChange={(event) => updateValue('celular', event.target.value.replace(/\D/g, '').slice(0, 9))} fullWidth />
-          <TextField label="Numero de Telefono Fijo" value={values.telefono} onChange={(event) => updateValue('telefono', event.target.value)} fullWidth />
-          <TextField label="Correo Electronico" type="email" value={values.email} onChange={(event) => updateValue('email', event.target.value)} fullWidth />
-          <TextField label="Numero de recibo" value={values.recibo} onChange={(event) => updateValue('recibo', event.target.value)} fullWidth />
-          <Box sx={{ gridColumn: { xs: 'span 1', md: 'span 2' }, display: 'flex', justifyContent: 'space-between' }}>
-            <Button onClick={() => setActiveStep(0)} disabled={loading}>Volver</Button>
-            <Button variant="contained" onClick={handleGoToCourses} disabled={loading}>Continuar</Button>
-          </Box>
+          <TextField disabled={lockedUntilVerified} label="Domicilio Direccion" value={values.direccion} onChange={(event) => updateValue('direccion', event.target.value)} fullWidth />
+          <TextField disabled={lockedUntilVerified} label="Domicilio Distrito" value={values.distrito} onChange={(event) => updateValue('distrito', event.target.value)} fullWidth />
+          <TextField disabled={lockedUntilVerified} label="Numero de Celular" value={values.celular} onChange={(event) => updateValue('celular', event.target.value.replace(/\D/g, '').slice(0, 9))} fullWidth />
+          <TextField disabled={lockedUntilVerified} label="Numero de Telefono Fijo" value={values.telefono} onChange={(event) => updateValue('telefono', event.target.value)} fullWidth />
+          <TextField disabled={lockedUntilVerified} label="Correo Electronico" type="email" value={values.email} onChange={(event) => updateValue('email', event.target.value)} fullWidth />
+          <TextField disabled={lockedUntilVerified} label="Numero de recibo" value={values.recibo} onChange={(event) => updateValue('recibo', event.target.value)} fullWidth />
         </Box>
-      )}
+      </Stack>
 
-      {activeStep === 2 && (
+      <Stack
+        component="fieldset"
+        disabled={courseLocked}
+        spacing={1.5}
+        sx={{
+          m: 0,
+          p: 0,
+          border: 0,
+          minWidth: 0,
+          opacity: courseLocked ? 0.55 : 1,
+        }}
+      >
+        <Typography variant="subtitle2" fontWeight={700}>
+          Datos de los Cursos
+        </Typography>
         <Stack spacing={2}>
           <FormControl fullWidth>
             <InputLabel>Seleccione un Modulo</InputLabel>
@@ -1238,7 +1565,7 @@ function MatriculaForm({
               label="Seleccione un Modulo"
               value={values.paqueteId}
               onChange={(event) => updateValue('paqueteId', String(event.target.value))}
-              disabled={loadingOptions || loading}
+              disabled={courseLocked}
             >
               {paquetes.map((paquete) => (
                 <MenuItem key={paquete.id} value={String(paquete.id)}>
@@ -1251,13 +1578,74 @@ function MatriculaForm({
             <Alert severity="warning">No hay modulos disponibles para este periodo.</Alert>
           )}
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button onClick={() => setActiveStep(1)} disabled={loading}>Volver</Button>
-            <Button variant="contained" onClick={handleSubmit} disabled={loading || paquetes.length === 0}>
+            <Button onClick={onCancel} disabled={loading}>Cancelar</Button>
+            <Button variant="contained" onClick={handleSubmit} disabled={courseLocked || paquetes.length === 0}>
               {isEditing ? 'Guardar Cambios' : 'Registrar Matricula'}
             </Button>
           </Box>
         </Stack>
-      )}
+      </Stack>
+
+      <Dialog open={Boolean(cameraSide)} onClose={stopCameraCapture} fullWidth maxWidth="sm">
+        <DialogTitle>
+          {cameraSide === 'frente' ? 'Capturar DNI frente' : 'Capturar DNI reverso'}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={1.5}>
+            {cameraError ? <Alert severity="error">{cameraError}</Alert> : null}
+            {cameraStarting ? <LinearProgress /> : null}
+            {cameraPreview ? (
+              <Box
+                component="img"
+                src={cameraPreview.url}
+                alt="Vista previa del documento"
+                sx={{
+                  width: '100%',
+                  aspectRatio: '4 / 3',
+                  bgcolor: 'common.black',
+                  borderRadius: 1,
+                  objectFit: 'contain',
+                }}
+              />
+            ) : (
+              <Box
+                component="video"
+                ref={cameraVideoRef}
+                muted
+                playsInline
+                autoPlay
+                sx={{
+                  width: '100%',
+                  aspectRatio: '4 / 3',
+                  bgcolor: 'common.black',
+                  borderRadius: 1,
+                  objectFit: 'contain',
+                }}
+              />
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={stopCameraCapture}>Cancelar</Button>
+          {cameraPreview ? (
+            <>
+              <Button onClick={handleRetakeCameraImage}>Tomar otra</Button>
+              <Button variant="contained" onClick={handleAcceptCameraImage}>
+                Aceptar foto
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="contained"
+              startIcon={<CameraAltIcon />}
+              onClick={() => void handleCaptureCameraImage()}
+              disabled={cameraStarting || Boolean(cameraError)}
+            >
+              Tomar foto
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }
@@ -1525,7 +1913,7 @@ export default function MatriculasPage() {
         open={openMatriculaModal}
         onClose={handleDismissModal}
         title={editingMatriculaId ? 'Editar Matricula' : 'Nueva Matricula'}
-        maxWidth={1100}
+        maxWidth="lg"
         disableAutoFocus
       >
         <MatriculaForm

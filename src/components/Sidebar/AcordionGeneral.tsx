@@ -50,13 +50,21 @@ export default function AcordionGeneral() {
           mx={1}
           sx={{
             '& .MuiAccordionSummary-root': {
-              backgroundColor: '#a0df9c',
+              backgroundColor: '#318515',
+              color: '#000',
+              '& .MuiTypography-root, & .MuiTypography-root *': {
+                color: '#000',
+              },
+              '& .MuiSvgIcon-root': {
+                color: '#000',
+              },
             },
           }}
         >
           <AcordionIntranet
             openAccordions={openAccordions}
             handleAccordionChange={handleAccordionChange}
+            variant="mobileDrawer"
           />
         </Box>
       )}

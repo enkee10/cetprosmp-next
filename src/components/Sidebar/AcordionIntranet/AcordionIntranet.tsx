@@ -79,6 +79,7 @@ interface Props {
   handleAccordionChange: (id: string, ancestors: string[]) => void;
   showRoot?: boolean;
   sections?: IntranetMenuSection[];
+  variant?: 'intranetPage' | 'mobileDrawer';
 }
 
 const rootId = 'intranet';
@@ -137,6 +138,9 @@ const intranetPageIvory = '#fff8e8';
 const intranetMenuTextColor = 'rgba(255, 248, 232, 0.82)';
 const intranetMenuActiveBg = 'rgba(255, 248, 232, 0.12)';
 const intranetMenuHoverBg = 'rgba(255, 248, 232, 0.08)';
+const mobileDrawerMenuTextColor = '#000';
+const mobileDrawerMenuActiveBg = 'rgba(49, 133, 21, 0.18)';
+const mobileDrawerMenuHoverBg = 'rgba(49, 133, 21, 0.1)';
 
 export const menuSections: IntranetMenuSection[] = [
   {
@@ -232,9 +236,20 @@ function SectionTitle({ icon, title }: { icon: React.ReactNode; title: string })
   );
 }
 
-function IntranetMenuItems({ items }: { items: IntranetMenuItem[] }) {
+function IntranetMenuItems({
+  items,
+  variant = 'intranetPage',
+}: {
+  items: IntranetMenuItem[];
+  variant?: Props['variant'];
+}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isMobileDrawer = variant === 'mobileDrawer';
+  const textColor = isMobileDrawer ? mobileDrawerMenuTextColor : intranetMenuTextColor;
+  const activeTextColor = isMobileDrawer ? mobileDrawerMenuTextColor : intranetPageIvory;
+  const activeBg = isMobileDrawer ? mobileDrawerMenuActiveBg : intranetMenuActiveBg;
+  const hoverBg = isMobileDrawer ? mobileDrawerMenuHoverBg : intranetMenuHoverBg;
 
   if (items.length === 0) {
     return null;
@@ -257,13 +272,13 @@ function IntranetMenuItems({ items }: { items: IntranetMenuItem[] }) {
                 px: 1,
                 py: 0.5,
                 borderRadius: 1,
-                bgcolor: active ? intranetMenuActiveBg : 'transparent',
+                bgcolor: active ? activeBg : 'transparent',
                 '&:hover': {
-                  bgcolor: active ? intranetMenuActiveBg : intranetMenuHoverBg,
+                  bgcolor: active ? activeBg : hoverBg,
                 },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 34, color: active ? intranetPageIvory : intranetMenuTextColor }}>
+              <ListItemIcon sx={{ minWidth: 34, color: active ? activeTextColor : textColor }}>
                 {item.icon}
               </ListItemIcon>
               <ListItemText
@@ -271,7 +286,7 @@ function IntranetMenuItems({ items }: { items: IntranetMenuItem[] }) {
                 primaryTypographyProps={{
                   fontSize: 13,
                   fontWeight: active ? 900 : 400,
-                  color: active ? intranetPageIvory : intranetMenuTextColor,
+                  color: active ? activeTextColor : textColor,
                   sx: {
                     whiteSpace: 'normal',
                     overflow: 'visible',
@@ -293,6 +308,7 @@ export default function AcordionIntranet({
   handleAccordionChange,
   showRoot = true,
   sections: intranetSections = menuSections,
+  variant = 'intranetPage',
 }: Props) {
   const rootAncestors = showRoot ? [rootId] : [];
   const { user } = useAuth();
@@ -427,7 +443,7 @@ export default function AcordionIntranet({
             expanded={openAccordions.includes(sectionId)}
             onChange={() => handleAccordionChange(sectionId, rootAncestors)}
           >
-            <IntranetMenuItems items={section.items} />
+            <IntranetMenuItems items={section.items} variant={variant} />
           </FullCustomAccordion>
         );
       })}

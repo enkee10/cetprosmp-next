@@ -104,6 +104,7 @@ export default function IntranetMenuWrapper() {
   return (
     <Box
       ref={wrapperRef}
+      sx={{ display: { xs: "none", md: "block" } }}
       onMouseEnter={() => {
         cancelCloseTimer();
         if (items.length > 0) {

@@ -622,15 +622,18 @@ export const updateUserProfile = https.onCall(async (data, context) => {
     const nowIso = new Date().toISOString();
     const payload = buildUserDataFromInput(data as Record<string, unknown>, { documentId });
     const requestedAvatar = asNullableString(data?.avatar ?? data?.foto);
+    const avatarRemoved = data?.avatarRemoved === true;
     const fallbackAvatar = asNullableString(data?.previousAvatar)
       ?? asNullableString(data?.previousAvatarPequeno)
       ?? asNullableString(data?.previousPhotoURL);
-    const avatarForPersist = requestedAvatar ?? fallbackAvatar;
-    const avatarForWorkspace = requestedAvatar && requestedAvatar !== fallbackAvatar
+    const avatarForPersist = avatarRemoved ? null : requestedAvatar ?? fallbackAvatar;
+    const avatarForWorkspace = !avatarRemoved && requestedAvatar && requestedAvatar !== fallbackAvatar
       ? requestedAvatar
       : undefined;
     if (avatarForPersist) {
       payload.avatar = avatarForPersist;
+    } else if (avatarRemoved) {
+      payload.avatar = null;
     } else {
       delete payload.avatar;
     }

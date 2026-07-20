@@ -6,18 +6,29 @@ import { useAuth } from '@/context/AuthContext';
 import { functions } from '@/lib/firebase';
 
 export type AppSettings = {
+  general: {
+    usarAvataresEnCertificadosTitulos: boolean;
+  };
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: boolean;
   };
 };
 
 export const defaultAppSettings: AppSettings = {
+  general: {
+    usarAvataresEnCertificadosTitulos: false,
+  },
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: false,
   },
 };
 
 const normalizeSettings = (value: Partial<AppSettings> | undefined | null): AppSettings => ({
+  general: {
+    usarAvataresEnCertificadosTitulos: Boolean(
+      value?.general?.usarAvataresEnCertificadosTitulos,
+    ),
+  },
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: Boolean(
       value?.visualizaciones?.usarRecorteFotografiaComoAvatarEstudiantes,

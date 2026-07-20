@@ -9,14 +9,24 @@ import { DataConnectAppSetting, DataConnectAppSettingInput } from "../core/types
 
 const USE_CROPPED_PHOTO_AS_STUDENT_AVATAR_KEY =
   "visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes";
+const USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY =
+  "general.usarAvataresEnCertificadosTitulos";
 
 const DEFAULT_SETTINGS = {
+  general: {
+    usarAvataresEnCertificadosTitulos: false,
+  },
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: false,
   },
 };
 
 const SETTING_DEFINITIONS: Record<string, { section: string; label: string; defaultValue: boolean }> = {
+  [USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY]: {
+    section: "general",
+    label: "Usar avatares en certificados y titulos",
+    defaultValue: false,
+  },
   [USE_CROPPED_PHOTO_AS_STUDENT_AVATAR_KEY]: {
     section: "visualizaciones",
     label: "Usar la foto imagen recortada como el avatar para Estudiantes",
@@ -52,12 +62,18 @@ const GET_APP_SETTING_BY_KEY_QUERY = `
 
 function buildSettingsResponse(items: DataConnectAppSetting[]) {
   const settings = {
+    general: {
+      ...DEFAULT_SETTINGS.general,
+    },
     visualizaciones: {
       ...DEFAULT_SETTINGS.visualizaciones,
     },
   };
 
   items.forEach((item) => {
+    if (item.settingKey === USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY) {
+      settings.general.usarAvataresEnCertificadosTitulos = Boolean(item.boolValue);
+    }
     if (item.settingKey === USE_CROPPED_PHOTO_AS_STUDENT_AVATAR_KEY) {
       settings.visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes = Boolean(item.boolValue);
     }
@@ -126,12 +142,20 @@ export const getAppSettings = https.onCall(async (_data, context) => {
 export const saveAppSettings = https.onCall(async (data, context) => {
   requireSuperUser(context, "guardar configuraciones");
 
+  const general = data?.general as Record<string, unknown> | undefined;
   const visualizaciones = data?.visualizaciones as Record<string, unknown> | undefined;
+  const usarAvataresEnCertificadosTitulos = Boolean(
+    general?.usarAvataresEnCertificadosTitulos,
+  );
   const usarRecorteFotografiaComoAvatarEstudiantes = Boolean(
     visualizaciones?.usarRecorteFotografiaComoAvatarEstudiantes,
   );
 
   try {
+    await upsertBooleanSetting(
+      USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY,
+      usarAvataresEnCertificadosTitulos,
+    );
     await upsertBooleanSetting(
       USE_CROPPED_PHOTO_AS_STUDENT_AVATAR_KEY,
       usarRecorteFotografiaComoAvatarEstudiantes,
@@ -139,6 +163,9 @@ export const saveAppSettings = https.onCall(async (data, context) => {
 
     return {
       settings: {
+        general: {
+          usarAvataresEnCertificadosTitulos,
+        },
         visualizaciones: {
           usarRecorteFotografiaComoAvatarEstudiantes,
         },

@@ -67,6 +67,8 @@ interface PaqueteOption {
   titulo?: string | null;
   descripcion?: string | null;
   grupoModuloTitulo?: string | null;
+  moduloOrden?: number | null;
+  grupoModuloOrden?: number | null;
   grupoIds?: number[];
 }
 
@@ -1218,7 +1220,7 @@ export function MatriculaForm({
         frontFile: true,
         backFile: true,
       }));
-      setMessage(sectionError);
+      setMessage(isStandalone ? null : sectionError);
       return;
     }
 
@@ -1389,7 +1391,7 @@ export function MatriculaForm({
   const handleVerifyWithReniec = async () => {
     const sectionError = validateSectionOne();
     if (sectionError) {
-      setMessage(sectionError);
+      setMessage(isStandalone ? null : sectionError);
       return;
     }
 
@@ -1492,12 +1494,12 @@ export function MatriculaForm({
         celular: true,
         recibo: true,
       }));
-      setMessage(sectionTwoError);
+      setMessage(isStandalone ? null : sectionTwoError);
       return;
     }
     if (!values.paqueteId) {
       markTouched('paqueteId');
-      setMessage('Selecciona un modulo.');
+      setMessage(isStandalone ? null : 'Selecciona un modulo.');
       return;
     }
 

@@ -668,6 +668,7 @@ export default function EstructuraAcademicaMasterDetail({
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [selectedPlanId, setSelectedPlanId] = useState('all');
   const [selectedModuloId, setSelectedModuloId] = useState<number | null>(null);
   const [selectedUnidadId, setSelectedUnidadId] = useState<number | null>(null);
   const [selectedCapacidadId, setSelectedCapacidadId] = useState<number | null>(null);
@@ -744,11 +745,26 @@ export default function EstructuraAcademicaMasterDetail({
     void fetchEstructura();
   }, [fetchEstructura]);
 
+  const planOptions = useMemo(() => {
+    const byId = new Map<number, string>();
+    modulos.forEach((modulo) => {
+      const id = modulo.planId ?? modulo.plan?.id ?? null;
+      if (!id || byId.has(id)) return;
+      byId.set(id, planName(modulo) || `Plan ${id}`);
+    });
+    return Array.from(byId.entries())
+      .map(([id, label]) => ({ id, label }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'es', { numeric: true }) || a.id - b.id);
+  }, [modulos]);
+
   const filteredModulos = useMemo(() => {
     const term = normalizeText(search);
-    if (!term) return modulos;
+    const byPlan = selectedPlanId === 'all'
+      ? modulos
+      : modulos.filter((modulo) => String(modulo.planId ?? modulo.plan?.id ?? '') === selectedPlanId);
+    if (!term) return byPlan;
 
-    return modulos.filter((modulo) => {
+    return byPlan.filter((modulo) => {
       const haystack = normalizeText([
         moduloName(modulo),
         modulo.slug,
@@ -758,7 +774,7 @@ export default function EstructuraAcademicaMasterDetail({
       ].join(' '));
       return haystack.includes(term);
     });
-  }, [modulos, search]);
+  }, [modulos, search, selectedPlanId]);
 
   const selectedModulo = useMemo(
     () => filteredModulos.find((modulo) => modulo.id === selectedModuloId) ?? filteredModulos[0] ?? null,
@@ -1118,6 +1134,22 @@ export default function EstructuraAcademicaMasterDetail({
               }}
             />
           ) : null}
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 220 } }}>
+            <InputLabel>Plan de Estudios</InputLabel>
+            <Select
+              label="Plan de Estudios"
+              value={selectedPlanId}
+              onChange={(event) => setSelectedPlanId(String(event.target.value))}
+              disabled={loading}
+            >
+              <MenuItem value="all">Todos</MenuItem>
+              {planOptions.map((option) => (
+                <MenuItem key={option.id} value={String(option.id)}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}

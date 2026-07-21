@@ -70,6 +70,7 @@ export default function GrupoModulosPage() {
       columns={columns}
       labelField="nombre"
       modalMaxWidth={760}
+      semestreFilter
     />
   );
 }

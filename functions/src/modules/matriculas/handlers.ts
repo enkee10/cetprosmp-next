@@ -604,6 +604,7 @@ const GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY = `
       modulo {
         titulo
         tituloComercial
+        orden
       }
     }
   }
@@ -2955,7 +2956,7 @@ async function listMatriculaPaquetesBySemestreData(semestreId: number) {
       id: number;
       nombre?: string | null;
       orden?: number | null;
-      modulo?: { titulo?: string | null; tituloComercial?: string | null } | null;
+      modulo?: { titulo?: string | null; tituloComercial?: string | null; orden?: number | null } | null;
     };
 
     const buildGrupoModuloTitulo = (
@@ -2974,7 +2975,30 @@ async function listMatriculaPaquetesBySemestreData(semestreId: number) {
       return nombres.join(" / ") || asCleanString(grupo.nombreDisplay) || asCleanString(grupo.paquete?.titulo);
     };
 
-    const byPaqueteId = new Map<number, { id: number; titulo?: string | null; descripcion?: string | null; grupoModuloTitulo?: string | null; grupoIds: number[] }>();
+    const getGrupoModuloSort = (grupoModulos: GrupoModuloLabelRow[]) => {
+      const ordered = grupoModulos
+        .slice()
+        .sort((a, b) =>
+          (a.modulo?.orden ?? Number.MAX_SAFE_INTEGER) - (b.modulo?.orden ?? Number.MAX_SAFE_INTEGER) ||
+          (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER) ||
+          a.id - b.id,
+        );
+      const first = ordered[0];
+      return {
+        moduloOrden: first?.modulo?.orden ?? null,
+        grupoModuloOrden: first?.orden ?? null,
+      };
+    };
+
+    const byPaqueteId = new Map<number, {
+      id: number;
+      titulo?: string | null;
+      descripcion?: string | null;
+      grupoModuloTitulo?: string | null;
+      moduloOrden?: number | null;
+      grupoModuloOrden?: number | null;
+      grupoIds: number[];
+    }>();
     const labelGrupoByPaqueteId = new Map<number, {
       id: number;
       nombreDisplay?: string | null;
@@ -2995,6 +3019,8 @@ async function listMatriculaPaquetesBySemestreData(semestreId: number) {
         titulo: grupo.paquete?.titulo ?? `Modulo ${paqueteId}`,
         descripcion: grupo.paquete?.descripcion ?? null,
         grupoModuloTitulo: null,
+        moduloOrden: null,
+        grupoModuloOrden: null,
         grupoIds: [],
       };
       current.grupoIds.push(grupo.id);
@@ -3012,18 +3038,23 @@ async function listMatriculaPaquetesBySemestreData(semestreId: number) {
           GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY,
           { variables: { grupoId: grupo.id } },
         );
-        return [paqueteId, buildGrupoModuloTitulo(grupo, grupoModulosResponse.data.grupoModulos ?? [])] as const;
+        const grupoModulos = grupoModulosResponse.data.grupoModulos ?? [];
+        return [paqueteId, buildGrupoModuloTitulo(grupo, grupoModulos), getGrupoModuloSort(grupoModulos)] as const;
       }),
     );
-    for (const [paqueteId, grupoModuloTitulo] of labelEntries) {
+    for (const [paqueteId, grupoModuloTitulo, sortInfo] of labelEntries) {
       const current = byPaqueteId.get(paqueteId);
       if (current) {
         current.grupoModuloTitulo = grupoModuloTitulo;
+        current.moduloOrden = sortInfo.moduloOrden;
+        current.grupoModuloOrden = sortInfo.grupoModuloOrden;
       }
     }
 
     return {
       paquetes: Array.from(byPaqueteId.values()).sort((a, b) =>
+        (a.moduloOrden ?? Number.MAX_SAFE_INTEGER) - (b.moduloOrden ?? Number.MAX_SAFE_INTEGER) ||
+        (a.grupoModuloOrden ?? Number.MAX_SAFE_INTEGER) - (b.grupoModuloOrden ?? Number.MAX_SAFE_INTEGER) ||
         String(a.grupoModuloTitulo ?? a.titulo ?? "").localeCompare(
           String(b.grupoModuloTitulo ?? b.titulo ?? ""),
           "es",

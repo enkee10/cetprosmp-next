@@ -64,6 +64,8 @@ interface User {
   fecha_creacion?: string;
   fecha_modificacion?: string;
   email_creador?: string;
+  dniImagenFrenteUrl?: string | null;
+  dniImagenReversoUrl?: string | null;
   dniImagenFrenteProcesadaUrl?: string | null;
   dniImagenReversoProcesadaUrl?: string | null;
 }

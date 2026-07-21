@@ -26,7 +26,15 @@ import {
 } from "../../dataconnectOperations.js";
 
 type GrupoModuloRow = DataConnectGrupoModulo & {
-  grupo?: Pick<DataConnectGrupo, "id" | "nombreDisplay"> | null;
+  grupo?: Pick<DataConnectGrupo, "id" | "nombreDisplay" | "semestreId"> & {
+    semestre?: {
+      id?: number | null;
+      titulo?: string | null;
+      inicio?: string | null;
+      fin?: string | null;
+      archivado?: boolean | null;
+    } | null;
+  } | null;
   modulo?: Pick<DataConnectModulo, "id" | "titulo" | "tituloComercial" | "orden"> | null;
   calendario?: Pick<DataConnectCalendario, "id" | "titulo"> | null;
 };
@@ -44,6 +52,14 @@ const LIST_GRUPO_MODULOS_QUERY = `
       grupo {
         id
         nombreDisplay
+        semestreId
+        semestre {
+          id
+          titulo
+          inicio
+          fin
+          archivado
+        }
       }
       moduloId
       modulo {

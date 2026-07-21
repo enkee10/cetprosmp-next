@@ -54,7 +54,11 @@ const LIST_GRUPOS_QUERY = `
       fechaActualizacion
       semestreId
       semestre {
+        id
         titulo
+        inicio
+        fin
+        archivado
       }
       personalId
       personal {

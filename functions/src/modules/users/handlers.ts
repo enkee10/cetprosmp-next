@@ -39,6 +39,8 @@ const LIST_USERS_QUERY = `
       blocked
       avatar
       recorteFotografia
+      dniImagenFrenteUrl
+      dniImagenReversoUrl
       dniImagenFrenteProcesadaUrl
       dniImagenReversoProcesadaUrl
       nombre

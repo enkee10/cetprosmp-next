@@ -55,6 +55,10 @@ const createValidationSchema = (isCreating: boolean) => yup.object().shape({
   rolId: yup.string().required('El rol es requerido'),
   avatar: yup.string().url('Debe ser una URL válida').nullable(),
   avatarRemoved: yup.boolean(),
+  dniImagenFrenteUrl: yup.string().nullable(),
+  dniImagenReversoUrl: yup.string().nullable(),
+  dniImagenFrenteProcesadaUrl: yup.string().nullable(),
+  dniImagenReversoProcesadaUrl: yup.string().nullable(),
   bloqueado: yup.boolean(),
   correo_institucional: yup.string().nullable(),
   fecha_creacion: yup.string().nullable(),
@@ -84,6 +88,10 @@ interface UserFormValues {
   rolId: string;
   avatar: string | null | undefined;
   avatarRemoved?: boolean;
+  dniImagenFrenteUrl?: string | null | undefined;
+  dniImagenReversoUrl?: string | null | undefined;
+  dniImagenFrenteProcesadaUrl?: string | null | undefined;
+  dniImagenReversoProcesadaUrl?: string | null | undefined;
   bloqueado: boolean | undefined;
   correo_institucional: string | null | undefined;
   fecha_creacion: string | null | undefined;
@@ -184,17 +192,6 @@ const UserForm: React.FC<UserFormProps> = ({
   const apellidoPaternoRef = useRef<HTMLInputElement>(null);
   const lastAutoInstitutionalEmailRef = useRef('');
   const lastAutoPasswordRef = useRef('');
-  const dniImagenFrenteProcesadaUrl = getInitialString(
-    initialData,
-    'dniImagenFrenteProcesadaUrl',
-    'dni_imagen_frente_procesada_url',
-  );
-  const dniImagenReversoProcesadaUrl = getInitialString(
-    initialData,
-    'dniImagenReversoProcesadaUrl',
-    'dni_imagen_reverso_procesada_url',
-  );
-  const hasProcessedDniImages = Boolean(dniImagenFrenteProcesadaUrl || dniImagenReversoProcesadaUrl);
 
   const { handleSubmit, control, formState: { errors }, reset, watch, setValue, getValues } = useForm<UserFormValues>({
     resolver: yupResolver(createValidationSchema(isCreating)) as Resolver<UserFormValues>,
@@ -220,6 +217,10 @@ const UserForm: React.FC<UserFormProps> = ({
       rolId: '',
       avatar: '',
       avatarRemoved: false,
+      dniImagenFrenteUrl: '',
+      dniImagenReversoUrl: '',
+      dniImagenFrenteProcesadaUrl: '',
+      dniImagenReversoProcesadaUrl: '',
       bloqueado: false,
       correo_institucional: '',
       fecha_creacion: '',
@@ -303,6 +304,13 @@ const UserForm: React.FC<UserFormProps> = ({
   }, []);
 
   const avatarUrl = watch('avatar');
+  const dniImagenFrenteUrl = watch('dniImagenFrenteUrl') || '';
+  const dniImagenReversoUrl = watch('dniImagenReversoUrl') || '';
+  const dniImagenFrenteProcesadaUrl = watch('dniImagenFrenteProcesadaUrl') || '';
+  const dniImagenReversoProcesadaUrl = watch('dniImagenReversoProcesadaUrl') || '';
+  const dniImagenFrenteDisplayUrl = dniImagenFrenteProcesadaUrl || dniImagenFrenteUrl;
+  const dniImagenReversoDisplayUrl = dniImagenReversoProcesadaUrl || dniImagenReversoUrl;
+  const hasDniImages = Boolean(dniImagenFrenteDisplayUrl || dniImagenReversoDisplayUrl);
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -369,6 +377,29 @@ const UserForm: React.FC<UserFormProps> = ({
     }
   };
 
+  const handleRemoveDniImage = (side: 'frente' | 'reverso') => {
+    if (side === 'frente') {
+      setValue('dniImagenFrenteUrl', '', {
+        shouldValidate: false,
+        shouldDirty: true,
+      });
+      setValue('dniImagenFrenteProcesadaUrl', '', {
+        shouldValidate: false,
+        shouldDirty: true,
+      });
+      return;
+    }
+
+    setValue('dniImagenReversoUrl', '', {
+      shouldValidate: false,
+      shouldDirty: true,
+    });
+    setValue('dniImagenReversoProcesadaUrl', '', {
+      shouldValidate: false,
+      shouldDirty: true,
+    });
+  };
+
   useEffect(() => {
     const asString = (value: unknown): string => (typeof value === 'string' ? value : '');
     const asSexo = (value: unknown): 'F' | 'M' => (value === 'M' ? 'M' : 'F');
@@ -412,6 +443,18 @@ const UserForm: React.FC<UserFormProps> = ({
           : (roles[0]?.id ? String(roles[0].id) : ''),
       avatar: asString(initialData?.avatar ?? initialData?.avatarPequeno ?? initialData?.photoURL),
       avatarRemoved: false,
+      dniImagenFrenteUrl: getInitialString(initialData, 'dniImagenFrenteUrl', 'dni_imagen_frente_url'),
+      dniImagenReversoUrl: getInitialString(initialData, 'dniImagenReversoUrl', 'dni_imagen_reverso_url'),
+      dniImagenFrenteProcesadaUrl: getInitialString(
+        initialData,
+        'dniImagenFrenteProcesadaUrl',
+        'dni_imagen_frente_procesada_url',
+      ),
+      dniImagenReversoProcesadaUrl: getInitialString(
+        initialData,
+        'dniImagenReversoProcesadaUrl',
+        'dni_imagen_reverso_procesada_url',
+      ),
       bloqueado: asBoolean(initialData?.bloqueado ?? initialData?.blocked),
       correo_institucional: asString(initialData?.correo_institucional ?? initialData?.correoInstitucional),
       fecha_creacion: asString(initialData?.fecha_creacion ?? initialData?.fechaCreacion),
@@ -696,9 +739,9 @@ const UserForm: React.FC<UserFormProps> = ({
             {!isCreating && (
               <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' }, mt: 1 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                  DNI procesado
+                  Imagenes de DNI
                 </Typography>
-                {hasProcessedDniImages ? (
+                {hasDniImages ? (
                   <Box
                     sx={{
                       display: 'grid',
@@ -709,15 +752,15 @@ const UserForm: React.FC<UserFormProps> = ({
                       gap: 2,
                     }}
                   >
-                    {dniImagenFrenteProcesadaUrl && (
+                    {dniImagenFrenteDisplayUrl && (
                       <Box>
                         <Typography variant="caption" color="text.secondary">
-                          Frente procesado
+                          Frente
                         </Typography>
                         <Box
                           component="img"
-                          src={dniImagenFrenteProcesadaUrl}
-                          alt="DNI frente procesado"
+                          src={dniImagenFrenteDisplayUrl}
+                          alt="DNI frente"
                           sx={{
                             display: 'block',
                             width: '100%',
@@ -729,17 +772,28 @@ const UserForm: React.FC<UserFormProps> = ({
                             borderColor: 'divider',
                           }}
                         />
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          startIcon={<DeleteOutline />}
+                          onClick={() => handleRemoveDniImage('frente')}
+                          disabled={isSubmitting}
+                          sx={{ mt: 1 }}
+                        >
+                          Quitar frente
+                        </Button>
                       </Box>
                     )}
-                    {dniImagenReversoProcesadaUrl && (
+                    {dniImagenReversoDisplayUrl && (
                       <Box>
                         <Typography variant="caption" color="text.secondary">
-                          Reverso procesado
+                          Reverso
                         </Typography>
                         <Box
                           component="img"
-                          src={dniImagenReversoProcesadaUrl}
-                          alt="DNI reverso procesado"
+                          src={dniImagenReversoDisplayUrl}
+                          alt="DNI reverso"
                           sx={{
                             display: 'block',
                             width: '100%',
@@ -751,6 +805,17 @@ const UserForm: React.FC<UserFormProps> = ({
                             borderColor: 'divider',
                           }}
                         />
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          startIcon={<DeleteOutline />}
+                          onClick={() => handleRemoveDniImage('reverso')}
+                          disabled={isSubmitting}
+                          sx={{ mt: 1 }}
+                        >
+                          Quitar reverso
+                        </Button>
                       </Box>
                     )}
                   </Box>

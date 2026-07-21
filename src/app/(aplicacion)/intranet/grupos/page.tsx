@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
+import { Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Stack } from '@mui/material';
 import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
@@ -23,7 +23,13 @@ interface Grupo {
   estado: string | null;
   archivado: boolean | null;
   semestreId: number | null;
-  semestre?: { titulo: string | null } | null;
+  semestre?: {
+    id?: number | null;
+    titulo: string | null;
+    inicio?: string | null;
+    fin?: string | null;
+    archivado?: boolean | null;
+  } | null;
   personalId: number | null;
   personal?: {
     displayName?: string | null;
@@ -66,6 +72,33 @@ const getGrupoNombre = (grupo: Grupo) => {
   ].filter(Boolean).join(' ') || grupo.nombreDisplay || '';
 };
 
+interface SemestreFilterOption {
+  id: number;
+  titulo: string;
+  inicio?: string | null;
+  fin?: string | null;
+  archivado?: boolean | null;
+}
+
+function pickDefaultSemestreId(options: SemestreFilterOption[]) {
+  const today = new Date();
+  const current = options.find((option) => {
+    if (option.archivado) return false;
+    if (!option.inicio || !option.fin) return false;
+    const start = new Date(`${option.inicio}T00:00:00`);
+    const end = new Date(`${option.fin}T23:59:59`);
+    return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start <= today && today <= end;
+  });
+  if (current) return String(current.id);
+
+  const sorted = options.slice().sort((a, b) => {
+    const aTime = a.inicio ? new Date(`${a.inicio}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
+    const bTime = b.inicio ? new Date(`${b.inicio}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
+    return bTime - aTime || b.id - a.id;
+  });
+  return sorted[0] ? String(sorted[0].id) : '';
+}
+
 export default function GruposPage() {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,6 +112,7 @@ export default function GruposPage() {
     page: 0,
     pageSize: 15,
   });
+  const [selectedSemestreId, setSelectedSemestreId] = useState('');
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
       numero: true,
@@ -317,13 +351,61 @@ export default function GruposPage() {
     [columnVisibilityModel, columns],
   );
 
+  const semestreOptions = useMemo(() => {
+    const byId = new Map<number, SemestreFilterOption>();
+    grupos.forEach((grupo) => {
+      const id = grupo.semestreId ?? grupo.semestre?.id ?? null;
+      if (!id || byId.has(id)) return;
+      byId.set(id, {
+        id,
+        titulo: grupo.semestre?.titulo || `Semestre ${id}`,
+        inicio: grupo.semestre?.inicio ?? null,
+        fin: grupo.semestre?.fin ?? null,
+        archivado: grupo.semestre?.archivado ?? null,
+      });
+    });
+    return Array.from(byId.values()).sort((a, b) =>
+      String(b.titulo).localeCompare(String(a.titulo), 'es', { numeric: true }) || b.id - a.id,
+    );
+  }, [grupos]);
+
+  useEffect(() => {
+    if (semestreOptions.length === 0) {
+      if (selectedSemestreId) setSelectedSemestreId('');
+      return;
+    }
+    if (selectedSemestreId && semestreOptions.some((option) => String(option.id) === selectedSemestreId)) return;
+    setSelectedSemestreId(pickDefaultSemestreId(semestreOptions));
+  }, [selectedSemestreId, semestreOptions]);
+
+  const filteredGrupos = useMemo(() => {
+    if (!selectedSemestreId) return grupos;
+    const selected = Number(selectedSemestreId);
+    return grupos.filter((grupo) => (grupo.semestreId ?? grupo.semestre?.id ?? null) === selected);
+  }, [grupos, selectedSemestreId]);
+
   return (
     <IntranetListLayout
       message={error}
       messageSeverity="error"
       title="Gestion de Grupos"
       commands={
-        <Stack direction="row" spacing={1.5}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ sm: 'center' }}>
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 190 } }}>
+            <InputLabel>Semestre</InputLabel>
+            <Select
+              label="Semestre"
+              value={selectedSemestreId}
+              onChange={(event) => setSelectedSemestreId(String(event.target.value))}
+              disabled={loading || semestreOptions.length === 0}
+            >
+              {semestreOptions.map((option) => (
+                <MenuItem key={option.id} value={String(option.id)}>
+                  {option.titulo}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Button variant="outlined" onClick={handleCreateGrupo}>
             Crear Grupo
           </Button>
@@ -336,7 +418,7 @@ export default function GruposPage() {
       columnToggleLabel="Campos"
     >
       <IntranetDataGrid
-        rows={grupos}
+        rows={filteredGrupos}
         columns={columns}
         columnVisibilityModel={columnVisibilityModel}
         onColumnVisibilityModelChange={setColumnVisibilityModel}

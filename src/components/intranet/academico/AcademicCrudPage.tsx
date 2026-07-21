@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
+import { Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Stack } from '@mui/material';
 import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
@@ -38,6 +38,15 @@ interface AcademicCrudPageProps {
   columns: AcademicColumnConfig[];
   labelField: string;
   modalMaxWidth?: number | string;
+  semestreFilter?: boolean;
+}
+
+interface SemestreFilterOption {
+  id: number;
+  titulo: string;
+  inicio?: string | null;
+  fin?: string | null;
+  archivado?: boolean | null;
 }
 
 function renderCellValue(value: unknown) {
@@ -64,6 +73,51 @@ function renderDateCellValue(value: unknown) {
   return formatDateOnly(value, { dateStyle: 'short' }) || value;
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' ? value as Record<string, unknown> : null;
+}
+
+function toNumberOrNull(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function getRowSemestre(row: AcademicRow): SemestreFilterOption | null {
+  const directSemestre = asRecord(row.semestre);
+  const grupo = asRecord(row.grupo);
+  const grupoSemestre = asRecord(grupo?.semestre);
+  const semestre = directSemestre ?? grupoSemestre;
+  const id = toNumberOrNull(row.semestreId) ?? toNumberOrNull(grupo?.semestreId) ?? toNumberOrNull(semestre?.id);
+  if (!id) return null;
+  const titulo = String(semestre?.titulo ?? `Semestre ${id}`).trim() || `Semestre ${id}`;
+  return {
+    id,
+    titulo,
+    inicio: typeof semestre?.inicio === 'string' ? semestre.inicio : null,
+    fin: typeof semestre?.fin === 'string' ? semestre.fin : null,
+    archivado: typeof semestre?.archivado === 'boolean' ? semestre.archivado : null,
+  };
+}
+
+function pickDefaultSemestreId(options: SemestreFilterOption[]) {
+  const today = new Date();
+  const current = options.find((option) => {
+    if (option.archivado) return false;
+    if (!option.inicio || !option.fin) return false;
+    const start = new Date(`${option.inicio}T00:00:00`);
+    const end = new Date(`${option.fin}T23:59:59`);
+    return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start <= today && today <= end;
+  });
+  if (current) return String(current.id);
+
+  const sorted = options.slice().sort((a, b) => {
+    const aTime = a.inicio ? new Date(`${a.inicio}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
+    const bTime = b.inicio ? new Date(`${b.inicio}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
+    return bTime - aTime || b.id - a.id;
+  });
+  return sorted[0] ? String(sorted[0].id) : '';
+}
+
 export function AcademicCrudPage({
   rowsKey,
   entityKey,
@@ -79,6 +133,7 @@ export function AcademicCrudPage({
   columns: columnConfigs,
   labelField,
   modalMaxWidth = 720,
+  semestreFilter = false,
 }: AcademicCrudPageProps) {
   const [rows, setRows] = useState<AcademicRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,6 +147,7 @@ export function AcademicCrudPage({
     page: 0,
     pageSize: 15,
   });
+  const [selectedSemestreId, setSelectedSemestreId] = useState('');
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>(() => ({
       ...Object.fromEntries(columnConfigs.map((column) => [column.field, !column.hidden])),
@@ -251,13 +307,57 @@ export function AcademicCrudPage({
     [columnVisibilityModel, columns],
   );
 
+  const semestreOptions = useMemo(() => {
+    const byId = new Map<number, SemestreFilterOption>();
+    rows.forEach((row) => {
+      const semestre = getRowSemestre(row);
+      if (semestre && !byId.has(semestre.id)) byId.set(semestre.id, semestre);
+    });
+    return Array.from(byId.values()).sort((a, b) =>
+      String(b.titulo).localeCompare(String(a.titulo), 'es', { numeric: true }) || b.id - a.id,
+    );
+  }, [rows]);
+
+  useEffect(() => {
+    if (!semestreFilter) return;
+    if (semestreOptions.length === 0) {
+      if (selectedSemestreId) setSelectedSemestreId('');
+      return;
+    }
+    if (selectedSemestreId && semestreOptions.some((option) => String(option.id) === selectedSemestreId)) return;
+    setSelectedSemestreId(pickDefaultSemestreId(semestreOptions));
+  }, [selectedSemestreId, semestreFilter, semestreOptions]);
+
+  const displayRows = useMemo(() => {
+    if (!semestreFilter || !selectedSemestreId) return rows;
+    const selected = Number(selectedSemestreId);
+    return rows.filter((row) => getRowSemestre(row)?.id === selected);
+  }, [rows, selectedSemestreId, semestreFilter]);
+
   return (
     <IntranetListLayout
       message={error}
       messageSeverity="error"
       title={title}
       commands={
-        <Stack direction="row" spacing={1.5}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ sm: 'center' }}>
+          {semestreFilter ? (
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 190 } }}>
+              <InputLabel>Semestre</InputLabel>
+              <Select
+                label="Semestre"
+                value={selectedSemestreId}
+                onChange={(event) => setSelectedSemestreId(String(event.target.value))}
+                disabled={loading || semestreOptions.length === 0}
+              >
+                {semestreOptions.map((option) => (
+                  <MenuItem key={option.id} value={String(option.id)}>
+                    {option.titulo}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : null}
           <Button variant="outlined" onClick={handleCreate}>
             {createLabel}
           </Button>
@@ -270,7 +370,7 @@ export function AcademicCrudPage({
       columnToggleLabel="Campos"
     >
       <IntranetDataGrid
-        rows={rows}
+        rows={displayRows}
         columns={columns}
         columnVisibilityModel={columnVisibilityModel}
         onColumnVisibilityModelChange={setColumnVisibilityModel}

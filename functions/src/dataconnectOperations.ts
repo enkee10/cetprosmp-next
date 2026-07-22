@@ -125,13 +125,13 @@ export const DELETE_TIPO_CARRERA_MUTATION = `
 `;
 
 export const INSERT_CARRERA_MUTATION = `
-  mutation InsertCarrera($data: Carrera_Data! @allow(fields: "nombre codigo descripcion nivel imagenPortadaUrl creadoEn actualizadoEn actEconomicaId especialidadId tipoCarreraId")) {
+  mutation InsertCarrera($data: Carrera_Data! @allow(fields: "nombre codigo descripcion nivel ciclo imagenPortadaUrl creadoEn actualizadoEn actEconomicaId especialidadId tipoCarreraId")) {
     carrera_insert(data: $data)
   }
 `;
 
 export const UPDATE_CARRERA_MUTATION = `
-  mutation UpdateCarrera($id: Int!, $data: Carrera_Data! @allow(fields: "nombre codigo descripcion nivel imagenPortadaUrl creadoEn actualizadoEn actEconomicaId especialidadId tipoCarreraId")) {
+  mutation UpdateCarrera($id: Int!, $data: Carrera_Data! @allow(fields: "nombre codigo descripcion nivel ciclo imagenPortadaUrl creadoEn actualizadoEn actEconomicaId especialidadId tipoCarreraId")) {
     carrera_update(id: $id, data: $data)
   }
 `;

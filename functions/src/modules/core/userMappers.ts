@@ -275,6 +275,7 @@ export function buildCarreraDataFromInput(input: Record<string, unknown>): DataC
     codigo: asNullableString(input.codigo),
     descripcion: asNullableString(input.descripcion),
     nivel: asNullableString(input.nivel),
+    ciclo: asNullableString(input.ciclo),
     imagenPortadaUrl: asNullableString(input.imagenPortadaUrl),
     creadoEn: asNullableTimestamp(input.creadoEn),
     actualizadoEn: asNullableTimestamp(input.actualizadoEn),

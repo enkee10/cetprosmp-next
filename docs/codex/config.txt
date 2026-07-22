@@ -1,2 +1,2 @@
-Solo al comenzar cualquier conversacion sobre este proyecto leer el archivo:
+Solo al iniciar o reiniciar cualquier conversacion sobre este proyecto leer el archivo:
 ./docs/codex/contexto-general.md 

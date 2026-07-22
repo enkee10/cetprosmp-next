@@ -5245,6 +5245,14 @@ input Carrera_Data {
   """
   actualizadoEn_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Carrera`.`ciclo` of type `String`
+  """
+  ciclo: String
+  """
+  ✨ `_expr` server value variant of `ciclo` (✨ Generated from Field `Carrera`.`ciclo` of type `String`)
+  """
+  ciclo_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Carrera`.`codigo` of type `String`
   """
   codigo: String
@@ -5406,6 +5414,10 @@ input Carrera_Filter {
   """
   actualizadoEn: Timestamp_Filter
   """
+  ✨ Generated from Field `Carrera`.`ciclo` of type `String`
+  """
+  ciclo: String_Filter
+  """
   ✨ Generated from Field `Carrera`.`codigo` of type `String`
   """
   codigo: String_Filter
@@ -5503,6 +5515,10 @@ input Carrera_Having {
   ✨ Generated from Field `Carrera`.`actualizadoEn_count` of type `Int!`
   """
   actualizadoEn_count: Int_Filter
+  """
+  ✨ Generated from Field `Carrera`.`ciclo_count` of type `Int!`
+  """
+  ciclo_count: Int_Filter
   """
   ✨ Generated from Field `Carrera`.`codigo_count` of type `Int!`
   """
@@ -5723,6 +5739,10 @@ input Carrera_Order {
   """
   actualizadoEn: OrderDirection
   """
+  ✨ Generated from Field `Carrera`.`ciclo` of type `String`
+  """
+  ciclo: OrderDirection
+  """
   ✨ Generated from Field `Carrera`.`codigo` of type `String`
   """
   codigo: OrderDirection
@@ -5782,6 +5802,10 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`actualizadoEn_count` of type `Int!`
   """
   actualizadoEn_count: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`ciclo_count` of type `Int!`
+  """
+  ciclo_count: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`codigo_count` of type `Int!`
   """

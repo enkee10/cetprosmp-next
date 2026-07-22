@@ -2300,6 +2300,15 @@ extend type Carrera {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Carrera.actualizadoEn", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Carrera` table where the `ciclo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  ciclo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.ciclo", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Carrera` table where the `codigo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   codigo_count(

@@ -18,6 +18,7 @@ interface Carrera {
   codigo: string | null;
   descripcion: string | null;
   nivel: string | null;
+  ciclo: string | null;
   imagenPortadaUrl: string | null;
   actEconomicaId: number | null;
   especialidadId: number | null;
@@ -57,6 +58,7 @@ export default function CarrerasPage() {
     nombre: true,
     codigo: true,
     nivel: true,
+    ciclo: true,
     tipoCarreraTitulo: true,
     actEconomicaTitulo: true,
     especialidadTitulo: false,
@@ -217,6 +219,7 @@ export default function CarrerasPage() {
       { field: 'nombre', headerName: 'Nombre', flex: 1.2, minWidth: 180, valueGetter: (_value, row: Carrera) => row.nombre || '' },
       { field: 'codigo', headerName: 'Codigo', flex: 0.7, minWidth: 110, valueGetter: (_value, row: Carrera) => row.codigo || '' },
       { field: 'nivel', headerName: 'Nivel', flex: 0.8, minWidth: 150, valueGetter: (_value, row: Carrera) => row.nivel || '' },
+      { field: 'ciclo', headerName: 'Ciclo', flex: 0.65, minWidth: 120, valueGetter: (_value, row: Carrera) => row.ciclo || '' },
       {
         field: 'tipoCarreraTitulo',
         headerName: 'Tipo de Carrera',

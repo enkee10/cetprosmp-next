@@ -111,6 +111,7 @@ type ReporteGrupoModuloOption = {
         titulo?: string | null;
         tituloComercial?: string | null;
         nivel?: string | null;
+        ciclo?: string | null;
         tipoCarrera?: { nombre?: string | null } | null;
         especialidad?: { titulo?: string | null; tituloComercial?: string | null } | null;
       } | null;
@@ -338,6 +339,7 @@ const REPORTE_OPTIONS_QUERY = `
             titulo
             tituloComercial
             nivel
+            ciclo
             tipoCarrera { nombre }
             especialidad { titulo tituloComercial }
           }
@@ -406,6 +408,7 @@ const REPORTE_DETALLE_QUERY = `
             titulo
             tituloComercial
             nivel
+            ciclo
             tipoCarrera { nombre }
             especialidad { titulo tituloComercial }
           }
@@ -713,6 +716,18 @@ function normalizeText(value: unknown) {
 function usesOpcionOcupacionalRules(value: unknown) {
   const normalized = normalizeText(value);
   return normalized.includes("opcion ocupacional") || normalized.includes("modulo ocupacional");
+}
+
+function averageGrades(values: Array<number | null | undefined>) {
+  const valid = values.filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  if (valid.length === 0) return null;
+  return Math.round(valid.reduce((sum, value) => sum + value, 0) / valid.length);
+}
+
+function sumGrades(values: Array<number | null | undefined>) {
+  const valid = values.filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  if (valid.length === 0) return null;
+  return Math.round(valid.reduce((total, value) => total + value, 0) * 100) / 100;
 }
 
 function cleanText(value: unknown) {
@@ -1713,10 +1728,10 @@ const ACTA_CLOSURE_LINE_CONFIGS: Record<ActaClosureLineAdjustment["kind"], ActaC
     detectTemplateGroup: true,
     maxStudents: 30,
     firstPageLimit: 20,
-    firstPageStartRow: 19,
-    secondPageStartRow: 54,
-    firstPageEndRow: 38,
-    secondPageEndRow: 63,
+    firstPageStartRow: 20,
+    secondPageStartRow: 55,
+    firstPageEndRow: 39,
+    secondPageEndRow: 64,
     firstPageRowHeightPx: 27,
     secondPageRowHeightPx: 28,
     firstPageRowMiddleAdjustmentPx: 5,
@@ -2563,6 +2578,7 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   const fin = data.grupoModulo.fin || data.semestre?.fin || null;
   const turno = cleanText(data.grupoModulo.grupo?.turno?.nombre || data.grupoModulo.grupo?.turnoNombre || "");
   const nivel = cleanText(data.grupoModulo.modulo?.plan?.carrera?.nivel || "");
+  const ciclo = cleanText(data.grupoModulo.modulo?.plan?.carrera?.ciclo || nivel);
   const semestre = cleanText(data.semestre?.titulo || data.grupoModulo.grupo?.semestre?.titulo || "");
   const resolucion = cleanText(datos.rd || "");
   const horas = data.grupoModulo.modulo?.horas ?? "";
@@ -2590,19 +2606,19 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
 
   if (data.opcionOcupacional) {
     addCell(updates, sheetName, "Y6", carrera.toLocaleUpperCase("es-PE"));
-    addCell(updates, sheetName, "AE7", nivel.toLocaleUpperCase("es-PE"));
+    addCell(updates, sheetName, "AE7", ciclo.toLocaleUpperCase("es-PE"));
     addCell(updates, sheetName, "AE8", modulo);
-    addCell(updates, sheetName, "Z11", resolucion);
-    addCell(updates, sheetName, "AF12", turno);
-    addCell(updates, sheetName, "AF13", data.seccion);
-    addCell(updates, sheetName, "AF14", formatHoras(horas));
-    addCell(updates, sheetName, "AF15", formatDate(inicio));
-    addCell(updates, sheetName, "AJ15", formatDate(fin));
-    addCell(updates, sheetName, "B67", modulo);
-    addCell(updates, sheetName, "J67", docente);
-    addCell(updates, sheetName, "C77", `${distrito}, ${getDocumentDateLong(data, "acta")}`);
-    addCell(updates, sheetName, "L78", docente);
-    addCell(updates, sheetName, "W78", director);
+    addCell(updates, sheetName, "Z12", resolucion);
+    addCell(updates, sheetName, "AF13", turno);
+    addCell(updates, sheetName, "AF14", data.seccion);
+    addCell(updates, sheetName, "AF15", formatHoras(horas));
+    addCell(updates, sheetName, "AF16", formatDate(inicio));
+    addCell(updates, sheetName, "AJ16", formatDate(fin));
+    addCell(updates, sheetName, "B68", modulo);
+    addCell(updates, sheetName, "J68", docente);
+    addCell(updates, sheetName, "C78", `${distrito}, ${getDocumentDateLong(data, "acta")}`);
+    addCell(updates, sheetName, "L81", docente ? `Lic. ${docente}` : "Lic. ");
+    addCell(updates, sheetName, "W81", director ? `Lic. ${director}` : "Lic. ");
     return;
   }
 
@@ -2742,17 +2758,27 @@ function fillOpcionActa(updates: SpreadsheetUpdate[], sheetName: string, data: R
   fillInstitutionHeader(updates, sheetName, data, "acta");
   const capacidadColumns = ["L", "M", "N", "O", "P", "Q", "R", "S", "T", "U"];
   const capacidadMap = capacidadPromedioMap(data);
+  const unidadMap = unidadPromedioMap(data);
   const capacidades = data.capacidades.slice(0, capacidadColumns.length);
+  const studentResults = new Map<number, { puntaje: number | null; promedio: number | null }>();
+
+  for (const student of data.estudiantes) {
+    const unitGrades = data.unidades.map((unit) => unidadMap.get(`${student.matriculaId}:${unit.id}`));
+    studentResults.set(student.id, {
+      puntaje: sumGrades(unitGrades),
+      promedio: averageGrades(unitGrades),
+    });
+  }
 
   capacidades.forEach((capacidad, index) => {
     const value = cleanText(capacidad.sigla || capacidad.descripcion || "");
     addCell(updates, sheetName, `${capacidadColumns[index]}7`, value);
-    addCell(updates, sheetName, `${capacidadColumns[index]}41`, value);
+    addCell(updates, sheetName, `${capacidadColumns[index]}42`, value);
   });
 
   const students = data.estudiantes.slice(0, 30);
   students.forEach((student, index) => {
-    const row = index < 20 ? 19 + index : 54 + (index - 20);
+    const row = index < 20 ? 20 + index : 55 + (index - 20);
     addCell(updates, sheetName, `B${row}`, index + 1);
     addCell(updates, sheetName, `C${row}`, "G");
     addCell(updates, sheetName, `D${row}`, student.matricula?.codigoInscripcion || "");
@@ -2767,23 +2793,24 @@ function fillOpcionActa(updates: SpreadsheetUpdate[], sheetName: string, data: R
       }
       addCell(updates, sheetName, `${column}${row}`, hasNotas ? formatGrade(notas[capacidadIndex]) : "");
     });
-    addCell(updates, sheetName, `V${row}`, formatGrade(student.puntaje));
-    addCell(updates, sheetName, `W${row}`, formatGrade(student.promedio));
-    const condition: string = getCondition(student.promedio);
+    const result = studentResults.get(student.id);
+    addCell(updates, sheetName, `V${row}`, formatGrade(result?.puntaje));
+    addCell(updates, sheetName, `W${row}`, formatGrade(result?.promedio));
+    const condition: string = getCondition(result?.promedio);
     addCell(updates, sheetName, `X${row}`, condition === "A" ? "X" : "");
     addCell(updates, sheetName, `Z${row}`, condition === "D" ? "X" : "");
     addCell(updates, sheetName, `AC${row}`, condition === "R" ? "X" : "");
   });
   for (let index = students.length; index < 30; index += 1) {
-    const row = index < 20 ? 19 + index : 54 + (index - 20);
+    const row = index < 20 ? 20 + index : 55 + (index - 20);
     ["C", "D", "G", ...capacidadColumns, "V", "W", "X", "Z", "AC"].forEach((column) => {
       addCell(updates, sheetName, `${column}${row}`, "");
     });
   }
-  addCell(updates, sheetName, "AH42", students.length);
-  addCell(updates, sheetName, "AH44", students.filter((student) => getCondition(student.promedio) === "A").length);
-  addCell(updates, sheetName, "AH46", students.filter((student) => getCondition(student.promedio) === "D").length);
-  addCell(updates, sheetName, "AH48", 0);
+  addCell(updates, sheetName, "AH43", students.length);
+  addCell(updates, sheetName, "AH45", students.filter((student) => getCondition(studentResults.get(student.id)?.promedio) === "A").length);
+  addCell(updates, sheetName, "AH47", students.filter((student) => getCondition(studentResults.get(student.id)?.promedio) === "D").length);
+  addCell(updates, sheetName, "AH49", 0);
 }
 
 function fillReporte(updates: SpreadsheetUpdate[], sheetName: string, tipoDocumento: ReportDocumentType, data: ReporteDocumentoData) {
@@ -3662,6 +3689,7 @@ async function generateReporteDocumentoInternal(input: {
     {
       "[Nombre Carrera]": getCarreraName(reportes[0].grupoModulo),
       "[Nombre Modulo]": getModuloDocumentName(reportes[0].grupoModulo),
+      "[ciclo]": reportes[0].grupoModulo.modulo?.plan?.carrera?.ciclo || reportes[0].grupoModulo.modulo?.plan?.carrera?.nivel || "",
     },
     isActaPrograma
       ? { kind: "programa", studentCount: Math.min(reportes[0].estudiantes.length, 40) }

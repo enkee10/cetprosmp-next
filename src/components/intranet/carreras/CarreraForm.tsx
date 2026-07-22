@@ -32,6 +32,7 @@ interface CarreraData {
   codigo: string | null;
   descripcion: string | null;
   nivel: string | null;
+  ciclo: string | null;
   imagenPortadaUrl: string | null;
   actEconomicaId: number | null;
   especialidadId: number | null;
@@ -55,12 +56,14 @@ interface TipoCarreraOption {
 }
 
 const NIVEL_OPTIONS = ['Auxiliar Técnico', 'Técnico', 'Profesional'];
+const CICLO_OPTIONS = ['Básico', 'Medio', 'Avanzado'];
 
 export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: CarreraFormProps) {
   const [nombre, setNombre] = useState('');
   const [codigo, setCodigo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [nivel, setNivel] = useState('');
+  const [ciclo, setCiclo] = useState('');
   const [imagenPortadaUrl, setImagenPortadaUrl] = useState('');
   const [actEconomicaId, setActEconomicaId] = useState('');
   const [especialidadId, setEspecialidadId] = useState('');
@@ -122,6 +125,7 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
           setCodigo(fetched.codigo || '');
           setDescripcion(fetched.descripcion || '');
           setNivel(fetched.nivel || '');
+          setCiclo(fetched.ciclo || '');
           setImagenPortadaUrl(fetched.imagenPortadaUrl || '');
           setActEconomicaId(fetched.actEconomicaId != null ? String(fetched.actEconomicaId) : '');
           setEspecialidadId(fetched.especialidadId != null ? String(fetched.especialidadId) : '');
@@ -152,6 +156,7 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
           codigo: string;
           descripcion: string;
           nivel?: string | null;
+          ciclo?: string | null;
           imagenPortadaUrl?: string | null;
           actEconomicaId?: number | null;
           especialidadId?: number | null;
@@ -166,6 +171,7 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
         codigo,
         descripcion,
         nivel: nivel || null,
+        ciclo: ciclo || null,
         imagenPortadaUrl: imagenPortadaUrl.trim() || null,
         actEconomicaId: actEconomicaId ? Number(actEconomicaId) : null,
         especialidadId: especialidadId ? Number(especialidadId) : null,
@@ -231,6 +237,26 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
               </MenuItem>
             ) : null}
             {NIVEL_OPTIONS.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Ciclo</InputLabel>
+          <Select
+            label="Ciclo"
+            value={ciclo}
+            onChange={(event) => setCiclo(String(event.target.value))}
+          >
+            <MenuItem value="">Sin ciclo</MenuItem>
+            {ciclo && !CICLO_OPTIONS.includes(ciclo) ? (
+              <MenuItem value={ciclo} disabled>
+                Ciclo actual no disponible
+              </MenuItem>
+            ) : null}
+            {CICLO_OPTIONS.map((option) => (
               <MenuItem key={option} value={option}>
                 {option}
               </MenuItem>

@@ -257,6 +257,7 @@ const REGISTRO_AUXILIAR_CONTEXT_QUERY = `
         tituloComercial
         horas
         creditos
+        creditosEfsrt
         plan {
           planEstudio
           carrera {
@@ -1752,6 +1753,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
       {
         grupoModulo: (RegistroAuxiliarGrupoModulo & {
           modulo?: {
+            creditosEfsrt?: number | null;
             plan?: {
               carrera?: {
                 tipoCarrera?: {
@@ -1770,6 +1772,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
           grupoId
           moduloId
           modulo {
+            creditosEfsrt
             plan {
               carrera {
                 tipoCarrera {
@@ -1795,7 +1798,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
       unidadesDidacticas: Array<Pick<RegistroAuxiliarUnidad, "id" | "creditos">>;
       capacidadesTerminales: RegistroAuxiliarCapacidad[];
       indicadoresCapacidad: RegistroAuxiliarIndicador[];
-      modulosEstudiantes: Array<{ id: number }>;
+      modulosEstudiantes: Array<{ id: number; matriculaId: number }>;
     }, { grupoModuloId: number; moduloId: number; grupoId: number }>(
       `
         query RegistroAuxiliarSaveContext($grupoModuloId: Int!, $moduloId: Int!, $grupoId: Int!) {
@@ -1827,6 +1830,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
           }
           modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
             id
+            matriculaId
           }
         }
       `,
@@ -1835,6 +1839,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
 
     const unidadIds = buildUnidadIds(contextResponse.data);
     const unidadIdSet = new Set(unidadIds);
+    const moduloCreditoEfsrt = grupoModulo.modulo?.creditosEfsrt ?? null;
     const unidadCreditoById = new Map(
       (contextResponse.data.unidadesDidacticas ?? [])
         .filter((unidad) => unidadIdSet.has(unidad.id))
@@ -1855,7 +1860,12 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
         a.id - b.id,
       );
     const indicadorById = new Map(indicadores.map((indicador) => [indicador.id, indicador]));
-    const moduloEstudianteIds = new Set((contextResponse.data.modulosEstudiantes ?? []).map((item) => item.id));
+    const moduloEstudiantes = contextResponse.data.modulosEstudiantes ?? [];
+    const moduloEstudianteIds = new Set(moduloEstudiantes.map((item) => item.id));
+    const moduloEstudianteIdByMatricula = new Map(moduloEstudiantes.map((item) => [item.matriculaId, item.id]));
+    const efsrtPppByModuloEstudianteId = new Map(
+      cleanEfsrtPppPromedios.map((item) => [item.moduloEstudianteId, item.promedioFinal] as const),
+    );
     const notasByMatricula = new Map<number, Map<number, number | null>>();
 
     for (const nota of cleanNotas) {
@@ -1896,11 +1906,22 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
         grupoId,
         usesOcupacionalRules
           ? average(unidadIds.map((unidadId) => unidadPromedios.get(unidadId)))
-          : weightedAverage(unidadIds.map((unidadId) => ({
-            value: unidadPromedios.get(unidadId),
-            weight: unidadCreditoById.get(unidadId),
-          }))),
-        sum(indicadores.map((indicador) => notasByIndicador.get(indicador.id))),
+          : weightedAverage([
+            ...unidadIds.map((unidadId) => ({
+              value: unidadPromedios.get(unidadId),
+              weight: unidadCreditoById.get(unidadId),
+            })),
+            {
+              value: efsrtPppByModuloEstudianteId.get(moduloEstudianteIdByMatricula.get(matriculaId) ?? -1),
+              weight: moduloCreditoEfsrt,
+            },
+          ]),
+        usesOcupacionalRules
+          ? sum(unidadIds.map((unidadId) => unidadPromedios.get(unidadId)))
+          : sum([
+            ...unidadIds.map((unidadId) => unidadPromedios.get(unidadId)),
+            efsrtPppByModuloEstudianteId.get(moduloEstudianteIdByMatricula.get(matriculaId) ?? -1),
+          ]),
       );
       if (moduloEstudianteId && !usesOcupacionalRules) {
         await ensureEfsrtPppEstudiante(grupoModuloId, moduloEstudianteId);

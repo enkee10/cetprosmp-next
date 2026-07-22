@@ -171,6 +171,7 @@ type RegistroAuxiliar = {
       titulo?: string | null;
       tituloComercial?: string | null;
       horas?: number | null;
+      creditosEfsrt?: number | null;
       plan?: {
         planEstudio?: string | null;
         carrera?: {
@@ -349,6 +350,23 @@ const sumNotas = (values: Array<number | null>) => {
   const valid = values.filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
   if (valid.length === 0) return null;
   return Math.round(valid.reduce((sum, value) => sum + value, 0) * 10) / 10;
+};
+
+const weightedAverage = (values: Array<{ value: number | null; weight: number | null | undefined }>) => {
+  let weightedSum = 0;
+  let totalWeight = 0;
+  const rawValues: Array<number | null> = [];
+
+  for (const item of values) {
+    rawValues.push(item.value);
+    if (typeof item.value !== 'number' || !Number.isFinite(item.value)) continue;
+    if (typeof item.weight !== 'number' || !Number.isFinite(item.weight) || item.weight <= 0) continue;
+    weightedSum += item.value * item.weight;
+    totalWeight += item.weight;
+  }
+
+  if (totalWeight <= 0) return average(rawValues);
+  return Math.round(weightedSum / totalWeight);
 };
 
 const buildIndicatorColumns = (estructura: Unidad[]) => {
@@ -785,14 +803,36 @@ export default function RegistroAuxiliarPage() {
     [getCapacidadAverage],
   );
 
-  const getModuloAverage = useCallback(
-    (matriculaId: number) => average((registro?.estructura || []).map((unidad) => getUnidadAverage(matriculaId, unidad))),
-    [getUnidadAverage, registro],
-  );
-
   const getEfsrtPppAverage = useCallback(
     (student: Estudiante) => parseNota(efsrtPppNotas[efsrtPppKey(student.id)]),
     [efsrtPppNotas],
+  );
+
+  const getModuloAverage = useCallback(
+    (student: Estudiante) => {
+      const unitGrades = (registro?.estructura || []).map((unidad) => getUnidadAverage(student.matriculaId, unidad));
+      if (usesOcupacionalRules) return average(unitGrades);
+      return weightedAverage([
+        ...(registro?.estructura || []).map((unidad, index) => ({
+          value: unitGrades[index],
+          weight: unidad.creditos,
+        })),
+        {
+          value: getEfsrtPppAverage(student),
+          weight: registro?.grupoModulo?.modulo?.creditosEfsrt,
+        },
+      ]);
+    },
+    [getEfsrtPppAverage, getUnidadAverage, registro, usesOcupacionalRules],
+  );
+
+  const getModuloPuntaje = useCallback(
+    (student: Estudiante) => {
+      const unitGrades = (registro?.estructura || []).map((unidad) => getUnidadAverage(student.matriculaId, unidad));
+      if (usesOcupacionalRules) return sumNotas(unitGrades);
+      return sumNotas([...unitGrades, getEfsrtPppAverage(student)]);
+    },
+    [getEfsrtPppAverage, getUnidadAverage, registro, usesOcupacionalRules],
   );
 
   const selectableColumns = useMemo<SelectableColumn[]>(() => {
@@ -826,11 +866,11 @@ export default function RegistroAuxiliarPage() {
 
     columns.push({
       key: 'puntaje',
-      getValue: (student) => displayNumber(sumNotas(indicatorColumns.map((column) => getNotaValue(student.matriculaId, column.indicador.id)))),
+      getValue: (student) => displayNumber(getModuloPuntaje(student)),
     });
     columns.push({
       key: 'promedio-general',
-      getValue: (student) => displayGrade(getModuloAverage(student.matriculaId)),
+      getValue: (student) => displayGrade(getModuloAverage(student)),
     });
 
     return columns;
@@ -1153,8 +1193,8 @@ export default function RegistroAuxiliarPage() {
       getStudentName(student),
       ...indicatorColumns.map((column) => notas[notaKey(student.matriculaId, column.indicador.id)] || ''),
       ...(showEfsrtPpp ? [displayGrade(getEfsrtPppAverage(student))] : []),
-      displayNumber(sumNotas(indicatorColumns.map((column) => getNotaValue(student.matriculaId, column.indicador.id)))),
-      displayGrade(getModuloAverage(student.matriculaId)),
+      displayNumber(getModuloPuntaje(student)),
+      displayGrade(getModuloAverage(student)),
     ]);
     await navigator.clipboard.writeText([header, ...rows].map((row) => row.join('\t')).join('\n'));
     setMessage('Matriz copiada al portapapeles.');
@@ -2064,12 +2104,12 @@ export default function RegistroAuxiliarPage() {
                           ...cellBaseSx,
                           ...selectableCellSx(tableRowIndex, selectableColumnIndexByKey.get('promedio-general') ?? -1),
                           bgcolor: '#c6e0b4',
-                          color: gradeColor(getModuloAverage(student.matriculaId)),
+                          color: gradeColor(getModuloAverage(student)),
                           textAlign: 'center',
                           fontWeight: 800,
                         }}
                       >
-                        {displayGrade(getModuloAverage(student.matriculaId))}
+                        {displayGrade(getModuloAverage(student))}
                       </Box>
                     </Box>
                     );

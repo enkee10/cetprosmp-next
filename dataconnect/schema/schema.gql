@@ -125,6 +125,7 @@ type Carrera @table(name: "carreras", singular: "carrera", plural: "carreras") {
   duracion: String
   creditos: Int
   nivel: String
+  ciclo: String
   tituloComercial: String @col(name: "titulo_comercial")
   slug: String
   descripcion2: String @col(name: "descripcion_2")

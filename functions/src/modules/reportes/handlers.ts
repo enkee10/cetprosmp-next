@@ -3,14 +3,12 @@ import { execFile } from "child_process";
 import { mkdtemp, readFile, rm, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { basename, join } from "path";
-import { Readable } from "stream";
 import { promisify } from "util";
 import JSZip from "jszip";
 import { PDFDocument } from "pdf-lib";
 import sharp from "sharp";
 import { getStorage } from "firebase-admin/storage";
 import { https, runWith } from "firebase-functions/v1";
-import { drive_v3, google } from "googleapis";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { getDatosGeneralesGlobales } from "../datos-generales/service.js";
 import { requirePermission } from "../core/permissions.js";
@@ -142,6 +140,7 @@ type ReporteEstudiante = {
   matriculaId: number;
   moduloId: number;
   grupoId?: number | null;
+  grupoModuloId?: number | null;
   matricula?: {
     id: number;
     codigoInscripcion?: string | null;
@@ -185,7 +184,8 @@ type ReporteDetalleData = {
   unidadDidacticaModulos: Array<{ orden?: number | null; unidadDidacticaId: number }>;
   unidadesDidacticas: ReporteUnidad[];
   capacidadesTerminales: ReporteCapacidad[];
-  modulosEstudiantes: ReporteEstudiante[];
+  modulosEstudiantesByGrupoModulo: ReporteEstudiante[];
+  modulosEstudiantesLegacy: ReporteEstudiante[];
   unidadesDidacticasEstudiantes: ReportePromedioUnidad[];
   capacidadesTerminalesEstudiantes: ReportePromedioCapacidad[];
   efsrtPppEstudiantes: ReporteEfsrt[];
@@ -255,7 +255,7 @@ type CertificadoTituloRow = {
 
 type SharedStringWriter = (value: string) => number;
 
-type ReportPdfProvider = "office" | "google" | "auto";
+type ReportPdfProvider = "office";
 
 const FONT_XML_REGEX = /<font\b[^>]*\/>|<font\b[^>]*>[\s\S]*?<\/font>/gi;
 const XF_XML_REGEX = /<xf\b[^>]*\/>|<xf\b[^>]*>[\s\S]*?<\/xf>/gi;
@@ -455,13 +455,40 @@ const REPORTE_DETALLE_QUERY = `
       orden
       unidadDidacticaId
     }
-    modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
+    modulosEstudiantesByGrupoModulo: modulosEstudiantes(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 1000) {
       id
       promedio
       puntaje
       matriculaId
       moduloId
       grupoId
+      grupoModuloId
+      matricula {
+        id
+        codigoInscripcion
+        archivado
+        user {
+          id
+          username
+          nombre
+          apellidos
+          apellidoPaterno
+          apellidoMaterno
+          dni
+          sexo
+          fechaNacimiento
+          avatar
+        }
+      }
+    }
+    modulosEstudiantesLegacy: modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
+      id
+      promedio
+      puntaje
+      matriculaId
+      moduloId
+      grupoId
+      grupoModuloId
       matricula {
         id
         codigoInscripcion
@@ -982,9 +1009,22 @@ function formatPlanResolucion(plan?: {
   ].filter(Boolean).join("_");
 }
 
+function formatActaOpcionResolucion(value: unknown) {
+  const text = cleanText(value);
+  if (!text) return "";
+  const parts = text.split("_");
+  if (parts.length === 1) return text;
+  if (parts.length === 2) return `${parts[0]} N° ${parts[1]}`.trim();
+  return `${parts[0]} N° ${parts[1]}-${parts[2]}`.trim();
+}
+
 function getCondition(promedio: number | null | undefined) {
   if (typeof promedio !== "number" || !Number.isFinite(promedio)) return "";
   return promedio >= 13 ? "A" : "D";
+}
+
+function hasFiniteGrade(values: Array<number | null | undefined>) {
+  return values.some((value) => typeof value === "number" && Number.isFinite(value));
 }
 
 function buildUnidadIds(response: {
@@ -1007,6 +1047,23 @@ function buildUnidadIds(response: {
 
 function getAcademicOrder(item: { id: number; orden?: number | null }) {
   return item.orden ?? item.id;
+}
+
+function mergeReporteEstudiantesForGrupoModulo(
+  grupoModuloId: number,
+  primary: ReporteEstudiante[] = [],
+  legacy: ReporteEstudiante[] = [],
+) {
+  const byId = new Map<number, ReporteEstudiante>();
+  for (const item of primary) {
+    byId.set(item.id, item);
+  }
+  for (const item of legacy) {
+    if (byId.has(item.id)) continue;
+    if (item.grupoModuloId && item.grupoModuloId !== grupoModuloId) continue;
+    byId.set(item.id, item);
+  }
+  return Array.from(byId.values());
 }
 
 function turnoRank(value: string | null | undefined) {
@@ -1559,25 +1616,6 @@ function removeXmlAttribute(tag: string, name: string) {
   return tag.replace(new RegExp(`\\s${name}="[^"]*"`, "gi"), "");
 }
 
-function ensureWorksheetPageMargins(xml: string, topCm = 2, horizontalCm = 0.8, bottomCm = 1) {
-  const marginAttrs = [
-    `left="${(horizontalCm / 2.54).toFixed(12)}"`,
-    `right="${(horizontalCm / 2.54).toFixed(12)}"`,
-    `top="${(topCm / 2.54).toFixed(12)}"`,
-    `bottom="${(bottomCm / 2.54).toFixed(12)}"`,
-    `header="0"`,
-    `footer="0"`,
-  ].join(" ");
-  const marginsTag = `<pageMargins ${marginAttrs}/>`;
-  if (/<pageMargins\b[^>]*(?:\/>|>[\s\S]*?<\/pageMargins>)/i.test(xml)) {
-    return xml.replace(/<pageMargins\b[^>]*(?:\/>|>[\s\S]*?<\/pageMargins>)/i, marginsTag);
-  }
-  if (/<pageSetup\b/i.test(xml)) {
-    return xml.replace(/<pageSetup\b/i, `${marginsTag}<pageSetup`);
-  }
-  return xml.replace(/<\/worksheet>$/i, `${marginsTag}</worksheet>`);
-}
-
 function ensureWorksheetFitToPagePr(xml: string) {
   const pageSetupPrTag = '<pageSetUpPr fitToPage="1"/>';
   if (/<pageSetUpPr\b[^>]*(?:\/>|>[\s\S]*?<\/pageSetUpPr>)/i.test(xml)) {
@@ -1639,10 +1677,6 @@ function ensureWorksheetPrintSetup(
 
 function printableScaleForDocument(tipoDocumento: ReportDocumentType) {
   return tipoDocumento === "nomina" ? 93 : 83;
-}
-
-function printableTopMarginForDocument(tipoDocumento: ReportDocumentType) {
-  return tipoDocumento === "nomina" ? 1 : 2;
 }
 
 function mergeRangeExists(xml: string, range: string) {
@@ -2155,10 +2189,7 @@ async function applyExcelUpdates(
   templateBuffer: Buffer,
   updates: SpreadsheetUpdate[],
   printScale = 83,
-  topMarginCm = 2,
   normalizeProgramaStyles = false,
-  horizontalMarginCm = 0.8,
-  bottomMarginCm = 1,
   printOrientation?: "landscape" | "portrait",
   forcePrintScale = false,
   paperSize = "9",
@@ -2208,7 +2239,6 @@ async function applyExcelUpdates(
   if (normalizeProgramaStyles) {
     nextXml = normalizeProgramaActaStudentStyles(nextXml);
   }
-  nextXml = ensureWorksheetPageMargins(nextXml, topMarginCm, horizontalMarginCm, bottomMarginCm);
   if (!preservePageLayout) {
     nextXml = ensureWorksheetPrintSetup(nextXml, printScale, printOrientation, forcePrintScale, paperSize, fitToPageWidth);
   }
@@ -2329,37 +2359,8 @@ function reportesOfficeConverterUsesIam() {
 }
 
 function reportesPdfProvider(input?: unknown): ReportPdfProvider {
-  const value = String(input || process.env.REPORTES_PDF_PROVIDER || "office").trim().toLowerCase();
-  if (value === "google" || value === "drive" || value === "sheets") return "google";
-  if (value === "auto") return "auto";
+  void input;
   return "office";
-}
-
-function reportesGoogleKeepTempFile() {
-  return ["1", "true", "yes", "on"].includes(
-    String(process.env.REPORTES_GOOGLE_KEEP_TEMP || "").trim().toLowerCase(),
-  );
-}
-
-function reportesGoogleDriveFolderId() {
-  return String(process.env.REPORTES_GOOGLE_DRIVE_FOLDER_ID || "").trim();
-}
-
-function getReportesGoogleAuth(scopes: string[]) {
-  const clientEmail = String(process.env.GOOGLE_CLIENT_EMAIL || "").trim();
-  const privateKey = String(process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
-  const subject = String(process.env.REPORTES_GOOGLE_SUBJECT_EMAIL || "").trim();
-
-  if (!clientEmail || !privateKey) {
-    throw new Error("Faltan GOOGLE_CLIENT_EMAIL o GOOGLE_PRIVATE_KEY para convertir reportes con Google Drive/Sheets.");
-  }
-
-  return new google.auth.JWT({
-    email: clientEmail,
-    key: privateKey,
-    scopes,
-    subject: subject || undefined,
-  });
 }
 
 async function getIdentityToken(audience: string) {
@@ -2398,96 +2399,6 @@ async function convertXlsxToPdfWithService(xlsxBuffer: Buffer, baseName: string,
   return Buffer.from(await response.arrayBuffer());
 }
 
-async function cleanupGoogleTempFile(drive: drive_v3.Drive, fileId: string) {
-  if (reportesGoogleKeepTempFile()) return;
-  try {
-    await drive.files.delete({
-      fileId,
-      supportsAllDrives: true,
-    });
-  } catch (error) {
-    console.warn("No se pudo eliminar el archivo temporal de Google Drive.", {
-      fileId,
-      message: String((error as { message?: string } | null)?.message || error),
-    });
-  }
-}
-
-async function exportGoogleSpreadsheetToPdf(auth: InstanceType<typeof google.auth.JWT>, fileId: string) {
-  const credentials = await auth.authorize();
-  const accessToken = credentials.access_token;
-  if (!accessToken) throw new Error("Google no devolvio access token para exportar el PDF.");
-
-  const params = new URLSearchParams({
-    format: "pdf",
-    size: "A4",
-    portrait: "false",
-    fitw: "false",
-    scale: "1",
-    top_margin: (2 / 2.54).toFixed(12),
-    bottom_margin: (1 / 2.54).toFixed(12),
-    left_margin: (0.8 / 2.54).toFixed(12),
-    right_margin: (0.8 / 2.54).toFixed(12),
-    sheetnames: "false",
-    printtitle: "false",
-    pagenumbers: "false",
-    gridlines: "false",
-    fzr: "false",
-  });
-
-  const response = await fetch(`https://docs.google.com/spreadsheets/d/${encodeURIComponent(fileId)}/export?${params.toString()}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  if (!response.ok) {
-    const message = await response.text().catch(() => "");
-    throw new Error(`Google Sheets no pudo exportar el PDF. HTTP ${response.status}: ${message}`);
-  }
-
-  const contentType = response.headers.get("content-type") || "";
-  if (!contentType.toLowerCase().includes("application/pdf")) {
-    const message = await response.text().catch(() => "");
-    throw new Error(`Google Sheets devolvio un contenido que no es PDF (${contentType}). ${message.slice(0, 500)}`);
-  }
-
-  return Buffer.from(await response.arrayBuffer());
-}
-
-async function convertXlsxToPdfWithGoogle(xlsxBuffer: Buffer, baseName: string) {
-  const auth = getReportesGoogleAuth(["https://www.googleapis.com/auth/drive"]);
-  const drive = google.drive({ version: "v3", auth });
-  const folderId = reportesGoogleDriveFolderId();
-  let fileId = "";
-
-  try {
-    const requestBody: drive_v3.Schema$File = {
-      name: `${baseName}.xlsx`,
-      mimeType: "application/vnd.google-apps.spreadsheet",
-    };
-    if (folderId) requestBody.parents = [folderId];
-
-    const created = await drive.files.create({
-      requestBody,
-      media: {
-        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        body: Readable.from(xlsxBuffer),
-      },
-      fields: "id",
-      supportsAllDrives: true,
-    });
-
-    fileId = String(created.data.id || "");
-    if (!fileId) throw new Error("Google Drive no devolvio el id del archivo temporal.");
-
-    return await exportGoogleSpreadsheetToPdf(auth, fileId);
-  } catch (error) {
-    throw new Error(`No se pudo convertir el Excel a PDF con Google Drive/Sheets. ${String((error as { message?: string } | null)?.message || error)}`);
-  } finally {
-    if (fileId) await cleanupGoogleTempFile(drive, fileId);
-  }
-}
-
 async function convertXlsxToPdfWithOffice(xlsxBuffer: Buffer, baseName: string) {
   const converterUrl = reportesOfficeConverterUrl();
   if (converterUrl) {
@@ -2523,20 +2434,7 @@ async function convertXlsxToPdfWithOffice(xlsxBuffer: Buffer, baseName: string) 
 }
 
 async function convertXlsxToPdf(xlsxBuffer: Buffer, baseName: string, providerInput?: unknown) {
-  const provider = reportesPdfProvider(providerInput);
-  if (provider === "google") {
-    return convertXlsxToPdfWithGoogle(xlsxBuffer, baseName);
-  }
-  if (provider === "auto") {
-    try {
-      return await convertXlsxToPdfWithGoogle(xlsxBuffer, baseName);
-    } catch (error) {
-      console.warn("Fallo Google Drive/Sheets para PDF; se usara Office.", {
-        message: String((error as { message?: string } | null)?.message || error),
-      });
-      return convertXlsxToPdfWithOffice(xlsxBuffer, baseName);
-    }
-  }
+  reportesPdfProvider(providerInput);
   return convertXlsxToPdfWithOffice(xlsxBuffer, baseName);
 }
 
@@ -2580,10 +2478,12 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   const nivel = cleanText(data.grupoModulo.modulo?.plan?.carrera?.nivel || "");
   const ciclo = cleanText(data.grupoModulo.modulo?.plan?.carrera?.ciclo || nivel);
   const semestre = cleanText(data.semestre?.titulo || data.grupoModulo.grupo?.semestre?.titulo || "");
-  const resolucion = cleanText(datos.rd || "");
+  const resolucion = formatPlanResolucion(data.grupoModulo.modulo?.plan) || cleanText(datos.rd || "");
   const horas = data.grupoModulo.modulo?.horas ?? "";
   const creditos = data.grupoModulo.modulo?.creditos ?? "";
   const codigoModular = cleanText(datos.codigoModular || "");
+  const docenteUpper = docente.toLocaleUpperCase("es-PE");
+  const directorUpper = director.toLocaleUpperCase("es-PE");
 
   if (mode === "nomina") {
     if (!data.opcionOcupacional) {
@@ -2608,17 +2508,16 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
     addCell(updates, sheetName, "Y6", carrera.toLocaleUpperCase("es-PE"));
     addCell(updates, sheetName, "AE7", ciclo.toLocaleUpperCase("es-PE"));
     addCell(updates, sheetName, "AE8", modulo);
-    addCell(updates, sheetName, "Z12", resolucion);
+    addCell(updates, sheetName, "Z12", formatActaOpcionResolucion(resolucion));
     addCell(updates, sheetName, "AF13", turno);
     addCell(updates, sheetName, "AF14", data.seccion);
     addCell(updates, sheetName, "AF15", formatHoras(horas));
     addCell(updates, sheetName, "AF16", formatDate(inicio));
     addCell(updates, sheetName, "AJ16", formatDate(fin));
     addCell(updates, sheetName, "B68", modulo);
-    addCell(updates, sheetName, "J68", docente);
-    addCell(updates, sheetName, "C78", `${distrito}, ${getDocumentDateLong(data, "acta")}`);
-    addCell(updates, sheetName, "L81", docente ? `Lic. ${docente}` : "Lic. ");
-    addCell(updates, sheetName, "W81", director ? `Lic. ${director}` : "Lic. ");
+    addCell(updates, sheetName, "J68", docenteUpper);
+    addCell(updates, sheetName, "L81", docenteUpper ? `LIC. ${docenteUpper}` : "LIC. ");
+    addCell(updates, sheetName, "W81", directorUpper ? `LIC. ${directorUpper}` : "LIC. ");
     return;
   }
 
@@ -2702,15 +2601,19 @@ function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data:
   });
 
   const students = data.estudiantes.slice(0, 40);
+  const getStudentUnitGrades = (student: ReporteEstudiante) => units.map((unit) => unitMap.get(`${student.matriculaId}:${unit.id}`));
+  const hasStudentAnyGrade = (student: ReporteEstudiante) => {
+    const unitGrades = getStudentUnitGrades(student);
+    const efsrt = efsrtMap.get(student.id);
+    return hasFiniteGrade(unitGrades) || (typeof efsrt === "number" && Number.isFinite(efsrt));
+  };
   students.forEach((student, index) => {
     const row = index < 20 ? 14 + index : 43 + (index - 20);
     addCell(updates, sheetName, `B${row}`, student.matricula?.user?.dni || student.matricula?.codigoInscripcion || "");
     addCell(updates, sheetName, `F${row}`, getStudentName(student));
     const efsrt = efsrtMap.get(student.id);
-    const unitGrades = units.map((unit) => unitMap.get(`${student.matriculaId}:${unit.id}`));
-    const hasUnitGrades = unitGrades.some((grade) => typeof grade === "number" && Number.isFinite(grade));
-    const hasEfsrtGrade = typeof efsrt === "number" && Number.isFinite(efsrt);
-    const hasAnyGrade = hasUnitGrades || hasEfsrtGrade;
+    const unitGrades = getStudentUnitGrades(student);
+    const hasAnyGrade = hasStudentAnyGrade(student);
     units.forEach((_unit, unitIndex) => {
       const column = unitColumns[unitIndex];
       if (!hasAnyGrade && unitIndex === 0) {
@@ -2750,7 +2653,7 @@ function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data:
       .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
     addCell(updates, sheetName, `${column}65`, values.filter((value) => value >= 13).length);
     addCell(updates, sheetName, `${column}66`, values.filter((value) => value < 13).length);
-    addCell(updates, sheetName, `${column}67`, 0);
+    addCell(updates, sheetName, `${column}67`, data.estudiantes.filter((student) => !hasStudentAnyGrade(student)).length);
   });
 }
 
@@ -2761,6 +2664,14 @@ function fillOpcionActa(updates: SpreadsheetUpdate[], sheetName: string, data: R
   const unidadMap = unidadPromedioMap(data);
   const capacidades = data.capacidades.slice(0, capacidadColumns.length);
   const studentResults = new Map<number, { puntaje: number | null; promedio: number | null }>();
+  const getStudentCapacidadGrades = (student: ReporteEstudiante) => (
+    capacidades.map((capacidad) => capacidadMap.get(`${student.matriculaId}:${capacidad.id}`))
+  );
+  const getStudentCondition = (student: ReporteEstudiante) => {
+    const notas = getStudentCapacidadGrades(student);
+    if (!hasFiniteGrade(notas)) return "R";
+    return getCondition(studentResults.get(student.id)?.promedio);
+  };
 
   for (const student of data.estudiantes) {
     const unitGrades = data.unidades.map((unit) => unidadMap.get(`${student.matriculaId}:${unit.id}`));
@@ -2783,8 +2694,8 @@ function fillOpcionActa(updates: SpreadsheetUpdate[], sheetName: string, data: R
     addCell(updates, sheetName, `C${row}`, "G");
     addCell(updates, sheetName, `D${row}`, student.matricula?.codigoInscripcion || "");
     addCell(updates, sheetName, `G${row}`, getStudentName(student));
-    const notas = capacidades.map((capacidad) => capacidadMap.get(`${student.matriculaId}:${capacidad.id}`));
-    const hasNotas = notas.some((nota) => typeof nota === "number" && Number.isFinite(nota));
+    const notas = getStudentCapacidadGrades(student);
+    const hasNotas = hasFiniteGrade(notas);
     capacidades.forEach((_capacidad, capacidadIndex) => {
       const column = capacidadColumns[capacidadIndex];
       if (!hasNotas && capacidadIndex === 0) {
@@ -2796,7 +2707,7 @@ function fillOpcionActa(updates: SpreadsheetUpdate[], sheetName: string, data: R
     const result = studentResults.get(student.id);
     addCell(updates, sheetName, `V${row}`, formatGrade(result?.puntaje));
     addCell(updates, sheetName, `W${row}`, formatGrade(result?.promedio));
-    const condition: string = getCondition(result?.promedio);
+    const condition = getStudentCondition(student);
     addCell(updates, sheetName, `X${row}`, condition === "A" ? "X" : "");
     addCell(updates, sheetName, `Z${row}`, condition === "D" ? "X" : "");
     addCell(updates, sheetName, `AC${row}`, condition === "R" ? "X" : "");
@@ -2808,9 +2719,9 @@ function fillOpcionActa(updates: SpreadsheetUpdate[], sheetName: string, data: R
     });
   }
   addCell(updates, sheetName, "AH43", students.length);
-  addCell(updates, sheetName, "AH45", students.filter((student) => getCondition(studentResults.get(student.id)?.promedio) === "A").length);
-  addCell(updates, sheetName, "AH47", students.filter((student) => getCondition(studentResults.get(student.id)?.promedio) === "D").length);
-  addCell(updates, sheetName, "AH49", 0);
+  addCell(updates, sheetName, "AH45", students.filter((student) => getStudentCondition(student) === "A").length);
+  addCell(updates, sheetName, "AH47", students.filter((student) => getStudentCondition(student) === "D").length);
+  addCell(updates, sheetName, "AH49", students.filter((student) => getStudentCondition(student) === "R").length);
 }
 
 function fillReporte(updates: SpreadsheetUpdate[], sheetName: string, tipoDocumento: ReportDocumentType, data: ReporteDocumentoData) {
@@ -3109,7 +3020,11 @@ async function buildReporteData(grupoModuloId: number) {
       getAcademicOrder(a) - getAcademicOrder(b) ||
       a.id - b.id,
     );
-  const estudiantes = (response.data.modulosEstudiantes ?? [])
+  const estudiantes = mergeReporteEstudiantesForGrupoModulo(
+    grupoModuloId,
+    response.data.modulosEstudiantesByGrupoModulo ?? [],
+    response.data.modulosEstudiantesLegacy ?? [],
+  )
     .filter((student) => !student.matricula?.archivado)
     .sort((a, b) => getStudentName(a).localeCompare(getStudentName(b), "es", { numeric: true }));
   const matriculaIds = new Set(estudiantes.map((student) => student.matriculaId));
@@ -3676,10 +3591,7 @@ async function generateReporteDocumentoInternal(input: {
     templateBuffer,
     updates,
     printableScaleForDocument(input.tipoDocumento),
-    printableTopMarginForDocument(input.tipoDocumento),
     input.tipoDocumento === "acta" && !reportes[0].opcionOcupacional,
-    isActaOpcion ? 0.5 : isActaPrograma ? 0.6 : 0.8,
-    isActaPrograma ? 0.6 : 1,
     undefined,
     false,
     "9",
@@ -3690,6 +3602,7 @@ async function generateReporteDocumentoInternal(input: {
       "[Nombre Carrera]": getCarreraName(reportes[0].grupoModulo),
       "[Nombre Modulo]": getModuloDocumentName(reportes[0].grupoModulo),
       "[ciclo]": reportes[0].grupoModulo.modulo?.plan?.carrera?.ciclo || reportes[0].grupoModulo.modulo?.plan?.carrera?.nivel || "",
+      "[fecha larga]": getDocumentDateLong(reportes[0], input.tipoDocumento === "nomina" ? "nomina" : "acta"),
     },
     isActaPrograma
       ? { kind: "programa", studentCount: Math.min(reportes[0].estudiantes.length, 40) }
@@ -3738,9 +3651,6 @@ function getReporteGenerationErrorMessage(error: unknown) {
     responseData: (error as { response?: { data?: unknown } } | null)?.response?.data,
   }).toLowerCase();
 
-  if (reason.includes("google drive/sheets") || reason.includes("unauthorized_client") || reason.includes("auth/drive") || reason.includes("drive api")) {
-    return message || "No se pudo convertir el Excel a PDF con Google Drive/Sheets.";
-  }
   if (reason.includes("libreoffice") || reason.includes("openoffice") || reason.includes("soffice") || reason.includes("convertir el excel a pdf")) {
     return "No se pudo convertir el Excel a PDF. Instala LibreOffice/OpenOffice o configura REPORTES_OFFICE_BIN con la ruta de soffice.";
   }

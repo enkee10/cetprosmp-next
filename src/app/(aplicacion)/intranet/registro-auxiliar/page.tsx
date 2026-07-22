@@ -878,8 +878,8 @@ export default function RegistroAuxiliarPage() {
     getCapacidadAverage,
     getEfsrtPppAverage,
     getModuloAverage,
+    getModuloPuntaje,
     getNotaValue,
-    indicatorColumns,
     showEfsrtPpp,
     visibleUnits,
   ]);
@@ -1731,7 +1731,7 @@ export default function RegistroAuxiliarPage() {
                         sx={{
                           ...cellBaseSx,
                           ...selectableCellSx(TABLE_HEADER_ROW_START, selectableColumnIndexByKey.get('efsrt-ppp') ?? -1, 3, 1),
-                          bgcolor: '#c6e0b4',
+                          bgcolor: '#d9ead3',
                           width: 48,
                           writingMode: 'vertical-rl',
                           transform: 'rotate(180deg)',
@@ -2053,7 +2053,7 @@ export default function RegistroAuxiliarPage() {
                             ...cellBaseSx,
                             ...selectableCellSx(tableRowIndex, selectableColumnIndexByKey.get('efsrt-ppp') ?? -1),
                             p: 0,
-                            bgcolor: '#c6e0b4',
+                            bgcolor: '#d9ead3',
                           }}
                         >
                           <Box
@@ -2071,7 +2071,7 @@ export default function RegistroAuxiliarPage() {
                               height: 24,
                               border: 0,
                               px: 0.4,
-                              bgcolor: isCellSelected(tableRowIndex, selectableColumnIndexByKey.get('efsrt-ppp') ?? -1) ? '#dcebcf' : '#c6e0b4',
+                              bgcolor: isCellSelected(tableRowIndex, selectableColumnIndexByKey.get('efsrt-ppp') ?? -1) ? '#eef7e8' : '#d9ead3',
                               color: gradeColor(parseNota(efsrtPppNotas[efsrtPppKey(student.id)])),
                               textAlign: 'center',
                               fontSize: 12,
@@ -2093,9 +2093,7 @@ export default function RegistroAuxiliarPage() {
                           fontWeight: 800,
                         }}
                       >
-                        {displayNumber(
-                          sumNotas(indicatorColumns.map((column) => getNotaValue(student.matriculaId, column.indicador.id))),
-                        )}
+                        {displayNumber(getModuloPuntaje(student))}
                       </Box>
                       <Box
                         component="td"

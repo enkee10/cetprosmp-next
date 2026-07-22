@@ -269,13 +269,13 @@ export const DELETE_GRUPO_MUTATION = `
 `;
 
 export const INSERT_GRUPO_MODULO_MUTATION = `
-  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId")) {
+  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia sufijo")) {
     grupoModulo_insert(data: $data)
   }
 `;
 
 export const UPDATE_GRUPO_MODULO_MUTATION = `
-  mutation UpdateGrupoModulo($id: Int!, $data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId")) {
+  mutation UpdateGrupoModulo($id: Int!, $data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia sufijo")) {
     grupoModulo_update(id: $id, data: $data)
   }
 `;
@@ -289,6 +289,18 @@ export const DELETE_GRUPO_MODULO_MUTATION = `
 export const INSERT_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION = `
   mutation InsertGrupoModuloUnidadDidactica($data: GrupoModuloUnidadDidactica_Data! @allow(fields: "grupoModuloId unidadDidacticaId orden inicio fin")) {
     grupoModuloUnidadDidactica_insert(data: $data)
+  }
+`;
+
+export const UPDATE_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION = `
+  mutation UpdateGrupoModuloUnidadDidactica($id: Int!, $data: GrupoModuloUnidadDidactica_Data! @allow(fields: "grupoModuloId unidadDidacticaId orden inicio fin")) {
+    grupoModuloUnidadDidactica_update(id: $id, data: $data)
+  }
+`;
+
+export const DELETE_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION = `
+  mutation DeleteGrupoModuloUnidadDidactica($id: Int!) {
+    grupoModuloUnidadDidactica_delete(id: $id)
   }
 `;
 
@@ -593,7 +605,7 @@ export const DELETE_PAQUETE_MUTATION = `
 `;
 
 export const INSERT_PAQUETE_MODULO_MUTATION = `
-  mutation InsertPaqueteModulo($data: PaqueteModulo_Data! @allow(fields: "paqueteId moduloId orden obligatorio")) {
+  mutation InsertPaqueteModulo($data: PaqueteModulo_Data! @allow(fields: "paqueteId moduloId orden obligatorio multiplicador sufijos")) {
     paqueteModulo_insert(data: $data)
   }
 `;
@@ -642,7 +654,7 @@ export const LIST_EVALUACION_ESTUDIANTE_IDS_BY_MATRICULA_QUERY = `
 `;
 
 export const INSERT_MODULO_ESTUDIANTE_MUTATION = `
-  mutation InsertModuloEstudiante($data: ModuloEstudiante_Data! @allow(fields: "promedio puntaje matriculaId moduloId grupoId")) {
+  mutation InsertModuloEstudiante($data: ModuloEstudiante_Data! @allow(fields: "promedio puntaje matriculaId moduloId grupoId grupoModuloId")) {
     moduloEstudiante_insert(data: $data)
   }
 `;

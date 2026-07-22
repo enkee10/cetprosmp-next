@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 
 interface FormLoadingOverlayProps {
   open: boolean;
@@ -28,6 +28,7 @@ export default function FormLoadingOverlay({
   const overlay = (
     <Box
       role="status"
+      aria-label={message}
       aria-live="polite"
       sx={{
         position: isFullscreen ? 'fixed' : 'absolute',
@@ -43,28 +44,7 @@ export default function FormLoadingOverlay({
         pointerEvents: 'auto',
       }}
     >
-      <Box
-        sx={{
-          minWidth: 220,
-          maxWidth: 'calc(100% - 32px)',
-          px: 3,
-          py: 2.5,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 1.5,
-          borderRadius: 2,
-          bgcolor: 'rgba(255, 255, 255, 0.86)',
-          border: '1px solid',
-          borderColor: 'divider',
-          boxShadow: 6,
-        }}
-      >
-        <CircularProgress size={34} />
-        <Typography variant="body2" sx={{ fontWeight: 600, textAlign: 'center' }}>
-          {message}
-        </Typography>
-      </Box>
+      <CircularProgress size={42} />
     </Box>
   );
 

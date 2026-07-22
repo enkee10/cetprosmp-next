@@ -158,6 +158,8 @@ interface MatriculaDocenteGrupoModulo {
   id: number;
   nombre?: string | null;
   orden?: number | null;
+  instancia?: number | null;
+  sufijo?: string | null;
   grupoId: number;
   moduloId: number;
   grupo?: {
@@ -180,6 +182,7 @@ interface MatriculaDocenteGrupoModulo {
 
 interface MatriculaDocenteModuloEstudiante {
   matriculaId?: number | null;
+  grupoModuloId?: number | null;
   grupoId?: number | null;
   moduloId?: number | null;
 }
@@ -192,13 +195,16 @@ type MatriculaSaveUserResult = {
 type GrupoModuloMapping = {
   grupoId: number;
   workspaceCorreo?: string | null;
-  moduloGrupos: Array<{ moduloId: number; grupoId: number }>;
+  moduloGrupos: Array<{ grupoModuloId: number; moduloId: number; grupoId: number }>;
 };
 
 type MatriculaWorkspaceGroup = {
   grupoId: number;
   workspaceCorreo?: string | null;
 };
+
+const getPaqueteModuloMultiplicador = (paqueteModulo: DataConnectPaqueteModulo) =>
+  Math.max(1, Math.min(6, paqueteModulo.multiplicador ?? 1));
 
 interface OcrIdentityData {
   tipoDocumento?: string | null;
@@ -359,10 +365,12 @@ const GET_PAQUETE_MODULOS_FOR_MATRICULA_QUERY = `
       id
       archivado
     }
-    paqueteModulos(where: { paqueteId: { eq: $paqueteId } }, limit: 10) {
+    paqueteModulos(where: { paqueteId: { eq: $paqueteId } }, limit: 50) {
       id
       orden
       obligatorio
+      multiplicador
+      sufijos
       paqueteId
       moduloId
     }
@@ -492,6 +500,8 @@ const LIST_MATRICULA_DOCENTE_GRUPOS_QUERY = `
       id
       nombre
       orden
+      instancia
+      sufijo
       grupoId
       moduloId
       grupo {
@@ -518,6 +528,7 @@ const LIST_MODULO_ESTUDIANTES_FOR_MATRICULAS_QUERY = `
   query ListModuloEstudiantesForMatriculas {
     modulosEstudiantes(limit: 200000) {
       matriculaId
+      grupoModuloId
       grupoId
       moduloId
     }
@@ -594,13 +605,15 @@ const GET_GRUPOS_BY_SEMESTRE_PAQUETE_QUERY = `
 
 const GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY = `
   query GetGrupoModulosForMatricula($grupoId: Int!) {
-    grupoModulos(where: { grupoId: { eq: $grupoId } }, limit: 10) {
+    grupoModulos(where: { grupoId: { eq: $grupoId } }, limit: 50) {
       id
       nombre
       orden
       obligatorio
       grupoId
       moduloId
+      instancia
+      sufijo
       modulo {
         titulo
         tituloComercial
@@ -2610,8 +2623,7 @@ async function cleanupMatricula(matriculaId: number) {
 
 async function replaceModuloEstudiantesForMatricula(
   matriculaId: number,
-  paqueteModulos: DataConnectPaqueteModulo[],
-  grupoIdByModuloId: Map<number, number | null>,
+  moduloGrupos: Array<{ grupoModuloId?: number | null; moduloId: number; grupoId?: number | null }>,
   fallbackGrupoId: number | null,
 ) {
   await dataConnect.executeGraphql<
@@ -2620,11 +2632,12 @@ async function replaceModuloEstudiantesForMatricula(
   >(DELETE_MODULO_ESTUDIANTES_BY_MATRICULA_MUTATION, { variables: { matriculaId } });
 
   await Promise.all(
-    paqueteModulos.map((paqueteModulo) => {
+    moduloGrupos.map((moduloGrupo) => {
       const moduloEstudiante = buildModuloEstudianteDataFromInput({
         matriculaId,
-        moduloId: paqueteModulo.moduloId,
-        grupoId: grupoIdByModuloId.get(paqueteModulo.moduloId) ?? fallbackGrupoId,
+        moduloId: moduloGrupo.moduloId,
+        grupoId: moduloGrupo.grupoId ?? fallbackGrupoId,
+        grupoModuloId: moduloGrupo.grupoModuloId ?? null,
         promedio: null,
         puntaje: null,
       });
@@ -2633,6 +2646,35 @@ async function replaceModuloEstudiantesForMatricula(
         { data: DataConnectModuloEstudianteInput }
       >(INSERT_MODULO_ESTUDIANTE_MUTATION, { variables: { data: moduloEstudiante } });
     }),
+  );
+}
+
+function buildModuloGruposForMatricula(data: unknown, paqueteModulos: DataConnectPaqueteModulo[]) {
+  const record = data as Record<string, unknown> | null;
+  const input = record?.moduloGrupos;
+  if (Array.isArray(input)) {
+    const result: Array<{ grupoModuloId: number | null; moduloId: number; grupoId: number | null }> = [];
+    for (const item of input) {
+      if (typeof item !== "object" || item === null) continue;
+      const raw = item as Record<string, unknown>;
+      const moduloId = toNumber(raw.moduloId, -1);
+      if (moduloId <= 0) continue;
+      result.push({
+        grupoModuloId: toNumberOrNull(raw.grupoModuloId) ?? null,
+        moduloId,
+        grupoId: toNumberOrNull(raw.grupoId) ?? null,
+      });
+    }
+    if (result.length > 0) return result;
+  }
+
+  const { result: grupoIdByModuloId, fallbackGrupoId } = buildGrupoIdByModuloId(data);
+  return paqueteModulos.flatMap((paqueteModulo) =>
+    Array.from({ length: getPaqueteModuloMultiplicador(paqueteModulo) }, () => ({
+      grupoModuloId: null,
+      moduloId: paqueteModulo.moduloId,
+      grupoId: grupoIdByModuloId.get(paqueteModulo.moduloId) ?? fallbackGrupoId,
+    })),
   );
 }
 
@@ -2680,13 +2722,14 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
     }
 
     const paqueteModulos = sortPaqueteModulos(paqueteResponse.data.paqueteModulos ?? []);
-    if (paqueteModulos.length < 1 || paqueteModulos.length > 3) {
+    const moduloGrupos = buildModuloGruposForMatricula(data, paqueteModulos);
+    if (moduloGrupos.length < 1 || moduloGrupos.length > 6) {
       throw new https.HttpsError(
         "failed-precondition",
-        "El paquete debe tener entre 1 y 3 modulos antes de matricular.",
+        "El paquete debe tener entre 1 y 6 instancias de modulos antes de matricular.",
       );
     }
-    const { result: grupoIdByModuloId, fallbackGrupoId } = buildGrupoIdByModuloId(data);
+    const fallbackGrupoId = toNumberOrNull(data.grupoId) ?? null;
 
     const matriculaPayload = buildMatriculaDataFromInput({
       ...data,
@@ -2709,8 +2752,7 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
 
     await replaceModuloEstudiantesForMatricula(
       matriculaId,
-      paqueteModulos,
-      grupoIdByModuloId,
+      moduloGrupos,
       fallbackGrupoId,
     );
 
@@ -2720,9 +2762,10 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
       userId,
       responsableId,
       responsableUserId,
-      modulos: paqueteModulos.map((item) => ({
+      modulos: moduloGrupos.map((item) => ({
         moduloId: item.moduloId,
-        grupoId: grupoIdByModuloId.get(item.moduloId) ?? fallbackGrupoId,
+        grupoId: item.grupoId ?? fallbackGrupoId,
+        grupoModuloId: item.grupoModuloId ?? null,
       })),
     };
   } catch (error) {
@@ -2748,12 +2791,16 @@ export const listMatriculas = https.onCall(async (data, context) => {
     ]);
 
     const shouldFilterByDocente = isDocenteMatriculaRequester(context);
+    let allowedGrupoModuloIds = new Set<string>();
     let allowedPairs = new Set<string>();
     if (grupoModuloId || shouldFilterByDocente) {
       const { grupoModulos } = await loadMatriculaDocenteGrupoModulos(context);
       const allowedGrupoModulos = grupoModuloId
         ? grupoModulos.filter((item) => item.id === grupoModuloId)
         : grupoModulos;
+      allowedGrupoModuloIds = new Set(
+        allowedGrupoModulos.map((item) => String(item.id)),
+      );
       allowedPairs = new Set(
         allowedGrupoModulos.map((item) => `${item.grupoId}:${item.moduloId}`),
       );
@@ -2763,7 +2810,11 @@ export const listMatriculas = https.onCall(async (data, context) => {
     const allowedMatriculaIds = shouldApplyMatriculaFilter
       ? new Set<number>(
         (moduloEstudiantesResponse.data.modulosEstudiantes ?? [])
-          .filter((item) => allowedPairs.has(`${item.grupoId ?? 0}:${item.moduloId ?? 0}`))
+          .filter((item) =>
+            item.grupoModuloId
+              ? allowedGrupoModuloIds.has(String(item.grupoModuloId))
+              : allowedPairs.has(`${item.grupoId ?? 0}:${item.moduloId ?? 0}`),
+          )
           .map((item) => item.matriculaId)
           .filter((id): id is number => Boolean(id)),
       )
@@ -3099,7 +3150,7 @@ async function getGrupoModuloMapping(semestreId: number, paqueteId: number): Pro
   }
 
   const modulosResponse = await dataConnect.executeGraphql<{
-    grupoModulos: Array<{ moduloId: number; grupoId: number }>;
+    grupoModulos: Array<{ id: number; moduloId: number; grupoId: number }>;
   }, { grupoId: number }>(
     GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY,
     { variables: { grupoId: grupo.id } },
@@ -3109,6 +3160,7 @@ async function getGrupoModuloMapping(semestreId: number, paqueteId: number): Pro
     grupoId: grupo.id,
     workspaceCorreo: grupo.workspaceCorreo ?? null,
     moduloGrupos: (modulosResponse.data.grupoModulos ?? []).map((item) => ({
+      grupoModuloId: item.id,
       moduloId: item.moduloId,
       grupoId: item.grupoId,
     })),
@@ -3639,10 +3691,11 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
     }
 
     const paqueteModulos = sortPaqueteModulos(paqueteResponse.data.paqueteModulos ?? []);
-    if (paqueteModulos.length < 1 || paqueteModulos.length > 3) {
+    const moduloGrupos = buildModuloGruposForMatricula({ ...data, moduloGrupos: grupoMapping.moduloGrupos, grupoId: grupoMapping.grupoId }, paqueteModulos);
+    if (moduloGrupos.length < 1 || moduloGrupos.length > 6) {
       throw new https.HttpsError(
         "failed-precondition",
-        "El paquete debe tener entre 1 y 3 modulos antes de matricular.",
+        "El paquete debe tener entre 1 y 6 instancias de modulos antes de matricular.",
       );
     }
 
@@ -3666,8 +3719,7 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
     const savedMatriculaId = getIdFromKeyOutput(updated.data.matricula_update) ?? matriculaId;
     await replaceModuloEstudiantesForMatricula(
       savedMatriculaId,
-      paqueteModulos,
-      new Map(grupoMapping.moduloGrupos.map((item) => [item.moduloId, item.grupoId ?? null])),
+      moduloGrupos,
       grupoMapping.grupoId,
     );
     const workspaceGroup = await syncMatriculaWorkspaceGroupChange({

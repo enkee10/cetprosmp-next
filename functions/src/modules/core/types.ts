@@ -448,6 +448,8 @@ export interface DataConnectGrupoModulo {
   obligatorio?: boolean | null;
   inicio?: string | null;
   fin?: string | null;
+  instancia?: number | null;
+  sufijo?: string | null;
   grupoId: number;
   moduloId: number;
   calendarioId?: number | null;
@@ -462,6 +464,8 @@ export interface DataConnectGrupoModuloInput {
   obligatorio?: boolean;
   inicio?: string | null;
   fin?: string | null;
+  instancia?: number | null;
+  sufijo?: string | null;
   grupoId: number;
   moduloId: number;
   calendarioId?: number | null;
@@ -757,6 +761,8 @@ export interface DataConnectPaqueteModulo {
   id: number;
   orden?: number | null;
   obligatorio?: boolean | null;
+  multiplicador?: number | null;
+  sufijos?: string | null;
   paqueteId: number;
   moduloId: number;
   modulo?: Pick<DataConnectModulo, "titulo" | "tituloComercial" | "orden" | "plan"> | null;
@@ -766,6 +772,8 @@ export interface DataConnectPaqueteModulo {
 export interface DataConnectPaqueteModuloInput {
   orden?: number | null;
   obligatorio?: boolean;
+  multiplicador?: number | null;
+  sufijos?: string | null;
   paqueteId: number;
   moduloId: number;
 }
@@ -801,6 +809,7 @@ export interface DataConnectModuloEstudianteInput {
   matriculaId: number;
   moduloId: number;
   grupoId?: number | null;
+  grupoModuloId?: number | null;
 }
 
 export interface DataConnectUnidadDidactica {

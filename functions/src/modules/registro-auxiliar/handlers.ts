@@ -108,6 +108,7 @@ type RegistroAuxiliarModuloEstudiante = {
   matriculaId: number;
   moduloId: number;
   grupoId?: number | null;
+  grupoModuloId?: number | null;
   matricula?: {
     id: number;
     codigoInscripcion?: string | null;
@@ -314,13 +315,37 @@ const REGISTRO_AUXILIAR_DETAIL_QUERY = `
       orden
       capacidadTerminalId
     }
-    modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
+    modulosEstudiantesByGrupoModulo: modulosEstudiantes(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 1000) {
       id
       promedio
       puntaje
       matriculaId
       moduloId
       grupoId
+      grupoModuloId
+      matricula {
+        id
+        codigoInscripcion
+        archivado
+        user {
+          id
+          username
+          nombre
+          apellidos
+          apellidoPaterno
+          apellidoMaterno
+          dni
+        }
+      }
+    }
+    modulosEstudiantesLegacy: modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
+      id
+      promedio
+      puntaje
+      matriculaId
+      moduloId
+      grupoId
+      grupoModuloId
       matricula {
         id
         codigoInscripcion
@@ -467,12 +492,24 @@ const FIND_UNIDAD_ESTUDIANTE_QUERY = `
 `;
 
 const FIND_MODULO_ESTUDIANTE_QUERY = `
-  query FindModuloEstudiante($matriculaId: Int!, $moduloId: Int!, $grupoId: Int!) {
+  query FindModuloEstudiante($matriculaId: Int!, $grupoModuloId: Int!) {
+    modulosEstudiantes(
+      where: { matriculaId: { eq: $matriculaId }, grupoModuloId: { eq: $grupoModuloId } },
+      limit: 1
+    ) {
+      id
+    }
+  }
+`;
+
+const FIND_MODULO_ESTUDIANTE_LEGACY_QUERY = `
+  query FindModuloEstudianteLegacy($matriculaId: Int!, $moduloId: Int!, $grupoId: Int!) {
     modulosEstudiantes(
       where: { matriculaId: { eq: $matriculaId }, moduloId: { eq: $moduloId }, grupoId: { eq: $grupoId } },
       limit: 1
     ) {
       id
+      grupoModuloId
     }
   }
 `;
@@ -544,10 +581,21 @@ const REGISTRO_AUXILIAR_CREATE_MATRICULA_CONTEXT_QUERY = `
 `;
 
 const FIND_MODULO_ESTUDIANTE_DUPLICATE_QUERY = `
-  query FindRegistroAuxiliarModuloEstudianteDuplicate($grupoId: Int!, $moduloId: Int!) {
-    modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
+  query FindRegistroAuxiliarModuloEstudianteDuplicate($grupoModuloId: Int!, $grupoId: Int!, $moduloId: Int!) {
+    modulosEstudiantesByGrupoModulo: modulosEstudiantes(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 1000) {
       id
       matriculaId
+      grupoModuloId
+      matricula {
+        id
+        archivado
+        userId
+      }
+    }
+    modulosEstudiantesLegacy: modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
+      id
+      matriculaId
+      grupoModuloId
       matricula {
         id
         archivado
@@ -619,7 +667,7 @@ const UPDATE_UNIDAD_ESTUDIANTE_MUTATION = `
 `;
 
 const UPDATE_MODULO_ESTUDIANTE_MUTATION = `
-  mutation UpdateModuloEstudiante($id: Int!, $data: ModuloEstudiante_Data! @allow(fields: "promedio puntaje")) {
+  mutation UpdateModuloEstudiante($id: Int!, $data: ModuloEstudiante_Data! @allow(fields: "promedio puntaje grupoModuloId")) {
     moduloEstudiante_update(id: $id, data: $data)
   }
 `;
@@ -1094,20 +1142,27 @@ async function upsertUnidadPromedio(matriculaId: number, unidadDidacticaId: numb
 
 async function updateModuloResultado(
   matriculaId: number,
+  grupoModuloId: number,
   moduloId: number,
   grupoId: number,
   promedio: number | null,
   puntaje: number | null,
 ) {
-  const existing = await dataConnect.executeGraphql<
-    { modulosEstudiantes: Array<{ id: number }> },
-    { matriculaId: number; moduloId: number; grupoId: number }
-  >(FIND_MODULO_ESTUDIANTE_QUERY, { variables: { matriculaId, moduloId, grupoId } });
+  let existing = await dataConnect.executeGraphql<
+    { modulosEstudiantes: Array<{ id: number; grupoModuloId?: number | null }> },
+    { matriculaId: number; grupoModuloId: number }
+  >(FIND_MODULO_ESTUDIANTE_QUERY, { variables: { matriculaId, grupoModuloId } });
+  if (!existing.data.modulosEstudiantes?.length) {
+    existing = await dataConnect.executeGraphql<
+      { modulosEstudiantes: Array<{ id: number; grupoModuloId?: number | null }> },
+      { matriculaId: number; moduloId: number; grupoId: number }
+    >(FIND_MODULO_ESTUDIANTE_LEGACY_QUERY, { variables: { matriculaId, moduloId, grupoId } });
+  }
   const id = existing.data.modulosEstudiantes?.[0]?.id;
   if (!id) return null;
-  await dataConnect.executeGraphql<unknown, { id: number; data: { promedio: number | null; puntaje: number | null } }>(
+  await dataConnect.executeGraphql<unknown, { id: number; data: { promedio: number | null; puntaje: number | null; grupoModuloId: number } }>(
     UPDATE_MODULO_ESTUDIANTE_MUTATION,
-    { variables: { id, data: { promedio, puntaje } } },
+    { variables: { id, data: { promedio, puntaje, grupoModuloId } } },
   );
   return id;
 }
@@ -1217,6 +1272,23 @@ function buildUnidadIds(response: {
 
 function getAcademicOrder(item: { id: number; orden?: number | null }) {
   return item.orden ?? item.id;
+}
+
+function mergeModuloEstudiantesForGrupoModulo(
+  grupoModuloId: number,
+  primary: RegistroAuxiliarModuloEstudiante[] = [],
+  legacy: RegistroAuxiliarModuloEstudiante[] = [],
+) {
+  const byId = new Map<number, RegistroAuxiliarModuloEstudiante>();
+  for (const item of primary) {
+    byId.set(item.id, item);
+  }
+  for (const item of legacy) {
+    if (byId.has(item.id)) continue;
+    if (item.grupoModuloId && item.grupoModuloId !== grupoModuloId) continue;
+    byId.set(item.id, item);
+  }
+  return Array.from(byId.values());
 }
 
 export const listRegistroAuxiliarDocenteModulos = https.onCall(async (data, context) => {
@@ -1332,7 +1404,8 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
       unidadesDidacticas: RegistroAuxiliarUnidad[];
       capacidadesTerminales: RegistroAuxiliarCapacidad[];
       indicadoresCapacidad: RegistroAuxiliarIndicador[];
-      modulosEstudiantes: RegistroAuxiliarModuloEstudiante[];
+      modulosEstudiantesByGrupoModulo: RegistroAuxiliarModuloEstudiante[];
+      modulosEstudiantesLegacy: RegistroAuxiliarModuloEstudiante[];
       indicadorCapacidadEstudiantes: RegistroAuxiliarRow[];
       capacidadTerminalEstudiantes: RegistroAuxiliarRow[];
       unidadesDidacticasEstudiantes: RegistroAuxiliarRow[];
@@ -1376,8 +1449,13 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
           })),
       }));
 
-    const matriculaIds = new Set((response.data.modulosEstudiantes ?? []).map((item) => item.matriculaId));
-    const moduloEstudianteIds = new Set((response.data.modulosEstudiantes ?? []).map((item) => item.id));
+    const modulosEstudiantes = mergeModuloEstudiantesForGrupoModulo(
+      grupoModuloId,
+      response.data.modulosEstudiantesByGrupoModulo ?? [],
+      response.data.modulosEstudiantesLegacy ?? [],
+    );
+    const matriculaIds = new Set(modulosEstudiantes.map((item) => item.matriculaId));
+    const moduloEstudianteIds = new Set(modulosEstudiantes.map((item) => item.id));
     const indicadorIds = new Set<number>();
     const capacidadIds = new Set<number>();
     for (const unidad of estructura) {
@@ -1391,7 +1469,7 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
       grupo: grupoModulo.grupo ?? null,
       grupoModulo,
       estructura,
-      estudiantes: (response.data.modulosEstudiantes ?? [])
+      estudiantes: modulosEstudiantes
         .filter((item) => !item.matricula?.archivado)
         .sort((a, b) => {
           const aUser = a.matricula?.user;
@@ -1505,17 +1583,24 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
     const userId = await ensureRegistroAuxiliarStudentUser(dni, dniData, existingUser, context);
 
     const duplicates = await dataConnect.executeGraphql<{
-      modulosEstudiantes: Array<{
+      modulosEstudiantesByGrupoModulo: RegistroAuxiliarModuloEstudiante[];
+      modulosEstudiantesLegacy: RegistroAuxiliarModuloEstudiante[];
+    }, { grupoModuloId: number; grupoId: number; moduloId: number }>(
+      FIND_MODULO_ESTUDIANTE_DUPLICATE_QUERY,
+      { variables: { grupoModuloId, grupoId, moduloId } },
+    );
+
+    const duplicateItems = mergeModuloEstudiantesForGrupoModulo(
+      grupoModuloId,
+      duplicates.data.modulosEstudiantesByGrupoModulo ?? [],
+      duplicates.data.modulosEstudiantesLegacy ?? [],
+    ) as Array<{
         id: number;
         matriculaId: number;
         matricula?: { id?: number | null; archivado?: boolean | null; userId?: number | null } | null;
       }>;
-    }, { grupoId: number; moduloId: number }>(
-      FIND_MODULO_ESTUDIANTE_DUPLICATE_QUERY,
-      { variables: { grupoId, moduloId } },
-    );
 
-    const duplicate = (duplicates.data.modulosEstudiantes ?? []).find((item) =>
+    const duplicate = duplicateItems.find((item) =>
       item.matricula?.userId === userId && item.matricula?.archivado !== true,
     );
     if (duplicate) {
@@ -1544,6 +1629,7 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
       matriculaId,
       moduloId,
       grupoId,
+      grupoModuloId,
       promedio: null,
       puntaje: null,
     });
@@ -1798,10 +1884,11 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
       unidadesDidacticas: Array<Pick<RegistroAuxiliarUnidad, "id" | "creditos">>;
       capacidadesTerminales: RegistroAuxiliarCapacidad[];
       indicadoresCapacidad: RegistroAuxiliarIndicador[];
-      modulosEstudiantes: Array<{ id: number; matriculaId: number }>;
-    }, { grupoModuloId: number; moduloId: number; grupoId: number }>(
+      modulosEstudiantesByGrupoModulo: RegistroAuxiliarModuloEstudiante[];
+      modulosEstudiantesLegacy: RegistroAuxiliarModuloEstudiante[];
+    }, { grupoModuloId: number; grupoId: number; moduloId: number }>(
       `
-        query RegistroAuxiliarSaveContext($grupoModuloId: Int!, $moduloId: Int!, $grupoId: Int!) {
+        query RegistroAuxiliarSaveContext($grupoModuloId: Int!, $grupoId: Int!, $moduloId: Int!) {
           grupoModuloUnidadesDidacticas(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 500) {
             orden
             unidadDidacticaId
@@ -1828,13 +1915,19 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
             orden
             capacidadTerminalId
           }
-          modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
+          modulosEstudiantesByGrupoModulo: modulosEstudiantes(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 1000) {
             id
             matriculaId
+            grupoModuloId
+          }
+          modulosEstudiantesLegacy: modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 1000) {
+            id
+            matriculaId
+            grupoModuloId
           }
         }
       `,
-      { variables: { grupoModuloId, moduloId, grupoId } },
+      { variables: { grupoModuloId, grupoId, moduloId } },
     );
 
     const unidadIds = buildUnidadIds(contextResponse.data);
@@ -1860,7 +1953,11 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
         a.id - b.id,
       );
     const indicadorById = new Map(indicadores.map((indicador) => [indicador.id, indicador]));
-    const moduloEstudiantes = contextResponse.data.modulosEstudiantes ?? [];
+    const moduloEstudiantes = mergeModuloEstudiantesForGrupoModulo(
+      grupoModuloId,
+      contextResponse.data.modulosEstudiantesByGrupoModulo ?? [],
+      contextResponse.data.modulosEstudiantesLegacy ?? [],
+    );
     const moduloEstudianteIds = new Set(moduloEstudiantes.map((item) => item.id));
     const moduloEstudianteIdByMatricula = new Map(moduloEstudiantes.map((item) => [item.matriculaId, item.id]));
     const efsrtPppByModuloEstudianteId = new Map(
@@ -1902,6 +1999,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
 
       const moduloEstudianteId = await updateModuloResultado(
         matriculaId,
+        grupoModuloId,
         moduloId,
         grupoId,
         usesOcupacionalRules

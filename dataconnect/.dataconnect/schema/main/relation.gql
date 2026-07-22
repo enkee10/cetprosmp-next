@@ -7535,6 +7535,40 @@ extend type GrupoModulo {
     having: GrupoModuloUnidadDidactica_Having
   ): [GrupoModuloUnidadDidactica!]! @fdc_generated(from: "GrupoModuloUnidadDidactica.grupoModulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `ModuloEstudiante` objects in a one-to-many relationship (where `ModuloEstudiante`.`grupoModulo` is this object).
+  """
+  modulosEstudiantes_on_grupoModulo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ModuloEstudiante_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ModuloEstudiante_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ModuloEstudiante_Having
+  ): [ModuloEstudiante!]! @fdc_generated(from: "ModuloEstudiante.grupoModulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `RegistroAcademicoDocumento` objects in a one-to-many relationship (where `RegistroAcademicoDocumento`.`grupoModulo` is this object).
   """
   registroAcademicoDocumentos_on_grupoModulo(
@@ -7622,6 +7656,15 @@ extend type GrupoModulo {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "GrupoModulo.inicio", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `GrupoModulo` table where the `instancia` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  instancia_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "GrupoModulo.instancia", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `GrupoModulo` table where the `moduloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   moduloId_count(
@@ -7658,6 +7701,15 @@ extend type GrupoModulo {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "GrupoModulo.orden", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `GrupoModulo` table where the `sufijo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  sufijo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "GrupoModulo.sufijo", purpose: QUERY_COUNT)
+  """
   ✨ Sum the `calendarioId` field in the `GrupoModulo` table.
   """
   calendarioId_sum(
@@ -7684,6 +7736,15 @@ extend type GrupoModulo {
     """
     distinct: Boolean = false
   ): Int @fdc_generated(from: "GrupoModulo.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `instancia` field in the `GrupoModulo` table.
+  """
+  instancia_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "GrupoModulo.instancia", purpose: QUERY_SUM)
   """
   ✨ Sum the `moduloId` field in the `GrupoModulo` table.
   """
@@ -7730,6 +7791,15 @@ extend type GrupoModulo {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "GrupoModulo.id", purpose: QUERY_AVG)
   """
+  ✨ Average the `instancia` field in the `GrupoModulo` table.
+  """
+  instancia_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "GrupoModulo.instancia", purpose: QUERY_AVG)
+  """
   ✨ Average the `moduloId` field in the `GrupoModulo` table.
   """
   moduloId_avg(
@@ -7768,6 +7838,10 @@ extend type GrupoModulo {
   """
   inicio_min: Timestamp @fdc_generated(from: "GrupoModulo.inicio", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `instancia` field in the `GrupoModulo` table.
+  """
+  instancia_min: Int @fdc_generated(from: "GrupoModulo.instancia", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `moduloId` field in the `GrupoModulo` table.
   """
   moduloId_min: Int @fdc_generated(from: "GrupoModulo.moduloId", purpose: QUERY_MIN)
@@ -7795,6 +7869,10 @@ extend type GrupoModulo {
   ✨ Maximum of the `inicio` field in the `GrupoModulo` table.
   """
   inicio_max: Timestamp @fdc_generated(from: "GrupoModulo.inicio", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `instancia` field in the `GrupoModulo` table.
+  """
+  instancia_max: Int @fdc_generated(from: "GrupoModulo.instancia", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `moduloId` field in the `GrupoModulo` table.
   """
@@ -10488,6 +10566,15 @@ extend type ModuloEstudiante {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "ModuloEstudiante.grupoId", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `ModuloEstudiante` table where the `grupoModuloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoModuloId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ModuloEstudiante.grupoModuloId", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `ModuloEstudiante` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   id_count(
@@ -10541,6 +10628,15 @@ extend type ModuloEstudiante {
     """
     distinct: Boolean = false
   ): Int @fdc_generated(from: "ModuloEstudiante.grupoId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `grupoModuloId` field in the `ModuloEstudiante` table.
+  """
+  grupoModuloId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ModuloEstudiante.grupoModuloId", purpose: QUERY_SUM)
   """
   ✨ Sum the `id` field in the `ModuloEstudiante` table.
   """
@@ -10596,6 +10692,15 @@ extend type ModuloEstudiante {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "ModuloEstudiante.grupoId", purpose: QUERY_AVG)
   """
+  ✨ Average the `grupoModuloId` field in the `ModuloEstudiante` table.
+  """
+  grupoModuloId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ModuloEstudiante.grupoModuloId", purpose: QUERY_AVG)
+  """
   ✨ Average the `id` field in the `ModuloEstudiante` table.
   """
   id_avg(
@@ -10645,6 +10750,10 @@ extend type ModuloEstudiante {
   """
   grupoId_min: Int @fdc_generated(from: "ModuloEstudiante.grupoId", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `grupoModuloId` field in the `ModuloEstudiante` table.
+  """
+  grupoModuloId_min: Int @fdc_generated(from: "ModuloEstudiante.grupoModuloId", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `id` field in the `ModuloEstudiante` table.
   """
   id_min: Int @fdc_generated(from: "ModuloEstudiante.id", purpose: QUERY_MIN)
@@ -10668,6 +10777,10 @@ extend type ModuloEstudiante {
   ✨ Maximum of the `grupoId` field in the `ModuloEstudiante` table.
   """
   grupoId_max: Int @fdc_generated(from: "ModuloEstudiante.grupoId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `grupoModuloId` field in the `ModuloEstudiante` table.
+  """
+  grupoModuloId_max: Int @fdc_generated(from: "ModuloEstudiante.grupoModuloId", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `id` field in the `ModuloEstudiante` table.
   """
@@ -11352,6 +11465,15 @@ extend type PaqueteModulo {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "PaqueteModulo.moduloId", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `PaqueteModulo` table where the `multiplicador` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  multiplicador_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PaqueteModulo.multiplicador", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `PaqueteModulo` table where the `obligatorio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   obligatorio_count(
@@ -11379,6 +11501,15 @@ extend type PaqueteModulo {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "PaqueteModulo.paqueteId", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `PaqueteModulo` table where the `sufijos` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  sufijos_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PaqueteModulo.sufijos", purpose: QUERY_COUNT)
+  """
   ✨ Sum the `id` field in the `PaqueteModulo` table.
   """
   id_sum(
@@ -11396,6 +11527,15 @@ extend type PaqueteModulo {
     """
     distinct: Boolean = false
   ): Int @fdc_generated(from: "PaqueteModulo.moduloId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `multiplicador` field in the `PaqueteModulo` table.
+  """
+  multiplicador_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PaqueteModulo.multiplicador", purpose: QUERY_SUM)
   """
   ✨ Sum the `orden` field in the `PaqueteModulo` table.
   """
@@ -11433,6 +11573,15 @@ extend type PaqueteModulo {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "PaqueteModulo.moduloId", purpose: QUERY_AVG)
   """
+  ✨ Average the `multiplicador` field in the `PaqueteModulo` table.
+  """
+  multiplicador_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PaqueteModulo.multiplicador", purpose: QUERY_AVG)
+  """
   ✨ Average the `orden` field in the `PaqueteModulo` table.
   """
   orden_avg(
@@ -11459,6 +11608,10 @@ extend type PaqueteModulo {
   """
   moduloId_min: Int @fdc_generated(from: "PaqueteModulo.moduloId", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `multiplicador` field in the `PaqueteModulo` table.
+  """
+  multiplicador_min: Int @fdc_generated(from: "PaqueteModulo.multiplicador", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `orden` field in the `PaqueteModulo` table.
   """
   orden_min: Int @fdc_generated(from: "PaqueteModulo.orden", purpose: QUERY_MIN)
@@ -11474,6 +11627,10 @@ extend type PaqueteModulo {
   ✨ Maximum of the `moduloId` field in the `PaqueteModulo` table.
   """
   moduloId_max: Int @fdc_generated(from: "PaqueteModulo.moduloId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `multiplicador` field in the `PaqueteModulo` table.
+  """
+  multiplicador_max: Int @fdc_generated(from: "PaqueteModulo.multiplicador", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `orden` field in the `PaqueteModulo` table.
   """

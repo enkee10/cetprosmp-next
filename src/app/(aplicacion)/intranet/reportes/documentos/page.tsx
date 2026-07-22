@@ -5,7 +5,6 @@ import {
   Alert,
   Box,
   Button,
-  CircularProgress,
   FormControl,
   IconButton,
   InputLabel,
@@ -26,6 +25,7 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { GridColDef, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { httpsCallable } from 'firebase/functions';
+import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import { dateOnlyTimestamp } from '@/lib/dateOnly';
@@ -248,6 +248,7 @@ export default function RegistroAcademicosPage() {
   const selectedHasMissingDocuments = selectedRows.some((row) => !row.generado);
   const activeRow = activeRowId ? rows.find((row) => row.id === activeRowId) ?? null : null;
   const selectedSemestreName = semestres.find((item) => String(item.id) === semestreId)?.titulo || '';
+  const generationInProgress = generatingIds.size > 0;
 
   const handleSelectionChange = useCallback((model: GridRowSelectionModel) => {
     const selectedIds = selectionModelToIds(model);
@@ -464,8 +465,8 @@ export default function RegistroAcademicosPage() {
 
           <Button
             variant="contained"
-            startIcon={generatingIds.size ? <CircularProgress size={18} color="inherit" /> : <PlayArrowIcon />}
-            disabled={!canGenerateReportes || loadingOptions || generatingIds.size > 0 || selectedRows.length === 0}
+            startIcon={<PlayArrowIcon />}
+            disabled={!canGenerateReportes || loadingOptions || generationInProgress || selectedRows.length === 0}
             onClick={() => void handleGenerate(selectedRows.map((row) => row.id))}
           >
             Generar
@@ -473,7 +474,7 @@ export default function RegistroAcademicosPage() {
 
           <Button
             variant="outlined"
-            startIcon={downloading ? <CircularProgress size={18} color="inherit" /> : <DownloadIcon />}
+            startIcon={<DownloadIcon />}
             disabled={downloading || selectedRows.length === 0 || selectedHasMissingDocuments}
             onClick={(event) => setToolbarDownloadAnchor(event.currentTarget)}
           >
@@ -541,7 +542,7 @@ export default function RegistroAcademicosPage() {
         disableScrollLock
       >
         <MenuItem
-          disabled={!canGenerateReportes || !activeRow || generatingIds.has(activeRow.id)}
+          disabled={!canGenerateReportes || !activeRow || generationInProgress}
           onClick={() => activeRow && void handleGenerate([activeRow.id])}
         >
           <PlayArrowIcon fontSize="small" sx={{ mr: 1 }} />
@@ -578,6 +579,11 @@ export default function RegistroAcademicosPage() {
           Descargar Excel
         </MenuItem>
       </Menu>
+      <FormLoadingOverlay
+        open={generationInProgress}
+        message={tipoDocumento === 'acta' ? 'Generando acta...' : 'Generando nomina...'}
+        variant="fullscreen"
+      />
     </Box>
   );
 }

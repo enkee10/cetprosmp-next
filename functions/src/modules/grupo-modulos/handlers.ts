@@ -48,6 +48,8 @@ const LIST_GRUPO_MODULOS_QUERY = `
       obligatorio
       inicio
       fin
+      instancia
+      sufijo
       grupoId
       grupo {
         id
@@ -86,6 +88,8 @@ const GET_GRUPO_MODULO_QUERY = `
       obligatorio
       inicio
       fin
+      instancia
+      sufijo
       grupoId
       moduloId
       calendarioId
@@ -155,6 +159,17 @@ function calendarioLabel(calendario?: Pick<DataConnectCalendario, "id" | "titulo
   return String(calendario?.titulo || (calendario?.id ? `Calendario ${calendario.id}` : "")).trim();
 }
 
+function appendSufijoToNombre(name: string, suffix: string | null | undefined) {
+  const cleanSuffix = String(suffix ?? "").trim();
+  const cleanName = String(name ?? "").replace(/\s+/g, " ").trim();
+  if (!cleanSuffix) return cleanName;
+  const markerIndex = cleanName.search(/\s\[/);
+  if (markerIndex > 0) {
+    return `${cleanName.slice(0, markerIndex)} (${cleanSuffix})${cleanName.slice(markerIndex)}`.trim();
+  }
+  return `${cleanName} (${cleanSuffix})`.trim();
+}
+
 function decorateGrupoModulo(row: GrupoModuloRow) {
   return {
     ...row,
@@ -187,6 +202,7 @@ const sortGrupoModulos = (items: GrupoModuloRow[]) =>
       grupoLabel(a.grupo).localeCompare(grupoLabel(b.grupo), "es", { numeric: true }) ||
       (a.orden ?? 0) - (b.orden ?? 0) ||
       moduloLabel(a.modulo).localeCompare(moduloLabel(b.modulo), "es", { numeric: true }) ||
+      (a.instancia ?? 1) - (b.instancia ?? 1) ||
       a.id - b.id,
     );
 
@@ -262,6 +278,7 @@ export const createOrUpdateGrupoModulo = https.onCall(async (data, context) => {
   if (!payload.moduloId) {
     throw new https.HttpsError("invalid-argument", "Selecciona un modulo.");
   }
+  payload.instancia = payload.instancia ?? 1;
 
   try {
     if (grupoModuloId) {
@@ -275,7 +292,10 @@ export const createOrUpdateGrupoModulo = https.onCall(async (data, context) => {
 
     const createPayload: DataConnectGrupoModuloInput = {
       ...payload,
-      nombre: await buildNombreForCreate(payload.grupoId, payload.moduloId),
+      nombre: appendSufijoToNombre(
+        await buildNombreForCreate(payload.grupoId, payload.moduloId),
+        payload.sufijo,
+      ),
     };
 
     const created = await dataConnect.executeGraphql<

@@ -35,6 +35,13 @@ interface PaqueteData {
   descripcion: string | null;
   archivado: boolean | null;
   moduloIds?: number[];
+  moduloItems?: PaqueteModuloItemData[];
+}
+
+interface PaqueteModuloItemData {
+  moduloId: number;
+  multiplicador?: number | null;
+  sufijos?: string[] | null;
 }
 
 interface ModuloOption {
@@ -46,7 +53,7 @@ interface ModuloOption {
   planId: number | null;
 }
 
-const MAX_MODULOS_PER_PAQUETE = 3;
+const MAX_INSTANCIAS_PER_PAQUETE = 6;
 
 const getModuloLabel = (modulo: ModuloOption) =>
   modulo.tituloComercial || modulo.titulo || `Modulo ${modulo.id}`;
@@ -54,7 +61,7 @@ const getModuloLabel = (modulo: ModuloOption) =>
 export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: PaqueteFormProps) {
   const [descripcion, setDescripcion] = useState('');
   const [archivado, setArchivado] = useState(false);
-  const [moduloIds, setModuloIds] = useState<string[]>([]);
+  const [moduloItems, setModuloItems] = useState<PaqueteModuloItemData[]>([]);
   const [modulos, setModulos] = useState<ModuloOption[]>([]);
   const [loadingModulos, setLoadingModulos] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -99,7 +106,19 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
         if (fetched) {
           setDescripcion(fetched.descripcion || '');
           setArchivado(Boolean(fetched.archivado));
-          setModuloIds((fetched.moduloIds || []).map((id) => String(id)));
+          setModuloItems(
+            fetched.moduloItems && fetched.moduloItems.length > 0
+              ? fetched.moduloItems.map((item) => ({
+                  moduloId: item.moduloId,
+                  multiplicador: Math.max(1, Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(item.multiplicador ?? 1))),
+                  sufijos: Array.isArray(item.sufijos) ? item.sufijos.map((suffix) => String(suffix ?? '')) : [],
+                }))
+              : (fetched.moduloIds || []).map((moduloId) => ({
+                  moduloId,
+                  multiplicador: 1,
+                  sufijos: [''],
+                })),
+          );
         }
       } catch (err) {
         console.error('Error fetching paquete: ', err);
@@ -117,8 +136,16 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
     [modulos],
   );
 
-  const selectedModuloNames = moduloIds
-    .map((id) => moduloTitleById.get(id) || `Modulo ${id}`)
+  const moduloIds = moduloItems.map((item) => String(item.moduloId));
+  const totalInstances = moduloItems.reduce((sum, item) => sum + Math.max(1, Number(item.multiplicador ?? 1)), 0);
+
+  const selectedModuloNames = moduloItems
+    .map((item) => {
+      const id = String(item.moduloId);
+      const name = moduloTitleById.get(id) || `Modulo ${id}`;
+      const multiplicador = Math.max(1, Number(item.multiplicador ?? 1));
+      return multiplicador > 1 ? `${name} x${multiplicador}` : name;
+    })
     .join(' / ');
 
   const generatedTitulo = selectedModuloNames;
@@ -134,11 +161,19 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
       return;
     }
 
-    if (moduloIds.length < 1 || moduloIds.length > MAX_MODULOS_PER_PAQUETE) {
-      setError('Selecciona entre 1 y 3 modulos para el paquete.');
+    if (moduloItems.length < 1 || totalInstances > MAX_INSTANCIAS_PER_PAQUETE) {
+      setError(`Selecciona entre 1 y ${MAX_INSTANCIAS_PER_PAQUETE} instancias de modulos para el paquete.`);
       setLoading(false);
       return;
     }
+
+    const normalizedModuloItems = moduloItems.map((item) => {
+      const multiplicador = Math.max(1, Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(item.multiplicador ?? 1)));
+      const sufijos = Array.from({ length: multiplicador }, (_unused, index) =>
+        String(item.sufijos?.[index] ?? '').trim(),
+      );
+      return { moduloId: item.moduloId, multiplicador, sufijos };
+    });
 
     try {
       const functions = getFunctions(app);
@@ -149,6 +184,7 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
           descripcion: string;
           archivado: boolean;
           moduloIds: number[];
+          moduloItems: PaqueteModuloItemData[];
         },
         { id: number | null }
       >(functions, 'createOrUpdatePaquete');
@@ -158,7 +194,8 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
         titulo: generatedTitulo,
         descripcion,
         archivado,
-        moduloIds: moduloIds.map(Number),
+        moduloIds: normalizedModuloItems.map((item) => item.moduloId),
+        moduloItems: normalizedModuloItems,
       });
 
       if (onSaved) {
@@ -222,7 +259,20 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
             onChange={(event) => {
               const nextValue = event.target.value;
               const nextIds = typeof nextValue === 'string' ? nextValue.split(',') : nextValue;
-              setModuloIds(Array.from(new Set(nextIds)).slice(0, MAX_MODULOS_PER_PAQUETE));
+              const uniqueIds = Array.from(new Set(nextIds.map((value) => String(value))));
+              setModuloItems((prev) => {
+                const previousById = new Map(prev.map((item) => [String(item.moduloId), item]));
+                const nextItems: PaqueteModuloItemData[] = [];
+                let nextTotal = 0;
+                for (const id of uniqueIds) {
+                  const previous = previousById.get(id);
+                  const multiplicador = Math.max(1, Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(previous?.multiplicador ?? 1)));
+                  if (nextTotal + multiplicador > MAX_INSTANCIAS_PER_PAQUETE) continue;
+                  nextItems.push(previous ?? { moduloId: Number(id), multiplicador: 1, sufijos: [''] });
+                  nextTotal += multiplicador;
+                }
+                return nextItems;
+              });
             }}
             input={<OutlinedInput label="Modulos del paquete" />}
             renderValue={() => selectedModuloNames}
@@ -230,7 +280,7 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
             {modulos.map((modulo) => {
               const value = String(modulo.id);
               const checked = moduloIds.includes(value);
-              const disabled = !checked && moduloIds.length >= MAX_MODULOS_PER_PAQUETE;
+              const disabled = !checked && totalInstances >= MAX_INSTANCIAS_PER_PAQUETE;
               return (
                 <MenuItem key={modulo.id} value={value} disabled={disabled}>
                   <Checkbox checked={checked} />
@@ -243,6 +293,87 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
             })}
           </Select>
         </FormControl>
+
+        {moduloItems.length > 0 && (
+          <Box sx={{ mt: 1.5, display: 'grid', gap: 1.5 }}>
+            {moduloItems.map((item) => {
+              const id = String(item.moduloId);
+              const multiplicador = Math.max(1, Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(item.multiplicador ?? 1)));
+              const suffixes = Array.from({ length: multiplicador }, (_unused, index) => item.sufijos?.[index] ?? '');
+              return (
+                <Box
+                  key={item.moduloId}
+                  sx={{
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 1,
+                    p: 1.5,
+                    display: 'grid',
+                    gap: 1,
+                  }}
+                >
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 96px' }, gap: 1 }}>
+                    <TextField
+                      label="Modulo"
+                      value={moduloTitleById.get(id) || `Modulo ${id}`}
+                      size="small"
+                      fullWidth
+                      disabled
+                    />
+                    <TextField
+                      label="Veces"
+                      value={multiplicador}
+                      onChange={(event) => {
+                        const nextMultiplier = Math.max(
+                          1,
+                          Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(event.target.value) || 1),
+                        );
+                        setModuloItems((prev) =>
+                          prev.map((current) => {
+                            if (current.moduloId !== item.moduloId) return current;
+                            const nextSuffixes = Array.from({ length: nextMultiplier }, (_unused, index) =>
+                              String(current.sufijos?.[index] ?? ''),
+                            );
+                            return { ...current, multiplicador: nextMultiplier, sufijos: nextSuffixes };
+                          }),
+                        );
+                      }}
+                      type="number"
+                      size="small"
+                      inputProps={{ min: 1, max: MAX_INSTANCIAS_PER_PAQUETE }}
+                    />
+                  </Box>
+                  {multiplicador > 1 && (
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }, gap: 1 }}>
+                      {suffixes.map((suffix, index) => (
+                        <TextField
+                          key={`${item.moduloId}-${index}`}
+                          label={`Sufijo ${index + 1}`}
+                          value={suffix}
+                          onChange={(event) => {
+                            const value = event.target.value;
+                            setModuloItems((prev) =>
+                              prev.map((current) => {
+                                if (current.moduloId !== item.moduloId) return current;
+                                const nextSuffixes = Array.from({ length: multiplicador }, (_unused, suffixIndex) =>
+                                  String(current.sufijos?.[suffixIndex] ?? ''),
+                                );
+                                nextSuffixes[index] = value;
+                                return { ...current, sufijos: nextSuffixes };
+                              }),
+                            );
+                          }}
+                          size="small"
+                          placeholder={index === 0 ? 'mar-may' : 'may-jul'}
+                        />
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
+        )}
 
         <TextField
           label="Descripcion"

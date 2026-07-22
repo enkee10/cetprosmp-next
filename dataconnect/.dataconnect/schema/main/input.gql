@@ -15773,6 +15773,18 @@ input GrupoModulo_Data {
   """
   inicio_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `GrupoModulo`.`instancia` of type `Int`
+  """
+  instancia: Int
+  """
+  ✨ `_expr` server value variant of `instancia` (✨ Generated from Field `GrupoModulo`.`instancia` of type `Int`)
+  """
+  instancia_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `instancia` (✨ Generated from Field `GrupoModulo`.`instancia` of type `Int`)
+  """
+  instancia_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `GrupoModulo`.`nombre` of type `String`
   """
   nombre: String
@@ -15801,6 +15813,14 @@ input GrupoModulo_Data {
   """
   orden_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`
+  """
+  sufijo: String
+  """
+  ✨ `_expr` server value variant of `sufijo` (✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`)
+  """
+  sufijo_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `GrupoModulo`.`certificadoTituloDocumentos_on_grupoModulo` of type `[CertificadoTituloDocumento!]!`
   """
   certificadoTituloDocumentos_on_grupoModulo: [CertificadoTituloDocumento_Data!]
@@ -15816,6 +15836,10 @@ input GrupoModulo_Data {
   ✨ Generated from Field `GrupoModulo`.`grupoModuloUnidadesDidacticas_on_grupoModulo` of type `[GrupoModuloUnidadDidactica!]!`
   """
   grupoModuloUnidadesDidacticas_on_grupoModulo: [GrupoModuloUnidadDidactica_Data!]
+  """
+  ✨ Generated from Field `GrupoModulo`.`modulosEstudiantes_on_grupoModulo` of type `[ModuloEstudiante!]!`
+  """
+  modulosEstudiantes_on_grupoModulo: [ModuloEstudiante_Data!]
   """
   ✨ Generated from Field `GrupoModulo`.`registroAcademicoDocumentos_on_grupoModulo` of type `[RegistroAcademicoDocumento!]!`
   """
@@ -15874,6 +15898,10 @@ input GrupoModulo_Filter {
   """
   inicio: Timestamp_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`instancia` of type `Int`
+  """
+  instancia: Int_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`nombre` of type `String`
   """
   nombre: String_Filter
@@ -15885,6 +15913,10 @@ input GrupoModulo_Filter {
   ✨ Generated from Field `GrupoModulo`.`orden` of type `Int`
   """
   orden: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`
+  """
+  sufijo: String_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`certificadoTituloDocumentos_on_grupoModulo` of type `[CertificadoTituloDocumento!]!`
   """
@@ -15901,6 +15933,10 @@ input GrupoModulo_Filter {
   ✨ Generated from Field `GrupoModulo`.`grupoModuloUnidadesDidacticas_on_grupoModulo` of type `[GrupoModuloUnidadDidactica!]!`
   """
   grupoModuloUnidadesDidacticas_on_grupoModulo: GrupoModuloUnidadDidactica_ListFilter
+  """
+  ✨ Generated from Field `GrupoModulo`.`modulosEstudiantes_on_grupoModulo` of type `[ModuloEstudiante!]!`
+  """
+  modulosEstudiantes_on_grupoModulo: ModuloEstudiante_ListFilter
   """
   ✨ Generated from Field `GrupoModulo`.`registroAcademicoDocumentos_on_grupoModulo` of type `[RegistroAcademicoDocumento!]!`
   """
@@ -15964,6 +16000,10 @@ input GrupoModulo_Having {
   """
   inicio_count: Int_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`instancia_count` of type `Int!`
+  """
+  instancia_count: Int_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`moduloId_count` of type `Int!`
   """
   moduloId_count: Int_Filter
@@ -15980,6 +16020,10 @@ input GrupoModulo_Having {
   """
   orden_count: Int_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`sufijo_count` of type `Int!`
+  """
+  sufijo_count: Int_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`calendarioId_sum` of type `Int`
   """
   calendarioId_sum: Int_Filter
@@ -15991,6 +16035,10 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`id_sum` of type `Int`
   """
   id_sum: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`instancia_sum` of type `Int`
+  """
+  instancia_sum: Int_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`moduloId_sum` of type `Int`
   """
@@ -16011,6 +16059,10 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`id_avg` of type `Float`
   """
   id_avg: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`instancia_avg` of type `Float`
+  """
+  instancia_avg: Float_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`moduloId_avg` of type `Float`
   """
@@ -16040,6 +16092,10 @@ input GrupoModulo_Having {
   """
   inicio_min: Timestamp_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`instancia_min` of type `Int`
+  """
+  instancia_min: Int_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`moduloId_min` of type `Int`
   """
   moduloId_min: Int_Filter
@@ -16067,6 +16123,10 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`inicio_max` of type `Timestamp`
   """
   inicio_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`instancia_max` of type `Int`
+  """
+  instancia_max: Int_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`moduloId_max` of type `Int`
   """
@@ -16143,6 +16203,10 @@ input GrupoModulo_Order {
   """
   inicio: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`instancia` of type `Int`
+  """
+  instancia: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`nombre` of type `String`
   """
   nombre: OrderDirection
@@ -16154,6 +16218,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`orden` of type `Int`
   """
   orden: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`
+  """
+  sufijo: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`_count` of type `Int!`
   """
@@ -16179,6 +16247,10 @@ input GrupoModulo_Order {
   """
   inicio_count: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`instancia_count` of type `Int!`
+  """
+  instancia_count: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`moduloId_count` of type `Int!`
   """
   moduloId_count: OrderDirection
@@ -16195,6 +16267,10 @@ input GrupoModulo_Order {
   """
   orden_count: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`sufijo_count` of type `Int!`
+  """
+  sufijo_count: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`calendarioId_sum` of type `Int`
   """
   calendarioId_sum: OrderDirection
@@ -16206,6 +16282,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`id_sum` of type `Int`
   """
   id_sum: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`instancia_sum` of type `Int`
+  """
+  instancia_sum: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`moduloId_sum` of type `Int`
   """
@@ -16226,6 +16306,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`id_avg` of type `Float`
   """
   id_avg: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`instancia_avg` of type `Float`
+  """
+  instancia_avg: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`moduloId_avg` of type `Float`
   """
@@ -16255,6 +16339,10 @@ input GrupoModulo_Order {
   """
   inicio_min: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`instancia_min` of type `Int`
+  """
+  instancia_min: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`moduloId_min` of type `Int`
   """
   moduloId_min: OrderDirection
@@ -16282,6 +16370,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`inicio_max` of type `Timestamp`
   """
   inicio_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`instancia_max` of type `Int`
+  """
+  instancia_max: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`moduloId_max` of type `Int`
   """
@@ -20658,6 +20750,18 @@ input ModuloEstudiante_Data {
   """
   grupoId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId` of type `Int`
+  """
+  grupoModuloId: Int
+  """
+  ✨ `_expr` server value variant of `grupoModuloId` (✨ Generated from Field `ModuloEstudiante`.`grupoModuloId` of type `Int`)
+  """
+  grupoModuloId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoModuloId` (✨ Generated from Field `ModuloEstudiante`.`grupoModuloId` of type `Int`)
+  """
+  grupoModuloId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `ModuloEstudiante`.`matriculaId` of type `Int!`
   """
   matriculaId: Int
@@ -20685,6 +20789,10 @@ input ModuloEstudiante_Data {
   ✨ Generated from Field `ModuloEstudiante`.`grupo` of type `Grupo`
   """
   grupo: Grupo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModulo` of type `GrupoModulo`
+  """
+  grupoModulo: GrupoModulo_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ModuloEstudiante`.`matricula` of type `Matricula!`
   """
@@ -20751,6 +20859,10 @@ input ModuloEstudiante_Filter {
   """
   grupoId: Int_Filter
   """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId` of type `Int`
+  """
+  grupoModuloId: Int_Filter
+  """
   ✨ Generated from Field `ModuloEstudiante`.`matriculaId` of type `Int!`
   """
   matriculaId: Int_Filter
@@ -20762,6 +20874,10 @@ input ModuloEstudiante_Filter {
   ✨ Generated from Field `ModuloEstudiante`.`grupo` of type `Grupo`
   """
   grupo: Grupo_Filter
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModulo` of type `GrupoModulo`
+  """
+  grupoModulo: GrupoModulo_Filter
   """
   ✨ Generated from Field `ModuloEstudiante`.`matricula` of type `Matricula!`
   """
@@ -20829,6 +20945,10 @@ input ModuloEstudiante_Having {
   """
   grupoId_count: Int_Filter
   """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: Int_Filter
+  """
   ✨ Generated from Field `ModuloEstudiante`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
@@ -20852,6 +20972,10 @@ input ModuloEstudiante_Having {
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_sum` of type `Int`
   """
   grupoId_sum: Int_Filter
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: Int_Filter
   """
   ✨ Generated from Field `ModuloEstudiante`.`id_sum` of type `Int`
   """
@@ -20877,6 +21001,10 @@ input ModuloEstudiante_Having {
   """
   grupoId_avg: Float_Filter
   """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: Float_Filter
+  """
   ✨ Generated from Field `ModuloEstudiante`.`id_avg` of type `Float`
   """
   id_avg: Float_Filter
@@ -20901,6 +21029,10 @@ input ModuloEstudiante_Having {
   """
   grupoId_min: Int_Filter
   """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: Int_Filter
+  """
   ✨ Generated from Field `ModuloEstudiante`.`id_min` of type `Int`
   """
   id_min: Int_Filter
@@ -20924,6 +21056,10 @@ input ModuloEstudiante_Having {
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_max` of type `Int`
   """
   grupoId_max: Int_Filter
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: Int_Filter
   """
   ✨ Generated from Field `ModuloEstudiante`.`id_max` of type `Int`
   """
@@ -20984,6 +21120,10 @@ input ModuloEstudiante_Order {
   """
   grupoId: OrderDirection
   """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId` of type `Int`
+  """
+  grupoModuloId: OrderDirection
+  """
   ✨ Generated from Field `ModuloEstudiante`.`matriculaId` of type `Int!`
   """
   matriculaId: OrderDirection
@@ -20995,6 +21135,10 @@ input ModuloEstudiante_Order {
   ✨ Generated from Field `ModuloEstudiante`.`grupo` of type `Grupo`
   """
   grupo: Grupo_Order
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModulo` of type `GrupoModulo`
+  """
+  grupoModulo: GrupoModulo_Order
   """
   ✨ Generated from Field `ModuloEstudiante`.`matricula` of type `Matricula!`
   """
@@ -21020,6 +21164,10 @@ input ModuloEstudiante_Order {
   """
   grupoId_count: OrderDirection
   """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: OrderDirection
+  """
   ✨ Generated from Field `ModuloEstudiante`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
@@ -21043,6 +21191,10 @@ input ModuloEstudiante_Order {
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_sum` of type `Int`
   """
   grupoId_sum: OrderDirection
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: OrderDirection
   """
   ✨ Generated from Field `ModuloEstudiante`.`id_sum` of type `Int`
   """
@@ -21068,6 +21220,10 @@ input ModuloEstudiante_Order {
   """
   grupoId_avg: OrderDirection
   """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: OrderDirection
+  """
   ✨ Generated from Field `ModuloEstudiante`.`id_avg` of type `Float`
   """
   id_avg: OrderDirection
@@ -21092,6 +21248,10 @@ input ModuloEstudiante_Order {
   """
   grupoId_min: OrderDirection
   """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: OrderDirection
+  """
   ✨ Generated from Field `ModuloEstudiante`.`id_min` of type `Int`
   """
   id_min: OrderDirection
@@ -21115,6 +21275,10 @@ input ModuloEstudiante_Order {
   ✨ Generated from Field `ModuloEstudiante`.`grupoId_max` of type `Int`
   """
   grupoId_max: OrderDirection
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: OrderDirection
   """
   ✨ Generated from Field `ModuloEstudiante`.`id_max` of type `Int`
   """
@@ -22210,6 +22374,18 @@ input PaqueteModulo_Data {
   """
   paquete: Paquete_Key @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador` of type `Int`
+  """
+  multiplicador: Int
+  """
+  ✨ `_expr` server value variant of `multiplicador` (✨ Generated from Field `PaqueteModulo`.`multiplicador` of type `Int`)
+  """
+  multiplicador_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `multiplicador` (✨ Generated from Field `PaqueteModulo`.`multiplicador` of type `Int`)
+  """
+  multiplicador_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `PaqueteModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: Boolean
@@ -22229,6 +22405,14 @@ input PaqueteModulo_Data {
   ✨ `_update` server value variant of `orden` (✨ Generated from Field `PaqueteModulo`.`orden` of type `Int`)
   """
   orden_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PaqueteModulo`.`sufijos` of type `String`
+  """
+  sufijos: String
+  """
+  ✨ `_expr` server value variant of `sufijos` (✨ Generated from Field `PaqueteModulo`.`sufijos` of type `String`)
+  """
+  sufijos_expr: String_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated filter input type for table 'PaqueteModulo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -22267,6 +22451,10 @@ input PaqueteModulo_Filter {
   """
   paquete: Paquete_Filter
   """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador` of type `Int`
+  """
+  multiplicador: Int_Filter
+  """
   ✨ Generated from Field `PaqueteModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: Boolean_Filter
@@ -22274,6 +22462,10 @@ input PaqueteModulo_Filter {
   ✨ Generated from Field `PaqueteModulo`.`orden` of type `Int`
   """
   orden: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`sufijos` of type `String`
+  """
+  sufijos: String_Filter
 }
 """
 ✨ Generated first-row input type for table 'PaqueteModulo'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -22321,6 +22513,10 @@ input PaqueteModulo_Having {
   """
   moduloId_count: Int_Filter
   """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador_count` of type `Int!`
+  """
+  multiplicador_count: Int_Filter
+  """
   ✨ Generated from Field `PaqueteModulo`.`obligatorio_count` of type `Int!`
   """
   obligatorio_count: Int_Filter
@@ -22333,6 +22529,10 @@ input PaqueteModulo_Having {
   """
   paqueteId_count: Int_Filter
   """
+  ✨ Generated from Field `PaqueteModulo`.`sufijos_count` of type `Int!`
+  """
+  sufijos_count: Int_Filter
+  """
   ✨ Generated from Field `PaqueteModulo`.`id_sum` of type `Int`
   """
   id_sum: Int_Filter
@@ -22340,6 +22540,10 @@ input PaqueteModulo_Having {
   ✨ Generated from Field `PaqueteModulo`.`moduloId_sum` of type `Int`
   """
   moduloId_sum: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador_sum` of type `Int`
+  """
+  multiplicador_sum: Int_Filter
   """
   ✨ Generated from Field `PaqueteModulo`.`orden_sum` of type `Int`
   """
@@ -22357,6 +22561,10 @@ input PaqueteModulo_Having {
   """
   moduloId_avg: Float_Filter
   """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador_avg` of type `Float`
+  """
+  multiplicador_avg: Float_Filter
+  """
   ✨ Generated from Field `PaqueteModulo`.`orden_avg` of type `Float`
   """
   orden_avg: Float_Filter
@@ -22373,6 +22581,10 @@ input PaqueteModulo_Having {
   """
   moduloId_min: Int_Filter
   """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador_min` of type `Int`
+  """
+  multiplicador_min: Int_Filter
+  """
   ✨ Generated from Field `PaqueteModulo`.`orden_min` of type `Int`
   """
   orden_min: Int_Filter
@@ -22388,6 +22600,10 @@ input PaqueteModulo_Having {
   ✨ Generated from Field `PaqueteModulo`.`moduloId_max` of type `Int`
   """
   moduloId_max: Int_Filter
+  """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador_max` of type `Int`
+  """
+  multiplicador_max: Int_Filter
   """
   ✨ Generated from Field `PaqueteModulo`.`orden_max` of type `Int`
   """
@@ -22448,6 +22664,10 @@ input PaqueteModulo_Order {
   """
   paquete: Paquete_Order
   """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador` of type `Int`
+  """
+  multiplicador: OrderDirection
+  """
   ✨ Generated from Field `PaqueteModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: OrderDirection
@@ -22455,6 +22675,10 @@ input PaqueteModulo_Order {
   ✨ Generated from Field `PaqueteModulo`.`orden` of type `Int`
   """
   orden: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`sufijos` of type `String`
+  """
+  sufijos: OrderDirection
   """
   ✨ Generated from Field `PaqueteModulo`.`_count` of type `Int!`
   """
@@ -22468,6 +22692,10 @@ input PaqueteModulo_Order {
   """
   moduloId_count: OrderDirection
   """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador_count` of type `Int!`
+  """
+  multiplicador_count: OrderDirection
+  """
   ✨ Generated from Field `PaqueteModulo`.`obligatorio_count` of type `Int!`
   """
   obligatorio_count: OrderDirection
@@ -22480,6 +22708,10 @@ input PaqueteModulo_Order {
   """
   paqueteId_count: OrderDirection
   """
+  ✨ Generated from Field `PaqueteModulo`.`sufijos_count` of type `Int!`
+  """
+  sufijos_count: OrderDirection
+  """
   ✨ Generated from Field `PaqueteModulo`.`id_sum` of type `Int`
   """
   id_sum: OrderDirection
@@ -22487,6 +22719,10 @@ input PaqueteModulo_Order {
   ✨ Generated from Field `PaqueteModulo`.`moduloId_sum` of type `Int`
   """
   moduloId_sum: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador_sum` of type `Int`
+  """
+  multiplicador_sum: OrderDirection
   """
   ✨ Generated from Field `PaqueteModulo`.`orden_sum` of type `Int`
   """
@@ -22504,6 +22740,10 @@ input PaqueteModulo_Order {
   """
   moduloId_avg: OrderDirection
   """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador_avg` of type `Float`
+  """
+  multiplicador_avg: OrderDirection
+  """
   ✨ Generated from Field `PaqueteModulo`.`orden_avg` of type `Float`
   """
   orden_avg: OrderDirection
@@ -22520,6 +22760,10 @@ input PaqueteModulo_Order {
   """
   moduloId_min: OrderDirection
   """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador_min` of type `Int`
+  """
+  multiplicador_min: OrderDirection
+  """
   ✨ Generated from Field `PaqueteModulo`.`orden_min` of type `Int`
   """
   orden_min: OrderDirection
@@ -22535,6 +22779,10 @@ input PaqueteModulo_Order {
   ✨ Generated from Field `PaqueteModulo`.`moduloId_max` of type `Int`
   """
   moduloId_max: OrderDirection
+  """
+  ✨ Generated from Field `PaqueteModulo`.`multiplicador_max` of type `Int`
+  """
+  multiplicador_max: OrderDirection
   """
   ✨ Generated from Field `PaqueteModulo`.`orden_max` of type `Int`
   """

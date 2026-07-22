@@ -35,6 +35,8 @@ const LIST_PAQUETES_QUERY = `
       id
       orden
       obligatorio
+      multiplicador
+      sufijos
       paqueteId
       moduloId
       modulo {
@@ -78,6 +80,8 @@ const GET_PAQUETE_QUERY = `
       id
       orden
       obligatorio
+      multiplicador
+      sufijos
       paqueteId
       moduloId
       modulo {
@@ -116,6 +120,67 @@ const normalizeModuloIds = (value: unknown): number[] => {
     .map((item) => toNumber(item, -1))
     .filter((item) => item > 0);
   return Array.from(new Set(ids));
+};
+
+type PaqueteModuloItemInput = {
+  moduloId: number;
+  multiplicador: number;
+  sufijos: string[];
+};
+
+const MAX_PAQUETE_MODULO_INSTANCES = 6;
+
+const normalizeSufijos = (value: unknown, multiplicador: number): string[] => {
+  const source = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? value.split(/\r?\n|,/)
+      : [];
+  const normalized = source
+    .slice(0, multiplicador)
+    .map((item) => String(item ?? "").trim());
+  while (normalized.length < multiplicador) normalized.push("");
+  return normalized;
+};
+
+const serializeSufijos = (value: string[]) => JSON.stringify(value.map((item) => item.trim()));
+
+const parseSufijos = (value: unknown): string[] => {
+  const text = String(value ?? "").trim();
+  if (!text) return [];
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed)) return parsed.map((item) => String(item ?? "").trim());
+  } catch {
+    // Legacy text values can still be split below.
+  }
+  return text.split(/\r?\n|,/).map((item) => item.trim());
+};
+
+const normalizeModuloItems = (data: unknown): PaqueteModuloItemInput[] => {
+  const input = data as Record<string, unknown> | null;
+  if (Array.isArray(input?.moduloItems)) {
+    const byModuloId = new Map<number, PaqueteModuloItemInput>();
+    for (const item of input.moduloItems) {
+      if (typeof item !== "object" || item === null) continue;
+      const record = item as Record<string, unknown>;
+      const moduloId = toNumber(record.moduloId, -1);
+      if (moduloId <= 0) continue;
+      const multiplicador = Math.max(1, Math.min(MAX_PAQUETE_MODULO_INSTANCES, toNumber(record.multiplicador, 1)));
+      byModuloId.set(moduloId, {
+        moduloId,
+        multiplicador,
+        sufijos: normalizeSufijos(record.sufijos, multiplicador),
+      });
+    }
+    return Array.from(byModuloId.values());
+  }
+
+  return normalizeModuloIds(input?.moduloIds).map((moduloId) => ({
+    moduloId,
+    multiplicador: 1,
+    sufijos: [""],
+  }));
 };
 
 const sortPaqueteModulos = (items: DataConnectPaqueteModulo[]) =>
@@ -173,6 +238,11 @@ export const listPaquetes = https.onCall(async (_data, context) => {
           ...paquete,
           paqueteModulos,
           moduloIds: paqueteModulos.map((item) => item.moduloId),
+          moduloItems: paqueteModulos.map((item) => ({
+            moduloId: item.moduloId,
+            multiplicador: item.multiplicador ?? 1,
+            sufijos: parseSufijos(item.sufijos),
+          })),
         };
       });
 
@@ -210,6 +280,11 @@ export const getPaquete = https.onCall(async (data, context) => {
         ...paquete,
         paqueteModulos,
         moduloIds: paqueteModulos.map((item) => item.moduloId),
+        moduloItems: paqueteModulos.map((item) => ({
+          moduloId: item.moduloId,
+          multiplicador: item.multiplicador ?? 1,
+          sufijos: parseSufijos(item.sufijos),
+        })),
       },
     };
   } catch (error) {
@@ -224,9 +299,10 @@ export const createOrUpdatePaquete = https.onCall(async (data, context) => {
     throw new https.HttpsError("invalid-argument", "titulo is required.");
   }
 
-  const moduloIds = normalizeModuloIds(data?.moduloIds);
-  if (moduloIds.length < 1 || moduloIds.length > 3) {
-    throw new https.HttpsError("invalid-argument", "El paquete debe tener entre 1 y 3 modulos.");
+  const moduloItems = normalizeModuloItems(data);
+  const totalInstances = moduloItems.reduce((sum, item) => sum + item.multiplicador, 0);
+  if (moduloItems.length < 1 || totalInstances > MAX_PAQUETE_MODULO_INSTANCES) {
+    throw new https.HttpsError("invalid-argument", `El paquete debe tener entre 1 y ${MAX_PAQUETE_MODULO_INSTANCES} instancias de modulos.`);
   }
 
   const paqueteId = toNumberOrNull(data?.id);
@@ -258,12 +334,14 @@ export const createOrUpdatePaquete = https.onCall(async (data, context) => {
     >(DELETE_PAQUETE_MODULOS_BY_PAQUETE_MUTATION, { variables: { paqueteId: savedPaqueteId } });
 
     await Promise.all(
-      moduloIds.map((moduloId, index) => {
+      moduloItems.map((item, index) => {
         const paqueteModulo = buildPaqueteModuloDataFromInput({
           paqueteId: savedPaqueteId,
-          moduloId,
+          moduloId: item.moduloId,
           orden: index + 1,
           obligatorio: true,
+          multiplicador: item.multiplicador,
+          sufijos: serializeSufijos(item.sufijos),
         });
         return dataConnect.executeGraphql<
           { paqueteModulo_insert: unknown },

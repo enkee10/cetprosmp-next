@@ -375,7 +375,7 @@ type AspectoEvaluacion @table(name: "aspectos_evaluacion", singular: "aspectoEva
   evaluacionId: Int! @col(name: "evaluacion_id")
 }
 
-type ModuloEstudiante @table(name: "modulos_estudiantes", singular: "moduloEstudiante", plural: "modulosEstudiantes") @unique(fields: ["matricula", "modulo"]) {
+type ModuloEstudiante @table(name: "modulos_estudiantes", singular: "moduloEstudiante", plural: "modulosEstudiantes") @unique(fields: ["matricula", "grupoModulo"]) {
   id: Int! @col(dataType: "serial")
   promedio: Float
   puntaje: Float
@@ -388,6 +388,9 @@ type ModuloEstudiante @table(name: "modulos_estudiantes", singular: "moduloEstud
 
   grupo: Grupo @ref(fields: "grupoId", references: "id")
   grupoId: Int @col(name: "grupo_id")
+
+  grupoModulo: GrupoModulo @ref(fields: "grupoModuloId", references: "id")
+  grupoModuloId: Int @col(name: "grupo_modulo_id")
 }
 
 type EfsrtPppEstudiante @table(name: "efsrt_ppp_estudiantes", singular: "efsrtPppEstudiante", plural: "efsrtPppEstudiantes") @unique(fields: ["grupoModulo", "moduloEstudiante"]) @index(fields: ["grupoModuloId"]) @index(fields: ["moduloEstudianteId"]) {
@@ -613,13 +616,15 @@ type Grupo @table(name: "grupos") @index(fields: ["calendarioId"]) @index(fields
   workspaceCorreo: String @col(name: "workspace_correo")
 }
 
-type GrupoModulo @table(name: "grupo_modulos", singular: "grupoModulo", plural: "grupoModulos") @unique(fields: ["grupo", "modulo"]) {
+type GrupoModulo @table(name: "grupo_modulos", singular: "grupoModulo", plural: "grupoModulos") @unique(fields: ["grupo", "modulo", "instancia"]) {
   id: Int! @col(dataType: "serial")
   nombre: String
   orden: Int
   obligatorio: Boolean
   inicio: Timestamp
   fin: Timestamp
+  instancia: Int
+  sufijo: String
 
   grupo: Grupo! @ref(fields: "grupoId", references: "id")
   grupoId: Int! @col(name: "grupo_id")
@@ -807,6 +812,8 @@ type PaqueteModulo @table(name: "paquete_modulos", singular: "paqueteModulo", pl
   id: Int! @col(dataType: "serial")
   orden: Int
   obligatorio: Boolean
+  multiplicador: Int
+  sufijos: String @col(dataType: "text")
 
   paquete: Paquete! @ref(fields: "paqueteId", references: "id")
   paqueteId: Int! @col(name: "paquete_id")

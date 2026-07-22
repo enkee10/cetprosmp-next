@@ -23,6 +23,11 @@ interface Paquete {
   descripcion: string | null;
   archivado: boolean | null;
   moduloIds?: number[];
+  moduloItems?: Array<{
+    moduloId: number;
+    multiplicador?: number | null;
+    sufijos?: string[] | null;
+  }>;
 }
 
 interface Modulo {
@@ -102,6 +107,12 @@ export default function PaquetesPage() {
     () => new Map(modulos.map((modulo) => [modulo.id, modulo.tituloComercial || modulo.titulo || `Modulo ${modulo.id}`])),
     [modulos],
   );
+
+  const getPaqueteModuloItems = useCallback((paquete: Paquete) => (
+    paquete.moduloItems && paquete.moduloItems.length > 0
+      ? paquete.moduloItems
+      : (paquete.moduloIds || []).map((moduloId) => ({ moduloId, multiplicador: 1, sufijos: [] }))
+  ), []);
 
   const handleDismissPaqueteModal = useCallback(() => {
     setOpenPaqueteModal(false);
@@ -187,8 +198,12 @@ export default function PaquetesPage() {
         flex: 1.8,
         minWidth: 280,
         valueGetter: (_value, row: Paquete) =>
-          (row.moduloIds || [])
-            .map((id) => moduloTitleById.get(id) || `Modulo ${id}`)
+          getPaqueteModuloItems(row)
+            .map((item) => {
+              const name = moduloTitleById.get(item.moduloId) || `Modulo ${item.moduloId}`;
+              const multiplicador = Number(item.multiplicador ?? 1);
+              return multiplicador > 1 ? `${name} x${multiplicador}` : name;
+            })
             .join(' / '),
       },
       {
@@ -197,7 +212,8 @@ export default function PaquetesPage() {
         type: 'number',
         flex: 0.45,
         minWidth: 80,
-        valueGetter: (_value, row: Paquete) => row.moduloIds?.length || 0,
+        valueGetter: (_value, row: Paquete) =>
+          getPaqueteModuloItems(row).reduce((sum, item) => sum + Math.max(1, Number(item.multiplicador ?? 1)), 0),
       },
       {
         field: 'archivado',
@@ -237,7 +253,7 @@ export default function PaquetesPage() {
         ),
       },
     ],
-    [moduloTitleById],
+    [getPaqueteModuloItems, moduloTitleById],
   );
 
   const columnToggleItems = useMemo(

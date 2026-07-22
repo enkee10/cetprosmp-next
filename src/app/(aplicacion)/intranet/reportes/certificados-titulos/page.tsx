@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Checkbox,
-  CircularProgress,
   FormControl,
   IconButton,
   InputLabel,
@@ -29,6 +28,7 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { GridColDef, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { httpsCallable } from 'firebase/functions';
+import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import { dateOnlyTimestamp } from '@/lib/dateOnly';
@@ -262,6 +262,7 @@ export default function CertificadosTitulosPage() {
   const singleSelectedRow = selectedRows.length === 1 ? selectedRows[0] : null;
   const selectedHasMissingDocuments = selectedRows.some((row) => !row.generado);
   const activeRow = activeRowId ? rows.find((row) => row.id === activeRowId) ?? null : null;
+  const generationInProgress = generatingIds.size > 0;
 
   const handleSelectionChange = useCallback((model: GridRowSelectionModel) => {
     const selectedIds = selectionModelToIds(model);
@@ -499,15 +500,15 @@ export default function CertificadosTitulosPage() {
           </Button>
           <Button
             variant="contained"
-            startIcon={generatingIds.size ? <CircularProgress size={18} color="inherit" /> : <PlayArrowIcon />}
-            disabled={!canGenerate || loadingOptions || generatingIds.size > 0 || selectedRows.length === 0}
+            startIcon={<PlayArrowIcon />}
+            disabled={!canGenerate || loadingOptions || generationInProgress || selectedRows.length === 0}
             onClick={() => void handleGenerate(selectedRows)}
           >
             Generar
           </Button>
           <Button
             variant="outlined"
-            startIcon={downloading ? <CircularProgress size={18} color="inherit" /> : <DownloadIcon />}
+            startIcon={<DownloadIcon />}
             disabled={downloading || selectedRows.length === 0 || selectedHasMissingDocuments}
             onClick={(event) => setToolbarDownloadAnchor(event.currentTarget)}
           >
@@ -544,7 +545,7 @@ export default function CertificadosTitulosPage() {
       </Paper>
 
       <Menu anchorEl={rowMenuAnchor} open={Boolean(rowMenuAnchor)} onClose={() => setRowMenuAnchor(null)} disableScrollLock>
-        <MenuItem disabled={!canGenerate || !activeRow || generatingIds.has(activeRow.id)} onClick={() => activeRow && void handleGenerate([activeRow])}>
+        <MenuItem disabled={!canGenerate || !activeRow || generationInProgress} onClick={() => activeRow && void handleGenerate([activeRow])}>
           <PlayArrowIcon fontSize="small" sx={{ mr: 1 }} />
           Generar
         </MenuItem>
@@ -561,6 +562,11 @@ export default function CertificadosTitulosPage() {
           Descargar Excel
         </MenuItem>
       </Menu>
+      <FormLoadingOverlay
+        open={generationInProgress}
+        message={tipoDocumento === 'certificado' ? 'Generando certificado...' : 'Generando titulo...'}
+        variant="fullscreen"
+      />
     </Box>
   );
 }

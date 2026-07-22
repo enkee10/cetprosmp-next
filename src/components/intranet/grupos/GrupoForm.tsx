@@ -76,6 +76,8 @@ interface PaqueteModuloOption {
   id: number;
   orden: number | null;
   obligatorio: boolean | null;
+  multiplicador?: number | null;
+  sufijos?: string | null;
   paqueteId: number;
   moduloId: number;
   modulo?: ModuloResumen | null;
@@ -124,6 +126,8 @@ interface GrupoModuloDetalle {
   id?: number;
   orden: number | null;
   obligatorio: boolean | null;
+  instancia?: number | null;
+  sufijo?: string | null;
   inicio?: string | null;
   fin?: string | null;
   grupoId?: number;
@@ -176,6 +180,33 @@ const getPrimaryPaqueteModulo = (paquete: PaqueteOption | undefined) =>
 const getOrdenText = (value: number | string | null | undefined) =>
   value == null || value === '' ? '' : String(value);
 
+const getGrupoModuloKey = (moduloId: number, instancia: number | null | undefined) =>
+  `${moduloId}:${instancia ?? 1}`;
+
+const parsePaqueteModuloSufijos = (value: string | null | undefined): string[] => {
+  const text = String(value ?? '').trim();
+  if (!text) return [];
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed)) return parsed.map((item) => String(item ?? '').trim());
+  } catch {
+    // Legacy text values can still be split below.
+  }
+  return text.split(/\r?\n|,/).map((item) => item.trim());
+};
+
+const expandPaqueteModuloOptions = (items: PaqueteModuloOption[]) =>
+  items.flatMap((paqueteModulo) => {
+    const multiplicador = Math.max(1, Math.min(6, Number(paqueteModulo.multiplicador ?? 1)));
+    const sufijos = parsePaqueteModuloSufijos(paqueteModulo.sufijos);
+    return Array.from({ length: multiplicador }, (_unused, index) => ({
+      ...paqueteModulo,
+      instancia: index + 1,
+      sufijo: sufijos[index] ?? '',
+      orden: (paqueteModulo.orden ?? 0) * 10 + index + 1,
+    }));
+  });
+
 const buildWorkspaceName = (
   semestre: SemestreOption | null,
   paquete: PaqueteOption | undefined,
@@ -217,13 +248,15 @@ const buildGrupoModulosFromPaquete = (
 ): GrupoModuloDetalle[] => {
   if (!paquete) return current;
 
-  const currentByModuloId = new Map(current.map((item) => [item.moduloId, item]));
+  const currentByKey = new Map(current.map((item) => [getGrupoModuloKey(item.moduloId, item.instancia), item]));
   const paqueteModulos = paquete.paqueteModulos && paquete.paqueteModulos.length > 0
-    ? paquete.paqueteModulos
+    ? expandPaqueteModuloOptions(paquete.paqueteModulos)
     : (paquete.moduloIds || []).map((moduloId, index) => ({
         id: index + 1,
         orden: index + 1,
         obligatorio: true,
+        instancia: 1,
+        sufijo: '',
         paqueteId: paquete.id,
         moduloId,
         modulo: null,
@@ -232,9 +265,13 @@ const buildGrupoModulosFromPaquete = (
 
   return paqueteModulos
     .slice()
-    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId)
+    .sort((a, b) =>
+      (a.orden ?? 0) - (b.orden ?? 0) ||
+      a.moduloId - b.moduloId ||
+      (a.instancia ?? 1) - (b.instancia ?? 1),
+    )
     .map((paqueteModulo, index) => {
-      const existing = currentByModuloId.get(paqueteModulo.moduloId);
+      const existing = currentByKey.get(getGrupoModuloKey(paqueteModulo.moduloId, paqueteModulo.instancia));
       const existingUnidadById = new Map(
         (existing?.unidadDidacticas ?? []).map((item) => [item.unidadDidacticaId, item]),
       );
@@ -258,6 +295,8 @@ const buildGrupoModulosFromPaquete = (
         id: existing?.id,
         grupoId: existing?.grupoId,
         moduloId: paqueteModulo.moduloId,
+        instancia: paqueteModulo.instancia,
+        sufijo: paqueteModulo.sufijo,
         modulo: existing?.modulo || paqueteModulo.modulo || null,
         orden: existing?.orden ?? paqueteModulo.orden ?? index + 1,
         obligatorio: existing?.obligatorio ?? paqueteModulo.obligatorio ?? true,
@@ -274,7 +313,10 @@ const toDateInputValue = (value: string | null | undefined) => {
 };
 
 const getModuloLabel = (modulo: GrupoModuloDetalle) =>
-  modulo.modulo?.tituloComercial || modulo.modulo?.titulo || `Modulo ${modulo.moduloId}`;
+  [
+    modulo.modulo?.tituloComercial || modulo.modulo?.titulo || `Modulo ${modulo.moduloId}`,
+    modulo.sufijo ? `(${modulo.sufijo})` : '',
+  ].filter(Boolean).join(' ');
 
 const getUnidadLabel = (unidad: GrupoModuloUnidadDidacticaDetalle) =>
   unidad.unidadDidactica?.sigla
@@ -532,10 +574,16 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
     setNombreDisplay(nombreCalculado);
   };
 
-  const updateGrupoModuloFecha = (moduloId: number, field: 'inicio' | 'fin', value: string) => {
+  const updateGrupoModuloFecha = (
+    moduloId: number,
+    instancia: number | null | undefined,
+    field: 'inicio' | 'fin',
+    value: string,
+  ) => {
+    const key = getGrupoModuloKey(moduloId, instancia);
     setGrupoModulos((prev) =>
       prev.map((item) =>
-        item.moduloId === moduloId
+        getGrupoModuloKey(item.moduloId, item.instancia) === key
           ? { ...item, [field]: value || null }
           : item,
       ),
@@ -544,13 +592,15 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
 
   const updateGrupoModuloUnidadFecha = (
     moduloId: number,
+    instancia: number | null | undefined,
     unidadDidacticaId: number,
     field: 'inicio' | 'fin',
     value: string,
   ) => {
+    const key = getGrupoModuloKey(moduloId, instancia);
     setGrupoModulos((prev) =>
       prev.map((item) => {
-        if (item.moduloId !== moduloId) return item;
+        if (getGrupoModuloKey(item.moduloId, item.instancia) !== key) return item;
         return {
           ...item,
           unidadDidacticas: (item.unidadDidacticas ?? []).map((unidad) =>
@@ -617,6 +667,8 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
           horarioId?: number | null;
           grupoModulos?: Array<{
             moduloId: number;
+            instancia?: number | null;
+            sufijo?: string | null;
             orden?: number | null;
             obligatorio?: boolean | null;
             inicio?: string | null;
@@ -649,6 +701,8 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         horarioId: horarioId ? Number(horarioId) : null,
         grupoModulos: grupoModulos.map((item) => ({
           moduloId: item.moduloId,
+          instancia: item.instancia ?? 1,
+          sufijo: item.sufijo ?? null,
           orden: item.orden,
           obligatorio: item.obligatorio ?? true,
           inicio: item.inicio || null,
@@ -915,7 +969,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
               <Box sx={{ display: 'grid', gap: 1.5 }}>
                 {grupoModulos.map((modulo) => (
                   <Box
-                    key={modulo.moduloId}
+                    key={getGrupoModuloKey(modulo.moduloId, modulo.instancia)}
                     sx={{
                       border: '1px solid',
                       borderColor: 'divider',
@@ -938,7 +992,9 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
                         label="Inicio"
                         type="date"
                         value={toDateInputValue(modulo.inicio)}
-                        onChange={(event) => updateGrupoModuloFecha(modulo.moduloId, 'inicio', event.target.value)}
+                        onChange={(event) =>
+                          updateGrupoModuloFecha(modulo.moduloId, modulo.instancia, 'inicio', event.target.value)
+                        }
                         InputLabelProps={{ shrink: true }}
                         fullWidth
                       />
@@ -946,7 +1002,9 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
                         label="Fin"
                         type="date"
                         value={toDateInputValue(modulo.fin)}
-                        onChange={(event) => updateGrupoModuloFecha(modulo.moduloId, 'fin', event.target.value)}
+                        onChange={(event) =>
+                          updateGrupoModuloFecha(modulo.moduloId, modulo.instancia, 'fin', event.target.value)
+                        }
                         InputLabelProps={{ shrink: true }}
                         fullWidth
                       />
@@ -958,7 +1016,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
                         <Box sx={{ display: 'grid', gap: 1 }}>
                           {(modulo.unidadDidacticas ?? []).map((unidad) => (
                             <Box
-                              key={unidad.unidadDidacticaId}
+                              key={`${getGrupoModuloKey(modulo.moduloId, modulo.instancia)}:${unidad.unidadDidacticaId}`}
                               sx={{
                                 display: 'grid',
                                 gap: 1,
@@ -974,6 +1032,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
                                 onChange={(event) =>
                                   updateGrupoModuloUnidadFecha(
                                     modulo.moduloId,
+                                    modulo.instancia,
                                     unidad.unidadDidacticaId,
                                     'inicio',
                                     event.target.value,
@@ -989,6 +1048,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
                                 onChange={(event) =>
                                   updateGrupoModuloUnidadFecha(
                                     modulo.moduloId,
+                                    modulo.instancia,
                                     unidad.unidadDidacticaId,
                                     'fin',
                                     event.target.value,

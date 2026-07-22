@@ -399,6 +399,8 @@ export function buildGrupoModuloDataFromInput(input: Record<string, unknown>) {
     obligatorio: toBoolean(input.obligatorio) ?? true,
     inicio: asNullableTimestamp(input.inicio),
     fin: asNullableTimestamp(input.fin),
+    instancia: toNumberOrNull(input.instancia),
+    sufijo: asNullableString(input.sufijo),
     calendarioId: toNumberOrNull(input.calendarioId),
   });
 }
@@ -499,6 +501,8 @@ export function buildPaqueteModuloDataFromInput(input: Record<string, unknown>):
     moduloId: toNumber(input.moduloId, 0),
     orden: toNumberOrNull(input.orden),
     obligatorio: toBoolean(input.obligatorio) ?? true,
+    multiplicador: toNumberOrNull(input.multiplicador),
+    sufijos: asNullableString(input.sufijos),
   }) as DataConnectPaqueteModuloInput;
 }
 
@@ -523,6 +527,7 @@ export function buildModuloEstudianteDataFromInput(input: Record<string, unknown
     matriculaId: toNumber(input.matriculaId, 0),
     moduloId: toNumber(input.moduloId, 0),
     grupoId: toNumberOrNull(input.grupoId),
+    grupoModuloId: toNumberOrNull(input.grupoModuloId),
   }) as DataConnectModuloEstudianteInput;
 }
 

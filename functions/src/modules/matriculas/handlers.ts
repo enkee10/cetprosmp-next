@@ -192,6 +192,7 @@ interface MatriculaDocenteModuloEstudiante {
 type MatriculaSaveUserResult = {
   userId: number;
   workspacePrimaryEmail: string | null;
+  workspaceWarning?: string | null;
 };
 
 type GrupoModuloMapping = {
@@ -207,6 +208,62 @@ type MatriculaWorkspaceGroup = {
 
 const getPaqueteModuloMultiplicador = (paqueteModulo: DataConnectPaqueteModulo) =>
   Math.max(1, Math.min(6, paqueteModulo.multiplicador ?? 1));
+
+const sleep = (milliseconds: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+
+function getErrorStatus(error: unknown) {
+  const err = error as {
+    code?: number | string;
+    status?: number | string;
+    response?: { status?: number | string };
+  } | null;
+  return Number(err?.code) || Number(err?.status) || Number(err?.response?.status) || 0;
+}
+
+function isTransientWorkspaceError(error: unknown) {
+  const status = getErrorStatus(error);
+  const message = JSON.stringify({
+    message: (error as { message?: string } | null)?.message || "",
+    errors: (error as { errors?: unknown } | null)?.errors || "",
+    responseData: (error as { response?: { data?: unknown } } | null)?.response?.data || "",
+  }).toLowerCase();
+  return (
+    status === 429 ||
+    status === 500 ||
+    status === 502 ||
+    status === 503 ||
+    status === 504 ||
+    message.includes("backend error") ||
+    message.includes("backenderror") ||
+    message.includes("service unavailable") ||
+    message.includes("timeout") ||
+    message.includes("temporarily unavailable") ||
+    message.includes("rate limit") ||
+    message.includes("econnreset")
+  );
+}
+
+function getWorkspaceWarningMessage(error: unknown) {
+  const message = String((error as { message?: string } | null)?.message || "").trim();
+  return message || "Google Workspace no respondio temporalmente; la matricula se guardo y la sincronizacion puede reintentarse luego.";
+}
+
+async function retryTransientWorkspace<T>(operation: () => Promise<T>, attempts = 3): Promise<T> {
+  let lastError: unknown;
+  for (let index = 0; index < attempts; index += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (!isTransientWorkspaceError(error) || index === attempts - 1) break;
+      await sleep(600 * (index + 1));
+    }
+  }
+  throw lastError;
+}
 
 interface OcrIdentityData {
   tipoDocumento?: string | null;
@@ -476,7 +533,7 @@ const MATRICULA_FIELDS = `
 
 const LIST_MATRICULAS_QUERY = `
   query ListMatriculasManual {
-    matriculas(limit: 500) {
+    matriculas(limit: 5000, orderBy: [{id: DESC}]) {
       ${MATRICULA_FIELDS}
     }
   }
@@ -1413,9 +1470,9 @@ function isLocalStorageUrl(value: string | null | undefined): boolean {
   }
 }
 
-function hasUsableStoredDocumentImages(user: MatriculaUserRow | null): boolean {
-  const frontUrl = asCleanString(user?.dniImagenFrenteUrl);
-  const backUrl = asCleanString(user?.dniImagenReversoUrl);
+function hasUsableProcessedDocumentImages(user: MatriculaUserRow | null): boolean {
+  const frontUrl = asCleanString(user?.dniImagenFrenteProcesadaUrl);
+  const backUrl = asCleanString(user?.dniImagenReversoProcesadaUrl);
   return Boolean(
     frontUrl
     && backUrl
@@ -1425,13 +1482,13 @@ function hasUsableStoredDocumentImages(user: MatriculaUserRow | null): boolean {
 }
 
 function getDocumentImagePolicy(user: MatriculaUserRow | null) {
-  const userHasStoredImages = hasUsableStoredDocumentImages(user);
+  const userHasStoredImages = hasUsableProcessedDocumentImages(user);
   const fechaVencimiento = normalizeDate(user?.fechaVencimiento);
   const storedDocumentExpired = Boolean(fechaVencimiento && isExpiredDate(fechaVencimiento));
   const shouldPersistDocumentImages = !userHasStoredImages || !fechaVencimiento || storedDocumentExpired;
-  let reason = "existing_images_current";
+  let reason = "existing_processed_images_current";
   if (!userHasStoredImages) {
-    reason = "missing_stored_images";
+    reason = "missing_processed_images";
   } else if (!fechaVencimiento) {
     reason = "missing_stored_expiration";
   } else if (storedDocumentExpired) {
@@ -3350,6 +3407,7 @@ async function saveUserForMatricula(
     })
     : null;
 
+  let workspaceWarning: string | null = null;
   if (shouldSyncStudentWorkspace(authStudent.roleId, authStudent.roleTitle)) {
     if (!workspacePrimaryEmail) {
       throw new https.HttpsError(
@@ -3359,49 +3417,55 @@ async function saveUserForMatricula(
     }
 
     try {
-      await syncStudentToWorkspace(
-        {
-          email: workspacePrimaryEmail,
-          institutionalEmail: payload.correoInstitucional ?? authStudent.institutionalEmail,
-          formEmail: payload.email ?? personalEmail,
-          avatar: avatarForWorkspace,
-          password: authStudent.authPassword,
-          username: authStudent.username,
-          roleId: authStudent.roleId,
-          roleTitle: authStudent.roleTitle,
-          fechaCreacion: payload.fechaCreacion ?? now,
-          fechaModificacion: payload.fechaModificacion ?? now,
-          apellidoPaterno: payload.apellidoPaterno ?? null,
-          apellidoMaterno: payload.apellidoMaterno ?? null,
-          nombre: payload.nombre ?? null,
-          direccion: payload.direccion ?? null,
-          distrito: payload.distrito ?? null,
-          telefono: payload.telefono ?? null,
-          celular: payload.celular ?? null,
-          dni: payload.dni ?? null,
-          tipoDocumento: payload.tipoDocumento ?? null,
-          sexo: payload.sexo ?? null,
-          fechaNacimiento: payload.fechaNacimiento ?? null,
-          instruccion: payload.instruccion ?? null,
-          estadoCivil: payload.estadoCivil ?? null,
-          blocked: Boolean(payload.blocked),
-        },
-        {
-          previousEmail: existingUser?.correoInstitucional ?? null,
-          createPassword: normalizeDocumentNumber(data.dni),
-        },
+      await retryTransientWorkspace(
+        () => syncStudentToWorkspace(
+          {
+            email: workspacePrimaryEmail,
+            institutionalEmail: payload.correoInstitucional ?? authStudent.institutionalEmail,
+            formEmail: payload.email ?? personalEmail,
+            avatar: avatarForWorkspace,
+            password: authStudent.authPassword,
+            username: authStudent.username,
+            roleId: authStudent.roleId,
+            roleTitle: authStudent.roleTitle,
+            fechaCreacion: payload.fechaCreacion ?? now,
+            fechaModificacion: payload.fechaModificacion ?? now,
+            apellidoPaterno: payload.apellidoPaterno ?? null,
+            apellidoMaterno: payload.apellidoMaterno ?? null,
+            nombre: payload.nombre ?? null,
+            direccion: payload.direccion ?? null,
+            distrito: payload.distrito ?? null,
+            telefono: payload.telefono ?? null,
+            celular: payload.celular ?? null,
+            dni: payload.dni ?? null,
+            tipoDocumento: payload.tipoDocumento ?? null,
+            sexo: payload.sexo ?? null,
+            fechaNacimiento: payload.fechaNacimiento ?? null,
+            instruccion: payload.instruccion ?? null,
+            estadoCivil: payload.estadoCivil ?? null,
+            blocked: Boolean(payload.blocked),
+          },
+          {
+            previousEmail: existingUser?.correoInstitucional ?? null,
+            createPassword: normalizeDocumentNumber(data.dni),
+          },
+        ),
       );
     } catch (workspaceError: unknown) {
       const rawMessage = String((workspaceError as { message?: string } | null)?.message || "");
       console.error("Workspace sync failed in saveUserForMatricula:", workspaceError);
+      if (isTransientWorkspaceError(workspaceError)) {
+        workspaceWarning = getWorkspaceWarningMessage(workspaceError);
+      } else {
       throw new https.HttpsError(
         "failed-precondition",
         rawMessage || "No se pudo sincronizar el estudiante con Google Workspace.",
       );
+      }
     }
   }
 
-  return { userId, workspacePrimaryEmail };
+  return { userId, workspacePrimaryEmail, workspaceWarning };
 }
 
 async function getMatriculaWorkspaceGroups(matriculaId: number): Promise<MatriculaWorkspaceGroup[]> {
@@ -3456,7 +3520,9 @@ async function syncMatriculaStudentToWorkspaceGroup(
   workspacePrimaryEmail: string | null,
 ) {
   try {
-    return await addWorkspaceGroupMember(grupoMapping.workspaceCorreo ?? null, workspacePrimaryEmail);
+    return await retryTransientWorkspace(
+      () => addWorkspaceGroupMember(grupoMapping.workspaceCorreo ?? null, workspacePrimaryEmail),
+    );
   } catch (error) {
     if (error instanceof WorkspaceSyncError) {
       throw new https.HttpsError("failed-precondition", error.message);
@@ -3566,14 +3632,21 @@ async function crearMatriculaFormularioData(data: any, context: https.CallableCo
       fecha: new Date().toISOString(),
       archivado: false,
     });
-    let workspaceGroup: Awaited<ReturnType<typeof syncMatriculaStudentToWorkspaceGroup>>;
+    let workspaceGroup: Awaited<ReturnType<typeof syncMatriculaStudentToWorkspaceGroup>> | { warning: string; skipped: true } | null = null;
+    const workspaceWarnings = [savedUser.workspaceWarning].filter((item): item is string => Boolean(item));
     try {
       workspaceGroup = await syncMatriculaStudentToWorkspaceGroup(grupoMapping, savedUser.workspacePrimaryEmail);
     } catch (workspaceGroupError) {
-      if (matricula.id) {
-        await cleanupMatricula(matricula.id);
+      if (isTransientWorkspaceError(workspaceGroupError)) {
+        const warning = getWorkspaceWarningMessage(workspaceGroupError);
+        workspaceWarnings.push(warning);
+        workspaceGroup = { warning, skipped: true };
+      } else {
+        if (matricula.id) {
+          await cleanupMatricula(matricula.id);
+        }
+        throw workspaceGroupError;
       }
-      throw workspaceGroupError;
     }
 
     let documentProcessingJobId: string | null = null;
@@ -3596,7 +3669,7 @@ async function crearMatriculaFormularioData(data: any, context: https.CallableCo
       }
     }
 
-    return { ...matricula, semestreId, documentProcessingJobId, workspaceGroup };
+    return { ...matricula, semestreId, documentProcessingJobId, workspaceGroup, workspaceWarnings };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in crearMatriculaFormulario:", error);
@@ -3706,14 +3779,23 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
       moduloGrupos,
       grupoMapping.grupoId,
     );
-    const workspaceGroup = await syncMatriculaWorkspaceGroupChange({
-      previousGroups: previousWorkspaceGroups,
-      newGroup: grupoMapping,
-      previousUserId: currentMatricula.userId ?? userId,
-      currentMatriculaId: savedMatriculaId,
-      previousWorkspaceEmail,
-      newWorkspaceEmail: savedUser.workspacePrimaryEmail,
-    });
+    let workspaceGroup: Awaited<ReturnType<typeof syncMatriculaWorkspaceGroupChange>> | { warning: string; skipped: true } | null = null;
+    const workspaceWarnings = [savedUser.workspaceWarning].filter((item): item is string => Boolean(item));
+    try {
+      workspaceGroup = await syncMatriculaWorkspaceGroupChange({
+        previousGroups: previousWorkspaceGroups,
+        newGroup: grupoMapping,
+        previousUserId: currentMatricula.userId ?? userId,
+        currentMatriculaId: savedMatriculaId,
+        previousWorkspaceEmail,
+        newWorkspaceEmail: savedUser.workspacePrimaryEmail,
+      });
+    } catch (workspaceGroupError) {
+      if (!isTransientWorkspaceError(workspaceGroupError)) throw workspaceGroupError;
+      const warning = getWorkspaceWarningMessage(workspaceGroupError);
+      workspaceWarnings.push(warning);
+      workspaceGroup = { warning, skipped: true };
+    }
 
     let documentProcessingJobId: string | null = null;
     if (data?.procesarImagenesDni !== false) {
@@ -3735,7 +3817,7 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
       }
     }
 
-    return { id: savedMatriculaId, semestreId, paqueteId, userId, documentProcessingJobId, workspaceGroup };
+    return { id: savedMatriculaId, semestreId, paqueteId, userId, documentProcessingJobId, workspaceGroup, workspaceWarnings };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in updateMatriculaFormulario:", error);

@@ -1702,12 +1702,12 @@ export function MatriculaForm({
         : isStandalone
           ? 'crearMatriculaFormularioSuelto'
           : 'crearMatriculaFormulario';
-      const saveMatricula = httpsCallable<Record<string, unknown>, { id?: number }>(
+      const saveMatricula = httpsCallable<Record<string, unknown>, { id?: number; workspaceWarnings?: string[] }>(
         functions,
         callableName,
         { timeout: 60000 },
       );
-      await saveMatricula({
+      const result = await saveMatricula({
         ...(isEditing ? { id: Number(matriculaId) } : {}),
         ...values,
         dni: normalizeDocumentNumber(values.dni),
@@ -1719,7 +1719,11 @@ export function MatriculaForm({
         procesarImagenesDni: shouldPersistDocumentImages,
         analisisDocumentoTemporal: documentAnalysisMetadata,
       });
-      setSuccessMessage(isEditing ? 'Matricula actualizada correctamente.' : 'Matricula registrada correctamente.');
+      const workspaceWarnings = result.data.workspaceWarnings || [];
+      setSuccessMessage([
+        isEditing ? 'Matricula actualizada correctamente.' : 'Matricula registrada correctamente.',
+        ...workspaceWarnings.map((warning) => `Advertencia Workspace: ${warning}`),
+      ].join('\n'));
       onSaved();
     } catch (error) {
       setMessage(getCallableErrorMessage(error, isEditing ? 'No se pudo actualizar la matricula.' : 'No se pudo registrar la matricula.'));

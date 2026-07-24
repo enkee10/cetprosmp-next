@@ -23,13 +23,13 @@ export const DELETE_ROLE_PERMISSIONS_BY_ROLE_MUTATION = `
 `;
 
 export const INSERT_APP_SETTING_MUTATION = `
-  mutation InsertAppSetting($data: AppSetting_Data! @allow(fields: "settingKey section label boolValue intValue updatedAt")) {
+  mutation InsertAppSetting($data: AppSetting_Data! @allow(fields: "settingKey section label boolValue intValue stringValue updatedAt")) {
     appSetting_insert(data: $data)
   }
 `;
 
 export const UPDATE_APP_SETTING_MUTATION = `
-  mutation UpdateAppSetting($id: Int!, $data: AppSetting_Data! @allow(fields: "section label boolValue intValue updatedAt")) {
+  mutation UpdateAppSetting($id: Int!, $data: AppSetting_Data! @allow(fields: "section label boolValue intValue stringValue updatedAt")) {
     appSetting_update(id: $id, data: $data)
   }
 `;

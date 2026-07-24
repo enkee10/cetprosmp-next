@@ -22,6 +22,7 @@ export {
 } from "./permisos/handlers.js";
 export {
   getAppSettings,
+  listSettingsSemestresConGrupos,
   saveAppSettings,
 } from "./settings/handlers.js";
 export {
@@ -159,7 +160,7 @@ export {
   onMatriculaAvatarExtractionJobCreated,
   onMatriculaDocumentoProcessingJobCreated,
   updateMatriculaFormulario,
-  verificarDocumentoMatricula,
+  verificarMatriculaOcrSimple,
   verificarMatriculaReniec,
 } from "./matriculas/handlers.js";
 export {

@@ -25,6 +25,7 @@ import { useRouter } from 'next/navigation';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 import { getDateOnlyLocalDate, toDateOnlyInputValue } from '@/lib/dateOnly';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { getPersonalShortName } from './personalName';
 
 interface GrupoFormProps {
@@ -406,6 +407,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { settings } = useAppSettings();
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -507,8 +509,13 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   }, [grupoId]);
 
   const semestreVigente = useMemo(
-    () => (!grupoId ? semestres.find((semestre) => isSemestreVigente(semestre, new Date())) || null : null),
-    [grupoId, semestres],
+    () => {
+      if (grupoId) return null;
+      return semestres.find((semestre) => semestre.id === settings.general.semestreActualId)
+        || semestres.find((semestre) => isSemestreVigente(semestre, new Date()))
+        || null;
+    },
+    [grupoId, semestres, settings.general.semestreActualId],
   );
 
   useEffect(() => {
@@ -636,13 +643,16 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       return;
     }
 
-    if (workspaceName.length > WORKSPACE_NAME_MAX_LENGTH) {
+    const finalWorkspaceName = (workspaceName || buildWorkspaceName(selectedSemestre, selectedPaquete, selectedPersonalName)).trim();
+    const finalWorkspaceCorreo = (workspaceCorreo || buildWorkspaceCorreo(selectedSemestre, selectedPaquete, selectedPersonalName)).trim();
+
+    if (finalWorkspaceName.length > WORKSPACE_NAME_MAX_LENGTH) {
       setError('Nombre Workspace no puede superar 73 caracteres.');
       setLoading(false);
       return;
     }
 
-    if (workspaceCorreo.length > WORKSPACE_CORREO_MAX_LENGTH) {
+    if (finalWorkspaceCorreo.length > WORKSPACE_CORREO_MAX_LENGTH) {
       setError('Correo Workspace no puede superar 80 caracteres.');
       setLoading(false);
       return;
@@ -688,8 +698,8 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       await createOrUpdateGrupo({
         id: grupoId ? Number(grupoId) : undefined,
         nombreDisplay: nombreGrupo.trim(),
-        workspaceName,
-        workspaceCorreo,
+        workspaceName: finalWorkspaceName,
+        workspaceCorreo: finalWorkspaceCorreo,
         descripcion,
         turnoNombre: selectedTurno?.nombre || turnoNombre,
         estado,

@@ -12,6 +12,7 @@ import { https, runWith } from "firebase-functions/v1";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { getDatosGeneralesGlobales } from "../datos-generales/service.js";
 import { requirePermission } from "../core/permissions.js";
+import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
 
 type ReportDocumentType = "acta" | "nomina";
 
@@ -2471,7 +2472,6 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   const docente = getPersonalName(data.grupoModulo.grupo?.personal);
   const director = getPersonalName(data.semestre?.director);
   const coordinador = getPersonalName(data.semestre?.coordinador1);
-  const distrito = cleanText(datos.distrito || "San Martin de Porres");
   const inicio = data.grupoModulo.inicio || data.semestre?.inicio || null;
   const fin = data.grupoModulo.fin || data.semestre?.fin || null;
   const turno = cleanText(data.grupoModulo.grupo?.turno?.nombre || data.grupoModulo.grupo?.turnoNombre || "");
@@ -2484,6 +2484,7 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   const codigoModular = cleanText(datos.codigoModular || "");
   const docenteUpper = docente.toLocaleUpperCase("es-PE");
   const directorUpper = director.toLocaleUpperCase("es-PE");
+  const coordinadorUpper = coordinador.toLocaleUpperCase("es-PE");
 
   if (mode === "nomina") {
     if (!data.opcionOcupacional) {
@@ -2536,10 +2537,9 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   addCell(updates, sheetName, "AH13", data.grupoModulo.modulo?.duracionEfsrt ?? "");
   addCell(updates, sheetName, "AH41", data.grupoModulo.modulo?.creditosEfsrt ?? "");
   addCell(updates, sheetName, "AH42", data.grupoModulo.modulo?.duracionEfsrt ?? "");
-  addCell(updates, sheetName, "AA70", `${distrito}, ${getDocumentDateLong(data, "acta")}`);
-  addCell(updates, sheetName, "C74", director ? `LIC. ${director}\nDIRECTOR` : "LIC. \nDIRECTOR");
-  addCell(updates, sheetName, "R74", coordinador ? `LIC. ${coordinador}\nCOORDINADORA` : "LIC. \nCOORDINADORA");
-  addCell(updates, sheetName, "AI74", docente ? `LIC. ${docente}` : "LIC. ");
+  addCell(updates, sheetName, "C74", directorUpper ? `LIC. ${directorUpper}\nDIRECTOR` : "LIC. \nDIRECTOR");
+  addCell(updates, sheetName, "R74", coordinadorUpper ? `LIC. ${coordinadorUpper}\nCOORDINADORA` : "LIC. \nCOORDINADORA");
+  addCell(updates, sheetName, "AI74", docenteUpper ? `LIC. ${docenteUpper}` : "LIC. ");
 }
 
 const dataHelpers: { datosGenerales: Awaited<ReturnType<typeof getDatosGeneralesGlobales>> } = {
@@ -2828,7 +2828,8 @@ function buildCertificateTokens(
 }
 
 async function buildCertificadoTituloRows() {
-  const response = await dataConnect.executeGraphql<{
+  const [response, semestreConsultaIds] = await Promise.all([
+    dataConnect.executeGraphql<{
     semestres: ReporteSemestre[];
     efsrtPppEstudiantes: Array<{
       promedioFinal?: number | null;
@@ -2855,7 +2856,10 @@ async function buildCertificadoTituloRows() {
       } | null;
     }>;
     certificadoTituloDocumentos: CertificadoTituloDocumento[];
-  }, Record<string, never>>(CERTIFICADOS_TITULOS_OPTIONS_QUERY);
+  }, Record<string, never>>(CERTIFICADOS_TITULOS_OPTIONS_QUERY),
+    getConfiguredSemestreConsultaIds(),
+  ]);
+  const allowedSemestreIds = semestreConsultaIds.length > 0 ? new Set(semestreConsultaIds) : null;
 
   const rows: CertificadoTituloRow[] = [];
   const grupoModuloById = new Map<number, {
@@ -2872,6 +2876,8 @@ async function buildCertificadoTituloRows() {
     if (!item.grupoModulo || !item.moduloEstudiante || item.moduloEstudiante.matricula?.archivado) continue;
 
     const grupoModulo = item.grupoModulo;
+    const semestreId = grupoModulo.grupo?.semestreId ?? null;
+    if (allowedSemestreIds && !allowedSemestreIds.has(Number(semestreId))) continue;
     const semestreTitulo = grupoModulo.grupo?.semestre?.titulo ?? null;
     const codigo = semestreCodigo(semestreTitulo);
     const user = item.moduloEstudiante.matricula?.user ?? null;
@@ -2889,7 +2895,7 @@ async function buildCertificadoTituloRows() {
       grupoModuloId: item.grupoModuloId,
       moduloEstudianteId: item.moduloEstudianteId,
       matriculaId: item.moduloEstudiante.matriculaId,
-      semestreId: grupoModulo.grupo?.semestreId ?? null,
+      semestreId,
       semestreTitulo,
       semestreCodigo: codigo,
       estudianteNombre: getUserDisplayName(user) || `Matricula ${item.moduloEstudiante.matriculaId}`,
@@ -2908,7 +2914,9 @@ async function buildCertificadoTituloRows() {
   );
 
   return {
-    semestres: response.data.semestres ?? [],
+    semestres: (response.data.semestres ?? []).filter((semestre) =>
+      !allowedSemestreIds || allowedSemestreIds.has(semestre.id),
+    ),
     grupoModulos: Array.from(grupoModuloById.values()).sort((a, b) =>
       cleanText(a.semestreTitulo).localeCompare(cleanText(b.semestreTitulo), "es", { numeric: true })
       || cleanText(a.nombre).localeCompare(cleanText(b.nombre), "es", { numeric: true }),
@@ -3603,6 +3611,12 @@ async function generateReporteDocumentoInternal(input: {
       "[Nombre Modulo]": getModuloDocumentName(reportes[0].grupoModulo),
       "[ciclo]": reportes[0].grupoModulo.modulo?.plan?.carrera?.ciclo || reportes[0].grupoModulo.modulo?.plan?.carrera?.nivel || "",
       "[fecha larga]": getDocumentDateLong(reportes[0], input.tipoDocumento === "nomina" ? "nomina" : "acta"),
+      "[Director]": getPersonalName(reportes[0].semestre?.director).toLocaleUpperCase("es-PE"),
+      "[director]": getPersonalName(reportes[0].semestre?.director).toLocaleUpperCase("es-PE"),
+      "[Coordinador1]": getPersonalName(reportes[0].semestre?.coordinador1).toLocaleUpperCase("es-PE"),
+      "[coordinador1]": getPersonalName(reportes[0].semestre?.coordinador1).toLocaleUpperCase("es-PE"),
+      "[Docente]": getPersonalName(reportes[0].grupoModulo.grupo?.personal).toLocaleUpperCase("es-PE"),
+      "[docente]": getPersonalName(reportes[0].grupoModulo.grupo?.personal).toLocaleUpperCase("es-PE"),
     },
     isActaPrograma
       ? { kind: "programa", studentCount: Math.min(reportes[0].estudiantes.length, 40) }
@@ -3679,23 +3693,33 @@ export const listReporteDocumentosOptions = https.onCall(async (_data, context) 
   try {
     await ensureAllTemplatesInStorage();
 
-    const [response, documentos] = await Promise.all([
+    const [response, documentos, semestreConsultaIds] = await Promise.all([
       dataConnect.executeGraphql<{
       semestres: Array<ReporteSemestre & { archivado?: boolean | null }>;
       grupoModulos: ReporteGrupoModuloOption[];
       }, Record<string, never>>(REPORTE_OPTIONS_QUERY, {}),
       listRegistrosAcademicosDocumentos(),
+      getConfiguredSemestreConsultaIds(),
     ]);
+    const allowedSemestreIds = semestreConsultaIds.length > 0 ? new Set(semestreConsultaIds) : null;
 
     const semestreIdsWithGrupoModulo = new Set(
       (response.data.grupoModulos ?? [])
         .map((item) => item.grupo?.semestreId)
-        .filter((id): id is number => typeof id === "number" && Number.isFinite(id)),
+        .filter((id): id is number =>
+          typeof id === "number" &&
+          Number.isFinite(id) &&
+          (!allowedSemestreIds || allowedSemestreIds.has(id)),
+        ),
     );
     const semestres = (response.data.semestres ?? [])
       .filter((semestre) => !semestre.archivado && semestreIdsWithGrupoModulo.has(semestre.id))
       .sort((a, b) => cleanText(b.titulo).localeCompare(cleanText(a.titulo), "es", { numeric: true }));
     const grupoModulos = (response.data.grupoModulos ?? [])
+      .filter((item) => {
+        const semestreId = item.grupo?.semestreId;
+        return typeof semestreId === "number" && (!allowedSemestreIds || allowedSemestreIds.has(semestreId));
+      })
       .sort((a, b) =>
         cleanText(a.grupo?.semestre?.titulo).localeCompare(cleanText(b.grupo?.semestre?.titulo), "es", { numeric: true })
         || getModuloName(a).localeCompare(getModuloName(b), "es", { numeric: true })

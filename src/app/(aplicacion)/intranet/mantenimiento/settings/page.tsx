@@ -1,16 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
   Button,
+  Checkbox,
   CircularProgress,
   Divider,
   FormControl,
   FormControlLabel,
   InputLabel,
+  ListItemText,
   MenuItem,
+  OutlinedInput,
   Select,
   Stack,
   Switch,
@@ -30,29 +33,103 @@ type SemestreOption = {
   nombre?: string | null;
   inicio?: string | null;
   fin?: string | null;
+  grupoCount?: number | null;
+};
+
+const getSemestreLabel = (semestre: SemestreOption) =>
+  semestre.titulo || semestre.nombre || `Semestre ${semestre.id}`;
+
+const getSemestreTime = (value?: string | null) => {
+  if (!value) return Number.NEGATIVE_INFINITY;
+  const time = new Date(`${value}T00:00:00`).getTime();
+  return Number.isFinite(time) ? time : Number.NEGATIVE_INFINITY;
+};
+
+const sortSemestresAsc = (items: SemestreOption[]) =>
+  items.slice().sort((a, b) =>
+    getSemestreTime(a.inicio) - getSemestreTime(b.inicio)
+    || String(getSemestreLabel(a)).localeCompare(getSemestreLabel(b), 'es', { numeric: true })
+    || a.id - b.id,
+  );
+
+const selectMenuProps = {
+  disableScrollLock: true,
+};
+
+const resolveInitialSemestreActualId = (semestres: SemestreOption[]) => {
+  const byTitle = semestres.find((semestre) => getSemestreLabel(semestre).trim() === '2026-1');
+  return byTitle?.id ?? null;
 };
 
 const normalizeDraftSettings = (value: Partial<AppSettings> | null | undefined): AppSettings => {
   const aceptaRespuestas = Boolean(
     value?.formularioMatricula?.aceptaRespuestas ?? value?.general?.formularioMatriculaAceptaRespuestas,
   );
-  const semestreId = Number(value?.formularioMatricula?.semestreId);
+  const semestreActualId = Number(value?.general?.semestreActualId ?? value?.formularioMatricula?.semestreId);
+  const activarReconocimientoDni = (value?.formularioMatricula?.activarReconocimientoDni ?? value?.general?.activarReconocimientoDni) !== false;
+  const semestresConsultaIds = Array.isArray(value?.general?.semestresConsultaIds)
+    ? value.general.semestresConsultaIds.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
+    : [];
 
   return {
     general: {
       ...defaultAppSettings.general,
       ...value?.general,
+      activarReconocimientoDni,
       formularioMatriculaAceptaRespuestas: aceptaRespuestas,
+      semestreActualId: Number.isFinite(semestreActualId) && semestreActualId > 0 ? semestreActualId : null,
+      semestresConsultaIds,
     },
     formularioMatricula: {
       ...defaultAppSettings.formularioMatricula,
       ...value?.formularioMatricula,
       aceptaRespuestas,
-      semestreId: Number.isFinite(semestreId) && semestreId > 0 ? semestreId : null,
+      semestreId: Number.isFinite(semestreActualId) && semestreActualId > 0 ? semestreActualId : null,
+      activarReconocimientoDni,
     },
     visualizaciones: {
       ...defaultAppSettings.visualizaciones,
       ...value?.visualizaciones,
+      mostrarImagenAvatarEstudiantesEnListas: value?.visualizaciones?.mostrarImagenAvatarEstudiantesEnListas !== false,
+      usarGeneradorImagenesAvatar: activarReconocimientoDni
+        ? value?.visualizaciones?.usarGeneradorImagenesAvatar !== false
+        : false,
+      modeloGeneradorImagenesAvatar: [
+        'gemini-3.1-flash-lite-image-1024',
+        'gemini-3.1-flash-image-512',
+      ].includes(String(value?.visualizaciones?.modeloGeneradorImagenesAvatar))
+        ? String(value?.visualizaciones?.modeloGeneradorImagenesAvatar)
+        : defaultAppSettings.visualizaciones.modeloGeneradorImagenesAvatar,
+    },
+  };
+};
+
+const applySemestreDefaults = (
+  value: Partial<AppSettings> | AppSettings,
+  semestres: SemestreOption[],
+  semestreConsultaOptions: SemestreOption[],
+): AppSettings => {
+  const normalized = normalizeDraftSettings(value);
+  if (semestres.length === 0) return normalized;
+
+  const semestreActualId = normalized.general.semestreActualId ?? resolveInitialSemestreActualId(semestres);
+  const consultaIds = normalized.general.semestresConsultaIds.length > 0
+    ? normalized.general.semestresConsultaIds
+    : semestreConsultaOptions.map((semestre) => semestre.id);
+  const normalizedConsultaIds = semestreActualId
+    ? Array.from(new Set([semestreActualId, ...consultaIds]))
+    : consultaIds;
+
+  return {
+    ...normalized,
+    general: {
+      ...normalized.general,
+      semestreActualId,
+      semestresConsultaIds: normalizedConsultaIds,
+    },
+    formularioMatricula: {
+      ...normalized.formularioMatricula,
+      semestreId: semestreActualId,
     },
   };
 };
@@ -71,10 +148,26 @@ export default function SettingsPage() {
   const canViewSettings = can('settings', 'view');
   const canEditSettings = can('settings', 'edit');
   const safeDraft = normalizeDraftSettings(draft);
+  const semestreActualOptions = useMemo(() => {
+    const ordered = sortSemestresAsc(semestres);
+    const today = new Date();
+    const currentIndex = ordered.findIndex((semestre) => {
+      if (!semestre.inicio || !semestre.fin) return false;
+      const start = new Date(`${semestre.inicio}T00:00:00`);
+      const end = new Date(`${semestre.fin}T23:59:59`);
+      return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start <= today && today <= end;
+    });
+    if (currentIndex < 0) return ordered;
+    return ordered.slice(Math.max(0, currentIndex - 1));
+  }, [semestres]);
+  const semestreConsultaOptions = useMemo(
+    () => sortSemestresAsc(semestres.filter((semestre) => Number(semestre.grupoCount ?? 0) > 0)),
+    [semestres],
+  );
 
   useEffect(() => {
-    setDraft(normalizeDraftSettings(settings));
-  }, [settings]);
+    setDraft(applySemestreDefaults(settings, semestres, semestreConsultaOptions));
+  }, [settings, semestreConsultaOptions, semestres]);
 
   useEffect(() => {
     if (loadingPermissions || !canViewSettings) return;
@@ -83,15 +176,15 @@ export default function SettingsPage() {
     const loadSemestres = async () => {
       setLoadingSemestres(true);
       try {
-        const listMatriculaSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(
+        const listSettingsSemestresConGrupos = httpsCallable<undefined, { semestres?: SemestreOption[] }>(
           functions,
-          'listMatriculaSemestres',
+          'listSettingsSemestresConGrupos',
         );
-        const result = await listMatriculaSemestres();
+        const result = await listSettingsSemestresConGrupos();
         if (active) setSemestres(result.data.semestres || []);
       } catch (error) {
-        console.error('Error loading matricula semestres for settings:', error);
-        if (active) setMessage('No se pudieron cargar los semestres de matricula.');
+        console.error('Error loading semestres con grupos for settings:', error);
+        if (active) setMessage('No se pudieron cargar los semestres con grupos.');
         if (active) setMessageSeverity('error');
       } finally {
         if (active) setLoadingSemestres(false);
@@ -231,6 +324,88 @@ export default function SettingsPage() {
             label="Usar avatares en certificados y titulos"
           />
 
+          <FormControl fullWidth size="small" disabled={loading || saving || loadingSemestres || !canEditSettings}>
+            <InputLabel>Semestre Actual</InputLabel>
+            <Select
+              label="Semestre Actual"
+              value={safeDraft.general.semestreActualId ? String(safeDraft.general.semestreActualId) : ''}
+              MenuProps={selectMenuProps}
+              onChange={(event) =>
+                setDraft((current) => {
+                  const normalized = normalizeDraftSettings(current);
+                  const semestreActualId = Number(event.target.value) || null;
+                  const semestresConsultaIds = semestreActualId
+                    ? Array.from(new Set([semestreActualId, ...normalized.general.semestresConsultaIds]))
+                    : normalized.general.semestresConsultaIds;
+                  return {
+                    ...normalized,
+                    general: {
+                      ...normalized.general,
+                      semestreActualId,
+                      semestresConsultaIds,
+                    },
+                    formularioMatricula: {
+                      ...normalized.formularioMatricula,
+                      semestreId: semestreActualId,
+                    },
+                  };
+                })
+              }
+            >
+              <MenuItem value="">Sin definir</MenuItem>
+              {semestreActualOptions.map((semestre) => (
+                <MenuItem key={semestre.id} value={String(semestre.id)}>
+                  {getSemestreLabel(semestre)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth size="small" disabled={loading || saving || loadingSemestres || !canEditSettings}>
+            <InputLabel>Usar solo los siguientes semestres para devolver datos</InputLabel>
+            <Select
+              multiple
+              label="Usar solo los siguientes semestres para devolver datos"
+              value={safeDraft.general.semestresConsultaIds.map(String)}
+              MenuProps={selectMenuProps}
+              input={<OutlinedInput label="Usar solo los siguientes semestres para devolver datos" />}
+              renderValue={(selected) =>
+                (selected as string[])
+                  .map((id) => semestreConsultaOptions.find((semestre) => String(semestre.id) === id))
+                  .filter((semestre): semestre is SemestreOption => Boolean(semestre))
+                  .map(getSemestreLabel)
+                  .join(', ')
+              }
+              onChange={(event) => {
+                const value = event.target.value;
+                const selected = typeof value === 'string' ? value.split(',') : value;
+                const selectedIds = selected
+                  .map((id) => Number(id))
+                  .filter((id) => Number.isFinite(id) && id > 0);
+                const nextSelectedIds = safeDraft.general.semestreActualId
+                  ? Array.from(new Set([safeDraft.general.semestreActualId, ...selectedIds]))
+                  : selectedIds;
+                setDraft((current) => ({
+                  ...normalizeDraftSettings(current),
+                  general: {
+                    ...normalizeDraftSettings(current).general,
+                    semestresConsultaIds: nextSelectedIds,
+                  },
+                }));
+              }}
+            >
+              {semestreConsultaOptions.map((semestre) => (
+                <MenuItem key={semestre.id} value={String(semestre.id)}>
+                  <Checkbox
+                    checked={safeDraft.general.semestresConsultaIds.includes(semestre.id)}
+                    disabled={safeDraft.general.semestreActualId === semestre.id}
+                  />
+                  <ListItemText primary={getSemestreLabel(semestre)} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <Box>
             <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
               Formulario de matricula
@@ -258,29 +433,37 @@ export default function SettingsPage() {
             label="El formulario acepta respuestas"
           />
 
-          <FormControl fullWidth size="small" disabled={loading || saving || loadingSemestres || !canEditSettings}>
-            <InputLabel>Definir semestre de matricula</InputLabel>
-            <Select
-              label="Definir semestre de matricula"
-              value={safeDraft.formularioMatricula.semestreId ? String(safeDraft.formularioMatricula.semestreId) : ''}
-              onChange={(event) =>
-                setDraft((current) => ({
-                  ...normalizeDraftSettings(current),
-                  formularioMatricula: {
-                    ...normalizeDraftSettings(current).formularioMatricula,
-                    semestreId: Number(event.target.value) || null,
-                  },
-                }))
-              }
-            >
-              <MenuItem value="">Sin definir</MenuItem>
-              {semestres.map((semestre) => (
-                <MenuItem key={semestre.id} value={String(semestre.id)}>
-                  {semestre.titulo || semestre.nombre || `Semestre ${semestre.id}`}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={safeDraft.formularioMatricula.activarReconocimientoDni}
+                disabled={loading || saving || !canEditSettings}
+                onChange={(event) =>
+                  setDraft((current) => {
+                    const normalized = normalizeDraftSettings(current);
+                    return {
+                      ...normalized,
+                      general: {
+                        ...normalized.general,
+                        activarReconocimientoDni: event.target.checked,
+                      },
+                      formularioMatricula: {
+                        ...normalized.formularioMatricula,
+                        activarReconocimientoDni: event.target.checked,
+                      },
+                      visualizaciones: {
+                        ...normalized.visualizaciones,
+                        usarGeneradorImagenesAvatar: event.target.checked
+                          ? normalized.visualizaciones.usarGeneradorImagenesAvatar
+                          : false,
+                      },
+                    };
+                  })
+                }
+              />
+            }
+            label="Activar reconocimiento de DNI"
+          />
 
           <Box>
             <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
@@ -307,6 +490,80 @@ export default function SettingsPage() {
             }
             label="Usar la foto imagen recortada como el avatar para Estudiantes"
           />
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={safeDraft.visualizaciones.mostrarImagenAvatarEstudiantesEnListas}
+                disabled={loading || saving || !canEditSettings}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    visualizaciones: {
+                      ...normalizeDraftSettings(current).visualizaciones,
+                      mostrarImagenAvatarEstudiantesEnListas: event.target.checked,
+                    },
+                  }))
+                }
+              />
+            }
+            label="Mostrar imagen de avatar de estudiantes en listas"
+          />
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={safeDraft.visualizaciones.usarGeneradorImagenesAvatar}
+                  disabled={loading || saving || !canEditSettings || !safeDraft.general.activarReconocimientoDni}
+                  onChange={(event) =>
+                    setDraft((current) => ({
+                      ...current,
+                      visualizaciones: {
+                        ...normalizeDraftSettings(current).visualizaciones,
+                        usarGeneradorImagenesAvatar: event.target.checked,
+                      },
+                    }))
+                  }
+                />
+              }
+              label="Usar generador de imagenes IA para avatar"
+            />
+
+            <FormControl
+              size="small"
+              sx={{ minWidth: { xs: '100%', sm: 320 } }}
+              disabled={
+                loading
+                || saving
+                || !canEditSettings
+                || !safeDraft.general.activarReconocimientoDni
+                || !safeDraft.visualizaciones.usarGeneradorImagenesAvatar
+              }
+            >
+              <InputLabel>Modelo de generacion</InputLabel>
+              <Select
+                label="Modelo de generacion"
+                value={safeDraft.visualizaciones.modeloGeneradorImagenesAvatar}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    visualizaciones: {
+                      ...normalizeDraftSettings(current).visualizaciones,
+                      modeloGeneradorImagenesAvatar: event.target.value,
+                    },
+                  }))
+                }
+              >
+                <MenuItem value="gemini-3.1-flash-lite-image-1024">
+                  Gemini Flash Lite Image 1024
+                </MenuItem>
+                <MenuItem value="gemini-3.1-flash-image-512">
+                  Gemini Flash Image 512
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
         </Stack>
       </Box>
     </IntranetListLayout>

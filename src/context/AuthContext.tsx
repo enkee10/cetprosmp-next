@@ -147,6 +147,21 @@ const loadUserDataFromFirebaseUser = async (firebaseUser: FirebaseUser): Promise
     };
 };
 
+const loadFallbackUserDataFromFirebaseUser = async (firebaseUser: FirebaseUser): Promise<UserData> => {
+    const token = await firebaseUser.getIdTokenResult(false).catch(() => null);
+    const claims = token?.claims ?? {};
+    return {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        photoURL: firebaseUser.photoURL,
+        role: (claims.role as string) || null,
+        roleTitle: null,
+        cargo: null,
+        level: (claims.level as number) || 0,
+    };
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) { // define el proveedor principal de autenticacion para toda la app
     const [user, setUser] = useState<UserData | null>(null); // guarda el usuario autenticado disponible para la interfaz
     const [loading, setLoading] = useState(true); // guarda si el contexto esta resolviendo auth o cargando perfil
@@ -170,7 +185,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                     if (!isExpectedAuthError(error)) {
                         console.error('Error loading auth user:', error);
                     }
-                    setUser(null);
+                    const fallbackUserData = await loadFallbackUserDataFromFirebaseUser(firebaseUser);
+                    setUser((current) => {
+                        if (current?.uid === firebaseUser.uid) return current;
+                        return fallbackUserData;
+                    });
                 }
             } else { // maneja el caso en que no exista un usuario autenticado
                 setUser(null); // limpia el usuario del contexto al cerrar sesion

@@ -1813,6 +1813,14 @@ input AppSetting_Data {
   """
   settingKey_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `AppSetting`.`stringValue` of type `String`
+  """
+  stringValue: String
+  """
+  ✨ `_expr` server value variant of `stringValue` (✨ Generated from Field `AppSetting`.`stringValue` of type `String`)
+  """
+  stringValue_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `AppSetting`.`updatedAt` of type `Timestamp`
   """
   updatedAt: Timestamp
@@ -1869,6 +1877,10 @@ input AppSetting_Filter {
   ✨ Generated from Field `AppSetting`.`settingKey` of type `String`
   """
   settingKey: String_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`stringValue` of type `String`
+  """
+  stringValue: String_Filter
   """
   ✨ Generated from Field `AppSetting`.`updatedAt` of type `Timestamp`
   """
@@ -1935,6 +1947,10 @@ input AppSetting_Having {
   ✨ Generated from Field `AppSetting`.`settingKey_count` of type `Int!`
   """
   settingKey_count: Int_Filter
+  """
+  ✨ Generated from Field `AppSetting`.`stringValue_count` of type `Int!`
+  """
+  stringValue_count: Int_Filter
   """
   ✨ Generated from Field `AppSetting`.`updatedAt_count` of type `Int!`
   """
@@ -2035,6 +2051,10 @@ input AppSetting_Order {
   """
   settingKey: OrderDirection
   """
+  ✨ Generated from Field `AppSetting`.`stringValue` of type `String`
+  """
+  stringValue: OrderDirection
+  """
   ✨ Generated from Field `AppSetting`.`updatedAt` of type `Timestamp`
   """
   updatedAt: OrderDirection
@@ -2066,6 +2086,10 @@ input AppSetting_Order {
   ✨ Generated from Field `AppSetting`.`settingKey_count` of type `Int!`
   """
   settingKey_count: OrderDirection
+  """
+  ✨ Generated from Field `AppSetting`.`stringValue_count` of type `Int!`
+  """
+  stringValue_count: OrderDirection
   """
   ✨ Generated from Field `AppSetting`.`updatedAt_count` of type `Int!`
   """

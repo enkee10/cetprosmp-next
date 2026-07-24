@@ -9,13 +9,20 @@ export type AppSettings = {
   general: {
     usarAvataresEnCertificadosTitulos: boolean;
     formularioMatriculaAceptaRespuestas: boolean;
+    activarReconocimientoDni: boolean;
+    semestreActualId: number | null;
+    semestresConsultaIds: number[];
   };
   formularioMatricula: {
     aceptaRespuestas: boolean;
     semestreId: number | null;
+    activarReconocimientoDni: boolean;
   };
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: boolean;
+    mostrarImagenAvatarEstudiantesEnListas: boolean;
+    usarGeneradorImagenesAvatar: boolean;
+    modeloGeneradorImagenesAvatar: string;
   };
 };
 
@@ -23,13 +30,20 @@ export const defaultAppSettings: AppSettings = {
   general: {
     usarAvataresEnCertificadosTitulos: false,
     formularioMatriculaAceptaRespuestas: false,
+    activarReconocimientoDni: true,
+    semestreActualId: null,
+    semestresConsultaIds: [],
   },
   formularioMatricula: {
     aceptaRespuestas: false,
     semestreId: null,
+    activarReconocimientoDni: true,
   },
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: false,
+    mostrarImagenAvatarEstudiantesEnListas: true,
+    usarGeneradorImagenesAvatar: true,
+    modeloGeneradorImagenesAvatar: 'gemini-3.1-flash-image-512',
   },
 };
 
@@ -41,19 +55,39 @@ const normalizeSettings = (value: Partial<AppSettings> | undefined | null): AppS
     formularioMatriculaAceptaRespuestas: Boolean(
       value?.formularioMatricula?.aceptaRespuestas ?? value?.general?.formularioMatriculaAceptaRespuestas,
     ),
+    activarReconocimientoDni: (value?.formularioMatricula?.activarReconocimientoDni ?? value?.general?.activarReconocimientoDni) !== false,
+    semestreActualId: Number(value?.general?.semestreActualId) > 0
+      ? Number(value?.general?.semestreActualId)
+      : Number(value?.formularioMatricula?.semestreId) > 0
+        ? Number(value?.formularioMatricula?.semestreId)
+        : null,
+    semestresConsultaIds: Array.isArray(value?.general?.semestresConsultaIds)
+      ? value.general.semestresConsultaIds.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
+      : [],
   },
   formularioMatricula: {
     aceptaRespuestas: Boolean(
       value?.formularioMatricula?.aceptaRespuestas ?? value?.general?.formularioMatriculaAceptaRespuestas,
     ),
-    semestreId: Number(value?.formularioMatricula?.semestreId) > 0
-      ? Number(value?.formularioMatricula?.semestreId)
-      : null,
+    semestreId: Number(value?.general?.semestreActualId) > 0
+      ? Number(value?.general?.semestreActualId)
+      : Number(value?.formularioMatricula?.semestreId) > 0
+        ? Number(value?.formularioMatricula?.semestreId)
+        : null,
+    activarReconocimientoDni: (value?.formularioMatricula?.activarReconocimientoDni ?? value?.general?.activarReconocimientoDni) !== false,
   },
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: Boolean(
       value?.visualizaciones?.usarRecorteFotografiaComoAvatarEstudiantes,
     ),
+    mostrarImagenAvatarEstudiantesEnListas: value?.visualizaciones?.mostrarImagenAvatarEstudiantesEnListas !== false,
+    usarGeneradorImagenesAvatar: value?.visualizaciones?.usarGeneradorImagenesAvatar !== false,
+    modeloGeneradorImagenesAvatar: [
+      'gemini-3.1-flash-lite-image-1024',
+      'gemini-3.1-flash-image-512',
+    ].includes(String(value?.visualizaciones?.modeloGeneradorImagenesAvatar))
+      ? String(value?.visualizaciones?.modeloGeneradorImagenesAvatar)
+      : 'gemini-3.1-flash-image-512',
   },
 });
 

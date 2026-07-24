@@ -19,6 +19,20 @@ const allowedDevOrigins = [
 ];
 
 const nextConfig: NextConfig = {
+  async headers() {
+    return [
+      {
+        source: "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, max-age=0, must-revalidate",
+          },
+        ],
+      },
+    ];
+  },
+
   /**
    * 1. ESLint
    */

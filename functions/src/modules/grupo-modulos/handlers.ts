@@ -24,6 +24,7 @@ import {
   INSERT_GRUPO_MODULO_MUTATION,
   UPDATE_GRUPO_MODULO_MUTATION,
 } from "../../dataconnectOperations.js";
+import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
 
 type GrupoModuloRow = DataConnectGrupoModulo & {
   grupo?: Pick<DataConnectGrupo, "id" | "nombreDisplay" | "semestreId"> & {
@@ -210,10 +211,20 @@ export const listGrupoModulos = https.onCall(async (_data, context) => {
   await requirePermission(context, "grupo-modulos", "view");
 
   try {
-    const response = await dataConnect.executeGraphql<{ grupoModulos: GrupoModuloRow[] }, Record<string, never>>(
-      LIST_GRUPO_MODULOS_QUERY,
-    );
-    return { grupoModulos: sortGrupoModulos(response.data.grupoModulos ?? []).map(decorateGrupoModulo) };
+    const [response, semestreConsultaIds] = await Promise.all([
+      dataConnect.executeGraphql<{ grupoModulos: GrupoModuloRow[] }, Record<string, never>>(
+        LIST_GRUPO_MODULOS_QUERY,
+      ),
+      getConfiguredSemestreConsultaIds(),
+    ]);
+    const allowedSemestreIds = semestreConsultaIds.length > 0 ? new Set(semestreConsultaIds) : null;
+    return {
+      grupoModulos: sortGrupoModulos(
+        (response.data.grupoModulos ?? []).filter((item) =>
+          !allowedSemestreIds || allowedSemestreIds.has(Number(item.grupo?.semestreId)),
+        ),
+      ).map(decorateGrupoModulo),
+    };
   } catch (error) {
     console.error("Error in listGrupoModulos:", error);
     throw new https.HttpsError("internal", "No se pudieron listar los grupo-modulos.");

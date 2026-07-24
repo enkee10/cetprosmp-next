@@ -12,6 +12,7 @@ import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
 import { GrupoForm } from '@/components/intranet/grupos/GrupoForm';
 import { getPersonalShortName } from '@/components/intranet/grupos/personalName';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 interface Grupo {
   id: number;
@@ -72,6 +73,10 @@ const getGrupoNombre = (grupo: Grupo) => {
   ].filter(Boolean).join(' ') || grupo.nombreDisplay || '';
 };
 
+const selectMenuProps = {
+  disableScrollLock: true,
+};
+
 interface SemestreFilterOption {
   id: number;
   titulo: string;
@@ -80,7 +85,10 @@ interface SemestreFilterOption {
   archivado?: boolean | null;
 }
 
-function pickDefaultSemestreId(options: SemestreFilterOption[]) {
+function pickDefaultSemestreId(options: SemestreFilterOption[], configuredSemestreId?: number | null) {
+  if (configuredSemestreId && options.some((option) => option.id === configuredSemestreId)) {
+    return String(configuredSemestreId);
+  }
   const today = new Date();
   const current = options.find((option) => {
     if (option.archivado) return false;
@@ -129,6 +137,7 @@ export default function GruposPage() {
       descripcion: false,
       actions: true,
     });
+  const { settings } = useAppSettings();
 
   const auth = getAuth(app);
   const functions = useMemo(() => getFunctions(app), []);
@@ -375,8 +384,8 @@ export default function GruposPage() {
       return;
     }
     if (selectedSemestreId && semestreOptions.some((option) => String(option.id) === selectedSemestreId)) return;
-    setSelectedSemestreId(pickDefaultSemestreId(semestreOptions));
-  }, [selectedSemestreId, semestreOptions]);
+    setSelectedSemestreId(pickDefaultSemestreId(semestreOptions, settings.general.semestreActualId));
+  }, [selectedSemestreId, semestreOptions, settings.general.semestreActualId]);
 
   const filteredGrupos = useMemo(() => {
     if (!selectedSemestreId) return grupos;
@@ -398,6 +407,7 @@ export default function GruposPage() {
               value={selectedSemestreId}
               onChange={(event) => setSelectedSemestreId(String(event.target.value))}
               disabled={loading || semestreOptions.length === 0}
+              MenuProps={selectMenuProps}
             >
               {semestreOptions.map((option) => (
                 <MenuItem key={option.id} value={String(option.id)}>

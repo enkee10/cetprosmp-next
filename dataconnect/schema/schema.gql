@@ -68,6 +68,7 @@ type AppSetting @table(name: "app_settings", singular: "appSetting", plural: "ap
   label: String @col(dataType: "text")
   boolValue: Boolean @col(name: "bool_value")
   intValue: Int @col(name: "int_value")
+  stringValue: String @col(name: "string_value", dataType: "text")
   updatedAt: Timestamp @col(name: "updated_at")
 }
 

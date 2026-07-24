@@ -79,6 +79,11 @@ function isAlreadyExists(error: unknown) {
   );
 }
 
+const sleep = (milliseconds: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+
 function getWorkspaceGroupClients(): WorkspaceGroupClients {
   if (!WORKSPACE_SUBJECT_EMAIL || !WORKSPACE_PRIMARY_DOMAIN) {
     throw new Error("Faltan variables WORKSPACE_SUBJECT_EMAIL o WORKSPACE_PRIMARY_DOMAIN para sincronizar grupos Workspace.");
@@ -197,18 +202,29 @@ async function upsertWorkspaceMemberRole(
 }
 
 async function applyWorkspaceGroupSettings(groupsSettings: groupssettings_v1.Groupssettings, groupEmail: string) {
-  await groupsSettings.groups.patch({
-    groupUniqueId: normalizeEmail(groupEmail),
-    requestBody: {
-      whoCanContactOwner: "ALL_MEMBERS_CAN_CONTACT",
-      whoCanViewGroup: "ALL_MEMBERS_CAN_VIEW",
-      whoCanPostMessage: "ALL_MEMBERS_CAN_POST",
-      whoCanViewMembership: "ALL_MEMBERS_CAN_VIEW",
-      whoCanModifyMembers: "OWNERS_AND_MANAGERS",
-      whoCanModerateMembers: "OWNERS_AND_MANAGERS",
-      whoCanJoin: "INVITED_CAN_JOIN",
-    },
-  });
+  const groupUniqueId = normalizeEmail(groupEmail);
+  const requestBody = {
+    whoCanContactOwner: "ALL_MEMBERS_CAN_CONTACT",
+    whoCanViewGroup: "ALL_MEMBERS_CAN_VIEW",
+    whoCanPostMessage: "ALL_MEMBERS_CAN_POST",
+    whoCanViewMembership: "ALL_MEMBERS_CAN_VIEW",
+    whoCanModifyMembers: "OWNERS_AND_MANAGERS",
+    whoCanModerateMembers: "OWNERS_AND_MANAGERS",
+    whoCanJoin: "INVITED_CAN_JOIN",
+  };
+  let lastError: unknown = null;
+
+  for (const delay of [0, 1200, 2400]) {
+    if (delay > 0) await sleep(delay);
+    try {
+      await groupsSettings.groups.patch({ groupUniqueId, requestBody });
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
 }
 
 export async function syncGrupoToWorkspace(input: GrupoWorkspaceSyncInput) {

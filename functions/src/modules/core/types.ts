@@ -118,6 +118,7 @@ export interface DataConnectAppSetting {
   label?: string | null;
   boolValue?: boolean | null;
   intValue?: number | null;
+  stringValue?: string | null;
   updatedAt?: string | null;
 }
 
@@ -127,6 +128,7 @@ export interface DataConnectAppSettingInput {
   label?: string | null;
   boolValue?: boolean;
   intValue?: number | null;
+  stringValue?: string | null;
   updatedAt?: string | null;
 }
 

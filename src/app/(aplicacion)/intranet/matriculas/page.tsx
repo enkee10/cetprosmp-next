@@ -15,6 +15,7 @@ import {
   FormControlLabel,
   FormLabel,
   IconButton,
+  InputAdornment,
   InputLabel,
   LinearProgress,
   Menu,
@@ -27,6 +28,7 @@ import {
   Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import ClearIcon from '@mui/icons-material/Clear';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -39,19 +41,18 @@ import {
   GridPaginationModel,
 } from '@mui/x-data-grid';
 import { httpsCallable } from 'firebase/functions';
-import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
 import { useSearchParams } from 'next/navigation';
 import { app, functions, storage } from '@/lib/firebase';
 import { formatDateOnly, getDateOnlyLocalDate } from '@/lib/dateOnly';
+import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
-
-type RecognitionMode = 'gemini' | 'documentAi';
 
 interface SemestreOption {
   id: number;
@@ -64,6 +65,8 @@ interface SemestreOption {
 
 interface PaqueteOption {
   id: number;
+  grupoId?: number | null;
+  paqueteId?: number | null;
   titulo?: string | null;
   descripcion?: string | null;
   grupoModuloTitulo?: string | null;
@@ -133,6 +136,7 @@ interface MatriculaListItem {
   fecha?: string | null;
   archivado?: boolean | null;
   paqueteId?: number | null;
+  grupoId?: number | null;
   semestreId?: number | null;
   userId?: number | null;
   responsableId?: number | null;
@@ -148,12 +152,12 @@ interface MatriculaFormProps {
   matriculaId?: string;
   isOpen: boolean;
   onCancel: () => void;
+  onReset?: () => void;
   onSaved: () => void;
   defaultSemestreId?: number | null;
+  reconocimientoDniActivo?: boolean;
   formVariant?: 'intranet' | 'standalone';
   hideSemestreControl?: boolean;
-  hideRecognitionModeControl?: boolean;
-  disableRecognitionModeControl?: boolean;
 }
 
 interface MatriculaFormValues {
@@ -176,14 +180,7 @@ interface MatriculaFormValues {
   email: string;
   recibo: string;
   paqueteId: string;
-}
-
-interface VerificarDocumentoResponse {
-  userExists?: boolean;
-  userHasStoredImages?: boolean;
-  user?: MatriculaUser | null;
-  documentImagePolicy?: DocumentImagePolicy | null;
-  datos?: Partial<MatriculaFormValues>;
+  grupoId: string;
 }
 
 interface DocumentImagePolicy {
@@ -203,6 +200,14 @@ interface MatriculaDocumentoEstadoResponse {
 interface VerificarReniecResponse {
   userExists?: boolean;
   datos?: Partial<MatriculaFormValues>;
+}
+
+interface VerificarOcrSimpleResponse {
+  frontValid?: boolean;
+  backValid?: boolean;
+  frontError?: string | null;
+  backError?: string | null;
+  debug?: unknown;
 }
 
 interface GeminiArchivoResult {
@@ -265,6 +270,20 @@ interface DocumentoAnalisisTemporal {
   respuestaGemini: ReturnType<typeof compactGeminiResultForMessage>;
 }
 
+type VerificationFailureReason = 'document_mismatch' | 'expired' | 'analysis_error' | 'simple_ocr';
+
+interface LastVerificationFailure {
+  frontSignature: string;
+  backSignature: string;
+  message: string;
+  frontError?: string | null;
+  backError?: string | null;
+  reason: VerificationFailureReason;
+  aiResult?: GeminiMatriculaResult | null;
+  reniecDatos?: Partial<MatriculaFormValues> | null;
+  analysisMetadata?: DocumentoAnalisisTemporal | null;
+}
+
 const initialValues: MatriculaFormValues = {
   semestreId: '',
   tipoDocumento: 'DNI',
@@ -285,6 +304,7 @@ const initialValues: MatriculaFormValues = {
   email: '',
   recibo: '',
   paqueteId: '',
+  grupoId: '',
 };
 
 const getCallableErrorMessage = (error: unknown, fallback: string) => {
@@ -350,6 +370,15 @@ const fileToGenerativePart = async (file: File) => {
       data,
       mimeType: detectDocumentContentType(file),
     },
+  };
+};
+
+const fileToOcrSimpleInput = async (file: File) => {
+  const part = await fileToGenerativePart(file);
+  return {
+    data: part.inlineData.data,
+    mimeType: part.inlineData.mimeType,
+    name: file.name,
   };
 };
 
@@ -419,6 +448,54 @@ const normalizeDateInput = (value: unknown) => {
   return '';
 };
 
+const isValidDateOnlyValue = (value: unknown) => {
+  const normalized = normalizeDateInput(value);
+  if (!normalized) return false;
+  const [year, month, day] = normalized.split('-').map((item) => Number(item));
+  if (!year || !month || !day) return false;
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+};
+
+const getAgeFromBirthDate = (value: unknown) => {
+  const normalized = normalizeDateInput(value);
+  if (!normalized || !isValidDateOnlyValue(normalized)) return null;
+  const [year, month, day] = normalized.split('-').map((item) => Number(item));
+  const today = todayDateOnly();
+  let age = today.getFullYear() - year;
+  const hasBirthdayPassed =
+    today.getMonth() > month - 1 || (today.getMonth() === month - 1 && today.getDate() >= day);
+  if (!hasBirthdayPassed) age -= 1;
+  return age;
+};
+
+const getBirthDateValidationError = (value: unknown) => {
+  const text = asString(value).trim();
+  if (!text) return 'Esta pregunta es obligatoria.';
+  if (!isValidDateOnlyValue(text)) return 'Ingresa una fecha valida.';
+  const age = getAgeFromBirthDate(text);
+  if (age === null || age < 13 || age > 90) return 'La edad debe estar entre 13 y 90 anos.';
+  return '';
+};
+
+const getDocumentNumberValidationError = (tipoDocumento: string, value: unknown) => {
+  const number = normalizeDocumentNumber(String(value ?? ''));
+  if (!number) return 'Esta pregunta es obligatoria.';
+  if (tipoDocumento === 'CE' && !/^\d{9}$/.test(number)) return 'El numero tiene que tener 9 digitos.';
+  if (tipoDocumento !== 'CE' && !/^\d{8}$/.test(number)) return 'El numero tiene que tener 8 digitos.';
+  return '';
+};
+
+const isValidEmail = (value: unknown) => {
+  const text = asString(value).trim();
+  if (!text) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
+};
+
+const getEmailValidationError = (value: unknown) => (
+  isValidEmail(value) ? '' : 'Ingresa un correo electronico valido.'
+);
+
 const RECIBO_OPTIONS = ['CONADIS', 'BECADO'] as const;
 
 const normalizeReciboInputValue = (value: unknown) => {
@@ -434,6 +511,10 @@ const isValidReciboValue = (value: unknown) => {
 
 const getPaqueteOptionLabel = (paquete: PaqueteOption) =>
   paquete.grupoModuloTitulo || paquete.titulo || `Modulo ${paquete.id}`;
+
+const getPaqueteOptionGrupoId = (paquete: PaqueteOption) => paquete.grupoId ?? paquete.id;
+
+const getPaqueteOptionPaqueteId = (paquete: PaqueteOption) => paquete.paqueteId ?? paquete.id;
 
 const parseDateOnly = (value: unknown) => {
   const normalized = normalizeDateInput(value);
@@ -629,6 +710,10 @@ const compactGeminiResultForMessage = (aiResult: GeminiMatriculaResult) => ({
   observaciones: aiResult.observaciones ?? null,
 });
 
+const fileSignature = (file: File | null) => (
+  file ? `${file.name}|${file.size}|${file.lastModified}` : ''
+);
+
 const analyzeMatriculaDocumentsWithGemini = async (
   tipoDocumento: string,
   dni: string,
@@ -742,7 +827,7 @@ Formato exacto:
     throw new Error([
       lastError.message,
       lastError.preview ? `Respuesta recibida: ${lastError.preview}` : null,
-      'Vuelve a intentarlo; si se repite, cambia temporalmente a Document AI o reduce el peso/resolucion de los archivos.',
+      'Vuelve a intentarlo; si se repite, reduce el peso/resolucion de los archivos o usa la verificacion con RENIEC.',
     ].filter(Boolean).join('\n'));
   }
   throw lastError;
@@ -798,6 +883,7 @@ function valuesFromMatricula(matricula: MatriculaListItem): MatriculaFormValues 
     email: user?.email || '',
     recibo: matricula.recibo || '',
     paqueteId: matricula.paqueteId ? String(matricula.paqueteId) : '',
+    grupoId: matricula.grupoId ? String(matricula.grupoId) : '',
   };
 }
 
@@ -805,16 +891,17 @@ export function MatriculaForm({
   matriculaId,
   isOpen,
   onCancel,
+  onReset,
   onSaved,
   defaultSemestreId,
+  reconocimientoDniActivo = true,
   formVariant = 'intranet',
   hideSemestreControl = false,
-  hideRecognitionModeControl = false,
-  disableRecognitionModeControl = true,
 }: MatriculaFormProps) {
   const isEditing = Boolean(matriculaId);
   const isStandalone = formVariant === 'standalone';
   const dniInputRef = useRef<HTMLInputElement | null>(null);
+  const birthDatePickerRef = useRef<HTMLInputElement | null>(null);
   const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const [values, setValues] = useState<MatriculaFormValues>(initialValues);
@@ -831,7 +918,6 @@ export function MatriculaForm({
   const [documentAnalysisMetadata, setDocumentAnalysisMetadata] = useState<DocumentoAnalisisTemporal | null>(null);
   const [responsable, setResponsable] = useState<MatriculaResponsable | null>(null);
   const [responsableUser, setResponsableUser] = useState<MatriculaResponsableUser | null>(null);
-  const [recognitionMode, setRecognitionMode] = useState<RecognitionMode>('gemini');
   const [documentVerified, setDocumentVerified] = useState(false);
   const [isExistingUserWithImages, setIsExistingUserWithImages] = useState(false);
   const [shouldPersistDocumentImages, setShouldPersistDocumentImages] = useState(true);
@@ -844,12 +930,15 @@ export function MatriculaForm({
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [frontFileVerificationError, setFrontFileVerificationError] = useState<string | null>(null);
+  const [backFileVerificationError, setBackFileVerificationError] = useState<string | null>(null);
+  const [lastVerificationFailure, setLastVerificationFailure] = useState<LastVerificationFailure | null>(null);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const selectedSemestreId = Number(values.semestreId || 0);
 
   const updateValue = useCallback(<K extends keyof MatriculaFormValues>(key: K, value: MatriculaFormValues[K]) => {
-    setValues((prev) => ({ ...prev, [key]: value, ...(key === 'semestreId' ? { paqueteId: '' } : {}) }));
+    setValues((prev) => ({ ...prev, [key]: value, ...(key === 'semestreId' ? { paqueteId: '', grupoId: '' } : {}) }));
     setMessage(null);
     setSuccessMessage(null);
     setTouched((prev) => ({ ...prev, [key]: false }));
@@ -858,10 +947,31 @@ export function MatriculaForm({
       setIsExistingUserWithImages(false);
       setShouldPersistDocumentImages(true);
       setDocumentAnalysisMetadata(null);
+      setFrontFileVerificationError(null);
+      setBackFileVerificationError(null);
+      setLastVerificationFailure(null);
     }
   }, []);
 
-  const showReniecVerification = verificationFailureCount >= 3 && !documentVerified;
+  const updateGrupoSelection = useCallback((grupoIdValue: string) => {
+    const selectedOption = paquetes.find((paquete) => String(getPaqueteOptionGrupoId(paquete)) === grupoIdValue);
+    setValues((prev) => ({
+      ...prev,
+      grupoId: grupoIdValue,
+      paqueteId: selectedOption ? String(getPaqueteOptionPaqueteId(selectedOption)) : '',
+    }));
+    setMessage(null);
+    setSuccessMessage(null);
+    setTouched((prev) => ({ ...prev, grupoId: false }));
+  }, [paquetes]);
+
+  const handleCancelFromVerification = useCallback(() => {
+    if (isStandalone && onReset) {
+      onReset();
+      return;
+    }
+    onCancel();
+  }, [isStandalone, onCancel, onReset]);
 
   const registerVerificationFailure = useCallback(() => {
     setVerificationFailureCount((current) => current + 1);
@@ -878,6 +988,11 @@ export function MatriculaForm({
     setDocumentVerified(false);
     setDocumentAnalysisMetadata(null);
     setShouldPersistDocumentImages(true);
+    if (side === 'frente') {
+      setFrontFileVerificationError(null);
+    } else {
+      setBackFileVerificationError(null);
+    }
     setMessage(null);
     setSuccessMessage(null);
     setTouched((prev) => ({ ...prev, [side === 'frente' ? 'frontFile' : 'backFile']: Boolean(file) }));
@@ -1066,6 +1181,7 @@ export function MatriculaForm({
             ...prev,
             semestreId: configuredSemestre ? String(configuredSemestre.id) : '',
             paqueteId: '',
+            grupoId: '',
           }));
           const getMatriculaResponsableActual = httpsCallable<
             undefined,
@@ -1138,13 +1254,6 @@ export function MatriculaForm({
     return { path, url, contentType };
   };
 
-  const deleteUploadedDocumentImage = async (image: UploadedImage | null) => {
-    if (!image?.path) return;
-    await deleteObject(ref(storage, image.path)).catch((error) => {
-      console.warn('No se pudo eliminar la imagen temporal de matricula:', error);
-    });
-  };
-
   const getMatriculaDocumentoPolicy = async () => {
     const getMatriculaDocumentoEstado = httpsCallable<
       { tipoDocumento: string; dni: string },
@@ -1157,6 +1266,79 @@ export function MatriculaForm({
     return result.data.documentImagePolicy ?? null;
   };
 
+  const fetchReniecForVerification = useCallback(async () => {
+    if (values.tipoDocumento === 'CE') {
+      return { tipoDocumento: 'CE', dni: normalizeDocumentNumber(values.dni) } as Partial<MatriculaFormValues>;
+    }
+    const verificarMatriculaReniec = httpsCallable<
+      { tipoDocumento: string; dni: string },
+      VerificarReniecResponse
+    >(functions, 'verificarMatriculaReniec', { timeout: 60000 });
+    const result = await verificarMatriculaReniec({
+      tipoDocumento: values.tipoDocumento,
+      dni: normalizeDocumentNumber(values.dni),
+    });
+    return result.data.datos || null;
+  }, [values.dni, values.tipoDocumento]);
+
+  const applyVerifiedDocumentData = useCallback((
+    aiResult: GeminiMatriculaResult | null | undefined,
+    reniecDatos: Partial<MatriculaFormValues> | null | undefined,
+    detectedType: 'DNI' | 'CE' | null,
+    detectedNumber: string,
+    detectedExpiration: string,
+  ) => {
+    setValues((prev) => ({
+      ...prev,
+      tipoDocumento: reniecDatos?.tipoDocumento === 'CE' || detectedType === 'CE' ? 'CE' : 'DNI',
+      dni: asString(reniecDatos?.dni) || detectedNumber || prev.dni,
+      apellidoPaterno: asString(reniecDatos?.apellidoPaterno) || asString(aiResult?.apellidoPaterno) || prev.apellidoPaterno,
+      apellidoMaterno: asString(reniecDatos?.apellidoMaterno) || asString(aiResult?.apellidoMaterno) || prev.apellidoMaterno,
+      nombre: asString(reniecDatos?.nombre) || asString(aiResult?.nombre) || prev.nombre,
+      sexo: normalizeAiGender(reniecDatos?.sexo) || normalizeAiGender(aiResult?.sexo) || prev.sexo,
+      nacionalidad: detectedType === 'DNI'
+        ? 'PERUANA'
+        : asString(aiResult?.nacionalidad) || asString(reniecDatos?.nacionalidad) || prev.nacionalidad,
+      fechaNacimiento: normalizeDateInput(reniecDatos?.fechaNacimiento) || normalizeDateInput(aiResult?.fechaNacimiento) || prev.fechaNacimiento,
+      fechaVencimiento: detectedExpiration || prev.fechaVencimiento,
+      estadoCivil: normalizeAiCivilStatus(aiResult?.estadoCivil) || normalizeAiCivilStatus(reniecDatos?.estadoCivil) || prev.estadoCivil,
+      direccion: asString(aiResult?.direccion) || asString(reniecDatos?.direccion) || prev.direccion,
+      distrito: asString(aiResult?.distrito) || asString(reniecDatos?.distrito) || prev.distrito,
+    }));
+  }, []);
+
+  const allowContinueAfterThirdFailure = useCallback((failure: LastVerificationFailure) => {
+    const aiResult = failure.aiResult ?? null;
+    const detectedType = normalizeAiDocumentType(aiResult?.tipoDocumento) || (values.tipoDocumento === 'CE' ? 'CE' : 'DNI');
+    const detectedNumber = normalizeDetectedDocumentNumber(values.tipoDocumento, aiResult?.numeroDocumento);
+    const detectedExpiration = normalizeDateInput(aiResult?.fechaVencimiento);
+    applyVerifiedDocumentData(aiResult, failure.reniecDatos, detectedType, detectedNumber, detectedExpiration);
+    setDocumentVerified(true);
+    setDocumentAnalysisMetadata(failure.analysisMetadata ?? null);
+    setFrontFileVerificationError(null);
+    setBackFileVerificationError(null);
+    setVerificationFailureCount(3);
+    setSuccessMessage('Documento habilitado despues del tercer intento. Completa o corrige los datos antes de guardar.');
+  }, [applyVerifiedDocumentData, values.tipoDocumento]);
+
+  const handleDocumentValidationFailure = useCallback((failure: LastVerificationFailure) => {
+    const nextCount = verificationFailureCount + 1;
+    if (nextCount >= 3) {
+      setLastVerificationFailure(failure);
+      allowContinueAfterThirdFailure(failure);
+      return;
+    }
+    setVerificationFailureCount(nextCount);
+    setLastVerificationFailure(failure);
+    setFrontFileVerificationError(failure.frontError ?? null);
+    setBackFileVerificationError(failure.backError ?? null);
+    setTouched((prev) => ({
+      ...prev,
+      ...(failure.frontError ? { frontFile: true } : {}),
+      ...(failure.backError ? { backFile: true } : {}),
+    }));
+  }, [allowContinueAfterThirdFailure, verificationFailureCount]);
+
   const applyDocumentImagePolicy = (policy?: DocumentImagePolicy | null) => {
     const shouldPersist = policy?.shouldPersistDocumentImages !== false;
     setIsExistingUserWithImages(Boolean(policy?.userHasStoredImages));
@@ -1167,7 +1349,8 @@ export function MatriculaForm({
   const validateSectionOne = () => {
     if (!values.semestreId) return 'Selecciona un periodo.';
     if (!values.tipoDocumento) return 'Selecciona el tipo de documento.';
-    if (!normalizeDocumentNumber(values.dni)) return 'Ingresa el numero de documento.';
+    const documentNumberError = getDocumentNumberValidationError(values.tipoDocumento, values.dni);
+    if (documentNumberError) return documentNumberError;
     if (!frontFile) return 'Sube la imagen del DNI frente.';
     if (!backFile) return 'Sube la imagen del DNI reverso.';
     return null;
@@ -1177,12 +1360,12 @@ export function MatriculaForm({
     if (!touched[key]) return '';
     if (key === 'semestreId' && !values.semestreId) return 'Esta pregunta es obligatoria.';
     if (key === 'dni') {
-      const dni = normalizeDocumentNumber(values.dni);
-      if (!dni) return 'Esta pregunta es obligatoria.';
-      if (values.tipoDocumento === 'DNI' && !/^\d{8}$/.test(dni)) return 'El numero tiene que tener 8 digitos.';
+      return getDocumentNumberValidationError(values.tipoDocumento, values.dni);
     }
     if (key === 'frontFile' && !frontFile) return 'Esta pregunta es obligatoria.';
+    if (key === 'frontFile' && frontFileVerificationError) return frontFileVerificationError;
     if (key === 'backFile' && !backFile) return 'Esta pregunta es obligatoria.';
+    if (key === 'backFile' && backFileVerificationError) return backFileVerificationError;
     const requiredLabels: Partial<Record<keyof MatriculaFormValues, string>> = {
       apellidoPaterno: 'Esta pregunta es obligatoria.',
       apellidoMaterno: 'Esta pregunta es obligatoria.',
@@ -1196,19 +1379,25 @@ export function MatriculaForm({
       distrito: 'Esta pregunta es obligatoria.',
       celular: 'Esta pregunta es obligatoria.',
       recibo: 'Esta pregunta es obligatoria.',
-      paqueteId: 'Esta pregunta es obligatoria.',
+      grupoId: 'Esta pregunta es obligatoria.',
     };
     if (key in requiredLabels && !String(values[key as keyof MatriculaFormValues] || '').trim()) {
       return requiredLabels[key as keyof MatriculaFormValues] || '';
     }
-    if (key === 'celular' && values.celular.trim() && !/^\d{9}$/.test(values.celular.trim())) {
-      return 'El celular debe tener 9 digitos.';
+    if (key === 'fechaNacimiento') {
+      return getBirthDateValidationError(values.fechaNacimiento);
+    }
+    if (key === 'celular' && values.celular.trim() && !/^9\d{8}$/.test(values.celular.trim())) {
+      return 'El celular debe tener 9 digitos y empezar con 9.';
+    }
+    if (key === 'email' && values.email.trim()) {
+      return getEmailValidationError(values.email);
     }
     if (key === 'recibo' && values.recibo.trim() && !isValidReciboValue(values.recibo)) {
       return 'Ingresa hasta 5 digitos o selecciona CONADIS/BECADO.';
     }
     return '';
-  }, [backFile, frontFile, touched, values]);
+  }, [backFile, backFileVerificationError, frontFile, frontFileVerificationError, touched, values]);
 
   const handleVerifyDocument = async () => {
     const sectionError = validateSectionOne();
@@ -1224,227 +1413,215 @@ export function MatriculaForm({
       return;
     }
 
+    const currentFrontSignature = fileSignature(frontFile);
+    const currentBackSignature = fileSignature(backFile);
+    if (
+      lastVerificationFailure
+      && !documentVerified
+      && verificationFailureCount > 0
+    ) {
+      const frontStillFailed = Boolean(
+        lastVerificationFailure.frontError
+        && lastVerificationFailure.frontSignature === currentFrontSignature,
+      );
+      const backStillFailed = Boolean(
+        lastVerificationFailure.backError
+        && lastVerificationFailure.backSignature === currentBackSignature,
+      );
+      if (frontStillFailed || backStillFailed) {
+        setMessage(null);
+        setSuccessMessage(null);
+        handleDocumentValidationFailure(lastVerificationFailure);
+        return;
+      }
+    }
+
     setLoading(true);
     setMessage(null);
     setSuccessMessage(null);
+    setFrontFileVerificationError(null);
+    setBackFileVerificationError(null);
     setDocumentAnalysisMetadata(null);
     try {
-      if (recognitionMode === 'gemini') {
-        const files = [frontFile, backFile].filter((file): file is File => Boolean(file));
-        if (files.length === 0) {
-          registerVerificationFailure();
-          setMessage('Sube al menos un archivo del documento para analizarlo con Gemini.');
-          return;
-        }
-
-        const aiResult = await analyzeMatriculaDocumentsWithGemini(
-          values.tipoDocumento,
-          normalizeDocumentNumber(values.dni),
-          files,
+      const files = [frontFile, backFile].filter((file): file is File => Boolean(file));
+      if (files.length === 0) {
+        registerVerificationFailure();
+        setFrontFileVerificationError(
+          reconocimientoDniActivo
+            ? 'Sube al menos un archivo del documento para analizarlo con Gemini.'
+            : 'Sube al menos un archivo del documento.',
         );
-        const detectedType = normalizeAiDocumentType(aiResult.tipoDocumento);
-        const detectedNumber = normalizeDetectedDocumentNumber(values.tipoDocumento, aiResult.numeroDocumento);
-        const expectedNumber = normalizeDocumentNumber(values.dni);
-        const documentMatches = detectedType === values.tipoDocumento && detectedNumber === expectedNumber;
-        const fileClassification = classifyGeminiFiles(files, aiResult);
-        const analysisMetadata: DocumentoAnalisisTemporal = {
-          motor: 'gemini',
-          pdfDuplicadoConDeteccionDeCuerpos: false,
-          archivos: fileClassification.archivos,
-          respuestaGemini: compactGeminiResultForMessage(aiResult),
-        };
+        setTouched((prev) => ({ ...prev, frontFile: true }));
+        return;
+      }
 
-        if (!documentMatches || !aiResult.contieneReverso || fileClassification.reverseIndex === null) {
-          registerVerificationFailure();
-          setMessage([
-            'Gemini no pudo validar el documento con los datos ingresados.',
-            JSON.stringify({
-              esperado: { tipoDocumento: values.tipoDocumento, dni: expectedNumber },
-              analisisDocumentoTemporal: analysisMetadata,
-            }, null, 2),
-          ].join('\n'));
+      const reniecPromise = fetchReniecForVerification().catch(() => null);
+      if (!reconocimientoDniActivo) {
+        if (!frontFile || !backFile) return;
+        const ocrPromise = (async () => {
+          const verificarMatriculaOcrSimple = httpsCallable<
+            {
+              tipoDocumento: string;
+              dni: string;
+              frente: Awaited<ReturnType<typeof fileToOcrSimpleInput>>;
+              reverso: Awaited<ReturnType<typeof fileToOcrSimpleInput>>;
+            },
+            VerificarOcrSimpleResponse
+          >(functions, 'verificarMatriculaOcrSimple', { timeout: 60000 });
+          const [frente, reverso] = await Promise.all([
+            fileToOcrSimpleInput(frontFile),
+            fileToOcrSimpleInput(backFile),
+          ]);
+          const result = await verificarMatriculaOcrSimple({
+            tipoDocumento: values.tipoDocumento,
+            dni: normalizeDocumentNumber(values.dni),
+            frente,
+            reverso,
+          });
+          return result.data;
+        })();
+        const [reniecDatos, ocrResult] = await Promise.all([
+          reniecPromise,
+          ocrPromise,
+        ]);
+        if (!ocrResult.frontValid || !ocrResult.backValid) {
+          handleDocumentValidationFailure({
+            frontSignature: currentFrontSignature,
+            backSignature: currentBackSignature,
+            reason: 'simple_ocr',
+            message: [
+              ocrResult.frontError,
+              ocrResult.backError,
+            ].filter(Boolean).join(' '),
+            frontError: ocrResult.frontError ?? null,
+            backError: ocrResult.backError ?? null,
+            aiResult: null,
+            reniecDatos,
+            analysisMetadata: null,
+          });
           return;
         }
-
-        const detectedExpiration = normalizeDateInput(aiResult.fechaVencimiento);
-        if (isExpiredDate(detectedExpiration)) {
-          registerVerificationFailure();
-          setMessage('Documento vencido.');
-          return;
-        }
-
         const documentPolicy = await getMatriculaDocumentoPolicy();
         const shouldPersist = applyDocumentImagePolicy(documentPolicy);
-        const uploadedFront = shouldPersist && fileClassification.frontIndex !== null
-          ? await uploadDocumentImage(files[fileClassification.frontIndex], 'frente')
+        const uploadedFront = shouldPersist && frontFile
+          ? await uploadDocumentImage(frontFile, 'frente')
           : null;
-        const uploadedBack = shouldPersist && fileClassification.reverseIndex !== null
-          ? await uploadDocumentImage(files[fileClassification.reverseIndex], 'reverso')
+        const uploadedBack = shouldPersist && backFile
+          ? await uploadDocumentImage(backFile, 'reverso')
           : null;
         setFrontImage(uploadedFront);
         setBackImage(uploadedBack);
-
-        setValues((prev) => ({
-          ...prev,
-          tipoDocumento: detectedType === 'CE' ? 'CE' : 'DNI',
-          dni: detectedNumber || prev.dni,
-          apellidoPaterno: asString(aiResult.apellidoPaterno) || prev.apellidoPaterno,
-          apellidoMaterno: asString(aiResult.apellidoMaterno) || prev.apellidoMaterno,
-          nombre: asString(aiResult.nombre) || prev.nombre,
-          sexo: normalizeAiGender(aiResult.sexo) || prev.sexo,
-          nacionalidad: detectedType === 'DNI' ? 'PERUANA' : asString(aiResult.nacionalidad) || prev.nacionalidad,
-          fechaNacimiento: normalizeDateInput(aiResult.fechaNacimiento) || prev.fechaNacimiento,
-          fechaVencimiento: detectedExpiration || prev.fechaVencimiento,
-          estadoCivil: normalizeAiCivilStatus(aiResult.estadoCivil) || prev.estadoCivil,
-          direccion: asString(aiResult.direccion) || prev.direccion,
-          distrito: asString(aiResult.distrito) || prev.distrito,
-        }));
+        applyVerifiedDocumentData(
+          null,
+          reniecDatos,
+          values.tipoDocumento === 'CE' ? 'CE' : 'DNI',
+          normalizeDocumentNumber(values.dni),
+          '',
+        );
         setDocumentVerified(true);
         setVerificationFailureCount(0);
-        setDocumentAnalysisMetadata(analysisMetadata);
-        setSuccessMessage([
-          'Documento verificado con Gemini. Revisa y completa los datos del usuario.',
-          '',
-          'Respuesta temporal de Gemini:',
-          JSON.stringify({
-            esperado: {
-              tipoDocumento: values.tipoDocumento,
-              numeroDocumento: expectedNumber,
-            },
-            detectadoNormalizado: {
-              tipoDocumento: detectedType,
-              numeroDocumento: detectedNumber,
-            },
-            analisisDocumentoTemporal: analysisMetadata,
-          }, null, 2),
-        ].join('\n'));
+        setLastVerificationFailure(null);
+        setFrontFileVerificationError(null);
+        setBackFileVerificationError(null);
+        setDocumentAnalysisMetadata(null);
+        setSuccessMessage(
+          reniecDatos
+            ? 'Datos cargados con API. Revisa y completa los datos del usuario.'
+            : 'Documento habilitado sin reconocimiento de DNI. Completa los datos del usuario.',
+        );
         return;
       }
 
-      const uploadedFront = frontFile && !frontImage ? await uploadDocumentImage(frontFile, 'frente') : frontImage;
-      const uploadedBack = backFile && !backImage ? await uploadDocumentImage(backFile, 'reverso') : backImage;
-      if (uploadedFront) setFrontImage(uploadedFront);
-      if (uploadedBack) setBackImage(uploadedBack);
+      const aiResult = await analyzeMatriculaDocumentsWithGemini(
+        values.tipoDocumento,
+        normalizeDocumentNumber(values.dni),
+        files,
+      );
+      const reniecDatos = await reniecPromise;
+      const detectedType = normalizeAiDocumentType(aiResult.tipoDocumento);
+      const detectedNumber = normalizeDetectedDocumentNumber(values.tipoDocumento, aiResult.numeroDocumento);
+      const expectedNumber = normalizeDocumentNumber(values.dni);
+      const documentMatches = detectedType === values.tipoDocumento && detectedNumber === expectedNumber;
+      const fileClassification = classifyGeminiFiles(files, aiResult);
+      const analysisMetadata: DocumentoAnalisisTemporal = {
+        motor: 'gemini',
+        pdfDuplicadoConDeteccionDeCuerpos: false,
+        archivos: fileClassification.archivos,
+        respuestaGemini: compactGeminiResultForMessage(aiResult),
+      };
 
-      const verificarDocumento = httpsCallable<
-        {
-          tipoDocumento: string;
-          dni: string;
-          frente?: UploadedImage | null;
-          reverso?: UploadedImage | null;
-        },
-        VerificarDocumentoResponse
-      >(functions, 'verificarDocumentoMatricula', { timeout: 60000 });
-      const result = await verificarDocumento({
-        tipoDocumento: values.tipoDocumento,
-        dni: normalizeDocumentNumber(values.dni),
-        frente: uploadedFront,
-        reverso: uploadedBack,
-      });
-      const datos = result.data.datos || {};
-      const documentPolicy = result.data.documentImagePolicy ?? null;
-      const shouldPersist = applyDocumentImagePolicy(documentPolicy);
-      if (!shouldPersist) {
-        await Promise.all([
-          deleteUploadedDocumentImage(uploadedFront),
-          deleteUploadedDocumentImage(uploadedBack),
-        ]);
-        setFrontImage(null);
-        setBackImage(null);
-      } else {
-        setFrontImage(uploadedFront);
-        setBackImage(uploadedBack);
+      if (!documentMatches || !aiResult.contieneReverso || fileClassification.reverseIndex === null) {
+        const frontError = fileClassification.frontIndex === null
+          ? 'No se encontro lado de frente del DNI.'
+          : !documentMatches
+            ? 'No se pudo validar el documento con los datos ingresados.'
+            : null;
+        const backError = !aiResult.contieneReverso || fileClassification.reverseIndex === null
+          ? 'No se encontro el lado reverso del DNI.'
+          : null;
+        handleDocumentValidationFailure({
+          frontSignature: currentFrontSignature,
+          backSignature: currentBackSignature,
+          reason: 'document_mismatch',
+          message: [frontError, backError].filter(Boolean).join(' '),
+          frontError,
+          backError,
+          aiResult,
+          reniecDatos,
+          analysisMetadata,
+        });
+        setSuccessMessage(null);
+        return;
       }
-      setValues((prev) => ({
-        ...prev,
-        tipoDocumento: datos.tipoDocumento === 'CE' ? 'CE' : prev.tipoDocumento,
-        dni: asString(datos.dni) || prev.dni,
-        apellidoPaterno: asString(datos.apellidoPaterno) || prev.apellidoPaterno,
-        apellidoMaterno: asString(datos.apellidoMaterno) || prev.apellidoMaterno,
-        nombre: asString(datos.nombre) || prev.nombre,
-        sexo: datos.sexo === 'M' ? 'M' : datos.sexo === 'F' ? 'F' : prev.sexo,
-        nacionalidad: (datos.tipoDocumento === 'CE' ? 'CE' : prev.tipoDocumento) === 'DNI'
-          ? 'PERUANA'
-          : asString(datos.nacionalidad) || prev.nacionalidad,
-        fechaNacimiento: asString(datos.fechaNacimiento).split('T')[0] || prev.fechaNacimiento,
-        fechaVencimiento: asString(datos.fechaVencimiento).split('T')[0] || prev.fechaVencimiento,
-        estadoCivil: normalizeAiCivilStatus(datos.estadoCivil) || prev.estadoCivil,
-        instruccion: asString(datos.instruccion) || prev.instruccion,
-        direccion: asString(datos.direccion) || prev.direccion,
-        distrito: asString(datos.distrito) || prev.distrito,
-      }));
+
+      const detectedExpiration = normalizeDateInput(aiResult.fechaVencimiento);
+      if (isExpiredDate(detectedExpiration)) {
+        handleDocumentValidationFailure({
+          frontSignature: currentFrontSignature,
+          backSignature: currentBackSignature,
+          reason: 'expired',
+          message: 'Documento vencido.',
+          frontError: 'Documento vencido.',
+          backError: null,
+          aiResult,
+          reniecDatos,
+          analysisMetadata,
+        });
+        setSuccessMessage(null);
+        return;
+      }
+
+      const documentPolicy = await getMatriculaDocumentoPolicy();
+      const shouldPersist = applyDocumentImagePolicy(documentPolicy);
+      const uploadedFront = shouldPersist && fileClassification.frontIndex !== null
+        ? await uploadDocumentImage(files[fileClassification.frontIndex], 'frente')
+        : null;
+      const uploadedBack = shouldPersist && fileClassification.reverseIndex !== null
+        ? await uploadDocumentImage(files[fileClassification.reverseIndex], 'reverso')
+        : null;
+      setFrontImage(uploadedFront);
+      setBackImage(uploadedBack);
+
+      applyVerifiedDocumentData(aiResult, reniecDatos, detectedType, detectedNumber, detectedExpiration);
       setDocumentVerified(true);
       setVerificationFailureCount(0);
-      setSuccessMessage(
-        result.data.userExists
-          ? 'Documento verificado. Se cargaron los datos guardados del usuario.'
-          : 'Documento verificado. Revisa y completa los datos del usuario.',
-      );
+      setLastVerificationFailure(null);
+      setFrontFileVerificationError(null);
+      setBackFileVerificationError(null);
+      setDocumentAnalysisMetadata(analysisMetadata);
+      setSuccessMessage('Documento verificado con Gemini. Revisa y completa los datos del usuario.');
     } catch (error) {
-      registerVerificationFailure();
-      setMessage(getCallableErrorMessage(error, 'No se pudo verificar el documento.'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyWithReniec = async () => {
-    const sectionError = validateSectionOne();
-    if (sectionError) {
-      setMessage(isStandalone ? null : sectionError);
-      return;
-    }
-
-    setLoading(true);
-    setMessage(null);
-    setSuccessMessage(null);
-    setDocumentAnalysisMetadata(null);
-    setFrontFile(null);
-    setBackFile(null);
-    setFrontImage(null);
-    setBackImage(null);
-    setProcessedDocumentImages({});
-    setIsExistingUserWithImages(false);
-    setShouldPersistDocumentImages(false);
-
-    try {
-      if (values.tipoDocumento === 'CE') {
-        setDocumentVerified(true);
-        setSuccessMessage('Documento habilitado. Completa los datos del usuario.');
-        return;
-      }
-
-      const verificarMatriculaReniec = httpsCallable<
-        { tipoDocumento: string; dni: string },
-        VerificarReniecResponse
-      >(functions, 'verificarMatriculaReniec', { timeout: 60000 });
-      const result = await verificarMatriculaReniec({
-        tipoDocumento: values.tipoDocumento,
-        dni: normalizeDocumentNumber(values.dni),
+      handleDocumentValidationFailure({
+        frontSignature: currentFrontSignature,
+        backSignature: currentBackSignature,
+        reason: 'analysis_error',
+        message: getCallableErrorMessage(error, 'No se pudo verificar el documento.'),
+        frontError: getCallableErrorMessage(error, 'No se pudo verificar el documento.'),
+        backError: getCallableErrorMessage(error, 'No se pudo verificar el documento.'),
+        aiResult: null,
+        reniecDatos: null,
+        analysisMetadata: null,
       });
-      const datos = result.data.datos || {};
-      setValues((prev) => ({
-        ...prev,
-        tipoDocumento: datos.tipoDocumento === 'CE' ? 'CE' : 'DNI',
-        dni: asString(datos.dni) || prev.dni,
-        apellidoPaterno: asString(datos.apellidoPaterno) || prev.apellidoPaterno,
-        apellidoMaterno: asString(datos.apellidoMaterno) || prev.apellidoMaterno,
-        nombre: asString(datos.nombre) || prev.nombre,
-        sexo: datos.sexo === 'M' ? 'M' : datos.sexo === 'F' ? 'F' : prev.sexo,
-        nacionalidad: asString(datos.nacionalidad) || prev.nacionalidad,
-        fechaNacimiento: asString(datos.fechaNacimiento).split('T')[0] || prev.fechaNacimiento,
-        estadoCivil: normalizeAiCivilStatus(datos.estadoCivil) || prev.estadoCivil,
-        direccion: asString(datos.direccion) || prev.direccion,
-        distrito: asString(datos.distrito) || prev.distrito,
-      }));
-      setDocumentVerified(true);
-      setSuccessMessage(
-        result.data.userExists
-          ? 'Datos cargados con RENIEC y registros guardados. Completa la matricula.'
-          : 'Datos cargados con RENIEC. Completa la matricula.',
-      );
-    } catch (error) {
-      setMessage(getCallableErrorMessage(error, 'No se pudo consultar RENIEC.'));
     } finally {
       setLoading(false);
     }
@@ -1467,7 +1644,11 @@ export function MatriculaForm({
     ];
     const missing = required.find(([key]) => !String(values[key] || '').trim());
     if (missing) return `Completa ${missing[1]}.`;
-    if (!/^\d{9}$/.test(values.celular.trim())) return 'El celular debe tener 9 digitos.';
+    const birthDateError = getBirthDateValidationError(values.fechaNacimiento);
+    if (birthDateError) return birthDateError;
+    if (!/^9\d{8}$/.test(values.celular.trim())) return 'El celular debe tener 9 digitos y empezar con 9.';
+    const emailError = getEmailValidationError(values.email);
+    if (emailError) return emailError;
     if (!isValidReciboValue(values.recibo)) return 'El recibo debe ser CONADIS, BECADO o hasta 5 digitos.';
     return null;
   };
@@ -1492,13 +1673,14 @@ export function MatriculaForm({
         direccion: true,
         distrito: true,
         celular: true,
+        email: true,
         recibo: true,
       }));
       setMessage(isStandalone ? null : sectionTwoError);
       return;
     }
-    if (!values.paqueteId) {
-      markTouched('paqueteId');
+    if (!values.grupoId || !values.paqueteId) {
+      markTouched('grupoId');
       setMessage(isStandalone ? null : 'Selecciona un modulo.');
       return;
     }
@@ -1507,6 +1689,14 @@ export function MatriculaForm({
     setMessage(null);
     setSuccessMessage(null);
     try {
+      const finalFrontImage = shouldPersistDocumentImages && !frontImage && frontFile
+        ? await uploadDocumentImage(frontFile, 'frente')
+        : frontImage;
+      const finalBackImage = shouldPersistDocumentImages && !backImage && backFile
+        ? await uploadDocumentImage(backFile, 'reverso')
+        : backImage;
+      if (finalFrontImage !== frontImage) setFrontImage(finalFrontImage);
+      if (finalBackImage !== backImage) setBackImage(finalBackImage);
       const callableName = isEditing
         ? 'updateMatriculaFormulario'
         : isStandalone
@@ -1523,8 +1713,9 @@ export function MatriculaForm({
         dni: normalizeDocumentNumber(values.dni),
         semestreId: Number(values.semestreId),
         paqueteId: Number(values.paqueteId),
-        dniImagenFrente: shouldPersistDocumentImages ? frontImage : null,
-        dniImagenReverso: shouldPersistDocumentImages ? backImage : null,
+        grupoId: Number(values.grupoId),
+        dniImagenFrente: shouldPersistDocumentImages ? finalFrontImage : null,
+        dniImagenReverso: shouldPersistDocumentImages ? finalBackImage : null,
         procesarImagenesDni: shouldPersistDocumentImages,
         analisisDocumentoTemporal: documentAnalysisMetadata,
       });
@@ -1683,12 +1874,12 @@ export function MatriculaForm({
     const error = getFieldError(key);
     if (!error) return null;
     return (
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.25, color: 'error.main' }}>
+      <Box component="span" sx={{ display: 'inline-flex', gap: 1, alignItems: 'center', mt: 1.25, color: 'error.main' }}>
         <ErrorOutlineIcon sx={{ fontSize: 19 }} />
-        <Typography variant="caption" sx={{ color: 'error.main' }}>
+        <Typography component="span" variant="caption" sx={{ color: 'error.main' }}>
           {error}
         </Typography>
-      </Stack>
+      </Box>
     );
   };
   const questionCardSx = isStandalone
@@ -1726,6 +1917,21 @@ export function MatriculaForm({
         '& .MuiFormLabel-root.Mui-focused, & .MuiFormLabel-root.Mui-error': {
           color: 'text.primary',
         },
+        '& .MuiRadioGroup-root': {
+          gap: 1.85,
+        },
+        '& .MuiFormControlLabel-root': {
+          alignItems: 'center',
+          m: 0,
+          minHeight: 0,
+        },
+        '& .MuiRadio-root': {
+          p: 0,
+          mr: 1,
+        },
+        '& .MuiFormControlLabel-label': {
+          lineHeight: 1.25,
+        },
       }
       : undefined
   );
@@ -1741,6 +1947,7 @@ export function MatriculaForm({
     ? {
       '& .MuiInputBase-root': {
         width: { xs: '100%', sm: '50%' },
+        transform: 'translateY(-5px)',
       },
       '& .MuiInputBase-input': {
         px: 0,
@@ -1817,9 +2024,71 @@ export function MatriculaForm({
     return isStandalone ? <Box sx={standaloneCardSx('recibo')}>{input}</Box> : input;
   };
 
+  const renderBirthDateField = (disabled: boolean) => (
+    <Box sx={{ position: 'relative' }}>
+      <TextField
+        disabled={disabled}
+        label={requiredLabel('Fecha de Nacimiento')}
+        variant={textFieldVariant}
+        placeholder={isStandalone ? 'dd/mm/aaaa' : 'dd/mm/aaaa'}
+        sx={textFieldSx('fechaNacimiento')}
+        value={values.fechaNacimiento}
+        onChange={(event) => {
+          const nextValue = event.target.value.replace(/[^\d/-]/g, '').slice(0, 10);
+          updateValue('fechaNacimiento', nextValue);
+        }}
+        onBlur={() => {
+          markTouched('fechaNacimiento');
+          const normalized = normalizeDateInput(values.fechaNacimiento);
+          if (normalized) updateValue('fechaNacimiento', normalized);
+        }}
+        error={Boolean(getFieldError('fechaNacimiento'))}
+        helperText={standaloneHelperText('fechaNacimiento')}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                edge="end"
+                size="small"
+                aria-label="Seleccionar fecha"
+                disabled={disabled}
+                onClick={() => {
+                  const picker = birthDatePickerRef.current as (HTMLInputElement & { showPicker?: () => void }) | null;
+                  if (picker?.showPicker) picker.showPicker();
+                  else picker?.click();
+                }}
+              >
+                <CalendarMonthIcon fontSize="small" />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+        fullWidth
+      />
+      <Box
+        component="input"
+        ref={birthDatePickerRef}
+        type="date"
+        value={normalizeDateInput(values.fechaNacimiento)}
+        onChange={(event) => updateValue('fechaNacimiento', event.target.value)}
+        tabIndex={-1}
+        sx={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          opacity: 0,
+          pointerEvents: 'none',
+          bottom: 0,
+          right: 0,
+        }}
+      />
+    </Box>
+  );
+
   return (
+    <Box sx={{ position: 'relative' }}>
+    <FormLoadingOverlay open={loading} variant="contained" />
     <Stack spacing={isStandalone ? 1.5 : 2.5}>
-      {loading && <LinearProgress />}
       <AutoDismissAlert message={message} severity="error" sx={{ whiteSpace: 'pre-wrap' }} />
       <AutoDismissAlert message={successMessage} severity="success" sx={{ whiteSpace: 'pre-wrap' }} />
       <Box sx={questionCardSx}>
@@ -1876,26 +2145,6 @@ export function MatriculaForm({
           </Typography>
         ) : null}
         <Box sx={gridSx}>
-          {!hideRecognitionModeControl ? (
-          <FormControl fullWidth variant={isStandalone ? 'standard' : 'outlined'} sx={selectLineSx}>
-            <InputLabel>Motor de lectura</InputLabel>
-            <Select
-              label="Motor de lectura"
-              value={recognitionMode}
-              onChange={(event) => {
-                setRecognitionMode(event.target.value === 'documentAi' ? 'documentAi' : 'gemini');
-                setDocumentVerified(false);
-                setDocumentAnalysisMetadata(null);
-                setMessage(null);
-                setSuccessMessage(null);
-              }}
-              disabled={loading || disableRecognitionModeControl}
-            >
-              <MenuItem value="gemini">Gemini 2.5 Flash</MenuItem>
-              <MenuItem value="documentAi">Document AI OCR</MenuItem>
-            </Select>
-          </FormControl>
-          ) : null}
           {!hideSemestreControl ? (
           <FormControl fullWidth error={Boolean(getFieldError('semestreId'))} variant={isStandalone ? 'standard' : 'outlined'} sx={selectLineSx}>
             <InputLabel>{requiredLabel('Periodo')}</InputLabel>
@@ -1943,12 +2192,15 @@ export function MatriculaForm({
             )}
           </FormControl>
           <TextField
-            label={requiredLabel('Numero de DNI')}
+            label={requiredLabel('Numero de Documento')}
             variant={textFieldVariant}
             placeholder={isStandalone ? 'Tu respuesta' : undefined}
             sx={textFieldSx('dni')}
             value={values.dni}
-            onChange={(event) => updateValue('dni', normalizeDocumentNumber(event.target.value))}
+            onChange={(event) => {
+              const maxLength = values.tipoDocumento === 'CE' ? 9 : 8;
+              updateValue('dni', event.target.value.replace(/\D/g, '').slice(0, maxLength));
+            }}
             onBlur={() => markTouched('dni')}
             error={Boolean(getFieldError('dni'))}
             helperText={standaloneHelperText('dni')}
@@ -1957,16 +2209,12 @@ export function MatriculaForm({
             autoFocus={!isEditing}
             fullWidth
           />
+          {!isStandalone ? <Box sx={{ display: { xs: 'none', md: 'block' } }} /> : null}
           {renderDocumentFileControl('frente', frontFile, frontImage, requiredLabel('Imagen DNI ó Documento de Extranjeria (De Frente)'))}
           {renderDocumentFileControl('reverso', backFile, backImage, requiredLabel('Imagen DNI ó Documento de Extranjeria (De Reverso)'))}
-          <Box className="matricula-actions" sx={{ gridColumn: { xs: 'span 1', md: isStandalone ? 'span 1' : 'span 2' }, display: 'flex', justifyContent: isStandalone ? 'flex-end' : 'space-between' }}>
-            {!isStandalone ? <Button onClick={onCancel} disabled={loading}>Cancelar</Button> : null}
+          <Box className="matricula-actions" sx={{ gridColumn: { xs: 'span 1', md: isStandalone ? 'span 1' : 'span 2' }, display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+            <Button onClick={handleCancelFromVerification} disabled={loading}>Cancelar</Button>
             <Stack direction="row" spacing={1}>
-              {showReniecVerification ? (
-                <Button color="success" variant="contained" onClick={handleVerifyWithReniec} disabled={loading}>
-                  Verificar con RENIEC
-                </Button>
-              ) : null}
               <Button variant="contained" onClick={handleVerifyDocument} disabled={loading}>
                 Verificar y continuar
               </Button>
@@ -2005,7 +2253,7 @@ export function MatriculaForm({
             {isStandalone ? renderFieldError('sexo') : getFieldError('sexo') ? <Typography variant="caption" color="error">{getFieldError('sexo')}</Typography> : null}
           </FormControl>
           <TextField disabled={lockedUntilVerified} label={requiredLabel('Nacionalidad')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('nacionalidad')} value={values.nacionalidad} onChange={(event) => updateValue('nacionalidad', event.target.value)} onBlur={() => markTouched('nacionalidad')} error={Boolean(getFieldError('nacionalidad'))} helperText={standaloneHelperText('nacionalidad')} fullWidth />
-          <TextField disabled={lockedUntilVerified} label={requiredLabel('Fecha de Nacimiento')} variant={textFieldVariant} sx={textFieldSx('fechaNacimiento')} type="date" value={values.fechaNacimiento} onChange={(event) => updateValue('fechaNacimiento', event.target.value)} onBlur={() => markTouched('fechaNacimiento')} error={Boolean(getFieldError('fechaNacimiento'))} helperText={standaloneHelperText('fechaNacimiento')} InputLabelProps={{ shrink: true }} fullWidth />
+          {renderBirthDateField(lockedUntilVerified)}
           {!isStandalone ? <TextField disabled={lockedUntilVerified} label="Fecha de Vencimiento" variant={textFieldVariant} sx={textFieldSx()} type="date" value={values.fechaVencimiento} onChange={(event) => updateValue('fechaVencimiento', event.target.value)} InputLabelProps={{ shrink: true }} fullWidth /> : null}
           <FormControl fullWidth disabled={lockedUntilVerified} error={Boolean(getFieldError('estadoCivil'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('estadoCivil') : selectLineSx}>
             {isStandalone ? (
@@ -2032,6 +2280,8 @@ export function MatriculaForm({
               </>
             )}
           </FormControl>
+          <TextField disabled={lockedUntilVerified} label={requiredLabel('Domicilio Direccion')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('direccion')} value={values.direccion} onChange={(event) => updateValue('direccion', event.target.value)} onBlur={() => markTouched('direccion')} error={Boolean(getFieldError('direccion'))} helperText={standaloneHelperText('direccion')} fullWidth />
+          <TextField disabled={lockedUntilVerified} label={requiredLabel('Domicilio Distrito')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('distrito')} value={values.distrito} onChange={(event) => updateValue('distrito', event.target.value)} onBlur={() => markTouched('distrito')} error={Boolean(getFieldError('distrito'))} helperText={standaloneHelperText('distrito')} fullWidth />
           <FormControl fullWidth disabled={lockedUntilVerified} error={Boolean(getFieldError('instruccion'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('instruccion') : selectLineSx}>
             {isStandalone ? (
               <>
@@ -2055,11 +2305,9 @@ export function MatriculaForm({
               </>
             )}
           </FormControl>
-          <TextField disabled={lockedUntilVerified} label={requiredLabel('Domicilio Direccion')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('direccion')} value={values.direccion} onChange={(event) => updateValue('direccion', event.target.value)} onBlur={() => markTouched('direccion')} error={Boolean(getFieldError('direccion'))} helperText={standaloneHelperText('direccion')} fullWidth />
-          <TextField disabled={lockedUntilVerified} label={requiredLabel('Domicilio Distrito')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('distrito')} value={values.distrito} onChange={(event) => updateValue('distrito', event.target.value)} onBlur={() => markTouched('distrito')} error={Boolean(getFieldError('distrito'))} helperText={standaloneHelperText('distrito')} fullWidth />
           <TextField disabled={lockedUntilVerified} label={requiredLabel('Numero de Celular')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('celular')} value={values.celular} onChange={(event) => updateValue('celular', event.target.value.replace(/\D/g, '').slice(0, 9))} onBlur={() => markTouched('celular')} error={Boolean(getFieldError('celular'))} helperText={standaloneHelperText('celular')} fullWidth />
           <TextField disabled={lockedUntilVerified} label={optionalLabel('Numero de Telefono Fijo')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx()} value={values.telefono} onChange={(event) => updateValue('telefono', event.target.value)} fullWidth />
-          <TextField disabled={lockedUntilVerified} label={optionalLabel('Correo Electronico')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx()} type="email" value={values.email} onChange={(event) => updateValue('email', event.target.value)} fullWidth />
+          <TextField disabled={lockedUntilVerified} label={optionalLabel('Correo Electronico')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('email')} type="email" value={values.email} onChange={(event) => updateValue('email', event.target.value)} onBlur={() => markTouched('email')} error={Boolean(getFieldError('email'))} helperText={standaloneHelperText('email')} fullWidth />
           {!isStandalone ? renderReciboField(lockedUntilVerified) : null}
         </Box>
       </Stack>
@@ -2082,43 +2330,43 @@ export function MatriculaForm({
           </Typography>
         ) : null}
         <Stack spacing={2}>
-          <FormControl fullWidth error={Boolean(getFieldError('paqueteId'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('paqueteId') : undefined}>
+          <FormControl fullWidth error={Boolean(getFieldError('grupoId'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('grupoId') : undefined}>
             {isStandalone ? (
               <>
                 <FormLabel>{requiredLabel('Seleccione un Modulo')}</FormLabel>
                 <RadioGroup
-                  value={values.paqueteId}
-                  onChange={(event) => updateValue('paqueteId', String(event.target.value))}
-                  onBlur={() => markTouched('paqueteId')}
+                  value={values.grupoId}
+                  onChange={(event) => updateGrupoSelection(String(event.target.value))}
+                  onBlur={() => markTouched('grupoId')}
                 >
                   {paquetes.map((paquete) => (
                     <FormControlLabel
-                      key={paquete.id}
-                      value={String(paquete.id)}
+                      key={getPaqueteOptionGrupoId(paquete)}
+                      value={String(getPaqueteOptionGrupoId(paquete))}
                       control={<Radio />}
                       label={getPaqueteOptionLabel(paquete)}
                     />
                   ))}
                 </RadioGroup>
-                {renderFieldError('paqueteId')}
+                {renderFieldError('grupoId')}
               </>
             ) : (
               <>
                 <InputLabel>{requiredLabel('Seleccione un Modulo')}</InputLabel>
                 <Select
                   label="Seleccione un Modulo (*)"
-                  value={values.paqueteId}
-                  onChange={(event) => updateValue('paqueteId', String(event.target.value))}
-                  onBlur={() => markTouched('paqueteId')}
+                  value={values.grupoId}
+                  onChange={(event) => updateGrupoSelection(String(event.target.value))}
+                  onBlur={() => markTouched('grupoId')}
                   disabled={courseLocked}
                 >
                   {paquetes.map((paquete) => (
-                    <MenuItem key={paquete.id} value={String(paquete.id)}>
+                    <MenuItem key={getPaqueteOptionGrupoId(paquete)} value={String(getPaqueteOptionGrupoId(paquete))}>
                       {getPaqueteOptionLabel(paquete)}
                     </MenuItem>
                   ))}
                 </Select>
-                {getFieldError('paqueteId') ? <Typography variant="caption" color="error" sx={{ mt: 0.75 }}>{getFieldError('paqueteId')}</Typography> : null}
+                {getFieldError('grupoId') ? <Typography variant="caption" color="error" sx={{ mt: 0.75 }}>{getFieldError('grupoId')}</Typography> : null}
               </>
             )}
           </FormControl>
@@ -2126,8 +2374,9 @@ export function MatriculaForm({
             <Alert severity="warning">No hay modulos disponibles para este periodo.</Alert>
           )}
           {isStandalone ? renderReciboField(courseLocked) : null}
-          <Box sx={{ display: 'flex', justifyContent: isStandalone ? 'flex-end' : 'space-between' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
             {!isStandalone ? <Button onClick={onCancel} disabled={loading}>Cancelar</Button> : null}
+            {isStandalone ? <Button onClick={onReset} disabled={loading}>Cancelar</Button> : null}
             <Button
               variant="contained"
               onClick={handleSubmit}
@@ -2200,6 +2449,7 @@ export function MatriculaForm({
         </DialogActions>
       </Dialog>
     </Stack>
+    </Box>
   );
 }
 
@@ -2481,8 +2731,8 @@ export default function MatriculasPage() {
           isOpen={openMatriculaModal}
           onCancel={handleDismissModal}
           onSaved={handleSaved}
-          defaultSemestreId={settings.formularioMatricula.semestreId}
-          disableRecognitionModeControl
+          defaultSemestreId={settings.general.semestreActualId}
+          reconocimientoDniActivo={settings.formularioMatricula.activarReconocimientoDni}
         />
       </Modal1>
     </IntranetListLayout>

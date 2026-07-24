@@ -13,6 +13,7 @@ import {
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { getRequesterRoleId, requireAuthenticated, requirePermission } from "../core/permissions.js";
+import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
 import {
   DataConnectActividad,
   DataConnectActividadInput,
@@ -427,6 +428,7 @@ const GET_ESTRUCTURA_ACADEMICA_DOCENTE_MENU_QUERY = `
       grupo {
         personalId
         semestre {
+          id
           titulo
           inicio
           fin
@@ -1018,7 +1020,8 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
   }
 
   try {
-    const response = await dataConnect.executeGraphql<{
+    const [response, semestreConsultaIds] = await Promise.all([
+      dataConnect.executeGraphql<{
       users: Array<{ id: number }>;
       personals: Array<{ id: number; userId?: number | null }>;
       semestres: EstructuraAcademicaSemestreOption[];
@@ -1031,11 +1034,21 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
     }, { uid: string }>(
       LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY,
       { variables: { uid } },
+    ),
+      getConfiguredSemestreConsultaIds(),
+    ]);
+    const allowedSemestreIds = semestreConsultaIds.length > 0 ? new Set(semestreConsultaIds) : null;
+    const semestres = (response.data.semestres ?? []).filter((semestre) =>
+      !allowedSemestreIds || allowedSemestreIds.has(semestre.id),
     );
+    const grupoModulos = (response.data.grupoModulos ?? []).filter((item) => {
+      const semestreId = item.grupo?.semestre?.id;
+      return !allowedSemestreIds || allowedSemestreIds.has(Number(semestreId));
+    });
 
-    const semestreTitulo = resolveSemestreTituloVigente(response.data.semestres ?? [], requestedSemestreTitulo);
+    const semestreTitulo = resolveSemestreTituloVigente(semestres, requestedSemestreTitulo);
     const personalIds = getPersonalIdsForUserId(response.data.users?.[0]?.id, response.data.personals ?? []);
-    const docenteGrupoModulos = (response.data.grupoModulos ?? [])
+    const docenteGrupoModulos = grupoModulos
       .filter((item) =>
         Boolean(item.grupo?.personalId && personalIds.has(item.grupo.personalId)) &&
         matchesSemestreTitulo(item.grupo?.semestre?.titulo, semestreTitulo),
@@ -1087,7 +1100,8 @@ export const getEstructuraAcademicaDocenteMenu = https.onCall(async (_data, cont
   }
 
   try {
-    const response = await dataConnect.executeGraphql<{
+    const [response, semestreConsultaIds] = await Promise.all([
+      dataConnect.executeGraphql<{
       users: Array<{ id: number }>;
       personals: Array<{ id: number; userId?: number | null }>;
       semestres: EstructuraAcademicaSemestreOption[];
@@ -1101,11 +1115,21 @@ export const getEstructuraAcademicaDocenteMenu = https.onCall(async (_data, cont
     }, { uid: string }>(
       GET_ESTRUCTURA_ACADEMICA_DOCENTE_MENU_QUERY,
       { variables: { uid } },
+    ),
+      getConfiguredSemestreConsultaIds(),
+    ]);
+    const allowedSemestreIds = semestreConsultaIds.length > 0 ? new Set(semestreConsultaIds) : null;
+    const semestres = (response.data.semestres ?? []).filter((semestre) =>
+      !allowedSemestreIds || allowedSemestreIds.has(semestre.id),
     );
+    const grupoModulos = (response.data.grupoModulos ?? []).filter((item) => {
+      const semestreId = item.grupo?.semestre?.id;
+      return !allowedSemestreIds || allowedSemestreIds.has(Number(semestreId));
+    });
 
-    const semestreTitulo = resolveSemestreTituloVigente(response.data.semestres ?? []);
+    const semestreTitulo = resolveSemestreTituloVigente(semestres);
     const personalIds = getPersonalIdsForUserId(response.data.users?.[0]?.id, response.data.personals ?? []);
-    const hasModulos = (response.data.grupoModulos ?? []).some((item) =>
+    const hasModulos = grupoModulos.some((item) =>
       Boolean(item.grupo?.personalId && personalIds.has(item.grupo.personalId)) &&
       matchesSemestreTitulo(item.grupo?.semestre?.titulo, semestreTitulo),
     );

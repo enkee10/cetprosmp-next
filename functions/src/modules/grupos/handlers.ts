@@ -45,6 +45,7 @@ import {
   syncGrupoToWorkspace,
   WorkspaceSyncError,
 } from "../../workspace/groupWorkspaceSync.js";
+import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
 
 const LIST_GRUPOS_QUERY = `
   query ListGruposManual {
@@ -857,18 +858,28 @@ export const listGrupos = https.onCall(async (_data, context) => {
   await requirePermission(context, "grupos", "view");
 
   try {
-    const response = await dataConnect.executeGraphql<{
-      grupos: DataConnectGrupo[];
-      grupoModulos: DataConnectGrupoModulo[];
-      grupoModuloUnidadesDidacticas: DataConnectGrupoModuloUnidadDidactica[];
-    }, Record<string, never>>(
-      LIST_GRUPOS_QUERY,
+    const [response, semestreConsultaIds] = await Promise.all([
+      dataConnect.executeGraphql<{
+        grupos: DataConnectGrupo[];
+        grupoModulos: DataConnectGrupoModulo[];
+        grupoModuloUnidadesDidacticas: DataConnectGrupoModuloUnidadDidactica[];
+      }, Record<string, never>>(
+        LIST_GRUPOS_QUERY,
+      ),
+      getConfiguredSemestreConsultaIds(),
+    ]);
+    const allowedSemestreIds = semestreConsultaIds.length > 0 ? new Set(semestreConsultaIds) : null;
+    const grupos = (response.data.grupos ?? []).filter((grupo) =>
+      !allowedSemestreIds || allowedSemestreIds.has(Number(grupo.semestreId)),
     );
+    const grupoIds = new Set(grupos.map((grupo) => grupo.id));
+    const grupoModulos = (response.data.grupoModulos ?? []).filter((item) => grupoIds.has(Number(item.grupoId)));
+    const grupoModuloIds = new Set(grupoModulos.map((item) => item.id));
     return {
       grupos: attachGrupoModulos(
-        response.data.grupos ?? [],
-        response.data.grupoModulos ?? [],
-        response.data.grupoModuloUnidadesDidacticas ?? [],
+        grupos,
+        grupoModulos,
+        (response.data.grupoModuloUnidadesDidacticas ?? []).filter((item) => grupoModuloIds.has(Number(item.grupoModuloId))),
       ),
     };
   } catch (error) {

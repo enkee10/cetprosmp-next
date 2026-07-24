@@ -20,6 +20,7 @@ import {
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 import { getDateOnlyLocalDate, toDateOnlyInputValue } from '@/lib/dateOnly';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 interface CalendarioFormProps {
   calendarioId?: string;
@@ -190,6 +191,7 @@ export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCance
   const [autoPeriodoAplicado, setAutoPeriodoAplicado] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { settings } = useAppSettings();
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -256,8 +258,13 @@ export function CalendarioForm({ calendarioId, asModal = false, onSaved, onCance
   }, [calendarioId]);
 
   const semestreVigente = useMemo(
-    () => (!calendarioId ? semestres.find((semestre) => isSemestreVigente(semestre, new Date())) || null : null),
-    [calendarioId, semestres],
+    () => {
+      if (calendarioId) return null;
+      return semestres.find((semestre) => semestre.id === settings.general.semestreActualId)
+        || semestres.find((semestre) => isSemestreVigente(semestre, new Date()))
+        || null;
+    },
+    [calendarioId, semestres, settings.general.semestreActualId],
   );
 
   useEffect(() => {

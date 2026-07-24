@@ -24,6 +24,7 @@ import { deleteMatriculaTree } from "../core/matriculaDeletion.js";
 import { getNextCodigoInscripcionForCurrentYear } from "../core/matriculaCodigoInscripcion.js";
 import { getDatosGeneralesGlobales as fetchDatosGeneralesGlobales } from "../datos-generales/service.js";
 import { getRequesterRoleId, isSuperUserContext, PermissionAction, requirePermission } from "../core/permissions.js";
+import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
 
 type RegistroAuxiliarNotaInput = {
   matriculaId?: unknown;
@@ -1301,7 +1302,8 @@ export const listRegistroAuxiliarDocenteModulos = https.onCall(async (data, cont
   }
 
   try {
-    const response = await dataConnect.executeGraphql<{
+    const [response, semestreConsultaIds] = await Promise.all([
+      dataConnect.executeGraphql<{
       users: Array<{ id: number }>;
       personals: Array<{ id: number; userId?: number | null }>;
       semestres: RegistroAuxiliarSemestreOption[];
@@ -1309,17 +1311,27 @@ export const listRegistroAuxiliarDocenteModulos = https.onCall(async (data, cont
     }, { uid: string }>(
       REGISTRO_AUXILIAR_DOCENTE_MODULOS_QUERY,
       { variables: { uid } },
+    ),
+      getConfiguredSemestreConsultaIds(),
+    ]);
+    const allowedSemestreIds = semestreConsultaIds.length > 0 ? new Set(semestreConsultaIds) : null;
+    const semestres = (response.data.semestres ?? []).filter((semestre) =>
+      !allowedSemestreIds || allowedSemestreIds.has(semestre.id),
     );
+    const grupoModulos = (response.data.grupoModulos ?? []).filter((item) => {
+      const semestreId = item.grupo?.semestre?.id ?? item.grupo?.semestreId;
+      return !allowedSemestreIds || allowedSemestreIds.has(Number(semestreId));
+    });
 
     const semestreTitulo = resolveSemestreTituloVigente(
-      response.data.semestres ?? [],
+      semestres,
       requestedSemestreTitulo,
     );
     const modulos = sortRegistroAuxiliarModulos(filterRegistroAuxiliarModulosForRequester({
       context,
       userId: response.data.users?.[0]?.id,
       personals: response.data.personals ?? [],
-      modulos: response.data.grupoModulos ?? [],
+      modulos: grupoModulos,
       semestreTitulo,
     }));
 
@@ -1340,7 +1352,7 @@ export const listRegistroAuxiliarOpciones = https.onCall(async (_data, context) 
   }
 
   try {
-    const [optionsResponse, datoGeneral] = await Promise.all([
+    const [optionsResponse, datoGeneral, semestreConsultaIds] = await Promise.all([
       dataConnect.executeGraphql<{
         users: Array<{ id: number }>;
         personals: Array<{ id: number; userId?: number | null }>;
@@ -1351,13 +1363,19 @@ export const listRegistroAuxiliarOpciones = https.onCall(async (_data, context) 
         { variables: { uid } },
       ),
       fetchDatosGeneralesGlobales(),
+      getConfiguredSemestreConsultaIds(),
     ]);
+    const allowedSemestreIds = semestreConsultaIds.length > 0 ? new Set(semestreConsultaIds) : null;
+    const allowedGrupoModulos = (optionsResponse.data.grupoModulos ?? []).filter((item) => {
+      const semestreId = item.grupo?.semestre?.id ?? item.grupo?.semestreId;
+      return !allowedSemestreIds || allowedSemestreIds.has(Number(semestreId));
+    });
 
     const modulos = filterRegistroAuxiliarModulosForRequester({
       context,
       userId: optionsResponse.data.users?.[0]?.id,
       personals: optionsResponse.data.personals ?? [],
-      modulos: optionsResponse.data.grupoModulos ?? [],
+      modulos: allowedGrupoModulos,
     });
     const grupos = buildRegistroAuxiliarGrupos(modulos);
     const semestreIds = new Set(

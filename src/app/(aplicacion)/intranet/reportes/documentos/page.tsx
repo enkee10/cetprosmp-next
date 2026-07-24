@@ -29,7 +29,7 @@ import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import { dateOnlyTimestamp } from '@/lib/dateOnly';
-import { functions } from '@/lib/firebase';
+import { auth, functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
 type TipoDocumento = 'acta' | 'nomina';
@@ -110,6 +110,27 @@ const selectMenuProps = {
   },
 };
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function waitForCallableAuthToken(timeoutMs = 3000) {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      await currentUser.getIdToken(false);
+      return;
+    }
+
+    await Promise.race([
+      auth.authStateReady(),
+      sleep(200),
+    ]).catch(() => undefined);
+  }
+
+  throw new Error('La sesion aun no esta lista. Vuelve a intentarlo en unos segundos.');
+}
+
 function selectionModelToIds(model: GridRowSelectionModel) {
   return Array.from(model.ids).map((id) => Number(id)).filter((id) => Number.isFinite(id));
 }
@@ -186,6 +207,7 @@ export default function RegistroAcademicosPage() {
         functions,
         'listReporteDocumentosOptions',
       );
+      await waitForCallableAuthToken();
       const result = await listReporteDocumentosOptions();
       const nextSemestres = result.data.semestres || [];
       setSemestres(nextSemestres);
@@ -270,6 +292,7 @@ export default function RegistroAcademicosPage() {
         GenerateResponse
       >(functions, 'generateReporteDocumento');
       for (const id of ids) {
+        await waitForCallableAuthToken();
         await generateReporteDocumento({ tipoDocumento, grupoModuloId: id });
       }
       await loadOptions();

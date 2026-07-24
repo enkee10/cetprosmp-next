@@ -753,6 +753,15 @@ extend type AppSetting {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "AppSetting.settingKey", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `AppSetting` table where the `stringValue` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  stringValue_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "AppSetting.stringValue", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `AppSetting` table where the `updatedAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   updatedAt_count(

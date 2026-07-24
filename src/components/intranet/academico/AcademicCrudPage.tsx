@@ -11,6 +11,7 @@ import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
 import { formatDateOnly } from '@/lib/dateOnly';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { AcademicEntityForm, AcademicFieldConfig } from './AcademicEntityForm';
 
 type AcademicRow = Record<string, unknown> & { id: number };
@@ -99,7 +100,10 @@ function getRowSemestre(row: AcademicRow): SemestreFilterOption | null {
   };
 }
 
-function pickDefaultSemestreId(options: SemestreFilterOption[]) {
+function pickDefaultSemestreId(options: SemestreFilterOption[], configuredSemestreId?: number | null) {
+  if (configuredSemestreId && options.some((option) => option.id === configuredSemestreId)) {
+    return String(configuredSemestreId);
+  }
   const today = new Date();
   const current = options.find((option) => {
     if (option.archivado) return false;
@@ -153,6 +157,7 @@ export function AcademicCrudPage({
       ...Object.fromEntries(columnConfigs.map((column) => [column.field, !column.hidden])),
       actions: true,
     }));
+  const { settings } = useAppSettings();
 
   const auth = getAuth(app);
   const functions = useMemo(() => getFunctions(app), []);
@@ -325,8 +330,8 @@ export function AcademicCrudPage({
       return;
     }
     if (selectedSemestreId && semestreOptions.some((option) => String(option.id) === selectedSemestreId)) return;
-    setSelectedSemestreId(pickDefaultSemestreId(semestreOptions));
-  }, [selectedSemestreId, semestreFilter, semestreOptions]);
+    setSelectedSemestreId(pickDefaultSemestreId(semestreOptions, settings.general.semestreActualId));
+  }, [selectedSemestreId, semestreFilter, semestreOptions, settings.general.semestreActualId]);
 
   const displayRows = useMemo(() => {
     if (!semestreFilter || !selectedSemestreId) return rows;

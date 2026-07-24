@@ -56,7 +56,7 @@ interface ModuloOption {
 const MAX_INSTANCIAS_PER_PAQUETE = 6;
 
 const getModuloLabel = (modulo: ModuloOption) =>
-  modulo.tituloComercial || modulo.titulo || `Modulo ${modulo.id}`;
+  modulo.titulo || `Modulo ${modulo.id}`;
 
 export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: PaqueteFormProps) {
   const [descripcion, setDescripcion] = useState('');
@@ -79,7 +79,7 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
         setModulos(
           (result.data.modulos || [])
             .slice()
-            .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || getModuloLabel(a).localeCompare(getModuloLabel(b), 'es')),
+            .sort((a, b) => getModuloLabel(a).localeCompare(getModuloLabel(b), 'es', { numeric: true }) || a.id - b.id),
         );
       } catch (err) {
         console.error('Error fetching paquete form options: ', err);
@@ -343,7 +343,7 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
                       inputProps={{ min: 1, max: MAX_INSTANCIAS_PER_PAQUETE }}
                     />
                   </Box>
-                  {multiplicador > 1 && (
+                  {multiplicador >= 1 && (
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }, gap: 1 }}>
                       {suffixes.map((suffix, index) => (
                         <TextField

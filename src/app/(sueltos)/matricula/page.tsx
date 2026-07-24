@@ -41,19 +41,27 @@ const normalizeStandaloneSettings = (value: Partial<AppSettings> | undefined | n
   const acceptsResponses = Boolean(
     value?.formularioMatricula?.aceptaRespuestas ?? value?.general?.formularioMatriculaAceptaRespuestas,
   );
-  const semestreId = Number(value?.formularioMatricula?.semestreId);
+  const semestreId = Number(value?.general?.semestreActualId ?? value?.formularioMatricula?.semestreId);
+  const reconocimientoDniActivo =
+    (value?.formularioMatricula?.activarReconocimientoDni ?? value?.general?.activarReconocimientoDni) !== false;
 
   return {
     general: {
       ...defaultAppSettings.general,
       ...value?.general,
+      activarReconocimientoDni: reconocimientoDniActivo,
       formularioMatriculaAceptaRespuestas: acceptsResponses,
+      semestreActualId: Number.isFinite(semestreId) && semestreId > 0 ? semestreId : null,
+      semestresConsultaIds: Array.isArray(value?.general?.semestresConsultaIds)
+        ? value.general.semestresConsultaIds.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
+        : [],
     },
     formularioMatricula: {
       ...defaultAppSettings.formularioMatricula,
       ...value?.formularioMatricula,
       aceptaRespuestas: acceptsResponses,
       semestreId: Number.isFinite(semestreId) && semestreId > 0 ? semestreId : null,
+      activarReconocimientoDni: reconocimientoDniActivo,
     },
     visualizaciones: {
       ...defaultAppSettings.visualizaciones,
@@ -202,8 +210,8 @@ export default function MatriculaSueltaPage() {
   }, [firebaseUser]);
 
   const selectedSemestre = useMemo(
-    () => semestres.find((semestre) => semestre.id === settings.formularioMatricula?.semestreId) ?? null,
-    [semestres, settings.formularioMatricula?.semestreId],
+    () => semestres.find((semestre) => semestre.id === settings.general.semestreActualId) ?? null,
+    [semestres, settings.general.semestreActualId],
   );
   const acceptsResponses = Boolean(settings.formularioMatricula?.aceptaRespuestas);
   const pageLoading = !authReady || Boolean(firebaseUser && loadingAccess) || Boolean(!firebaseUser && authRedirectLoading && !loginError);
@@ -313,11 +321,12 @@ export default function MatriculaSueltaPage() {
               key={`matricula-suelta-${formKey}`}
               isOpen
               onCancel={handleSwitchAccount}
+              onReset={handleNewMatricula}
               onSaved={handleSaved}
               defaultSemestreId={selectedSemestre.id}
+              reconocimientoDniActivo={settings.formularioMatricula.activarReconocimientoDni}
               formVariant="standalone"
               hideSemestreControl
-              hideRecognitionModeControl
             />
           </Box>
         )}

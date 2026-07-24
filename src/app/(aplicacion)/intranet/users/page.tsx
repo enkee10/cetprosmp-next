@@ -121,13 +121,15 @@ const UserAvatarCell = ({
   nombre,
   apellidoPaterno,
   useRecorteFotografia,
+  showImage,
 }: Pick<User, 'avatar' | 'avatarPequeno' | 'recorteFotografia' | 'nombre' | 'apellidoPaterno'> & {
   useRecorteFotografia: boolean;
+  showImage: boolean;
 }) => {
   const fallbackSrc = avatar?.trim() || undefined;
   const normalSrc = avatarPequeno?.trim() || fallbackSrc;
   const recorteSrc = recorteFotografia?.trim() || undefined;
-  const preferredSrc = useRecorteFotografia ? (recorteSrc || normalSrc) : normalSrc;
+  const preferredSrc = showImage ? (useRecorteFotografia ? (recorteSrc || normalSrc) : normalSrc) : undefined;
   const [src, setSrc] = useState(preferredSrc);
 
   useEffect(() => {
@@ -468,6 +470,9 @@ const UsersPage = () => {
                 useRecorteFotografia={
                   appSettings.visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes && isStudentUser(row)
                 }
+                showImage={
+                  appSettings.visualizaciones.mostrarImagenAvatarEstudiantesEnListas || !isStudentUser(row)
+                }
               />
             </Box>
           );
@@ -573,7 +578,10 @@ const UsersPage = () => {
         ),
       },
     ],
-    [appSettings.visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes],
+    [
+      appSettings.visualizaciones.mostrarImagenAvatarEstudiantesEnListas,
+      appSettings.visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes,
+    ],
   );
 
   const columnToggleItems = useMemo(

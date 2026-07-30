@@ -41,6 +41,7 @@ interface User {
   blocked?: boolean;
   bloqueado?: boolean;
   avatar?: string;
+  avatarTiny?: string;
   avatarPequeno?: string;
   photoURL?: string | null;
   recorteFotografia?: string | null;
@@ -116,18 +117,20 @@ const formatDateAsDayMonthYear = (value: unknown) => {
 
 const UserAvatarCell = ({
   avatar,
+  avatarTiny,
   avatarPequeno,
   recorteFotografia,
   nombre,
   apellidoPaterno,
   useRecorteFotografia,
   showImage,
-}: Pick<User, 'avatar' | 'avatarPequeno' | 'recorteFotografia' | 'nombre' | 'apellidoPaterno'> & {
+}: Pick<User, 'avatar' | 'avatarTiny' | 'avatarPequeno' | 'recorteFotografia' | 'nombre' | 'apellidoPaterno'> & {
   useRecorteFotografia: boolean;
   showImage: boolean;
 }) => {
   const fallbackSrc = avatar?.trim() || undefined;
-  const normalSrc = avatarPequeno?.trim() || fallbackSrc;
+  const tinySrc = avatarTiny?.trim() || undefined;
+  const normalSrc = tinySrc || avatarPequeno?.trim() || fallbackSrc;
   const recorteSrc = recorteFotografia?.trim() || undefined;
   const preferredSrc = showImage ? (useRecorteFotografia ? (recorteSrc || normalSrc) : normalSrc) : undefined;
   const [src, setSrc] = useState(preferredSrc);
@@ -140,7 +143,9 @@ const UserAvatarCell = ({
     nombre && apellidoPaterno ? `${nombre[0]}${apellidoPaterno[0]}`.toUpperCase() : null;
   const debugSource = useRecorteFotografia && recorteSrc
     ? `recorteFotografia: ${recorteSrc}`
-    : avatarPequeno?.trim()
+    : tinySrc
+      ? `avatarTiny: ${tinySrc}`
+      : avatarPequeno?.trim()
       ? `avatarPequeno: ${avatarPequeno.trim()}`
       : fallbackSrc
         ? `avatar: ${fallbackSrc}`
@@ -151,11 +156,17 @@ const UserAvatarCell = ({
       src={src}
       title={debugSource}
       sx={{
+        width: 48,
+        height: 48,
+        fontSize: 16,
+        fontWeight: 700,
         bgcolor: 'transparent',
+        color: '#ffffff',
         background: 'linear-gradient(180deg, #8fd8ff 0%, #ffffff 100%)',
       }}
       imgProps={{
         referrerPolicy: 'no-referrer',
+        style: { objectFit: 'contain' },
         onError: () => {
           setSrc((current) => {
             if (current && normalSrc && current !== normalSrc) return normalSrc;
@@ -193,7 +204,7 @@ const UsersPage = () => {
   const [menuUser, setMenuUser] = useState<User | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
-    pageSize: 15,
+    pageSize: 30,
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
@@ -444,25 +455,28 @@ const UsersPage = () => {
       {
         field: 'avatar',
         headerName: 'Avatar',
-        width: 60,
+        width: 68,
+        minWidth: 68,
+        maxWidth: 68,
         sortable: false,
         filterable: false,
         renderCell: (params) => {
           const row = params.row as User;
-          const { avatar, avatarPequeno, recorteFotografia, nombre, apellidoPaterno } = row;
+          const { avatar, avatarTiny, avatarPequeno, recorteFotografia, nombre, apellidoPaterno } = row;
           return (
             <Box
               sx={{
                 width: '100%',
                 height: '100%',
                 display: 'flex',
-                alignItems: 'flex-start',
-                justifyContent: 'flex-start',
-                pt: 0.25,
+                alignItems: 'center',
+                justifyContent: 'center',
+                py: 0,
               }}
             >
               <UserAvatarCell
                 avatar={avatar}
+                avatarTiny={avatarTiny}
                 avatarPequeno={avatarPequeno}
                 recorteFotografia={recorteFotografia}
                 nombre={nombre}

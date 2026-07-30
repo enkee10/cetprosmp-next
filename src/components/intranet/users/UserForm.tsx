@@ -113,6 +113,19 @@ interface Role {
   scala?: number | null;
 }
 
+interface UserGrupoModuloHistorialItem {
+  id?: number | null;
+  matriculaId?: number | null;
+  grupoModuloId?: number | null;
+  grupoModuloNombre?: string | null;
+  semestre?: string | null;
+  estado?: 'aprobado' | 'desaprobado' | 'retirado' | 'en curso' | string | null;
+  promedio?: number | null;
+  puntaje?: number | null;
+  inicio?: string | null;
+  fin?: string | null;
+}
+
 const INSTITUTIONAL_DOMAIN = 'cetprosmp.edu.pe';
 
 const normalizeAliasToken = (value: string | null | undefined): string =>
@@ -185,6 +198,10 @@ const UserForm: React.FC<UserFormProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [removingAvatar, setRemovingAvatar] = useState(false);
+  const [removingDniImages, setRemovingDniImages] = useState(false);
+  const [grupoModuloHistorial, setGrupoModuloHistorial] = useState<UserGrupoModuloHistorialItem[]>([]);
+  const [loadingGrupoModuloHistorial, setLoadingGrupoModuloHistorial] = useState(false);
   const isCreating = !initialData;
   const auth = getAuth(app);
 
@@ -303,13 +320,43 @@ const UserForm: React.FC<UserFormProps> = ({
     fetchRoles();
   }, []);
 
+  useEffect(() => {
+    const rawUserId = initialData?.id;
+    const userId = Number(rawUserId);
+    if (!Number.isFinite(userId) || userId <= 0) {
+      setGrupoModuloHistorial([]);
+      return;
+    }
+
+    let mounted = true;
+    const fetchHistorial = async () => {
+      setLoadingGrupoModuloHistorial(true);
+      try {
+        const listHistorial = httpsCallable<{ userId: number }, { historial?: UserGrupoModuloHistorialItem[] }>(
+          functions,
+          'listUserGrupoModuloHistorial',
+        );
+        const result = await listHistorial({ userId });
+        if (mounted) setGrupoModuloHistorial(result.data.historial || []);
+      } catch (error) {
+        console.error('Error fetching user grupo-modulo historial:', error);
+        if (mounted) setGrupoModuloHistorial([]);
+      } finally {
+        if (mounted) setLoadingGrupoModuloHistorial(false);
+      }
+    };
+
+    void fetchHistorial();
+    return () => {
+      mounted = false;
+    };
+  }, [initialData?.id]);
+
   const avatarUrl = watch('avatar');
-  const dniImagenFrenteUrl = watch('dniImagenFrenteUrl') || '';
-  const dniImagenReversoUrl = watch('dniImagenReversoUrl') || '';
   const dniImagenFrenteProcesadaUrl = watch('dniImagenFrenteProcesadaUrl') || '';
   const dniImagenReversoProcesadaUrl = watch('dniImagenReversoProcesadaUrl') || '';
-  const dniImagenFrenteDisplayUrl = dniImagenFrenteProcesadaUrl || dniImagenFrenteUrl;
-  const dniImagenReversoDisplayUrl = dniImagenReversoProcesadaUrl || dniImagenReversoUrl;
+  const dniImagenFrenteDisplayUrl = dniImagenFrenteProcesadaUrl;
+  const dniImagenReversoDisplayUrl = dniImagenReversoProcesadaUrl;
   const hasDniImages = Boolean(dniImagenFrenteDisplayUrl || dniImagenReversoDisplayUrl);
 
   const handleFileChange = async (
@@ -362,35 +409,52 @@ const UserForm: React.FC<UserFormProps> = ({
     }
   };
 
-  const handleRemoveAvatar = () => {
+  const handleRemoveAvatar = async () => {
     setUploadError(null);
-    setValue('avatar', '', {
-      shouldValidate: true,
-      shouldDirty: true,
-    });
-    setValue('avatarRemoved', true, {
-      shouldValidate: false,
-      shouldDirty: true,
-    });
-    if (avatarInputRef.current) {
-      avatarInputRef.current.value = '';
+
+    const documentId = typeof initialData?.documentId === 'string' ? initialData.documentId : '';
+    setRemovingAvatar(true);
+    try {
+      if (documentId) {
+        const deleteUserAvatarImage = httpsCallable<{ documentId: string }>(
+          functions,
+          'deleteUserAvatarImage',
+        );
+        await deleteUserAvatarImage({ documentId });
+      }
+
+      setValue('avatar', '', {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setValue('avatarRemoved', true, {
+        shouldValidate: false,
+        shouldDirty: true,
+      });
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Error deleting avatar:', error);
+      const message = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message || '')
+        : '';
+      setUploadError(message || 'No se pudo eliminar el avatar.');
+    } finally {
+      setRemovingAvatar(false);
     }
   };
 
-  const handleRemoveDniImage = (side: 'frente' | 'reverso') => {
-    if (side === 'frente') {
-      setValue('dniImagenFrenteUrl', '', {
-        shouldValidate: false,
-        shouldDirty: true,
-      });
-      setValue('dniImagenFrenteProcesadaUrl', '', {
-        shouldValidate: false,
-        shouldDirty: true,
-      });
-      return;
-    }
-
+  const clearDniImageFields = () => {
+    setValue('dniImagenFrenteUrl', '', {
+      shouldValidate: false,
+      shouldDirty: true,
+    });
     setValue('dniImagenReversoUrl', '', {
+      shouldValidate: false,
+      shouldDirty: true,
+    });
+    setValue('dniImagenFrenteProcesadaUrl', '', {
       shouldValidate: false,
       shouldDirty: true,
     });
@@ -398,6 +462,33 @@ const UserForm: React.FC<UserFormProps> = ({
       shouldValidate: false,
       shouldDirty: true,
     });
+  };
+
+  const handleRemoveDniImages = async () => {
+    setUploadError(null);
+    const documentId = typeof initialData?.documentId === 'string' ? initialData.documentId : '';
+    if (!documentId) {
+      setUploadError('No se puede quitar el DNI: el usuario no tiene documentId.');
+      return;
+    }
+
+    setRemovingDniImages(true);
+    try {
+      const deleteUserDniImage = httpsCallable<{ documentId: string }>(
+        functions,
+        'deleteUserDniImage',
+      );
+      await deleteUserDniImage({ documentId });
+      clearDniImageFields();
+    } catch (error) {
+      console.error('Error removing DNI image:', error);
+      const message = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message || '')
+        : '';
+      setUploadError(message || 'No se pudieron quitar las imagenes de DNI.');
+    } finally {
+      setRemovingDniImages(false);
+    }
   };
 
   useEffect(() => {
@@ -519,7 +610,7 @@ const UserForm: React.FC<UserFormProps> = ({
               <Avatar src={avatarUrl || undefined} sx={{ width: 100, height: 100 }} />
               <input type="file" accept="image/*" style={{ display: 'none' }} ref={avatarInputRef} onChange={(e) => handleFileChange(e, 'avatar')} />
               <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
-                <Button variant="outlined" onClick={() => avatarInputRef.current?.click()} disabled={isUploading} tabIndex={23}>
+                <Button variant="outlined" onClick={() => avatarInputRef.current?.click()} disabled={isUploading || removingAvatar} tabIndex={23}>
                   {isUploading ? <CircularProgress size={24} /> : (avatarUrl ? 'Cambiar Avatar' : 'Subir Avatar')}
                 </Button>
                 {avatarUrl ? (
@@ -528,9 +619,9 @@ const UserForm: React.FC<UserFormProps> = ({
                     color="error"
                     startIcon={<DeleteOutline />}
                     onClick={handleRemoveAvatar}
-                    disabled={isUploading}
+                    disabled={isUploading || removingAvatar}
                   >
-                    Quitar Avatar
+                    {removingAvatar ? 'Eliminando Avatar...' : 'Eliminar Avatar'}
                   </Button>
                 ) : null}
               </Box>
@@ -772,17 +863,6 @@ const UserForm: React.FC<UserFormProps> = ({
                             borderColor: 'divider',
                           }}
                         />
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          startIcon={<DeleteOutline />}
-                          onClick={() => handleRemoveDniImage('frente')}
-                          disabled={isSubmitting}
-                          sx={{ mt: 1 }}
-                        >
-                          Quitar frente
-                        </Button>
                       </Box>
                     )}
                     {dniImagenReversoDisplayUrl && (
@@ -805,19 +885,21 @@ const UserForm: React.FC<UserFormProps> = ({
                             borderColor: 'divider',
                           }}
                         />
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          startIcon={<DeleteOutline />}
-                          onClick={() => handleRemoveDniImage('reverso')}
-                          disabled={isSubmitting}
-                          sx={{ mt: 1 }}
-                        >
-                          Quitar reverso
-                        </Button>
                       </Box>
                     )}
+                    <Box sx={{ gridColumn: { xs: 'span 1', md: 'span 2' } }}>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<DeleteOutline />}
+                        onClick={handleRemoveDniImages}
+                        disabled={isSubmitting || removingDniImages}
+                        sx={{ mt: 0.5 }}
+                      >
+                        {removingDniImages ? 'Eliminando DNI...' : 'Eliminar DNI'}
+                      </Button>
+                    </Box>
                   </Box>
                 ) : (
                   <Typography variant="body2" color="text.secondary">
@@ -826,6 +908,60 @@ const UserForm: React.FC<UserFormProps> = ({
                 )}
               </Box>
             )}
+            {!isCreating && (loadingGrupoModuloHistorial || grupoModuloHistorial.length > 0) ? (
+              <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' }, mt: 1 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                  Historial de grupos-modulos
+                </Typography>
+                {loadingGrupoModuloHistorial ? (
+                  <Typography variant="body2" color="text.secondary">
+                    Cargando historial...
+                  </Typography>
+                ) : (
+                  <Box sx={{ display: 'grid', gap: 1 }}>
+                    {grupoModuloHistorial.map((item) => {
+                      const estado = item.estado || 'en curso';
+                      const estadoColor =
+                        estado === 'aprobado'
+                          ? 'success.main'
+                          : estado === 'desaprobado'
+                            ? 'error.main'
+                            : estado === 'retirado'
+                              ? 'warning.main'
+                              : 'info.main';
+                      return (
+                        <Box
+                          key={item.id ?? `${item.matriculaId}-${item.grupoModuloId}`}
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', sm: '110px minmax(0, 1fr) 110px 80px' },
+                            gap: 1,
+                            alignItems: 'center',
+                            p: 1,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 1,
+                          }}
+                        >
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {item.semestre || '-'}
+                          </Typography>
+                          <Typography variant="body2">
+                            {item.grupoModuloNombre || 'Sin grupo-modulo'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: estadoColor, fontWeight: 700, textTransform: 'capitalize' }}>
+                            {estado}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {typeof item.promedio === 'number' ? item.promedio.toFixed(0) : '-'}
+                          </Typography>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                )}
+              </Box>
+            ) : null}
         </Box>
       </form>
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
@@ -834,7 +970,7 @@ const UserForm: React.FC<UserFormProps> = ({
             Cancelar
           </Button>
         )}
-        <Button type="submit" form="user-form" variant="contained" disabled={isUploading || isSubmitting} tabIndex={21}>
+        <Button type="submit" form="user-form" variant="contained" disabled={isUploading || removingAvatar || removingDniImages || isSubmitting} tabIndex={21}>
           {isCreating ? 'Crear' : 'Guardar Cambios'}
         </Button>
       </Box>

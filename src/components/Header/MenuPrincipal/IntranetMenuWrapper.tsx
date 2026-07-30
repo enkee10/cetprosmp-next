@@ -58,7 +58,7 @@ const buildDocenteRegistroItems = (
     const moduloName = getModuloMenuName(modulo);
     return {
       id: `registro-auxiliar-${modulo.id}`,
-      title: `Notas ${periodo} ${moduloName}`,
+      title: `Notas ${moduloName} ${periodo}`,
       path: `/intranet/registro-auxiliar?grupoModuloId=${modulo.id}`,
       icon: null,
     };

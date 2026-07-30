@@ -41,7 +41,7 @@ export default function SectoresPage() {
   const [menuSectorId, setMenuSectorId] = useState<string | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
-    pageSize: 15,
+    pageSize: 30,
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({

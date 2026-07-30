@@ -540,7 +540,7 @@ export default function CertificadosTitulosPage() {
           rowSelectionModel={selectionModel}
           onRowSelectionModelChange={handleSelectionChange}
           getRowId={(row) => row.id}
-          initialState={{ pagination: { paginationModel: { page: 0, pageSize: 15 } } }}
+          initialState={{ pagination: { paginationModel: { page: 0, pageSize: 30 } } }}
         />
       </Paper>
 

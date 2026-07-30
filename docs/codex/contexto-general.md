@@ -3,6 +3,7 @@
 ## comportamiento CODEX
  - nunca hacer nada que no se te pida explicitamente, sin embargo puedes sugerirlo.
  - Al hacer deploy cuando es function darle timeout de 180 para que no falle, cuando es hosting  darle timeout largo porque usa firebase hosting con next de framework
+ - cuando vayas hacer pruebas en local usa siempre el puerto 3001 y no el 3000
 
 ## Estado actual
 - Estoy desarrollando el sistema CETPRO con Next.js, Firebase, MUI y GitHub y conectado a workspace de google.

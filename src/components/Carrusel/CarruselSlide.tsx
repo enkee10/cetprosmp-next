@@ -7,12 +7,14 @@ import CarrerasBlock from './CarrerasBlock';
 import ModularesBlock from './ModularesBlock';
 import PortadaImagen from './PortadaImagen';
 import EspecialidadTitulo from './EspecialidadTitulo';
+import { getStrapiMedia } from '@/lib/getStrapiMedia';
 
 const fondoDefault = process.env.NEXT_PUBLIC_DEFAULT_BACKGROUND_URL;
 
 export default function CarruselSlide({ especialidad }: { especialidad: Especialidad }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const fondoSeguro = getStrapiMedia(especialidad.fondo || fondoDefault || null);
 
   // Cálculo original para modulares sueltos (lo conservo)
   const carrerasConCodigo = especialidad.carreras.filter((c) => !!c.codigo);
@@ -29,7 +31,7 @@ export default function CarruselSlide({ especialidad }: { especialidad: Especial
         width: '100%',
         height: isMobile ? 'calc(100vh - 48px)' : 500,
         aspectRatio: isMobile ? 'auto' : '2.4',
-        backgroundImage: `url(${especialidad.fondo || fondoDefault || ''})`,
+        backgroundImage: `url(${fondoSeguro})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         p: { xs: 2, md: 4 },

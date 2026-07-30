@@ -1,5 +1,6 @@
 import { https } from "firebase-functions/v1";
 import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import { UPDATE_USER_MUTATION } from "../../dataconnectOperations.js";
 import { deleteMatriculasForUser } from "../core/matriculaDeletion.js";
 import {
@@ -18,7 +19,7 @@ import {
   toNumber,
 } from "../core/userMappers.js";
 import { authAdmin, DEFAULT_LEVEL, getInitialClaimsByEmail, isBlockedIntranetRole } from "../core/authCore.js";
-import { requireAuthenticated, requirePermission } from "../core/permissions.js";
+import { requireAuthenticated, requirePermission, requireSuperUser } from "../core/permissions.js";
 import {
   dataConnect,
   deleteDataConnectUserByDocumentId,
@@ -56,6 +57,7 @@ const LIST_USERS_QUERY = `
       nacionalidad
       estadoCivil
       instruccion
+      nombreColegio
       fechaNacimiento
       correoInstitucional
       fechaCreacion
@@ -105,6 +107,75 @@ const LIST_LOGIN_USERS_QUERY = `
   }
 `;
 
+const GET_USER_DNI_IMAGES_QUERY = `
+  query GetUserDniImages($documentId: String!) {
+    users(where: { documentId: { eq: $documentId } }, limit: 1) {
+      id
+      tipoDocumento
+      dni
+      dniImagenFrenteUrl
+      dniImagenReversoUrl
+      dniImagenFrenteProcesadaUrl
+      dniImagenReversoProcesadaUrl
+    }
+  }
+`;
+
+const GET_USER_AVATAR_IMAGES_QUERY = `
+  query GetUserAvatarImages($documentId: String!) {
+    users(where: { documentId: { eq: $documentId } }, limit: 1) {
+      id
+      tipoDocumento
+      dni
+      avatar
+      recorteFotografia
+    }
+  }
+`;
+
+const LIST_USER_GRUPO_MODULO_HISTORIAL_QUERY = `
+  query ListUserGrupoModuloHistorialManual {
+    modulosEstudiantes(limit: 200000) {
+      id
+      promedio
+      puntaje
+      matriculaId
+      grupoModuloId
+      grupoId
+      moduloId
+      matricula {
+        id
+        userId
+        archivado
+        fecha
+        semestre {
+          id
+          titulo
+        }
+      }
+      grupoModulo {
+        id
+        nombre
+        inicio
+        fin
+        grupo {
+          id
+          nombreDisplay
+          semestre {
+            id
+            titulo
+          }
+        }
+        modulo {
+          id
+          titulo
+          tituloComercial
+        }
+      }
+    }
+  }
+`;
+
 const isTransientDataConnectSqlError = (error: unknown): boolean => {
   const message = [
     String((error as { message?: string } | null)?.message || ""),
@@ -139,6 +210,115 @@ const getEmailLocalPart = (value: unknown): string => {
   const atIndex = email.indexOf("@");
   return atIndex > 0 ? email.slice(0, atIndex) : "";
 };
+
+function getStoragePathFromDownloadUrl(value: string | null | undefined): string | undefined {
+  const raw = asNullableString(value);
+  if (!raw) return undefined;
+
+  try {
+    const url = new URL(raw);
+    const marker = "/o/";
+    const markerIndex = url.pathname.indexOf(marker);
+    if (markerIndex < 0) return undefined;
+    const encodedPath = url.pathname.slice(markerIndex + marker.length);
+    return decodeURIComponent(encodedPath);
+  } catch {
+    return undefined;
+  }
+}
+
+async function deleteStorageFilesFromUrls(urls: Array<string | null | undefined>) {
+  const paths = Array.from(
+    new Set(
+      urls
+        .map((url) => getStoragePathFromDownloadUrl(url))
+        .filter((path): path is string => Boolean(path)),
+    ),
+  );
+  if (!paths.length) return [];
+
+  const bucket = getStorage().bucket();
+  await Promise.all(paths.map(async (path) => {
+    try {
+      await bucket.file(path).delete({ ignoreNotFound: true });
+    } catch (error) {
+      console.warn("deleteStorageFilesFromUrls skipped", { path, error });
+    }
+  }));
+  return paths;
+}
+
+function normalizeDocumentNumberForPath(value: unknown): string {
+  return String(value ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+function getDocumentFilePrefix(value: unknown): "dni" | "ce" {
+  const normalized = String(value ?? "").trim().toUpperCase();
+  return normalized === "CE" || normalized.includes("EXTRANJ") ? "ce" : "dni";
+}
+
+function getExpectedDniStoragePaths(user: { tipoDocumento?: string | null; dni?: string | null }) {
+  const number = normalizeDocumentNumberForPath(user.dni);
+  if (!number) return [];
+  const prefix = getDocumentFilePrefix(user.tipoDocumento);
+  return [
+    `matriculas/documentos/${number}/${prefix}-${number}-original-frente`,
+    `matriculas/documentos/${number}/${prefix}-${number}-original-reverso`,
+    `matriculas/documentos-procesados/${number}/${prefix}-${number}-procesado-frente.jpg`,
+    `matriculas/documentos-procesados/${number}/${prefix}-${number}-procesado-reverso.jpg`,
+  ];
+}
+
+function avatarSizeSuffix(size: "grande" | "mediano" | "pequeno" | "tiny") {
+  return size === "grande" ? "" : `-${size}`;
+}
+
+function getExpectedAvatarStoragePaths(user: { tipoDocumento?: string | null; dni?: string | null }) {
+  const number = normalizeDocumentNumberForPath(user.dni);
+  if (!number) return [];
+  const prefix = getDocumentFilePrefix(user.tipoDocumento);
+  const avatarModes = ["generado", "recorte"];
+  const sizes = ["grande", "mediano", "pequeno", "tiny"] as const;
+  return [
+    ...avatarModes.flatMap((mode) =>
+      sizes.flatMap((size) => [
+        `usuarios/avatars/${number}/avatar-${mode}-${prefix}-${number}${avatarSizeSuffix(size)}.jpg`,
+        `usuarios/avatars/${number}/avatar-${mode}-${prefix}-${number}${avatarSizeSuffix(size)}.png`,
+      ]),
+    ),
+    `usuarios/avatars/${number}/fotorecortada-${prefix}-${number}.jpg`,
+  ];
+}
+
+async function deleteStorageFilesFromPaths(paths: string[]) {
+  const uniquePaths = Array.from(new Set(paths.filter(Boolean)));
+  if (!uniquePaths.length) return [];
+
+  const bucket = getStorage().bucket();
+  await Promise.all(uniquePaths.map(async (path) => {
+    try {
+      await bucket.file(path).delete({ ignoreNotFound: true });
+    } catch (error) {
+      console.warn("deleteStorageFilesFromPaths skipped", { path, error });
+    }
+  }));
+  return uniquePaths;
+}
+
+const normalizeRoleTitleForCleanup = (value: unknown) =>
+  String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+
+function isStudentOrFormerStudentRole(user: Record<string, unknown>) {
+  const roleId = toNumber(user.rolId, 0);
+  const rol = user.rol && typeof user.rol === "object" ? user.rol as { titulo?: unknown } : null;
+  const title = normalizeRoleTitleForCleanup(rol?.titulo);
+  return roleId === 3 || title.includes("estudiante") || title.includes("alumno");
+}
 
 async function resolveExistingAuthEmail(candidates: Array<unknown>): Promise<string | null> {
   const normalizedCandidates = Array.from(
@@ -203,24 +383,33 @@ async function hydrateProcessedAvatarThumbnails(
     .limit(1000)
     .get();
 
-  const thumbnailByUserId = new Map<number, string>();
+  const thumbnailByUserId = new Map<number, { avatarTiny?: string; avatarPequeno?: string }>();
   snapshot.docs.forEach((doc) => {
     const data = doc.data();
     const userId = toNumber(data.userId, 0);
     if (!userIds.has(userId) || thumbnailByUserId.has(userId) || data.status !== "completed") return;
 
     const avatarTamanos = data.avatarTamanos as {
+      tiny?: { url?: unknown } | null;
       pequeno?: { url?: unknown } | null;
       grande?: { url?: unknown } | null;
     } | null;
     const avatar = data.avatar as { url?: unknown } | null;
-    const thumbnail =
+    const tiny =
+      asNullableString(avatarTamanos?.tiny?.url)
+      ?? asNullableString(avatarTamanos?.pequeno?.url)
+      ?? asNullableString(avatarTamanos?.grande?.url)
+      ?? asNullableString(avatar?.url);
+    const pequeno =
       asNullableString(avatarTamanos?.pequeno?.url)
       ?? asNullableString(avatarTamanos?.grande?.url)
       ?? asNullableString(avatar?.url);
 
-    if (thumbnail) {
-      thumbnailByUserId.set(userId, thumbnail);
+    if (tiny || pequeno) {
+      thumbnailByUserId.set(userId, {
+        avatarTiny: tiny ?? undefined,
+        avatarPequeno: pequeno ?? undefined,
+      });
     }
   });
 
@@ -228,8 +417,8 @@ async function hydrateProcessedAvatarThumbnails(
 
   return users.map((user) => {
     const userId = toNumber(user.id, 0);
-    const avatarPequeno = thumbnailByUserId.get(userId);
-    return avatarPequeno ? { ...user, avatarPequeno } : user;
+    const avatars = thumbnailByUserId.get(userId);
+    return avatars ? { ...user, ...avatars } : user;
   });
 }
 
@@ -352,6 +541,95 @@ export const listUsers = https.onCall(async (_data, context) => {
   } catch (error) {
     console.error("Error in listUsers:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while listing users.");
+  }
+});
+
+export const listUserGrupoModuloHistorial = https.onCall(async (data, context) => {
+  await requirePermission(context, "users", "view");
+
+  const userId = toNumber(data?.userId, -1);
+  if (userId <= 0) {
+    throw new https.HttpsError("invalid-argument", "userId is required.");
+  }
+
+  try {
+    const response = await dataConnect.executeGraphql<{
+      modulosEstudiantes: Array<{
+        id?: number | null;
+        promedio?: number | null;
+        puntaje?: number | null;
+        matriculaId?: number | null;
+        grupoModuloId?: number | null;
+        grupoId?: number | null;
+        moduloId?: number | null;
+        matricula?: {
+          id?: number | null;
+          userId?: number | null;
+          archivado?: boolean | null;
+          fecha?: string | null;
+          semestre?: { id?: number | null; titulo?: string | null } | null;
+        } | null;
+        grupoModulo?: {
+          id?: number | null;
+          nombre?: string | null;
+          inicio?: string | null;
+          fin?: string | null;
+          grupo?: {
+            id?: number | null;
+            nombreDisplay?: string | null;
+            semestre?: { id?: number | null; titulo?: string | null } | null;
+          } | null;
+          modulo?: {
+            id?: number | null;
+            titulo?: string | null;
+            tituloComercial?: string | null;
+          } | null;
+        } | null;
+      }>;
+    }, Record<string, never>>(LIST_USER_GRUPO_MODULO_HISTORIAL_QUERY);
+
+    const historial = (response.data.modulosEstudiantes ?? [])
+      .filter((item) => Number(item.matricula?.userId ?? 0) === userId)
+      .map((item) => {
+        const promedio = typeof item.promedio === "number" && Number.isFinite(item.promedio) ? item.promedio : null;
+        const estado = item.matricula?.archivado
+          ? "retirado"
+          : promedio == null
+            ? "en curso"
+            : promedio >= 13
+              ? "aprobado"
+              : "desaprobado";
+        const semestre =
+          asNullableString(item.grupoModulo?.grupo?.semestre?.titulo)
+          ?? asNullableString(item.matricula?.semestre?.titulo)
+          ?? "";
+        return {
+          id: item.id ?? null,
+          matriculaId: item.matriculaId ?? item.matricula?.id ?? null,
+          grupoModuloId: item.grupoModuloId ?? item.grupoModulo?.id ?? null,
+          grupoModuloNombre:
+            asNullableString(item.grupoModulo?.nombre)
+            ?? asNullableString(item.grupoModulo?.modulo?.titulo)
+            ?? asNullableString(item.grupoModulo?.modulo?.tituloComercial)
+            ?? "",
+          semestre,
+          estado,
+          promedio,
+          puntaje: item.puntaje ?? null,
+          inicio: item.grupoModulo?.inicio ?? null,
+          fin: item.grupoModulo?.fin ?? null,
+        };
+      })
+      .sort((a, b) =>
+        String(b.semestre ?? "").localeCompare(String(a.semestre ?? ""), "es", { numeric: true }) ||
+        String(a.grupoModuloNombre ?? "").localeCompare(String(b.grupoModuloNombre ?? ""), "es", { numeric: true }) ||
+        Number(b.id ?? 0) - Number(a.id ?? 0),
+      );
+
+    return { historial };
+  } catch (error) {
+    console.error("Error in listUserGrupoModuloHistorial:", error);
+    throw new https.HttpsError("internal", "No se pudo cargar el historial academico del usuario.");
   }
 });
 
@@ -803,6 +1081,136 @@ export const updateUserProfile = https.onCall(async (data, context) => {
     }
     console.error("Error in updateUserProfile:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while updating user profile.");
+  }
+});
+
+export const deleteUserDniImage = https.onCall(async (data, context) => {
+  await requirePermission(context, "users", "edit");
+
+  const documentId = asNullableString(data?.documentId ?? data?.uid);
+  if (!documentId) {
+    throw new https.HttpsError("invalid-argument", "documentId is required.");
+  }
+
+  try {
+    const response = await dataConnect.executeGraphql<{
+      users: Array<{
+        id: number;
+        tipoDocumento?: string | null;
+        dni?: string | null;
+        dniImagenFrenteUrl?: string | null;
+        dniImagenReversoUrl?: string | null;
+        dniImagenFrenteProcesadaUrl?: string | null;
+        dniImagenReversoProcesadaUrl?: string | null;
+      }>;
+    }, { documentId: string }>(GET_USER_DNI_IMAGES_QUERY, { variables: { documentId } });
+    const user = response.data.users?.[0] ?? null;
+    if (!user?.id) {
+      throw new https.HttpsError("not-found", `No Data Connect user was found for documentId '${documentId}'.`);
+    }
+
+    const urlPaths = await deleteStorageFilesFromUrls([
+      user.dniImagenFrenteUrl,
+      user.dniImagenReversoUrl,
+      user.dniImagenFrenteProcesadaUrl,
+      user.dniImagenReversoProcesadaUrl,
+    ]);
+    const expectedPaths = await deleteStorageFilesFromPaths(getExpectedDniStoragePaths(user));
+    const deletedPaths = Array.from(new Set([...urlPaths, ...expectedPaths]));
+    const updateData: DataConnectUserInput = {
+      dniImagenFrenteUrl: null,
+      dniImagenReversoUrl: null,
+      dniImagenFrenteProcesadaUrl: null,
+      dniImagenReversoProcesadaUrl: null,
+    };
+
+    await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
+      UPDATE_USER_MUTATION,
+      { variables: { id: user.id, data: updateData } },
+    );
+
+    return { id: user.id, deletedPaths };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in deleteUserDniImage:", error);
+    throw new https.HttpsError("internal", "No se pudo quitar la imagen de DNI del usuario.");
+  }
+});
+
+export const deleteUserAvatarImage = https.onCall(async (data, context) => {
+  await requirePermission(context, "users", "edit");
+
+  const documentId = asNullableString(data?.documentId ?? data?.uid);
+  if (!documentId) {
+    throw new https.HttpsError("invalid-argument", "documentId is required.");
+  }
+
+  try {
+    const response = await dataConnect.executeGraphql<{
+      users: Array<{
+        id: number;
+        tipoDocumento?: string | null;
+        dni?: string | null;
+        avatar?: string | null;
+        recorteFotografia?: string | null;
+      }>;
+    }, { documentId: string }>(GET_USER_AVATAR_IMAGES_QUERY, { variables: { documentId } });
+    const user = response.data.users?.[0] ?? null;
+    if (!user?.id) {
+      throw new https.HttpsError("not-found", `No Data Connect user was found for documentId '${documentId}'.`);
+    }
+
+    const urlPaths = await deleteStorageFilesFromUrls([
+      user.avatar,
+      user.recorteFotografia,
+    ]);
+    const expectedPaths = await deleteStorageFilesFromPaths(getExpectedAvatarStoragePaths(user));
+    const deletedPaths = Array.from(new Set([...urlPaths, ...expectedPaths]));
+    const updateData: DataConnectUserInput = {
+      avatar: null,
+      recorteFotografia: null,
+    };
+
+    await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
+      UPDATE_USER_MUTATION,
+      { variables: { id: user.id, data: updateData } },
+    );
+
+    return { id: user.id, deletedPaths };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in deleteUserAvatarImage:", error);
+    throw new https.HttpsError("internal", "No se pudo eliminar el avatar del usuario.");
+  }
+});
+
+export const clearStudentAvatarLinks = https.onCall(async (_data, context) => {
+  requireSuperUser(context, "limpiar enlaces de avatar de estudiantes");
+
+  try {
+    const users = await executeListUsersQuerySerialized();
+    const targetUsers = users.filter((user) => {
+      const avatar = asNullableString(user.avatar);
+      const recorteFotografia = asNullableString(user.recorteFotografia);
+      return Boolean(avatar || recorteFotografia) && isStudentOrFormerStudentRole(user);
+    });
+
+    for (const user of targetUsers) {
+      const id = toNumber(user.id, 0);
+      if (!id) continue;
+      await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
+        UPDATE_USER_MUTATION,
+        { variables: { id, data: { avatar: null, recorteFotografia: null } } },
+      );
+    }
+
+    return {
+      total: targetUsers.length,
+      ids: targetUsers.map((user) => toNumber(user.id, 0)).filter((id) => id > 0),
+    };
+  } catch (error) {
+    console.error("Error in clearStudentAvatarLinks:", error);
+    throw new https.HttpsError("internal", "No se pudieron limpiar los enlaces de avatar de estudiantes.");
   }
 });
 

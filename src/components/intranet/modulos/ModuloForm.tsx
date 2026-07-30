@@ -43,7 +43,6 @@ interface ModuloData {
   metas: number | null;
   activo: boolean | null;
   slug: string | null;
-  comun: boolean | null;
   planId: number | null;
   planIds?: number[];
 }
@@ -401,11 +400,6 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           <FormControlLabel
             control={<Checkbox checked={activo} onChange={(e) => setActivo(e.target.checked)} />}
             label="Activo"
-            sx={{ gridColumn: { xs: 'auto', md: 'span 3' }, alignSelf: 'center' }}
-          />
-          <FormControlLabel
-            control={<Checkbox checked={planIds.length > 1} disabled />}
-            label="Comun"
             sx={{ gridColumn: { xs: 'auto', md: 'span 3' }, alignSelf: 'center' }}
           />
 

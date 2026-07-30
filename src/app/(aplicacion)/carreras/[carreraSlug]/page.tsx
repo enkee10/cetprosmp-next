@@ -7,6 +7,7 @@ import type { Carrera } from '@/types/carreras';
 import Image from 'next/image';
 import RichText from '@/components/RichText';
 import ListaModulos from '@/components/Modulos/ListaModulos';
+import { getStrapiMedia } from '@/lib/getStrapiMedia';
 
 const generarLorem = () => {
   const lorem =
@@ -60,11 +61,13 @@ export default async function CarreraDetallePage({
 
   const imagenesFinales: string[] = imagenes?.length
     ? imagenes.map((img: any) =>
-        typeof img === 'string'
-          ? img.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL
-          : img?.url?.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL
+        getStrapiMedia(
+          typeof img === 'string'
+            ? img.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL
+            : img?.url?.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL,
+        )
       )
-    : [process.env.NEXT_PUBLIC_DEFAULT_IMG_URL, process.env.NEXT_PUBLIC_DEFAULT_IMG_URL];
+    : [getStrapiMedia(null), getStrapiMedia(null)];
 
   const modulosSinCodigo = carrera.modulos ?? [];
 

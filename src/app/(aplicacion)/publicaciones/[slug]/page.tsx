@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { getPublicacionBySlug, getPublicaciones, formatFecha } from '@/lib/getPublicaciones';
 import RichText from '@/components/RichText';
 import PublicacionesCard from '@/components/Publicaciones/PublicacionesCard';
+import { getStrapiMedia } from '@/lib/getStrapiMedia';
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -46,7 +47,7 @@ export default async function PublicacionDetallePage({ params }: Params) {
 
   const mostrarImagen = !!(pub.imagenPrincipal && pub.imagenPrincipal.trim() !== '');
   const imgFallback = process.env.NEXT_PUBLIC_DEFAULT_IMG_URL || '/imagenes/img-predeterminada.avif';
-  const imagen = mostrarImagen ? (pub.imagenPrincipal as string) : imgFallback;
+  const imagen = getStrapiMedia(mostrarImagen ? (pub.imagenPrincipal as string) : imgFallback);
 
   // Relacionadas (vea también): destacadas del mismo tipo, excluyendo la actual
   const todas = await getPublicaciones();
@@ -121,7 +122,7 @@ export default async function PublicacionDetallePage({ params }: Params) {
                       <Box
                         key={i}
                         component="img"
-                        src={url}
+                        src={getStrapiMedia(url)}
                         alt={`Imagen ${i + 1}`}
                         sx={{
                           width: '100%',

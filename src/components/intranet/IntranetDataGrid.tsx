@@ -72,9 +72,11 @@ export default function IntranetDataGrid<R extends GridValidRowModel = GridValid
   columnHeaderHeight = 40,
   disableColumnSelector = true,
   disableRowSelectionOnClick = true,
+  initialState,
   localeText = localeTextEs,
   pageSizeOptions = [15, 30, 50, 100],
   rowHeight = 45,
+  slotProps,
   sx,
   ...props
 }: IntranetDataGridProps<R>) {
@@ -87,6 +89,9 @@ export default function IntranetDataGrid<R extends GridValidRowModel = GridValid
       ),
     [props.columns, props.rows],
   );
+  const basePaginationSlotProps = (slotProps?.basePagination ?? {}) as Record<string, any>;
+  const basePaginationNestedSlotProps = (basePaginationSlotProps.slotProps ?? {}) as Record<string, any>;
+  const basePaginationSelectSlotProps = (basePaginationNestedSlotProps.select ?? {}) as Record<string, any>;
 
   return (
     <Box sx={{ width: '100%', minWidth: 0 }}>
@@ -97,9 +102,36 @@ export default function IntranetDataGrid<R extends GridValidRowModel = GridValid
         columnHeaderHeight={columnHeaderHeight}
         disableColumnSelector={disableColumnSelector}
         disableRowSelectionOnClick={disableRowSelectionOnClick}
+        initialState={{
+          ...initialState,
+          pagination: {
+            ...initialState?.pagination,
+            paginationModel: {
+              pageSize: 30,
+              page: 0,
+              ...initialState?.pagination?.paginationModel,
+            },
+          },
+        }}
         localeText={localeText}
         pageSizeOptions={pageSizeOptions}
         rowHeight={rowHeight}
+        slotProps={{
+          ...slotProps,
+          basePagination: {
+            ...basePaginationSlotProps,
+            slotProps: {
+              ...basePaginationNestedSlotProps,
+              select: {
+                ...basePaginationSelectSlotProps,
+                MenuProps: {
+                  ...(basePaginationSelectSlotProps.MenuProps ?? {}),
+                  disableScrollLock: true,
+                },
+              },
+            },
+          } as any,
+        }}
         sx={[defaultSx, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
       />
     </Box>

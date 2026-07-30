@@ -285,8 +285,8 @@ export default function User() { // define el componente del usuario mostrado en
     <>
       {user ? ( // muestra el popper del usuario cuando existe una sesion activa
         <Box ref={anchorRef} sx={{ display: "inline-block" }}> {/* define el ancla visual del popper */} 
-          <IconButton onClick={handleToggle} color="inherit"> {/* permite abrir y cerrar el popper del usuario */} 
-            <Avatar alt={user.displayName || "Usuario"} src={user.photoURL || undefined} sx={{ width: 32, height: 32 }} imgProps={{ referrerPolicy: "no-referrer" }} /> {/* muestra el avatar del usuario autenticado */} 
+          <IconButton onClick={handleToggle} color="inherit" sx={{ py: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}> {/* permite abrir y cerrar el popper del usuario */} 
+            <Avatar alt={user.displayName || "Usuario"} src={user.photoURL || undefined} sx={{ width: 40, height: 40 }} imgProps={{ referrerPolicy: "no-referrer" }} /> {/* muestra el avatar del usuario autenticado */} 
           </IconButton>
 
           <Popper open={open} anchorEl={anchorRef.current} placement="bottom-end" modifiers={[{ name: "offset", options: { offset: [0, 8] } }]} sx={{ zIndex: 1300 }}> {/* posiciona el panel del usuario debajo del avatar */} 

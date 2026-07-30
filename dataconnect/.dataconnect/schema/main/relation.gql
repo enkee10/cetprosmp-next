@@ -6812,6 +6812,74 @@ extend type Grupo {
     having: GrupoModulo_Having
   ): [GrupoModulo!]! @fdc_generated(from: "GrupoModulo.grupo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `MatriculaCambioModulo` objects in a one-to-many relationship (where `MatriculaCambioModulo`.`grupoAnterior` is this object).
+  """
+  matriculaCambiosModulo_on_grupoAnterior(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaCambioModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaCambioModulo_Having
+  ): [MatriculaCambioModulo!]! @fdc_generated(from: "MatriculaCambioModulo.grupoAnterior", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `MatriculaCambioModulo` objects in a one-to-many relationship (where `MatriculaCambioModulo`.`grupoNuevo` is this object).
+  """
+  matriculaCambiosModulo_on_grupoNuevo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaCambioModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaCambioModulo_Having
+  ): [MatriculaCambioModulo!]! @fdc_generated(from: "MatriculaCambioModulo.grupoNuevo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `MatriculaGrupo` objects in a one-to-many relationship (where `MatriculaGrupo`.`grupo` is this object).
   """
   matriculaGrupos_on_grupo(
@@ -7543,6 +7611,74 @@ extend type GrupoModulo {
     """
     having: GrupoModuloUnidadDidactica_Having
   ): [GrupoModuloUnidadDidactica!]! @fdc_generated(from: "GrupoModuloUnidadDidactica.grupoModulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `MatriculaCambioModulo` objects in a one-to-many relationship (where `MatriculaCambioModulo`.`grupoModuloAnterior` is this object).
+  """
+  matriculaCambiosModulo_on_grupoModuloAnterior(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaCambioModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaCambioModulo_Having
+  ): [MatriculaCambioModulo!]! @fdc_generated(from: "MatriculaCambioModulo.grupoModuloAnterior", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `MatriculaCambioModulo` objects in a one-to-many relationship (where `MatriculaCambioModulo`.`grupoModuloNuevo` is this object).
+  """
+  matriculaCambiosModulo_on_grupoModuloNuevo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaCambioModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaCambioModulo_Having
+  ): [MatriculaCambioModulo!]! @fdc_generated(from: "MatriculaCambioModulo.grupoModuloNuevo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `ModuloEstudiante` objects in a one-to-many relationship (where `ModuloEstudiante`.`grupoModulo` is this object).
   """
@@ -8853,6 +8989,40 @@ extend type Matricula {
     having: IndicadorCapacidadEstudiante_Having
   ): [IndicadorCapacidadEstudiante!]! @fdc_generated(from: "IndicadorCapacidadEstudiante.matricula", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `MatriculaCambioModulo` objects in a one-to-many relationship (where `MatriculaCambioModulo`.`matricula` is this object).
+  """
+  matriculaCambiosModulo_on_matricula(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaCambioModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaCambioModulo_Having
+  ): [MatriculaCambioModulo!]! @fdc_generated(from: "MatriculaCambioModulo.matricula", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `MatriculaGrupo` objects in a one-to-many relationship (where `MatriculaGrupo`.`matricula` is this object).
   """
   matriculaGrupos_on_matricula(
@@ -9151,6 +9321,15 @@ extend type Matricula {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Matricula.codigoInscripcion", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Matricula` table where the `fechaActualizacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaActualizacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Matricula.fechaActualizacion", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Matricula` table where the `fecha` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   fecha_count(
@@ -9331,6 +9510,10 @@ extend type Matricula {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Matricula.userId", purpose: QUERY_AVG)
   """
+  ✨ Minimum of the `fechaActualizacion` field in the `Matricula` table.
+  """
+  fechaActualizacion_min: Timestamp @fdc_generated(from: "Matricula.fechaActualizacion", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `fecha` field in the `Matricula` table.
   """
   fecha_min: Timestamp @fdc_generated(from: "Matricula.fecha", purpose: QUERY_MIN)
@@ -9358,6 +9541,10 @@ extend type Matricula {
   ✨ Minimum of the `userId` field in the `Matricula` table.
   """
   userId_min: Int @fdc_generated(from: "Matricula.userId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `fechaActualizacion` field in the `Matricula` table.
+  """
+  fechaActualizacion_max: Timestamp @fdc_generated(from: "Matricula.fechaActualizacion", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `fecha` field in the `Matricula` table.
   """
@@ -9390,6 +9577,422 @@ extend type Matricula {
   A generated field that is used for caching results in SDKs.
   """
   _id: ID! @fdc_generated(from: "Matricula.id", purpose: ENTITY_ID)
+}
+extend type MatriculaCambioModulo {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "MatriculaCambioModulo", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table.
+  """
+  _count: Int! @fdc_generated(from: "MatriculaCambioModulo.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `fechaCambio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaCambio_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.fechaCambio", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `grupoAnteriorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoAnteriorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.grupoAnteriorId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `grupoModuloAnteriorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoModuloAnteriorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.grupoModuloAnteriorId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `grupoModuloNuevoId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoModuloNuevoId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.grupoModuloNuevoId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `grupoNuevoId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoNuevoId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.grupoNuevoId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `matriculaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  matriculaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.matriculaId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `moduloAnteriorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  moduloAnteriorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.moduloAnteriorId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `moduloNuevoId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  moduloNuevoId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.moduloNuevoId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `registradoPorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  registradoPorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.registradoPorId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `semestreId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  semestreId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.semestreId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `MatriculaCambioModulo` table where the `userId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  userId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo.userId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `grupoAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoAnteriorId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaCambioModulo.grupoAnteriorId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `grupoModuloAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoModuloAnteriorId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaCambioModulo.grupoModuloAnteriorId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `grupoModuloNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoModuloNuevoId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaCambioModulo.grupoModuloNuevoId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `grupoNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoNuevoId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaCambioModulo.grupoNuevoId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `MatriculaCambioModulo` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaCambioModulo.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `matriculaId` field in the `MatriculaCambioModulo` table.
+  """
+  matriculaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaCambioModulo.matriculaId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `moduloAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  moduloAnteriorId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaCambioModulo.moduloAnteriorId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `moduloNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  moduloNuevoId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaCambioModulo.moduloNuevoId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `registradoPorId` field in the `MatriculaCambioModulo` table.
+  """
+  registradoPorId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaCambioModulo.registradoPorId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `semestreId` field in the `MatriculaCambioModulo` table.
+  """
+  semestreId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaCambioModulo.semestreId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `userId` field in the `MatriculaCambioModulo` table.
+  """
+  userId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "MatriculaCambioModulo.userId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `grupoAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoAnteriorId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaCambioModulo.grupoAnteriorId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `grupoModuloAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoModuloAnteriorId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaCambioModulo.grupoModuloAnteriorId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `grupoModuloNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoModuloNuevoId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaCambioModulo.grupoModuloNuevoId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `grupoNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoNuevoId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaCambioModulo.grupoNuevoId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `MatriculaCambioModulo` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaCambioModulo.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `matriculaId` field in the `MatriculaCambioModulo` table.
+  """
+  matriculaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaCambioModulo.matriculaId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `moduloAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  moduloAnteriorId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaCambioModulo.moduloAnteriorId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `moduloNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  moduloNuevoId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaCambioModulo.moduloNuevoId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `registradoPorId` field in the `MatriculaCambioModulo` table.
+  """
+  registradoPorId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaCambioModulo.registradoPorId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `semestreId` field in the `MatriculaCambioModulo` table.
+  """
+  semestreId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaCambioModulo.semestreId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `userId` field in the `MatriculaCambioModulo` table.
+  """
+  userId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "MatriculaCambioModulo.userId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `fechaCambio` field in the `MatriculaCambioModulo` table.
+  """
+  fechaCambio_min: Timestamp @fdc_generated(from: "MatriculaCambioModulo.fechaCambio", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `grupoAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoAnteriorId_min: Int @fdc_generated(from: "MatriculaCambioModulo.grupoAnteriorId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `grupoModuloAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoModuloAnteriorId_min: Int @fdc_generated(from: "MatriculaCambioModulo.grupoModuloAnteriorId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `grupoModuloNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoModuloNuevoId_min: Int @fdc_generated(from: "MatriculaCambioModulo.grupoModuloNuevoId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `grupoNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoNuevoId_min: Int @fdc_generated(from: "MatriculaCambioModulo.grupoNuevoId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `MatriculaCambioModulo` table.
+  """
+  id_min: Int @fdc_generated(from: "MatriculaCambioModulo.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `matriculaId` field in the `MatriculaCambioModulo` table.
+  """
+  matriculaId_min: Int @fdc_generated(from: "MatriculaCambioModulo.matriculaId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `moduloAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  moduloAnteriorId_min: Int @fdc_generated(from: "MatriculaCambioModulo.moduloAnteriorId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `moduloNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  moduloNuevoId_min: Int @fdc_generated(from: "MatriculaCambioModulo.moduloNuevoId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `registradoPorId` field in the `MatriculaCambioModulo` table.
+  """
+  registradoPorId_min: Int @fdc_generated(from: "MatriculaCambioModulo.registradoPorId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `semestreId` field in the `MatriculaCambioModulo` table.
+  """
+  semestreId_min: Int @fdc_generated(from: "MatriculaCambioModulo.semestreId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `userId` field in the `MatriculaCambioModulo` table.
+  """
+  userId_min: Int @fdc_generated(from: "MatriculaCambioModulo.userId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `fechaCambio` field in the `MatriculaCambioModulo` table.
+  """
+  fechaCambio_max: Timestamp @fdc_generated(from: "MatriculaCambioModulo.fechaCambio", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `grupoAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoAnteriorId_max: Int @fdc_generated(from: "MatriculaCambioModulo.grupoAnteriorId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `grupoModuloAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoModuloAnteriorId_max: Int @fdc_generated(from: "MatriculaCambioModulo.grupoModuloAnteriorId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `grupoModuloNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoModuloNuevoId_max: Int @fdc_generated(from: "MatriculaCambioModulo.grupoModuloNuevoId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `grupoNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  grupoNuevoId_max: Int @fdc_generated(from: "MatriculaCambioModulo.grupoNuevoId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `MatriculaCambioModulo` table.
+  """
+  id_max: Int @fdc_generated(from: "MatriculaCambioModulo.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `matriculaId` field in the `MatriculaCambioModulo` table.
+  """
+  matriculaId_max: Int @fdc_generated(from: "MatriculaCambioModulo.matriculaId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `moduloAnteriorId` field in the `MatriculaCambioModulo` table.
+  """
+  moduloAnteriorId_max: Int @fdc_generated(from: "MatriculaCambioModulo.moduloAnteriorId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `moduloNuevoId` field in the `MatriculaCambioModulo` table.
+  """
+  moduloNuevoId_max: Int @fdc_generated(from: "MatriculaCambioModulo.moduloNuevoId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `registradoPorId` field in the `MatriculaCambioModulo` table.
+  """
+  registradoPorId_max: Int @fdc_generated(from: "MatriculaCambioModulo.registradoPorId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `semestreId` field in the `MatriculaCambioModulo` table.
+  """
+  semestreId_max: Int @fdc_generated(from: "MatriculaCambioModulo.semestreId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `userId` field in the `MatriculaCambioModulo` table.
+  """
+  userId_max: Int @fdc_generated(from: "MatriculaCambioModulo.userId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "MatriculaCambioModulo.id", purpose: ENTITY_ID)
 }
 extend type MatriculaGrupo {
   """
@@ -9918,6 +10521,74 @@ extend type Modulo {
     """
     having: GrupoModulo_Having
   ): [GrupoModulo!]! @fdc_generated(from: "GrupoModulo.modulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `MatriculaCambioModulo` objects in a one-to-many relationship (where `MatriculaCambioModulo`.`moduloAnterior` is this object).
+  """
+  matriculaCambiosModulo_on_moduloAnterior(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaCambioModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaCambioModulo_Having
+  ): [MatriculaCambioModulo!]! @fdc_generated(from: "MatriculaCambioModulo.moduloAnterior", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `MatriculaCambioModulo` objects in a one-to-many relationship (where `MatriculaCambioModulo`.`moduloNuevo` is this object).
+  """
+  matriculaCambiosModulo_on_moduloNuevo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaCambioModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaCambioModulo_Having
+  ): [MatriculaCambioModulo!]! @fdc_generated(from: "MatriculaCambioModulo.moduloNuevo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `ModuloEstudiante` objects in a one-to-many relationship (where `ModuloEstudiante`.`modulo` is this object).
   """
@@ -14268,6 +14939,40 @@ extend type Semestre {
     having: Matricula_Having
   ): [Matricula!]! @fdc_generated(from: "Matricula.semestre", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `MatriculaCambioModulo` objects in a one-to-many relationship (where `MatriculaCambioModulo`.`semestre` is this object).
+  """
+  matriculaCambiosModulo_on_semestre(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaCambioModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaCambioModulo_Having
+  ): [MatriculaCambioModulo!]! @fdc_generated(from: "MatriculaCambioModulo.semestre", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `Plan` objects in a one-to-many relationship (where `Plan`.`periodoVigencia` is this object).
   """
   planes_on_periodoVigencia(
@@ -15827,6 +16532,74 @@ extend type User {
     having: Matricula_Having
   ): [Matricula!]! @fdc_generated(from: "Matricula.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `MatriculaCambioModulo` objects in a one-to-many relationship (where `MatriculaCambioModulo`.`registradoPor` is this object).
+  """
+  matriculaCambiosModulo_on_registradoPor(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaCambioModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaCambioModulo_Having
+  ): [MatriculaCambioModulo!]! @fdc_generated(from: "MatriculaCambioModulo.registradoPor", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `MatriculaCambioModulo` objects in a one-to-many relationship (where `MatriculaCambioModulo`.`user` is this object).
+  """
+  matriculaCambiosModulo_on_user(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaCambioModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaCambioModulo_Having
+  ): [MatriculaCambioModulo!]! @fdc_generated(from: "MatriculaCambioModulo.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `MatriculaUser` objects in a one-to-many relationship (where `MatriculaUser`.`user` is this object).
   """
   matriculaUsers_on_user(
@@ -16179,6 +16952,15 @@ extend type User {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "User.nickName", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `nombreColegio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nombreColegio_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.nombreColegio", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `User` table where the `nombre` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """

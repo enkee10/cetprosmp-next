@@ -13,7 +13,10 @@ import {
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { getRequesterRoleId, requireAuthenticated, requirePermission } from "../core/permissions.js";
-import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
+import {
+  getConfiguredSemestreConsultaIds,
+  getDocenteMenuSemestreSelection,
+} from "../settings/handlers.js";
 import {
   DataConnectActividad,
   DataConnectActividadInput,
@@ -646,7 +649,7 @@ function attachPlanRelationsToModulo(
 
   return {
     ...modulo,
-    comun: modulo.comun ?? planIds.length > 1,
+    comun: false,
     planId: primary?.planId ?? modulo.planId ?? null,
     plan: primary?.plan ?? modulo.plan ?? null,
     planIds,
@@ -953,19 +956,14 @@ function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
 }
 
 function buildEstructuraAcademicaOpciones(response: EstructuraAcademicaQueryResponse) {
-  const planRelationsByModuloId = groupByNumber(response.planModulos ?? [], (relation) => relation.moduloId);
   const unidadRelationsByUnidadId = groupByNumber(response.unidadDidacticaModulos ?? [], (relation) => relation.unidadDidacticaId);
 
-  const modulosComunes = (response.modulos ?? [])
-    .map((modulo) => attachPlanRelationsToModulo(modulo, planRelationsByModuloId))
-    .filter((modulo) => Boolean(modulo.comun))
-    .map((modulo) => ({
-      id: modulo.id,
-      titulo: modulo.titulo ?? null,
-      tituloComercial: modulo.tituloComercial ?? null,
-      planIds: modulo.planIds ?? [],
-    }))
-    .sort((a, b) => String(a.titulo || a.tituloComercial || "").localeCompare(String(b.titulo || b.tituloComercial || ""), "es"));
+  const modulosComunes: Array<{
+    id: number;
+    titulo: string | null;
+    tituloComercial: string | null;
+    planIds: number[];
+  }> = [];
 
   const unidadesComunes = (response.unidadesDidacticas ?? [])
     .filter((unidad) => Boolean(unidad.comun))
@@ -1046,7 +1044,11 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
       return !allowedSemestreIds || allowedSemestreIds.has(Number(semestreId));
     });
 
-    const semestreTitulo = resolveSemestreTituloVigente(semestres, requestedSemestreTitulo);
+    const docenteSemestreSelection = requestedSemestreTitulo
+      ? null
+      : await getDocenteMenuSemestreSelection(semestres);
+    const semestreTitulo = docenteSemestreSelection?.currentSemestreTitulo
+      ?? resolveSemestreTituloVigente(semestres, requestedSemestreTitulo);
     const personalIds = getPersonalIdsForUserId(response.data.users?.[0]?.id, response.data.personals ?? []);
     const docenteGrupoModulos = grupoModulos
       .filter((item) =>
@@ -1127,7 +1129,9 @@ export const getEstructuraAcademicaDocenteMenu = https.onCall(async (_data, cont
       return !allowedSemestreIds || allowedSemestreIds.has(Number(semestreId));
     });
 
-    const semestreTitulo = resolveSemestreTituloVigente(semestres);
+    const docenteSemestreSelection = await getDocenteMenuSemestreSelection(semestres);
+    const semestreTitulo = docenteSemestreSelection.currentSemestreTitulo
+      ?? resolveSemestreTituloVigente(semestres);
     const personalIds = getPersonalIdsForUserId(response.data.users?.[0]?.id, response.data.personals ?? []);
     const hasModulos = grupoModulos.some((item) =>
       Boolean(item.grupo?.personalId && personalIds.has(item.grupo.personalId)) &&
@@ -1303,19 +1307,7 @@ export const reuseEstructuraAcademicaItem = https.onCall(async (data, context) =
 
   try {
     if (entity === "modulo") {
-      const planId = toNumber(data?.planId, -1);
-      const moduloId = toNumber(data?.moduloId, -1);
-      if (planId <= 0 || moduloId <= 0) throw new https.HttpsError("invalid-argument", "planId and moduloId are required.");
-      const orden = await nextPlanModuloOrder(planId);
-      await dataConnect.executeGraphql<
-        { planModulo_insert: unknown },
-        { data: DataConnectPlanModuloInput }
-      >(INSERT_PLAN_MODULO_MUTATION, { variables: { data: { planId, moduloId, orden } } });
-      await dataConnect.executeGraphql<
-        { modulo_update: unknown },
-        { id: number; data: DataConnectModuloInput }
-      >(UPDATE_MODULO_MUTATION, { variables: { id: moduloId, data: { comun: true } } });
-      return { id: moduloId };
+      throw new https.HttpsError("failed-precondition", "La reutilizacion de modulos comunes no esta habilitada.");
     }
 
     if (entity === "unidadDidactica") {

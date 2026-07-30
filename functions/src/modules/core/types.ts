@@ -22,6 +22,7 @@ export interface DataConnectUserInput {
   nacionalidad?: string | null;
   estadoCivil?: string | null;
   instruccion?: string | null;
+  nombreColegio?: string | null;
   fechaNacimiento?: string | null;
   fechaVencimiento?: string | null;
   direccion?: string | null;
@@ -784,6 +785,7 @@ export interface DataConnectMatricula {
   id: number;
   recibo?: string | null;
   fecha?: string | null;
+  fechaActualizacion?: string | null;
   codigoInscripcion?: string | null;
   archivado?: boolean | null;
   paqueteId?: number | null;
@@ -796,6 +798,7 @@ export interface DataConnectMatricula {
 export interface DataConnectMatriculaInput {
   recibo?: string | null;
   fecha?: string | null;
+  fechaActualizacion?: string | null;
   codigoInscripcion?: string | null;
   archivado?: boolean;
   paqueteId?: number | null;

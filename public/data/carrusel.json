@@ -76,8 +76,8 @@
     "id": 3,
     "tituloComercial": "Computación",
     "slug": "computacion",
-    "fondo": "http://localhost:1337/uploads/computacion_fondo01_e17724e761.avif",
-    "portada": "http://localhost:1337/uploads/computacion01_a_ee8a8aed01.png",
+    "fondo": "/imagenes/comunes/fondo-predeterminado.jpg",
+    "portada": "/imagenes/comunes/portada-predeterminada.png",
     "carreras": [
       {
         "id": 4,

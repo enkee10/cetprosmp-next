@@ -22,6 +22,7 @@ type User @table(name: "users") {
   nacionalidad: String @default(value: "PERUANA")
   estadoCivil: String @col(name: "estado_civil")
   instruccion: String
+  nombreColegio: String @col(name: "nombre_colegio")
   fechaNacimiento: Timestamp @col(name: "fecha_nacimiento")
   fechaVencimiento: Timestamp @col(name: "fecha_vencimiento")
   direccion: String
@@ -392,6 +393,41 @@ type ModuloEstudiante @table(name: "modulos_estudiantes", singular: "moduloEstud
 
   grupoModulo: GrupoModulo @ref(fields: "grupoModuloId", references: "id")
   grupoModuloId: Int @col(name: "grupo_modulo_id")
+}
+
+type MatriculaCambioModulo @table(name: "matricula_cambios_modulo", singular: "matriculaCambioModulo", plural: "matriculaCambiosModulo") @index(fields: ["matriculaId"]) @index(fields: ["userId"]) {
+  id: Int! @col(dataType: "serial")
+  fechaCambio: Timestamp @col(name: "fecha_cambio")
+
+  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
+  matriculaId: Int! @col(name: "matricula_id")
+
+  user: User @ref(fields: "userId", references: "id")
+  userId: Int @col(name: "user_id")
+
+  semestre: Semestre @ref(fields: "semestreId", references: "id")
+  semestreId: Int @col(name: "semestre_id")
+
+  grupoModuloAnterior: GrupoModulo @ref(fields: "grupoModuloAnteriorId", references: "id")
+  grupoModuloAnteriorId: Int @col(name: "grupo_modulo_anterior_id")
+
+  grupoModuloNuevo: GrupoModulo @ref(fields: "grupoModuloNuevoId", references: "id")
+  grupoModuloNuevoId: Int @col(name: "grupo_modulo_nuevo_id")
+
+  grupoAnterior: Grupo @ref(fields: "grupoAnteriorId", references: "id")
+  grupoAnteriorId: Int @col(name: "grupo_anterior_id")
+
+  grupoNuevo: Grupo @ref(fields: "grupoNuevoId", references: "id")
+  grupoNuevoId: Int @col(name: "grupo_nuevo_id")
+
+  moduloAnterior: Modulo @ref(fields: "moduloAnteriorId", references: "id")
+  moduloAnteriorId: Int @col(name: "modulo_anterior_id")
+
+  moduloNuevo: Modulo @ref(fields: "moduloNuevoId", references: "id")
+  moduloNuevoId: Int @col(name: "modulo_nuevo_id")
+
+  registradoPor: User @ref(fields: "registradoPorId", references: "id")
+  registradoPorId: Int @col(name: "registrado_por_id")
 }
 
 type EfsrtPppEstudiante @table(name: "efsrt_ppp_estudiantes", singular: "efsrtPppEstudiante", plural: "efsrtPppEstudiantes") @unique(fields: ["grupoModulo", "moduloEstudiante"]) @index(fields: ["grupoModuloId"]) @index(fields: ["moduloEstudianteId"]) {
@@ -828,6 +864,7 @@ type Matricula @table(name: "matriculas") {
   recibo: String
   codigoInscripcion: String @col(name: "codigo_inscripcion", dataType: "varchar(13)")
   fecha: Timestamp
+  fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
   archivado: Boolean
 
   paquete: Paquete @ref(fields: "paqueteId", references: "id")

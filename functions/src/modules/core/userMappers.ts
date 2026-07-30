@@ -191,6 +191,7 @@ export function buildUserDataFromInput(
     nacionalidad: asNullableString(input.nacionalidad ?? input.Nacionalidad),
     estadoCivil: asNullableString(input.estado_civil ?? input.estadoCivil),
     instruccion: asNullableString(input.instruccion),
+    nombreColegio: asNullableString(input.nombreColegio ?? input.nombre_colegio),
     fechaNacimiento: asNullableTimestamp(input.fecha_nacimiento ?? input.fechaNacimiento),
     fechaVencimiento: asNullableTimestamp(input.fecha_vencimiento ?? input.fechaVencimiento),
     direccion: asNullableString(input.direccion),
@@ -510,6 +511,7 @@ export function buildMatriculaDataFromInput(input: Record<string, unknown>): Dat
   return compactUndefined({
     recibo: asNullableString(input.recibo),
     fecha: asNullableTimestamp(input.fecha),
+    fechaActualizacion: asNullableTimestamp(input.fechaActualizacion),
     codigoInscripcion: asNullableString(input.codigoInscripcion),
     archivado: toBoolean(input.archivado),
     paqueteId: toNumberOrNull(input.paqueteId),

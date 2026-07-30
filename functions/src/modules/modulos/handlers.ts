@@ -1,5 +1,6 @@
 import { https } from "firebase-functions/v1";
 import {
+  buildGrupoDataFromInput,
   buildModuloDataFromInput,
   buildPaqueteDataFromInput,
   buildPaqueteModuloDataFromInput,
@@ -17,7 +18,15 @@ import {
   DataConnectPaqueteModuloInput,
   DataConnectPlanModulo,
   DataConnectPlanModuloInput,
+  DataConnectGrupoInput,
+  DataConnectGrupoModuloInput,
 } from "../core/types.js";
+import {
+  buildGrupoModuloNombreRelacional,
+  getDocenteNombreForGrupoModulo,
+  GrupoModuloNombreContext,
+  GrupoModuloNombreModulo,
+} from "../core/grupoModuloNombre.js";
 import {
   DELETE_PLAN_MODULOS_BY_MODULO_MUTATION,
   DELETE_MODULO_MUTATION,
@@ -26,6 +35,8 @@ import {
   INSERT_PAQUETE_MODULO_MUTATION,
   INSERT_PAQUETE_MUTATION,
   INSERT_MODULO_MUTATION,
+  UPDATE_GRUPO_MUTATION,
+  UPDATE_GRUPO_MODULO_MUTATION,
   UPDATE_MODULO_MUTATION,
   UPDATE_MODULO_ORDEN_MUTATION,
   UPDATE_PAQUETE_MUTATION,
@@ -192,6 +203,63 @@ const GET_PAQUETE_MODULOS_WITH_MODULOS_QUERY = `
   }
 `;
 
+const LIST_GRUPOS_FOR_PAQUETES_RENAME_QUERY = `
+  query ListGruposForPaquetesRename {
+    grupos(limit: 5000) {
+      id
+      turnoNombre
+      paqueteId
+      paquete {
+        titulo
+      }
+      turno {
+        nombre
+      }
+      horario {
+        nombre
+      }
+      personal {
+        displayName
+        user {
+          username
+          apellidoPaterno
+        }
+      }
+    }
+  }
+`;
+
+const LIST_GRUPO_MODULOS_FOR_MODULO_RENAME_QUERY = `
+  query ListGrupoModulosForModuloRename($moduloId: Int!) {
+    grupoModulos(where: { moduloId: { eq: $moduloId } }, limit: 5000) {
+      id
+      sufijo
+      modulo {
+        id
+        titulo
+        tituloComercial
+      }
+      grupo {
+        id
+        turnoNombre
+        turno {
+          nombre
+        }
+        horario {
+          nombre
+        }
+        personal {
+          displayName
+          user {
+            username
+            apellidoPaterno
+          }
+        }
+      }
+    }
+  }
+`;
+
 interface ModulosQueryResponse {
   modulos: DataConnectModulo[];
   planModulos: DataConnectPlanModulo[];
@@ -269,7 +337,7 @@ function attachPlanRelationsToModulos(
 
     return {
       ...modulo,
-      comun: modulo.comun ?? planIds.length > 1,
+      comun: false,
       planId: primary?.planId ?? modulo.planId ?? null,
       plan: primary?.plan ?? modulo.plan ?? null,
       planIds,
@@ -334,6 +402,114 @@ async function syncPaquetesTituloForModulo(moduloId: number) {
       >(UPDATE_PAQUETE_MUTATION, { variables: { id: paqueteId, data: paquetePayload } });
     }),
   );
+
+  return paqueteIds;
+}
+
+const normalizeSpaces = (value: unknown) =>
+  String(value ?? "").trim().replace(/\s+/g, " ");
+
+function buildGrupoNombreRelacional(grupo: {
+  turnoNombre?: string | null;
+  paquete?: { titulo?: string | null } | null;
+  turno?: { nombre?: string | null } | null;
+  horario?: { nombre?: string | null } | null;
+  personal?: NonNullable<GrupoModuloNombreContext>["personal"];
+} | null | undefined) {
+  const paqueteTitulo = normalizeSpaces(grupo?.paquete?.titulo);
+  const turnoNombre = normalizeSpaces(grupo?.turno?.nombre || grupo?.turnoNombre);
+  const horarioNombre = normalizeSpaces(grupo?.horario?.nombre);
+  const docenteNombre = getDocenteNombreForGrupoModulo(grupo?.personal ?? null);
+
+  return [
+    paqueteTitulo,
+    turnoNombre ? `[${turnoNombre}]` : "",
+    horarioNombre,
+    docenteNombre ? `(${docenteNombre})` : "",
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function syncGruposNombreForPaquetes(paqueteIds: number[]) {
+  const affectedPaqueteIds = new Set(paqueteIds.filter((id) => Number.isInteger(id) && id > 0));
+  if (affectedPaqueteIds.size === 0) return;
+
+  const response = await dataConnect.executeGraphql<{
+    grupos: Array<{
+      id: number;
+      turnoNombre?: string | null;
+      paqueteId?: number | null;
+      paquete?: { titulo?: string | null } | null;
+      turno?: { nombre?: string | null } | null;
+      horario?: { nombre?: string | null } | null;
+      personal?: NonNullable<GrupoModuloNombreContext>["personal"];
+    }>;
+  }, Record<string, never>>(LIST_GRUPOS_FOR_PAQUETES_RENAME_QUERY);
+
+  await Promise.all(
+    (response.data.grupos ?? [])
+      .filter((grupo) => affectedPaqueteIds.has(Number(grupo.paqueteId)))
+      .map((grupo) => {
+        const nombreDisplay = buildGrupoNombreRelacional(grupo);
+        if (!nombreDisplay) return Promise.resolve();
+
+        const payload = buildGrupoDataFromInput({ nombreDisplay }) as DataConnectGrupoInput;
+        return dataConnect.executeGraphql<
+          { grupo_update: unknown },
+          { id: number; data: DataConnectGrupoInput }
+        >(UPDATE_GRUPO_MUTATION, { variables: { id: grupo.id, data: payload } });
+      }),
+  );
+}
+
+function appendGrupoModuloSufijo(name: string, suffix: string | null | undefined) {
+  const cleanSuffix = normalizeSpaces(suffix);
+  const cleanName = normalizeSpaces(name);
+  if (!cleanSuffix) return cleanName;
+  const markerIndex = cleanName.search(/\s\[/);
+  if (markerIndex > 0) {
+    return `${cleanName.slice(0, markerIndex)} (${cleanSuffix})${cleanName.slice(markerIndex)}`.trim();
+  }
+  return `${cleanName} (${cleanSuffix})`.trim();
+}
+
+async function syncGrupoModulosNombreForModulo(moduloId: number) {
+  const response = await dataConnect.executeGraphql<{
+    grupoModulos: Array<{
+      id: number;
+      sufijo?: string | null;
+      modulo?: GrupoModuloNombreModulo;
+      grupo?: GrupoModuloNombreContext;
+    }>;
+  }, { moduloId: number }>(
+    LIST_GRUPO_MODULOS_FOR_MODULO_RENAME_QUERY,
+    { variables: { moduloId } },
+  );
+
+  await Promise.all(
+    (response.data.grupoModulos ?? []).map((grupoModulo) => {
+      const baseName = buildGrupoModuloNombreRelacional(grupoModulo.grupo ?? null, grupoModulo.modulo);
+      const nombre = appendGrupoModuloSufijo(baseName, grupoModulo.sufijo);
+      if (!nombre) return Promise.resolve();
+
+      const payload = { nombre } as DataConnectGrupoModuloInput;
+      return dataConnect.executeGraphql<
+        { grupoModulo_update: unknown },
+        { id: number; data: DataConnectGrupoModuloInput }
+      >(UPDATE_GRUPO_MODULO_MUTATION, { variables: { id: grupoModulo.id, data: payload } });
+    }),
+  );
+}
+
+async function syncModuloNameDependents(moduloId: number) {
+  const paqueteIds = await syncPaquetesTituloForModulo(moduloId);
+  await Promise.all([
+    syncGruposNombreForPaquetes(paqueteIds),
+    syncGrupoModulosNombreForModulo(moduloId),
+  ]);
 }
 
 async function ensureSingleModulePaquete(moduloId: number, modulo: DataConnectModuloInput) {
@@ -486,7 +662,7 @@ export const createOrUpdateModulo = https.onCall(async (data, context) => {
       if (planIds !== undefined) {
         await syncPlanModulos(moduloId, planIds, payload.orden);
       }
-      await syncPaquetesTituloForModulo(moduloId);
+      await syncModuloNameDependents(moduloId);
 
       return { id: getIdFromKeyOutput(updated.data.modulo_update) ?? moduloId };
     }
@@ -510,7 +686,7 @@ export const createOrUpdateModulo = https.onCall(async (data, context) => {
         await syncPlanModulos(createdModuloId, planIds, payload.orden);
       }
       paqueteId = await ensureSingleModulePaquete(createdModuloId, payload);
-      await syncPaquetesTituloForModulo(createdModuloId);
+      await syncModuloNameDependents(createdModuloId);
     } catch (error) {
       if (planIds !== undefined) {
         await dataConnect.executeGraphql<{ planModulo_deleteMany: number }, { moduloId: number }>(

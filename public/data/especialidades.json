@@ -172,11 +172,11 @@
         ]
       }
     ],
-    "imagen": "http://localhost:1337/uploads/computacion_fondo01_e17724e761.avif",
+    "imagen": "/imagenes/comunes/fondo-predeterminado.jpg",
     "imagenes": [
-      "http://localhost:1337/uploads/computacion01_a_ee8a8aed01.png",
-      "http://localhost:1337/uploads/computacion02_a_26bae19d57.png",
-      "http://localhost:1337/uploads/paseo_campo_992a19249f.png"
+      "/imagenes/comunes/portada-predeterminada.png",
+      "/imagenes/comunes/img-predeterminada.avif",
+      "/imagenes/comunes/fondo-predeterminado.jpg"
     ]
   }
 ]

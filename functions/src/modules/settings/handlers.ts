@@ -25,8 +25,16 @@ const CURRENT_SEMESTRE_ID_KEY =
   "general.semestreActualId";
 const QUERY_SEMESTRES_IDS_KEY =
   "general.semestresConsultaIds";
+const USE_PREVIOUS_SEMESTRE_DOCENTE_LISTS_KEY =
+  "general.usarListasSemestreAnteriorDocentes";
 const MATRICULA_FORM_ACCEPTS_RESPONSES_KEY =
   "formularioMatricula.aceptaRespuestas";
+const MATRICULA_NEXT_FORM_ACCEPTS_RESPONSES_KEY =
+  "formularioMatricula.siguienteAceptaRespuestas";
+const MATRICULA_FORM_BACKGROUND_COLOR_KEY =
+  "formularioMatricula.fondoColor";
+const MATRICULA_NEXT_FORM_BACKGROUND_COLOR_KEY =
+  "formularioMatricula.siguienteFondoColor";
 const LEGACY_MATRICULA_FORM_ACCEPTS_RESPONSES_KEY =
   "general.formularioMatriculaAceptaRespuestas";
 const MATRICULA_FORM_SEMESTRE_ID_KEY =
@@ -39,11 +47,15 @@ const DEFAULT_SETTINGS = {
     activarReconocimientoDni: true,
     semestreActualId: null as number | null,
     semestresConsultaIds: [] as number[],
+    usarListasSemestreAnteriorDocentes: true,
   },
   formularioMatricula: {
     aceptaRespuestas: false,
+    siguienteAceptaRespuestas: false,
     semestreId: null as number | null,
     activarReconocimientoDni: true,
+    fondoColor: "#ffffff",
+    siguienteFondoColor: "#ffffff",
   },
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: false,
@@ -64,6 +76,11 @@ const AVATAR_GENERATION_MODEL_OPTIONS = new Set([
   "gemini-3.1-flash-lite-image-1024",
   "gemini-3.1-flash-image-512",
 ]);
+
+const normalizeHexColor = (value: unknown, fallback = "#ffffff") => {
+  const text = String(value ?? "").trim();
+  return /^#[0-9a-f]{6}$/i.test(text) ? text : fallback;
+};
 
 const SETTING_DEFINITIONS: Record<string, SettingDefinition> = {
   [USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY]: {
@@ -96,11 +113,35 @@ const SETTING_DEFINITIONS: Record<string, SettingDefinition> = {
     valueType: "string",
     defaultValue: "[]",
   },
+  [USE_PREVIOUS_SEMESTRE_DOCENTE_LISTS_KEY]: {
+    section: "general",
+    label: "Usar listas del semestre anterior para Docentes",
+    valueType: "boolean",
+    defaultValue: true,
+  },
   [MATRICULA_FORM_ACCEPTS_RESPONSES_KEY]: {
     section: "formularioMatricula",
-    label: "El formulario acepta respuestas",
+    label: "Formulario Matricula actual acepta respuestas",
     valueType: "boolean",
     defaultValue: false,
+  },
+  [MATRICULA_NEXT_FORM_ACCEPTS_RESPONSES_KEY]: {
+    section: "formularioMatricula",
+    label: "Formulario Matricula siguiente acepta respuestas",
+    valueType: "boolean",
+    defaultValue: false,
+  },
+  [MATRICULA_FORM_BACKGROUND_COLOR_KEY]: {
+    section: "formularioMatricula",
+    label: "Color de fondo formulario actual",
+    valueType: "string",
+    defaultValue: "#ffffff",
+  },
+  [MATRICULA_NEXT_FORM_BACKGROUND_COLOR_KEY]: {
+    section: "formularioMatricula",
+    label: "Color de fondo formulario siguiente",
+    valueType: "string",
+    defaultValue: "#ffffff",
   },
   [LEGACY_MATRICULA_FORM_ACCEPTS_RESPONSES_KEY]: {
     section: "general",
@@ -271,9 +312,27 @@ function buildSettingsResponse(items: DataConnectAppSetting[]) {
         settings.general.semestresConsultaIds = [];
       }
     }
+    if (item.settingKey === USE_PREVIOUS_SEMESTRE_DOCENTE_LISTS_KEY) {
+      settings.general.usarListasSemestreAnteriorDocentes = item.boolValue !== false;
+    }
     if (item.settingKey === MATRICULA_FORM_ACCEPTS_RESPONSES_KEY) {
       settings.formularioMatricula.aceptaRespuestas = Boolean(item.boolValue);
       settings.general.formularioMatriculaAceptaRespuestas = Boolean(item.boolValue);
+    }
+    if (item.settingKey === MATRICULA_NEXT_FORM_ACCEPTS_RESPONSES_KEY) {
+      settings.formularioMatricula.siguienteAceptaRespuestas = Boolean(item.boolValue);
+    }
+    if (item.settingKey === MATRICULA_FORM_BACKGROUND_COLOR_KEY) {
+      settings.formularioMatricula.fondoColor = normalizeHexColor(
+        item.stringValue,
+        DEFAULT_SETTINGS.formularioMatricula.fondoColor,
+      );
+    }
+    if (item.settingKey === MATRICULA_NEXT_FORM_BACKGROUND_COLOR_KEY) {
+      settings.formularioMatricula.siguienteFondoColor = normalizeHexColor(
+        item.stringValue,
+        DEFAULT_SETTINGS.formularioMatricula.siguienteFondoColor,
+      );
     }
     if (
       item.settingKey === LEGACY_MATRICULA_FORM_ACCEPTS_RESPONSES_KEY
@@ -382,6 +441,74 @@ export async function getConfiguredSemestreConsultaIds() {
   }
 }
 
+type DocenteMenuSemestreOption = {
+  id: number;
+  titulo?: string | null;
+  inicio?: string | null;
+  fin?: string | null;
+  anio?: {
+    id?: number | null;
+    nombre?: string | null;
+    titulo?: string | null;
+  } | null;
+};
+
+const getSemestreSortTime = (value?: string | null) => {
+  if (!value) return Number.NEGATIVE_INFINITY;
+  const time = new Date(`${value}T00:00:00`).getTime();
+  return Number.isFinite(time) ? time : Number.NEGATIVE_INFINITY;
+};
+
+const sortDocenteMenuSemestresAsc = <T extends DocenteMenuSemestreOption>(semestres: T[]) =>
+  semestres.slice().sort((a, b) =>
+    getSemestreSortTime(a.inicio) - getSemestreSortTime(b.inicio) ||
+    String(a.anio?.nombre ?? a.anio?.titulo ?? "").localeCompare(
+      String(b.anio?.nombre ?? b.anio?.titulo ?? ""),
+      "es",
+      { numeric: true },
+    ) ||
+    String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es", { numeric: true }) ||
+    a.id - b.id,
+  );
+
+export async function getDocenteMenuSemestreSelection<T extends DocenteMenuSemestreOption>(
+  semestresInput: T[],
+) {
+  const semestres = sortDocenteMenuSemestresAsc(
+    semestresInput.filter((semestre) => Boolean(semestre?.id)),
+  );
+  const response = await dataConnect.executeGraphql<
+    { appSettings: DataConnectAppSetting[] },
+    Record<string, never>
+  >(LIST_APP_SETTINGS_QUERY);
+  const settings = buildSettingsResponse(response.data.appSettings ?? []);
+  const currentSemestre =
+    semestres.find((semestre) => semestre.id === settings.general.semestreActualId) ??
+    semestres.find((semestre) => String(semestre.titulo ?? "").trim() === "2026-1") ??
+    semestres[semestres.length - 1] ??
+    null;
+
+  const selected = currentSemestre ? [currentSemestre] : [];
+  if (currentSemestre && settings.general.usarListasSemestreAnteriorDocentes) {
+    const currentIndex = semestres.findIndex((semestre) => semestre.id === currentSemestre.id);
+    const previousSemestre = currentIndex > 0 ? semestres[currentIndex - 1] : null;
+    if (previousSemestre) selected.push(previousSemestre);
+  }
+
+  const semestreIds = selected.map((semestre) => semestre.id);
+  const semestreTitulos = selected.map((semestre) => String(semestre.titulo ?? "").trim()).filter(Boolean);
+  const orderById = new Map<number, number>();
+  semestreIds.forEach((id, index) => orderById.set(id, index));
+
+  return {
+    semestreIds,
+    semestreTitulos,
+    currentSemestreId: currentSemestre?.id ?? null,
+    currentSemestreTitulo: currentSemestre?.titulo ?? null,
+    orderById,
+  };
+}
+
 export const getAppSettings = https.onCall(async (_data, context) => {
   requireAuthenticated(context);
 
@@ -412,6 +539,17 @@ export const saveAppSettings = https.onCall(async (data, context) => {
   const formularioMatriculaAceptaRespuestas = Boolean(
     formularioMatricula?.aceptaRespuestas,
   );
+  const formularioMatriculaSiguienteAceptaRespuestas = Boolean(
+    formularioMatricula?.siguienteAceptaRespuestas,
+  );
+  const formularioMatriculaFondoColor = normalizeHexColor(
+    formularioMatricula?.fondoColor,
+    DEFAULT_SETTINGS.formularioMatricula.fondoColor,
+  );
+  const formularioMatriculaSiguienteFondoColor = normalizeHexColor(
+    formularioMatricula?.siguienteFondoColor,
+    DEFAULT_SETTINGS.formularioMatricula.siguienteFondoColor,
+  );
   const semestreActualIdRaw = Number(general?.semestreActualId ?? formularioMatricula?.semestreId);
   const semestreActualId = Number.isFinite(semestreActualIdRaw) && semestreActualIdRaw > 0 ? semestreActualIdRaw : null;
   const semestresConsultaIdsRaw = Array.isArray(general?.semestresConsultaIds)
@@ -420,6 +558,8 @@ export const saveAppSettings = https.onCall(async (data, context) => {
   const semestresConsultaIds = semestresConsultaIdsRaw
     .map((id) => Number(id))
     .filter((id) => Number.isFinite(id) && id > 0);
+  const usarListasSemestreAnteriorDocentes =
+    general?.usarListasSemestreAnteriorDocentes !== false;
   const usarRecorteFotografiaComoAvatarEstudiantes = Boolean(
     visualizaciones?.usarRecorteFotografiaComoAvatarEstudiantes,
   );
@@ -458,8 +598,24 @@ export const saveAppSettings = https.onCall(async (data, context) => {
       JSON.stringify(normalizedSemestresConsultaIds),
     );
     await upsertSetting(
+      USE_PREVIOUS_SEMESTRE_DOCENTE_LISTS_KEY,
+      usarListasSemestreAnteriorDocentes,
+    );
+    await upsertSetting(
       MATRICULA_FORM_ACCEPTS_RESPONSES_KEY,
       formularioMatriculaAceptaRespuestas,
+    );
+    await upsertSetting(
+      MATRICULA_NEXT_FORM_ACCEPTS_RESPONSES_KEY,
+      formularioMatriculaSiguienteAceptaRespuestas,
+    );
+    await upsertSetting(
+      MATRICULA_FORM_BACKGROUND_COLOR_KEY,
+      formularioMatriculaFondoColor,
+    );
+    await upsertSetting(
+      MATRICULA_NEXT_FORM_BACKGROUND_COLOR_KEY,
+      formularioMatriculaSiguienteFondoColor,
     );
     await upsertSetting(
       MATRICULA_FORM_SEMESTRE_ID_KEY,
@@ -490,11 +646,15 @@ export const saveAppSettings = https.onCall(async (data, context) => {
           formularioMatriculaAceptaRespuestas: formularioMatriculaAceptaRespuestas,
           semestreActualId,
           semestresConsultaIds: normalizedSemestresConsultaIds,
+          usarListasSemestreAnteriorDocentes,
         },
         formularioMatricula: {
           aceptaRespuestas: formularioMatriculaAceptaRespuestas,
+          siguienteAceptaRespuestas: formularioMatriculaSiguienteAceptaRespuestas,
           semestreId: semestreActualId,
           activarReconocimientoDni,
+          fondoColor: formularioMatriculaFondoColor,
+          siguienteFondoColor: formularioMatriculaSiguienteFondoColor,
         },
         visualizaciones: {
           usarRecorteFotografiaComoAvatarEstudiantes,

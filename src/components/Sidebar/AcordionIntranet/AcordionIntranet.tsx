@@ -124,7 +124,7 @@ const buildDocenteRegistroItems = (
     const moduloName = getModuloMenuName(modulo);
     return {
       id: `registro-auxiliar-${modulo.id}`,
-      title: `Notas ${periodo} ${moduloName}`,
+      title: `Notas ${moduloName} ${periodo}`,
       path: `/intranet/registro-auxiliar?grupoModuloId=${modulo.id}`,
       icon: <FactCheckIcon />,
     };
@@ -142,7 +142,7 @@ const buildDocenteMatriculaItems = (
       || `Modulo ${modulo.moduloId}`;
     return {
       id: `matriculas-${modulo.id}`,
-      title: `Lista ${periodo} ${moduloName}`,
+      title: `Lista ${moduloName} ${periodo}`,
       path: `/intranet/matriculas?grupoModuloId=${modulo.id}`,
       icon: <AssignmentIcon />,
     };

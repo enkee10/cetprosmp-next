@@ -912,6 +912,30 @@ extend type Query {
     first: Matricula_FirstRow
   ): Matricula @fdc_generated(from: "Matricula", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `MatriculaCambioModulo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  matriculaCambioModulo(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: MatriculaCambioModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: MatriculaCambioModulo_FirstRow
+  ): MatriculaCambioModulo @fdc_generated(from: "MatriculaCambioModulo", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `MatriculaGrupo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   matriculaGrupo(
@@ -2945,6 +2969,40 @@ extend type Query {
     """
     having: Matricula_Having
   ): [Matricula!]! @fdc_generated(from: "Matricula", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `MatriculaCambioModulo` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  matriculaCambiosModulo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [MatriculaCambioModulo_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: MatriculaCambioModulo_Having
+  ): [MatriculaCambioModulo!]! @fdc_generated(from: "MatriculaCambioModulo", purpose: QUERY_MULTIPLE)
   """
   ✨ List `MatriculaGrupo` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

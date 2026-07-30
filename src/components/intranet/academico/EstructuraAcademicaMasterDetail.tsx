@@ -1200,16 +1200,6 @@ export default function EstructuraAcademicaMasterDetail({
                     <AddIcon fontSize="small" />
                   </IconButton>
                 ) : null}
-                {allowEdit ? (
-                  <IconButton
-                    size="small"
-                    title="Reutilizar modulo comun"
-                    disabled={actionLoading || !selectedModulo?.planId || reusableModulos.length === 0}
-                    onClick={() => setReuseDialog({ kind: 'modulo', value: '' })}
-                  >
-                    <LinkIcon fontSize="small" />
-                  </IconButton>
-                ) : null}
                 {allowDelete ? (
                   <IconButton size="small" title="Quitar modulo del plan" color="error" disabled={actionLoading || !selectedModulo?.planModuloId} onClick={handleDetachModulo}>
                     <DeleteOutlineIcon fontSize="small" />

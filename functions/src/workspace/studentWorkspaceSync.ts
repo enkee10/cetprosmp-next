@@ -67,6 +67,7 @@ type WorkspaceSyncOptions = {
   previousEmail?: string | null;
   createIfMissing?: boolean;
   createPassword?: string | null;
+  preferPatchFirst?: boolean;
 };
 
 type WorkspaceDirectoryClient = {
@@ -734,6 +735,16 @@ export async function syncStudentToWorkspace(
   const shouldRenamePrimaryEmail = Boolean(previousEmail) && previousEmail !== currentEmail;
   let effectiveUserKeyForPhoto = currentEmail;
 
+  const finishExistingUserUpdate = async (userKey: string) => {
+    const response = await directory.users.patch({
+      userKey,
+      requestBody: payload,
+    });
+    effectiveUserKeyForPhoto = response.data.id || response.data.primaryEmail || currentEmail;
+    await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar);
+    await syncWorkspaceRoleGroupsInternal(directory, currentEmail, context.roleId ?? null);
+  };
+
   if (!createIfMissing) {
     const updateExisting = async (userKey: string) => {
       const response = await directory.users.patch({
@@ -781,6 +792,20 @@ export async function syncStudentToWorkspace(
     await syncWorkspaceAvatar(directory, effectiveUserKeyForPhoto, context.avatar);
     await syncWorkspaceRoleGroupsInternal(directory, currentEmail, context.roleId ?? null);
     return;
+  }
+
+  if (options?.preferPatchFirst && !shouldRenamePrimaryEmail) {
+    try {
+      await finishExistingUserUpdate(currentEmail);
+      return;
+    } catch (error: unknown) {
+      const { status, reason } = getWorkspaceErrorMeta(error);
+      const notFound =
+        status === 404
+        || reason.includes("notfound")
+        || reason.includes("resource not found");
+      if (!notFound) throw error;
+    }
   }
 
   try {

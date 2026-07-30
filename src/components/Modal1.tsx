@@ -98,12 +98,7 @@ export default function Modal1({
     };
   }, [isDragging]);
 
-  const handleTitlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0) return;
-
-    const target = event.target as HTMLElement;
-    if (target.closest('button')) return;
-
+  const beginDrag = (event: ReactPointerEvent<HTMLElement>) => {
     event.preventDefault();
     dragStartRef.current = {
       pointerX: event.clientX,
@@ -114,6 +109,22 @@ export default function Modal1({
     prevBodyUserSelectRef.current = document.body.style.userSelect;
     document.body.style.userSelect = 'none';
     setIsDragging(true);
+  };
+
+  const handleTitlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+
+    const target = event.target as HTMLElement;
+    if (target.closest('button')) return;
+
+    beginDrag(event);
+  };
+
+  const handleContentPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+    if (event.target !== event.currentTarget) return;
+
+    beginDrag(event);
   };
 
   useEffect(() => {
@@ -228,15 +239,17 @@ export default function Modal1({
       </DialogTitle>
       <DialogContent
         ref={contentRef}
+        onPointerDown={handleContentPointerDown}
         sx={{
           p: 2,
           width: '100%',
           boxSizing: 'border-box',
           overflowY: 'auto',
           overscrollBehavior: 'contain',
+          cursor: isDragging ? 'grabbing' : 'grab',
         }}
       >
-        {children}
+        <Box sx={{ cursor: 'auto' }}>{children}</Box>
       </DialogContent>
     </Dialog>
   );

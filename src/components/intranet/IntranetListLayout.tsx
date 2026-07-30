@@ -69,11 +69,13 @@ const IntranetListLayout: React.FC<IntranetListLayoutProps> = ({
           <Box sx={{ minWidth: 0, flex: '1 1 auto' }}>{commands}</Box>
 
           {columnToggleItems ? (
-            <ColumnVisibilityControl
-              items={columnToggleItems}
-              label={columnToggleLabel}
-              onToggleColumn={onToggleColumn}
-            />
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              <ColumnVisibilityControl
+                items={columnToggleItems}
+                label={columnToggleLabel}
+                onToggleColumn={onToggleColumn}
+              />
+            </Box>
           ) : null}
         </Box>
       </Box>

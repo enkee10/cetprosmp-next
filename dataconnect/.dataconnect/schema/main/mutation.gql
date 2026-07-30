@@ -342,6 +342,15 @@ extend type Mutation {
     data: Matricula_Data!
   ): Matricula_KeyOutput! @fdc_generated(from: "Matricula", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `MatriculaCambioModulo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  matriculaCambioModulo_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: MatriculaCambioModulo_Data!
+  ): MatriculaCambioModulo_KeyOutput! @fdc_generated(from: "MatriculaCambioModulo", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `MatriculaGrupo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   matriculaGrupo_insert(
@@ -980,6 +989,15 @@ extend type Mutation {
     """
     data: [Matricula_Data!]!
   ): [Matricula_KeyOutput!]! @fdc_generated(from: "Matricula", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `MatriculaCambioModulo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  matriculaCambioModulo_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [MatriculaCambioModulo_Data!]!
+  ): [MatriculaCambioModulo_KeyOutput!]! @fdc_generated(from: "MatriculaCambioModulo", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `MatriculaGrupo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1620,6 +1638,15 @@ extend type Mutation {
     data: Matricula_Data!
   ): Matricula_KeyOutput! @fdc_generated(from: "Matricula", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `MatriculaCambioModulo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaCambioModulo`.
+  """
+  matriculaCambioModulo_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: MatriculaCambioModulo_Data!
+  ): MatriculaCambioModulo_KeyOutput! @fdc_generated(from: "MatriculaCambioModulo", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `MatriculaGrupo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaGrupo`.
   """
   matriculaGrupo_upsert(
@@ -2258,6 +2285,15 @@ extend type Mutation {
     """
     data: [Matricula_Data!]!
   ): [Matricula_KeyOutput!]! @fdc_generated(from: "Matricula", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `MatriculaCambioModulo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaCambioModulo`.
+  """
+  matriculaCambioModulo_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [MatriculaCambioModulo_Data!]!
+  ): [MatriculaCambioModulo_KeyOutput!]! @fdc_generated(from: "MatriculaCambioModulo", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `MatriculaGrupo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaGrupo`.
   """
@@ -3657,6 +3693,35 @@ extend type Mutation {
     """
     data: Matricula_Data!
   ): Matricula_KeyOutput @fdc_generated(from: "Matricula", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `MatriculaCambioModulo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `MatriculaCambioModulo` or `null` if not found.
+  """
+  matriculaCambioModulo_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: MatriculaCambioModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: MatriculaCambioModulo_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: MatriculaCambioModulo_Data!
+  ): MatriculaCambioModulo_KeyOutput @fdc_generated(from: "MatriculaCambioModulo", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `MatriculaGrupo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `MatriculaGrupo` or `null` if not found.
   """
@@ -5287,6 +5352,25 @@ extend type Mutation {
     data: Matricula_Data!
   ): Int! @fdc_generated(from: "Matricula", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `MatriculaCambioModulo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  matriculaCambioModulo_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: MatriculaCambioModulo_Data!
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `MatriculaGrupo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   matriculaGrupo_updateMany(
@@ -6826,6 +6910,30 @@ extend type Mutation {
     first: Matricula_FirstRow
   ): Matricula_KeyOutput @fdc_generated(from: "Matricula", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `MatriculaCambioModulo` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  matriculaCambioModulo_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: MatriculaCambioModulo_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: MatriculaCambioModulo_FirstRow
+  ): MatriculaCambioModulo_KeyOutput @fdc_generated(from: "MatriculaCambioModulo", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `MatriculaGrupo` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   matriculaGrupo_delete(
@@ -8099,6 +8207,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Matricula", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `MatriculaCambioModulo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  matriculaCambioModulo_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: MatriculaCambioModulo_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "MatriculaCambioModulo", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `MatriculaGrupo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

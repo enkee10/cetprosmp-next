@@ -328,6 +328,11 @@ export interface ListUsersData {
   } & User_Key)[];
 }
 
+export interface MatriculaCambioModulo_Key {
+  id: number;
+  __typename?: 'MatriculaCambioModulo_Key';
+}
+
 export interface MatriculaGrupo_Key {
   matriculaId: number;
   grupoId: number;

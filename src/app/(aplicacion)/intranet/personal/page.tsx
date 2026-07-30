@@ -347,7 +347,9 @@ export default function PersonalPage() {
       {
         field: 'avatar',
         headerName: 'Avatar',
-        width: 60,
+        width: 68,
+        minWidth: 68,
+        maxWidth: 68,
         sortable: false,
         filterable: false,
         renderCell: (params) => {
@@ -360,13 +362,23 @@ export default function PersonalPage() {
                 height: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'flex-start',
+                justifyContent: 'center',
+                py: 0,
               }}
             >
               <Avatar
                 src={avatarSrc}
                 alt={row.userUsername || 'Personal'}
-                imgProps={{ referrerPolicy: 'no-referrer' }}
+                sx={{
+                  width: 48,
+                  height: 48,
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  bgcolor: 'transparent',
+                  background: 'linear-gradient(180deg, #8fd8ff 0%, #ffffff 100%)',
+                }}
+                imgProps={{ referrerPolicy: 'no-referrer', style: { objectFit: 'contain' } }}
               >
                 {(row.userUsername || 'P').trim().slice(0, 1).toUpperCase()}
               </Avatar>

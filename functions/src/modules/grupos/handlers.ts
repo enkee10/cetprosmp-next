@@ -499,15 +499,6 @@ const sortPaqueteModulos = (items: DataConnectPaqueteModulo[]) =>
     .slice()
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId);
 
-const sortGrupos = (items: DataConnectGrupo[]) =>
-  items
-    .slice()
-    .sort((a, b) =>
-      String(a.nombreDisplay ?? "").localeCompare(String(b.nombreDisplay ?? ""), "es", { numeric: true }) ||
-      (a.grupoOrd ?? 0) - (b.grupoOrd ?? 0) ||
-      a.id - b.id,
-    );
-
 const sortGrupoModulos = (items: DataConnectGrupoModulo[]) =>
   items
     .slice()
@@ -515,6 +506,31 @@ const sortGrupoModulos = (items: DataConnectGrupoModulo[]) =>
       (a.orden ?? 0) - (b.orden ?? 0) ||
       a.moduloId - b.moduloId ||
       (a.instancia ?? 1) - (b.instancia ?? 1),
+    );
+
+const getGrupoEspecialidadOrden = (grupoModulos: DataConnectGrupoModulo[]) => {
+  const values = grupoModulos
+    .map((item) => item.modulo?.plan?.carrera?.especialidad?.orden)
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  return values.length > 0 ? Math.min(...values) : Number.MAX_SAFE_INTEGER;
+};
+
+const getGrupoModuloOrden = (grupoModulos: DataConnectGrupoModulo[]) => {
+  const values = grupoModulos
+    .map((item) => item.modulo?.orden)
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  return values.length > 0 ? Math.min(...values) : Number.MAX_SAFE_INTEGER;
+};
+
+const sortGruposWithModulos = (items: Array<DataConnectGrupo & { grupoModulos?: DataConnectGrupoModulo[] }>) =>
+  items
+    .slice()
+    .sort((a, b) =>
+      getGrupoEspecialidadOrden(a.grupoModulos ?? []) - getGrupoEspecialidadOrden(b.grupoModulos ?? []) ||
+      getGrupoModuloOrden(a.grupoModulos ?? []) - getGrupoModuloOrden(b.grupoModulos ?? []) ||
+      String(a.nombreDisplay ?? "").localeCompare(String(b.nombreDisplay ?? ""), "es", { numeric: true }) ||
+      (a.grupoOrd ?? 0) - (b.grupoOrd ?? 0) ||
+      a.id - b.id,
     );
 
 interface GrupoModuloDetalleInput {
@@ -844,7 +860,7 @@ function attachGrupoModulos(
     modulosByGrupoId.set(item.grupoId, current);
   }
 
-  return sortGrupos(grupos).map((grupo) => {
+  const gruposConModulos = grupos.map((grupo) => {
     const items = sortGrupoModulos(modulosByGrupoId.get(grupo.id) ?? []);
     return {
       ...grupo,
@@ -852,6 +868,7 @@ function attachGrupoModulos(
       moduloIds: items.map((item) => item.moduloId),
     };
   });
+  return sortGruposWithModulos(gruposConModulos);
 }
 
 export const listGrupos = https.onCall(async (_data, context) => {

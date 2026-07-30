@@ -3,9 +3,13 @@ export {
   registerUser,
   resolveLoginEmail,
   getMyProfile,
+  listUserGrupoModuloHistorial,
   listUsers,
   createNewUser,
   updateUserProfile,
+  clearStudentAvatarLinks,
+  deleteUserAvatarImage,
+  deleteUserDniImage,
   deleteUser,
 } from "./users/handlers.js";
 export {
@@ -160,6 +164,7 @@ export {
   onMatriculaAvatarExtractionJobCreated,
   onMatriculaDocumentoProcessingJobCreated,
   updateMatriculaFormulario,
+  verificarMatriculaGemini,
   verificarMatriculaOcrSimple,
   verificarMatriculaReniec,
 } from "./matriculas/handlers.js";

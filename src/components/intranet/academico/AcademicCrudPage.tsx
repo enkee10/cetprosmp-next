@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Stack } from '@mui/material';
-import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
+import {
+  GridColDef,
+  GridColumnVisibilityModel,
+  GridPaginationModel,
+} from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -16,12 +20,24 @@ import { AcademicEntityForm, AcademicFieldConfig } from './AcademicEntityForm';
 
 type AcademicRow = Record<string, unknown> & { id: number };
 
+const selectMenuProps = {
+  disableScrollLock: true,
+};
+
 export interface AcademicColumnConfig {
   field: string;
   headerName: string;
   flex?: number;
+  width?: number;
   minWidth?: number;
+  maxWidth?: number;
   hidden?: boolean;
+  align?: GridColDef['align'];
+  headerAlign?: GridColDef['headerAlign'];
+  sortable?: boolean;
+  filterable?: boolean;
+  disableColumnMenu?: boolean;
+  renderCell?: GridColDef<AcademicRow>['renderCell'];
 }
 
 interface AcademicCrudPageProps {
@@ -40,6 +56,7 @@ interface AcademicCrudPageProps {
   labelField: string;
   modalMaxWidth?: number | string;
   semestreFilter?: boolean;
+  defaultPageSize?: number;
 }
 
 interface SemestreFilterOption {
@@ -138,6 +155,7 @@ export function AcademicCrudPage({
   labelField,
   modalMaxWidth = 720,
   semestreFilter = false,
+  defaultPageSize = 30,
 }: AcademicCrudPageProps) {
   const [rows, setRows] = useState<AcademicRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,7 +167,7 @@ export function AcademicCrudPage({
   const [menuRowId, setMenuRowId] = useState<string | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
-    pageSize: 15,
+    pageSize: defaultPageSize,
   });
   const [selectedSemestreId, setSelectedSemestreId] = useState('');
   const [columnVisibilityModel, setColumnVisibilityModel] =
@@ -259,9 +277,17 @@ export function AcademicCrudPage({
       ...columnConfigs.map<GridColDef>((column) => ({
         field: column.field,
         headerName: column.headerName,
-        flex: column.flex ?? 1,
+        flex: column.width ? undefined : column.flex ?? 1,
+        width: column.width,
         minWidth: column.minWidth ?? 140,
+        maxWidth: column.maxWidth,
+        align: column.align,
+        headerAlign: column.headerAlign,
+        sortable: column.sortable,
+        filterable: column.filterable,
+        disableColumnMenu: column.disableColumnMenu,
         type: fieldTypeByName.get(column.field) === 'number' ? 'number' : undefined,
+        renderCell: column.renderCell,
         valueGetter: (_value, row: AcademicRow) =>
           fieldTypeByName.get(column.field) === 'number'
             ? renderNumberCellValue(row[column.field])
@@ -347,13 +373,14 @@ export function AcademicCrudPage({
       commands={
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ sm: 'center' }}>
           {semestreFilter ? (
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 190 } }}>
+            <FormControl size="small" sx={{ width: { xs: '100%', sm: 150 } }}>
               <InputLabel>Semestre</InputLabel>
               <Select
                 label="Semestre"
                 value={selectedSemestreId}
                 onChange={(event) => setSelectedSemestreId(String(event.target.value))}
                 disabled={loading || semestreOptions.length === 0}
+                MenuProps={selectMenuProps}
               >
                 {semestreOptions.map((option) => (
                   <MenuItem key={option.id} value={String(option.id)}>

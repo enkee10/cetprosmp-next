@@ -170,11 +170,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
     const pathname = usePathname(); // obtiene la ruta actual para decidir redirecciones de autenticacion sin secuestrar la navegacion publica
 
     useEffect(() => { // sincroniza el contexto con el estado real de Firebase Auth
+        let active = true;
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => { // escucha cambios de sesion del usuario autenticado
+            if (!active) return;
             setLoading(true); // activa el estado de carga mientras se resuelve el nuevo estado de sesion
             if (firebaseUser) { // verifica si existe un usuario autenticado en Firebase
+                let fallbackUserData: UserData | null = null;
+                try {
+                    fallbackUserData = await loadFallbackUserDataFromFirebaseUser(firebaseUser);
+                    if (!active) return;
+                    if (canAccessIntranet(fallbackUserData.role, fallbackUserData.level, fallbackUserData.roleTitle)) {
+                        setUser(fallbackUserData);
+                        setAuthReady(true);
+                        setLoading(false);
+                    }
+                } catch (error) {
+                    if (!isExpectedAuthError(error)) {
+                        console.error('Error loading cached auth user:', error);
+                    }
+                }
                 try {
                     const userData = await loadUserDataFromFirebaseUser(firebaseUser); // construye el usuario con Auth, perfil y claims actualizados
+                    if (!active) return;
                     if (!canAccessIntranet(userData.role, userData.level, userData.roleTitle)) {
                         await signOut(auth);
                         setUser(null);
@@ -185,20 +202,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                     if (!isExpectedAuthError(error)) {
                         console.error('Error loading auth user:', error);
                     }
-                    const fallbackUserData = await loadFallbackUserDataFromFirebaseUser(firebaseUser);
-                    setUser((current) => {
-                        if (current?.uid === firebaseUser.uid) return current;
-                        return fallbackUserData;
-                    });
+                    if (!active) return;
+                    if (fallbackUserData && canAccessIntranet(fallbackUserData.role, fallbackUserData.level, fallbackUserData.roleTitle)) {
+                        setUser((current) => {
+                            if (current?.uid === firebaseUser.uid) return current;
+                            return fallbackUserData;
+                        });
+                    } else {
+                        setUser((current) => (current?.uid === firebaseUser.uid ? current : null));
+                    }
                 }
             } else { // maneja el caso en que no exista un usuario autenticado
+                if (!active) return;
                 setUser(null); // limpia el usuario del contexto al cerrar sesion
             }
             setLoading(false); // desactiva el estado de carga cuando termina la sincronizacion
             setAuthReady(true); // + marca que la sincronizacion inicial ya termino y la interfaz puede quedarse montada
         });
 
-        return () => unsubscribe(); // libera el listener de auth al desmontar el proveedor
+        return () => {
+            active = false;
+            unsubscribe();
+        }; // libera el listener de auth al desmontar el proveedor
     }, []); // ejecuta la sincronizacion inicial una sola vez
 
     useEffect(() => { // redirige una sola vez a intranet cuando ya existe una sesion valida con acceso

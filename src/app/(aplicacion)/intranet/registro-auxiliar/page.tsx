@@ -22,6 +22,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import SaveIcon from '@mui/icons-material/Save';
+import SearchIcon from '@mui/icons-material/Search';
 import { useSearchParams } from 'next/navigation';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -1200,6 +1201,11 @@ export default function RegistroAuxiliarPage() {
     setMessage('Matriz copiada al portapapeles.');
   };
 
+  const handleOpenPrintView = () => {
+    if (!registro || !grupoModuloId) return;
+    window.open(`/intranet/registro-auxiliar/imprimir?grupoModuloId=${encodeURIComponent(grupoModuloId)}`, '_blank', 'noopener,noreferrer');
+  };
+
   const handleSave = async () => {
     if (!registro || !grupoModuloId) return;
     setSaving(true);
@@ -1462,12 +1468,29 @@ export default function RegistroAuxiliarPage() {
             </FormControl>
           </>
         )}
-        <Button variant="outlined" startIcon={<ContentCopyIcon />} onClick={handleCopyNotas} disabled={!registro}>
-          Copiar
-        </Button>
-        <Button variant="contained" startIcon={saving ? <CircularProgress size={16} /> : <SaveIcon />} onClick={handleSave} disabled={!registro || saving || !canEditRegistro}>
-          Guardar
-        </Button>
+        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+          <Tooltip title="Copiar">
+            <span>
+              <IconButton color="primary" onClick={handleCopyNotas} disabled={!registro}>
+                <ContentCopyIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Vista previa">
+            <span>
+              <IconButton aria-label="Vista previa de impresion" color="primary" onClick={handleOpenPrintView} disabled={!registro}>
+                <SearchIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Guardar">
+            <span>
+              <IconButton color="primary" onClick={handleSave} disabled={!registro || saving || !canEditRegistro}>
+                {saving ? <CircularProgress size={20} /> : <SaveIcon />}
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Stack>
       </Stack>
 
       {error && <Alert severity="error" sx={{ mb: 1.5 }}>{error}</Alert>}

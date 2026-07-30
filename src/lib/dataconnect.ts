@@ -8,7 +8,20 @@ let emulatorConnected = false;
 
 const isEnabled = (value: string | undefined) => value === 'true' || value === '1' || value === 'yes' || value === 'si';
 
+const isBrowserLocalHost = () => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const hostname = window.location.hostname.toLowerCase();
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.localhost');
+};
+
 const shouldUseEmulator = () => {
+  if (!isBrowserLocalHost()) {
+    return false;
+  }
+
   if (process.env.NEXT_PUBLIC_USE_DATACONNECT_EMULATOR !== undefined) {
     return isEnabled(process.env.NEXT_PUBLIC_USE_DATACONNECT_EMULATOR);
   }

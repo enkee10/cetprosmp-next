@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import Link from 'next/link';
 import type { Publicacion } from '@/types/publicaciones';
+import { getStrapiMedia } from '@/lib/getStrapiMedia';
 
 type Props = { publicacion: Publicacion };
 
@@ -35,8 +36,9 @@ const PublicacionesCard: React.FC<Props> = ({ publicacion }) => {
 
   const imgFallback =
     process.env.NEXT_PUBLIC_DEFAULT_IMG_URL || '/imagenes/img-predeterminada.avif';
-  const imagen =
-    imagenPrincipal && imagenPrincipal.trim() !== '' ? imagenPrincipal : imgFallback;
+  const imagen = getStrapiMedia(
+    imagenPrincipal && imagenPrincipal.trim() !== '' ? imagenPrincipal : imgFallback,
+  );
   const contenidoTexto = typeof contenido === 'string' ? contenido : '';
 
   // Descripción: descripcionCorta (máx 15) → contenido (máx 15) → lorem (15)

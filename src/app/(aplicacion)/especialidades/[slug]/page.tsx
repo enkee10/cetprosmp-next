@@ -8,6 +8,7 @@ import Image from 'next/image';
 import RichText from '@/components/RichText';
 import ListaCarreras from '@/components/Carreras/ListaCarreras';
 import ListaModulos from '@/components/Modulos/ListaModulos';
+import { getStrapiMedia } from '@/lib/getStrapiMedia';
 
 // Fallback: 4 párrafos de 100 palabras
 const generarLorem = () => {
@@ -54,9 +55,11 @@ export default async function EspecialidadDetallePage({ params }: { params: Prom
   // ✅ Mejora: filtra valores nulos y genera URLs válidas
   const imagenesFinales: string[] =
     imagenes?.filter(Boolean).map((img: any) =>
-      typeof img === 'string'
-        ? img.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL
-        : img?.url?.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL
+      getStrapiMedia(
+        typeof img === 'string'
+          ? img.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL
+          : img?.url?.trim() || process.env.NEXT_PUBLIC_DEFAULT_IMG_URL,
+      )
     ) ?? [];
 
   if (imagenesFinales.length === 0) {

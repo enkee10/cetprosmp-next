@@ -118,7 +118,7 @@ export default function GruposPage() {
   const [menuGrupoId, setMenuGrupoId] = useState<string | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
-    pageSize: 15,
+    pageSize: 30,
   });
   const [selectedSemestreId, setSelectedSemestreId] = useState('');
   const [columnVisibilityModel, setColumnVisibilityModel] =
@@ -133,7 +133,7 @@ export default function GruposPage() {
       workspaceName: false,
       workspaceCorreo: false,
       estado: true,
-      archivado: true,
+      archivado: false,
       descripcion: false,
       actions: true,
     });
@@ -301,8 +301,9 @@ export default function GruposPage() {
       {
         field: 'estado',
         headerName: 'Estado',
-        flex: 0.32,
+        width: 80,
         minWidth: 55,
+        maxWidth: 80,
         valueGetter: (_value, row: Grupo) => row.estado || '',
       },
       {

@@ -1,7 +1,21 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Avatar, Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
+import {
+  Avatar,
+  Button,
+  Checkbox,
+  FormControl,
+  IconButton,
+  InputLabel,
+  ListItemText,
+  Menu,
+  MenuItem,
+  OutlinedInput,
+  Select,
+  Stack,
+} from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material/Select';
 import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
@@ -64,9 +78,10 @@ export default function PlanesPage() {
   const [planFormResetKey, setPlanFormResetKey] = useState(0);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuPlanId, setMenuPlanId] = useState<string | null>(null);
+  const [selectedPlanEstudioFilters, setSelectedPlanEstudioFilters] = useState<string[]>([]);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
-    pageSize: 15,
+    pageSize: 30,
   });
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
@@ -155,6 +170,26 @@ export default function PlanesPage() {
     [semestres],
   );
 
+  const planFilterOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          planes
+            .map((plan) => (plan.planEstudio || '').trim())
+            .filter(Boolean),
+        ),
+      ).sort((a, b) => b.localeCompare(a, 'es', { numeric: true })),
+    [planes],
+  );
+
+  const filteredPlanes = useMemo(
+    () =>
+      selectedPlanEstudioFilters.length > 0
+        ? planes.filter((plan) => selectedPlanEstudioFilters.includes((plan.planEstudio || '').trim()))
+        : planes,
+    [planes, selectedPlanEstudioFilters],
+  );
+
   useEffect(() => {
     void fetchPlanes();
   }, [fetchPlanes]);
@@ -176,6 +211,14 @@ export default function PlanesPage() {
   const handleCreatePlan = useCallback(() => {
     setEditingPlanId(null);
     setOpenPlanModal(true);
+  }, []);
+
+  const handlePlanFilterChange = useCallback((event: SelectChangeEvent<string[]>) => {
+    const rawValue = event.target.value;
+    const nextValue = typeof rawValue === 'string' ? rawValue.split(',') : rawValue;
+
+    setSelectedPlanEstudioFilters(nextValue.includes('__all__') ? [] : nextValue);
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
   }, []);
 
   const handleEditPlan = useCallback((id: string) => {
@@ -228,9 +271,9 @@ export default function PlanesPage() {
       {
         field: 'rowNumber',
         headerName: '#',
-        width: 56,
-        minWidth: 56,
-        maxWidth: 56,
+        width: 40,
+        minWidth: 40,
+        maxWidth: 40,
         align: 'center',
         headerAlign: 'center',
         sortable: false,
@@ -249,16 +292,18 @@ export default function PlanesPage() {
       {
         field: 'planEstudio',
         headerName: 'Plan Estudio',
-        flex: 0.9,
-        minWidth: 150,
+        width: 120,
+        minWidth: 120,
+        maxWidth: 120,
         valueGetter: (_value, row: Plan) => row.planEstudio || '',
       },
       {
         field: 'creditos',
         headerName: 'Creditos',
         type: 'number',
-        flex: 0.7,
-        minWidth: 110,
+        width: 70,
+        minWidth: 70,
+        maxWidth: 70,
         valueGetter: (_value, row: Plan) => (row.creditos != null ? row.creditos : null),
       },
       {
@@ -279,15 +324,17 @@ export default function PlanesPage() {
       {
         field: 'duracion',
         headerName: 'Duracion',
-        flex: 0.8,
-        minWidth: 120,
+        width: 100,
+        minWidth: 100,
+        maxWidth: 100,
         valueGetter: (_value, row: Plan) => row.duracion || '',
       },
       {
         field: 'resolucionTipo',
         headerName: 'Resolucion',
-        flex: 1,
-        minWidth: 180,
+        width: 170,
+        minWidth: 170,
+        maxWidth: 170,
         valueGetter: (_value, row: Plan) => formatResolucion(row),
       },
       {
@@ -410,7 +457,37 @@ export default function PlanesPage() {
       messageSeverity="error"
       title="Gestion de Planes"
       commands={
-        <Stack direction="row" spacing={1.5}>
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+          <FormControl size="small" sx={{ width: 150 }}>
+            <InputLabel id="planes-filter-label" shrink>
+              Plan de Estudios
+            </InputLabel>
+            <Select
+              labelId="planes-filter-label"
+              multiple
+              displayEmpty
+              value={selectedPlanEstudioFilters}
+              onChange={handlePlanFilterChange}
+              input={<OutlinedInput notched label="Plan de Estudios" />}
+              renderValue={(selected) => {
+                if (selected.length === 0) return 'Todos';
+                if (selected.length === 1) return selected[0];
+                return `${selected.length} planes seleccionados`;
+              }}
+              MenuProps={{ disableScrollLock: true }}
+            >
+              <MenuItem value="__all__">
+                <Checkbox checked={selectedPlanEstudioFilters.length === 0} />
+                <ListItemText primary="Todos" />
+              </MenuItem>
+              {planFilterOptions.map((planEstudio) => (
+                <MenuItem key={planEstudio} value={planEstudio}>
+                  <Checkbox checked={selectedPlanEstudioFilters.includes(planEstudio)} />
+                  <ListItemText primary={planEstudio} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Button variant="outlined" onClick={handleCreatePlan}>
             Crear Plan
           </Button>
@@ -423,7 +500,7 @@ export default function PlanesPage() {
       columnToggleLabel="Campos"
     >
       <IntranetDataGrid
-        rows={planes}
+        rows={filteredPlanes}
         columns={columns}
         columnVisibilityModel={columnVisibilityModel}
         onColumnVisibilityModelChange={setColumnVisibilityModel}
@@ -463,7 +540,7 @@ export default function PlanesPage() {
         open={openPlanModal}
         onClose={handleDismissPlanModal}
         title={editingPlanId ? 'Editar Plan' : 'Crear Plan'}
-        maxWidth={1000}
+        maxWidth="lg"
       >
         <PlanForm
           key={`${editingPlanId ?? 'new-plan'}-${planFormResetKey}`}

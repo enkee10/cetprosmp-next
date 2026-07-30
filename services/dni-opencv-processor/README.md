@@ -36,7 +36,7 @@ confianza, usa la metadata/posicion como respaldo.
 Guarda imagenes JPEG procesadas en:
 
 ```text
-matriculas/documentos-procesados/{dni}/{jobId}-{side}.jpg
+matriculas/documentos-procesados/{numero-documento}/{dni|ce}-{numero-documento}-procesado-{frente|reverso}.jpg
 ```
 
 Devuelve un JSON con `status: "completed"` y `outputs`. La Cloud Function que

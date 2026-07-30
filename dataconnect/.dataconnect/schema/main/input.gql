@@ -227,6 +227,12 @@ It has the same format as `Matricula_Key`, but is only used as mutation return v
 """
 scalar Matricula_KeyOutput
 """
+✨ `MatriculaCambioModulo_KeyOutput` returns the primary key fields of table type `MatriculaCambioModulo`.
+
+It has the same format as `MatriculaCambioModulo_Key`, but is only used as mutation return value.
+"""
+scalar MatriculaCambioModulo_KeyOutput
+"""
 ✨ `MatriculaGrupo_KeyOutput` returns the primary key fields of table type `MatriculaGrupo`.
 
 It has the same format as `MatriculaGrupo_Key`, but is only used as mutation return value.
@@ -14922,6 +14928,14 @@ input Grupo_Data {
   """
   grupoModulos_on_grupo: [GrupoModulo_Data!]
   """
+  ✨ Generated from Field `Grupo`.`matriculaCambiosModulo_on_grupoAnterior` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_grupoAnterior: [MatriculaCambioModulo_Data!]
+  """
+  ✨ Generated from Field `Grupo`.`matriculaCambiosModulo_on_grupoNuevo` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_grupoNuevo: [MatriculaCambioModulo_Data!]
+  """
   ✨ Generated from Field `Grupo`.`matriculaGrupos_on_grupo` of type `[MatriculaGrupo!]!`
   """
   matriculaGrupos_on_grupo: [MatriculaGrupo_Data!]
@@ -15050,6 +15064,14 @@ input Grupo_Filter {
   ✨ Generated from Field `Grupo`.`grupoModulos_on_grupo` of type `[GrupoModulo!]!`
   """
   grupoModulos_on_grupo: GrupoModulo_ListFilter
+  """
+  ✨ Generated from Field `Grupo`.`matriculaCambiosModulo_on_grupoAnterior` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_grupoAnterior: MatriculaCambioModulo_ListFilter
+  """
+  ✨ Generated from Field `Grupo`.`matriculaCambiosModulo_on_grupoNuevo` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_grupoNuevo: MatriculaCambioModulo_ListFilter
   """
   ✨ Generated from Field `Grupo`.`matriculaGrupos_on_grupo` of type `[MatriculaGrupo!]!`
   """
@@ -15861,6 +15883,14 @@ input GrupoModulo_Data {
   """
   grupoModuloUnidadesDidacticas_on_grupoModulo: [GrupoModuloUnidadDidactica_Data!]
   """
+  ✨ Generated from Field `GrupoModulo`.`matriculaCambiosModulo_on_grupoModuloAnterior` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_grupoModuloAnterior: [MatriculaCambioModulo_Data!]
+  """
+  ✨ Generated from Field `GrupoModulo`.`matriculaCambiosModulo_on_grupoModuloNuevo` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_grupoModuloNuevo: [MatriculaCambioModulo_Data!]
+  """
   ✨ Generated from Field `GrupoModulo`.`modulosEstudiantes_on_grupoModulo` of type `[ModuloEstudiante!]!`
   """
   modulosEstudiantes_on_grupoModulo: [ModuloEstudiante_Data!]
@@ -15957,6 +15987,14 @@ input GrupoModulo_Filter {
   ✨ Generated from Field `GrupoModulo`.`grupoModuloUnidadesDidacticas_on_grupoModulo` of type `[GrupoModuloUnidadDidactica!]!`
   """
   grupoModuloUnidadesDidacticas_on_grupoModulo: GrupoModuloUnidadDidactica_ListFilter
+  """
+  ✨ Generated from Field `GrupoModulo`.`matriculaCambiosModulo_on_grupoModuloAnterior` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_grupoModuloAnterior: MatriculaCambioModulo_ListFilter
+  """
+  ✨ Generated from Field `GrupoModulo`.`matriculaCambiosModulo_on_grupoModuloNuevo` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_grupoModuloNuevo: MatriculaCambioModulo_ListFilter
   """
   ✨ Generated from Field `GrupoModulo`.`modulosEstudiantes_on_grupoModulo` of type `[ModuloEstudiante!]!`
   """
@@ -18128,6 +18166,22 @@ input Matricula_Data {
   """
   fecha_update: [Timestamp_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Matricula`.`fechaActualizacion` of type `Timestamp`
+  """
+  fechaActualizacion: Timestamp
+  """
+  ✨ `_expr` server value variant of `fechaActualizacion` (✨ Generated from Field `Matricula`.`fechaActualizacion` of type `Timestamp`)
+  """
+  fechaActualizacion_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fechaActualizacion` (✨ Generated from Field `Matricula`.`fechaActualizacion` of type `Timestamp`)
+  """
+  fechaActualizacion_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaActualizacion` (✨ Generated from Field `Matricula`.`fechaActualizacion` of type `Timestamp`)
+  """
+  fechaActualizacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Matricula`.`recibo` of type `String`
   """
   recibo: String
@@ -18151,6 +18205,10 @@ input Matricula_Data {
   ✨ Generated from Field `Matricula`.`indicadoresCapacidadEstudiantes_on_matricula` of type `[IndicadorCapacidadEstudiante!]!`
   """
   indicadoresCapacidadEstudiantes_on_matricula: [IndicadorCapacidadEstudiante_Data!]
+  """
+  ✨ Generated from Field `Matricula`.`matriculaCambiosModulo_on_matricula` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_matricula: [MatriculaCambioModulo_Data!]
   """
   ✨ Generated from Field `Matricula`.`matriculaGrupos_on_matricula` of type `[MatriculaGrupo!]!`
   """
@@ -18245,6 +18303,10 @@ input Matricula_Filter {
   """
   fecha: Timestamp_Filter
   """
+  ✨ Generated from Field `Matricula`.`fechaActualizacion` of type `Timestamp`
+  """
+  fechaActualizacion: Timestamp_Filter
+  """
   ✨ Generated from Field `Matricula`.`recibo` of type `String`
   """
   recibo: String_Filter
@@ -18264,6 +18326,10 @@ input Matricula_Filter {
   ✨ Generated from Field `Matricula`.`indicadoresCapacidadEstudiantes_on_matricula` of type `[IndicadorCapacidadEstudiante!]!`
   """
   indicadoresCapacidadEstudiantes_on_matricula: IndicadorCapacidadEstudiante_ListFilter
+  """
+  ✨ Generated from Field `Matricula`.`matriculaCambiosModulo_on_matricula` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_matricula: MatriculaCambioModulo_ListFilter
   """
   ✨ Generated from Field `Matricula`.`matriculaGrupos_on_matricula` of type `[MatriculaGrupo!]!`
   """
@@ -18342,6 +18408,10 @@ input Matricula_Having {
   ✨ Generated from Field `Matricula`.`codigoInscripcion_count` of type `Int!`
   """
   codigoInscripcion_count: Int_Filter
+  """
+  ✨ Generated from Field `Matricula`.`fechaActualizacion_count` of type `Int!`
+  """
+  fechaActualizacion_count: Int_Filter
   """
   ✨ Generated from Field `Matricula`.`fecha_count` of type `Int!`
   """
@@ -18423,6 +18493,10 @@ input Matricula_Having {
   """
   userId_avg: Float_Filter
   """
+  ✨ Generated from Field `Matricula`.`fechaActualizacion_min` of type `Timestamp`
+  """
+  fechaActualizacion_min: Timestamp_Filter
+  """
   ✨ Generated from Field `Matricula`.`fecha_min` of type `Timestamp`
   """
   fecha_min: Timestamp_Filter
@@ -18450,6 +18524,10 @@ input Matricula_Having {
   ✨ Generated from Field `Matricula`.`userId_min` of type `Int`
   """
   userId_min: Int_Filter
+  """
+  ✨ Generated from Field `Matricula`.`fechaActualizacion_max` of type `Timestamp`
+  """
+  fechaActualizacion_max: Timestamp_Filter
   """
   ✨ Generated from Field `Matricula`.`fecha_max` of type `Timestamp`
   """
@@ -18566,6 +18644,10 @@ input Matricula_Order {
   """
   fecha: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`fechaActualizacion` of type `Timestamp`
+  """
+  fechaActualizacion: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`recibo` of type `String`
   """
   recibo: OrderDirection
@@ -18581,6 +18663,10 @@ input Matricula_Order {
   ✨ Generated from Field `Matricula`.`codigoInscripcion_count` of type `Int!`
   """
   codigoInscripcion_count: OrderDirection
+  """
+  ✨ Generated from Field `Matricula`.`fechaActualizacion_count` of type `Int!`
+  """
+  fechaActualizacion_count: OrderDirection
   """
   ✨ Generated from Field `Matricula`.`fecha_count` of type `Int!`
   """
@@ -18662,6 +18748,10 @@ input Matricula_Order {
   """
   userId_avg: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`fechaActualizacion_min` of type `Timestamp`
+  """
+  fechaActualizacion_min: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`fecha_min` of type `Timestamp`
   """
   fecha_min: OrderDirection
@@ -18690,6 +18780,10 @@ input Matricula_Order {
   """
   userId_min: OrderDirection
   """
+  ✨ Generated from Field `Matricula`.`fechaActualizacion_max` of type `Timestamp`
+  """
+  fechaActualizacion_max: OrderDirection
+  """
   ✨ Generated from Field `Matricula`.`fecha_max` of type `Timestamp`
   """
   fecha_max: OrderDirection
@@ -18715,6 +18809,929 @@ input Matricula_Order {
   semestreId_max: OrderDirection
   """
   ✨ Generated from Field `Matricula`.`userId_max` of type `Int`
+  """
+  userId_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'MatriculaCambioModulo'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input MatriculaCambioModulo_Data {
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `MatriculaCambioModulo`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `MatriculaCambioModulo`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId` of type `Int`
+  """
+  grupoAnteriorId: Int
+  """
+  ✨ `_expr` server value variant of `grupoAnteriorId` (✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId` of type `Int`)
+  """
+  grupoAnteriorId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoAnteriorId` (✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId` of type `Int`)
+  """
+  grupoAnteriorId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId` of type `Int`
+  """
+  grupoModuloAnteriorId: Int
+  """
+  ✨ `_expr` server value variant of `grupoModuloAnteriorId` (✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId` of type `Int`)
+  """
+  grupoModuloAnteriorId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoModuloAnteriorId` (✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId` of type `Int`)
+  """
+  grupoModuloAnteriorId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId` of type `Int`
+  """
+  grupoModuloNuevoId: Int
+  """
+  ✨ `_expr` server value variant of `grupoModuloNuevoId` (✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId` of type `Int`)
+  """
+  grupoModuloNuevoId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoModuloNuevoId` (✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId` of type `Int`)
+  """
+  grupoModuloNuevoId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId` of type `Int`
+  """
+  grupoNuevoId: Int
+  """
+  ✨ `_expr` server value variant of `grupoNuevoId` (✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId` of type `Int`)
+  """
+  grupoNuevoId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoNuevoId` (✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId` of type `Int`)
+  """
+  grupoNuevoId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int
+  """
+  ✨ `_expr` server value variant of `matriculaId` (✨ Generated from Field `MatriculaCambioModulo`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `matriculaId` (✨ Generated from Field `MatriculaCambioModulo`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId` of type `Int`
+  """
+  moduloAnteriorId: Int
+  """
+  ✨ `_expr` server value variant of `moduloAnteriorId` (✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId` of type `Int`)
+  """
+  moduloAnteriorId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `moduloAnteriorId` (✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId` of type `Int`)
+  """
+  moduloAnteriorId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId` of type `Int`
+  """
+  moduloNuevoId: Int
+  """
+  ✨ `_expr` server value variant of `moduloNuevoId` (✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId` of type `Int`)
+  """
+  moduloNuevoId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `moduloNuevoId` (✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId` of type `Int`)
+  """
+  moduloNuevoId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId` of type `Int`
+  """
+  registradoPorId: Int
+  """
+  ✨ `_expr` server value variant of `registradoPorId` (✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId` of type `Int`)
+  """
+  registradoPorId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `registradoPorId` (✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId` of type `Int`)
+  """
+  registradoPorId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId` of type `Int`
+  """
+  semestreId: Int
+  """
+  ✨ `_expr` server value variant of `semestreId` (✨ Generated from Field `MatriculaCambioModulo`.`semestreId` of type `Int`)
+  """
+  semestreId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `semestreId` (✨ Generated from Field `MatriculaCambioModulo`.`semestreId` of type `Int`)
+  """
+  semestreId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId` of type `Int`
+  """
+  userId: Int
+  """
+  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `MatriculaCambioModulo`.`userId` of type `Int`)
+  """
+  userId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `userId` (✨ Generated from Field `MatriculaCambioModulo`.`userId` of type `Int`)
+  """
+  userId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnterior` of type `Grupo`
+  """
+  grupoAnterior: Grupo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnterior` of type `GrupoModulo`
+  """
+  grupoModuloAnterior: GrupoModulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevo` of type `GrupoModulo`
+  """
+  grupoModuloNuevo: GrupoModulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevo` of type `Grupo`
+  """
+  grupoNuevo: Grupo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnterior` of type `Modulo`
+  """
+  moduloAnterior: Modulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevo` of type `Modulo`
+  """
+  moduloNuevo: Modulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPor` of type `User`
+  """
+  registradoPor: User_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestre` of type `Semestre`
+  """
+  semestre: Semestre_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`user` of type `User`
+  """
+  user: User_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio` of type `Timestamp`
+  """
+  fechaCambio: Timestamp
+  """
+  ✨ `_expr` server value variant of `fechaCambio` (✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio` of type `Timestamp`)
+  """
+  fechaCambio_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fechaCambio` (✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio` of type `Timestamp`)
+  """
+  fechaCambio_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaCambio` (✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio` of type `Timestamp`)
+  """
+  fechaCambio_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'MatriculaCambioModulo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input MatriculaCambioModulo_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [MatriculaCambioModulo_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: MatriculaCambioModulo_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [MatriculaCambioModulo_Filter!]
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId` of type `Int`
+  """
+  grupoAnteriorId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId` of type `Int`
+  """
+  grupoModuloAnteriorId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId` of type `Int`
+  """
+  grupoModuloNuevoId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId` of type `Int`
+  """
+  grupoNuevoId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId` of type `Int`
+  """
+  moduloAnteriorId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId` of type `Int`
+  """
+  moduloNuevoId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId` of type `Int`
+  """
+  registradoPorId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId` of type `Int`
+  """
+  semestreId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId` of type `Int`
+  """
+  userId: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnterior` of type `Grupo`
+  """
+  grupoAnterior: Grupo_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnterior` of type `GrupoModulo`
+  """
+  grupoModuloAnterior: GrupoModulo_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevo` of type `GrupoModulo`
+  """
+  grupoModuloNuevo: GrupoModulo_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevo` of type `Grupo`
+  """
+  grupoNuevo: Grupo_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnterior` of type `Modulo`
+  """
+  moduloAnterior: Modulo_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevo` of type `Modulo`
+  """
+  moduloNuevo: Modulo_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPor` of type `User`
+  """
+  registradoPor: User_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestre` of type `Semestre`
+  """
+  semestre: Semestre_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`user` of type `User`
+  """
+  user: User_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio` of type `Timestamp`
+  """
+  fechaCambio: Timestamp_Filter
+}
+"""
+✨ Generated first-row input type for table 'MatriculaCambioModulo'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input MatriculaCambioModulo_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [MatriculaCambioModulo_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: MatriculaCambioModulo_Filter
+}
+"""
+✨ Generated having input type for table 'MatriculaCambioModulo'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input MatriculaCambioModulo_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [MatriculaCambioModulo_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: MatriculaCambioModulo_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [MatriculaCambioModulo_Having!]
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio_count` of type `Int!`
+  """
+  fechaCambio_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId_count` of type `Int!`
+  """
+  grupoAnteriorId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId_count` of type `Int!`
+  """
+  grupoModuloAnteriorId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId_count` of type `Int!`
+  """
+  grupoModuloNuevoId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId_count` of type `Int!`
+  """
+  grupoNuevoId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId_count` of type `Int!`
+  """
+  matriculaId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId_count` of type `Int!`
+  """
+  moduloAnteriorId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId_count` of type `Int!`
+  """
+  moduloNuevoId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId_count` of type `Int!`
+  """
+  registradoPorId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId_count` of type `Int!`
+  """
+  semestreId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId_count` of type `Int!`
+  """
+  userId_count: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId_sum` of type `Int`
+  """
+  grupoAnteriorId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId_sum` of type `Int`
+  """
+  grupoModuloAnteriorId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId_sum` of type `Int`
+  """
+  grupoModuloNuevoId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId_sum` of type `Int`
+  """
+  grupoNuevoId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId_sum` of type `Int`
+  """
+  matriculaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId_sum` of type `Int`
+  """
+  moduloAnteriorId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId_sum` of type `Int`
+  """
+  moduloNuevoId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId_sum` of type `Int`
+  """
+  registradoPorId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId_sum` of type `Int`
+  """
+  semestreId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId_sum` of type `Int`
+  """
+  userId_sum: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId_avg` of type `Float`
+  """
+  grupoAnteriorId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId_avg` of type `Float`
+  """
+  grupoModuloAnteriorId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId_avg` of type `Float`
+  """
+  grupoModuloNuevoId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId_avg` of type `Float`
+  """
+  grupoNuevoId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId_avg` of type `Float`
+  """
+  matriculaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId_avg` of type `Float`
+  """
+  moduloAnteriorId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId_avg` of type `Float`
+  """
+  moduloNuevoId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId_avg` of type `Float`
+  """
+  registradoPorId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId_avg` of type `Float`
+  """
+  semestreId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId_avg` of type `Float`
+  """
+  userId_avg: Float_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio_min` of type `Timestamp`
+  """
+  fechaCambio_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId_min` of type `Int`
+  """
+  grupoAnteriorId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId_min` of type `Int`
+  """
+  grupoModuloAnteriorId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId_min` of type `Int`
+  """
+  grupoModuloNuevoId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId_min` of type `Int`
+  """
+  grupoNuevoId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId_min` of type `Int`
+  """
+  matriculaId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId_min` of type `Int`
+  """
+  moduloAnteriorId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId_min` of type `Int`
+  """
+  moduloNuevoId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId_min` of type `Int`
+  """
+  registradoPorId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId_min` of type `Int`
+  """
+  semestreId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId_min` of type `Int`
+  """
+  userId_min: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio_max` of type `Timestamp`
+  """
+  fechaCambio_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId_max` of type `Int`
+  """
+  grupoAnteriorId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId_max` of type `Int`
+  """
+  grupoModuloAnteriorId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId_max` of type `Int`
+  """
+  grupoModuloNuevoId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId_max` of type `Int`
+  """
+  grupoNuevoId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId_max` of type `Int`
+  """
+  matriculaId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId_max` of type `Int`
+  """
+  moduloAnteriorId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId_max` of type `Int`
+  """
+  moduloNuevoId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId_max` of type `Int`
+  """
+  registradoPorId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId_max` of type `Int`
+  """
+  semestreId_max: Int_Filter
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId_max` of type `Int`
+  """
+  userId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'MatriculaCambioModulo'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input MatriculaCambioModulo_Key {
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `MatriculaCambioModulo`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'MatriculaCambioModulo'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input MatriculaCambioModulo_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: MatriculaCambioModulo_Filter
+}
+"""
+✨ Generated order input type for table 'MatriculaCambioModulo'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input MatriculaCambioModulo_Order {
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId` of type `Int`
+  """
+  grupoAnteriorId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId` of type `Int`
+  """
+  grupoModuloAnteriorId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId` of type `Int`
+  """
+  grupoModuloNuevoId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId` of type `Int`
+  """
+  grupoNuevoId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId` of type `Int!`
+  """
+  matriculaId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId` of type `Int`
+  """
+  moduloAnteriorId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId` of type `Int`
+  """
+  moduloNuevoId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId` of type `Int`
+  """
+  registradoPorId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId` of type `Int`
+  """
+  semestreId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId` of type `Int`
+  """
+  userId: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnterior` of type `Grupo`
+  """
+  grupoAnterior: Grupo_Order
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnterior` of type `GrupoModulo`
+  """
+  grupoModuloAnterior: GrupoModulo_Order
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevo` of type `GrupoModulo`
+  """
+  grupoModuloNuevo: GrupoModulo_Order
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevo` of type `Grupo`
+  """
+  grupoNuevo: Grupo_Order
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Order
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnterior` of type `Modulo`
+  """
+  moduloAnterior: Modulo_Order
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevo` of type `Modulo`
+  """
+  moduloNuevo: Modulo_Order
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPor` of type `User`
+  """
+  registradoPor: User_Order
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestre` of type `Semestre`
+  """
+  semestre: Semestre_Order
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`user` of type `User`
+  """
+  user: User_Order
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio` of type `Timestamp`
+  """
+  fechaCambio: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio_count` of type `Int!`
+  """
+  fechaCambio_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId_count` of type `Int!`
+  """
+  grupoAnteriorId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId_count` of type `Int!`
+  """
+  grupoModuloAnteriorId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId_count` of type `Int!`
+  """
+  grupoModuloNuevoId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId_count` of type `Int!`
+  """
+  grupoNuevoId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId_count` of type `Int!`
+  """
+  matriculaId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId_count` of type `Int!`
+  """
+  moduloAnteriorId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId_count` of type `Int!`
+  """
+  moduloNuevoId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId_count` of type `Int!`
+  """
+  registradoPorId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId_count` of type `Int!`
+  """
+  semestreId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId_count` of type `Int!`
+  """
+  userId_count: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId_sum` of type `Int`
+  """
+  grupoAnteriorId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId_sum` of type `Int`
+  """
+  grupoModuloAnteriorId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId_sum` of type `Int`
+  """
+  grupoModuloNuevoId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId_sum` of type `Int`
+  """
+  grupoNuevoId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId_sum` of type `Int`
+  """
+  matriculaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId_sum` of type `Int`
+  """
+  moduloAnteriorId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId_sum` of type `Int`
+  """
+  moduloNuevoId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId_sum` of type `Int`
+  """
+  registradoPorId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId_sum` of type `Int`
+  """
+  semestreId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId_sum` of type `Int`
+  """
+  userId_sum: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId_avg` of type `Float`
+  """
+  grupoAnteriorId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId_avg` of type `Float`
+  """
+  grupoModuloAnteriorId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId_avg` of type `Float`
+  """
+  grupoModuloNuevoId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId_avg` of type `Float`
+  """
+  grupoNuevoId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId_avg` of type `Float`
+  """
+  matriculaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId_avg` of type `Float`
+  """
+  moduloAnteriorId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId_avg` of type `Float`
+  """
+  moduloNuevoId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId_avg` of type `Float`
+  """
+  registradoPorId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId_avg` of type `Float`
+  """
+  semestreId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId_avg` of type `Float`
+  """
+  userId_avg: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio_min` of type `Timestamp`
+  """
+  fechaCambio_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId_min` of type `Int`
+  """
+  grupoAnteriorId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId_min` of type `Int`
+  """
+  grupoModuloAnteriorId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId_min` of type `Int`
+  """
+  grupoModuloNuevoId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId_min` of type `Int`
+  """
+  grupoNuevoId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId_min` of type `Int`
+  """
+  matriculaId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId_min` of type `Int`
+  """
+  moduloAnteriorId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId_min` of type `Int`
+  """
+  moduloNuevoId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId_min` of type `Int`
+  """
+  registradoPorId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId_min` of type `Int`
+  """
+  semestreId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId_min` of type `Int`
+  """
+  userId_min: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`fechaCambio_max` of type `Timestamp`
+  """
+  fechaCambio_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoAnteriorId_max` of type `Int`
+  """
+  grupoAnteriorId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloAnteriorId_max` of type `Int`
+  """
+  grupoModuloAnteriorId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoModuloNuevoId_max` of type `Int`
+  """
+  grupoModuloNuevoId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`grupoNuevoId_max` of type `Int`
+  """
+  grupoNuevoId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`matriculaId_max` of type `Int`
+  """
+  matriculaId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloAnteriorId_max` of type `Int`
+  """
+  moduloAnteriorId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`moduloNuevoId_max` of type `Int`
+  """
+  moduloNuevoId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`registradoPorId_max` of type `Int`
+  """
+  registradoPorId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`semestreId_max` of type `Int`
+  """
+  semestreId_max: OrderDirection
+  """
+  ✨ Generated from Field `MatriculaCambioModulo`.`userId_max` of type `Int`
   """
   userId_max: OrderDirection
 }
@@ -20043,6 +21060,14 @@ input Modulo_Data {
   """
   grupoModulos_on_modulo: [GrupoModulo_Data!]
   """
+  ✨ Generated from Field `Modulo`.`matriculaCambiosModulo_on_moduloAnterior` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_moduloAnterior: [MatriculaCambioModulo_Data!]
+  """
+  ✨ Generated from Field `Modulo`.`matriculaCambiosModulo_on_moduloNuevo` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_moduloNuevo: [MatriculaCambioModulo_Data!]
+  """
   ✨ Generated from Field `Modulo`.`modulosEstudiantes_on_modulo` of type `[ModuloEstudiante!]!`
   """
   modulosEstudiantes_on_modulo: [ModuloEstudiante_Data!]
@@ -20155,6 +21180,14 @@ input Modulo_Filter {
   ✨ Generated from Field `Modulo`.`grupoModulos_on_modulo` of type `[GrupoModulo!]!`
   """
   grupoModulos_on_modulo: GrupoModulo_ListFilter
+  """
+  ✨ Generated from Field `Modulo`.`matriculaCambiosModulo_on_moduloAnterior` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_moduloAnterior: MatriculaCambioModulo_ListFilter
+  """
+  ✨ Generated from Field `Modulo`.`matriculaCambiosModulo_on_moduloNuevo` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_moduloNuevo: MatriculaCambioModulo_ListFilter
   """
   ✨ Generated from Field `Modulo`.`modulosEstudiantes_on_modulo` of type `[ModuloEstudiante!]!`
   """
@@ -28280,6 +29313,10 @@ input Semestre_Data {
   """
   matriculas_on_semestre: [Matricula_Data!]
   """
+  ✨ Generated from Field `Semestre`.`matriculaCambiosModulo_on_semestre` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_semestre: [MatriculaCambioModulo_Data!]
+  """
   ✨ Generated from Field `Semestre`.`planes_on_periodoVigencia` of type `[Plan!]!`
   """
   planes_on_periodoVigencia: [Plan_Data!]
@@ -28388,6 +29425,10 @@ input Semestre_Filter {
   ✨ Generated from Field `Semestre`.`matriculas_on_semestre` of type `[Matricula!]!`
   """
   matriculas_on_semestre: Matricula_ListFilter
+  """
+  ✨ Generated from Field `Semestre`.`matriculaCambiosModulo_on_semestre` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_semestre: MatriculaCambioModulo_ListFilter
   """
   ✨ Generated from Field `Semestre`.`planes_on_periodoVigencia` of type `[Plan!]!`
   """
@@ -31077,6 +32118,14 @@ input User_Data {
   """
   nombre_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `User`.`nombreColegio` of type `String`
+  """
+  nombreColegio: String
+  """
+  ✨ `_expr` server value variant of `nombreColegio` (✨ Generated from Field `User`.`nombreColegio` of type `String`)
+  """
+  nombreColegio_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `User`.`provider` of type `String`
   """
   provider: String
@@ -31144,6 +32193,14 @@ input User_Data {
   ✨ Generated from Field `User`.`matriculas_on_user` of type `[Matricula!]!`
   """
   matriculas_on_user: [Matricula_Data!]
+  """
+  ✨ Generated from Field `User`.`matriculaCambiosModulo_on_registradoPor` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_registradoPor: [MatriculaCambioModulo_Data!]
+  """
+  ✨ Generated from Field `User`.`matriculaCambiosModulo_on_user` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_user: [MatriculaCambioModulo_Data!]
   """
   ✨ Generated from Field `User`.`matriculaUsers_on_user` of type `[MatriculaUser!]!`
   """
@@ -31290,6 +32347,10 @@ input User_Filter {
   """
   nombre: String_Filter
   """
+  ✨ Generated from Field `User`.`nombreColegio` of type `String`
+  """
+  nombreColegio: String_Filter
+  """
   ✨ Generated from Field `User`.`provider` of type `String`
   """
   provider: String_Filter
@@ -31333,6 +32394,14 @@ input User_Filter {
   ✨ Generated from Field `User`.`matriculas_on_user` of type `[Matricula!]!`
   """
   matriculas_on_user: Matricula_ListFilter
+  """
+  ✨ Generated from Field `User`.`matriculaCambiosModulo_on_registradoPor` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_registradoPor: MatriculaCambioModulo_ListFilter
+  """
+  ✨ Generated from Field `User`.`matriculaCambiosModulo_on_user` of type `[MatriculaCambioModulo!]!`
+  """
+  matriculaCambiosModulo_on_user: MatriculaCambioModulo_ListFilter
   """
   ✨ Generated from Field `User`.`matriculaUsers_on_user` of type `[MatriculaUser!]!`
   """
@@ -31491,6 +32560,10 @@ input User_Having {
   ✨ Generated from Field `User`.`nickName_count` of type `Int!`
   """
   nickName_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`nombreColegio_count` of type `Int!`
+  """
+  nombreColegio_count: Int_Filter
   """
   ✨ Generated from Field `User`.`nombre_count` of type `Int!`
   """
@@ -31739,6 +32812,10 @@ input User_Order {
   """
   nombre: OrderDirection
   """
+  ✨ Generated from Field `User`.`nombreColegio` of type `String`
+  """
+  nombreColegio: OrderDirection
+  """
   ✨ Generated from Field `User`.`provider` of type `String`
   """
   provider: OrderDirection
@@ -31874,6 +32951,10 @@ input User_Order {
   ✨ Generated from Field `User`.`nickName_count` of type `Int!`
   """
   nickName_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`nombreColegio_count` of type `Int!`
+  """
+  nombreColegio_count: OrderDirection
   """
   ✨ Generated from Field `User`.`nombre_count` of type `Int!`
   """

@@ -544,7 +544,7 @@ export default function RegistroAcademicosPage() {
           onRowSelectionModelChange={handleSelectionChange}
           getRowId={(row) => row.id}
           initialState={{
-            pagination: { paginationModel: { page: 0, pageSize: 15 } },
+            pagination: { paginationModel: { page: 0, pageSize: 30 } },
           }}
           sx={{
             '& .MuiDataGrid-cell': {

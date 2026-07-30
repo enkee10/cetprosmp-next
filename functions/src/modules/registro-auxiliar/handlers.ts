@@ -24,7 +24,10 @@ import { deleteMatriculaTree } from "../core/matriculaDeletion.js";
 import { getNextCodigoInscripcionForCurrentYear } from "../core/matriculaCodigoInscripcion.js";
 import { getDatosGeneralesGlobales as fetchDatosGeneralesGlobales } from "../datos-generales/service.js";
 import { getRequesterRoleId, isSuperUserContext, PermissionAction, requirePermission } from "../core/permissions.js";
-import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
+import {
+  getConfiguredSemestreConsultaIds,
+  getDocenteMenuSemestreSelection,
+} from "../settings/handlers.js";
 
 type RegistroAuxiliarNotaInput = {
   matriculaId?: unknown;
@@ -749,10 +752,22 @@ function getPersonalIdsForUserId(
   );
 }
 
-function sortRegistroAuxiliarModulos(items: RegistroAuxiliarDocenteModulo[]) {
+function getRegistroAuxiliarModuloSemestreId(item: RegistroAuxiliarDocenteModulo) {
+  const semestreId = item.grupo?.semestre?.id ?? item.grupo?.semestreId;
+  return Number.isFinite(Number(semestreId)) ? Number(semestreId) : null;
+}
+
+function sortRegistroAuxiliarModulos(
+  items: RegistroAuxiliarDocenteModulo[],
+  semestreOrderById?: Map<number, number> | null,
+) {
   return items
     .slice()
     .sort((a, b) =>
+      (semestreOrderById
+        ? (semestreOrderById.get(getRegistroAuxiliarModuloSemestreId(a) ?? -1) ?? Number.MAX_SAFE_INTEGER)
+          - (semestreOrderById.get(getRegistroAuxiliarModuloSemestreId(b) ?? -1) ?? Number.MAX_SAFE_INTEGER)
+        : 0) ||
       String(a.grupo?.semestre?.titulo ?? "").localeCompare(String(b.grupo?.semestre?.titulo ?? ""), "es", { numeric: true }) ||
       String(a.grupo?.nombreDisplay ?? "").localeCompare(String(b.grupo?.nombreDisplay ?? ""), "es", { numeric: true }) ||
       String(a.nombre || a.modulo?.titulo || a.modulo?.tituloComercial || "").localeCompare(
@@ -1323,17 +1338,35 @@ export const listRegistroAuxiliarDocenteModulos = https.onCall(async (data, cont
       return !allowedSemestreIds || allowedSemestreIds.has(Number(semestreId));
     });
 
-    const semestreTitulo = resolveSemestreTituloVigente(
-      semestres,
-      requestedSemestreTitulo,
-    );
-    const modulos = sortRegistroAuxiliarModulos(filterRegistroAuxiliarModulosForRequester({
+    const isDocenteRequester = isDocenteRegistroRequester(context);
+    const hasExplicitSemestre = Boolean(requestedSemestreTitulo);
+    const docenteSemestreSelection = isDocenteRequester && !hasExplicitSemestre
+      ? await getDocenteMenuSemestreSelection(semestres)
+      : null;
+    const semestreTitulo = docenteSemestreSelection?.currentSemestreTitulo
+      ?? resolveSemestreTituloVigente(
+        semestres,
+        requestedSemestreTitulo,
+      );
+    const modulosByRequester = filterRegistroAuxiliarModulosForRequester({
       context,
       userId: response.data.users?.[0]?.id,
       personals: response.data.personals ?? [],
       modulos: grupoModulos,
-      semestreTitulo,
-    }));
+      semestreTitulo: hasExplicitSemestre ? semestreTitulo : null,
+    });
+    const docenteSemestreIds = docenteSemestreSelection
+      ? new Set(docenteSemestreSelection.semestreIds)
+      : null;
+    const modulos = sortRegistroAuxiliarModulos(
+      docenteSemestreIds
+        ? modulosByRequester.filter((item) => {
+          const semestreId = getRegistroAuxiliarModuloSemestreId(item);
+          return semestreId != null && docenteSemestreIds.has(semestreId);
+        })
+        : modulosByRequester,
+      docenteSemestreSelection?.orderById,
+    );
 
     return { modulos, semestreTitulo };
   } catch (error) {

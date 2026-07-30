@@ -1,6 +1,6 @@
 import { getStorage } from "firebase-admin/storage";
 import { getFirestore } from "firebase-admin/firestore";
-import { firestore as functionsFirestore, https } from "firebase-functions/v1";
+import { firestore as functionsFirestore, https, runWith } from "firebase-functions/v1";
 import { randomUUID } from "crypto";
 import sharp from "sharp";
 import { google } from "googleapis";
@@ -33,6 +33,7 @@ import {
 } from "../core/types.js";
 import {
   DELETE_MODULO_ESTUDIANTES_BY_MATRICULA_MUTATION,
+  INSERT_MATRICULA_CAMBIO_MODULO_MUTATION,
   INSERT_MATRICULA_MUTATION,
   INSERT_MODULO_ESTUDIANTE_MUTATION,
   UPDATE_MATRICULA_MUTATION,
@@ -48,7 +49,10 @@ import {
   shouldSyncStudentWorkspace,
   syncStudentToWorkspace,
 } from "../../workspace/studentWorkspaceSync.js";
-import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
+import {
+  getConfiguredSemestreConsultaIds,
+  getDocenteMenuSemestreSelection,
+} from "../settings/handlers.js";
 
 interface MatriculaUserRow {
   id: number;
@@ -68,6 +72,7 @@ interface MatriculaUserRow {
   nacionalidad?: string | null;
   estadoCivil?: string | null;
   instruccion?: string | null;
+  nombreColegio?: string | null;
   fechaNacimiento?: string | null;
   fechaVencimiento?: string | null;
   direccion?: string | null;
@@ -79,6 +84,8 @@ interface MatriculaUserRow {
   fechaModificacion?: string | null;
   emailCreador?: string | null;
   avatar?: string | null;
+  avatarTiny?: string | null;
+  recorteFotografia?: string | null;
   dniImagenFrenteUrl?: string | null;
   dniImagenReversoUrl?: string | null;
   dniImagenFrenteProcesadaUrl?: string | null;
@@ -113,10 +120,55 @@ interface MatriculaResponsableUserRow {
   correoInstitucional?: string | null;
 }
 
+interface MatriculaCambioModuloRow {
+  id?: number | null;
+  fechaCambio?: string | null;
+  grupoModuloAnterior?: {
+    id?: number | null;
+    nombre?: string | null;
+  } | null;
+  grupoModuloNuevo?: {
+    id?: number | null;
+    nombre?: string | null;
+  } | null;
+  grupoAnterior?: {
+    id?: number | null;
+    nombreDisplay?: string | null;
+  } | null;
+  grupoNuevo?: {
+    id?: number | null;
+    nombreDisplay?: string | null;
+  } | null;
+  moduloAnterior?: {
+    id?: number | null;
+    titulo?: string | null;
+    tituloComercial?: string | null;
+  } | null;
+  moduloNuevo?: {
+    id?: number | null;
+    titulo?: string | null;
+    tituloComercial?: string | null;
+  } | null;
+  semestre?: {
+    id?: number | null;
+    titulo?: string | null;
+  } | null;
+  registradoPor?: {
+    id?: number | null;
+    nombre?: string | null;
+    apellidoPaterno?: string | null;
+    apellidoMaterno?: string | null;
+    username?: string | null;
+    email?: string | null;
+    correoInstitucional?: string | null;
+  } | null;
+}
+
 interface MatriculaRow {
   id: number;
   recibo?: string | null;
   fecha?: string | null;
+  fechaActualizacion?: string | null;
   codigoInscripcion?: string | null;
   archivado?: boolean | null;
   paqueteId?: number | null;
@@ -128,6 +180,9 @@ interface MatriculaRow {
   user?: MatriculaUserRow | null;
   responsable?: MatriculaResponsableRow | null;
   responsableUser?: MatriculaResponsableUserRow | null;
+  modulosEstudiantes?: MatriculaModuloLinkRow[];
+  cambiosModulo?: MatriculaCambioModuloRow[];
+  fichaUnidadesDidacticas?: MatriculaFichaUnidadDidactica[];
   paquete?: {
     id?: number | null;
     titulo?: string | null;
@@ -138,8 +193,51 @@ interface MatriculaRow {
     id?: number | null;
     titulo?: string | null;
     descripcion?: string | null;
+    inicio?: string | null;
+    fin?: string | null;
     archivado?: boolean | null;
+    director?: {
+      id?: number | null;
+      displayName?: string | null;
+      user?: {
+        username?: string | null;
+        nombre?: string | null;
+        apellidoPaterno?: string | null;
+        apellidoMaterno?: string | null;
+      } | null;
+    } | null;
   } | null;
+}
+
+interface MatriculaFichaPlan {
+  id?: number | null;
+  planEstudio?: string | null;
+  carrera?: {
+    id?: number | null;
+    nombre?: string | null;
+    titulo?: string | null;
+    nivel?: string | null;
+    ciclo?: string | null;
+    tipoCarrera?: {
+      nombre?: string | null;
+    } | null;
+  } | null;
+}
+
+interface MatriculaFichaPlanModulo {
+  id?: number | null;
+  orden?: number | null;
+  planId?: number | null;
+  moduloId?: number | null;
+  plan?: MatriculaFichaPlan | null;
+}
+
+interface MatriculaFichaUnidadDidactica {
+  id: number;
+  nombre?: string | null;
+  duracion?: number | null;
+  creditos?: number | null;
+  orden?: number | null;
 }
 
 interface MatriculaSemestreOption {
@@ -187,6 +285,52 @@ interface MatriculaDocenteModuloEstudiante {
   grupoModuloId?: number | null;
   grupoId?: number | null;
   moduloId?: number | null;
+}
+
+type MatriculaFichaModulo = {
+  id?: number | null;
+  titulo?: string | null;
+  tituloComercial?: string | null;
+  horas?: number | null;
+  creditos?: number | null;
+  duracionEfsrt?: number | null;
+  creditosEfsrt?: number | null;
+  plan?: MatriculaFichaPlan | null;
+};
+
+type MatriculaFichaGrupoModulo = {
+  id?: number | null;
+  nombre?: string | null;
+  inicio?: string | null;
+  fin?: string | null;
+  grupo?: {
+    id?: number | null;
+    nombreDisplay?: string | null;
+    turnoNombre?: string | null;
+    semestre?: {
+      id?: number | null;
+      titulo?: string | null;
+      inicio?: string | null;
+      fin?: string | null;
+    } | null;
+    turno?: {
+      nombre?: string | null;
+    } | null;
+  } | null;
+  modulo?: MatriculaFichaModulo | null;
+  moduloId?: number | null;
+  grupoId?: number | null;
+};
+
+interface MatriculaModuloLinkRow {
+  id?: number | null;
+  matriculaId?: number | null;
+  grupoModuloId?: number | null;
+  grupoId?: number | null;
+  moduloId?: number | null;
+  promedio?: number | null;
+  puntaje?: number | null;
+  grupoModulo?: MatriculaFichaGrupoModulo | null;
 }
 
 type MatriculaSaveUserResult = {
@@ -278,6 +422,11 @@ interface OcrIdentityData {
   estadoCivil?: string | null;
   direccion?: string | null;
   distrito?: string | null;
+  instruccion?: string | null;
+  nombreColegio?: string | null;
+  celular?: string | null;
+  telefono?: string | null;
+  email?: string | null;
 }
 
 type PeruDevsDniResult = {
@@ -303,6 +452,53 @@ type SimpleOcrImageInput = {
   name?: unknown;
 };
 
+type GeminiMatriculaArchivoResult = {
+  indice?: number | null;
+  nombreArchivo?: string | null;
+  tipoLado?: string | null;
+  areaLectura?: string | null;
+  tieneDosCuerpos?: boolean | null;
+  orientacion?: string | null;
+  rotacionHorariaParaLeer?: number | string | null;
+  textoReconocido?: string | null;
+  senalesReverso?: string[] | null;
+  fragmentosReverso?: string[] | null;
+  contieneDireccion?: boolean | null;
+  contieneDomicilio?: boolean | null;
+  contieneDistrito?: boolean | null;
+  contienePerMrz?: boolean | null;
+};
+
+type GeminiMatriculaResult = {
+  tipoDocumento?: string | null;
+  numeroDocumento?: string | null;
+  documentoCoincide?: boolean | null;
+  contieneReverso?: boolean | null;
+  archivos?: GeminiMatriculaArchivoResult[] | null;
+  nombre?: string | null;
+  apellidoPaterno?: string | null;
+  apellidoMaterno?: string | null;
+  sexo?: string | null;
+  nacionalidad?: string | null;
+  fechaNacimiento?: string | null;
+  fechaVencimiento?: string | null;
+  estadoCivil?: string | null;
+  direccion?: string | null;
+  distrito?: string | null;
+  textoReconocido?: string | null;
+  observaciones?: string | null;
+};
+
+class GeminiJsonParseError extends Error {
+  preview: string;
+
+  constructor(message: string, preview: string) {
+    super(message);
+    this.name = "GeminiJsonParseError";
+    this.preview = preview;
+  }
+}
+
 interface UploadedDocumentImage {
   path?: string | null;
   url?: string | null;
@@ -321,6 +517,8 @@ interface DocumentoArchivoMetadata {
     tipoLado?: string | null;
     areaLectura?: string | null;
     tieneDosCuerpos?: boolean | null;
+    orientacion?: string | null;
+    rotacionHorariaParaLeer?: number | string | null;
     senalesReverso?: string[] | null;
     fragmentosReverso?: string[] | null;
     contieneDireccion?: boolean | null;
@@ -343,6 +541,8 @@ interface MatriculaDocumentProcessingSide {
   metadata: DocumentoArchivoMetadata | null;
   hasTwoBodies: boolean;
   selectedArea: string;
+  orientation: string;
+  rotationClockwise: number | null;
   instructions: {
     twoBodies: string;
     orientation: string;
@@ -377,6 +577,9 @@ const DNI_RECOGNITION_ENABLED_LEGACY_KEY = "general.activarReconocimientoDni";
 const AVATAR_GENERATION_ENABLED_KEY = "visualizaciones.usarGeneradorImagenesAvatar";
 const AVATAR_GENERATION_MODEL_KEY = "visualizaciones.modeloGeneradorImagenesAvatar";
 const FORMULARIO_MATRICULA_ACEPTA_RESPUESTAS_KEY = "formularioMatricula.aceptaRespuestas";
+const FORMULARIO_MATRICULA_SIGUIENTE_ACEPTA_RESPUESTAS_KEY = "formularioMatricula.siguienteAceptaRespuestas";
+const FORMULARIO_MATRICULA_FONDO_COLOR_KEY = "formularioMatricula.fondoColor";
+const FORMULARIO_MATRICULA_SIGUIENTE_FONDO_COLOR_KEY = "formularioMatricula.siguienteFondoColor";
 const FORMULARIO_MATRICULA_ACEPTA_RESPUESTAS_LEGACY_KEY = "general.formularioMatriculaAceptaRespuestas";
 const FORMULARIO_MATRICULA_SEMESTRE_ID_KEY = "formularioMatricula.semestreId";
 const CURRENT_SEMESTRE_ID_KEY = "general.semestreActualId";
@@ -399,6 +602,7 @@ const USER_FIELDS = `
   nacionalidad
   estadoCivil
   instruccion
+  nombreColegio
   fechaNacimiento
   fechaVencimiento
   direccion
@@ -410,6 +614,7 @@ const USER_FIELDS = `
   fechaModificacion
   emailCreador
   avatar
+  recorteFotografia
   dniImagenFrenteUrl
   dniImagenReversoUrl
   dniImagenFrenteProcesadaUrl
@@ -482,6 +687,7 @@ const MATRICULA_FIELDS = `
   id
   recibo
   fecha
+  fechaActualizacion
   codigoInscripcion
   archivado
   paqueteId
@@ -527,7 +733,19 @@ const MATRICULA_FIELDS = `
     id
     titulo
     descripcion
+    inicio
+    fin
     archivado
+    director {
+      id
+      displayName
+      user {
+        username
+        nombre
+        apellidoPaterno
+        apellidoMaterno
+      }
+    }
   }
 `;
 
@@ -599,7 +817,170 @@ const GET_MATRICULA_QUERY = `
       ${MATRICULA_FIELDS}
     }
     modulosEstudiantes(where: { matriculaId: { eq: $id } }, limit: 10) {
+      id
+      matriculaId
+      moduloId
       grupoId
+      grupoModuloId
+      promedio
+      puntaje
+      grupoModulo {
+        id
+        nombre
+        inicio
+        fin
+        grupo {
+          id
+          nombreDisplay
+          turnoNombre
+          turno { nombre }
+          semestre {
+            id
+            titulo
+            inicio
+            fin
+          }
+        }
+        modulo {
+          id
+          titulo
+          tituloComercial
+          horas
+          creditos
+          duracionEfsrt
+          creditosEfsrt
+          plan {
+            id
+            planEstudio
+            carrera {
+              id
+              nombre
+              titulo
+              nivel
+              ciclo
+              tipoCarrera { nombre }
+            }
+          }
+        }
+      }
+    }
+    grupoModulos(limit: 50000) {
+      id
+      nombre
+      inicio
+      fin
+      grupoId
+      moduloId
+      grupo {
+        id
+        nombreDisplay
+        turnoNombre
+        turno { nombre }
+        semestre {
+          id
+          titulo
+          inicio
+          fin
+        }
+      }
+    }
+    modulos(limit: 5000) {
+      id
+      titulo
+      tituloComercial
+      horas
+      creditos
+      duracionEfsrt
+      creditosEfsrt
+      plan {
+        id
+        planEstudio
+        carrera {
+          id
+          nombre
+          titulo
+          nivel
+          ciclo
+          tipoCarrera { nombre }
+        }
+      }
+    }
+    grupoModuloUnidadesDidacticas(limit: 50000) {
+      orden
+      grupoModuloId
+      unidadDidacticaId
+    }
+    unidadDidacticaModulos(limit: 50000) {
+      orden
+      moduloId
+      unidadDidacticaId
+    }
+    unidadesDidacticas(limit: 50000) {
+      id
+      nombre
+      duracion
+      creditos
+    }
+    planModulos(limit: 5000) {
+      id
+      orden
+      planId
+      moduloId
+      plan {
+        id
+        planEstudio
+        carrera {
+          id
+          nombre
+          titulo
+          nivel
+          ciclo
+          tipoCarrera { nombre }
+        }
+      }
+    }
+    matriculaCambiosModulo(where: { matriculaId: { eq: $id } }, limit: 100, orderBy: [{ id: DESC }]) {
+      id
+      fechaCambio
+      grupoModuloAnterior {
+        id
+        nombre
+      }
+      grupoModuloNuevo {
+        id
+        nombre
+      }
+      grupoAnterior {
+        id
+        nombreDisplay
+      }
+      grupoNuevo {
+        id
+        nombreDisplay
+      }
+      moduloAnterior {
+        id
+        titulo
+        tituloComercial
+      }
+      moduloNuevo {
+        id
+        titulo
+        tituloComercial
+      }
+      semestre {
+        id
+        titulo
+      }
+      registradoPor {
+        id
+        username
+        nombre
+        apellidoPaterno
+        apellidoMaterno
+        email
+        correoInstitucional
+      }
     }
   }
 `;
@@ -636,6 +1017,11 @@ const LIST_MATRICULA_SEMESTRES_QUERY = `
       }
     }
     grupos(limit: 10000) {
+      id
+      semestreId
+      archivado
+    }
+    matriculas(limit: 10000) {
       id
       semestreId
       archivado
@@ -693,6 +1079,8 @@ const GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY = `
       nombre
       orden
       obligatorio
+      inicio
+      fin
       grupoId
       moduloId
       instancia
@@ -754,14 +1142,16 @@ const CHECK_DUPLICATE_MATRICULA_QUERY = `
   }
 `;
 
-const VALID_RECIBO_TEXT_VALUES = new Set(["CONADIS", "BECADO"]);
+const VALID_RECIBO_TEXT_VALUES = new Set(["CONADIS", "BECADO", "POR REGULARIZAR"]);
 
 function normalizeMatriculaRecibo(value: unknown): string | null {
-  const text = asCleanString(value)?.toUpperCase().replace(/\s+/g, "") ?? null;
+  const text = asCleanString(value)?.toUpperCase().replace(/\s+/g, " ") ?? null;
   if (!text) return null;
   if (VALID_RECIBO_TEXT_VALUES.has(text)) return text;
-  if (/^\d{1,5}$/.test(text)) return text;
-  throw new https.HttpsError("invalid-argument", "El recibo debe ser CONADIS, BECADO o un numero de hasta 5 digitos.");
+  const compactText = text.replace(/\s+/g, "");
+  if (compactText === "PORREGULARIZAR") return "POR REGULARIZAR";
+  if (/^\d{1,5}$/.test(compactText)) return compactText;
+  throw new https.HttpsError("invalid-argument", "El recibo debe ser CONADIS, BECADO, POR REGULARIZAR o un numero de hasta 5 digitos.");
 }
 
 const sortPaqueteModulos = (items: DataConnectPaqueteModulo[]) =>
@@ -789,6 +1179,10 @@ const normalizeDocumentNumber = (value: unknown): string =>
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, "");
 
+function documentFilePrefix(value: unknown): "dni" | "ce" {
+  return normalizeDocumentType(value) === "CE" ? "ce" : "dni";
+}
+
 const asCleanString = (value: unknown): string | null => {
   const text = String(value ?? "").trim().replace(/\s+/g, " ");
   return text ? text : null;
@@ -803,6 +1197,21 @@ const normalizeDate = (value: unknown): string | null => {
   if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
   return null;
 };
+
+function normalizeRotationClockwise(value: unknown): number | null {
+  if (typeof value === "number" && [0, 90, 180, 270].includes(value)) {
+    return value;
+  }
+  const text = String(value ?? "").trim().toLowerCase();
+  if (!text) return null;
+  const numeric = Number(text.replace(/[^\d-]/g, ""));
+  if ([0, 90, 180, 270].includes(numeric)) return numeric;
+  if (["ninguna", "correcta", "upright", "none"].includes(text)) return 0;
+  if (text.includes("180") || text.includes("cabeza")) return 180;
+  if (text.includes("270")) return 270;
+  if (text.includes("90")) return 90;
+  return null;
+}
 
 function parseDateOnly(value: unknown): Date | null {
   const normalized = normalizeDate(value);
@@ -943,6 +1352,255 @@ function validateSimpleOcrBack(text: string) {
     || compact.includes("<PER");
 }
 
+function getGeminiDocumentInput(value: unknown, label: string): {
+  data: string;
+  mimeType: string;
+  name: string | null;
+} {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new https.HttpsError("invalid-argument", `Envia el archivo ${label}.`);
+  }
+  const raw = value as SimpleOcrImageInput;
+  const dataUrlOrBase64 = asCleanString(raw.data);
+  const mimeType = asCleanString(raw.mimeType) ?? "image/jpeg";
+  const name = asCleanString(raw.name);
+  if (!dataUrlOrBase64) {
+    throw new https.HttpsError("invalid-argument", `Envia el archivo ${label}.`);
+  }
+  if (!mimeType.startsWith("image/") && mimeType !== "application/pdf") {
+    throw new https.HttpsError("invalid-argument", `El archivo ${label} debe ser imagen o PDF.`);
+  }
+  const data = dataUrlOrBase64.includes(",")
+    ? dataUrlOrBase64.split(",").pop() ?? ""
+    : dataUrlOrBase64;
+  if (!data) {
+    throw new https.HttpsError("invalid-argument", `El archivo ${label} esta vacio.`);
+  }
+  return { data, mimeType, name };
+}
+
+function resolveMatriculaGeminiProjectId(): string {
+  return asCleanString(process.env.MATRICULA_GEMINI_PROJECT_ID)
+    ?? asCleanString(process.env.GCLOUD_PROJECT)
+    ?? asCleanString(process.env.GOOGLE_CLOUD_PROJECT)
+    ?? "cetprosmp-2026";
+}
+
+function resolveMatriculaGeminiLocation(): string {
+  return asCleanString(process.env.MATRICULA_GEMINI_LOCATION) ?? DEFAULT_AVATAR_IMAGE_LOCATION;
+}
+
+function resolveMatriculaGeminiModel(): string {
+  return asCleanString(process.env.MATRICULA_GEMINI_MODEL) ?? "gemini-2.5-flash";
+}
+
+function buildMatriculaGeminiPrompt(tipoDocumento: string, dni: string): string {
+  const documentReadingInstructions = `
+Estrategia de lectura:
+- Primero revisa el archivo 1 para determinar si contiene dos cuerpos/imagenes completos del documento en una misma pagina o vista.
+- Si el archivo 1 no tiene dos cuerpos completos, revisa el archivo 2 con el mismo criterio.
+- Dos cuerpos significa que se ven claramente dos lados separados del documento, por ejemplo frente arriba y reverso abajo, o reverso arriba y frente abajo.
+- Si cualquiera de los dos archivos contiene dos cuerpos completos, trabaja solo con ese archivo y no leas ni uses el otro archivo bajo ninguna circunstancia.
+- La prioridad es fija: si el archivo 1 tiene dos cuerpos, usa archivo 1; solo si el archivo 1 no tiene dos cuerpos y el archivo 2 si los tiene, usa archivo 2.
+- En ese caso, lee los dos cuerpos del archivo elegido y de ahi extrae todos los datos, valida el tipo y numero de documento, determina cual cuerpo es frente y cual es reverso, y prepara la metadata para OpenCV.
+- Si el archivo elegido contiene dos cuerpos completos pero no logras validar algun dato, devuelve el dato como null o la validacion como false; no uses el otro archivo como respaldo.
+- Cuando uses un solo archivo con dos cuerpos, devuelve dos elementos en "archivos" con el mismo "indice" del archivo elegido: uno para el cuerpo "superior" y otro para el cuerpo "inferior"; en cada elemento indica "tipoLado" frente/reverso y "areaLectura" superior/inferior.
+- Solo si ningun archivo contiene dos cuerpos completos, analiza ambos archivos con el flujo normal de frente/reverso.
+- Si un archivo tiene un solo cuerpo, reporta "areaLectura": "completa" y "tieneDosCuerpos": false.
+- Si un archivo tiene dos cuerpos, reporta "areaLectura": "superior" o "inferior" segun el cuerpo que estes clasificando en ese elemento de "archivos".
+- Si un archivo tiene dos cuerpos, "orientacion" y "rotacionHorariaParaLeer" deben corresponder a ese cuerpo/area especifica, no a la orientacion global del archivo completo.
+- No generes ni modifiques imagenes; solo limita la lectura visual cuando realmente hay dos cuerpos.
+`.trim();
+
+  return `
+Eres un extractor de datos para matriculas de un CETPRO en Peru.
+Analiza los archivos adjuntos de un DNI peruano o carnet de extranjeria. Pueden estar en cualquier orden: frente/reverso, reverso/frente, imagen o PDF.
+
+Documento esperado en el formulario:
+- tipoDocumento: ${tipoDocumento}
+- numeroDocumento: ${dni}
+
+${documentReadingInstructions}
+
+Reglas:
+- El primer adjunto es archivo 1, el segundo adjunto es archivo 2. Si la estrategia de lectura indica usar solo un archivo, no reportes datos extraidos del otro archivo.
+- Si es DNI, identifica "documento nacional de identidad" o "nacional" y extrae el numero con formato ########-#. Para comparar, usa los 8 digitos antes del guion.
+- Si es carnet de extranjeria, identifica "carnet" o "extranjeria" y extrae el numero con formato #########.
+- Para reverso, basta encontrar alguna palabra o dato equivalente a direccion, domicilio, distrito o el fragmento "per<".
+- En "archivos", devuelve solo datos compactos para clasificar cada archivo o cuerpo: indice, tipoLado, areaLectura, tieneDosCuerpos, orientacion, rotacionHorariaParaLeer y flags booleanos de evidencias del reverso.
+- Primero decide "rotacionHorariaParaLeer": que rotacion horaria, en grados, debo aplicar a esta imagen o cuerpo para que el texto del documento se pueda leer normalmente de izquierda a derecha.
+- Valores exactos permitidos de "rotacionHorariaParaLeer": 0, 90, 180 o 270. Debe ser numero, no texto.
+- Usa 0 si el texto ya se lee correctamente de izquierda a derecha.
+- Usa 90 si debo girar la imagen/cuerpo 90 grados en sentido horario para leer el texto correctamente.
+- Usa 180 si debo girar la imagen/cuerpo 180 grados para leer el texto correctamente. Si el documento esta de cabeza, devuelve obligatoriamente 180.
+- Usa 270 si debo girar la imagen/cuerpo 270 grados en sentido horario para leer el texto correctamente.
+- Evalua cada archivo o cuerpo de forma independiente. No copies ni infieras la rotacion de un cuerpo desde otro cuerpo.
+- Despues completa "orientacion" con el estado visual compatible con el sistema actual: "correcta", "girada_derecha", "girada_izquierda" o "de_cabeza". Para documentos de cabeza, siempre usa "de_cabeza".
+- Si "rotacionHorariaParaLeer" es 180, "orientacion" debe ser "de_cabeza".
+- No confundas "como esta girada la foto" con "la rotacion que debes aplicar": "rotacionHorariaParaLeer" es una accion correctiva, no una descripcion.
+- No devuelvas nombreArchivo, senales, fragmentos de evidencia, OCR completo ni campos extra por archivo.
+- Extrae nombres, apellido paterno y apellido materno desde el documento, no desde texto inferido.
+- La direccion debe ser solo la direccion o domicilio. El distrito debe ir separado, sin provincia ni departamento cuando sea posible.
+- Las fechas deben devolverse en YYYY-MM-DD. Si el documento muestra formato DD/MM/YYYY o DD-MM-YYYY, conviertelo.
+- Sexo debe ser "F" o "M".
+- Estado civil puede ser texto completo o una letra: "S" soltero/soltera, "C" casado/casada, "D" divorciado/divorciada, "V" viudo/viuda.
+- Nacionalidad debe ser el texto del documento, por ejemplo "PERUANA".
+- Fecha de vencimiento debe venir del campo de vencimiento, caducidad o expiracion del documento.
+- No inventes datos. Si no estas seguro, usa null.
+- No devuelvas texto reconocido completo. Solo campos estructurados.
+- Devuelve SOLO JSON valido, sin markdown.
+
+Formato exacto:
+{
+  "tipoDocumento": "DNI|CE|null",
+  "numeroDocumento": "string|null",
+  "documentoCoincide": true,
+  "contieneReverso": true,
+  "archivos": [
+    {
+      "indice": 1,
+      "tipoLado": "frente|reverso|desconocido",
+      "areaLectura": "pagina-1|pagina-2|superior|inferior|completa",
+      "tieneDosCuerpos": true,
+      "orientacion": "correcta|girada_derecha|girada_izquierda|de_cabeza",
+      "rotacionHorariaParaLeer": 0,
+      "contieneDireccion": true,
+      "contieneDomicilio": true,
+      "contieneDistrito": true,
+      "contienePerMrz": true
+    }
+  ],
+  "nombre": "string|null",
+  "apellidoPaterno": "string|null",
+  "apellidoMaterno": "string|null",
+  "sexo": "F|M|null",
+  "nacionalidad": "string|null",
+  "fechaNacimiento": "YYYY-MM-DD|null",
+  "fechaVencimiento": "YYYY-MM-DD|null",
+  "estadoCivil": "S|C|D|V|string|null",
+  "direccion": "string|null",
+  "distrito": "string|null"
+}
+`.trim();
+}
+
+function extractGeminiTextFromResponse(payload: unknown): string {
+  const response = payload as {
+    candidates?: Array<{
+      content?: {
+        parts?: Array<{ text?: unknown }>;
+      };
+    }>;
+  } | null;
+  const parts = response?.candidates?.[0]?.content?.parts ?? [];
+  return parts
+    .map((part) => (typeof part.text === "string" ? part.text : ""))
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+}
+
+function parseGeminiMatriculaJson(text: string): GeminiMatriculaResult {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    throw new GeminiJsonParseError("Gemini devolvio una respuesta vacia. Intenta nuevamente.", "");
+  }
+  const fenced = /```(?:json)?\s*([\s\S]*?)\s*```/i.exec(trimmed)?.[1];
+  const candidate = (fenced || trimmed).trim();
+  const firstBrace = candidate.indexOf("{");
+  const lastBrace = candidate.lastIndexOf("}");
+  const jsonText = firstBrace >= 0 && lastBrace > firstBrace
+    ? candidate.slice(firstBrace, lastBrace + 1)
+    : candidate;
+
+  try {
+    return JSON.parse(jsonText) as GeminiMatriculaResult;
+  } catch (error) {
+    const preview = candidate.slice(0, 600);
+    const detail = String((error as { message?: string } | null)?.message || error);
+    throw new GeminiJsonParseError(`Gemini devolvio JSON incompleto o invalido: ${detail}`, preview);
+  }
+}
+
+async function runMatriculaGeminiRecognition(params: {
+  tipoDocumento: string;
+  dni: string;
+  archivos: Array<{ data: string; mimeType: string; name: string | null }>;
+}): Promise<GeminiMatriculaResult> {
+  const projectId = resolveMatriculaGeminiProjectId();
+  const location = resolveMatriculaGeminiLocation();
+  const model = resolveMatriculaGeminiModel();
+  const prompt = buildMatriculaGeminiPrompt(params.tipoDocumento, params.dni);
+  const auth = new google.auth.GoogleAuth({
+    scopes: ["https://www.googleapis.com/auth/cloud-platform"],
+  });
+  const client = await auth.getClient();
+  const token = await client.getAccessToken();
+  const accessToken = typeof token === "string" ? token : token?.token;
+  if (!accessToken) {
+    throw new Error("No se pudo obtener token de acceso para Gemini.");
+  }
+
+  const host = location === "global" ? "aiplatform.googleapis.com" : `${location}-aiplatform.googleapis.com`;
+  const endpoint = `https://${host}/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:generateContent`;
+  let lastError: unknown = null;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: prompt },
+                ...params.archivos.map((archivo) => ({
+                  inlineData: {
+                    mimeType: archivo.mimeType,
+                    data: archivo.data,
+                  },
+                })),
+              ],
+            },
+          ],
+          generationConfig: {
+            responseMimeType: "application/json",
+            temperature: 0,
+            maxOutputTokens: 4096,
+          },
+        }),
+      });
+      const responseText = await response.text();
+      if (!response.ok) {
+        throw new Error(`Gemini DNI recognition fallo (${response.status}): ${responseText.slice(0, 500)}`);
+      }
+      const payload = JSON.parse(responseText) as unknown;
+      return parseGeminiMatriculaJson(extractGeminiTextFromResponse(payload));
+    } catch (error) {
+      lastError = error;
+      const canRetry = error instanceof GeminiJsonParseError && attempt < 3;
+      if (!canRetry) break;
+      await sleep(600 * attempt);
+    }
+  }
+
+  if (lastError instanceof GeminiJsonParseError) {
+    throw new https.HttpsError(
+      "internal",
+      [
+        lastError.message,
+        lastError.preview ? `Respuesta recibida: ${lastError.preview}` : null,
+        "Vuelve a intentarlo; si se repite, reduce el peso/resolucion de los archivos.",
+      ].filter(Boolean).join("\n"),
+    );
+  }
+  throw lastError;
+}
+
 const isEmptyValue = (value: unknown): boolean => {
   if (value === undefined || value === null) return true;
   return String(value).trim() === "";
@@ -962,13 +1620,22 @@ function mergeSavedUserWithOcr(saved: MatriculaUserRow | null, ocr: OcrIdentityD
     "estadoCivil",
     "direccion",
     "distrito",
+    "instruccion",
+    "nombreColegio",
+    "celular",
+    "telefono",
+    "email",
   ];
 
   for (const key of keys) {
     const savedValue = saved?.[key];
-    if (!isEmptyValue(savedValue)) {
+    if (isEmptyValue(result[key]) && !isEmptyValue(savedValue)) {
       result[key] = String(savedValue);
     }
+  }
+
+  if (isEmptyValue(result.email) && !isEmptyValue(saved?.correoInstitucional)) {
+    result.email = String(saved?.correoInstitucional);
   }
 
   return result;
@@ -1014,6 +1681,17 @@ const buildGroupCountBySemestre = (
   return countBySemestre;
 };
 
+const buildMatriculaCountBySemestre = (
+  matriculas: Array<{ semestreId?: number | null; archivado?: boolean | null }>,
+) => {
+  const countBySemestre = new Map<number, number>();
+  matriculas.forEach((matricula) => {
+    if (matricula.archivado || !matricula.semestreId) return;
+    countBySemestre.set(matricula.semestreId, (countBySemestre.get(matricula.semestreId) ?? 0) + 1);
+  });
+  return countBySemestre;
+};
+
 async function requireMatriculaSemestreAccess(context: https.CallableContext) {
   if (await hasPermission(context, "matriculas", "view")) return;
   if (await hasPermission(context, "matriculas", "create")) return;
@@ -1038,12 +1716,20 @@ async function requireMatriculaPermissionOrFormularioAccess(context: https.Calla
   await requireFormularioMatriculaAccess(context);
 }
 
-async function requireFormularioMatriculaOpen() {
+const normalizeFormularioHexColor = (value: unknown, fallback = "#ffffff") => {
+  const text = String(value ?? "").trim();
+  return /^#[0-9a-f]{6}$/i.test(text) ? text : fallback;
+};
+
+async function requireFormularioMatriculaOpen(kind?: unknown) {
+  const settingKey = kind === "siguiente"
+    ? FORMULARIO_MATRICULA_SIGUIENTE_ACEPTA_RESPUESTAS_KEY
+    : FORMULARIO_MATRICULA_ACEPTA_RESPUESTAS_KEY;
   const response = await dataConnect.executeGraphql<{
     appSettings: Array<{ id: number; boolValue?: boolean | null }>;
   }, { settingKey: string }>(
     GET_FORMULARIO_MATRICULA_SETTING_QUERY,
-    { variables: { settingKey: FORMULARIO_MATRICULA_ACEPTA_RESPUESTAS_KEY } },
+    { variables: { settingKey } },
   );
   if (!Boolean(response.data.appSettings?.[0]?.boolValue)) {
     throw new https.HttpsError("failed-precondition", "El formulario no acepta respuestas en este momento.");
@@ -1051,7 +1737,17 @@ async function requireFormularioMatriculaOpen() {
 }
 
 async function getFormularioMatriculaSettingsData() {
-  const [recognitionResponse, legacyRecognitionResponse, acceptsResponse, legacyAcceptsResponse, currentSemestreResponse, semestreResponse] = await Promise.all([
+  const [
+    recognitionResponse,
+    legacyRecognitionResponse,
+    acceptsResponse,
+    nextAcceptsResponse,
+    currentBackgroundResponse,
+    nextBackgroundResponse,
+    legacyAcceptsResponse,
+    currentSemestreResponse,
+    semestreResponse,
+  ] = await Promise.all([
     dataConnect.executeGraphql<{
       appSettings: Array<{ id: number; boolValue?: boolean | null }>;
     }, { settingKey: string }>(
@@ -1069,6 +1765,24 @@ async function getFormularioMatriculaSettingsData() {
     }, { settingKey: string }>(
       GET_FORMULARIO_MATRICULA_SETTING_QUERY,
       { variables: { settingKey: FORMULARIO_MATRICULA_ACEPTA_RESPUESTAS_KEY } },
+    ),
+    dataConnect.executeGraphql<{
+      appSettings: Array<{ id: number; boolValue?: boolean | null }>;
+    }, { settingKey: string }>(
+      GET_FORMULARIO_MATRICULA_SETTING_QUERY,
+      { variables: { settingKey: FORMULARIO_MATRICULA_SIGUIENTE_ACEPTA_RESPUESTAS_KEY } },
+    ),
+    dataConnect.executeGraphql<{
+      appSettings: Array<{ id: number; stringValue?: string | null }>;
+    }, { settingKey: string }>(
+      GET_FORMULARIO_MATRICULA_SETTING_QUERY,
+      { variables: { settingKey: FORMULARIO_MATRICULA_FONDO_COLOR_KEY } },
+    ),
+    dataConnect.executeGraphql<{
+      appSettings: Array<{ id: number; stringValue?: string | null }>;
+    }, { settingKey: string }>(
+      GET_FORMULARIO_MATRICULA_SETTING_QUERY,
+      { variables: { settingKey: FORMULARIO_MATRICULA_SIGUIENTE_FONDO_COLOR_KEY } },
     ),
     dataConnect.executeGraphql<{
       appSettings: Array<{ id: number; boolValue?: boolean | null }>;
@@ -1110,8 +1824,11 @@ async function getFormularioMatriculaSettingsData() {
     },
     formularioMatricula: {
       aceptaRespuestas: acceptsResponses,
+      siguienteAceptaRespuestas: Boolean(nextAcceptsResponse.data.appSettings?.[0]?.boolValue),
       semestreId: Number.isFinite(semestreId) && semestreId > 0 ? semestreId : null,
       activarReconocimientoDni: recognitionEnabled,
+      fondoColor: normalizeFormularioHexColor(currentBackgroundResponse.data.appSettings?.[0]?.stringValue),
+      siguienteFondoColor: normalizeFormularioHexColor(nextBackgroundResponse.data.appSettings?.[0]?.stringValue),
     },
   };
 }
@@ -1177,10 +1894,22 @@ function getPersonalIdsForMatriculaUser(
   );
 }
 
-function sortMatriculaDocenteGrupoModulos(items: MatriculaDocenteGrupoModulo[]) {
+function getMatriculaGrupoModuloSemestreId(item: MatriculaDocenteGrupoModulo) {
+  const semestreId = item.grupo?.semestre?.id ?? item.grupo?.semestreId;
+  return Number.isFinite(Number(semestreId)) ? Number(semestreId) : null;
+}
+
+function sortMatriculaDocenteGrupoModulos(
+  items: MatriculaDocenteGrupoModulo[],
+  semestreOrderById?: Map<number, number> | null,
+) {
   return items
     .slice()
     .sort((a, b) =>
+      (semestreOrderById
+        ? (semestreOrderById.get(getMatriculaGrupoModuloSemestreId(a) ?? -1) ?? Number.MAX_SAFE_INTEGER)
+          - (semestreOrderById.get(getMatriculaGrupoModuloSemestreId(b) ?? -1) ?? Number.MAX_SAFE_INTEGER)
+        : 0) ||
       String(a.grupo?.semestre?.titulo ?? "").localeCompare(String(b.grupo?.semestre?.titulo ?? ""), "es", { numeric: true }) ||
       String(a.grupo?.nombreDisplay ?? "").localeCompare(String(b.grupo?.nombreDisplay ?? ""), "es", { numeric: true }) ||
       String(a.nombre || a.modulo?.titulo || a.modulo?.tituloComercial || "").localeCompare(
@@ -1242,14 +1971,32 @@ async function loadMatriculaDocenteGrupoModulos(context: https.CallableContext, 
     return !allowedSemestreIds || allowedSemestreIds.has(Number(semestreId));
   });
 
-  const semestreTitulo = resolveMatriculaSemestreTitulo(semestres, semestreTituloInput);
-  const grupoModulos = sortMatriculaDocenteGrupoModulos(filterMatriculaDocenteGrupoModulos({
+  const isDocenteRequester = isDocenteMatriculaRequester(context);
+  const hasExplicitSemestre = Boolean(String(semestreTituloInput ?? "").trim());
+  const docenteSemestreSelection = isDocenteRequester && !hasExplicitSemestre
+    ? await getDocenteMenuSemestreSelection(semestres)
+    : null;
+  const semestreTitulo = docenteSemestreSelection?.currentSemestreTitulo
+    ?? resolveMatriculaSemestreTitulo(semestres, semestreTituloInput);
+  const grupoModulosByRequester = filterMatriculaDocenteGrupoModulos({
     context,
     userId: response.data.users?.[0]?.id,
     personals: response.data.personals ?? [],
     grupoModulos: grupoModulosInput,
-    semestreTitulo,
-  }));
+    semestreTitulo: hasExplicitSemestre ? semestreTitulo : null,
+  });
+  const docenteSemestreIds = docenteSemestreSelection
+    ? new Set(docenteSemestreSelection.semestreIds)
+    : null;
+  const grupoModulos = sortMatriculaDocenteGrupoModulos(
+    docenteSemestreIds
+      ? grupoModulosByRequester.filter((item) => {
+        const semestreId = getMatriculaGrupoModuloSemestreId(item);
+        return semestreId != null && docenteSemestreIds.has(semestreId);
+      })
+      : grupoModulosByRequester,
+    docenteSemestreSelection?.orderById,
+  );
 
   return { grupoModulos, semestreTitulo };
 }
@@ -1378,22 +2125,27 @@ export const getFormularioMatriculaConfiguracion = https.onCall(async (_data, co
   }
 });
 
-export const listMatriculaSemestres = https.onCall(async (_data, context) => {
+export const listMatriculaSemestres = https.onCall(async (data, context) => {
   await requireMatriculaSemestreAccess(context);
+  const soloConMatriculas = Boolean(data?.soloConMatriculas);
 
   try {
     const response = await dataConnect.executeGraphql<{
       semestres: MatriculaSemestreOption[];
       grupos: Array<{ id: number; semestreId?: number | null; archivado?: boolean | null }>;
+      matriculas: Array<{ id: number; semestreId?: number | null; archivado?: boolean | null }>;
     }, Record<string, never>>(
       LIST_MATRICULA_SEMESTRES_QUERY,
     );
     const groupCountBySemestre = buildGroupCountBySemestre(response.data.grupos ?? []);
+    const matriculaCountBySemestre = buildMatriculaCountBySemestre(response.data.matriculas ?? []);
     return {
       semestres: sortMatriculaSemestres(response.data.semestres ?? [])
+        .filter((semestre) => !soloConMatriculas || (matriculaCountBySemestre.get(semestre.id) ?? 0) > 0)
         .map((semestre) => ({
           ...addMatriculaSemestreDerivedFields(semestre),
           grupoCount: groupCountBySemestre.get(semestre.id) ?? 0,
+          matriculaCount: matriculaCountBySemestre.get(semestre.id) ?? 0,
         })),
     };
   } catch (error) {
@@ -1426,10 +2178,46 @@ export const listFormularioMatriculaSemestres = https.onCall(async (_data, conte
   }
 });
 
+function isMatriculaProgramaPlan(plan: MatriculaFichaPlan | null | undefined) {
+  const tipoCarrera = normalizeText(plan?.carrera?.tipoCarrera?.nombre);
+  const planEstudio = normalizeText(plan?.planEstudio);
+  return tipoCarrera.includes("programa de estudio") || planEstudio.includes("programa");
+}
+
+function resolveMatriculaFichaPlanForModulo(params: {
+  moduloId?: number | null;
+  plan?: MatriculaFichaPlan | null;
+  planModulos: MatriculaFichaPlanModulo[];
+}) {
+  if (params.plan?.id) return params.plan;
+  const moduloId = toNumberOrNull(params.moduloId);
+  if (!moduloId) return params.plan ?? null;
+
+  const relations = params.planModulos
+    .filter((item) => Number(item.moduloId) === moduloId)
+    .slice()
+    .sort((a, b) =>
+      (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER) ||
+      (a.planId ?? 0) - (b.planId ?? 0),
+    );
+
+  return relations.find((item) => isMatriculaProgramaPlan(item.plan))?.plan
+    ?? relations[0]?.plan
+    ?? params.plan
+    ?? null;
+}
+
 async function getMatriculaById(matriculaId: number): Promise<MatriculaRow | null> {
   const response = await dataConnect.executeGraphql<{
     matricula: MatriculaRow | null;
-    modulosEstudiantes?: Array<{ grupoId?: number | null }>;
+    modulosEstudiantes?: MatriculaModuloLinkRow[];
+    grupoModulos?: MatriculaFichaGrupoModulo[];
+    modulos?: MatriculaFichaModulo[];
+    grupoModuloUnidadesDidacticas?: Array<{ orden?: number | null; grupoModuloId?: number | null; unidadDidacticaId: number }>;
+    unidadDidacticaModulos?: Array<{ orden?: number | null; moduloId?: number | null; unidadDidacticaId: number }>;
+    unidadesDidacticas?: MatriculaFichaUnidadDidactica[];
+    planModulos?: MatriculaFichaPlanModulo[];
+    matriculaCambiosModulo?: MatriculaCambioModuloRow[];
   }, { id: number }>(
     GET_MATRICULA_QUERY,
     { variables: { id: matriculaId } },
@@ -1437,9 +2225,57 @@ async function getMatriculaById(matriculaId: number): Promise<MatriculaRow | nul
 
   const matricula = response.data.matricula ?? null;
   if (!matricula) return null;
+  const planModulos = response.data.planModulos ?? [];
+  const grupoModuloById = new Map((response.data.grupoModulos ?? []).map((item) => [Number(item.id), item]));
+  const moduloById = new Map((response.data.modulos ?? []).map((item) => [Number(item.id), item]));
+  const modulosEstudiantes = (response.data.modulosEstudiantes ?? []).map((item) => {
+    const fallbackGrupoModulo = item.grupoModuloId ? grupoModuloById.get(Number(item.grupoModuloId)) : null;
+    const sourceGrupoModulo = item.grupoModulo ?? fallbackGrupoModulo ?? null;
+    const modulo = sourceGrupoModulo?.modulo ?? (item.moduloId ? moduloById.get(Number(item.moduloId)) : null);
+    if (!modulo) return item;
+    return {
+      ...item,
+      grupoModulo: {
+        ...sourceGrupoModulo,
+        id: sourceGrupoModulo?.id ?? item.grupoModuloId,
+        grupoId: sourceGrupoModulo?.grupoId ?? item.grupoId,
+        moduloId: sourceGrupoModulo?.moduloId ?? item.moduloId,
+        modulo: {
+          ...modulo,
+          plan: resolveMatriculaFichaPlanForModulo({
+            moduloId: item.moduloId ?? modulo.id,
+            plan: modulo.plan,
+            planModulos,
+          }),
+        },
+      },
+    };
+  });
+  const programaModulo =
+    modulosEstudiantes.find((item) =>
+      normalizeText(item.grupoModulo?.modulo?.plan?.carrera?.tipoCarrera?.nombre).includes("programa de estudio"),
+    ) ?? modulosEstudiantes[0] ?? null;
+  const grupoModuloId = programaModulo?.grupoModuloId ?? programaModulo?.grupoModulo?.id ?? null;
+  const moduloId = programaModulo?.moduloId ?? programaModulo?.grupoModulo?.modulo?.id ?? null;
+  const unidadesById = new Map((response.data.unidadesDidacticas ?? []).map((unidad) => [unidad.id, unidad]));
+  const grupoModuloUnidadLinks = (response.data.grupoModuloUnidadesDidacticas ?? [])
+    .filter((item) => grupoModuloId && Number(item.grupoModuloId) === Number(grupoModuloId));
+  const moduloUnidadLinks = (response.data.unidadDidacticaModulos ?? [])
+    .filter((item) => moduloId && Number(item.moduloId) === Number(moduloId));
+  const unidadLinks = grupoModuloUnidadLinks.length > 0 ? grupoModuloUnidadLinks : moduloUnidadLinks;
+  const fichaUnidadesDidacticas: MatriculaFichaUnidadDidactica[] = unidadLinks
+    .flatMap((item) => {
+      const unidad = unidadesById.get(item.unidadDidacticaId);
+      return unidad ? [{ ...unidad, orden: item.orden ?? unidad.id }] : [];
+    })
+    .sort((a, b) => (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id);
+
   return {
     ...matricula,
-    grupoId: response.data.modulosEstudiantes?.find((item) => item.grupoId)?.grupoId ?? null,
+    grupoId: modulosEstudiantes.find((item) => item.grupoId)?.grupoId ?? null,
+    modulosEstudiantes,
+    cambiosModulo: response.data.matriculaCambiosModulo ?? [],
+    fichaUnidadesDidacticas,
   };
 }
 
@@ -1470,19 +2306,15 @@ function isLocalStorageUrl(value: string | null | undefined): boolean {
   }
 }
 
-function hasUsableProcessedDocumentImages(user: MatriculaUserRow | null): boolean {
-  const frontUrl = asCleanString(user?.dniImagenFrenteProcesadaUrl);
-  const backUrl = asCleanString(user?.dniImagenReversoProcesadaUrl);
-  return Boolean(
-    frontUrl
-    && backUrl
-    && !isLocalStorageUrl(frontUrl)
-    && !isLocalStorageUrl(backUrl),
-  );
+function hasUsableProcessedDocumentImage(value: string | null | undefined): boolean {
+  const url = asCleanString(value);
+  return Boolean(url && !isLocalStorageUrl(url));
 }
 
 function getDocumentImagePolicy(user: MatriculaUserRow | null) {
-  const userHasStoredImages = hasUsableProcessedDocumentImages(user);
+  const hasStoredFrontImage = hasUsableProcessedDocumentImage(user?.dniImagenFrenteProcesadaUrl);
+  const hasStoredBackImage = hasUsableProcessedDocumentImage(user?.dniImagenReversoProcesadaUrl);
+  const userHasStoredImages = hasStoredFrontImage && hasStoredBackImage;
   const fechaVencimiento = normalizeDate(user?.fechaVencimiento);
   const storedDocumentExpired = Boolean(fechaVencimiento && isExpiredDate(fechaVencimiento));
   const shouldPersistDocumentImages = !userHasStoredImages || !fechaVencimiento || storedDocumentExpired;
@@ -1497,11 +2329,43 @@ function getDocumentImagePolicy(user: MatriculaUserRow | null) {
 
   return {
     userHasStoredImages,
+    hasStoredFrontImage,
+    hasStoredBackImage,
     fechaVencimiento,
     storedDocumentExpired,
     shouldPersistDocumentImages,
     reason,
   };
+}
+
+function shouldProcessDocumentSide(params: {
+  existingProcessedUrl?: string | null;
+  source: UploadedDocumentImage;
+  storedExpiration?: string | null;
+  newExpiration?: string | null;
+}): boolean {
+  const hasProcessed = hasUsableProcessedDocumentImage(params.existingProcessedUrl);
+  const sourceAvailable = Boolean(params.source.path || params.source.url);
+  if (!sourceAvailable) return false;
+
+  if (!hasProcessed) {
+    return true;
+  }
+
+  const storedExpiration = normalizeDate(params.storedExpiration);
+  const newExpiration = normalizeDate(params.newExpiration);
+  const storedExpired = Boolean(storedExpiration && isExpiredDate(storedExpiration));
+
+  if (storedExpiration && !storedExpired) {
+    return false;
+  }
+
+  if (storedExpired) {
+    const newDocumentIsCurrent = Boolean(newExpiration && !isExpiredDate(newExpiration));
+    return Boolean(params.source.isNewUpload && newDocumentIsCurrent);
+  }
+
+  return Boolean(params.source.isNewUpload);
 }
 
 function hasUploadedDocumentImageInput(value: unknown): boolean {
@@ -1587,6 +2451,8 @@ function buildDocumentProcessingSide(
 
   const hasTwoBodies = Boolean(metadata?.gemini?.tieneDosCuerpos);
   const selectedArea = asCleanString(metadata?.gemini?.areaLectura) ?? "completa";
+  const orientation = asCleanString(metadata?.gemini?.orientacion) ?? "correcta";
+  const rotationClockwise = normalizeRotationClockwise(metadata?.gemini?.rotacionHorariaParaLeer);
 
   return {
     side,
@@ -1594,12 +2460,16 @@ function buildDocumentProcessingSide(
     metadata,
     hasTwoBodies,
     selectedArea,
+    orientation,
+    rotationClockwise,
     instructions: {
       twoBodies: hasTwoBodies
         ? `El archivo tiene dos cuerpos. Trabaja solo con el cuerpo del area '${selectedArea}' asignado a '${side}' y descarta visualmente el otro cuerpo.`
         : "El archivo tiene un solo cuerpo. Procesa el documento completo.",
-      orientation: "Corrige la orientacion del DNI para dejarlo perfectamente horizontal.",
-      perspective: "Corrige la perspectiva para obtener un rectangulo proporcional 8.6:5.4, conservando la mayor resolucion posible.",
+      orientation: rotationClockwise !== null
+        ? `Primero gira el area ${rotationClockwise} grados en sentido horario para que el texto se lea de izquierda a derecha.`
+        : `Primero corrige la orientacion declarada por la IA (${orientation}) para dejar el DNI perfectamente horizontal.`,
+      perspective: "Corrige la perspectiva usando la proporcion 8.6:5.4 solo como referencia para detectar bordes; conserva la proporcion real detectada al guardar.",
       crop: "Recorta perfectamente el DNI detectando sus bordes.",
       enhancement: "Mejora brillo, contraste y nitidez sin perder legibilidad.",
       output: `Guarda la imagen procesada del lado '${side}' y devuelve su nuevo vinculo si se genera.`,
@@ -1613,16 +2483,39 @@ async function enqueueMatriculaDocumentProcessingJob(params: {
   tipoDocumento: string;
   dni: string;
   fechaNacimiento?: string | null;
+  fechaVencimientoAnterior?: string | null;
+  fechaVencimientoNueva?: string | null;
   frente: UploadedDocumentImage;
   reverso: UploadedDocumentImage;
   dniImagenFrenteProcesadaUrl?: string | null;
   dniImagenReversoProcesadaUrl?: string | null;
+  avatarUrl?: string | null;
+  recorteFotografiaUrl?: string | null;
   analisisDocumentoTemporal: DocumentoAnalisisMetadata | null;
 }) {
   const frontMetadata = getDocumentoArchivoMetadata(params.analisisDocumentoTemporal, "frente");
   const backMetadata = getDocumentoArchivoMetadata(params.analisisDocumentoTemporal, "reverso");
-  const shouldProcessFront = params.frente.isNewUpload || !asCleanString(params.dniImagenFrenteProcesadaUrl);
-  const shouldProcessBack = params.reverso.isNewUpload || !asCleanString(params.dniImagenReversoProcesadaUrl);
+  const shouldProcessFront = shouldProcessDocumentSide({
+    existingProcessedUrl: params.dniImagenFrenteProcesadaUrl,
+    source: params.frente,
+    storedExpiration: params.fechaVencimientoAnterior,
+    newExpiration: params.fechaVencimientoNueva,
+  });
+  const shouldProcessBack = shouldProcessDocumentSide({
+    existingProcessedUrl: params.dniImagenReversoProcesadaUrl,
+    source: params.reverso,
+    storedExpiration: params.fechaVencimientoAnterior,
+    newExpiration: params.fechaVencimientoNueva,
+  });
+  const newDocumentIsCurrent = Boolean(
+    normalizeDate(params.fechaVencimientoNueva)
+    && !isExpiredDate(params.fechaVencimientoNueva),
+  );
+  const storedDocumentExpired = Boolean(
+    normalizeDate(params.fechaVencimientoAnterior)
+    && isExpiredDate(params.fechaVencimientoAnterior),
+  );
+  const forceAvatarRefresh = storedDocumentExpired && newDocumentIsCurrent && (shouldProcessFront || shouldProcessBack);
   const sides = [
     shouldProcessFront ? buildDocumentProcessingSide("frente", params.frente, frontMetadata) : null,
     shouldProcessBack ? buildDocumentProcessingSide("reverso", params.reverso, backMetadata) : null,
@@ -1652,7 +2545,12 @@ async function enqueueMatriculaDocumentProcessingJob(params: {
     tipoDocumento: params.tipoDocumento,
     dni: params.dni,
     fechaNacimiento: normalizeDate(params.fechaNacimiento),
+    fechaVencimientoAnterior: normalizeDate(params.fechaVencimientoAnterior),
+    fechaVencimientoNueva: normalizeDate(params.fechaVencimientoNueva),
     analisisDocumentoTemporal: params.analisisDocumentoTemporal,
+    existingAvatarUrl: asCleanString(params.avatarUrl) ?? null,
+    existingRecorteFotografiaUrl: asCleanString(params.recorteFotografiaUrl) ?? null,
+    forceAvatarRefresh,
     sides,
     processor: {
       target: "cloud-run-opencv",
@@ -1740,13 +2638,28 @@ function getProcessedDocumentOutput(
 
 async function enqueueMatriculaAvatarExtractionJob(params: {
   userId: unknown;
+  tipoDocumento?: string | null;
   dni: string;
   fechaNacimiento?: string | null;
   documentProcessingJobId: string;
   frenteProcesado: ProcessedDocumentOutput | null;
+  existingAvatarUrl?: string | null;
+  existingRecorteFotografiaUrl?: string | null;
+  forceRegenerate?: boolean;
 }) {
   const userId = toNumberOrNull(params.userId);
   if (!userId || !params.frenteProcesado?.path) return null;
+  const existingAvatarUrl = asCleanString(params.existingAvatarUrl);
+  const existingRecorteFotografiaUrl = asCleanString(params.existingRecorteFotografiaUrl);
+  const forceRegenerate = Boolean(params.forceRegenerate);
+  if (!forceRegenerate && existingAvatarUrl && existingRecorteFotografiaUrl) {
+    console.info("matricula_avatar_extraction_skipped_existing_assets", {
+      userId,
+      dni: params.dni,
+      documentProcessingJobId: params.documentProcessingJobId,
+    });
+    return null;
+  }
 
   const now = new Date().toISOString();
   const ref = await getFirestore()
@@ -1757,20 +2670,52 @@ async function enqueueMatriculaAvatarExtractionJob(params: {
       updatedAt: now,
       source: "matricula_document_processing",
       userId,
+      tipoDocumento: normalizeDocumentType(params.tipoDocumento) ?? null,
       dni: params.dni,
       fechaNacimiento: normalizeDate(params.fechaNacimiento),
       documentProcessingJobId: params.documentProcessingJobId,
       frenteProcesado: params.frenteProcesado,
+      existingAvatarUrl: existingAvatarUrl ?? null,
+      existingRecorteFotografiaUrl: existingRecorteFotografiaUrl ?? null,
+      forceRegenerate,
     }) as FirebaseFirestore.DocumentData);
 
   console.info("matricula_avatar_extraction_queued", {
     jobId: ref.id,
     userId,
     dni: params.dni,
-    fechaNacimiento: normalizeDate(params.fechaNacimiento),
-    sourcePath: params.frenteProcesado.path,
-  });
+      fechaNacimiento: normalizeDate(params.fechaNacimiento),
+      sourcePath: params.frenteProcesado.path,
+      forceRegenerate,
+    });
   return ref.id;
+}
+
+async function enqueueMatriculaAvatarExtractionFromExistingProcessed(params: {
+  user: MatriculaUserRow | null;
+  userId: number;
+  dni: string;
+  fechaNacimiento?: string | null;
+  source: string;
+}) {
+  const frontUrl = asCleanString(params.user?.dniImagenFrenteProcesadaUrl);
+  if (!frontUrl || isLocalStorageUrl(frontUrl)) return null;
+
+  return enqueueMatriculaAvatarExtractionJob({
+    userId: params.userId,
+    tipoDocumento: params.user?.tipoDocumento,
+    dni: params.dni,
+    fechaNacimiento: params.fechaNacimiento ?? params.user?.fechaNacimiento,
+    documentProcessingJobId: params.source,
+    frenteProcesado: {
+      path: getStoragePathFromDownloadUrl(frontUrl),
+      url: frontUrl,
+      contentType: detectDocumentContentType(frontUrl),
+    },
+    existingAvatarUrl: params.user?.avatar,
+    existingRecorteFotografiaUrl: params.user?.recorteFotografia,
+    forceRegenerate: false,
+  });
 }
 
 async function downloadProcessedImage(source: ProcessedDocumentOutput): Promise<{
@@ -2121,10 +3066,14 @@ async function generateCarnetAvatarImage(params: {
     "Genera una fotografia tipo carnet/retrato a color usando estrictamente la persona de la imagen de referencia.",
     "Objetivo: mejorar la visualizacion, nitidez, iluminacion y color solamente.",
     "Manten los rasgos faciales, identidad, expresion neutral y proporciones naturales de la referencia.",
-    "Manten el mismo cabello, largo, volumen, linea de cabello, peinado y color de cabello de la referencia. No inventes ni estilices el peinado.",
+    "El cabello y el peinado son parte de la identidad: manten exactamente el mismo cabello, largo, volumen, silueta, raya, flequillo, recogido, linea de cabello y color de la referencia.",
+    "No alises, no rices, no ordenes, no estilices, no cambies volumen ni inventes un peinado nuevo aunque la referencia sea borrosa.",
     ageInstruction,
     "No embellezcas, no retoques la piel, no cambies facciones principales, no cambies genero, no agregues maquillaje ni accesorios nuevos.",
     "Encuadre: rostro y hombros, frontal, estilo documento oficial, sin textos, sin logos, sin bordes, sin elementos del DNI.",
+    "Composicion: centra a la persona en la imagen final; la cabeza, rostro, cuello y hombros deben quedar alineados al eje vertical central.",
+    "No copies el descentrado, desplazamiento lateral o encuadre torcido de la foto del DNI; corrige la composicion para que haya espacio equilibrado a izquierda y derecha.",
+    "Manten la cabeza completa dentro del encuadre, sin cortar cabello, menton ni hombros de forma brusca.",
     "Fondo: blanco puro #FFFFFF, liso y uniforme, sin sombras fuertes, sin textura, sin degradado y sin patron de transparencia.",
     "No uses fondo verde, no uses color chroma key, no uses transparencia y no simules cuadricula de transparencia.",
     "Salida: retrato vertical 3:4, apariencia fotografica natural.",
@@ -2165,7 +3114,7 @@ async function generateCarnetAvatarImage(params: {
       ],
       generationConfig: {
         responseModalities: ["TEXT", "IMAGE"],
-        temperature: 0.2,
+        temperature: 0.1,
         imageConfig: {
           aspectRatio: "3:4",
           imageSize: params.imageSize,
@@ -2201,24 +3150,34 @@ async function uploadAvatarImage(params: {
   contentType?: string;
   extension?: string;
   sizeLabel?: string;
+  sourceMode: "generado" | "recorte";
   width?: number;
   height?: number;
   bucketName: string;
   userId: number;
   dni: string;
+  tipoDocumento?: string | null;
   jobId: string;
 }): Promise<{ path: string; url: string; bucket: string; contentType: string }> {
   const safeDni = normalizeDocumentNumber(params.dni) || String(params.userId);
+  const prefix = documentFilePrefix(params.tipoDocumento);
   const contentType = params.contentType ?? "image/jpeg";
   const extension = params.extension ?? (contentType === "image/png" ? "png" : "jpg");
   const sizeLabel = asCleanString(params.sizeLabel) ?? "grande";
-  const path = `usuarios/avatars/${safeDni}/avatar-dni-${params.jobId}-${sizeLabel}.${extension}`;
+  const sizeSuffix = sizeLabel === "grande" ? "" : `-${sizeLabel}`;
+  const path = `usuarios/avatars/${safeDni}/avatar-${params.sourceMode}-${prefix}-${safeDni}${sizeSuffix}.${extension}`;
   const token = randomUUID();
   const bucket = getStorage().bucket(params.bucketName);
   const file = bucket.file(path);
-  const outputBuffer = params.width && params.height
+  const shouldResize = Boolean(params.width || params.height);
+  const outputBuffer = shouldResize
     ? await sharp(params.avatarBuffer)
-      .resize(params.width, params.height, { fit: "cover" })
+      .resize({
+        width: params.width,
+        height: params.height,
+        fit: params.width && params.height ? "cover" : "inside",
+        withoutEnlargement: true,
+      })
       .toFormat(contentType === "image/png" ? "png" : "jpeg", contentType === "image/png"
         ? { compressionLevel: 9 }
         : { quality: 90 })
@@ -2246,11 +3205,14 @@ async function uploadAvatarImages(params: {
   bucketName: string;
   userId: number;
   dni: string;
+  tipoDocumento?: string | null;
+  sourceMode: "generado" | "recorte";
   jobId: string;
 }): Promise<{
   grande: { path: string; url: string; bucket: string; contentType: string };
   mediano: { path: string; url: string; bucket: string; contentType: string };
   pequeno: { path: string; url: string; bucket: string; contentType: string };
+  tiny: { path: string; url: string; bucket: string; contentType: string };
 }> {
   const base = {
     avatarBuffer: params.avatarBuffer,
@@ -2259,14 +3221,17 @@ async function uploadAvatarImages(params: {
     bucketName: params.bucketName,
     userId: params.userId,
     dni: params.dni,
+    tipoDocumento: params.tipoDocumento,
+    sourceMode: params.sourceMode,
     jobId: params.jobId,
   };
-  const [grande, mediano, pequeno] = await Promise.all([
+  const [grande, mediano, pequeno, tiny] = await Promise.all([
     uploadAvatarImage({ ...base, sizeLabel: "grande" }),
     uploadAvatarImage({ ...base, sizeLabel: "mediano", width: 300, height: 400 }),
     uploadAvatarImage({ ...base, sizeLabel: "pequeno", width: 96, height: 128 }),
+    uploadAvatarImage({ ...base, sizeLabel: "tiny", width: 48 }),
   ]);
-  return { grande, mediano, pequeno };
+  return { grande, mediano, pequeno, tiny };
 }
 
 async function uploadRecorteFotografiaImage(params: {
@@ -2274,10 +3239,12 @@ async function uploadRecorteFotografiaImage(params: {
   bucketName: string;
   userId: number;
   dni: string;
+  tipoDocumento?: string | null;
   jobId: string;
 }): Promise<{ path: string; url: string; bucket: string; contentType: string }> {
   const safeDni = normalizeDocumentNumber(params.dni) || String(params.userId);
-  const path = `usuarios/avatars/${safeDni}/recorte-fotografia-dni-${params.jobId}.jpg`;
+  const prefix = documentFilePrefix(params.tipoDocumento);
+  const path = `usuarios/avatars/${safeDni}/fotorecortada-${prefix}-${safeDni}.jpg`;
   const token = randomUUID();
   const bucket = getStorage().bucket(params.bucketName);
   const file = bucket.file(path);
@@ -2317,13 +3284,27 @@ async function processMatriculaAvatarExtractionJob(
 
   await ref.update({ status: "processing", updatedAt: new Date().toISOString() });
   try {
+    const forceRegenerate = Boolean(job.forceRegenerate);
+    const existingAvatarUrl = asCleanString(job.existingAvatarUrl);
+    const existingRecorteFotografiaUrl = asCleanString(job.existingRecorteFotografiaUrl);
+    const shouldRefreshAvatar = forceRegenerate || !existingAvatarUrl;
+    const shouldRefreshRecorte = forceRegenerate || !existingRecorteFotografiaUrl;
+    if (!shouldRefreshAvatar && !shouldRefreshRecorte) {
+      await ref.update({
+        status: "skipped_existing_assets",
+        updatedAt: new Date().toISOString(),
+        message: "El usuario ya tiene avatar y recorte de fotografia.",
+      });
+      return;
+    }
+
     const { buffer, bucketName } = await downloadProcessedImage(source);
     const cropBox = await detectAvatarCropBox(buffer);
     const avatarGenerationSettings = await getAvatarGenerationSettings();
     const currentAge = calculateCurrentAge(job.fechaNacimiento);
     const referenceBuffer = await buildAvatarReferenceImage({ sourceBuffer: buffer, cropBox });
     const recorteFotografiaBuffer = await buildOriginalPhotoCropImage({ sourceBuffer: buffer, cropBox });
-    const generatedAvatar = avatarGenerationSettings.enabled
+    const generatedAvatar = shouldRefreshAvatar && avatarGenerationSettings.enabled
       ? await generateCarnetAvatarImage({
         referenceBuffer,
         currentAge,
@@ -2331,32 +3312,43 @@ async function processMatriculaAvatarExtractionJob(
         imageSize: avatarGenerationSettings.imageSize,
       })
       : null;
-    const avatarBuffer = generatedAvatar?.buffer
-      ?? await buildDirectCropAvatarImage({ sourceBuffer: buffer, cropBox });
-    const avatar = await uploadAvatarImages({
-      avatarBuffer,
-      contentType: generatedAvatar?.contentType,
-      extension: generatedAvatar?.extension,
-      bucketName,
-      userId,
-      dni: asCleanString(job.dni) ?? "",
-      jobId,
-    });
-    const recorteFotografia = await uploadRecorteFotografiaImage({
-      cropBuffer: recorteFotografiaBuffer,
-      bucketName,
-      userId,
-      dni: asCleanString(job.dni) ?? "",
-      jobId,
-    });
+    const avatarBuffer = shouldRefreshAvatar
+      ? (generatedAvatar?.buffer ?? await buildDirectCropAvatarImage({ sourceBuffer: buffer, cropBox }))
+      : null;
+    const avatar = avatarBuffer
+      ? await uploadAvatarImages({
+        avatarBuffer,
+        contentType: generatedAvatar?.contentType,
+        extension: generatedAvatar?.extension,
+        bucketName,
+        userId,
+        dni: asCleanString(job.dni) ?? "",
+        tipoDocumento: asCleanString(job.tipoDocumento),
+        sourceMode: generatedAvatar ? "generado" : "recorte",
+        jobId,
+      })
+      : null;
+    const recorteFotografia = shouldRefreshRecorte
+      ? await uploadRecorteFotografiaImage({
+        cropBuffer: recorteFotografiaBuffer,
+        bucketName,
+        userId,
+        dni: asCleanString(job.dni) ?? "",
+        tipoDocumento: asCleanString(job.tipoDocumento),
+        jobId,
+      })
+      : null;
+    const userUpdateData: DataConnectUserInput = {};
+    if (avatar?.grande.url) userUpdateData.avatar = avatar.grande.url;
+    if (recorteFotografia?.url) userUpdateData.recorteFotografia = recorteFotografia.url;
     await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
       UPDATE_USER_MUTATION,
-      { variables: { id: userId, data: { avatar: avatar.grande.url, recorteFotografia: recorteFotografia.url } } },
+      { variables: { id: userId, data: userUpdateData } },
     );
     await ref.update({
       status: "completed",
       updatedAt: new Date().toISOString(),
-      avatar: avatar.grande,
+      avatar: avatar?.grande ?? null,
       avatarTamanos: avatar,
       recorteFotografia,
       cropBox,
@@ -2378,9 +3370,11 @@ async function processMatriculaAvatarExtractionJob(
     console.info("matricula_avatar_extraction_completed", {
       jobId,
       userId,
-      avatarPath: avatar.grande.path,
-      avatarMedianoPath: avatar.mediano.path,
-      avatarPequenoPath: avatar.pequeno.path,
+      avatarPath: avatar?.grande.path ?? null,
+      avatarMedianoPath: avatar?.mediano.path ?? null,
+      avatarPequenoPath: avatar?.pequeno.path ?? null,
+      avatarTinyPath: avatar?.tiny.path ?? null,
+      recorteFotografiaPath: recorteFotografia?.path ?? null,
       cropBox,
       avatarMode: generatedAvatar ? "gemini_carnet_color" : "vision_direct_crop",
       avatarModel: generatedAvatar?.model ?? null,
@@ -2511,10 +3505,14 @@ async function dispatchMatriculaDocumentProcessingJob(
     const avatarExtractionJobId = responseOk
       ? await enqueueMatriculaAvatarExtractionJob({
         userId: job.userId,
+        tipoDocumento: asCleanString(job.tipoDocumento),
         dni: asCleanString(job.dni) ?? "",
         fechaNacimiento: asCleanString(job.fechaNacimiento),
         documentProcessingJobId: jobId,
         frenteProcesado: getProcessedDocumentOutput(processorResult, "frente"),
+        existingAvatarUrl: asCleanString(job.existingAvatarUrl),
+        existingRecorteFotografiaUrl: asCleanString(job.existingRecorteFotografiaUrl),
+        forceRegenerate: Boolean(job.forceAvatarRefresh),
       })
       : null;
     console.info("matricula_document_processing_response", {
@@ -2615,6 +3613,129 @@ async function replaceModuloEstudiantesForMatricula(
   );
 }
 
+const COURSE_CHANGE_WINDOW_DAYS = 21;
+const DOCENTE_MAX_MODULO_CHANGE_EVENTS = 3;
+
+function getModuloChangeKey(item: { grupoModuloId?: number | null; grupoId?: number | null; moduloId?: number | null }) {
+  return [
+    item.grupoModuloId ?? 0,
+    item.grupoId ?? 0,
+    item.moduloId ?? 0,
+  ].join(":");
+}
+
+function sortModuloChangeItems<T extends { grupoModuloId?: number | null; grupoId?: number | null; moduloId?: number | null }>(items: T[]) {
+  return items
+    .slice()
+    .sort((a, b) =>
+      (a.grupoModuloId ?? 0) - (b.grupoModuloId ?? 0) ||
+      (a.grupoId ?? 0) - (b.grupoId ?? 0) ||
+      (a.moduloId ?? 0) - (b.moduloId ?? 0),
+    );
+}
+
+function hasGrupoModuloSelectionChanged(
+  previousItems: Array<{ grupoModuloId?: number | null; grupoId?: number | null; moduloId?: number | null }>,
+  nextItems: Array<{ grupoModuloId?: number | null; grupoId?: number | null; moduloId?: number | null }>,
+) {
+  const previousKeys = sortModuloChangeItems(previousItems).map(getModuloChangeKey);
+  const nextKeys = sortModuloChangeItems(nextItems).map(getModuloChangeKey);
+  if (previousKeys.length !== nextKeys.length) return true;
+  return previousKeys.some((key, index) => key !== nextKeys[index]);
+}
+
+function isGrupoModuloChangeExpired(item: MatriculaModuloLinkRow, now = new Date()) {
+  const inicio = parseDateOnly(item.grupoModulo?.inicio);
+  if (!inicio) return false;
+  const today = todayDateOnly(now);
+  const elapsedDays = Math.floor((today.getTime() - inicio.getTime()) / 86_400_000);
+  return elapsedDays > COURSE_CHANGE_WINDOW_DAYS;
+}
+
+function countModuloChangeEvents(changes: MatriculaCambioModuloRow[] | null | undefined) {
+  const keys = new Set<string>();
+  for (const change of changes ?? []) {
+    const hasPrevious = Boolean(
+      change.grupoModuloAnterior?.id
+      || asCleanString(change.grupoModuloAnterior?.nombre)
+      || change.moduloAnterior?.id
+      || asCleanString(change.moduloAnterior?.titulo)
+      || asCleanString(change.moduloAnterior?.tituloComercial)
+      || change.grupoAnterior?.id
+      || asCleanString(change.grupoAnterior?.nombreDisplay),
+    );
+    if (!hasPrevious) continue;
+    const fechaCambio = asCleanString(change.fechaCambio);
+    keys.add(fechaCambio || `id:${change.id ?? keys.size}`);
+  }
+  return keys.size;
+}
+
+async function getRequesterDataConnectUserId(context: https.CallableContext) {
+  const uid = asCleanString(context.auth?.uid);
+  if (!uid) return null;
+  const response = await dataConnect.executeGraphql<{
+    users: Array<{ id: number }>;
+  }, { documentId: string }>(
+    FIND_USER_BY_DOCUMENT_ID_FOR_MATRICULA_QUERY,
+    { variables: { documentId: uid } },
+  );
+  return response.data.users?.[0]?.id ?? null;
+}
+
+async function recordMatriculaModuloChanges(params: {
+  matriculaId: number;
+  userId?: number | null;
+  semestreId?: number | null;
+  previousItems: MatriculaModuloLinkRow[];
+  nextItems: Array<{ grupoModuloId?: number | null; moduloId: number; grupoId?: number | null }>;
+  fechaCambio: string;
+  registradoPorId?: number | null;
+}) {
+  if (!hasGrupoModuloSelectionChanged(params.previousItems, params.nextItems)) return;
+
+  const previousItems = sortModuloChangeItems(params.previousItems);
+  const nextItems = sortModuloChangeItems(params.nextItems);
+  const max = Math.max(previousItems.length, nextItems.length);
+  const changedPairs: Array<{
+    previous: MatriculaModuloLinkRow | null;
+    next: { grupoModuloId?: number | null; moduloId: number; grupoId?: number | null } | null;
+  }> = [];
+  for (let index = 0; index < max; index += 1) {
+    const previousCandidate = previousItems[index] ?? null;
+    const nextCandidate = nextItems[index] ?? null;
+    if (previousCandidate && nextCandidate && getModuloChangeKey(previousCandidate) === getModuloChangeKey(nextCandidate)) continue;
+    changedPairs.push({ previous: previousCandidate, next: nextCandidate });
+  }
+  const selectedChange =
+    changedPairs.find((change) => change.previous && change.next)
+    ?? changedPairs.find((change) => change.previous)
+    ?? null;
+  if (!selectedChange?.previous) return;
+  const { previous, next } = selectedChange;
+
+  await dataConnect.executeGraphql<
+    { matriculaCambioModulo_insert: unknown },
+    { data: Record<string, unknown> }
+  >(INSERT_MATRICULA_CAMBIO_MODULO_MUTATION, {
+    variables: {
+      data: {
+        fechaCambio: params.fechaCambio,
+        matriculaId: params.matriculaId,
+        userId: params.userId ?? null,
+        semestreId: params.semestreId ?? null,
+        grupoModuloAnteriorId: previous?.grupoModuloId ?? null,
+        grupoModuloNuevoId: next?.grupoModuloId ?? null,
+        grupoAnteriorId: previous?.grupoId ?? null,
+        grupoNuevoId: next?.grupoId ?? null,
+        moduloAnteriorId: previous?.moduloId ?? null,
+        moduloNuevoId: next?.moduloId ?? null,
+        registradoPorId: params.registradoPorId ?? null,
+      },
+    },
+  });
+}
+
 function buildModuloGruposForMatricula(data: unknown, paqueteModulos: DataConnectPaqueteModulo[]) {
   const record = data as Record<string, unknown> | null;
   const input = record?.moduloGrupos;
@@ -2665,6 +3786,9 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
   const paqueteId = toNumber(data.paqueteId, -1);
   const responsableId = toNumberOrNull(data.responsableId) ?? null;
   const responsableUserId = toNumberOrNull(data.responsableUserId) ?? null;
+  const precomputedModuloGrupos = Array.isArray(data.moduloGrupos)
+    ? data.moduloGrupos as Array<{ grupoModuloId?: number | null; moduloId: number; grupoId?: number | null }>
+    : null;
   if (userId <= 0) {
     throw new https.HttpsError("invalid-argument", "userId is required.");
   }
@@ -2675,20 +3799,23 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
   let matriculaId: number | null = null;
 
   try {
-    const paqueteResponse = await dataConnect.executeGraphql<{
-      paquete: DataConnectPaquete | null;
-      paqueteModulos: DataConnectPaqueteModulo[];
-    }, { paqueteId: number }>(GET_PAQUETE_MODULOS_FOR_MATRICULA_QUERY, { variables: { paqueteId } });
+    let moduloGrupos = precomputedModuloGrupos;
+    if (!moduloGrupos) {
+      const paqueteResponse = await dataConnect.executeGraphql<{
+        paquete: DataConnectPaquete | null;
+        paqueteModulos: DataConnectPaqueteModulo[];
+      }, { paqueteId: number }>(GET_PAQUETE_MODULOS_FOR_MATRICULA_QUERY, { variables: { paqueteId } });
 
-    if (!paqueteResponse.data.paquete) {
-      throw new https.HttpsError("not-found", "El paquete seleccionado no existe.");
-    }
-    if (paqueteResponse.data.paquete.archivado) {
-      throw new https.HttpsError("failed-precondition", "El paquete seleccionado esta archivado.");
-    }
+      if (!paqueteResponse.data.paquete) {
+        throw new https.HttpsError("not-found", "El paquete seleccionado no existe.");
+      }
+      if (paqueteResponse.data.paquete.archivado) {
+        throw new https.HttpsError("failed-precondition", "El paquete seleccionado esta archivado.");
+      }
 
-    const paqueteModulos = sortPaqueteModulos(paqueteResponse.data.paqueteModulos ?? []);
-    const moduloGrupos = buildModuloGruposForMatricula(data, paqueteModulos);
+      const paqueteModulos = sortPaqueteModulos(paqueteResponse.data.paqueteModulos ?? []);
+      moduloGrupos = buildModuloGruposForMatricula(data, paqueteModulos);
+    }
     if (moduloGrupos.length < 1 || moduloGrupos.length > 6) {
       throw new https.HttpsError(
         "failed-precondition",
@@ -2697,11 +3824,13 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
     }
     const fallbackGrupoId = toNumberOrNull(data.grupoId) ?? null;
 
+    const now = new Date().toISOString();
     const matriculaPayload = buildMatriculaDataFromInput({
       ...data,
       userId,
       paqueteId,
-      fecha: data.fecha ?? new Date().toISOString(),
+      fecha: data.fecha ?? now,
+      fechaActualizacion: data.fechaActualizacion ?? data.fecha ?? now,
       codigoInscripcion: data.codigoInscripcion ?? await getNextCodigoInscripcionForCurrentYear(),
       archivado: data.archivado ?? false,
     });
@@ -2742,9 +3871,67 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
   }
 }
 
+function toNumberSetFromInput(value: unknown) {
+  const values = Array.isArray(value) ? value : value == null ? [] : [value];
+  return new Set(
+    values
+      .map((item) => toNumberOrNull(item))
+      .filter((item): item is number => Boolean(item && item > 0)),
+  );
+}
+
+async function hydrateMatriculaUserAvatarTiny(matriculas: MatriculaRow[]): Promise<MatriculaRow[]> {
+  const userIds = new Set(
+    matriculas
+      .map((matricula) => toNumberOrNull(matricula.user?.id))
+      .filter((id): id is number => Boolean(id && id > 0)),
+  );
+  if (userIds.size === 0) return matriculas;
+
+  const snapshot = await getFirestore()
+    .collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION)
+    .orderBy("updatedAt", "desc")
+    .limit(1000)
+    .get();
+
+  const tinyByUserId = new Map<number, string>();
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    const userId = toNumberOrNull(data.userId);
+    if (!userId || !userIds.has(userId) || tinyByUserId.has(userId) || data.status !== "completed") return;
+
+    const avatarTamanos = data.avatarTamanos as {
+      tiny?: { url?: unknown } | null;
+      pequeno?: { url?: unknown } | null;
+      grande?: { url?: unknown } | null;
+    } | null;
+    const avatar = data.avatar as { url?: unknown } | null;
+    const tiny =
+      asCleanString(avatarTamanos?.tiny?.url)
+      ?? asCleanString(avatarTamanos?.pequeno?.url)
+      ?? asCleanString(avatarTamanos?.grande?.url)
+      ?? asCleanString(avatar?.url);
+    if (tiny) tinyByUserId.set(userId, tiny);
+  });
+
+  if (tinyByUserId.size === 0) return matriculas;
+
+  return matriculas.map((matricula) => {
+    const userId = toNumberOrNull(matricula.user?.id);
+    const avatarTiny = userId ? tinyByUserId.get(userId) : null;
+    return avatarTiny && matricula.user
+      ? { ...matricula, user: { ...matricula.user, avatarTiny } }
+      : matricula;
+  });
+}
+
 export const listMatriculas = https.onCall(async (data, context) => {
   await requirePermission(context, "matriculas", "view");
   const grupoModuloId = toNumberOrNull(data?.grupoModuloId);
+  const grupoModuloIds = toNumberSetFromInput(data?.grupoModuloIds);
+  if (grupoModuloId) grupoModuloIds.add(grupoModuloId);
+  const semestreId = toNumberOrNull(data?.semestreId);
+  const semestreTitulo = String(data?.semestreTitulo ?? "").trim() || null;
 
   try {
     const [matriculasResponse, moduloEstudiantesResponse, semestreConsultaIds] = await Promise.all([
@@ -2761,10 +3948,10 @@ export const listMatriculas = https.onCall(async (data, context) => {
     const shouldFilterByDocente = isDocenteMatriculaRequester(context);
     let allowedGrupoModuloIds = new Set<string>();
     let allowedPairs = new Set<string>();
-    if (grupoModuloId || shouldFilterByDocente) {
-      const { grupoModulos } = await loadMatriculaDocenteGrupoModulos(context);
-      const allowedGrupoModulos = grupoModuloId
-        ? grupoModulos.filter((item) => item.id === grupoModuloId)
+    if (grupoModuloIds.size > 0 || shouldFilterByDocente) {
+      const { grupoModulos } = await loadMatriculaDocenteGrupoModulos(context, semestreTitulo);
+      const allowedGrupoModulos = grupoModuloIds.size > 0
+        ? grupoModulos.filter((item) => grupoModuloIds.has(item.id))
         : grupoModulos;
       allowedGrupoModuloIds = new Set(
         allowedGrupoModulos.map((item) => String(item.id)),
@@ -2774,7 +3961,7 @@ export const listMatriculas = https.onCall(async (data, context) => {
       );
     }
 
-    const shouldApplyMatriculaFilter = Boolean(grupoModuloId || shouldFilterByDocente);
+    const shouldApplyMatriculaFilter = Boolean(grupoModuloIds.size > 0 || shouldFilterByDocente);
     const allowedMatriculaIds = shouldApplyMatriculaFilter
       ? new Set<number>(
         (moduloEstudiantesResponse.data.modulosEstudiantes ?? [])
@@ -2790,6 +3977,7 @@ export const listMatriculas = https.onCall(async (data, context) => {
 
     const matriculas = (matriculasResponse.data.matriculas ?? [])
       .filter((matricula) => !allowedSemestreIds || allowedSemestreIds.has(Number(matricula.semestreId)))
+      .filter((matricula) => !semestreId || Number(matricula.semestreId) === semestreId)
       .filter((matricula) => !allowedMatriculaIds || allowedMatriculaIds.has(matricula.id))
       .slice()
       .sort((a, b) => {
@@ -2797,7 +3985,7 @@ export const listMatriculas = https.onCall(async (data, context) => {
         return dateCompare || b.id - a.id;
       });
 
-    return { matriculas };
+    return { matriculas: await hydrateMatriculaUserAvatarTiny(matriculas) };
   } catch (error) {
     console.error("Error in listMatriculas:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar las matriculas.");
@@ -2873,41 +4061,56 @@ export const verificarMatriculaReniec = https.onCall(async (data, context) => {
   await requireMatriculaPermissionOrFormularioAccess(context, "view");
 
   const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
-  const dni = normalizeDocumentNumber(data?.dni).replace(/\D/g, "").slice(0, 8);
-  if (!tipoDocumento || !dni) {
+  const documentNumber = normalizeDocumentNumber(data?.dni)
+    .replace(/\D/g, "")
+    .slice(0, tipoDocumento === "CE" ? 9 : 8);
+  if (!tipoDocumento || !documentNumber) {
     throw new https.HttpsError("invalid-argument", "Ingresa tipo y numero de documento.");
   }
   if (tipoDocumento !== "DNI") {
+    const existingUser = await findUserByDocument(tipoDocumento, documentNumber);
     return {
-      datos: {
+      userExists: Boolean(existingUser),
+      datos: mergeSavedUserWithOcr(existingUser, {
         tipoDocumento,
-        dni: normalizeDocumentNumber(data?.dni),
-      },
+        dni: documentNumber,
+      }),
     };
   }
-  if (!/^\d{8}$/.test(dni)) {
+  if (!/^\d{8}$/.test(documentNumber)) {
     throw new https.HttpsError("invalid-argument", "Ingresa un DNI valido de 8 digitos.");
   }
 
   try {
-    const [existingUser, dniData] = await Promise.all([
-      findUserByDocument("DNI", dni),
-      fetchPeruDevsDni(dni),
+    const [existingUser, dniDataResult] = await Promise.allSettled([
+      findUserByDocument("DNI", documentNumber),
+      fetchPeruDevsDni(documentNumber),
     ]);
-    const reniecData: OcrIdentityData = {
+    const existingUserValue = existingUser.status === "fulfilled" ? existingUser.value : null;
+    if (existingUser.status === "rejected") {
+      console.error("Error finding existing user for matricula verification:", existingUser.reason);
+    }
+    if (dniDataResult.status === "rejected" && !existingUserValue) {
+      throw dniDataResult.reason;
+    }
+    const dniData = dniDataResult.status === "fulfilled" ? dniDataResult.value : null;
+    const reniecData: OcrIdentityData = dniData ? {
       tipoDocumento: "DNI",
-      dni,
+      dni: documentNumber,
       nombre: asCleanString(dniData.nombres),
       apellidoPaterno: asCleanString(dniData.apellido_paterno),
       apellidoMaterno: asCleanString(dniData.apellido_materno),
       sexo: normalizePeruDevsSexo(dniData.genero),
       nacionalidad: "PERUANA",
       fechaNacimiento: normalizeDate(dniData.fecha_nacimiento),
+    } : {
+      tipoDocumento: "DNI",
+      dni: documentNumber,
     };
 
     return {
-      userExists: Boolean(existingUser),
-      datos: mergeSavedUserWithOcr(existingUser, reniecData),
+      userExists: Boolean(existingUserValue),
+      datos: mergeSavedUserWithOcr(existingUserValue, reniecData),
     };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
@@ -2958,6 +4161,35 @@ export const verificarMatriculaOcrSimple = https.onCall(async (data, context) =>
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in verificarMatriculaOcrSimple:", error);
     throw new https.HttpsError("internal", "No se pudo hacer la validacion OCR simple.");
+  }
+});
+
+export const verificarMatriculaGemini = runWith({ timeoutSeconds: 120, memory: "512MB" }).https.onCall(async (data, context) => {
+  await requireMatriculaPermissionOrFormularioAccess(context, "create");
+
+  const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
+  const dni = normalizeDocumentNumber(data?.dni);
+  if (!tipoDocumento || !dni) {
+    throw new https.HttpsError("invalid-argument", "Ingresa tipo y numero de documento.");
+  }
+
+  try {
+    const rawArchivos: unknown[] = Array.isArray(data?.archivos) ? data.archivos : [];
+    const archivos = rawArchivos
+      .slice(0, 2)
+      .map((archivo, index) => getGeminiDocumentInput(archivo, `archivo ${index + 1}`));
+    if (archivos.length === 0) {
+      throw new https.HttpsError("invalid-argument", "Sube al menos un archivo del documento.");
+    }
+    return await runMatriculaGeminiRecognition({
+      tipoDocumento,
+      dni,
+      archivos,
+    });
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in verificarMatriculaGemini:", error);
+    throw new https.HttpsError("internal", "No se pudo verificar el documento con Gemini.");
   }
 });
 
@@ -3246,6 +4478,14 @@ function buildMatriculaUsername(data: Record<string, unknown>): string {
   ].filter(Boolean).join(" ").trim() || "Estudiante";
 }
 
+function buildMatriculaNickName(data: Record<string, unknown>): string {
+  const firstName = asCleanString(data.nombre)?.split(/\s+/)[0] ?? "";
+  return [
+    firstName,
+    asCleanString(data.apellidoPaterno),
+  ].filter(Boolean).join(" ").trim() || buildMatriculaUsername(data);
+}
+
 function resolveMatriculaInstitutionalEmail(dni: string): string {
   return `${normalizeDocumentNumber(dni).toLowerCase()}@cetprosmp.edu.pe`;
 }
@@ -3298,15 +4538,18 @@ async function ensureStudentAuthForMatricula(
   const authPassword = normalizeDocumentNumber(data.dni);
 
   if (existingAuthUser) {
-    await authAdmin.updateUser(existingAuthUser.uid, {
+    const updated = await authAdmin.updateUser(existingAuthUser.uid, {
       email: institutionalEmail,
       password: authPassword,
       displayName: username,
       emailVerified: true,
       disabled: blockedForAuth,
     });
-    const updated = await authAdmin.getUser(existingAuthUser.uid);
-    await authAdmin.setCustomUserClaims(updated.uid, { role: String(roleId), level: permissionLevel });
+    const desiredClaims = { role: String(roleId), level: permissionLevel };
+    const currentClaims = updated.customClaims ?? {};
+    if (currentClaims.role !== desiredClaims.role || currentClaims.level !== desiredClaims.level) {
+      await authAdmin.setCustomUserClaims(updated.uid, desiredClaims);
+    }
     return {
       authUser: updated,
       authPassword,
@@ -3326,12 +4569,10 @@ async function ensureStudentAuthForMatricula(
     emailVerified: true,
     disabled: blockedForAuth,
   });
-  await authAdmin.updateUser(created.uid, { emailVerified: true });
-  const createdAuthUser = await authAdmin.getUser(created.uid);
-  await authAdmin.setCustomUserClaims(createdAuthUser.uid, { role: String(roleId), level: permissionLevel });
+  await authAdmin.setCustomUserClaims(created.uid, { role: String(roleId), level: permissionLevel });
 
   return {
-    authUser: createdAuthUser,
+    authUser: created,
     authPassword,
     institutionalEmail,
     roleId,
@@ -3364,6 +4605,7 @@ async function saveUserForMatricula(
     tipoDocumento: normalizeDocumentType(data.tipoDocumento),
     dni: normalizeDocumentNumber(data.dni),
     username: authStudent.username,
+    nickName: buildMatriculaNickName(data),
     email: personalEmail,
     correoInstitucional: authStudent.institutionalEmail,
     nacionalidad: asCleanString(data.nacionalidad) ?? "PERUANA",
@@ -3448,6 +4690,7 @@ async function saveUserForMatricula(
           {
             previousEmail: existingUser?.correoInstitucional ?? null,
             createPassword: normalizeDocumentNumber(data.dni),
+            preferPatchFirst: Boolean(existingUser || authStudent.authAlreadyExisted),
           },
         ),
       );
@@ -3609,16 +4852,20 @@ async function crearMatriculaFormularioData(data: any, context: https.CallableCo
   }
 
   try {
-    const { responsable, responsableUser } = await getMatriculaResponsableFromContext(context);
-    const existingUser = await findUserByDocument(tipoDocumento, dni);
+    const [{ responsable, responsableUser }, existingUser] = await Promise.all([
+      getMatriculaResponsableFromContext(context),
+      findUserByDocument(tipoDocumento, dni),
+    ]);
     const savedUser = await saveUserForMatricula(existingUser, {
       ...(data as Record<string, unknown>),
       tipoDocumento,
       dni,
     }, context);
     const userId = savedUser.userId;
-    await ensureNoMatriculaDuplicates(userId, semestreId, paqueteId, recibo);
-    const grupoMapping = await getGrupoModuloMapping(semestreId, paqueteId, grupoId);
+    const [, grupoMapping] = await Promise.all([
+      ensureNoMatriculaDuplicates(userId, semestreId, paqueteId, recibo),
+      getGrupoModuloMapping(semestreId, paqueteId, grupoId),
+    ]);
     const matricula = await createMatriculaWithModuloEstudiantes({
       ...(data as Record<string, unknown>),
       userId,
@@ -3658,15 +4905,28 @@ async function crearMatriculaFormularioData(data: any, context: https.CallableCo
           tipoDocumento,
           dni,
           fechaNacimiento: data?.fechaNacimiento,
+          fechaVencimientoAnterior: existingUser?.fechaVencimiento,
+          fechaVencimientoNueva: data?.fechaVencimiento,
           frente: getUploadedImage(data?.dniImagenFrente, existingUser?.dniImagenFrenteUrl),
           reverso: getUploadedImage(data?.dniImagenReverso, existingUser?.dniImagenReversoUrl),
           dniImagenFrenteProcesadaUrl: existingUser?.dniImagenFrenteProcesadaUrl,
           dniImagenReversoProcesadaUrl: existingUser?.dniImagenReversoProcesadaUrl,
+          avatarUrl: existingUser?.avatar,
+          recorteFotografiaUrl: existingUser?.recorteFotografia,
           analisisDocumentoTemporal: getDocumentoAnalisisMetadata(data?.analisisDocumentoTemporal),
         });
       } catch (jobError) {
         console.warn("No se pudo encolar el procesamiento de documentos de matricula:", jobError);
       }
+    }
+    if (!documentProcessingJobId) {
+      await enqueueMatriculaAvatarExtractionFromExistingProcessed({
+        user: existingUser,
+        userId,
+        dni,
+        fechaNacimiento: data?.fechaNacimiento,
+        source: `matricula-${matricula.id ?? "nueva"}-existing-processed`,
+      });
     }
 
     return { ...matricula, semestreId, documentProcessingJobId, workspaceGroup, workspaceWarnings };
@@ -3684,7 +4944,7 @@ export const crearMatriculaFormulario = https.onCall(async (data, context) => {
 
 export const crearMatriculaFormularioSuelto = https.onCall(async (data, context) => {
   await requireFormularioMatriculaAccess(context);
-  await requireFormularioMatriculaOpen();
+  await requireFormularioMatriculaOpen(data?.formularioMatriculaTipo);
   return crearMatriculaFormularioData(data, context);
 });
 
@@ -3720,10 +4980,12 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
     if (!currentMatricula) {
       throw new https.HttpsError("not-found", "La matricula no existe.");
     }
-    const previousWorkspaceGroups = await getMatriculaWorkspaceGroups(matriculaId);
+    const previousModuloItems = currentMatricula.modulosEstudiantes ?? [];
     const previousWorkspaceEmail = resolveWorkspaceEmailForMatriculaUser(currentMatricula.user);
-
-    const documentUser = await findUserByDocument(tipoDocumento, dni);
+    const [previousWorkspaceGroups, documentUser] = await Promise.all([
+      getMatriculaWorkspaceGroups(matriculaId),
+      findUserByDocument(tipoDocumento, dni),
+    ]);
     const userToSave = documentUser ?? currentMatricula.user ?? null;
     const savedUser = await saveUserForMatricula(userToSave, {
       ...(data as Record<string, unknown>),
@@ -3732,37 +4994,36 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
     }, context);
     const userId = savedUser.userId;
 
-    await ensureNoMatriculaDuplicates(userId, semestreId, paqueteId, recibo, matriculaId);
-    const grupoMapping = await getGrupoModuloMapping(semestreId, paqueteId, grupoId);
-
-    const paqueteResponse = await dataConnect.executeGraphql<{
-      paquete: DataConnectPaquete | null;
-      paqueteModulos: DataConnectPaqueteModulo[];
-    }, { paqueteId: number }>(GET_PAQUETE_MODULOS_FOR_MATRICULA_QUERY, { variables: { paqueteId } });
-
-    if (!paqueteResponse.data.paquete) {
-      throw new https.HttpsError("not-found", "El paquete seleccionado no existe.");
-    }
-    if (paqueteResponse.data.paquete.archivado) {
-      throw new https.HttpsError("failed-precondition", "El paquete seleccionado esta archivado.");
-    }
-
-    const paqueteModulos = sortPaqueteModulos(paqueteResponse.data.paqueteModulos ?? []);
-    const moduloGrupos = buildModuloGruposForMatricula({ ...data, moduloGrupos: grupoMapping.moduloGrupos, grupoId: grupoMapping.grupoId }, paqueteModulos);
+    const [, grupoMapping] = await Promise.all([
+      ensureNoMatriculaDuplicates(userId, semestreId, paqueteId, recibo, matriculaId),
+      getGrupoModuloMapping(semestreId, paqueteId, grupoId),
+    ]);
+    const moduloGrupos = grupoMapping.moduloGrupos;
     if (moduloGrupos.length < 1 || moduloGrupos.length > 6) {
       throw new https.HttpsError(
         "failed-precondition",
         "El paquete debe tener entre 1 y 6 instancias de modulos antes de matricular.",
       );
     }
+    const moduloSelectionChanged = hasGrupoModuloSelectionChanged(previousModuloItems, moduloGrupos);
+    if (moduloSelectionChanged && isDocenteMatriculaRequester(context)) {
+      if (previousModuloItems.some((item) => isGrupoModuloChangeExpired(item))) {
+        throw new https.HttpsError("failed-precondition", "Fecha de cambios vencida.");
+      }
+      if (countModuloChangeEvents(currentMatricula.cambiosModulo) >= DOCENTE_MAX_MODULO_CHANGE_EVENTS) {
+        throw new https.HttpsError("failed-precondition", "Limite de cambios de modulo alcanzado.");
+      }
+    }
 
+    const fechaCambio = new Date().toISOString();
     const matriculaPayload = buildMatriculaDataFromInput({
       ...data,
       userId,
       paqueteId,
       semestreId,
       recibo,
-      fecha: data?.fecha ?? currentMatricula.fecha ?? new Date().toISOString(),
+      fecha: currentMatricula.fecha ?? data?.fecha ?? fechaCambio,
+      fechaActualizacion: fechaCambio,
       archivado: data?.archivado ?? currentMatricula.archivado ?? false,
       responsableId: undefined,
       responsableUserId: undefined,
@@ -3774,6 +5035,15 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
     >(UPDATE_MATRICULA_MUTATION, { variables: { id: matriculaId, data: matriculaPayload } });
 
     const savedMatriculaId = getIdFromKeyOutput(updated.data.matricula_update) ?? matriculaId;
+    await recordMatriculaModuloChanges({
+      matriculaId: savedMatriculaId,
+      userId,
+      semestreId,
+      previousItems: previousModuloItems,
+      nextItems: moduloGrupos,
+      fechaCambio,
+      registradoPorId: await getRequesterDataConnectUserId(context),
+    });
     await replaceModuloEstudiantesForMatricula(
       savedMatriculaId,
       moduloGrupos,
@@ -3806,15 +5076,28 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
           tipoDocumento,
           dni,
           fechaNacimiento: data?.fechaNacimiento ?? userToSave?.fechaNacimiento,
+          fechaVencimientoAnterior: userToSave?.fechaVencimiento,
+          fechaVencimientoNueva: data?.fechaVencimiento,
           frente: getUploadedImage(data?.dniImagenFrente, userToSave?.dniImagenFrenteUrl),
           reverso: getUploadedImage(data?.dniImagenReverso, userToSave?.dniImagenReversoUrl),
           dniImagenFrenteProcesadaUrl: userToSave?.dniImagenFrenteProcesadaUrl,
           dniImagenReversoProcesadaUrl: userToSave?.dniImagenReversoProcesadaUrl,
+          avatarUrl: userToSave?.avatar,
+          recorteFotografiaUrl: userToSave?.recorteFotografia,
           analisisDocumentoTemporal: getDocumentoAnalisisMetadata(data?.analisisDocumentoTemporal),
         });
       } catch (jobError) {
         console.warn("No se pudo encolar el procesamiento de documentos de matricula actualizada:", jobError);
       }
+    }
+    if (!documentProcessingJobId) {
+      await enqueueMatriculaAvatarExtractionFromExistingProcessed({
+        user: userToSave,
+        userId,
+        dni,
+        fechaNacimiento: data?.fechaNacimiento ?? userToSave?.fechaNacimiento,
+        source: `matricula-${savedMatriculaId}-existing-processed`,
+      });
     }
 
     return { id: savedMatriculaId, semestreId, paqueteId, userId, documentProcessingJobId, workspaceGroup, workspaceWarnings };

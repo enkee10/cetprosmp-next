@@ -17,6 +17,7 @@ import {
   Select,
   Stack,
   Switch,
+  TextField,
   Typography,
 } from '@mui/material';
 import NumbersIcon from '@mui/icons-material/Numbers';
@@ -56,6 +57,10 @@ const selectMenuProps = {
   disableScrollLock: true,
 };
 
+const normalizeColor = (value: unknown, fallback = '#ffffff') => (
+  /^#[0-9a-f]{6}$/i.test(String(value || '')) ? String(value) : fallback
+);
+
 const resolveInitialSemestreActualId = (semestres: SemestreOption[]) => {
   const byTitle = semestres.find((semestre) => getSemestreLabel(semestre).trim() === '2026-1');
   return byTitle?.id ?? null;
@@ -84,8 +89,11 @@ const normalizeDraftSettings = (value: Partial<AppSettings> | null | undefined):
       ...defaultAppSettings.formularioMatricula,
       ...value?.formularioMatricula,
       aceptaRespuestas,
+      siguienteAceptaRespuestas: Boolean(value?.formularioMatricula?.siguienteAceptaRespuestas),
       semestreId: Number.isFinite(semestreActualId) && semestreActualId > 0 ? semestreActualId : null,
       activarReconocimientoDni,
+      fondoColor: normalizeColor(value?.formularioMatricula?.fondoColor),
+      siguienteFondoColor: normalizeColor(value?.formularioMatricula?.siguienteFondoColor),
     },
     visualizaciones: {
       ...defaultAppSettings.visualizaciones,
@@ -324,6 +332,25 @@ export default function SettingsPage() {
             label="Usar avatares en certificados y titulos"
           />
 
+          <FormControlLabel
+            control={
+              <Switch
+                checked={safeDraft.general.usarListasSemestreAnteriorDocentes}
+                disabled={loading || saving || !canEditSettings}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    general: {
+                      ...normalizeDraftSettings(current).general,
+                      usarListasSemestreAnteriorDocentes: event.target.checked,
+                    },
+                  }))
+                }
+              />
+            }
+            label="Usar listas del semestre anterior para Docentes"
+          />
+
           <FormControl fullWidth size="small" disabled={loading || saving || loadingSemestres || !canEditSettings}>
             <InputLabel>Semestre Actual</InputLabel>
             <Select
@@ -413,25 +440,93 @@ export default function SettingsPage() {
             <Divider />
           </Box>
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={safeDraft.formularioMatricula.aceptaRespuestas}
-                disabled={loading || saving || !canEditSettings}
-                onChange={(event) =>
-                  setDraft((current) => ({
-                    ...current,
-                    ...normalizeDraftSettings(current),
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={safeDraft.formularioMatricula.aceptaRespuestas}
+                  disabled={loading || saving || !canEditSettings}
+                  onChange={(event) =>
+                    setDraft((current) => {
+                      const normalized = normalizeDraftSettings(current);
+                      return {
+                        ...normalized,
+                        formularioMatricula: {
+                          ...normalized.formularioMatricula,
+                          aceptaRespuestas: event.target.checked,
+                        },
+                      };
+                    })
+                  }
+                />
+              }
+              label="Formulario Matricula actual acepta respuestas"
+            />
+            <TextField
+              label="Color de fondo"
+              type="color"
+              size="small"
+              value={safeDraft.formularioMatricula.fondoColor}
+              disabled={loading || saving || !canEditSettings}
+              onChange={(event) =>
+                setDraft((current) => {
+                  const normalized = normalizeDraftSettings(current);
+                  return {
+                    ...normalized,
                     formularioMatricula: {
-                      ...normalizeDraftSettings(current).formularioMatricula,
-                      aceptaRespuestas: event.target.checked,
+                      ...normalized.formularioMatricula,
+                      fondoColor: normalizeColor(event.target.value),
                     },
-                  }))
-                }
-              />
-            }
-            label="El formulario acepta respuestas"
-          />
+                  };
+                })
+              }
+              sx={{ width: { xs: '100%', sm: 170 } }}
+            />
+          </Stack>
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={safeDraft.formularioMatricula.siguienteAceptaRespuestas}
+                  disabled={loading || saving || !canEditSettings}
+                  onChange={(event) =>
+                    setDraft((current) => {
+                      const normalized = normalizeDraftSettings(current);
+                      return {
+                        ...normalized,
+                        formularioMatricula: {
+                          ...normalized.formularioMatricula,
+                          siguienteAceptaRespuestas: event.target.checked,
+                        },
+                      };
+                    })
+                  }
+                />
+              }
+              label="Formulario Matricula siguiente acepta respuestas"
+            />
+            <TextField
+              label="Color de fondo"
+              type="color"
+              size="small"
+              value={safeDraft.formularioMatricula.siguienteFondoColor}
+              disabled={loading || saving || !canEditSettings}
+              onChange={(event) =>
+                setDraft((current) => {
+                  const normalized = normalizeDraftSettings(current);
+                  return {
+                    ...normalized,
+                    formularioMatricula: {
+                      ...normalized.formularioMatricula,
+                      siguienteFondoColor: normalizeColor(event.target.value),
+                    },
+                  };
+                })
+              }
+              sx={{ width: { xs: '100%', sm: 170 } }}
+            />
+          </Stack>
 
           <FormControlLabel
             control={

@@ -28,6 +28,15 @@ import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
 
 type GrupoModuloRow = DataConnectGrupoModulo & {
   grupo?: Pick<DataConnectGrupo, "id" | "nombreDisplay" | "semestreId"> & {
+    personal?: {
+      displayName?: string | null;
+      user?: {
+        username?: string | null;
+        nombre?: string | null;
+        apellidoPaterno?: string | null;
+        avatar?: string | null;
+      } | null;
+    } | null;
     semestre?: {
       id?: number | null;
       titulo?: string | null;
@@ -36,7 +45,17 @@ type GrupoModuloRow = DataConnectGrupoModulo & {
       archivado?: boolean | null;
     } | null;
   } | null;
-  modulo?: Pick<DataConnectModulo, "id" | "titulo" | "tituloComercial" | "orden"> | null;
+  modulo?: Pick<DataConnectModulo, "id" | "titulo" | "tituloComercial" | "orden"> & {
+    plan?: {
+      carrera?: {
+        especialidad?: {
+          orden?: number | null;
+          titulo?: string | null;
+          tituloComercial?: string | null;
+        } | null;
+      } | null;
+    } | null;
+  } | null;
   calendario?: Pick<DataConnectCalendario, "id" | "titulo"> | null;
 };
 
@@ -56,6 +75,15 @@ const LIST_GRUPO_MODULOS_QUERY = `
         id
         nombreDisplay
         semestreId
+        personal {
+          displayName
+          user {
+            username
+            nombre
+            apellidoPaterno
+            avatar
+          }
+        }
         semestre {
           id
           titulo
@@ -70,6 +98,15 @@ const LIST_GRUPO_MODULOS_QUERY = `
         titulo
         tituloComercial
         orden
+        plan {
+          carrera {
+            especialidad {
+              orden
+              titulo
+              tituloComercial
+            }
+          }
+        }
       }
       calendarioId
       calendario {
@@ -172,11 +209,20 @@ function appendSufijoToNombre(name: string, suffix: string | null | undefined) {
 }
 
 function decorateGrupoModulo(row: GrupoModuloRow) {
+  const docenteNombre = String(
+    row.grupo?.personal?.displayName ||
+    [row.grupo?.personal?.user?.nombre, row.grupo?.personal?.user?.apellidoPaterno].filter(Boolean).join(" ") ||
+    row.grupo?.personal?.user?.username ||
+    "",
+  ).trim();
+
   return {
     ...row,
     grupoLabel: grupoLabel(row.grupo),
     moduloLabel: moduloLabel(row.modulo),
     calendarioLabel: calendarioLabel(row.calendario),
+    docenteAvatar: row.grupo?.personal?.user?.avatar ?? null,
+    docenteNombre,
   };
 }
 
@@ -200,9 +246,18 @@ const sortGrupoModulos = (items: GrupoModuloRow[]) =>
   items
     .slice()
     .sort((a, b) =>
+      (a.modulo?.plan?.carrera?.especialidad?.orden ?? Number.MAX_SAFE_INTEGER) -
+        (b.modulo?.plan?.carrera?.especialidad?.orden ?? Number.MAX_SAFE_INTEGER) ||
+      (a.modulo?.orden ?? Number.MAX_SAFE_INTEGER) - (b.modulo?.orden ?? Number.MAX_SAFE_INTEGER) ||
+      String(a.modulo?.plan?.carrera?.especialidad?.tituloComercial || a.modulo?.plan?.carrera?.especialidad?.titulo || "")
+        .localeCompare(
+          String(b.modulo?.plan?.carrera?.especialidad?.tituloComercial || b.modulo?.plan?.carrera?.especialidad?.titulo || ""),
+          "es",
+          { numeric: true },
+        ) ||
+      moduloLabel(a.modulo).localeCompare(moduloLabel(b.modulo), "es", { numeric: true }) ||
       grupoLabel(a.grupo).localeCompare(grupoLabel(b.grupo), "es", { numeric: true }) ||
       (a.orden ?? 0) - (b.orden ?? 0) ||
-      moduloLabel(a.modulo).localeCompare(moduloLabel(b.modulo), "es", { numeric: true }) ||
       (a.instancia ?? 1) - (b.instancia ?? 1) ||
       a.id - b.id,
     );

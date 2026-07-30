@@ -12,11 +12,15 @@ export type AppSettings = {
     activarReconocimientoDni: boolean;
     semestreActualId: number | null;
     semestresConsultaIds: number[];
+    usarListasSemestreAnteriorDocentes: boolean;
   };
   formularioMatricula: {
     aceptaRespuestas: boolean;
+    siguienteAceptaRespuestas: boolean;
     semestreId: number | null;
     activarReconocimientoDni: boolean;
+    fondoColor: string;
+    siguienteFondoColor: string;
   };
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: boolean;
@@ -33,11 +37,15 @@ export const defaultAppSettings: AppSettings = {
     activarReconocimientoDni: true,
     semestreActualId: null,
     semestresConsultaIds: [],
+    usarListasSemestreAnteriorDocentes: true,
   },
   formularioMatricula: {
     aceptaRespuestas: false,
+    siguienteAceptaRespuestas: false,
     semestreId: null,
     activarReconocimientoDni: true,
+    fondoColor: '#ffffff',
+    siguienteFondoColor: '#ffffff',
   },
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: false,
@@ -64,17 +72,25 @@ const normalizeSettings = (value: Partial<AppSettings> | undefined | null): AppS
     semestresConsultaIds: Array.isArray(value?.general?.semestresConsultaIds)
       ? value.general.semestresConsultaIds.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
       : [],
+    usarListasSemestreAnteriorDocentes: value?.general?.usarListasSemestreAnteriorDocentes !== false,
   },
   formularioMatricula: {
     aceptaRespuestas: Boolean(
       value?.formularioMatricula?.aceptaRespuestas ?? value?.general?.formularioMatriculaAceptaRespuestas,
     ),
+    siguienteAceptaRespuestas: Boolean(value?.formularioMatricula?.siguienteAceptaRespuestas),
     semestreId: Number(value?.general?.semestreActualId) > 0
       ? Number(value?.general?.semestreActualId)
       : Number(value?.formularioMatricula?.semestreId) > 0
         ? Number(value?.formularioMatricula?.semestreId)
         : null,
     activarReconocimientoDni: (value?.formularioMatricula?.activarReconocimientoDni ?? value?.general?.activarReconocimientoDni) !== false,
+    fondoColor: /^#[0-9a-f]{6}$/i.test(String(value?.formularioMatricula?.fondoColor || ''))
+      ? String(value?.formularioMatricula?.fondoColor)
+      : '#ffffff',
+    siguienteFondoColor: /^#[0-9a-f]{6}$/i.test(String(value?.formularioMatricula?.siguienteFondoColor || ''))
+      ? String(value?.formularioMatricula?.siguienteFondoColor)
+      : '#ffffff',
   },
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: Boolean(

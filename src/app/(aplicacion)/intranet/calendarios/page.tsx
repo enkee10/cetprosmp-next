@@ -137,7 +137,7 @@ export default function CalendariosPage() {
   const [calendarioFormResetKey, setCalendarioFormResetKey] = useState(0);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuCalendarioId, setMenuCalendarioId] = useState<string | null>(null);
-  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 15 });
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 30 });
   const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
     numero: true,
     titulo: true,

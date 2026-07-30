@@ -617,13 +617,13 @@ export const DELETE_PAQUETE_MODULOS_BY_PAQUETE_MUTATION = `
 `;
 
 export const INSERT_MATRICULA_MUTATION = `
-  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha codigoInscripcion archivado paqueteId semestreId userId responsableId responsableUserId")) {
+  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha fechaActualizacion codigoInscripcion archivado paqueteId semestreId userId responsableId responsableUserId")) {
     matricula_insert(data: $data)
   }
 `;
 
 export const UPDATE_MATRICULA_MUTATION = `
-  mutation UpdateMatricula($id: Int!, $data: Matricula_Data! @allow(fields: "recibo fecha codigoInscripcion archivado paqueteId semestreId userId")) {
+  mutation UpdateMatricula($id: Int!, $data: Matricula_Data! @allow(fields: "recibo fecha fechaActualizacion codigoInscripcion archivado paqueteId semestreId userId")) {
     matricula_update(id: $id, data: $data)
   }
 `;
@@ -667,6 +667,7 @@ export const DELETE_ASPECTOS_EVALUACION_ESTUDIANTES_BY_EVALUACION_ESTUDIANTE_MUT
 
 export const DELETE_MATRICULA_DEPENDENCIES_MUTATION = `
   mutation DeleteMatriculaDependencies($matriculaId: Int!) {
+    matriculaCambioModulo_deleteMany(where: { matriculaId: { eq: $matriculaId } })
     asistencia_deleteMany(where: { matriculaId: { eq: $matriculaId } })
     evaluacionEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
     indicadorCapacidadEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
@@ -685,14 +686,20 @@ export const DELETE_MODULO_ESTUDIANTES_BY_MATRICULA_MUTATION = `
   }
 `;
 
+export const INSERT_MATRICULA_CAMBIO_MODULO_MUTATION = `
+  mutation InsertMatriculaCambioModulo($data: MatriculaCambioModulo_Data! @allow(fields: "fechaCambio matriculaId userId semestreId grupoModuloAnteriorId grupoModuloNuevoId grupoAnteriorId grupoNuevoId moduloAnteriorId moduloNuevoId registradoPorId")) {
+    matriculaCambioModulo_insert(data: $data)
+  }
+`;
+
 export const INSERT_USER_MUTATION = `
-  mutation InsertUser($data: User_Data! @allow(fields: "documentId username nickName email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento fechaVencimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar recorteFotografia dniImagenFrenteUrl dniImagenReversoUrl dniImagenFrenteProcesadaUrl dniImagenReversoProcesadaUrl rolId")) {
+  mutation InsertUser($data: User_Data! @allow(fields: "documentId username nickName email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion nombreColegio fechaNacimiento fechaVencimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar recorteFotografia dniImagenFrenteUrl dniImagenReversoUrl dniImagenFrenteProcesadaUrl dniImagenReversoProcesadaUrl rolId")) {
     user_insert(data: $data)
   }
 `;
 
 export const UPDATE_USER_MUTATION = `
-  mutation UpdateUser($id: Int!, $data: User_Data! @allow(fields: "documentId username nickName email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion fechaNacimiento fechaVencimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar recorteFotografia dniImagenFrenteUrl dniImagenReversoUrl dniImagenFrenteProcesadaUrl dniImagenReversoProcesadaUrl rolId")) {
+  mutation UpdateUser($id: Int!, $data: User_Data! @allow(fields: "documentId username nickName email provider confirmed blocked dni tipoDocumento nombre apellidos apellidoPaterno apellidoMaterno sexo nacionalidad estadoCivil instruccion nombreColegio fechaNacimiento fechaVencimiento direccion distrito telefono celular correoInstitucional fechaCreacion fechaModificacion emailCreador avatar recorteFotografia dniImagenFrenteUrl dniImagenReversoUrl dniImagenFrenteProcesadaUrl dniImagenReversoProcesadaUrl rolId")) {
     user_update(id: $id, data: $data)
   }
 `;

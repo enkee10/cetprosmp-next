@@ -5,6 +5,7 @@ import { Box, Typography, Container, Chip, Stack } from '@mui/material';
 import Image from 'next/image';
 import type { Personal } from '@/types/personal';
 import personalData from '@/../public/data/personal.json';
+import { sanitizeStrapiMediaHtml } from '@/lib/getStrapiMedia';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -21,7 +22,7 @@ export default async function PersonalDetallePage({ params }: Props) {
     ? persona.user.foto
     : process.env.NEXT_PUBLIC_DEFAULT_IMG_URL!;
 
-  const memoHtml = persona.memo || '<p>Sin reseña disponible.</p>';
+  const memoHtml = sanitizeStrapiMediaHtml(persona.memo || '<p>Sin reseña disponible.</p>');
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>

@@ -78,7 +78,7 @@
     "destacado": false,
     "imagenPrincipal": null,
     "galeria": [
-      "http://localhost:1337/uploads/presentacion2_6c3a6ae338.png"
+      "/imagenes/comunes/img-predeterminada.avif"
     ],
     "videosYoutube": []
   },
@@ -196,7 +196,7 @@
         ]
       }
     ],
-    "contenido2": "<p>Para otros usos de este término, véase Familia (desambiguación).</p><p>Escultura de Henry Moore con el título Familia. Barclay School, Stevenage, Hertfordshire, Gran Bretaña.<br>La familia es un grupo de personas formado por individuos unidos, y primordialment<img class=\"image_resized image-style-align-left\" style=\"aspect-ratio:1120/643;width:38.92%;\" src=\"http://localhost:1337/uploads/paseo_campo_ac24fc681a.png\" alt=\"paseo-campo.png\" srcset=\"http://localhost:1337/uploads/thumbnail_paseo_campo_ac24fc681a.png 245w,http://localhost:1337/uploads/small_paseo_campo_ac24fc681a.png 500w,http://localhost:1337/uploads/medium_paseo_campo_ac24fc681a.png 750w,http://localhost:1337/uploads/large_paseo_campo_ac24fc681a.png 1000w,\" sizes=\"100vw\" width=\"1120\" height=\"643\">e vinculados por relaciones de filiación o de pareja.[1]​ El Diccionario de la lengua española la define, entre otras cosas, como un grupo de personas emparentadas entre sí que viven juntas, lo que lleva implícito los conceptos de parentesco y convivencia.[2]​ Según la Declaración Universal de los Derechos Humanos, es el elemento natural, universal y fundamental de la sociedad, tiene derecho a la protección de la sociedad y del Estado.[3]​</p><p>Los lazos principales que definen una familia son de dos tipos: vínculos de afinidad derivados del establecimiento de un vínculo reconocido socialmente, como el matrimonio[4]​ —que, en algunas sociedades, solo permite la unión entre dos personas mientras que en otras es posible la poligamia—, y vínculos de consanguinidad, como la filiación entre padres e hijos o los lazos que se establecen entre los hermanos que descienden de un mismo padre. También puede diferenciarse la familia según el grado de parentesco entre sus miembros.</p>",
+    "contenido2": "<p>Para otros usos de este término, véase Familia (desambiguación).</p><p>Escultura de Henry Moore con el título Familia. Barclay School, Stevenage, Hertfordshire, Gran Bretaña.<br>La familia es un grupo de personas formado por individuos unidos, y primordialment<img class=\"image_resized image-style-align-left\" style=\"aspect-ratio:1120/643;width:38.92%;\" src=\"/imagenes/comunes/fondo-predeterminado.jpg\" alt=\"paseo-campo.png\" srcset=\"/imagenes/comunes/fondo-predeterminado.jpg 245w,/imagenes/comunes/fondo-predeterminado.jpg 500w,/imagenes/comunes/fondo-predeterminado.jpg 750w,/imagenes/comunes/fondo-predeterminado.jpg 1000w,\" sizes=\"100vw\" width=\"1120\" height=\"643\">e vinculados por relaciones de filiación o de pareja.[1]​ El Diccionario de la lengua española la define, entre otras cosas, como un grupo de personas emparentadas entre sí que viven juntas, lo que lleva implícito los conceptos de parentesco y convivencia.[2]​ Según la Declaración Universal de los Derechos Humanos, es el elemento natural, universal y fundamental de la sociedad, tiene derecho a la protección de la sociedad y del Estado.[3]​</p><p>Los lazos principales que definen una familia son de dos tipos: vínculos de afinidad derivados del establecimiento de un vínculo reconocido socialmente, como el matrimonio[4]​ —que, en algunas sociedades, solo permite la unión entre dos personas mientras que en otras es posible la poligamia—, y vínculos de consanguinidad, como la filiación entre padres e hijos o los lazos que se establecen entre los hermanos que descienden de un mismo padre. También puede diferenciarse la familia según el grado de parentesco entre sus miembros.</p>",
     "fechaPublicacion": "2025-01-01",
     "fechaEventoInicio": null,
     "fechaEventoFin": null,
@@ -204,8 +204,8 @@
     "destacado": false,
     "imagenPrincipal": null,
     "galeria": [
-      "http://localhost:1337/uploads/mision_vision1_89258a3e1f.jpg",
-      "http://localhost:1337/uploads/mision_vision2_a12554783e.jpg"
+      "/imagenes/comunes/img-predeterminada.avif",
+      "/imagenes/comunes/fondo-predeterminado.jpg"
     ],
     "videosYoutube": []
   }

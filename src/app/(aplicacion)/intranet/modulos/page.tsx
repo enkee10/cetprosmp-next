@@ -25,7 +25,6 @@ interface Modulo {
   metas: number | null;
   activo: boolean | null;
   slug: string | null;
-  comun: boolean | null;
   carrera?: {
     id?: number | null;
     nombre?: string | null;
@@ -146,7 +145,6 @@ export default function ModulosPage() {
       creditos: true,
       duracionEfsrt: true,
       creditosEfsrt: true,
-      comun: true,
       actions: true,
     });
 
@@ -369,15 +367,6 @@ export default function ModulosPage() {
         minWidth: 95,
         maxWidth: 95,
         valueGetter: (_value, row: Modulo) => (row.creditosEfsrt != null ? row.creditosEfsrt : null),
-      },
-      {
-        field: 'comun',
-        headerName: 'Comun',
-        type: 'boolean',
-        width: 82,
-        minWidth: 82,
-        maxWidth: 82,
-        valueGetter: (_value, row: Modulo) => Boolean(row.comun || (row.planIds?.length ?? 0) > 1),
       },
       {
         field: 'actions',

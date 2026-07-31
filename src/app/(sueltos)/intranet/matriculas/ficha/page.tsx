@@ -1406,7 +1406,7 @@ function FichaDniImagesPage({
         src={src}
         alt={alt}
         sx={{
-          width: '250px',
+          width: '350px',
           height: 'auto',
           maxHeight: '38%',
           objectFit: 'contain',
@@ -1468,7 +1468,7 @@ function FichaDniImagesPage({
               </Box>
             </Box>
           ) : null}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '100px' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '150px' }}>
             {renderImage(frenteUrl, 'DNI frente')}
             {renderImage(reversoUrl, 'DNI reverso')}
           </Box>

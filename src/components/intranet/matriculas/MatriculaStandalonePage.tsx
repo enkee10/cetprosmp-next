@@ -340,7 +340,7 @@ export function MatriculaStandalonePage({ mode = 'actual' }: { mode?: MatriculaS
 
   const handleOpenFichaMatricula = useCallback(() => {
     if (!submittedMatriculaId) return;
-    window.open(`/sueltos/intranet/matriculas/ficha?matriculaId=${submittedMatriculaId}`, '_blank', 'noopener,noreferrer');
+    window.open(`/intranet/matriculas/ficha?matriculaId=${submittedMatriculaId}`, '_blank', 'noopener,noreferrer');
   }, [submittedMatriculaId]);
 
   const handleSwitchAccount = useCallback(async () => {
@@ -422,7 +422,7 @@ export function MatriculaStandalonePage({ mode = 'actual' }: { mode?: MatriculaS
           <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, bgcolor: '#fffdf9', borderRadius: 2 }}>
             <Stack spacing={2.5} alignItems="flex-start">
               <Typography variant="h5" fontWeight={700}>
-                Gracias por matricularte y formar parte de nuestra familia San Martina
+                Gracias por matricularte y formar parte de nuestra familia Sanmartina
               </Typography>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
                 <Button variant="contained" onClick={handleNewMatricula}>

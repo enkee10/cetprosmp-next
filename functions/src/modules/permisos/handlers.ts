@@ -44,6 +44,18 @@ const LIST_ROLE_PERMISSIONS_BY_ROLE_QUERY = `
   }
 `;
 
+const GET_REQUESTER_ROLE_QUERY = `
+  query GetRequesterRoleManual($documentId: String!) {
+    users(where: { documentId: { eq: $documentId } }, limit: 1) {
+      rolId
+      rol {
+        titulo
+        scala
+      }
+    }
+  }
+`;
+
 const entityIds = new Set(PERMISSION_ENTITIES.map((entity) => entity.id));
 
 function normalizePermission(item: unknown, roleId: number): DataConnectRolePermissionInput | null {
@@ -113,13 +125,45 @@ export const listMisPermisos = https.onCall(async (_data, context) => {
     };
   }
 
-  const roleId = getRequesterRoleId(context);
+  let roleId = getRequesterRoleId(context);
+  let requesterRole: { titulo?: string | null; scala?: number | null } | null = null;
+  const uid = context.auth?.uid;
+  if (uid) {
+    try {
+      const requesterResponse = await dataConnect.executeGraphql<
+        { users: Array<{ rolId?: number | null; rol?: { titulo?: string | null; scala?: number | null } | null }> },
+        { documentId: string }
+      >(
+        GET_REQUESTER_ROLE_QUERY,
+        { variables: { documentId: uid } },
+      );
+      const requester = requesterResponse.data.users?.[0] ?? null;
+      if (requester?.rolId) roleId = requester.rolId;
+      requesterRole = requester?.rol ?? null;
+      if (Number(requesterRole?.scala ?? 0) >= 600) {
+        return {
+          entities: PERMISSION_ENTITIES,
+          permissions: PERMISSION_ENTITIES.map((entity) => ({
+            roleId: roleId > 0 ? roleId : 600,
+            entity: entity.id,
+            canView: true,
+            canCreate: true,
+            canEdit: true,
+            canDelete: true,
+          })),
+        };
+      }
+    } catch (error) {
+      console.warn("No se pudo resolver el rol real del solicitante; se usaran claims.", error);
+    }
+  }
+
   if (roleId <= 0) {
     return { entities: PERMISSION_ENTITIES, permissions: [] };
   }
 
   try {
-    const role = await getRoleById(roleId);
+    const role = requesterRole ?? await getRoleById(roleId);
     if (!role || isBlockedIntranetRole(roleId, role.titulo)) {
       return { entities: PERMISSION_ENTITIES, permissions: [] };
     }

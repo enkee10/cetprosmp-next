@@ -92,6 +92,27 @@ const resolveProfileRoleTitle = (profile: unknown): string | null => {
     );
 };
 
+const resolveProfileRole = (profile: unknown): string | null => {
+    const data = profile as {
+        rolId?: unknown;
+        role?: unknown;
+    } | null;
+    const value = data?.rolId ?? data?.role;
+    if (value === null || value === undefined || value === '') return null;
+    return String(value);
+};
+
+const resolveProfileLevel = (profile: unknown): number | null => {
+    const data = profile as {
+        level?: unknown;
+        scala?: unknown;
+        rol?: { scala?: unknown } | null;
+    } | null;
+    const value = data?.level ?? data?.scala ?? data?.rol?.scala;
+    const level = Number(value);
+    return Number.isFinite(level) ? level : null;
+};
+
 const resolveEmailForPasswordLogin = async (identifier: string): Promise<string> => {
     const normalizedIdentifier = identifier.trim();
     if (!normalizedIdentifier) return normalizedIdentifier;
@@ -135,15 +156,17 @@ const loadUserDataFromFirebaseUser = async (firebaseUser: FirebaseUser): Promise
     const token = await withTimeout(firebaseUser.getIdTokenResult(true), 12000, 'getIdTokenResult');
     const claims = token.claims;
     const roleTitle = resolveProfileRoleTitle(profile);
+    const profileRole = resolveProfileRole(profile);
+    const profileLevel = resolveProfileLevel(profile);
     return {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
         displayName: firebaseUser.displayName,
         photoURL: resolveProfilePhotoURL(profile, firebaseUser.photoURL),
-        role: (claims.role as string) || null,
+        role: profileRole ?? ((claims.role as string) || null),
         roleTitle,
         cargo: roleTitle,
-        level: (claims.level as number) || 0,
+        level: profileLevel ?? (Number(claims.level ?? 0) || 0),
     };
 };
 
@@ -179,7 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                 try {
                     fallbackUserData = await loadFallbackUserDataFromFirebaseUser(firebaseUser);
                     if (!active) return;
-                    if (canAccessIntranet(fallbackUserData.role, fallbackUserData.level, fallbackUserData.roleTitle)) {
+                    if (canAccessIntranet(fallbackUserData.role, fallbackUserData.level, fallbackUserData.roleTitle, fallbackUserData.email)) {
                         setUser(fallbackUserData);
                         setAuthReady(true);
                         setLoading(false);
@@ -192,7 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                 try {
                     const userData = await loadUserDataFromFirebaseUser(firebaseUser); // construye el usuario con Auth, perfil y claims actualizados
                     if (!active) return;
-                    if (!canAccessIntranet(userData.role, userData.level, userData.roleTitle)) {
+                    if (!canAccessIntranet(userData.role, userData.level, userData.roleTitle, userData.email)) {
                         await signOut(auth);
                         setUser(null);
                     } else {
@@ -203,7 +226,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                         console.error('Error loading auth user:', error);
                     }
                     if (!active) return;
-                    if (fallbackUserData && canAccessIntranet(fallbackUserData.role, fallbackUserData.level, fallbackUserData.roleTitle)) {
+                    if (fallbackUserData && canAccessIntranet(fallbackUserData.role, fallbackUserData.level, fallbackUserData.roleTitle, fallbackUserData.email)) {
                         setUser((current) => {
                             if (current?.uid === firebaseUser.uid) return current;
                             return fallbackUserData;
@@ -228,7 +251,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
 
     useEffect(() => { // redirige una sola vez a intranet cuando ya existe una sesion valida con acceso
         if (!authReady || loading || !user) return;
-        if (!canAccessIntranet(user.role, user.level, user.roleTitle)) return;
+        if (!canAccessIntranet(user.role, user.level, user.roleTitle, user.email)) return;
         if (pathname?.startsWith('/intranet')) {
             window.sessionStorage.setItem(INTRANET_REDIRECT_KEY, user.uid);
             return;
@@ -249,7 +272,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
         try {
             const credential = await signInWithPopup(auth, provider); // inicia el popup de Google para autenticar al usuario
             const userData = await loadUserDataFromFirebaseUser(credential.user);
-            if (!canAccessIntranet(userData.role, userData.level, userData.roleTitle)) {
+            if (!canAccessIntranet(userData.role, userData.level, userData.roleTitle, userData.email)) {
                 await signOut(auth);
                 setUser(null);
                 throw createIntranetAccessDeniedError();
@@ -281,7 +304,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                 throw verificationError; // devuelve el error controlado para mostrar el mensaje adecuado en el modal
             }
             const userData = await loadUserDataFromFirebaseUser(userCredential.user);
-            if (!canAccessIntranet(userData.role, userData.level, userData.roleTitle)) {
+            if (!canAccessIntranet(userData.role, userData.level, userData.roleTitle, userData.email)) {
                 await signOut(auth);
                 setUser(null);
                 throw createIntranetAccessDeniedError();

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { useAuth } from '@/context/AuthContext';
 import { functions } from '@/lib/firebase';
+import { isSuperUserEmail, isSuperUserRole, isSuperUserTitle } from '@/lib/intranetPermissions';
 import type { IntranetMenuSection } from '@/components/Sidebar/AcordionIntranet/AcordionIntranet';
 
 export type PermissionAction = 'view' | 'create' | 'edit' | 'delete';
@@ -30,13 +31,23 @@ export function useIntranetPermissions() {
   const { user } = useAuth();
   const [permissions, setPermissions] = useState<IntranetPermission[]>([]);
   const [loading, setLoading] = useState(true);
-  const isSuperUser = Number(user?.level ?? 0) >= 600;
+  const isSuperUser =
+    Number(user?.level ?? 0) >= 600
+    || isSuperUserRole(user?.role)
+    || isSuperUserTitle(user?.roleTitle)
+    || isSuperUserEmail(user?.email);
 
   useEffect(() => {
     let active = true;
 
     const loadPermissions = async () => {
       if (!user) {
+        setPermissions([]);
+        setLoading(false);
+        return;
+      }
+
+      if (isSuperUser) {
         setPermissions([]);
         setLoading(false);
         return;
@@ -62,7 +73,7 @@ export function useIntranetPermissions() {
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [isSuperUser, user]);
 
   const permissionsByEntity = useMemo(() => {
     return new Map(permissions.map((permission) => [permission.entity, permission]));
@@ -79,7 +90,8 @@ export function useIntranetPermissions() {
 
   const filterSections = useCallback(
     (sections: IntranetMenuSection[]) => {
-      if (loading && !isSuperUser) return [];
+      if (isSuperUser) return sections;
+      if (loading) return [];
       return sections
         .map((section) => ({
           ...section,

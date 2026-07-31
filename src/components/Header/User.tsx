@@ -74,6 +74,18 @@ const shouldLogAuthError = (error: unknown) => { // + decide si un error debe re
   return !code.startsWith("auth/") && !code.startsWith("functions/"); // + solo deja pasar a consola los errores inesperados que no son validaciones de usuario
 }; // + cierra el filtro para evitar ruido de errores esperados en desarrollo
 
+const ROLE_TITLES_BY_ID: Record<string, string> = {
+  "1": "Visitante",
+  "2": "Ex-estudiante",
+  "3": "Estudiante",
+  "4": "Docente",
+  "5": "Administrativo",
+  "6": "Coordinador",
+  "7": "Director",
+  "8": "Superusuario",
+  "9": "Ex-docente",
+};
+
 const getUserRoleLabel = (user: { cargo?: unknown; roleTitle?: unknown; role?: unknown } | null) => {
   const text = [user?.cargo, user?.roleTitle]
     .map((value) => (typeof value === "string" ? value.trim() : ""))
@@ -81,7 +93,7 @@ const getUserRoleLabel = (user: { cargo?: unknown; roleTitle?: unknown; role?: u
   if (text) return text;
 
   const role = typeof user?.role === "string" || typeof user?.role === "number" ? String(user.role).trim() : "";
-  return role ? `Rol ${role}` : "Sin rol asignado";
+  return role ? (ROLE_TITLES_BY_ID[role] ?? `Rol ${role}`) : "Sin rol asignado";
 };
 
 export default function User() { // define el componente del usuario mostrado en el header

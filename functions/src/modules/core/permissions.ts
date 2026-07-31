@@ -1,6 +1,7 @@
 import { https } from "firebase-functions/v1";
 import { dataConnect, getRoleById } from "./dataConnectCore.js";
-import { isBlockedIntranetRole } from "./authCore.js";
+import { isBlockedIntranetRole, isSuperAdminEmail } from "./authCore.js";
+import { DataConnectRole } from "./types.js";
 
 export type PermissionAction = "view" | "create" | "edit" | "delete";
 
@@ -64,8 +65,24 @@ const GET_ROLE_PERMISSION_QUERY = `
   }
 `;
 
+const GET_REQUESTER_ROLE_QUERY = `
+  query GetRequesterRoleForPermissionManual($documentId: String!) {
+    users(where: { documentId: { eq: $documentId } }, limit: 1) {
+      rolId
+      rol {
+        titulo
+        scala
+      }
+    }
+  }
+`;
+
 export function isSuperUserContext(context: https.CallableContext) {
-  return Number(context.auth?.token?.level ?? 0) >= SUPERUSER_LEVEL;
+  const token = context.auth?.token;
+  const level = Number(token?.level ?? 0);
+  const roleId = Number(token?.roleId ?? token?.role ?? 0);
+  const email = typeof token?.email === "string" ? token.email : null;
+  return level >= SUPERUSER_LEVEL || roleId >= SUPERUSER_LEVEL || isSuperAdminEmail(email);
 }
 
 export function requireAuthenticated(context: https.CallableContext) {
@@ -101,10 +118,30 @@ export async function hasPermission(context: https.CallableContext, entity: stri
   if (isSuperUserContext(context)) return true;
   if (!entityIds.has(entity)) return false;
 
-  const roleId = getRequesterRoleId(context);
+  let roleId = getRequesterRoleId(context);
+  let role: DataConnectRole | { titulo?: string | null; scala?: number | null } | null = null;
+  const uid = context.auth?.uid;
+  if (uid) {
+    try {
+      const requesterResponse = await dataConnect.executeGraphql<
+        { users: Array<{ rolId?: number | null; rol?: { titulo?: string | null; scala?: number | null } | null }> },
+        { documentId: string }
+      >(
+        GET_REQUESTER_ROLE_QUERY,
+        { variables: { documentId: uid } },
+      );
+      const requester = requesterResponse.data.users?.[0] ?? null;
+      if (requester?.rolId) roleId = requester.rolId;
+      role = requester?.rol ?? null;
+      if (Number(role?.scala ?? 0) >= SUPERUSER_LEVEL) return true;
+    } catch (error) {
+      console.warn("No se pudo resolver el rol real para permisos; se usaran claims.", error);
+    }
+  }
+
   if (roleId <= 0) return false;
 
-  const role = await getRoleById(roleId);
+  role = role ?? await getRoleById(roleId);
   if (!role || isBlockedIntranetRole(roleId, role.titulo)) return false;
 
   const response = await dataConnect.executeGraphql<{

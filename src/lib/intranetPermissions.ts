@@ -5,6 +5,8 @@ export const normalizeRoleId = (role: string | number | null | undefined) => {
 
 export const isSuperUserLevel = (level = 0) => level >= 600;
 
+export const isSuperUserRole = (role: string | number | null | undefined) => normalizeRoleId(role) >= 600;
+
 const blockedIntranetRoleIds = new Set([1, 9]);
 const blockedIntranetRoleTitles = new Set(['visitante', 'exestudiante', 'exdocente']);
 
@@ -15,6 +17,16 @@ const normalizeRoleTitle = (roleTitle: unknown) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[\s_-]+/g, '');
+
+export const isSuperUserEmail = (email: string | null | undefined) =>
+  String(email ?? '').trim().toLowerCase() === 'enkee03@cetprosmp.edu.pe';
+
+export const isSuperUserTitle = (roleTitle: unknown) => {
+  const normalizedTitle = normalizeRoleTitle(roleTitle);
+  return normalizedTitle === 'superusuario'
+    || normalizedTitle === 'superadmin'
+    || normalizedTitle === 'superadministrador';
+};
 
 export const isBlockedIntranetRole = (
   role: string | number | null | undefined,
@@ -31,8 +43,9 @@ export const canAccessIntranet = (
   role: string | number | null | undefined,
   level = 0,
   roleTitle?: unknown,
+  email?: string | null,
 ) =>
-  isSuperUserLevel(level) || (
+  isSuperUserLevel(level) || isSuperUserRole(role) || isSuperUserTitle(roleTitle) || isSuperUserEmail(email) || (
     normalizeRoleId(role) > 0
     && Number(level) > 0
     && !isBlockedIntranetRole(role, roleTitle)

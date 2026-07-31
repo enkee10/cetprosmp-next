@@ -280,7 +280,7 @@ export default function IntranetSidebar() {
           openAccordions={openAccordions}
           handleAccordionChange={handleAccordionChange}
           showRoot={false}
-          sections={visibleSections}
+          sections={menuSections}
         />
       )}
       <Divider />

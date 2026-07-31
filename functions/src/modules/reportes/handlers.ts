@@ -2580,7 +2580,7 @@ function fillNomina(updates: SpreadsheetUpdate[], sheetName: string, data: Repor
 
 function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data: ReporteDocumentoData) {
   fillInstitutionHeader(updates, sheetName, data, "acta");
-  const unitColumns = ["X", "Y", "Z", "AA", "AB", "AC"];
+  const unitColumns = ["X", "Y", "Z", "AA", "AB", "AC", "AD"];
   const unitMap = unidadPromedioMap(data);
   const efsrtMap = efsrtPromedioMap(data);
   const units = data.unidades.slice(0, unitColumns.length);

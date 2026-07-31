@@ -157,6 +157,7 @@ export function MatriculaStandalonePage({ mode = 'actual' }: { mode?: MatriculaS
   const [authRedirectLoading, setAuthRedirectLoading] = useState(true);
   const [formKey, setFormKey] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedMatriculaId, setSubmittedMatriculaId] = useState<number | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
@@ -323,7 +324,8 @@ export function MatriculaStandalonePage({ mode = 'actual' }: { mode?: MatriculaS
   const accentColor = darkenHexColor(backgroundColor);
   const pageLoading = !authReady || Boolean(firebaseUser && loadingAccess) || Boolean(!firebaseUser && authRedirectLoading && !loginError);
 
-  const handleSaved = useCallback(() => {
+  const handleSaved = useCallback((result?: { id?: number }) => {
+    setSubmittedMatriculaId(Number(result?.id) || null);
     setFormKey((current) => current + 1);
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -331,9 +333,15 @@ export function MatriculaStandalonePage({ mode = 'actual' }: { mode?: MatriculaS
 
   const handleNewMatricula = useCallback(() => {
     setSubmitted(false);
+    setSubmittedMatriculaId(null);
     setFormKey((current) => current + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  const handleOpenFichaMatricula = useCallback(() => {
+    if (!submittedMatriculaId) return;
+    window.open(`/sueltos/intranet/matriculas/ficha?matriculaId=${submittedMatriculaId}`, '_blank', 'noopener,noreferrer');
+  }, [submittedMatriculaId]);
 
   const handleSwitchAccount = useCallback(async () => {
     setError(null);
@@ -413,12 +421,17 @@ export function MatriculaStandalonePage({ mode = 'actual' }: { mode?: MatriculaS
         ) : submitted ? (
           <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, bgcolor: '#fffdf9', borderRadius: 2 }}>
             <Stack spacing={2.5} alignItems="flex-start">
-            <Typography variant="h5" fontWeight={700}>
-              Gracias por matricularte y formar parte de nuestra familia San Martina
-            </Typography>
-            <Button variant="contained" onClick={handleNewMatricula}>
-              Nueva matricula
-            </Button>
+              <Typography variant="h5" fontWeight={700}>
+                Gracias por matricularte y formar parte de nuestra familia San Martina
+              </Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
+                <Button variant="contained" onClick={handleNewMatricula}>
+                  Nueva matricula
+                </Button>
+                <Button variant="outlined" onClick={handleOpenFichaMatricula} disabled={!submittedMatriculaId}>
+                  Ver ficha de matricula
+                </Button>
+              </Stack>
             </Stack>
           </Paper>
         ) : (

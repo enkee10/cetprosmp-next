@@ -1144,6 +1144,10 @@ const CHECK_DUPLICATE_MATRICULA_QUERY = `
 
 const VALID_RECIBO_TEXT_VALUES = new Set(["CONADIS", "BECADO", "POR REGULARIZAR"]);
 
+function isRepeatableMatriculaRecibo(recibo: string) {
+  return VALID_RECIBO_TEXT_VALUES.has(recibo);
+}
+
 function normalizeMatriculaRecibo(value: unknown): string | null {
   const text = asCleanString(value)?.toUpperCase().replace(/\s+/g, " ") ?? null;
   if (!text) return null;
@@ -4445,11 +4449,7 @@ async function ensureNoMatriculaDuplicates(
   recibo: string,
   currentMatriculaId?: number | null,
 ) {
-  const [reciboResponse, duplicateResponse] = await Promise.all([
-    dataConnect.executeGraphql<{ matriculas: Array<{ id: number }> }, { recibo: string }>(
-      CHECK_RECIBO_MATRICULA_QUERY,
-      { variables: { recibo } },
-    ),
+  const [duplicateResponse, reciboResponse] = await Promise.all([
     dataConnect.executeGraphql<
       { matriculas: Array<{ id: number }> },
       { userId: number; semestreId: number; paqueteId: number }
@@ -4457,9 +4457,15 @@ async function ensureNoMatriculaDuplicates(
       CHECK_DUPLICATE_MATRICULA_QUERY,
       { variables: { userId, semestreId, paqueteId } },
     ),
+    isRepeatableMatriculaRecibo(recibo)
+      ? Promise.resolve(null)
+      : dataConnect.executeGraphql<{ matriculas: Array<{ id: number }> }, { recibo: string }>(
+        CHECK_RECIBO_MATRICULA_QUERY,
+        { variables: { recibo } },
+      ),
   ]);
 
-  const hasSameRecibo = (reciboResponse.data.matriculas ?? []).some((item) => item.id !== currentMatriculaId);
+  const hasSameRecibo = (reciboResponse?.data.matriculas ?? []).some((item) => item.id !== currentMatriculaId);
   const hasDuplicateMatricula = (duplicateResponse.data.matriculas ?? []).some((item) => item.id !== currentMatriculaId);
 
   if (hasSameRecibo) {

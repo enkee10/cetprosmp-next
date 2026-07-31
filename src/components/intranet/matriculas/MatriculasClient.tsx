@@ -215,7 +215,7 @@ interface MatriculaFormProps {
   isOpen: boolean;
   onCancel: () => void;
   onReset?: () => void;
-  onSaved: () => void;
+  onSaved: (result?: { id?: number }) => void;
   defaultSemestreId?: number | null;
   reconocimientoDniActivo?: boolean;
   formVariant?: 'intranet' | 'standalone';
@@ -395,15 +395,6 @@ const initialValues: MatriculaFormValues = {
 const getCallableErrorMessage = (error: unknown, fallback: string) => {
   const message = (error as { message?: string } | null)?.message;
   return message || fallback;
-};
-
-const extractGeminiRawResponseFromError = (message: string) => {
-  const marker = 'Respuesta recibida:';
-  const markerIndex = message.indexOf(marker);
-  if (markerIndex < 0) return null;
-  const raw = message.slice(markerIndex + marker.length).trim();
-  const retryIndex = raw.indexOf(' Vuelve a intentarlo');
-  return (retryIndex >= 0 ? raw.slice(0, retryIndex) : raw).trim() || null;
 };
 
 const normalizeDocumentNumber = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -1040,8 +1031,6 @@ export function MatriculaForm({
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [recognitionJsonPreview, setRecognitionJsonPreview] = useState<string | null>(null);
-  const [recognitionJsonCopied, setRecognitionJsonCopied] = useState(false);
   const [courseChangeExpired, setCourseChangeExpired] = useState(false);
   const [courseChangeLimitReached, setCourseChangeLimitReached] = useState(false);
   const [moduleChanges, setModuleChanges] = useState<NonNullable<MatriculaListItem['cambiosModulo']>>([]);
@@ -1075,8 +1064,6 @@ export function MatriculaForm({
       setIsExistingUserWithImages(false);
       setShouldPersistDocumentImages(true);
       setDocumentAnalysisMetadata(null);
-      setRecognitionJsonPreview(null);
-      setRecognitionJsonCopied(false);
       setVerificationFailureCount(0);
       setFrontFileVerificationError(null);
       setBackFileVerificationError(null);
@@ -1119,8 +1106,6 @@ export function MatriculaForm({
     }
     setDocumentVerified(false);
     setDocumentAnalysisMetadata(null);
-    setRecognitionJsonPreview(null);
-    setRecognitionJsonCopied(false);
     setShouldPersistDocumentImages(true);
     if (side === 'frente') {
       setFrontFileVerificationError(null);
@@ -1135,17 +1120,6 @@ export function MatriculaForm({
   const markTouched = useCallback((key: string) => {
     setTouched((prev) => ({ ...prev, [key]: true }));
   }, []);
-
-  const handleCopyRecognitionJson = useCallback(async () => {
-    if (!recognitionJsonPreview) return;
-    try {
-      await navigator.clipboard.writeText(recognitionJsonPreview);
-      setRecognitionJsonCopied(true);
-      window.setTimeout(() => setRecognitionJsonCopied(false), 1800);
-    } catch {
-      setMessage('No se pudo copiar el JSON al portapapeles.');
-    }
-  }, [recognitionJsonPreview]);
 
   const stopCameraCapture = useCallback(() => {
     cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -1624,8 +1598,6 @@ export function MatriculaForm({
     setFrontFileVerificationError(null);
     setBackFileVerificationError(null);
     setDocumentAnalysisMetadata(null);
-    setRecognitionJsonPreview(null);
-    setRecognitionJsonCopied(false);
     try {
       const files = [frontFile, backFile].filter((file): file is File => Boolean(file));
       if (files.length === 0) {
@@ -1670,11 +1642,6 @@ export function MatriculaForm({
           ocrPromise,
           documentPolicyPromise,
         ]);
-        setRecognitionJsonPreview(JSON.stringify({
-          motor: 'ocr_simple',
-          resultado: ocrResult,
-        }, null, 2));
-        setRecognitionJsonCopied(false);
         if (!ocrResult.frontValid || !ocrResult.backValid) {
           handleDocumentValidationFailure({
             frontSignature: currentFrontSignature,
@@ -1732,11 +1699,6 @@ export function MatriculaForm({
         archivos,
       });
       const aiResult = geminiResult.data;
-      setRecognitionJsonPreview(JSON.stringify({
-        motor: 'gemini',
-        resultado: aiResult,
-      }, null, 2));
-      setRecognitionJsonCopied(false);
       const [reniecDatos, documentPolicy] = await Promise.all([
         reniecPromise,
         documentPolicyPromise,
@@ -1814,13 +1776,6 @@ export function MatriculaForm({
       setSuccessMessage('Documento verificado con Gemini. Revisa y completa los datos del usuario.');
     } catch (error) {
       const errorMessage = getCallableErrorMessage(error, 'No se pudo verificar el documento.');
-      const rawGeminiResponse = extractGeminiRawResponseFromError(errorMessage);
-      setRecognitionJsonPreview(JSON.stringify({
-        motor: reconocimientoDniActivo ? 'gemini' : 'ocr_simple',
-        error: errorMessage,
-        respuestaRecibida: rawGeminiResponse,
-      }, null, 2));
-      setRecognitionJsonCopied(false);
       handleDocumentValidationFailure({
         frontSignature: currentFrontSignature,
         backSignature: currentBackSignature,
@@ -1943,7 +1898,7 @@ export function MatriculaForm({
         isEditing ? 'Matricula actualizada correctamente.' : 'Matricula registrada correctamente.',
         ...workspaceWarnings.map((warning) => `Advertencia Workspace: ${warning}`),
       ].join('\n'));
-      onSaved();
+      onSaved({ id: result.data.id });
     } catch (error) {
       setMessage(getCallableErrorMessage(error, isEditing ? 'No se pudo actualizar la matricula.' : 'No se pudo registrar la matricula.'));
     } finally {
@@ -2356,44 +2311,11 @@ export function MatriculaForm({
 
   return (
     <Box sx={{ position: 'relative' }}>
-    <FormLoadingOverlay open={loading} variant="contained" />
-    <Stack spacing={isStandalone ? 1.5 : 2.5}>
-      <AutoDismissAlert message={message} severity="error" sx={{ whiteSpace: 'pre-wrap' }} />
-      <AutoDismissAlert message={successMessage} severity="success" sx={{ whiteSpace: 'pre-wrap' }} />
-      {recognitionJsonPreview ? (
-        <Alert
-          severity="info"
-          action={
-            <Button color="inherit" size="small" onClick={handleCopyRecognitionJson}>
-              {recognitionJsonCopied ? 'Copiado' : 'Copiar JSON'}
-            </Button>
-          }
-          sx={{
-            alignItems: 'flex-start',
-            '& .MuiAlert-message': { width: '100%', overflow: 'hidden' },
-          }}
-        >
-          <Typography variant="subtitle2" fontWeight={700} gutterBottom>
-            JSON devuelto por la verificacion
-          </Typography>
-          <Box
-            component="pre"
-            sx={{
-              m: 0,
-              maxHeight: 260,
-              overflow: 'auto',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-              fontSize: 12,
-              lineHeight: 1.45,
-              fontFamily: 'monospace',
-            }}
-          >
-            {recognitionJsonPreview}
-          </Box>
-        </Alert>
-      ) : null}
-      <Box sx={questionCardSx}>
+      <FormLoadingOverlay open={loading} variant="contained" />
+      <Stack spacing={isStandalone ? 1.5 : 2.5}>
+        <AutoDismissAlert message={message} severity="error" sx={{ whiteSpace: 'pre-wrap' }} />
+        <AutoDismissAlert message={successMessage} severity="success" sx={{ whiteSpace: 'pre-wrap' }} />
+        <Box sx={questionCardSx}>
         <Typography variant="subtitle2" fontWeight={700} gutterBottom>
           Responsable del llenado de la matricula
         </Typography>

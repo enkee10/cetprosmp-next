@@ -45,7 +45,7 @@ const MenuBox = styled(Box)(({ theme }) => ({
 
 export default function MenuPrincipal() {
   const { user } = useAuth();
-  const showIntranet = canAccessIntranet(user?.role, user?.level, user?.roleTitle);
+  const showIntranet = canAccessIntranet(user?.role, user?.level, user?.roleTitle, user?.email);
 
   return (
     <MenuBox>

@@ -353,6 +353,15 @@ const UserForm: React.FC<UserFormProps> = ({
   }, [initialData?.id]);
 
   const avatarUrl = watch('avatar');
+  const avatarRemoved = watch('avatarRemoved');
+  const initialAvatarUrl = typeof initialData?.avatar === 'string' ? initialData.avatar : '';
+  const initialAvatarMedianoUrl = typeof initialData?.avatarMediano === 'string' ? initialData.avatarMediano : '';
+  const initialAvatarPequenoUrl = typeof initialData?.avatarPequeno === 'string' ? initialData.avatarPequeno : '';
+  const avatarPreviewUrl = avatarRemoved
+    ? ''
+    : avatarUrl && avatarUrl !== initialAvatarUrl
+      ? avatarUrl
+      : initialAvatarMedianoUrl || initialAvatarPequenoUrl || avatarUrl;
   const dniImagenFrenteProcesadaUrl = watch('dniImagenFrenteProcesadaUrl') || '';
   const dniImagenReversoProcesadaUrl = watch('dniImagenReversoProcesadaUrl') || '';
   const dniImagenFrenteDisplayUrl = dniImagenFrenteProcesadaUrl;
@@ -599,34 +608,80 @@ const UserForm: React.FC<UserFormProps> = ({
             display: 'grid',
             gridTemplateColumns: {
               xs: 'minmax(0, 1fr)',
-              sm: 'repeat(2, minmax(0, 1fr))',
+              sm: 'repeat(12, minmax(0, 1fr))',
             },
             gap: 2,
             mt: 1,
             width: '100%',
+            '& > *': {
+              gridColumn: {
+                xs: 'span 1',
+                sm: 'span 6',
+              },
+            },
           }}
         >
-            <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' }, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Avatar src={avatarUrl || undefined} sx={{ width: 100, height: 100 }} />
+            <Box
+              sx={{
+                gridColumn: { xs: 'span 1', sm: 'span 6' },
+                gridRow: { sm: 'span 3' },
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: 'minmax(120px, 3fr) minmax(0, 3fr)',
+                  sm: 'repeat(6, minmax(0, 1fr))',
+                },
+                columnGap: 1.5,
+                rowGap: 1,
+                alignItems: 'start',
+                mb: 1,
+              }}
+            >
+              <Avatar
+                src={avatarPreviewUrl || undefined}
+                variant="rounded"
+                sx={{
+                  gridColumn: { xs: '1', sm: 'span 3' },
+                  width: '100%',
+                  height: 'auto',
+                  aspectRatio: '3 / 4',
+                  borderRadius: 1,
+                  bgcolor: 'grey.100',
+                  color: 'text.secondary',
+                  '& img': {
+                    objectFit: 'contain',
+                  },
+                }}
+              />
               <input type="file" accept="image/*" style={{ display: 'none' }} ref={avatarInputRef} onChange={(e) => handleFileChange(e, 'avatar')} />
-              <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
-                <Button variant="outlined" onClick={() => avatarInputRef.current?.click()} disabled={isUploading || removingAvatar} tabIndex={23}>
+              <Box
+                sx={{
+                  gridColumn: { xs: '2', sm: 'span 3' },
+                  display: 'flex',
+                  gap: 1,
+                  flexWrap: 'wrap',
+                  alignItems: 'flex-start',
+                  maxWidth: '100%',
+                }}
+              >
+                <Button variant="outlined" size="small" onClick={() => avatarInputRef.current?.click()} disabled={isUploading || removingAvatar} tabIndex={23} sx={{ width: 'fit-content', maxWidth: '100%' }}>
                   {isUploading ? <CircularProgress size={24} /> : (avatarUrl ? 'Cambiar Avatar' : 'Subir Avatar')}
                 </Button>
                 {avatarUrl ? (
                   <Button
                     variant="outlined"
                     color="error"
+                    size="small"
                     startIcon={<DeleteOutline />}
                     onClick={handleRemoveAvatar}
                     disabled={isUploading || removingAvatar}
+                    sx={{ width: 'fit-content', maxWidth: '100%' }}
                   >
                     {removingAvatar ? 'Eliminando Avatar...' : 'Eliminar Avatar'}
                   </Button>
                 ) : null}
               </Box>
-              {errors.avatar && <Typography color="error" variant="caption">{errors.avatar.message as string}</Typography>}
-              {uploadError && <Typography color="error" variant="caption" sx={{ mt: 1 }}>{uploadError}</Typography>}
+              {errors.avatar && <Typography color="error" variant="caption" sx={{ gridColumn: { xs: '1 / -1', sm: 'span 6' } }}>{errors.avatar.message as string}</Typography>}
+              {uploadError && <Typography color="error" variant="caption" sx={{ gridColumn: { xs: '1 / -1', sm: 'span 6' } }}>{uploadError}</Typography>}
             </Box>
 
             <Controller name="apellido_paterno" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 1 }} inputRef={(el) => { field.ref(el); apellidoPaternoRef.current = el; }} label="Apellido Paterno" error={!!errors.apellido_paterno} helperText={errors.apellido_paterno?.message} fullWidth />} />
@@ -779,7 +834,7 @@ const UserForm: React.FC<UserFormProps> = ({
                   label="Correo Institucional"
                   fullWidth
                   InputLabelProps={{ shrink: true }}
-                  sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' } }}
+                  sx={{ gridColumn: { xs: 'span 1', sm: 'span 12' } }}
                 />
               )}
             />
@@ -828,7 +883,7 @@ const UserForm: React.FC<UserFormProps> = ({
               )}
             />
             {!isCreating && (
-              <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' }, mt: 1 }}>
+              <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 12' }, mt: 1 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                   Imagenes de DNI
                 </Typography>
@@ -909,7 +964,7 @@ const UserForm: React.FC<UserFormProps> = ({
               </Box>
             )}
             {!isCreating && (loadingGrupoModuloHistorial || grupoModuloHistorial.length > 0) ? (
-              <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' }, mt: 1 }}>
+              <Box sx={{ gridColumn: { xs: 'span 1', sm: 'span 12' }, mt: 1 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                   Historial de grupos-modulos
                 </Typography>

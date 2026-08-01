@@ -271,15 +271,10 @@ interface DocumentImagePolicy {
   reason?: string | null;
 }
 
-interface MatriculaDocumentoEstadoResponse {
-  userExists?: boolean;
-  user?: MatriculaUser | null;
-  documentImagePolicy?: DocumentImagePolicy | null;
-}
-
 interface VerificarReniecResponse {
   userExists?: boolean;
   datos?: Partial<MatriculaFormValues>;
+  documentImagePolicy?: DocumentImagePolicy | null;
 }
 
 interface VerificarOcrSimpleResponse {
@@ -1385,18 +1380,6 @@ export function MatriculaForm({
     return { path, url, contentType };
   };
 
-  const getMatriculaDocumentoPolicy = async () => {
-    const getMatriculaDocumentoEstado = httpsCallable<
-      { tipoDocumento: string; dni: string },
-      MatriculaDocumentoEstadoResponse
-    >(functions, 'getMatriculaDocumentoEstado');
-    const result = await getMatriculaDocumentoEstado({
-      tipoDocumento: values.tipoDocumento,
-      dni: normalizeDocumentNumber(values.dni),
-    });
-    return result.data.documentImagePolicy ?? null;
-  };
-
   const uploadVerifiedDocumentImages = async (
     shouldPersist: boolean,
     frontIndex: number | null,
@@ -1420,7 +1403,7 @@ export function MatriculaForm({
       tipoDocumento: values.tipoDocumento,
       dni: normalizeDocumentNumber(values.dni),
     });
-    return result.data.datos || null;
+    return result.data;
   }, [values.dni, values.tipoDocumento]);
 
   const applyVerifiedDocumentData = useCallback((
@@ -1612,7 +1595,6 @@ export function MatriculaForm({
       }
 
       const reniecPromise = fetchReniecForVerification().catch(() => null);
-      const documentPolicyPromise = getMatriculaDocumentoPolicy().catch(() => null);
       if (!reconocimientoDniActivo) {
         if (!frontFile || !backFile) return;
         const ocrPromise = (async () => {
@@ -1637,11 +1619,12 @@ export function MatriculaForm({
           });
           return result.data;
         })();
-        const [reniecDatos, ocrResult, documentPolicy] = await Promise.all([
+        const [reniecResult, ocrResult] = await Promise.all([
           reniecPromise,
           ocrPromise,
-          documentPolicyPromise,
         ]);
+        const reniecDatos = reniecResult?.datos ?? null;
+        const documentPolicy = reniecResult?.documentImagePolicy ?? null;
         if (!ocrResult.frontValid || !ocrResult.backValid) {
           handleDocumentValidationFailure({
             frontSignature: currentFrontSignature,
@@ -1699,10 +1682,9 @@ export function MatriculaForm({
         archivos,
       });
       const aiResult = geminiResult.data;
-      const [reniecDatos, documentPolicy] = await Promise.all([
-        reniecPromise,
-        documentPolicyPromise,
-      ]);
+      const reniecResult = await reniecPromise;
+      const reniecDatos = reniecResult?.datos ?? null;
+      const documentPolicy = reniecResult?.documentImagePolicy ?? null;
       const detectedType = normalizeAiDocumentType(aiResult.tipoDocumento);
       const detectedNumber = normalizeDetectedDocumentNumber(values.tipoDocumento, aiResult.numeroDocumento);
       const expectedNumber = normalizeDocumentNumber(values.dni);

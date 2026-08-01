@@ -4079,6 +4079,7 @@ export const verificarMatriculaReniec = https.onCall(async (data, context) => {
         tipoDocumento,
         dni: documentNumber,
       }),
+      documentImagePolicy: getDocumentImagePolicy(existingUser),
     };
   }
   if (!/^\d{8}$/.test(documentNumber)) {
@@ -4115,6 +4116,7 @@ export const verificarMatriculaReniec = https.onCall(async (data, context) => {
     return {
       userExists: Boolean(existingUserValue),
       datos: mergeSavedUserWithOcr(existingUserValue, reniecData),
+      documentImagePolicy: getDocumentImagePolicy(existingUserValue),
     };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;

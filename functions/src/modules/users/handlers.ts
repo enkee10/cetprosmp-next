@@ -383,7 +383,7 @@ async function hydrateProcessedAvatarThumbnails(
     .limit(1000)
     .get();
 
-  const thumbnailByUserId = new Map<number, { avatarTiny?: string; avatarPequeno?: string }>();
+  const thumbnailByUserId = new Map<number, { avatarTiny?: string; avatarPequeno?: string; avatarMediano?: string }>();
   snapshot.docs.forEach((doc) => {
     const data = doc.data();
     const userId = toNumber(data.userId, 0);
@@ -392,6 +392,7 @@ async function hydrateProcessedAvatarThumbnails(
     const avatarTamanos = data.avatarTamanos as {
       tiny?: { url?: unknown } | null;
       pequeno?: { url?: unknown } | null;
+      mediano?: { url?: unknown } | null;
       grande?: { url?: unknown } | null;
     } | null;
     const avatar = data.avatar as { url?: unknown } | null;
@@ -404,11 +405,16 @@ async function hydrateProcessedAvatarThumbnails(
       asNullableString(avatarTamanos?.pequeno?.url)
       ?? asNullableString(avatarTamanos?.grande?.url)
       ?? asNullableString(avatar?.url);
+    const mediano =
+      asNullableString(avatarTamanos?.mediano?.url)
+      ?? asNullableString(avatarTamanos?.grande?.url)
+      ?? asNullableString(avatar?.url);
 
-    if (tiny || pequeno) {
+    if (tiny || pequeno || mediano) {
       thumbnailByUserId.set(userId, {
         avatarTiny: tiny ?? undefined,
         avatarPequeno: pequeno ?? undefined,
+        avatarMediano: mediano ?? undefined,
       });
     }
   });

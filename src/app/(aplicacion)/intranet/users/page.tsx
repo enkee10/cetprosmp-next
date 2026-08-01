@@ -43,6 +43,7 @@ interface User {
   avatar?: string;
   avatarTiny?: string;
   avatarPequeno?: string;
+  avatarMediano?: string;
   photoURL?: string | null;
   recorteFotografia?: string | null;
   rolTitulo?: string | null;

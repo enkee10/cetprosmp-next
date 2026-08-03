@@ -3964,6 +3964,51 @@ async function listMatriculasForList(semestreId: number | null) {
   }, Record<string, never>>(LIST_MATRICULAS_QUERY);
 }
 
+async function hydrateMatriculaListAvatarTiny(matriculas: MatriculaRow[]): Promise<MatriculaRow[]> {
+  const userIds = new Set(
+    matriculas
+      .map((matricula) => toNumber(matricula.user?.id ?? matricula.userId, 0))
+      .filter((id) => id > 0),
+  );
+  if (userIds.size === 0) return matriculas;
+
+  const snapshot = await getFirestore()
+    .collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION)
+    .orderBy("updatedAt", "desc")
+    .limit(1000)
+    .get();
+
+  const avatarTinyByUserId = new Map<number, string>();
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    const userId = toNumber(data.userId, 0);
+    if (!userIds.has(userId) || avatarTinyByUserId.has(userId) || data.status !== "completed") return;
+
+    const avatarTamanos = data.avatarTamanos as {
+      tiny?: { url?: unknown } | null;
+      pequeno?: { url?: unknown } | null;
+      grande?: { url?: unknown } | null;
+    } | null;
+    const avatar = data.avatar as { url?: unknown } | null;
+    const tiny =
+      asCleanString(avatarTamanos?.tiny?.url)
+      ?? asCleanString(avatarTamanos?.pequeno?.url)
+      ?? asCleanString(avatarTamanos?.grande?.url)
+      ?? asCleanString(avatar?.url);
+
+    if (tiny) avatarTinyByUserId.set(userId, tiny);
+  });
+
+  if (avatarTinyByUserId.size === 0) return matriculas;
+
+  return matriculas.map((matricula) => {
+    if (!matricula.user) return matricula;
+    const userId = toNumber(matricula.user.id ?? matricula.userId, 0);
+    const avatarTiny = avatarTinyByUserId.get(userId);
+    return avatarTiny ? { ...matricula, user: { ...matricula.user, avatarTiny } } : matricula;
+  });
+}
+
 async function listModuloEstudiantesForAllowedGrupoModulos(
   grupoModulos: MatriculaDocenteGrupoModulo[],
 ): Promise<MatriculaDocenteModuloEstudiante[]> {
@@ -4077,7 +4122,7 @@ export const listMatriculas = https.onCall(async (data, context) => {
         return dateCompare || b.id - a.id;
       });
 
-    return { matriculas };
+    return { matriculas: await hydrateMatriculaListAvatarTiny(matriculas) };
   } catch (error) {
     console.error("Error in listMatriculas:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar las matriculas.");

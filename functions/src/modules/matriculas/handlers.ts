@@ -622,6 +622,23 @@ const USER_FIELDS = `
   rolId
 `;
 
+const MATRICULA_LIST_USER_FIELDS = `
+  id
+  documentId
+  username
+  email
+  dni
+  tipoDocumento
+  nombre
+  apellidos
+  apellidoPaterno
+  apellidoMaterno
+  celular
+  correoInstitucional
+  avatar
+  rolId
+`;
+
 const GET_PAQUETE_MODULOS_FOR_MATRICULA_QUERY = `
   query GetPaqueteModulosForMatricula($paqueteId: Int!) {
     paquete(id: $paqueteId) {
@@ -749,10 +766,47 @@ const MATRICULA_FIELDS = `
   }
 `;
 
+const MATRICULA_LIST_FIELDS = `
+  id
+  recibo
+  fecha
+  fechaActualizacion
+  codigoInscripcion
+  archivado
+  paqueteId
+  semestreId
+  userId
+  responsableId
+  responsableUserId
+  user {
+    ${MATRICULA_LIST_USER_FIELDS}
+  }
+  paquete {
+    id
+    titulo
+    archivado
+  }
+  semestre {
+    id
+    titulo
+    inicio
+    fin
+    archivado
+  }
+`;
+
 const LIST_MATRICULAS_QUERY = `
   query ListMatriculasManual {
     matriculas(limit: 5000, orderBy: [{id: DESC}]) {
-      ${MATRICULA_FIELDS}
+      ${MATRICULA_LIST_FIELDS}
+    }
+  }
+`;
+
+const LIST_MATRICULAS_BY_SEMESTRE_QUERY = `
+  query ListMatriculasBySemestreManual($semestreId: Int!) {
+    matriculas(where: { semestreId: { eq: $semestreId } }, limit: 5000, orderBy: [{id: DESC}]) {
+      ${MATRICULA_LIST_FIELDS}
     }
   }
 `;
@@ -800,9 +854,20 @@ const LIST_MATRICULA_DOCENTE_GRUPOS_QUERY = `
   }
 `;
 
-const LIST_MODULO_ESTUDIANTES_FOR_MATRICULAS_QUERY = `
-  query ListModuloEstudiantesForMatriculas {
-    modulosEstudiantes(limit: 200000) {
+const LIST_MODULO_ESTUDIANTES_BY_GRUPO_MODULO_IDS_QUERY = `
+  query ListModuloEstudiantesByGrupoModuloIdsForMatriculas($grupoModuloIds: [Int!]!) {
+    modulosEstudiantes(where: { grupoModuloId: { in: $grupoModuloIds } }, limit: 200000) {
+      matriculaId
+      grupoModuloId
+      grupoId
+      moduloId
+    }
+  }
+`;
+
+const LIST_MODULO_ESTUDIANTES_BY_GRUPO_IDS_QUERY = `
+  query ListModuloEstudiantesByGrupoIdsForMatriculas($grupoIds: [Int!]!) {
+    modulosEstudiantes(where: { grupoId: { in: $grupoIds } }, limit: 200000) {
       matriculaId
       grupoModuloId
       grupoId
@@ -3884,49 +3949,72 @@ function toNumberSetFromInput(value: unknown) {
   );
 }
 
-async function hydrateMatriculaUserAvatarTiny(matriculas: MatriculaRow[]): Promise<MatriculaRow[]> {
-  const userIds = new Set(
-    matriculas
-      .map((matricula) => toNumberOrNull(matricula.user?.id))
-      .filter((id): id is number => Boolean(id && id > 0)),
+async function listMatriculasForList(semestreId: number | null) {
+  if (semestreId) {
+    return dataConnect.executeGraphql<{
+      matriculas: MatriculaRow[];
+    }, { semestreId: number }>(
+      LIST_MATRICULAS_BY_SEMESTRE_QUERY,
+      { variables: { semestreId } },
+    );
+  }
+
+  return dataConnect.executeGraphql<{
+    matriculas: MatriculaRow[];
+  }, Record<string, never>>(LIST_MATRICULAS_QUERY);
+}
+
+async function listModuloEstudiantesForAllowedGrupoModulos(
+  grupoModulos: MatriculaDocenteGrupoModulo[],
+): Promise<MatriculaDocenteModuloEstudiante[]> {
+  const grupoModuloIds = Array.from(
+    new Set(
+      grupoModulos
+        .map((item) => toNumberOrNull(item.id))
+        .filter((id): id is number => Boolean(id && id > 0)),
+    ),
   );
-  if (userIds.size === 0) return matriculas;
+  const grupoIds = Array.from(
+    new Set(
+      grupoModulos
+        .map((item) => toNumberOrNull(item.grupoId))
+        .filter((id): id is number => Boolean(id && id > 0)),
+    ),
+  );
 
-  const snapshot = await getFirestore()
-    .collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION)
-    .orderBy("updatedAt", "desc")
-    .limit(1000)
-    .get();
+  const [byGrupoModulo, byGrupo] = await Promise.all([
+    grupoModuloIds.length > 0
+      ? dataConnect.executeGraphql<{
+        modulosEstudiantes: MatriculaDocenteModuloEstudiante[];
+      }, { grupoModuloIds: number[] }>(
+        LIST_MODULO_ESTUDIANTES_BY_GRUPO_MODULO_IDS_QUERY,
+        { variables: { grupoModuloIds } },
+      )
+      : Promise.resolve({ data: { modulosEstudiantes: [] } }),
+    grupoIds.length > 0
+      ? dataConnect.executeGraphql<{
+        modulosEstudiantes: MatriculaDocenteModuloEstudiante[];
+      }, { grupoIds: number[] }>(
+        LIST_MODULO_ESTUDIANTES_BY_GRUPO_IDS_QUERY,
+        { variables: { grupoIds } },
+      )
+      : Promise.resolve({ data: { modulosEstudiantes: [] } }),
+  ]);
 
-  const tinyByUserId = new Map<number, string>();
-  snapshot.docs.forEach((doc) => {
-    const data = doc.data();
-    const userId = toNumberOrNull(data.userId);
-    if (!userId || !userIds.has(userId) || tinyByUserId.has(userId) || data.status !== "completed") return;
-
-    const avatarTamanos = data.avatarTamanos as {
-      tiny?: { url?: unknown } | null;
-      pequeno?: { url?: unknown } | null;
-      grande?: { url?: unknown } | null;
-    } | null;
-    const avatar = data.avatar as { url?: unknown } | null;
-    const tiny =
-      asCleanString(avatarTamanos?.tiny?.url)
-      ?? asCleanString(avatarTamanos?.pequeno?.url)
-      ?? asCleanString(avatarTamanos?.grande?.url)
-      ?? asCleanString(avatar?.url);
-    if (tiny) tinyByUserId.set(userId, tiny);
+  const byKey = new Map<string, MatriculaDocenteModuloEstudiante>();
+  [...(byGrupoModulo.data.modulosEstudiantes ?? []), ...(byGrupo.data.modulosEstudiantes ?? [])].forEach((item) => {
+    byKey.set(
+      [
+        item.matriculaId ?? "",
+        item.grupoModuloId ?? "",
+        item.grupoId ?? "",
+        item.moduloId ?? "",
+      ].join(":"),
+      item,
+    );
   });
 
-  if (tinyByUserId.size === 0) return matriculas;
-
-  return matriculas.map((matricula) => {
-    const userId = toNumberOrNull(matricula.user?.id);
-    const avatarTiny = userId ? tinyByUserId.get(userId) : null;
-    return avatarTiny && matricula.user
-      ? { ...matricula, user: { ...matricula.user, avatarTiny } }
-      : matricula;
-  });
+  return Array.from(byKey.values());
 }
 
 export const listMatriculas = https.onCall(async (data, context) => {
@@ -3934,17 +4022,12 @@ export const listMatriculas = https.onCall(async (data, context) => {
   const grupoModuloId = toNumberOrNull(data?.grupoModuloId);
   const grupoModuloIds = toNumberSetFromInput(data?.grupoModuloIds);
   if (grupoModuloId) grupoModuloIds.add(grupoModuloId);
-  const semestreId = toNumberOrNull(data?.semestreId);
+  const semestreId = toNumberOrNull(data?.semestreId) ?? null;
   const semestreTitulo = String(data?.semestreTitulo ?? "").trim() || null;
 
   try {
-    const [matriculasResponse, moduloEstudiantesResponse, semestreConsultaIds] = await Promise.all([
-      dataConnect.executeGraphql<{
-        matriculas: MatriculaRow[];
-      }, Record<string, never>>(LIST_MATRICULAS_QUERY),
-      dataConnect.executeGraphql<{
-        modulosEstudiantes: MatriculaDocenteModuloEstudiante[];
-      }, Record<string, never>>(LIST_MODULO_ESTUDIANTES_FOR_MATRICULAS_QUERY),
+    const [matriculasResponse, semestreConsultaIds] = await Promise.all([
+      listMatriculasForList(semestreId),
       getConfiguredSemestreConsultaIds(),
     ]);
     const allowedSemestreIds = semestreConsultaIds.length > 0 ? new Set(semestreConsultaIds) : null;
@@ -3952,23 +4035,28 @@ export const listMatriculas = https.onCall(async (data, context) => {
     const shouldFilterByDocente = isDocenteMatriculaRequester(context);
     let allowedGrupoModuloIds = new Set<string>();
     let allowedPairs = new Set<string>();
+    let moduloEstudiantes: MatriculaDocenteModuloEstudiante[] = [];
     if (grupoModuloIds.size > 0 || shouldFilterByDocente) {
       const { grupoModulos } = await loadMatriculaDocenteGrupoModulos(context, semestreTitulo);
       const allowedGrupoModulos = grupoModuloIds.size > 0
         ? grupoModulos.filter((item) => grupoModuloIds.has(item.id))
         : grupoModulos;
+      if (allowedGrupoModulos.length === 0) {
+        return { matriculas: [] };
+      }
       allowedGrupoModuloIds = new Set(
         allowedGrupoModulos.map((item) => String(item.id)),
       );
       allowedPairs = new Set(
         allowedGrupoModulos.map((item) => `${item.grupoId}:${item.moduloId}`),
       );
+      moduloEstudiantes = await listModuloEstudiantesForAllowedGrupoModulos(allowedGrupoModulos);
     }
 
     const shouldApplyMatriculaFilter = Boolean(grupoModuloIds.size > 0 || shouldFilterByDocente);
     const allowedMatriculaIds = shouldApplyMatriculaFilter
       ? new Set<number>(
-        (moduloEstudiantesResponse.data.modulosEstudiantes ?? [])
+        moduloEstudiantes
           .filter((item) =>
             item.grupoModuloId
               ? allowedGrupoModuloIds.has(String(item.grupoModuloId))
@@ -3989,7 +4077,7 @@ export const listMatriculas = https.onCall(async (data, context) => {
         return dateCompare || b.id - a.id;
       });
 
-    return { matriculas: await hydrateMatriculaUserAvatarTiny(matriculas) };
+    return { matriculas };
   } catch (error) {
     console.error("Error in listMatriculas:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar las matriculas.");

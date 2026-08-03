@@ -639,6 +639,9 @@ const isCourseChangeExpired = (matricula?: MatriculaListItem | null) => {
   );
 };
 
+const areStringArraysEqual = (left: string[], right: string[]) =>
+  left.length === right.length && left.every((value, index) => value === right[index]);
+
 const normalizeAiGender = (value: unknown): 'F' | 'M' | null => {
   const text = String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   if (text === 'f' || text.includes('femenino') || text.includes('mujer')) return 'F';
@@ -2849,7 +2852,10 @@ export function MatriculasPage() {
     const loadGrupoModuloFilters = async () => {
       setGrupoModuloFilterOptions([]);
       if (!selectedSemestreFilterLabel) {
-        setSelectedGrupoModuloFilterIds(grupoModuloId ? [String(grupoModuloId)] : []);
+        const nextIds = grupoModuloId ? [String(grupoModuloId)] : [];
+        setSelectedGrupoModuloFilterIds((current) =>
+          areStringArraysEqual(current, nextIds) ? current : nextIds,
+        );
         return;
       }
 
@@ -2869,10 +2875,12 @@ export function MatriculasPage() {
         setGrupoModuloFilterOptions(options);
         setSelectedGrupoModuloFilterIds((current) => {
           if (grupoModuloId) {
-            return options.some((item) => item.id === grupoModuloId) ? [String(grupoModuloId)] : [];
+            const nextIds = options.some((item) => item.id === grupoModuloId) ? [String(grupoModuloId)] : [];
+            return areStringArraysEqual(current, nextIds) ? current : nextIds;
           }
           const availableIds = new Set(options.map((item) => String(item.id)));
-          return current.filter((id) => availableIds.has(id));
+          const nextIds = current.filter((id) => availableIds.has(id));
+          return areStringArraysEqual(current, nextIds) ? current : nextIds;
         });
       } catch (err) {
         console.error('Error fetching matricula grupo-modulos: ', err);
@@ -2935,9 +2943,6 @@ export function MatriculasPage() {
     setEditingMatriculaId(null);
     setFormResetKey((prev) => prev + 1);
     void fetchMatriculas();
-    setTimeout(() => {
-      void fetchMatriculas();
-    }, 400);
   }, [fetchMatriculas]);
 
   const handleCreateMatricula = useCallback(() => {
@@ -2959,11 +2964,26 @@ export function MatriculasPage() {
     setMenuMatriculaId(null);
   }, []);
 
-  const handleOpenUserForm = useCallback((userToEdit?: MatriculaUser | null) => {
-    if (!userToEdit) return;
-    setEditingUser(userToEdit);
+  const handleOpenUserForm = useCallback(async (matriculaToEdit?: MatriculaListItem | null) => {
+    if (!matriculaToEdit?.user) return;
+    setEditingUser(matriculaToEdit.user);
     setUserFormResetKey((prev) => prev + 1);
     setOpenUserModal(true);
+
+    try {
+      const getMatricula = httpsCallable<{ id: number }, { matricula?: MatriculaListItem | null }>(
+        functions,
+        'getMatricula',
+      );
+      const result = await getMatricula({ id: Number(matriculaToEdit.id) });
+      const fullUser = result.data.matricula?.user;
+      if (fullUser) {
+        setEditingUser(fullUser);
+        setUserFormResetKey((prev) => prev + 1);
+      }
+    } catch (err) {
+      console.error('Error fetching user details from matricula: ', err);
+    }
   }, []);
 
   const handleDismissUserModal = useCallback(() => {
@@ -3002,9 +3022,6 @@ export function MatriculasPage() {
       setOpenUserModal(false);
       setEditingUser(null);
       void fetchMatriculas();
-      setTimeout(() => {
-        void fetchMatriculas();
-      }, 400);
     } catch (err) {
       console.error('Error saving user from matriculas: ', err);
       setError(getCallableErrorMessage(err, 'No se pudo guardar el usuario.'));
@@ -3026,9 +3043,6 @@ export function MatriculasPage() {
       setMenuAnchorEl(null);
       setMenuMatriculaId(null);
       void fetchMatriculas();
-      setTimeout(() => {
-        void fetchMatriculas();
-      }, 400);
     } catch (err) {
       console.error('Error deleting matricula: ', err);
       setError(getCallableErrorMessage(err, 'No se pudo eliminar la matricula.'));
@@ -3085,7 +3099,7 @@ export function MatriculasPage() {
             <Box
               component="button"
               type="button"
-              onClick={() => handleOpenUserForm(row.user)}
+              onClick={() => void handleOpenUserForm(row)}
               sx={{
                 p: 0,
                 border: 0,
@@ -3138,7 +3152,7 @@ export function MatriculasPage() {
             <Box
               component="button"
               type="button"
-              onClick={() => handleOpenUserForm(row.user)}
+              onClick={() => void handleOpenUserForm(row)}
               sx={{
                 p: 0,
                 border: 0,

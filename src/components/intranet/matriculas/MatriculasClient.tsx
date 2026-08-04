@@ -291,8 +291,7 @@ interface GeminiArchivoResult {
   tipoLado?: 'frente' | 'reverso' | 'desconocido' | string | null;
   areaLectura?: 'pagina-1' | 'pagina-2' | 'superior' | 'inferior' | 'completa' | string | null;
   tieneDosCuerpos?: boolean | null;
-  orientacion?: 'correcta' | 'girada_derecha' | 'girada_izquierda' | 'de_cabeza' | string | null;
-  rotacionHorariaParaLeer?: 0 | 90 | 180 | 270 | number | string | null;
+  direccionTexto?: 'izquierda_derecha' | 'arriba_abajo' | 'abajo_arriba' | 'de_cabeza' | string | null;
   textoReconocido?: string | null;
   senalesReverso?: string[] | null;
   fragmentosReverso?: string[] | null;
@@ -331,8 +330,7 @@ interface DocumentoArchivoClasificado {
     tipoLado: string | null;
     areaLectura: string | null;
     tieneDosCuerpos: boolean;
-    orientacion: string | null;
-    rotacionHorariaParaLeer: number | string | null;
+    direccionTexto: string | null;
     senalesReverso: string[];
     fragmentosReverso: string[];
     contieneDireccion: boolean;
@@ -757,8 +755,7 @@ const classifyGeminiFiles = (files: File[], aiResult: GeminiMatriculaResult) => 
         tipoLado: archivo.tipoLado ?? null,
         areaLectura: archivo.areaLectura ?? null,
         tieneDosCuerpos: Boolean(archivo.tieneDosCuerpos),
-        orientacion: archivo.orientacion ?? null,
-        rotacionHorariaParaLeer: archivo.rotacionHorariaParaLeer ?? null,
+        direccionTexto: archivo.direccionTexto ?? null,
         senalesReverso: archivo.senalesReverso ?? [],
         fragmentosReverso: archivo.fragmentosReverso ?? [],
         contieneDireccion: Boolean(archivo.contieneDireccion),

@@ -458,8 +458,7 @@ type GeminiMatriculaArchivoResult = {
   tipoLado?: string | null;
   areaLectura?: string | null;
   tieneDosCuerpos?: boolean | null;
-  orientacion?: string | null;
-  rotacionHorariaParaLeer?: number | string | null;
+  direccionTexto?: string | null;
   textoReconocido?: string | null;
   senalesReverso?: string[] | null;
   fragmentosReverso?: string[] | null;
@@ -499,6 +498,71 @@ class GeminiJsonParseError extends Error {
   }
 }
 
+const GEMINI_MATRICULA_RESPONSE_SCHEMA = {
+  type: "OBJECT",
+  required: [
+    "tipoDocumento",
+    "numeroDocumento",
+    "documentoCoincide",
+    "contieneReverso",
+    "archivos",
+    "nombre",
+    "apellidoPaterno",
+    "apellidoMaterno",
+    "sexo",
+    "nacionalidad",
+    "fechaNacimiento",
+    "fechaVencimiento",
+    "estadoCivil",
+    "direccion",
+    "distrito",
+  ],
+  properties: {
+    tipoDocumento: { type: "STRING", nullable: true, enum: ["DNI", "CE"] },
+    numeroDocumento: { type: "STRING", nullable: true },
+    documentoCoincide: { type: "BOOLEAN" },
+    contieneReverso: { type: "BOOLEAN" },
+    archivos: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        required: [
+          "indice",
+          "tipoLado",
+          "areaLectura",
+          "tieneDosCuerpos",
+          "direccionTexto",
+          "contieneDireccion",
+          "contieneDomicilio",
+          "contieneDistrito",
+          "contienePerMrz",
+        ],
+        properties: {
+          indice: { type: "INTEGER" },
+          tipoLado: { type: "STRING", enum: ["frente", "reverso", "desconocido"] },
+          areaLectura: { type: "STRING", enum: ["pagina-1", "pagina-2", "superior", "inferior", "completa"] },
+          tieneDosCuerpos: { type: "BOOLEAN" },
+          direccionTexto: { type: "STRING", enum: ["izquierda_derecha", "arriba_abajo", "abajo_arriba", "de_cabeza"] },
+          contieneDireccion: { type: "BOOLEAN" },
+          contieneDomicilio: { type: "BOOLEAN" },
+          contieneDistrito: { type: "BOOLEAN" },
+          contienePerMrz: { type: "BOOLEAN" },
+        },
+      },
+    },
+    nombre: { type: "STRING", nullable: true },
+    apellidoPaterno: { type: "STRING", nullable: true },
+    apellidoMaterno: { type: "STRING", nullable: true },
+    sexo: { type: "STRING", nullable: true, enum: ["F", "M"] },
+    nacionalidad: { type: "STRING", nullable: true },
+    fechaNacimiento: { type: "STRING", nullable: true },
+    fechaVencimiento: { type: "STRING", nullable: true },
+    estadoCivil: { type: "STRING", nullable: true },
+    direccion: { type: "STRING", nullable: true },
+    distrito: { type: "STRING", nullable: true },
+  },
+} as const;
+
 interface UploadedDocumentImage {
   path?: string | null;
   url?: string | null;
@@ -517,8 +581,7 @@ interface DocumentoArchivoMetadata {
     tipoLado?: string | null;
     areaLectura?: string | null;
     tieneDosCuerpos?: boolean | null;
-    orientacion?: string | null;
-    rotacionHorariaParaLeer?: number | string | null;
+    direccionTexto?: string | null;
     senalesReverso?: string[] | null;
     fragmentosReverso?: string[] | null;
     contieneDireccion?: boolean | null;
@@ -1267,18 +1330,13 @@ const normalizeDate = (value: unknown): string | null => {
   return null;
 };
 
-function normalizeRotationClockwise(value: unknown): number | null {
-  if (typeof value === "number" && [0, 90, 180, 270].includes(value)) {
-    return value;
-  }
-  const text = String(value ?? "").trim().toLowerCase();
+function resolveRotationClockwiseFromTextDirection(value: unknown): number | null {
+  const text = normalizeText(value).replace(/[_-]+/g, " ");
   if (!text) return null;
-  const numeric = Number(text.replace(/[^\d-]/g, ""));
-  if ([0, 90, 180, 270].includes(numeric)) return numeric;
-  if (["ninguna", "correcta", "upright", "none"].includes(text)) return 0;
-  if (text.includes("180") || text.includes("cabeza")) return 180;
-  if (text.includes("270")) return 270;
-  if (text.includes("90")) return 90;
+  if (text === "izquierda derecha" || text.includes("izquierda derecha")) return 0;
+  if (text === "arriba abajo" || text.includes("arriba abajo")) return 270;
+  if (text === "abajo arriba" || text.includes("abajo arriba")) return 90;
+  if (text.includes("cabeza")) return 180;
   return null;
 }
 
@@ -1477,8 +1535,8 @@ Estrategia de lectura:
 - Solo si ningun archivo contiene dos cuerpos completos, analiza ambos archivos con el flujo normal de frente/reverso.
 - Si un archivo tiene un solo cuerpo, reporta "areaLectura": "completa" y "tieneDosCuerpos": false.
 - Si un archivo tiene dos cuerpos, reporta "areaLectura": "superior" o "inferior" segun el cuerpo que estes clasificando en ese elemento de "archivos".
-- Si un archivo tiene dos cuerpos, "orientacion" y "rotacionHorariaParaLeer" deben corresponder a ese cuerpo/area especifica, no a la orientacion global del archivo completo.
-- No generes ni modifiques imagenes; solo limita la lectura visual cuando realmente hay dos cuerpos.
+- Si un archivo tiene dos cuerpos, "direccionTexto" debe corresponder a ese cuerpo/area especifica, no a la direccion global del archivo completo.
+- No generes ni modifiques imagenes; solo limita la lectura visual.
 `.trim();
 
   return `
@@ -1496,17 +1554,11 @@ Reglas:
 - Si es DNI, identifica "documento nacional de identidad" o "nacional" y extrae el numero con formato ########-#. Para comparar, usa los 8 digitos antes del guion.
 - Si es carnet de extranjeria, identifica "carnet" o "extranjeria" y extrae el numero con formato #########.
 - Para reverso, basta encontrar alguna palabra o dato equivalente a direccion, domicilio, distrito o el fragmento "per<".
-- En "archivos", devuelve solo datos compactos para clasificar cada archivo o cuerpo: indice, tipoLado, areaLectura, tieneDosCuerpos, orientacion, rotacionHorariaParaLeer y flags booleanos de evidencias del reverso.
-- Primero decide "rotacionHorariaParaLeer": que rotacion horaria, en grados, debo aplicar a esta imagen o cuerpo para que el texto del documento se pueda leer normalmente de izquierda a derecha.
-- Valores exactos permitidos de "rotacionHorariaParaLeer": 0, 90, 180 o 270. Debe ser numero, no texto.
-- Usa 0 si el texto ya se lee correctamente de izquierda a derecha.
-- Usa 90 si debo girar la imagen/cuerpo 90 grados en sentido horario para leer el texto correctamente.
-- Usa 180 si debo girar la imagen/cuerpo 180 grados para leer el texto correctamente. Si el documento esta de cabeza, devuelve obligatoriamente 180.
-- Usa 270 si debo girar la imagen/cuerpo 270 grados en sentido horario para leer el texto correctamente.
-- Evalua cada archivo o cuerpo de forma independiente. No copies ni infieras la rotacion de un cuerpo desde otro cuerpo.
-- Despues completa "orientacion" con el estado visual compatible con el sistema actual: "correcta", "girada_derecha", "girada_izquierda" o "de_cabeza". Para documentos de cabeza, siempre usa "de_cabeza".
-- Si "rotacionHorariaParaLeer" es 180, "orientacion" debe ser "de_cabeza".
-- No confundas "como esta girada la foto" con "la rotacion que debes aplicar": "rotacionHorariaParaLeer" es una accion correctiva, no una descripcion.
+- En "archivos", devuelve solo datos compactos para clasificar cada archivo o cuerpo: indice, tipoLado, areaLectura, tieneDosCuerpos, direccionTexto y flags booleanos de evidencias del reverso.
+- Para cada archivo o cada cuerpo independiente del DNI, indica la direccion del texto principal en la imagen. Responde "direccionTexto" usando exactamente una de estas opciones: "izquierda_derecha", "arriba_abajo", "abajo_arriba", "de_cabeza".
+- Usa "izquierda_derecha" si el texto se lee de izquierda a derecha. Usa "arriba_abajo" si el texto se lee de arriba hacia abajo. Usa "abajo_arriba" si el texto se lee de abajo hacia arriba. Usa "de_cabeza" si el texto esta invertido de cabeza.
+- No devuelvas grados de rotacion ni indiques izquierda o derecha de la imagen.
+- Evalua cada archivo o cuerpo de forma independiente. No copies ni infieras la direccion del texto de un cuerpo desde otro cuerpo.
 - No devuelvas nombreArchivo, senales, fragmentos de evidencia, OCR completo ni campos extra por archivo.
 - Extrae nombres, apellido paterno y apellido materno desde el documento, no desde texto inferido.
 - La direccion debe ser solo la direccion o domicilio. El distrito debe ir separado, sin provincia ni departamento cuando sea posible.
@@ -1531,8 +1583,7 @@ Formato exacto:
       "tipoLado": "frente|reverso|desconocido",
       "areaLectura": "pagina-1|pagina-2|superior|inferior|completa",
       "tieneDosCuerpos": true,
-      "orientacion": "correcta|girada_derecha|girada_izquierda|de_cabeza",
-      "rotacionHorariaParaLeer": 0,
+      "direccionTexto": "izquierda_derecha|arriba_abajo|abajo_arriba|de_cabeza",
       "contieneDireccion": true,
       "contieneDomicilio": true,
       "contieneDistrito": true,
@@ -1638,6 +1689,7 @@ async function runMatriculaGeminiRecognition(params: {
           ],
           generationConfig: {
             responseMimeType: "application/json",
+            responseSchema: GEMINI_MATRICULA_RESPONSE_SCHEMA,
             temperature: 0,
             maxOutputTokens: 4096,
           },
@@ -2520,8 +2572,8 @@ function buildDocumentProcessingSide(
 
   const hasTwoBodies = Boolean(metadata?.gemini?.tieneDosCuerpos);
   const selectedArea = asCleanString(metadata?.gemini?.areaLectura) ?? "completa";
-  const orientation = asCleanString(metadata?.gemini?.orientacion) ?? "correcta";
-  const rotationClockwise = normalizeRotationClockwise(metadata?.gemini?.rotacionHorariaParaLeer);
+  const textDirection = asCleanString(metadata?.gemini?.direccionTexto) ?? "izquierda_derecha";
+  const rotationClockwise = resolveRotationClockwiseFromTextDirection(textDirection);
 
   return {
     side,
@@ -2529,7 +2581,7 @@ function buildDocumentProcessingSide(
     metadata,
     hasTwoBodies,
     selectedArea,
-    orientation,
+    orientation: textDirection,
     rotationClockwise,
     instructions: {
       twoBodies: hasTwoBodies
@@ -2537,7 +2589,7 @@ function buildDocumentProcessingSide(
         : "El archivo tiene un solo cuerpo. Procesa el documento completo.",
       orientation: rotationClockwise !== null
         ? `Primero gira el area ${rotationClockwise} grados en sentido horario para que el texto se lea de izquierda a derecha.`
-        : `Primero corrige la orientacion declarada por la IA (${orientation}) para dejar el DNI perfectamente horizontal.`,
+        : `Primero corrige la orientacion segun la direccion de texto declarada por la IA (${textDirection}) para dejar el DNI perfectamente horizontal.`,
       perspective: "Corrige la perspectiva usando la proporcion 8.6:5.4 solo como referencia para detectar bordes; conserva la proporcion real detectada al guardar.",
       crop: "Recorta perfectamente el DNI detectando sus bordes.",
       enhancement: "Mejora brillo, contraste y nitidez sin perder legibilidad.",
@@ -3134,11 +3186,11 @@ async function generateCarnetAvatarImage(params: {
   prompt = [
     "Genera una fotografia tipo carnet/retrato a color usando estrictamente la persona de la imagen de referencia.",
     "Objetivo: mejorar la visualizacion, nitidez, iluminacion y color solamente.",
-    "Manten los rasgos faciales, identidad, expresion neutral y proporciones naturales de la referencia.",
+    "Manten fielmente los rasgos faciales, identidad, expresion neutral, tono de piel, marcas visibles, edad aparente y proporciones naturales de la referencia.",
     "El cabello y el peinado son parte de la identidad: manten exactamente el mismo cabello, largo, volumen, silueta, raya, flequillo, recogido, linea de cabello y color de la referencia.",
     "No alises, no rices, no ordenes, no estilices, no cambies volumen ni inventes un peinado nuevo aunque la referencia sea borrosa.",
     ageInstruction,
-    "No embellezcas, no retoques la piel, no cambies facciones principales, no cambies genero, no agregues maquillaje ni accesorios nuevos.",
+    "No embellezcas, no retoques la piel, no cambies facciones principales, estructura facial, nariz, ojos, boca, cejas, mandibula, forma del rostro, tono de piel, edad, genero, peso aparente ni expresion; no agregues maquillaje ni accesorios nuevos.",
     "Encuadre: rostro y hombros, frontal, estilo documento oficial, sin textos, sin logos, sin bordes, sin elementos del DNI.",
     "Composicion: centra a la persona en la imagen final; la cabeza, rostro, cuello y hombros deben quedar alineados al eje vertical central.",
     "No copies el descentrado, desplazamiento lateral o encuadre torcido de la foto del DNI; corrige la composicion para que haya espacio equilibrado a izquierda y derecha.",

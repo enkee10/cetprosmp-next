@@ -46,9 +46,15 @@ invoca este servicio guarda ese resultado en Firestore.
 
 - `FIREBASE_STORAGE_BUCKET`: bucket principal de Storage. Recomendado.
 - `ENABLE_OCR_ORIENTATION`: activa la correccion final de orientacion por OCR.
-  Por defecto esta desactivada; el OCR solo se usa para clasificar frente/reverso.
-- `OCR_ORIENTATION_MIN_SCORE_DELTA`: diferencia minima entre la lectura normal y
-  la lectura a 180 grados para rotar. Por defecto `1.5`.
+  Por defecto esta activada y compara la lectura normal contra la lectura a 180 grados.
+- `FORCE_DOCUMENT_RATIO`: fuerza la proporcion fisica aproximada del DNI (`8.6/5.4`)
+  cuando el contorno detectado es razonable. Por defecto esta activada.
+- `ENABLE_PRE_WARP_REFINEMENT`: activa el refinamiento lateral del contorno antes
+  de corregir perspectiva. Por defecto esta activada.
+- `ENABLE_PRE_WARP_EXPANSION`: activa la expansion preventiva del contorno antes
+  de corregir perspectiva. Por defecto esta activada.
+- `ENABLE_NEAR_FRONTAL_CROP`: activa el recorte conservador para documentos casi
+  frontales. Por defecto esta activada.
 - `PROCESSOR_TOKEN`: secreto opcional. Si existe, exige header
   `Authorization: Bearer <token>`. Si no existe, usa seguridad IAM de Cloud Run.
 - `OUTPUT_WIDTH`: ancho aproximado de salida en pixeles. Por defecto `1600`.

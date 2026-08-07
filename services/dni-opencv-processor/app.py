@@ -120,70 +120,15 @@ def clean_text(value: Any) -> str:
     return str(value or "").strip()
 
 
+def env_flag(name: str, default: bool = True) -> bool:
+    fallback = "true" if default else "false"
+    return clean_text(os.getenv(name, fallback)).lower() not in {"0", "false", "no", "off"}
+
+
 def normalize_ocr_text(value: Any) -> str:
     text = unicodedata.normalize("NFKD", clean_text(value).upper())
     text = "".join(char for char in text if not unicodedata.combining(char))
     return re.sub(r"\s+", " ", text)
-
-
-def normalize_declared_orientation(value: Any) -> str:
-    text = unicodedata.normalize("NFKD", clean_text(value).lower())
-    text = "".join(char for char in text if not unicodedata.combining(char))
-    text = re.sub(r"[^a-z0-9]+", "_", text).strip("_")
-    if text in {"girada_derecha", "derecha", "right", "rotated_right", "90", "clockwise"}:
-        return "girada_derecha"
-    if text in {"girada_izquierda", "izquierda", "left", "rotated_left", "270", "counterclockwise"}:
-        return "girada_izquierda"
-    if text in {"de_cabeza", "cabeza_abajo", "upside_down", "invertida", "180"}:
-        return "de_cabeza"
-    return "correcta"
-
-
-def apply_declared_orientation(image: np.ndarray, value: Any) -> np.ndarray:
-    orientation = normalize_declared_orientation(value)
-    if orientation == "girada_derecha":
-        return cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    if orientation == "girada_izquierda":
-        return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
-    if orientation == "de_cabeza":
-        return cv2.rotate(image, cv2.ROTATE_180)
-    return image
-
-
-def normalize_clockwise_rotation(value: Any) -> int | None:
-    if value is None:
-        return None
-    if isinstance(value, (int, float)):
-        number = int(value)
-        return number if number in {0, 90, 180, 270} else None
-    text = unicodedata.normalize("NFKD", clean_text(value).lower())
-    text = "".join(char for char in text if not unicodedata.combining(char))
-    if text in {"ninguna", "correcta", "none", "upright"}:
-        return 0
-    match = re.search(r"-?\d+", text)
-    if not match:
-        return None
-    number = int(match.group(0))
-    return number if number in {0, 90, 180, 270} else None
-
-
-def apply_clockwise_rotation(image: np.ndarray, value: Any) -> np.ndarray:
-    rotation = normalize_clockwise_rotation(value)
-    if rotation is None:
-        return image
-    if rotation == 90:
-        return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
-    if rotation == 180:
-        return cv2.rotate(image, cv2.ROTATE_180)
-    if rotation == 270:
-        return cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    return image
-
-
-def apply_document_rotation(image: np.ndarray, rotation_clockwise: Any, orientation: Any) -> np.ndarray:
-    if normalize_clockwise_rotation(rotation_clockwise) is not None:
-        return apply_clockwise_rotation(image, rotation_clockwise)
-    return apply_declared_orientation(image, orientation)
 
 
 def normalize_area(value: Any) -> str:
@@ -448,6 +393,25 @@ def rect_border_touches(rect: np.ndarray, width: int, height: int, margin_ratio:
     return touches
 
 
+def clipped_document_border_factor(rect: np.ndarray, width: int, height: int, margin_ratio: float = 0.015) -> float:
+    touches = rect_border_touches(rect, width, height, margin_ratio)
+    if not touches:
+        return 1.0
+
+    rect_area = rect_polygon_area(rect)
+    frame_area = max(1.0, float(width * height))
+    area_ratio = rect_area / frame_area
+    vertical_clip = "superior" in touches or "inferior" in touches
+
+    if vertical_clip and area_ratio >= 0.16:
+        return 1.14
+    if area_ratio >= 0.28:
+        return 1.08
+    if area_ratio >= 0.10:
+        return 1.0
+    return 0.88
+
+
 def is_nearly_frontal_rect(rect: np.ndarray, output_side: Any = None) -> bool:
     ordered = order_points(rect)
     top = ordered[1] - ordered[0]
@@ -480,6 +444,46 @@ def is_nearly_frontal_rect(rect: np.ndarray, output_side: Any = None) -> bool:
     return max_angle_error <= 7.5 and width_delta <= 0.08 and height_delta <= 0.10 and bounds_fill >= 0.93
 
 
+def should_preserve_reverso_near_frontal_crop(rect: np.ndarray, image_width: int, image_height: int, output_side: Any = None) -> bool:
+    if normalize_side(output_side) != "reverso":
+        return False
+
+    ordered = order_points(rect)
+    top = ordered[1] - ordered[0]
+    bottom = ordered[2] - ordered[3]
+    left = ordered[3] - ordered[0]
+    right = ordered[2] - ordered[1]
+    top_width = max(1.0, float(np.linalg.norm(top)))
+    bottom_width = max(1.0, float(np.linalg.norm(bottom)))
+    left_height = max(1.0, float(np.linalg.norm(left)))
+    right_height = max(1.0, float(np.linalg.norm(right)))
+
+    def angle_degrees(vector: np.ndarray) -> float:
+        return abs(float(np.degrees(np.arctan2(vector[1], vector[0]))))
+
+    top_angle = min(angle_degrees(top), abs(180 - angle_degrees(top)))
+    bottom_angle = min(angle_degrees(bottom), abs(180 - angle_degrees(bottom)))
+    left_angle = abs(90 - angle_degrees(left))
+    right_angle = abs(90 - angle_degrees(right))
+    max_angle_error = max(top_angle, bottom_angle, left_angle, right_angle)
+    width_delta = abs(top_width - bottom_width) / max(top_width, bottom_width)
+    height_delta = abs(left_height - right_height) / max(left_height, right_height)
+    polygon_area = rect_polygon_area(ordered)
+    x1, y1, x2, y2 = rect_bounds(ordered)
+    bounds_area = max(1.0, (x2 - x1) * (y2 - y1))
+    frame_area = max(1.0, float(image_width * image_height))
+    bounds_fill = polygon_area / bounds_area
+    area_ratio = polygon_area / frame_area
+
+    return (
+        area_ratio >= 0.38
+        and bounds_fill >= 0.91
+        and max_angle_error <= 6.5
+        and width_delta <= 0.13
+        and height_delta <= 0.10
+    )
+
+
 def crop_nearly_frontal_document(image: np.ndarray, rect: np.ndarray) -> np.ndarray | None:
     height, width = image.shape[:2]
     x1, y1, x2, y2 = rect_bounds(rect)
@@ -488,8 +492,8 @@ def crop_nearly_frontal_document(image: np.ndarray, rect: np.ndarray) -> np.ndar
     if crop_width < width * 0.35 or crop_height < height * 0.30:
         return None
 
-    pad_x = max(4, int(crop_width * 0.010))
-    pad_y = max(3, int(crop_height * 0.012))
+    pad_x = max(3, int(crop_width * 0.007))
+    pad_y = max(3, int(crop_height * 0.009))
     x1_i = max(0, int(np.floor(x1)) - pad_x)
     y1_i = max(0, int(np.floor(y1)) - pad_y)
     x2_i = min(width, int(np.ceil(x2)) + pad_x)
@@ -570,14 +574,14 @@ def collect_quadrilateral_candidates_v2(image: np.ndarray, limit: int) -> list[t
                 ratio_score = 1.0 - min(abs(aspect_ratio - DOCUMENT_RATIO) / DOCUMENT_RATIO, 1.0)
                 area_score = min(rect_fraction / 0.42, 1.0)
                 edge_score = rect_edge_strength(raw_edges, rect)
-                touch_penalty = 0.82 if rect_border_touches(rect, width, height) else 1.0
+                border_factor = clipped_document_border_factor(rect, width, height)
                 score = (
                     ratio_score * 3.4
                     + rectangularity * 2.5
                     + area_score * 1.7
                     + edge_score * 1.8
                     + min(contour_area / max(1.0, rect_area), 1.0)
-                ) * touch_penalty
+                ) * border_factor
                 candidates.append((score, rect / scale, f"{pass_name}_eps_{epsilon_ratio:.3f}"))
 
     result: list[tuple[float, np.ndarray, str]] = []
@@ -642,6 +646,312 @@ def collect_hough_candidates_v2(image: np.ndarray, limit: int) -> list[tuple[flo
     return result
 
 
+def odd_kernel(value: float, minimum: int = 3, maximum: int = 51) -> int:
+    result = int(round(value))
+    result = max(minimum, min(maximum, result))
+    return result + 1 if result % 2 == 0 else result
+
+
+def rect_perspective_score(rect: np.ndarray) -> float:
+    ordered = order_points(rect)
+    top = max(1.0, float(np.linalg.norm(ordered[1] - ordered[0])))
+    bottom = max(1.0, float(np.linalg.norm(ordered[2] - ordered[3])))
+    right = max(1.0, float(np.linalg.norm(ordered[2] - ordered[1])))
+    left = max(1.0, float(np.linalg.norm(ordered[3] - ordered[0])))
+    diagonal_a = max(1.0, float(np.linalg.norm(ordered[2] - ordered[0])))
+    diagonal_b = max(1.0, float(np.linalg.norm(ordered[3] - ordered[1])))
+    width_balance = min(top, bottom) / max(top, bottom)
+    height_balance = min(left, right) / max(left, right)
+    diagonal_balance = min(diagonal_a, diagonal_b) / max(diagonal_a, diagonal_b)
+    return max(0.0, min(1.0, width_balance * 0.35 + height_balance * 0.35 + diagonal_balance * 0.30))
+
+
+def rect_content_density(gray: np.ndarray, rect: np.ndarray) -> float:
+    try:
+        ordered = order_points(rect)
+        destination = np.array(
+            [
+                [0, 0],
+                [399, 0],
+                [399, 251],
+                [0, 251],
+            ],
+            dtype="float32",
+        )
+        matrix = cv2.getPerspectiveTransform(ordered, destination)
+        warped_gray = cv2.warpPerspective(gray, matrix, (400, 252))
+        height, width = warped_gray.shape[:2]
+        if height < 40 or width < 70:
+            return 0.0
+        inner = warped_gray[int(height * 0.04): int(height * 0.96), int(width * 0.04): int(width * 0.96)]
+        blurred = cv2.GaussianBlur(inner, (3, 3), 0.8)
+        edges = cv2.Canny(blurred, 35, 110, apertureSize=3, L2gradient=True)
+        return float(np.count_nonzero(edges)) / max(1.0, float(edges.size))
+    except Exception:
+        return 0.0
+
+
+def build_ai_detection_maps(image: np.ndarray) -> tuple[list[tuple[str, np.ndarray, bool]], np.ndarray]:
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    minimum_dimension = min(gray.shape[:2])
+    close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (odd_kernel(minimum_dimension * 0.008, 5, 17),) * 2)
+    fill_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (odd_kernel(minimum_dimension * 0.025, 11, 41),) * 2)
+    color_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (odd_kernel(minimum_dimension * 0.012, 7, 25),) * 2)
+    dilate_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+
+    edge_maps: list[tuple[str, np.ndarray, bool]] = []
+    original_blurred = cv2.GaussianBlur(gray, (5, 5), 1.2)
+    equalized_blurred = cv2.GaussianBlur(cv2.equalizeHist(gray), (5, 5), 1.2)
+    for base_name, base in (("gray", original_blurred), ("equalized", equalized_blurred)):
+        for low, high in ((20, 60), (35, 110), (60, 180)):
+            edges = cv2.Canny(base, low, high, apertureSize=3, L2gradient=True)
+            closed = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, close_kernel, iterations=2)
+            dilated = cv2.dilate(closed, dilate_kernel, iterations=1)
+            edge_maps.append((f"{base_name}_canny_{low}_{high}", dilated, False))
+
+    union_edges = edge_maps[0][1].copy()
+    for _name, edge_map, _color_mask in edge_maps[1:]:
+        union_edges = cv2.bitwise_or(union_edges, edge_map)
+
+    _threshold, otsu = cv2.threshold(original_blurred, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    _threshold, inverse_otsu = cv2.threshold(original_blurred, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+    segmentation_maps: list[tuple[str, np.ndarray, bool]] = []
+    for name, mask in (("otsu", otsu), ("inverse_otsu", inverse_otsu)):
+        closed = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, fill_kernel, iterations=2)
+        segmentation_maps.append((name, closed, False))
+
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hue = hsv[:, :, 0]
+    saturation = hsv[:, :, 1]
+    value = hsv[:, :, 2]
+    saturation_blurred = cv2.medianBlur(saturation, 7)
+    _threshold, saturation_mask = cv2.threshold(saturation_blurred, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    saturation_closed = cv2.morphologyEx(saturation_mask, cv2.MORPH_CLOSE, fill_kernel, iterations=2)
+    segmentation_maps.append(("saturation", saturation_closed, False))
+
+    cyan_hue = ((hue >= 77) & (hue <= 136)).astype(np.uint8) * 255
+    chroma_gate = (saturation > 11).astype(np.uint8) * 255
+    value_gate = (value > 125).astype(np.uint8) * 255
+    cyan_mask = cv2.bitwise_and(cyan_hue, chroma_gate)
+    cyan_mask = cv2.bitwise_and(cyan_mask, value_gate)
+    cyan_closed = cv2.morphologyEx(cyan_mask, cv2.MORPH_CLOSE, color_kernel, iterations=2)
+    segmentation_maps.append(("cyan", cyan_closed, True))
+
+    return edge_maps + segmentation_maps, union_edges
+
+
+def ai_candidate_score(
+    area_ratio: float,
+    aspect_ratio: float,
+    rectangularity: float,
+    edge_support: float,
+    content_density: float,
+    perspective_score: float,
+    color_mask: bool,
+    touches_border: bool,
+) -> float:
+    aspect_score = 1.0 - min(abs(aspect_ratio - DOCUMENT_RATIO) / DOCUMENT_RATIO, 1.0)
+    area_score = max(0.0, min(1.0, np.sqrt(area_ratio / 0.25)))
+    content_score = max(0.0, min(1.0, (content_density - 0.02) / 0.14))
+    score = (
+        aspect_score * 0.33
+        + edge_support * 0.25
+        + rectangularity * 0.14
+        + perspective_score * 0.10
+        + area_score * 0.08
+        + content_score * 0.10
+    )
+    if color_mask:
+        score += 0.035
+    if touches_border:
+        if area_ratio >= 0.16:
+            score += 0.06
+        elif area_ratio < 0.08:
+            score -= 0.06
+    if area_ratio > 0.88:
+        score -= 0.08
+    return max(0.0, min(1.0, score))
+
+
+def evaluate_ai_rect(
+    rect: np.ndarray,
+    contour_area: float,
+    union_edges: np.ndarray,
+    gray: np.ndarray,
+    color_mask: bool,
+) -> tuple[float, np.ndarray, dict[str, float]] | None:
+    height, width = union_edges.shape[:2]
+    rect = order_points(rect.astype("float32"))
+    rect_area = rect_polygon_area(rect)
+    frame_area = max(1.0, float(width * height))
+    area_ratio = rect_area / frame_area
+    if area_ratio < 0.015 or area_ratio > 0.96:
+        return None
+
+    rect_width, rect_height, aspect_ratio = rect_dimensions(rect)
+    if min(rect_width, rect_height) < min(width, height) * 0.10:
+        return None
+    if not 1.08 <= aspect_ratio <= 2.05:
+        return None
+
+    outside_allowance = min(width, height) * 0.04
+    if np.any(rect[:, 0] < -outside_allowance) or np.any(rect[:, 1] < -outside_allowance):
+        return None
+    if np.any(rect[:, 0] > width + outside_allowance) or np.any(rect[:, 1] > height + outside_allowance):
+        return None
+
+    rectangularity = max(0.0, min(1.0, contour_area / max(rect_area, 1.0)))
+    edge_support = rect_edge_strength(union_edges, rect)
+    perspective_score = rect_perspective_score(rect)
+    content_density = rect_content_density(gray, rect)
+    touches_border = bool(rect_border_touches(rect, width, height, 0.012))
+    score = ai_candidate_score(
+        area_ratio,
+        aspect_ratio,
+        rectangularity,
+        edge_support,
+        content_density,
+        perspective_score,
+        color_mask,
+        touches_border,
+    )
+    if score < 0.40:
+        return None
+    return score, rect, {
+        "areaRatio": area_ratio,
+        "aspectRatio": aspect_ratio,
+        "rectangularity": rectangularity,
+        "edgeSupport": edge_support,
+        "contentDensity": content_density,
+        "perspectiveScore": perspective_score,
+    }
+
+
+def collect_ai_detector_candidates(image: np.ndarray, limit: int) -> list[tuple[float, np.ndarray, str]]:
+    resized, scale = resize_for_document_detection(image, 1600)
+    gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+    maps, union_edges = build_ai_detection_maps(resized)
+    frame_area = max(1.0, float(resized.shape[0] * resized.shape[1]))
+    candidates: list[tuple[float, np.ndarray, str]] = []
+
+    for map_name, mask, color_mask in maps:
+        contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)[:120]
+        include_polygon = map_name in {"otsu", "inverse_otsu"} or "canny" in map_name
+        minimum_rect_fill = 0.18 if color_mask else 0.45
+
+        for contour in contours:
+            contour_area = float(cv2.contourArea(contour))
+            if contour_area < frame_area * 0.015 * 0.30 or contour_area > frame_area * 0.96 * 1.05:
+                continue
+            perimeter = cv2.arcLength(contour, True)
+            if perimeter <= 0:
+                continue
+
+            if include_polygon:
+                for epsilon_ratio in (0.012, 0.020, 0.035):
+                    approx = cv2.approxPolyDP(contour, epsilon_ratio * perimeter, True)
+                    if len(approx) != 4 or not cv2.isContourConvex(approx):
+                        continue
+                    evaluated = evaluate_ai_rect(
+                        approx.reshape(4, 2).astype("float32"),
+                        contour_area,
+                        union_edges,
+                        gray,
+                        color_mask,
+                    )
+                    if evaluated:
+                        score, rect, _metrics = evaluated
+                        candidates.append((score, rect / scale, f"ai_{map_name}_poly_{epsilon_ratio:.3f}"))
+
+            box = cv2.boxPoints(cv2.minAreaRect(contour))
+            if box is None or len(box) != 4:
+                continue
+            rectangle_area = max(1.0, float(cv2.contourArea(box.astype(np.float32))))
+            if contour_area / rectangle_area < minimum_rect_fill:
+                continue
+            evaluated = evaluate_ai_rect(
+                box.astype("float32"),
+                min(contour_area, rectangle_area),
+                union_edges,
+                gray,
+                color_mask,
+            )
+            if evaluated:
+                score, rect, _metrics = evaluated
+                candidates.append((score - 0.035, rect / scale, f"ai_{map_name}_min_rect"))
+
+    if max(resized.shape[:2]) <= 400 and any(rect_polygon_area(rect) / frame_area >= 0.70 for _score, rect, _source in candidates):
+        inset = max(1, int(round(min(resized.shape[:2]) * 0.016)))
+        frame_rect = np.array(
+            [
+                [inset, inset],
+                [resized.shape[1] - 1 - inset, inset],
+                [resized.shape[1] - 1 - inset, resized.shape[0] - 1 - inset],
+                [inset, resized.shape[0] - 1 - inset],
+            ],
+            dtype="float32",
+        )
+        evaluated = evaluate_ai_rect(frame_rect, rect_polygon_area(frame_rect) * 0.96, union_edges, gray, False)
+        if evaluated:
+            score, rect, _metrics = evaluated
+            candidates.append((score, rect / scale, "ai_low_resolution_full_frame"))
+
+    deduplicated: list[tuple[float, np.ndarray, str]] = []
+    for score, rect, source in sorted(candidates, key=lambda item: item[0], reverse=True):
+        duplicate_index = next((index for index, (_existing_score, existing_rect, _existing_source) in enumerate(deduplicated) if rect_iou(rect, existing_rect) >= 0.86), None)
+        if duplicate_index is None:
+            deduplicated.append((score, rect, source))
+        elif score > deduplicated[duplicate_index][0]:
+            deduplicated[duplicate_index] = (score, rect, source)
+
+    selected: list[tuple[float, np.ndarray, str]] = []
+    for score, rect, source in sorted(deduplicated, key=lambda item: item[0], reverse=True):
+        if score < 0.48:
+            continue
+        area_ratio = rect_polygon_area(rect) / frame_area
+        if limit <= 1 and area_ratio < 0.08:
+            app.logger.info(
+                "DNI AI detector skipped small single-body candidate source=%s score=%.3f area_ratio=%.4f",
+                source,
+                score,
+                area_ratio,
+            )
+            continue
+        if any(rect_iou(rect, existing_rect) > 0.25 for _existing_score, existing_rect, _existing_source in selected):
+            continue
+        if selected:
+            primary_area = rect_polygon_area(selected[0][1])
+            relative_area = rect_polygon_area(rect) / max(primary_area, 1.0)
+            if relative_area < 0.40 or relative_area > 2.50:
+                continue
+            if score < selected[0][0] - 0.18:
+                continue
+        selected.append((score, rect, source))
+        if len(selected) >= limit:
+            break
+
+    return selected
+
+
+def find_document_contours_ai(image: np.ndarray, limit: int = 1) -> list[np.ndarray]:
+    candidates = collect_ai_detector_candidates(image, limit)
+    if candidates:
+        app.logger.info(
+            "DNI AI detector selected %s candidate(s): %s",
+            len(candidates),
+            [
+                {
+                    "score": round(score, 3),
+                    "source": source,
+                    "bounds": tuple(round(value, 1) for value in rect_bounds(rect)),
+                }
+                for score, rect, source in candidates
+            ],
+        )
+    return [rect for _score, rect, _source in candidates]
+
+
 def find_document_contours_v2(image: np.ndarray, limit: int = 1) -> list[np.ndarray]:
     height, width = image.shape[:2]
     candidates = collect_quadrilateral_candidates_v2(image, limit)
@@ -678,6 +988,46 @@ def find_document_contours_v2(image: np.ndarray, limit: int = 1) -> list[np.ndar
             ],
         )
     return [rect for _, rect, _ in result]
+
+
+def should_prefer_border_clipped_candidate(
+    primary_rect: np.ndarray,
+    alternative_rect: np.ndarray,
+    image_width: int,
+    image_height: int,
+) -> bool:
+    frame_area = max(1.0, float(image_width * image_height))
+    primary_area = rect_polygon_area(primary_rect)
+    alternative_area = rect_polygon_area(alternative_rect)
+    primary_area_ratio = primary_area / frame_area
+    alternative_area_ratio = alternative_area / frame_area
+    if primary_area_ratio < 0.62 or alternative_area_ratio < 0.16:
+        return False
+    if alternative_area_ratio >= primary_area_ratio * 0.78:
+        return False
+
+    primary_touches = set(rect_border_touches(primary_rect, image_width, image_height, 0.012))
+    alternative_touches = set(rect_border_touches(alternative_rect, image_width, image_height, 0.012))
+    primary_side_clipped = {"izquierdo", "derecho"}.issubset(primary_touches)
+    primary_frame_like = primary_side_clipped and bool(primary_touches & {"superior", "inferior"})
+    if not primary_frame_like:
+        return False
+
+    alternative_side_clipped = {"izquierdo", "derecho"}.issubset(alternative_touches)
+    alternative_vertical_touch_count = len(alternative_touches & {"superior", "inferior"})
+    if not alternative_side_clipped or alternative_vertical_touch_count:
+        return False
+
+    primary_height = rect_bounds(primary_rect)[3] - rect_bounds(primary_rect)[1]
+    alternative_height = rect_bounds(alternative_rect)[3] - rect_bounds(alternative_rect)[1]
+    if alternative_height >= primary_height * 0.74:
+        return False
+
+    _alt_width, _alt_height, alternative_ratio = rect_dimensions(alternative_rect)
+    if not 1.30 <= alternative_ratio <= 1.95:
+        return False
+
+    return True
 
 
 def build_document_detection_masks(image: np.ndarray) -> list[tuple[str, np.ndarray]]:
@@ -732,16 +1082,7 @@ def rect_mask_fill_ratio(mask: np.ndarray, rect: np.ndarray) -> float:
 
 
 def border_touch_penalty(rect: np.ndarray, image_width: int, image_height: int) -> float:
-    x1, y1, x2, y2 = rect_bounds(rect)
-    margin_x = image_width * 0.018
-    margin_y = image_height * 0.018
-    touches = (
-        x1 <= margin_x
-        or y1 <= margin_y
-        or x2 >= image_width - margin_x
-        or y2 >= image_height - margin_y
-    )
-    return 0.55 if touches else 1.0
+    return clipped_document_border_factor(rect, image_width, image_height, 0.018)
 
 
 def shrink_wide_rect_to_document_ratio(rect: np.ndarray, image_width: int) -> np.ndarray:
@@ -1008,11 +1349,11 @@ def expand_rect_before_warp_for_side(
     right_height = max(1.0, float(np.linalg.norm(right_vector)))
 
     if side_name == "frente":
-        horizontal_expand = min(max(top_width, bottom_width) * 0.060, image_width * 0.050, 76)
-        vertical_expand = min(max(left_height, right_height) * 0.070, image_height * 0.060, 64)
+        horizontal_expand = min(max(top_width, bottom_width) * 0.026, image_width * 0.023, 32)
+        vertical_expand = min(max(left_height, right_height) * 0.030, image_height * 0.026, 26)
     else:
-        horizontal_expand = min(max(top_width, bottom_width) * 0.043, image_width * 0.036, 54)
-        vertical_expand = min(max(left_height, right_height) * 0.052, image_height * 0.044, 46)
+        horizontal_expand = min(max(top_width, bottom_width) * 0.023, image_width * 0.020, 27)
+        vertical_expand = min(max(left_height, right_height) * 0.026, image_height * 0.023, 24)
     top_unit = top_vector / top_width
     bottom_unit = bottom_vector / bottom_width
     left_unit = left_vector / left_height
@@ -1053,14 +1394,14 @@ def refine_low_quality_side_margins(image: np.ndarray, rect: np.ndarray) -> np.n
     rect, trimmed_blank_sides = trim_low_quality_blank_side_margins(image, rect)
     x1, _y1, x2, _y2 = rect_bounds(rect)
     rect_width = max(1.0, x2 - x1)
-    max_expand = int(max(6, min(rect_width * 0.035, image_width * 0.045, 56)))
+    max_expand = int(max(5, min(rect_width * 0.026, image_width * 0.034, 42)))
     left_expand = side_edge_expansion(gray, rect, "left", max_expand)
     right_expand = side_edge_expansion(gray, rect, "right", max_expand)
 
     if not trimmed_blank_sides and not left_expand and x1 > image_width * 0.025:
-        left_expand = int(rect_width * 0.012)
+        left_expand = int(rect_width * 0.008)
     if not trimmed_blank_sides and not right_expand and x2 < image_width * 0.975:
-        right_expand = int(rect_width * 0.012)
+        right_expand = int(rect_width * 0.008)
 
     if not left_expand and not right_expand:
         return rect
@@ -1077,6 +1418,32 @@ def refine_low_quality_side_margins(image: np.ndarray, rect: np.ndarray) -> np.n
 
 
 def find_document_contours(image: np.ndarray, limit: int = 1) -> list[np.ndarray]:
+    ai_contours = find_document_contours_ai(image, limit)
+    if len(ai_contours) >= limit:
+        if limit == 1:
+            v2_contours = find_document_contours_v2(image, 2)
+            replacement = next(
+                (
+                    rect
+                    for rect in v2_contours
+                    if should_prefer_border_clipped_candidate(
+                        ai_contours[0],
+                        rect,
+                        image.shape[1],
+                        image.shape[0],
+                    )
+                ),
+                None,
+            )
+            if replacement is not None:
+                app.logger.warning(
+                    "DNI detector replaced frame-like AI contour bounds=%s with border-clipped V2 contour bounds=%s",
+                    tuple(round(value, 1) for value in rect_bounds(ai_contours[0])),
+                    tuple(round(value, 1) for value in rect_bounds(replacement)),
+                )
+                return [replacement]
+        return ai_contours
+
     v2_contours = find_document_contours_v2(image, limit)
     if len(v2_contours) >= limit:
         return v2_contours
@@ -1150,8 +1517,12 @@ def find_document_contours(image: np.ndarray, limit: int = 1) -> list[np.ndarray
             candidates.append((score, rect / scale))
 
     result: list[np.ndarray] = []
-    for rect in v2_contours:
+    for rect in ai_contours:
         result.append(rect)
+
+    for rect in v2_contours:
+        if not any(rect_iou(rect, existing) > 0.45 for existing in result):
+            result.append(rect)
 
     for _, rect in sorted(candidates, key=lambda item: item[0], reverse=True):
         if any(rect_iou(rect, existing) > 0.45 for existing in result):
@@ -1620,8 +1991,8 @@ def _outside_in_card_bounds(image: np.ndarray) -> tuple[int, int, int, int] | No
     if x1 is None or x2 is None or y1 is None or y2 is None:
         return None
 
-    pad_x = max(6, int(width * 0.014))
-    pad_y = max(5, int(height * 0.018))
+    pad_x = max(2, int(width * 0.005))
+    pad_y = max(2, int(height * 0.006))
     x1 = max(0, x1 - pad_x)
     x2 = min(width, x2 + pad_x)
     y1 = max(0, y1 - pad_y)
@@ -1691,8 +2062,8 @@ def trim_warped_document_margins(image: np.ndarray) -> np.ndarray:
     right_edge = _find_vertical_document_edge(gray, "right")
     top_edge = _find_horizontal_document_edge(gray, "top")
     bottom_edge = _find_horizontal_document_edge(gray, "bottom")
-    horizontal_edge_padding = max(9, int(width * 0.034))
-    vertical_edge_padding = max(7, int(height * 0.050))
+    horizontal_edge_padding = max(4, int(width * 0.014))
+    vertical_edge_padding = max(4, int(height * 0.020))
     if left_edge is not None:
         x1 = max(x1, max(0, left_edge - horizontal_edge_padding))
     if right_edge is not None:
@@ -1720,8 +2091,8 @@ def trim_warped_document_margins(image: np.ndarray) -> np.ndarray:
     if x1 == 0 and x2 == width and y1 == 0 and y2 == height:
         return image
 
-    safety_padding_x = max(10, int(width * 0.034))
-    safety_padding_y = max(8, int(height * 0.055))
+    safety_padding_x = max(3, int(width * 0.009))
+    safety_padding_y = max(3, int(height * 0.013))
     if x1 > 0:
         x1 = max(0, x1 - safety_padding_x)
     if x2 < width:
@@ -1751,10 +2122,17 @@ def trim_warped_document_margins(image: np.ndarray) -> np.ndarray:
 
 def warp_document(image: np.ndarray, contour: np.ndarray | None, output_side: Any = None) -> np.ndarray:
     rect = order_points(contour if contour is not None else fallback_document_box(image))
-    if contour is not None:
+    if contour is not None and env_flag("ENABLE_PRE_WARP_REFINEMENT", True):
         rect = refine_low_quality_side_margins(image, rect)
-    rect = expand_rect_before_warp_for_side(rect, image.shape[1], image.shape[0], output_side)
-    if contour is not None and is_nearly_frontal_rect(rect, output_side):
+    if env_flag("ENABLE_PRE_WARP_EXPANSION", True):
+        rect = expand_rect_before_warp_for_side(rect, image.shape[1], image.shape[0], output_side)
+    else:
+        rect = order_points(rect)
+    if contour is not None and env_flag("ENABLE_NEAR_FRONTAL_CROP", True) and is_nearly_frontal_rect(rect, output_side):
+        conservative = crop_nearly_frontal_document(image, rect)
+        if conservative is not None:
+            return conservative
+    if contour is not None and env_flag("ENABLE_REVERSO_NEAR_FRONTAL_CROP", True) and should_preserve_reverso_near_frontal_crop(rect, image.shape[1], image.shape[0], output_side):
         conservative = crop_nearly_frontal_document(image, rect)
         if conservative is not None:
             return conservative
@@ -1773,7 +2151,8 @@ def warp_document(image: np.ndarray, contour: np.ndarray | None, output_side: An
     output_width = int(os.getenv("OUTPUT_WIDTH", str(DEFAULT_OUTPUT_WIDTH)))
     output_width = max(800, min(max(output_width, min(detected_width, DEFAULT_OUTPUT_WIDTH)), 2400))
     normalized_ratio = source_long / source_short
-    if 1.35 <= normalized_ratio <= 1.90:
+    force_document_ratio = env_flag("FORCE_DOCUMENT_RATIO", True)
+    if force_document_ratio and 1.35 <= normalized_ratio <= 1.90:
         output_height = int(round(output_width / DOCUMENT_RATIO))
     else:
         output_height = max(1, int(round(output_width * (source_short / source_long))))
@@ -1818,7 +2197,7 @@ def enhance_image(image: np.ndarray) -> np.ndarray:
 
 
 def should_use_ocr_orientation() -> bool:
-    return clean_text(os.getenv("ENABLE_OCR_ORIENTATION")).lower() in {"1", "true", "yes", "on"}
+    return env_flag("ENABLE_OCR_ORIENTATION", True)
 
 
 def prepare_ocr_image(image: np.ndarray) -> np.ndarray:
@@ -1848,6 +2227,140 @@ def read_ocr_text(image: np.ndarray) -> str:
     return normalize_ocr_text(text)
 
 
+def ocr_score_result(
+    score: float,
+    average_confidence: float,
+    readable_tokens: int,
+    readable_characters: int,
+    keyword_matches: int,
+) -> dict[str, Any]:
+    return {
+        "score": score,
+        "averageConfidence": average_confidence,
+        "readableTokens": readable_tokens,
+        "readableCharacters": readable_characters,
+        "keywordMatches": keyword_matches,
+    }
+
+
+def score_tesseract_tokens(text_values: list[Any], confidence_values: list[Any]) -> dict[str, Any]:
+    confidence_sum = 0.0
+    confidence_weight = 0.0
+    readable_tokens = 0
+    readable_characters = 0
+    garbage_characters = 0
+    mrz_evidence = 0
+    normalized_tokens: list[str] = []
+
+    for text_value, confidence_value in zip(text_values, confidence_values):
+        text = normalize_ocr_text(text_value)
+        if not text:
+            continue
+        try:
+            confidence = float(confidence_value)
+        except (TypeError, ValueError):
+            continue
+        if confidence < 0:
+            continue
+
+        normalized_tokens.append(text)
+        compact = re.sub(r"\s+", "", text)
+        alphanumeric = len(re.findall(r"[A-Z0-9]", compact))
+        garbage = len(re.findall(r"[^A-Z0-9<]", compact))
+        ratio = alphanumeric / max(1, len(compact))
+        readable = alphanumeric >= 2 and ratio >= 0.62
+        weight = max(1, min(10, alphanumeric))
+
+        if readable:
+            readable_tokens += 1
+            readable_characters += alphanumeric
+            confidence_sum += confidence * weight
+            confidence_weight += weight
+        garbage_characters += garbage
+        if re.search(r"(?:I|P)?<PER[A-Z0-9<]{4,}", compact) or re.search(r"[A-Z0-9<]{18,}", compact):
+            mrz_evidence += 1
+
+    joined = f" {' '.join(normalized_tokens)} "
+    keyword_matches = sum(1 for keyword in OCR_ORIENTATION_KEYWORDS if keyword in joined)
+    average_confidence = confidence_sum / confidence_weight if confidence_weight > 0 else 0.0
+    garbage_ratio = garbage_characters / max(1, readable_characters + garbage_characters)
+
+    score = clamp01(
+        (average_confidence / 100.0) * 0.38
+        + clamp01(readable_tokens / 22.0) * 0.12
+        + clamp01(readable_characters / 170.0) * 0.10
+        + clamp01(keyword_matches / 6.0) * 0.32
+        + clamp01(mrz_evidence / 2.0) * 0.08
+        - garbage_ratio * 0.10
+    )
+    return ocr_score_result(score, average_confidence, readable_tokens, readable_characters, keyword_matches)
+
+
+def read_ocr_layout_score(image: np.ndarray, page_segmentation_mode: int) -> dict[str, Any] | None:
+    try:
+        import pytesseract
+    except Exception as exc:
+        app.logger.warning("OCR skipped because pytesseract is unavailable: %s", exc)
+        return None
+
+    prepared = prepare_ocr_image(image)
+    try:
+        data = pytesseract.image_to_data(
+            prepared,
+            lang="eng",
+            config=f"--psm {page_segmentation_mode}",
+            output_type=pytesseract.Output.DICT,
+        )
+    except Exception as exc:
+        app.logger.warning("OCR layout failed: %s", exc)
+        return None
+
+    return score_tesseract_tokens(list(data.get("text", [])), list(data.get("conf", [])))
+
+
+def combine_ocr_scores(block: dict[str, Any] | None, sparse: dict[str, Any] | None) -> dict[str, Any] | None:
+    if block is None:
+        return sparse
+    if sparse is None:
+        return block
+    return ocr_score_result(
+        float(sparse["score"]) * 0.68 + float(block["score"]) * 0.32,
+        max(float(block["averageConfidence"]), float(sparse["averageConfidence"])),
+        max(int(block["readableTokens"]), int(sparse["readableTokens"])),
+        max(int(block["readableCharacters"]), int(sparse["readableCharacters"])),
+        max(int(block["keywordMatches"]), int(sparse["keywordMatches"])),
+    )
+
+
+def ocr_orientation_analysis(image: np.ndarray, rotated_180: np.ndarray) -> dict[str, Any] | None:
+    sparse_0 = read_ocr_layout_score(image, 11)
+    sparse_180 = read_ocr_layout_score(rotated_180, 11)
+    block_0 = read_ocr_layout_score(image, 6)
+    block_180 = read_ocr_layout_score(rotated_180, 6)
+    evidence_0 = combine_ocr_scores(block_0, sparse_0)
+    evidence_180 = combine_ocr_scores(block_180, sparse_180)
+    if evidence_0 is None or evidence_180 is None:
+        return None
+
+    strongest = max(float(evidence_0["score"]), float(evidence_180["score"]))
+    best = evidence_0 if float(evidence_0["score"]) >= float(evidence_180["score"]) else evidence_180
+    usable = strongest >= 0.16 and (int(best["keywordMatches"]) >= 1 or int(best["readableTokens"]) >= 6)
+    if not usable:
+        return None
+
+    separation = abs(float(evidence_0["score"]) - float(evidence_180["score"])) / max(0.12, strongest)
+    evidence_strength = clamp01((strongest - 0.16) / 0.5)
+    confidence = clamp01(0.5 + separation * 0.72 * (0.62 + evidence_strength * 0.38))
+    return {
+        "rotation": 0 if float(evidence_0["score"]) >= float(evidence_180["score"]) else 180,
+        "confidence": max(0.5, min(0.99, confidence)),
+        "score0": float(evidence_0["score"]),
+        "score180": float(evidence_180["score"]),
+        "evidence0": evidence_0,
+        "evidence180": evidence_180,
+    }
+
+
 def score_keywords(text: str, keywords: dict[str, int]) -> float:
     score = 0.0
     for keyword, weight in keywords.items():
@@ -1856,43 +2369,403 @@ def score_keywords(text: str, keywords: dict[str, int]) -> float:
     return score
 
 
-def ocr_orientation_score(image: np.ndarray) -> tuple[float, str]:
-    normalized = read_ocr_text(image)
-    if not normalized:
-        return 0.0, ""
-
-    score = score_keywords(normalized, OCR_ORIENTATION_KEYWORDS)
-
-    # Text that is upright usually produces more alphabetic tokens than upside-down text.
-    score += min(len(re.findall(r"[A-Z]{4,}", normalized)) * 0.35, 4.0)
-    return score, normalized[:240]
+def clamp01(value: float) -> float:
+    return max(0.0, min(1.0, float(value)))
 
 
-def auto_orient_with_ocr(image: np.ndarray) -> np.ndarray:
-    if not should_use_ocr_orientation():
-        return image
+def front_emblem_corner_score(image: np.ndarray, x1: float, x2: float, y1: float, y2: float) -> float:
+    height, width = image.shape[:2]
+    region = image[int(height * y1): int(height * y2), int(width * x1): int(width * x2)]
+    if region.size == 0:
+        return 0.0
 
-    candidates = [
-        ("0", image),
-        ("180", cv2.rotate(image, cv2.ROTATE_180)),
-    ]
-    scored = [(name, candidate, *ocr_orientation_score(candidate)) for name, candidate in candidates]
-    scored.sort(key=lambda item: item[2], reverse=True)
-    best_name, best_image, best_score, best_text = scored[0]
-    second_score = scored[1][2] if len(scored) > 1 else 0.0
-    min_delta = float(os.getenv("OCR_ORIENTATION_MIN_SCORE_DELTA", "1.5"))
-
-    app.logger.info(
-        "OCR orientation scores best=%s best_score=%.2f second_score=%.2f best_text=%s",
-        best_name,
-        best_score,
-        second_score,
-        best_text,
+    hsv = cv2.cvtColor(region, cv2.COLOR_BGR2HSV)
+    hue = hsv[:, :, 0]
+    saturation = hsv[:, :, 1].astype(np.float32) / 255.0
+    value = hsv[:, :, 2].astype(np.float32) / 255.0
+    red = ((hue < 10) | (hue > 168)) & (saturation > 0.25) & (value > 0.25)
+    green = (hue > 38) & (hue < 95) & (saturation > 0.20) & (value > 0.20)
+    yellow = (hue >= 15) & (hue <= 38) & (saturation > 0.25) & (value > 0.25)
+    has_emblem_palette = bool(np.any(red) and np.any(green))
+    return (
+        min(float(red.mean()) * 100.0, 2.0)
+        + min(float(green.mean()) * 100.0, 2.0)
+        + min(float(yellow.mean()) * 80.0, 1.0)
+        + (1.0 if has_emblem_palette else 0.0)
     )
 
-    if best_name != "0" and best_score >= 2.0 and (best_score - second_score) >= min_delta:
-        return best_image
-    return image
+
+def front_emblem_orientation_analysis(image: np.ndarray) -> dict[str, Any] | None:
+    top_left = front_emblem_corner_score(image, 0.00, 0.16, 0.00, 0.20)
+    bottom_right = front_emblem_corner_score(image, 0.84, 1.00, 0.80, 1.00)
+    delta = top_left - bottom_right
+    if abs(delta) < 1.50:
+        return None
+    return {
+        "rotation": 0 if delta > 0 else 180,
+        "confidence": min(0.90, 0.62 + min(abs(delta) / 4.0, 1.0) * 0.28),
+        "method": "front_emblem_corner",
+        "scores": {
+            "topLeft": top_left,
+            "bottomRight": bottom_right,
+        },
+    }
+
+
+def front_portrait_left_score(image: np.ndarray, start_x_ratio: float, end_x_ratio: float) -> float:
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    height, width = gray.shape[:2]
+    start_y = max(0, int(height * 0.08))
+    end_y = min(height, int(height * 0.72))
+    start_x = max(0, int(width * start_x_ratio))
+    end_x = min(width, int(width * end_x_ratio))
+    region = gray[start_y:end_y, start_x:end_x]
+    if region.size == 0:
+        return 0.0
+
+    region = cv2.GaussianBlur(region, (5, 5), 0)
+    mean = float(region.mean())
+    deviation = float(region.std()) / 255.0
+    gradient_x = cv2.Sobel(region, cv2.CV_32F, 1, 0, ksize=3)
+    gradient_y = cv2.Sobel(region, cv2.CV_32F, 0, 1, ksize=3)
+    edge_density = float(((np.abs(gradient_x) + np.abs(gradient_y)) > 45).mean())
+    dark_density = float((region < mean - 18).mean())
+    midtone_density = float(((region > 55) & (region < 205)).mean())
+    return dark_density * 0.36 + edge_density * 0.26 + deviation * 0.20 + midtone_density * 0.18
+
+
+def front_portrait_orientation_analysis(image: np.ndarray) -> dict[str, Any] | None:
+    left_score = front_portrait_left_score(image, 0.02, 0.36)
+    right_score = front_portrait_left_score(image, 0.64, 0.98)
+    delta = left_score - right_score
+    if abs(delta) < 0.018:
+        return None
+
+    return {
+        "rotation": 0 if delta > 0 else 180,
+        "confidence": min(0.88, 0.70 + min(abs(delta) / 0.055, 1.0) * 0.18),
+        "method": "front_portrait_left",
+        "scores": {
+            "left": float(left_score),
+            "right": float(right_score),
+        },
+    }
+
+
+def build_chevron_template(character: str, size: int = 28) -> np.ndarray:
+    canvas = np.zeros((size, size), dtype=np.uint8)
+    cv2.putText(canvas, character, (2, size - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.9, 255, 2, cv2.LINE_AA)
+    return cv2.threshold(canvas, 10, 255, cv2.THRESH_BINARY)[1]
+
+
+def mrz_chevron_score(image: np.ndarray) -> float:
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    height, width = gray.shape[:2]
+    region = gray[int(height * 0.02): int(height * 0.98), int(width * 0.02): int(width * 0.98)]
+    if region.size == 0:
+        return 0.0
+
+    if region.shape[1] < 800:
+        scale = 800 / max(1, region.shape[1])
+        region = cv2.resize(
+            region,
+            (int(region.shape[1] * scale), int(region.shape[0] * scale)),
+            interpolation=cv2.INTER_CUBIC,
+        )
+
+    threshold = cv2.threshold(region, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+    less_template = build_chevron_template("<")
+    greater_template = build_chevron_template(">")
+    less_match = cv2.matchTemplate(threshold, less_template, cv2.TM_CCOEFF_NORMED)
+    greater_match = cv2.matchTemplate(threshold, greater_template, cv2.TM_CCOEFF_NORMED)
+    less_score = float(less_match[less_match > 0.36].sum()) if np.any(less_match > 0.36) else 0.0
+    greater_score = float(greater_match[greater_match > 0.36].sum()) if np.any(greater_match > 0.36) else 0.0
+    return less_score - greater_score
+
+
+def reverse_chevron_orientation_analysis(image: np.ndarray, rotated_180: np.ndarray) -> dict[str, Any] | None:
+    score_0 = mrz_chevron_score(image)
+    score_180 = mrz_chevron_score(rotated_180)
+    delta = abs(score_0 - score_180)
+    if max(score_0, score_180) <= 0.0:
+        return None
+    if delta < 24.0:
+        return None
+    return {
+        "rotation": 0 if score_0 >= score_180 else 180,
+        "confidence": min(0.92, 0.62 + min(delta / 220.0, 1.0) * 0.30),
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+            "score0": score_0,
+            "score180": score_180,
+        },
+    }
+
+
+def reverse_pdf417_region_score(
+    gray: np.ndarray,
+    start_ratio: float,
+    end_ratio: float,
+    start_x_ratio: float = 0.06,
+    end_x_ratio: float = 0.82,
+) -> float:
+    height, width = gray.shape[:2]
+    start_y = max(0, int(height * start_ratio))
+    end_y = min(height, int(height * end_ratio))
+    start_x = max(0, int(width * start_x_ratio))
+    end_x = min(width, int(width * end_x_ratio))
+    region = gray[start_y:end_y, start_x:end_x]
+    if region.size == 0:
+        return 0.0
+
+    region = cv2.GaussianBlur(region, (3, 3), 0)
+    gradient_x = cv2.Sobel(region, cv2.CV_32F, 1, 0, ksize=3)
+    gradient_y = cv2.Sobel(region, cv2.CV_32F, 0, 1, ksize=3)
+    threshold = cv2.threshold(region, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+    dark_mask = threshold > 0
+    dark_density = float(dark_mask.mean())
+    vertical_density = float((np.abs(gradient_x) > 35).mean())
+    edge_density = float(((np.abs(gradient_x) + np.abs(gradient_y)) > 55).mean())
+    column_density = dark_mask.mean(axis=0)
+    column_variation = float(np.std(column_density))
+    column_coverage = float((column_density > 0.08).mean())
+    return (
+        dark_density * 0.25
+        + vertical_density * 0.25
+        + edge_density * 0.20
+        + column_variation * 0.15
+        + column_coverage * 0.15
+    )
+
+
+def reverse_pdf417_orientation_analysis(image: np.ndarray) -> dict[str, Any] | None:
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    top_score = reverse_pdf417_region_score(gray, 0.05, 0.38)
+    bottom_score = reverse_pdf417_region_score(gray, 0.62, 0.95)
+    strongest = max(top_score, bottom_score)
+    delta = abs(bottom_score - top_score)
+    if strongest < 0.38 or delta < 0.045:
+        return None
+
+    confidence = min(
+        0.92,
+        0.68
+        + min(delta / 0.12, 1.0) * 0.22
+        + min(max(0.0, strongest - 0.40) / 0.22, 1.0) * 0.02,
+    )
+    return {
+        "rotation": 0 if bottom_score >= top_score else 180,
+        "confidence": confidence,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+            "top": float(top_score),
+            "bottom": float(bottom_score),
+        },
+    }
+
+
+def side_visual_orientation_analysis(image: np.ndarray, rotated_180: np.ndarray, output_side: Any) -> dict[str, Any] | None:
+    side = normalize_side(output_side)
+    if side == "frente":
+        visual_candidates = [
+            candidate
+            for candidate in (
+                front_emblem_orientation_analysis(image),
+                front_portrait_orientation_analysis(image),
+            )
+            if candidate is not None
+        ]
+        if not visual_candidates:
+            return None
+        return max(visual_candidates, key=lambda item: float(item["confidence"]))
+    if side == "reverso":
+        pdf417_orientation = reverse_pdf417_orientation_analysis(image)
+        if pdf417_orientation is not None:
+            return pdf417_orientation
+        return reverse_chevron_orientation_analysis(image, rotated_180)
+    return None
+
+
+def orientation_band_score(
+    gray: np.ndarray,
+    start_ratio: float,
+    end_ratio: float,
+    global_mean: float,
+) -> float:
+    height, width = gray.shape[:2]
+    start_x = max(2, round(width * 0.035))
+    end_x = min(width - 2, round(width * 0.965))
+    start_y = max(2, round(height * start_ratio))
+    end_y = min(height - 2, round(height * end_ratio))
+    if end_x <= start_x or end_y <= start_y:
+        return 0.0
+
+    bin_count = 24
+    bin_edges = np.zeros(bin_count, dtype=np.float32)
+    bin_samples = np.zeros(bin_count, dtype=np.float32)
+    row_energy: list[float] = []
+    edge_count = 0.0
+    vertical_stroke_count = 0.0
+    dark_count = 0.0
+    magnitude_sum = 0.0
+    samples = 0.0
+
+    gray_i = gray.astype(np.int16)
+    for y in range(start_y, end_y, 2):
+        current_row_energy = 0.0
+        row_samples = 0.0
+        for x in range(start_x, end_x, 2):
+            gx = abs(int(gray_i[y, min(width - 1, x + 1)]) - int(gray_i[y, max(0, x - 1)]))
+            gy = abs(int(gray_i[min(height - 1, y + 1), x]) - int(gray_i[max(0, y - 1), x]))
+            is_edge = gx >= 22 or gy >= 28
+            bin_index = min(bin_count - 1, int(((x - start_x) / max(1, end_x - start_x)) * bin_count))
+            if is_edge:
+                edge_count += 1.0
+                bin_edges[bin_index] += 1.0
+            if gx >= 22:
+                vertical_stroke_count += 1.0
+            if gray_i[y, x] <= global_mean - 24:
+                dark_count += 1.0
+
+            local_magnitude = min(1.0, (gx * 1.15 + gy * 0.35) / 90.0)
+            magnitude_sum += local_magnitude
+            current_row_energy += local_magnitude
+            row_samples += 1.0
+            bin_samples[bin_index] += 1.0
+            samples += 1.0
+        row_energy.append(current_row_energy / max(1.0, row_samples))
+
+    coverage = 0.0
+    for index in range(bin_count):
+        density = bin_edges[index] / max(1.0, bin_samples[index])
+        if density >= 0.045:
+            coverage += 1.0
+    coverage /= bin_count
+
+    row_energy_sorted = sorted(row_energy, reverse=True)
+    peak_count = max(1, round(len(row_energy_sorted) * 0.24))
+    peak_energy = sum(row_energy_sorted[:peak_count]) / peak_count if row_energy_sorted else 0.0
+    edge_density = edge_count / max(1.0, samples)
+    vertical_density = vertical_stroke_count / max(1.0, samples)
+    dark_density = dark_count / max(1.0, samples)
+    mean_magnitude = magnitude_sum / max(1.0, samples)
+
+    return (
+        edge_density * 0.2
+        + vertical_density * 0.14
+        + mean_magnitude * 0.12
+        + peak_energy * 0.12
+        + coverage * 0.08
+        + dark_density * 0.34
+    )
+
+
+def layout_orientation_analysis(image: np.ndarray) -> dict[str, Any]:
+    height, width = image.shape[:2]
+    if width < 80 or height < 50:
+        return {
+            "rotation": 0,
+            "confidence": 0.5,
+            "topScore": 0.0,
+            "bottomScore": 0.0,
+        }
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    global_mean = float(gray[::4, ::4].mean()) if gray.size else 0.0
+    top_score = orientation_band_score(gray, 0.035, 0.365, global_mean)
+    bottom_score = orientation_band_score(gray, 0.635, 0.965, global_mean)
+    strongest = max(top_score, bottom_score)
+    separation = abs(bottom_score - top_score) / max(0.035, strongest)
+    evidence = clamp01((strongest - 0.055) / 0.2)
+    confidence = clamp01(0.5 + separation * 0.72 * (0.55 + evidence * 0.45))
+    confidence = max(0.5, min(0.99, confidence))
+    return {
+        "rotation": 0 if bottom_score >= top_score else 180,
+        "confidence": confidence,
+        "topScore": float(top_score),
+        "bottomScore": float(bottom_score),
+    }
+
+
+def auto_orient_document(image: np.ndarray, output_side: Any = None) -> tuple[np.ndarray, dict[str, Any]]:
+    layout = layout_orientation_analysis(image)
+    ocr_enabled = should_use_ocr_orientation()
+    ocr_scores: dict[str, Any] = {"enabled": ocr_enabled}
+    side_visual: dict[str, Any] | None = None
+    selected_rotation = int(layout["rotation"])
+    method = "layout_mrz_barcode"
+    confidence = float(layout["confidence"])
+    rotated_180: np.ndarray | None = None
+
+    if ocr_enabled:
+        rotated_180 = cv2.rotate(image, cv2.ROTATE_180)
+        ocr = ocr_orientation_analysis(image, rotated_180)
+        if ocr is not None:
+            ocr_scores.update(ocr)
+            weak_ocr_conflict = (
+                float(ocr["confidence"]) < 0.55
+                and int(ocr["rotation"]) != selected_rotation
+            )
+            if not weak_ocr_conflict:
+                selected_rotation = int(ocr["rotation"])
+                confidence = float(ocr["confidence"])
+                method = "ocr_tesseract_layout"
+
+    if rotated_180 is None:
+        rotated_180 = cv2.rotate(image, cv2.ROTATE_180)
+    side_visual = side_visual_orientation_analysis(image, rotated_180, output_side)
+    if side_visual is not None:
+        visual_confidence = float(side_visual["confidence"])
+        visual_rotation = int(side_visual["rotation"])
+        visual_method = str(side_visual["method"])
+        if method == "ocr_tesseract_layout":
+            should_override = (
+                visual_method in {"front_emblem_corner", "reverse_pdf417_bottom_band"}
+                and visual_rotation != selected_rotation
+                and visual_confidence >= 0.81
+                and confidence < 0.98
+            )
+        else:
+            should_override = (
+                visual_confidence >= confidence + 0.03
+                or (
+                    visual_method in {"front_emblem_corner", "front_portrait_left", "reverse_pdf417_bottom_band"}
+                    and visual_rotation != selected_rotation
+                    and visual_confidence >= 0.81
+                )
+                or (
+                    visual_rotation != selected_rotation
+                    and confidence < 0.72
+                    and visual_confidence >= 0.68
+                )
+            )
+        if should_override:
+            selected_rotation = visual_rotation
+            confidence = max(confidence, visual_confidence)
+            method = visual_method
+
+    output = cv2.rotate(image, cv2.ROTATE_180) if selected_rotation == 180 else image
+    diagnostics = {
+        "rotationApplied": selected_rotation,
+        "method": method,
+        "confidence": confidence,
+        "side": normalize_side(output_side),
+        "layout": layout,
+        "ocr": ocr_scores,
+        "sideVisual": side_visual,
+    }
+    app.logger.info(
+        "OpenCV orientation side=%s rotation=%s method=%s confidence=%.2f layout_top=%.4f layout_bottom=%.4f ocr0=%.2f ocr180=%.2f",
+        diagnostics["side"],
+        selected_rotation,
+        method,
+        confidence,
+        layout.get("topScore", 0.0),
+        layout.get("bottomScore", 0.0),
+        ocr_scores.get("score0", 0.0),
+        ocr_scores.get("score180", 0.0),
+    )
+    return output, diagnostics
 
 
 def best_side_scores_by_rotation(image: np.ndarray) -> tuple[float, float, str, str]:
@@ -1966,16 +2839,16 @@ def classify_side_text(image: np.ndarray) -> tuple[float, float, str]:
     return features["front"], features["back"], features["text"]
 
 
-def process_selected_image(image: np.ndarray, output_side: Any = None) -> np.ndarray:
+def process_selected_image(image: np.ndarray, output_side: Any = None) -> tuple[np.ndarray, dict[str, Any]]:
     contour = find_document_contour(image)
     warped = warp_document(image, contour, output_side)
-    return enhance_image(warped)
+    oriented, diagnostics = auto_orient_document(warped, output_side)
+    return enhance_image(oriented), diagnostics
 
 
-def process_image(content: bytes, content_type: str, source_path: str | None, side: dict[str, Any]) -> np.ndarray:
+def process_image(content: bytes, content_type: str, source_path: str | None, side: dict[str, Any]) -> tuple[np.ndarray, dict[str, Any]]:
     area = normalize_area(side.get("selectedArea"))
     image = decode_image(content, content_type, source_path, area)
-    image = apply_document_rotation(image, side.get("rotationClockwise"), side.get("orientation"))
     selected = preselect_body(image, bool(side.get("hasTwoBodies")), area)
     return process_selected_image(selected, side.get("side"))
 
@@ -1990,53 +2863,31 @@ def split_two_body_image(image: np.ndarray) -> dict[str, np.ndarray]:
 
 def process_two_body_image(
     image: np.ndarray,
-    area_orientations: dict[str, Any] | None = None,
-    area_rotations: dict[str, Any] | None = None,
     area_sides: dict[str, str] | None = None,
-) -> tuple[dict[str, np.ndarray], str]:
-    area_orientations = area_orientations or {}
-    area_rotations = area_rotations or {}
+) -> tuple[dict[str, np.ndarray], str, dict[str, dict[str, Any]]]:
     area_sides = area_sides or {}
+
     contours = find_document_contours(image, limit=2)
     if len(contours) >= 2:
         ordered = sorted(contours[:2], key=lambda rect: float(rect[:, 1].mean()))
         processed: dict[str, np.ndarray] = {}
+        orientation_diagnostics: dict[str, dict[str, Any]] = {}
         for area, contour in (("superior", ordered[0]), ("inferior", ordered[1])):
             warped = warp_document(image, contour, area_sides.get(area))
-            oriented = apply_document_rotation(
-                warped,
-                area_rotations.get(area),
-                area_orientations.get(area),
-            )
+            oriented, diagnostics = auto_orient_document(warped, area_sides.get(area))
             processed[area] = enhance_image(oriented)
-        return processed, "contours"
+            orientation_diagnostics[area] = diagnostics
+        return processed, "contours", orientation_diagnostics
 
     split_images = split_two_body_image(image)
-    return {
-        area: apply_document_rotation(
-            process_selected_image(split_images[area], area_sides.get(area)),
-            area_rotations.get(area),
-            area_orientations.get(area),
-        )
-        for area in ("superior", "inferior")
-    }, "split_fallback"
-
-
-def process_two_body_image_by_metadata(
-    image: np.ndarray,
-    area_orientations: dict[str, Any],
-    area_rotations: dict[str, Any],
-) -> tuple[dict[str, np.ndarray], str]:
-    processed: dict[str, np.ndarray] = {}
+    processed = {}
+    orientation_diagnostics = {}
     for area in ("superior", "inferior"):
-        selected = preselect_body(image, True, area)
-        oriented = apply_document_rotation(
-            selected,
-            area_rotations.get(area),
-            area_orientations.get(area),
+        processed[area], orientation_diagnostics[area] = process_selected_image(
+            split_images[area],
+            area_sides.get(area),
         )
-        processed[area] = process_selected_image(oriented)
-    return processed, "metadata_preselect"
+    return processed, "split_fallback", orientation_diagnostics
 
 
 def area_by_output_side(reference_side: dict[str, Any]) -> dict[str, str]:
@@ -2053,11 +2904,9 @@ def area_by_output_side(reference_side: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def build_two_body_area_metadata(job: dict[str, Any], reference_side: dict[str, Any]) -> tuple[dict[str, str], dict[str, Any], dict[str, Any], dict[str, Any]]:
+def build_two_body_area_metadata(job: dict[str, Any], reference_side: dict[str, Any]) -> tuple[dict[str, str], dict[str, Any]]:
     fallback_side_areas = area_by_output_side(reference_side)
     side_areas: dict[str, str] = {}
-    area_orientations: dict[str, Any] = {}
-    area_rotations: dict[str, Any] = {}
     metadata_entries: list[dict[str, Any]] = []
     sides = job.get("sides") if isinstance(job.get("sides"), list) else []
 
@@ -2069,13 +2918,9 @@ def build_two_body_area_metadata(job: dict[str, Any], reference_side: dict[str, 
         if side_name not in {"frente", "reverso"} or area not in {"superior", "inferior"}:
             continue
         side_areas[side_name] = area
-        area_orientations[area] = item.get("orientation")
-        area_rotations[area] = item.get("rotationClockwise")
         metadata_entries.append({
             "side": side_name,
             "area": area,
-            "orientation": normalize_declared_orientation(item.get("orientation")),
-            "rotationClockwise": normalize_clockwise_rotation(item.get("rotationClockwise")),
         })
 
     if len(side_areas) == 1:
@@ -2085,26 +2930,13 @@ def build_two_body_area_metadata(job: dict[str, Any], reference_side: dict[str, 
     for side_name, area in fallback_side_areas.items():
         side_areas.setdefault(side_name, area)
 
-    for side_name, area in side_areas.items():
-        if area not in area_orientations:
-            area_orientations[area] = reference_side.get("orientation")
-        if area not in area_rotations:
-            area_rotations[area] = reference_side.get("rotationClockwise")
-
     diagnostics = {
         "metadataEntries": metadata_entries,
         "fallbackSideAreas": fallback_side_areas,
         "resolvedSideAreas": side_areas,
-        "resolvedAreaOrientations": {
-            area: normalize_declared_orientation(orientation)
-            for area, orientation in area_orientations.items()
-        },
-        "resolvedAreaRotationsClockwise": {
-            area: normalize_clockwise_rotation(rotation)
-            for area, rotation in area_rotations.items()
-        },
+        "orientationSource": "opencv_auto_after_crop",
     }
-    return side_areas, area_orientations, area_rotations, diagnostics
+    return side_areas, diagnostics
 
 
 def classify_two_body_areas_by_ocr(
@@ -2183,18 +3015,16 @@ def process_two_body_side(job: dict[str, Any], side: dict[str, Any]) -> list[dic
 
     content, bucket_name, source_path = download_source(source)
     image = decode_image(content, content_type, source_path, normalize_area(side.get("selectedArea")))
-    side_areas, area_orientations, area_rotations, metadata_diagnostics = build_two_body_area_metadata(job, side)
+    side_areas, metadata_diagnostics = build_two_body_area_metadata(job, side)
     area_sides = {area: side_name for side_name, area in side_areas.items()}
-    processed_by_area, detection_mode = process_two_body_image(
+    processed_by_area, detection_mode, orientation_diagnostics_by_area = process_two_body_image(
         image,
-        area_orientations,
-        area_rotations,
         area_sides,
     )
     assignment_mode = "metadata_side_classification"
     assignment_diagnostics = {
         **metadata_diagnostics,
-        "reason": "Gemini metadata is authoritative for side/orientation; OpenCV contours are preferred for body extraction.",
+        "reason": "Gemini metadata is authoritative for side/area only; OpenCV detects contour and corrects orientation after crop.",
     }
     outputs: list[dict[str, Any]] = []
 
@@ -2217,6 +3047,7 @@ def process_two_body_side(job: dict[str, Any], side: dict[str, Any]) -> list[dic
             "detectionMode": detection_mode,
             "assignmentMode": assignment_mode,
             "assignmentDiagnostics": assignment_diagnostics,
+            "orientationDiagnostics": orientation_diagnostics_by_area.get(area),
             "output": output,
         })
 
@@ -2284,7 +3115,7 @@ def process_side(job: dict[str, Any], side: dict[str, Any]) -> dict[str, Any]:
         normalize_area(side.get("selectedArea")),
     )
     content, bucket_name, source_path = download_source(source)
-    image = process_image(content, content_type, source_path, side)
+    image, orientation_diagnostics = process_image(content, content_type, source_path, side)
     output = upload_output(
         image=image,
         bucket_name=bucket_name,
@@ -2298,6 +3129,7 @@ def process_side(job: dict[str, Any], side: dict[str, Any]) -> dict[str, Any]:
         "sourcePath": source_path,
         "hasTwoBodies": bool(side.get("hasTwoBodies")),
         "selectedArea": normalize_area(side.get("selectedArea")),
+        "orientationDiagnostics": orientation_diagnostics,
         "output": output,
     }
 

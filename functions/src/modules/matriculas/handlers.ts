@@ -58,6 +58,7 @@ interface MatriculaUserRow {
   id: number;
   documentId?: string | null;
   username?: string | null;
+  nickName?: string | null;
   email?: string | null;
   provider?: string | null;
   confirmed?: boolean | null;
@@ -84,6 +85,8 @@ interface MatriculaUserRow {
   fechaModificacion?: string | null;
   emailCreador?: string | null;
   avatar?: string | null;
+  avatarMediano?: string | null;
+  avatarPequeno?: string | null;
   avatarTiny?: string | null;
   recorteFotografia?: string | null;
   dniImagenFrenteUrl?: string | null;
@@ -458,7 +461,6 @@ type GeminiMatriculaArchivoResult = {
   tipoLado?: string | null;
   areaLectura?: string | null;
   tieneDosCuerpos?: boolean | null;
-  direccionTexto?: string | null;
   textoReconocido?: string | null;
   senalesReverso?: string[] | null;
   fragmentosReverso?: string[] | null;
@@ -531,7 +533,6 @@ const GEMINI_MATRICULA_RESPONSE_SCHEMA = {
           "tipoLado",
           "areaLectura",
           "tieneDosCuerpos",
-          "direccionTexto",
           "contieneDireccion",
           "contieneDomicilio",
           "contieneDistrito",
@@ -540,9 +541,8 @@ const GEMINI_MATRICULA_RESPONSE_SCHEMA = {
         properties: {
           indice: { type: "INTEGER" },
           tipoLado: { type: "STRING", enum: ["frente", "reverso", "desconocido"] },
-          areaLectura: { type: "STRING", enum: ["pagina-1", "pagina-2", "superior", "inferior", "completa"] },
+          areaLectura: { type: "STRING", enum: ["superior", "inferior", "completa"] },
           tieneDosCuerpos: { type: "BOOLEAN" },
-          direccionTexto: { type: "STRING", enum: ["izquierda_derecha", "arriba_abajo", "abajo_arriba", "de_cabeza"] },
           contieneDireccion: { type: "BOOLEAN" },
           contieneDomicilio: { type: "BOOLEAN" },
           contieneDistrito: { type: "BOOLEAN" },
@@ -581,7 +581,6 @@ interface DocumentoArchivoMetadata {
     tipoLado?: string | null;
     areaLectura?: string | null;
     tieneDosCuerpos?: boolean | null;
-    direccionTexto?: string | null;
     senalesReverso?: string[] | null;
     fragmentosReverso?: string[] | null;
     contieneDireccion?: boolean | null;
@@ -604,7 +603,7 @@ interface MatriculaDocumentProcessingSide {
   metadata: DocumentoArchivoMetadata | null;
   hasTwoBodies: boolean;
   selectedArea: string;
-  orientation: string;
+  orientation: string | null;
   rotationClockwise: number | null;
   instructions: {
     twoBodies: string;
@@ -651,6 +650,7 @@ const USER_FIELDS = `
   id
   documentId
   username
+  nickName
   email
   provider
   confirmed
@@ -855,14 +855,6 @@ const MATRICULA_LIST_FIELDS = `
     inicio
     fin
     archivado
-  }
-`;
-
-const LIST_MATRICULAS_QUERY = `
-  query ListMatriculasManual {
-    matriculas(limit: 5000, orderBy: [{id: DESC}]) {
-      ${MATRICULA_LIST_FIELDS}
-    }
   }
 `;
 
@@ -1282,7 +1274,7 @@ function normalizeMatriculaRecibo(value: unknown): string | null {
   if (VALID_RECIBO_TEXT_VALUES.has(text)) return text;
   const compactText = text.replace(/\s+/g, "");
   if (compactText === "PORREGULARIZAR") return "POR REGULARIZAR";
-  if (/^\d{1,5}$/.test(compactText)) return compactText;
+  if (/^\d{1,5}$/.test(compactText)) return compactText.replace(/^0+(?=\d)/, "");
   throw new https.HttpsError("invalid-argument", "El recibo debe ser CONADIS, BECADO, POR REGULARIZAR o un numero de hasta 5 digitos.");
 }
 
@@ -1329,16 +1321,6 @@ const normalizeDate = (value: unknown): string | null => {
   if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
   return null;
 };
-
-function resolveRotationClockwiseFromTextDirection(value: unknown): number | null {
-  const text = normalizeText(value).replace(/[_-]+/g, " ");
-  if (!text) return null;
-  if (text === "izquierda derecha" || text.includes("izquierda derecha")) return 0;
-  if (text === "arriba abajo" || text.includes("arriba abajo")) return 270;
-  if (text === "abajo arriba" || text.includes("abajo arriba")) return 90;
-  if (text.includes("cabeza")) return 180;
-  return null;
-}
 
 function parseDateOnly(value: unknown): Date | null {
   const normalized = normalizeDate(value);
@@ -1524,28 +1506,24 @@ function resolveMatriculaGeminiModel(): string {
 function buildMatriculaGeminiPrompt(tipoDocumento: string, dni: string): string {
   const documentReadingInstructions = `
 Estrategia de lectura:
-- Primero revisa el archivo 1 para determinar si contiene dos cuerpos/imagenes completos del documento en una misma pagina o vista.
-- Si el archivo 1 no tiene dos cuerpos completos, revisa el archivo 2 con el mismo criterio.
+- Primero revisa la primera imagen para determinar si contiene los dos cuerpos completos del documento, Si el archivo 1 no tiene dos cuerpos revisa el archivo 2 y determina si tiene 2 cuerpos
 - Dos cuerpos significa que se ven claramente dos lados separados del documento, por ejemplo frente arriba y reverso abajo, o reverso arriba y frente abajo.
-- Si cualquiera de los dos archivos contiene dos cuerpos completos, trabaja solo con ese archivo y no leas ni uses el otro archivo bajo ninguna circunstancia.
-- La prioridad es fija: si el archivo 1 tiene dos cuerpos, usa archivo 1; solo si el archivo 1 no tiene dos cuerpos y el archivo 2 si los tiene, usa archivo 2.
-- En ese caso, lee los dos cuerpos del archivo elegido y de ahi extrae todos los datos, valida el tipo y numero de documento, determina cual cuerpo es frente y cual es reverso, y prepara la metadata para OpenCV.
-- Si el archivo elegido contiene dos cuerpos completos pero no logras validar algun dato, devuelve el dato como null o la validacion como false; no uses el otro archivo como respaldo.
+- Si cualquiera de los dos archivos contiene los dos cuerpos completos del documento, trabaja solo con ese archivo y descartar el otro.
+- En caso el archivo tenga los dos cuerpos, lee los dos cuerpos del archivo elegido y de ahi extrae todos los datos, determina el tipo y numero de documento, determina cual cuerpo es frente y cual es reverso, y prepara la metadata para OpenCV.
+- Si el archivo elegido contiene los dos cuerpos completos pero no logras validar algun dato, devuelve el dato como null; no uses el otro archivo como respaldo.
 - Cuando uses un solo archivo con dos cuerpos, devuelve dos elementos en "archivos" con el mismo "indice" del archivo elegido: uno para el cuerpo "superior" y otro para el cuerpo "inferior"; en cada elemento indica "tipoLado" frente/reverso y "areaLectura" superior/inferior.
 - Solo si ningun archivo contiene dos cuerpos completos, analiza ambos archivos con el flujo normal de frente/reverso.
 - Si un archivo tiene un solo cuerpo, reporta "areaLectura": "completa" y "tieneDosCuerpos": false.
 - Si un archivo tiene dos cuerpos, reporta "areaLectura": "superior" o "inferior" segun el cuerpo que estes clasificando en ese elemento de "archivos".
-- Si un archivo tiene dos cuerpos, "direccionTexto" debe corresponder a ese cuerpo/area especifica, no a la direccion global del archivo completo.
-- No generes ni modifiques imagenes; solo limita la lectura visual.
 `.trim();
 
   return `
+Datos a Validar
+tipo documento = ${tipoDocumento}
+numero documento = ${dni}
+
 Eres un extractor de datos para matriculas de un CETPRO en Peru.
 Analiza los archivos adjuntos de un DNI peruano o carnet de extranjeria. Pueden estar en cualquier orden: frente/reverso, reverso/frente, imagen o PDF.
-
-Documento esperado en el formulario:
-- tipoDocumento: ${tipoDocumento}
-- numeroDocumento: ${dni}
 
 ${documentReadingInstructions}
 
@@ -1553,13 +1531,10 @@ Reglas:
 - El primer adjunto es archivo 1, el segundo adjunto es archivo 2. Si la estrategia de lectura indica usar solo un archivo, no reportes datos extraidos del otro archivo.
 - Si es DNI, identifica "documento nacional de identidad" o "nacional" y extrae el numero con formato ########-#. Para comparar, usa los 8 digitos antes del guion.
 - Si es carnet de extranjeria, identifica "carnet" o "extranjeria" y extrae el numero con formato #########.
-- Para reverso, basta encontrar alguna palabra o dato equivalente a direccion, domicilio, distrito o el fragmento "per<".
-- En "archivos", devuelve solo datos compactos para clasificar cada archivo o cuerpo: indice, tipoLado, areaLectura, tieneDosCuerpos, direccionTexto y flags booleanos de evidencias del reverso.
-- Para cada archivo o cada cuerpo independiente del DNI, indica la direccion del texto principal en la imagen. Responde "direccionTexto" usando exactamente una de estas opciones: "izquierda_derecha", "arriba_abajo", "abajo_arriba", "de_cabeza".
-- Usa "izquierda_derecha" si el texto se lee de izquierda a derecha. Usa "arriba_abajo" si el texto se lee de arriba hacia abajo. Usa "abajo_arriba" si el texto se lee de abajo hacia arriba. Usa "de_cabeza" si el texto esta invertido de cabeza.
-- No devuelvas grados de rotacion ni indiques izquierda o derecha de la imagen.
-- Evalua cada archivo o cuerpo de forma independiente. No copies ni infieras la direccion del texto de un cuerpo desde otro cuerpo.
-- No devuelvas nombreArchivo, senales, fragmentos de evidencia, OCR completo ni campos extra por archivo.
+- Para reverso, basta encontrar alguna palabra o dato equivalente a direccion, domicilio, distrito o el fragmento "PER<".
+- valida si los datos a validar corresponden al de los archivos, colocar en documentoCoincide true o false segun corresponda.
+- En "archivos", devuelve solo datos compactos para clasificar cada archivo o cuerpo: indice, tipoLado, areaLectura, tieneDosCuerpos y flags booleanos de evidencias del reverso.
+- No determines ni devuelvas orientacion, giro, rotacion, direccion de texto ni grados de correccion. La orientacion visual sera corregida por OpenCV despues del recorte.
 - Extrae nombres, apellido paterno y apellido materno desde el documento, no desde texto inferido.
 - La direccion debe ser solo la direccion o domicilio. El distrito debe ir separado, sin provincia ni departamento cuando sea posible.
 - Las fechas deben devolverse en YYYY-MM-DD. Si el documento muestra formato DD/MM/YYYY o DD-MM-YYYY, conviertelo.
@@ -1581,9 +1556,8 @@ Formato exacto:
     {
       "indice": 1,
       "tipoLado": "frente|reverso|desconocido",
-      "areaLectura": "pagina-1|pagina-2|superior|inferior|completa",
+      "areaLectura": "superior|inferior|completa",
       "tieneDosCuerpos": true,
-      "direccionTexto": "izquierda_derecha|arriba_abajo|abajo_arriba|de_cabeza",
       "contieneDireccion": true,
       "contieneDomicilio": true,
       "contieneDistrito": true,
@@ -2391,13 +2365,13 @@ async function getMatriculaById(matriculaId: number): Promise<MatriculaRow | nul
     })
     .sort((a, b) => (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id);
 
-  return {
+  return hydrateMatriculaUserAvatarThumbnails({
     ...matricula,
     grupoId: modulosEstudiantes.find((item) => item.grupoId)?.grupoId ?? null,
     modulosEstudiantes,
     cambiosModulo: response.data.matriculaCambiosModulo ?? [],
     fichaUnidadesDidacticas,
-  };
+  });
 }
 
 function getStoragePathFromDownloadUrl(value: string | null | undefined): string | undefined {
@@ -2572,8 +2546,6 @@ function buildDocumentProcessingSide(
 
   const hasTwoBodies = Boolean(metadata?.gemini?.tieneDosCuerpos);
   const selectedArea = asCleanString(metadata?.gemini?.areaLectura) ?? "completa";
-  const textDirection = asCleanString(metadata?.gemini?.direccionTexto) ?? "izquierda_derecha";
-  const rotationClockwise = resolveRotationClockwiseFromTextDirection(textDirection);
 
   return {
     side,
@@ -2581,15 +2553,13 @@ function buildDocumentProcessingSide(
     metadata,
     hasTwoBodies,
     selectedArea,
-    orientation: textDirection,
-    rotationClockwise,
+    orientation: null,
+    rotationClockwise: null,
     instructions: {
       twoBodies: hasTwoBodies
         ? `El archivo tiene dos cuerpos. Trabaja solo con el cuerpo del area '${selectedArea}' asignado a '${side}' y descarta visualmente el otro cuerpo.`
         : "El archivo tiene un solo cuerpo. Procesa el documento completo.",
-      orientation: rotationClockwise !== null
-        ? `Primero gira el area ${rotationClockwise} grados en sentido horario para que el texto se lea de izquierda a derecha.`
-        : `Primero corrige la orientacion segun la direccion de texto declarada por la IA (${textDirection}) para dejar el DNI perfectamente horizontal.`,
+      orientation: "No uses orientacion declarada por IA. Detecta y corrige automaticamente la orientacion visual del DNI despues del recorte.",
       perspective: "Corrige la perspectiva usando la proporcion 8.6:5.4 solo como referencia para detectar bordes; conserva la proporcion real detectada al guardar.",
       crop: "Recorta perfectamente el DNI detectando sus bordes.",
       enhancement: "Mejora brillo, contraste y nitidez sin perder legibilidad.",
@@ -3092,7 +3062,7 @@ async function buildOriginalPhotoCropImage(params: {
 }
 
 function isWhiteAvatarBackgroundPixel(data: Buffer, index: number): boolean {
-  return data[index] >= 242 && data[index + 1] >= 242 && data[index + 2] >= 242;
+  return data[index] >= 239 && data[index + 1] >= 239 && data[index + 2] >= 239;
 }
 
 async function removeWhiteAvatarBackgroundFromTopAndSides(buffer: Buffer): Promise<Buffer> {
@@ -3185,18 +3155,19 @@ async function generateCarnetAvatarImage(params: {
   ].join(" ");
   prompt = [
     "Genera una fotografia tipo carnet/retrato a color usando estrictamente la persona de la imagen de referencia.",
-    "Objetivo: mejorar la visualizacion, nitidez, iluminacion y color solamente.",
+    "Objetivo: mejorar la visualizacion, nitidez, iluminacion y color solamente, mantener la apariencia fisica exactamente a la fotografia.",
     "Manten fielmente los rasgos faciales, identidad, expresion neutral, tono de piel, marcas visibles, edad aparente y proporciones naturales de la referencia.",
     "El cabello y el peinado son parte de la identidad: manten exactamente el mismo cabello, largo, volumen, silueta, raya, flequillo, recogido, linea de cabello y color de la referencia.",
-    "No alises, no rices, no ordenes, no estilices, no cambies volumen ni inventes un peinado nuevo aunque la referencia sea borrosa.",
+    "No alises, no rices, no ordenes, no estilices, no cambies volumen, no cambies direccion del cabello ni inventes un peinado nuevo aunque la referencia sea borrosa.",
     ageInstruction,
     "No embellezcas, no retoques la piel, no cambies facciones principales, estructura facial, nariz, ojos, boca, cejas, mandibula, forma del rostro, tono de piel, edad, genero, peso aparente ni expresion; no agregues maquillaje ni accesorios nuevos.",
+    "La indicacion de ropa formal aplica exclusivamente a la vestimenta visible debajo del cuello y hombros; no autoriza cambios de peinado, cabello, frente, orejas, cabeza, rostro, piel, edad aparente, expresion, contextura ni identidad facial.",
+    "Coloca unicamente ropa formal conservadora y sobria, preferentemente en tonos medios u oscuros para separarla claramente del fondo blanco; la ropa puede reemplazar la vestimenta original, pero bajo ninguna circunstancia debe modificar, estilizar, rejuvenecer, embellecer o reinterpretar la apariencia fisica exacta del rostro, cabeza, cuello, cabello, tono de piel, edad aparente, expresion ni las caracteristicas de identidad indicadas en las reglas anteriores.",
     "Encuadre: rostro y hombros, frontal, estilo documento oficial, sin textos, sin logos, sin bordes, sin elementos del DNI.",
     "Composicion: centra a la persona en la imagen final; la cabeza, rostro, cuello y hombros deben quedar alineados al eje vertical central.",
-    "No copies el descentrado, desplazamiento lateral o encuadre torcido de la foto del DNI; corrige la composicion para que haya espacio equilibrado a izquierda y derecha.",
-    "Manten la cabeza completa dentro del encuadre, sin cortar cabello, menton ni hombros de forma brusca.",
-    "Fondo: blanco puro #FFFFFF, liso y uniforme, sin sombras fuertes, sin textura, sin degradado y sin patron de transparencia.",
-    "No uses fondo verde, no uses color chroma key, no uses transparencia y no simules cuadricula de transparencia.",
+    "Fondo obligatorio: toda el area de fondo debe ser blanco puro exacto #FFFFFF, completamente uniforme de borde a borde.",
+    "No uses ningun gris, blanco humo, beige, celeste, sombra, degradado, viñeta, iluminacion ambiental, textura ni variacion tonal en el fondo.",
+    "El fondo debe mantenerse plano y solido con valores RGB 255,255,255 en toda zona que no sea persona o ropa, hasta los bordes de la imagen, para que pueda ser removido automaticamente.",
     "Salida: retrato vertical 3:4, apariencia fotografica natural.",
   ].join(" ");
 
@@ -3348,7 +3319,7 @@ async function uploadAvatarImages(params: {
   };
   const [grande, mediano, pequeno, tiny] = await Promise.all([
     uploadAvatarImage({ ...base, sizeLabel: "grande" }),
-    uploadAvatarImage({ ...base, sizeLabel: "mediano", width: 300, height: 400 }),
+    uploadAvatarImage({ ...base, sizeLabel: "mediano", width: 200, height: 267 }),
     uploadAvatarImage({ ...base, sizeLabel: "pequeno", width: 96, height: 128 }),
     uploadAvatarImage({ ...base, sizeLabel: "tiny", width: 48 }),
   ]);
@@ -4001,19 +3972,69 @@ function toNumberSetFromInput(value: unknown) {
   );
 }
 
-async function listMatriculasForList(semestreId: number | null) {
-  if (semestreId) {
-    return dataConnect.executeGraphql<{
-      matriculas: MatriculaRow[];
-    }, { semestreId: number }>(
-      LIST_MATRICULAS_BY_SEMESTRE_QUERY,
-      { variables: { semestreId } },
-    );
-  }
-
+async function listMatriculasForList(semestreId: number) {
   return dataConnect.executeGraphql<{
     matriculas: MatriculaRow[];
-  }, Record<string, never>>(LIST_MATRICULAS_QUERY);
+  }, { semestreId: number }>(
+    LIST_MATRICULAS_BY_SEMESTRE_QUERY,
+    { variables: { semestreId } },
+  );
+}
+
+async function getLatestUserAvatarThumbnails(userIds: Set<number>): Promise<Map<number, {
+  avatarTiny?: string;
+  avatarPequeno?: string;
+  avatarMediano?: string;
+}>> {
+  if (userIds.size === 0) return new Map();
+
+  const snapshot = await getFirestore()
+    .collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION)
+    .orderBy("updatedAt", "desc")
+    .limit(1000)
+    .get();
+
+  const thumbnailByUserId = new Map<number, {
+    avatarTiny?: string;
+    avatarPequeno?: string;
+    avatarMediano?: string;
+  }>();
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    const userId = toNumber(data.userId, 0);
+    if (!userIds.has(userId) || thumbnailByUserId.has(userId) || data.status !== "completed") return;
+
+    const avatarTamanos = data.avatarTamanos as {
+      tiny?: { url?: unknown } | null;
+      pequeno?: { url?: unknown } | null;
+      mediano?: { url?: unknown } | null;
+      grande?: { url?: unknown } | null;
+    } | null;
+    const avatar = data.avatar as { url?: unknown } | null;
+    const tiny =
+      asCleanString(avatarTamanos?.tiny?.url)
+      ?? asCleanString(avatarTamanos?.pequeno?.url)
+      ?? asCleanString(avatarTamanos?.grande?.url)
+      ?? asCleanString(avatar?.url);
+    const pequeno =
+      asCleanString(avatarTamanos?.pequeno?.url)
+      ?? asCleanString(avatarTamanos?.grande?.url)
+      ?? asCleanString(avatar?.url);
+    const mediano =
+      asCleanString(avatarTamanos?.mediano?.url)
+      ?? asCleanString(avatarTamanos?.grande?.url)
+      ?? asCleanString(avatar?.url);
+
+    if (tiny || pequeno || mediano) {
+      thumbnailByUserId.set(userId, {
+        avatarTiny: tiny ?? undefined,
+        avatarPequeno: pequeno ?? undefined,
+        avatarMediano: mediano ?? undefined,
+      });
+    }
+  });
+
+  return thumbnailByUserId;
 }
 
 async function hydrateMatriculaListAvatarTiny(matriculas: MatriculaRow[]): Promise<MatriculaRow[]> {
@@ -4024,41 +4045,23 @@ async function hydrateMatriculaListAvatarTiny(matriculas: MatriculaRow[]): Promi
   );
   if (userIds.size === 0) return matriculas;
 
-  const snapshot = await getFirestore()
-    .collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION)
-    .orderBy("updatedAt", "desc")
-    .limit(1000)
-    .get();
-
-  const avatarTinyByUserId = new Map<number, string>();
-  snapshot.docs.forEach((doc) => {
-    const data = doc.data();
-    const userId = toNumber(data.userId, 0);
-    if (!userIds.has(userId) || avatarTinyByUserId.has(userId) || data.status !== "completed") return;
-
-    const avatarTamanos = data.avatarTamanos as {
-      tiny?: { url?: unknown } | null;
-      pequeno?: { url?: unknown } | null;
-      grande?: { url?: unknown } | null;
-    } | null;
-    const avatar = data.avatar as { url?: unknown } | null;
-    const tiny =
-      asCleanString(avatarTamanos?.tiny?.url)
-      ?? asCleanString(avatarTamanos?.pequeno?.url)
-      ?? asCleanString(avatarTamanos?.grande?.url)
-      ?? asCleanString(avatar?.url);
-
-    if (tiny) avatarTinyByUserId.set(userId, tiny);
-  });
-
-  if (avatarTinyByUserId.size === 0) return matriculas;
+  const avatarByUserId = await getLatestUserAvatarThumbnails(userIds);
+  if (avatarByUserId.size === 0) return matriculas;
 
   return matriculas.map((matricula) => {
     if (!matricula.user) return matricula;
     const userId = toNumber(matricula.user.id ?? matricula.userId, 0);
-    const avatarTiny = avatarTinyByUserId.get(userId);
-    return avatarTiny ? { ...matricula, user: { ...matricula.user, avatarTiny } } : matricula;
+    const avatar = avatarByUserId.get(userId);
+    return avatar?.avatarTiny ? { ...matricula, user: { ...matricula.user, avatarTiny: avatar.avatarTiny } } : matricula;
   });
+}
+
+async function hydrateMatriculaUserAvatarThumbnails(matricula: MatriculaRow | null): Promise<MatriculaRow | null> {
+  const userId = toNumber(matricula?.user?.id ?? matricula?.userId, 0);
+  if (!matricula || !matricula.user || userId <= 0) return matricula;
+
+  const avatars = (await getLatestUserAvatarThumbnails(new Set([userId]))).get(userId);
+  return avatars ? { ...matricula, user: { ...matricula.user, ...avatars } } : matricula;
 }
 
 async function listModuloEstudiantesForAllowedGrupoModulos(
@@ -4119,8 +4122,11 @@ export const listMatriculas = https.onCall(async (data, context) => {
   const grupoModuloId = toNumberOrNull(data?.grupoModuloId);
   const grupoModuloIds = toNumberSetFromInput(data?.grupoModuloIds);
   if (grupoModuloId) grupoModuloIds.add(grupoModuloId);
-  const semestreId = toNumberOrNull(data?.semestreId) ?? null;
+  const semestreId = toNumberOrNull(data?.semestreId);
   const semestreTitulo = String(data?.semestreTitulo ?? "").trim() || null;
+  if (!semestreId || semestreId <= 0) {
+    throw new https.HttpsError("invalid-argument", "Debes seleccionar un semestre para cargar matriculas.");
+  }
 
   try {
     const [matriculasResponse, semestreConsultaIds] = await Promise.all([

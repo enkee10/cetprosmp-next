@@ -1,0 +1,236 @@
+[
+  {
+    "pair": "par1",
+    "side": "frente",
+    "path": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\remote\\par1-frente-remote.jpg",
+    "diag": {
+      "confidence": 0.8963506822053138,
+      "layout": {
+        "bottomScore": 0.26319962071651215,
+        "confidence": 0.6080754774473481,
+        "rotation": 0,
+        "topScore": 0.22369208644859828
+      },
+      "method": "ocr_tesseract_layout",
+      "ocr": {
+        "confidence": 0.8963506822053138,
+        "enabled": true,
+        "evidence0": {
+          "averageConfidence": 70.73780487804878,
+          "keywordMatches": 5,
+          "readableCharacters": 168,
+          "readableTokens": 29,
+          "score": 0.7034731596139674
+        },
+        "evidence180": {
+          "averageConfidence": 28.27848101265823,
+          "keywordMatches": 0,
+          "readableCharacters": 170,
+          "readableTokens": 36,
+          "score": 0.3162202891610179
+        },
+        "rotation": 0,
+        "score0": 0.7034731596139674,
+        "score180": 0.3162202891610179
+      },
+      "rotationApplied": 0,
+      "side": "frente",
+      "sideVisual": null
+    }
+  },
+  {
+    "pair": "par1",
+    "side": "reverso",
+    "path": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\remote\\par1-reverso-remote.jpg",
+    "diag": {
+      "confidence": 0.8924935141658377,
+      "layout": {
+        "bottomScore": 0.2899643684150923,
+        "confidence": 0.7659453441487352,
+        "rotation": 0,
+        "topScore": 0.1828606548747835
+      },
+      "method": "ocr_tesseract_layout",
+      "ocr": {
+        "confidence": 0.8924935141658377,
+        "enabled": true,
+        "evidence0": {
+          "averageConfidence": 62.34375,
+          "keywordMatches": 2,
+          "readableCharacters": 141,
+          "readableTokens": 26,
+          "score": 0.6094737188659587
+        },
+        "evidence180": {
+          "averageConfidence": 18.391752577319586,
+          "keywordMatches": 0,
+          "readableCharacters": 115,
+          "readableTokens": 25,
+          "score": 0.26396381182826517
+        },
+        "rotation": 0,
+        "score0": 0.6094737188659587,
+        "score180": 0.26396381182826517
+      },
+      "rotationApplied": 0,
+      "side": "reverso",
+      "sideVisual": null
+    }
+  },
+  {
+    "pair": "par2",
+    "side": "frente",
+    "path": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\remote\\par2-frente-remote.jpg",
+    "diag": {
+      "confidence": 0.8963506822053138,
+      "layout": {
+        "bottomScore": 0.26319962071651215,
+        "confidence": 0.6080754774473481,
+        "rotation": 0,
+        "topScore": 0.22369208644859828
+      },
+      "method": "ocr_tesseract_layout",
+      "ocr": {
+        "confidence": 0.8963506822053138,
+        "enabled": true,
+        "evidence0": {
+          "averageConfidence": 70.73780487804878,
+          "keywordMatches": 5,
+          "readableCharacters": 168,
+          "readableTokens": 29,
+          "score": 0.7034731596139674
+        },
+        "evidence180": {
+          "averageConfidence": 28.27848101265823,
+          "keywordMatches": 0,
+          "readableCharacters": 170,
+          "readableTokens": 36,
+          "score": 0.3162202891610179
+        },
+        "rotation": 0,
+        "score0": 0.7034731596139674,
+        "score180": 0.3162202891610179
+      },
+      "rotationApplied": 0,
+      "side": "frente",
+      "sideVisual": null
+    }
+  },
+  {
+    "pair": "par2",
+    "side": "reverso",
+    "path": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\remote\\par2-reverso-remote.jpg",
+    "diag": {
+      "confidence": 0.8135250780132784,
+      "layout": {
+        "bottomScore": 0.18233075059397758,
+        "confidence": 0.7606851605808087,
+        "rotation": 180,
+        "topScore": 0.2858129743721464
+      },
+      "method": "ocr_tesseract_layout",
+      "ocr": {
+        "confidence": 0.8135250780132784,
+        "enabled": true,
+        "evidence0": {
+          "averageConfidence": 28.267441860465116,
+          "keywordMatches": 0,
+          "readableCharacters": 127,
+          "readableTokens": 25,
+          "score": 0.28664455295182634
+        },
+        "evidence180": {
+          "averageConfidence": 63.072916666666664,
+          "keywordMatches": 2,
+          "readableCharacters": 139,
+          "readableTokens": 29,
+          "score": 0.5472893908417025
+        },
+        "rotation": 180,
+        "score0": 0.28664455295182634,
+        "score180": 0.5472893908417025
+      },
+      "rotationApplied": 180,
+      "side": "reverso",
+      "sideVisual": null
+    }
+  },
+  {
+    "pair": "par3",
+    "side": "frente",
+    "path": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\remote\\par3-frente-remote.jpg",
+    "diag": {
+      "confidence": 0.8969167378166,
+      "layout": {
+        "bottomScore": 0.18010263255516612,
+        "confidence": 0.6136122785539446,
+        "rotation": 180,
+        "topScore": 0.21759310467967102
+      },
+      "method": "ocr_tesseract_layout",
+      "ocr": {
+        "confidence": 0.8969167378166,
+        "enabled": true,
+        "evidence0": {
+          "averageConfidence": 78.4638783269962,
+          "keywordMatches": 5,
+          "readableCharacters": 269,
+          "readableTokens": 53,
+          "score": 0.7567005805733676
+        },
+        "evidence180": {
+          "averageConfidence": 34.831372549019605,
+          "keywordMatches": 0,
+          "readableCharacters": 261,
+          "readableTokens": 56,
+          "score": 0.3395517945384949
+        },
+        "rotation": 0,
+        "score0": 0.7567005805733676,
+        "score180": 0.3395517945384949
+      },
+      "rotationApplied": 0,
+      "side": "frente",
+      "sideVisual": null
+    }
+  },
+  {
+    "pair": "par3",
+    "side": "reverso",
+    "path": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\remote\\par3-reverso-remote.jpg",
+    "diag": {
+      "confidence": 0.5836383893324534,
+      "layout": {
+        "bottomScore": 0.20529794511703076,
+        "confidence": 0.6339927980766101,
+        "rotation": 0,
+        "topScore": 0.1622812265267698
+      },
+      "method": "ocr_tesseract_layout",
+      "ocr": {
+        "confidence": 0.5836383893324534,
+        "enabled": true,
+        "evidence0": {
+          "averageConfidence": 23.8265306122449,
+          "keywordMatches": 0,
+          "readableCharacters": 126,
+          "readableTokens": 43,
+          "score": 0.2533648038288762
+        },
+        "evidence180": {
+          "averageConfidence": 32.345794392523366,
+          "keywordMatches": 0,
+          "readableCharacters": 142,
+          "readableTokens": 37,
+          "score": 0.30150508503537143
+        },
+        "rotation": 180,
+        "score0": 0.2533648038288762,
+        "score180": 0.30150508503537143
+      },
+      "rotationApplied": 180,
+      "side": "reverso",
+      "sideVisual": null
+    }
+  }
+]

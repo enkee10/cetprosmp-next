@@ -105,6 +105,7 @@ interface UserFormProps {
   initialData?: Record<string, unknown>;
   isSubmitting?: boolean;
   submittingMessage?: string;
+  restrictFieldsFromMatriculaDocente?: boolean;
 }
 
 interface Role {
@@ -193,6 +194,7 @@ const UserForm: React.FC<UserFormProps> = ({
   initialData,
   isSubmitting = false,
   submittingMessage,
+  restrictFieldsFromMatriculaDocente = false,
 }) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -203,6 +205,13 @@ const UserForm: React.FC<UserFormProps> = ({
   const [grupoModuloHistorial, setGrupoModuloHistorial] = useState<UserGrupoModuloHistorialItem[]>([]);
   const [loadingGrupoModuloHistorial, setLoadingGrupoModuloHistorial] = useState(false);
   const isCreating = !initialData;
+  const canEditField = (field: keyof UserFormValues) =>
+    !restrictFieldsFromMatriculaDocente || field === 'celular' || field === 'direccion' || field === 'distrito';
+  const isLockedField = (field: keyof UserFormValues) => !canEditField(field);
+  const textInputProps = (field: keyof UserFormValues, tabIndex: number) => ({
+    tabIndex: isLockedField(field) ? -1 : tabIndex,
+    readOnly: isLockedField(field),
+  });
   const auth = getAuth(app);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -372,6 +381,8 @@ const UserForm: React.FC<UserFormProps> = ({
     event: React.ChangeEvent<HTMLInputElement>,
     field: 'avatar',
   ) => {
+    if (restrictFieldsFromMatriculaDocente) return;
+
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -419,6 +430,8 @@ const UserForm: React.FC<UserFormProps> = ({
   };
 
   const handleRemoveAvatar = async () => {
+    if (restrictFieldsFromMatriculaDocente) return;
+
     setUploadError(null);
 
     const documentId = typeof initialData?.documentId === 'string' ? initialData.documentId : '';
@@ -474,6 +487,8 @@ const UserForm: React.FC<UserFormProps> = ({
   };
 
   const handleRemoveDniImages = async () => {
+    if (restrictFieldsFromMatriculaDocente) return;
+
     setUploadError(null);
     const documentId = typeof initialData?.documentId === 'string' ? initialData.documentId : '';
     if (!documentId) {
@@ -663,7 +678,7 @@ const UserForm: React.FC<UserFormProps> = ({
                   maxWidth: '100%',
                 }}
               >
-                <Button variant="outlined" size="small" onClick={() => avatarInputRef.current?.click()} disabled={isUploading || removingAvatar} tabIndex={23} sx={{ width: 'fit-content', maxWidth: '100%' }}>
+                <Button variant="outlined" size="small" onClick={() => avatarInputRef.current?.click()} disabled={restrictFieldsFromMatriculaDocente || isUploading || removingAvatar} tabIndex={23} sx={{ width: 'fit-content', maxWidth: '100%' }}>
                   {isUploading ? <CircularProgress size={24} /> : (avatarUrl ? 'Cambiar Avatar' : 'Subir Avatar')}
                 </Button>
                 {avatarUrl ? (
@@ -673,7 +688,7 @@ const UserForm: React.FC<UserFormProps> = ({
                     size="small"
                     startIcon={<DeleteOutline />}
                     onClick={handleRemoveAvatar}
-                    disabled={isUploading || removingAvatar}
+                    disabled={restrictFieldsFromMatriculaDocente || isUploading || removingAvatar}
                     sx={{ width: 'fit-content', maxWidth: '100%' }}
                   >
                     {removingAvatar ? 'Eliminando Avatar...' : 'Eliminar Avatar'}
@@ -684,9 +699,9 @@ const UserForm: React.FC<UserFormProps> = ({
               {uploadError && <Typography color="error" variant="caption" sx={{ gridColumn: { xs: '1 / -1', sm: 'span 6' } }}>{uploadError}</Typography>}
             </Box>
 
-            <Controller name="apellido_paterno" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 1 }} inputRef={(el) => { field.ref(el); apellidoPaternoRef.current = el; }} label="Apellido Paterno" error={!!errors.apellido_paterno} helperText={errors.apellido_paterno?.message} fullWidth />} />
-            <Controller name="apellido_materno" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 2 }} label="Apellido Materno" error={!!errors.apellido_materno} helperText={errors.apellido_materno?.message} fullWidth />} />
-            <Controller name="nombre" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 3 }} label="Nombre" error={!!errors.nombre} helperText={errors.nombre?.message} fullWidth />} />
+            <Controller name="apellido_paterno" control={control} render={({ field }) => <TextField {...field} inputProps={textInputProps('apellido_paterno', 1)} inputRef={(el) => { field.ref(el); apellidoPaternoRef.current = el; }} label="Apellido Paterno" error={!!errors.apellido_paterno} helperText={errors.apellido_paterno?.message} fullWidth disabled={isLockedField('apellido_paterno')} />} />
+            <Controller name="apellido_materno" control={control} render={({ field }) => <TextField {...field} inputProps={textInputProps('apellido_materno', 2)} label="Apellido Materno" error={!!errors.apellido_materno} helperText={errors.apellido_materno?.message} fullWidth disabled={isLockedField('apellido_materno')} />} />
+            <Controller name="nombre" control={control} render={({ field }) => <TextField {...field} inputProps={textInputProps('nombre', 3)} label="Nombre" error={!!errors.nombre} helperText={errors.nombre?.message} fullWidth disabled={isLockedField('nombre')} />} />
             <Controller name="username" control={control} render={({ field }) => <TextField {...field} label="Username" error={!!errors.username} helperText={errors.username?.message} fullWidth disabled />} />
             <Controller
               name="nickName"
@@ -707,22 +722,22 @@ const UserForm: React.FC<UserFormProps> = ({
             <Controller name="sexo" control={control} render={({ field }) => (
               <FormControl fullWidth>
                 <InputLabel>Sexo</InputLabel>
-                <Select {...field} label="Sexo" inputProps={{ tabIndex: 4 }}>
+                <Select {...field} label="Sexo" inputProps={{ tabIndex: isLockedField('sexo') ? -1 : 4 }} disabled={isLockedField('sexo')}>
                   <MenuItem value="M">Masculino</MenuItem>
                   <MenuItem value="F">Femenino</MenuItem>
                 </Select>
               </FormControl>
             )} />
 
-            <Controller name="fecha_nacimiento" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 5 }} label="Fecha de Nacimiento" type="date" InputLabelProps={{ shrink: true }} error={!!errors.fecha_nacimiento} helperText={errors.fecha_nacimiento?.message} fullWidth />} />
-            <Controller name="celular" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 6 }} label="Celular" error={!!errors.celular} helperText={errors.celular?.message} fullWidth />} />
-            <Controller name="telefono" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 7 }} label="Teléfono" error={!!errors.telefono} helperText={errors.telefono?.message} fullWidth />} />
-            <Controller name="email" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 8 }} label="Email" type="email" error={!!errors.email} helperText={errors.email?.message} fullWidth />} />
+            <Controller name="fecha_nacimiento" control={control} render={({ field }) => <TextField {...field} inputProps={textInputProps('fecha_nacimiento', 5)} label="Fecha de Nacimiento" type="date" InputLabelProps={{ shrink: true }} error={!!errors.fecha_nacimiento} helperText={errors.fecha_nacimiento?.message} fullWidth disabled={isLockedField('fecha_nacimiento')} />} />
+            <Controller name="celular" control={control} render={({ field }) => <TextField {...field} inputProps={textInputProps('celular', 6)} label="Celular" error={!!errors.celular} helperText={errors.celular?.message} fullWidth disabled={isLockedField('celular')} />} />
+            <Controller name="telefono" control={control} render={({ field }) => <TextField {...field} inputProps={textInputProps('telefono', 7)} label="Teléfono" error={!!errors.telefono} helperText={errors.telefono?.message} fullWidth disabled={isLockedField('telefono')} />} />
+            <Controller name="email" control={control} render={({ field }) => <TextField {...field} inputProps={textInputProps('email', 8)} label="Email" type="email" error={!!errors.email} helperText={errors.email?.message} fullWidth disabled={isLockedField('email')} />} />
 
             <Controller name="tipo_documento" control={control} render={({ field }) => (
               <FormControl fullWidth>
                 <InputLabel>Tipo de Documento</InputLabel>
-                <Select {...field} label="Tipo de Documento" inputProps={{ tabIndex: 9 }}>
+                <Select {...field} label="Tipo de Documento" inputProps={{ tabIndex: isLockedField('tipo_documento') ? -1 : 9 }} disabled={isLockedField('tipo_documento')}>
                   <MenuItem value="DNI">DNI</MenuItem>
                   <MenuItem value="CE">CE</MenuItem>
                 </Select>
@@ -732,32 +747,34 @@ const UserForm: React.FC<UserFormProps> = ({
             <Controller name="dni" control={control} render={({ field: { onBlur, ...field } }) => (
               <TextField
                 {...field}
-                inputProps={{ tabIndex: 10 }}
+                inputProps={textInputProps('dni', 10)}
                 label="N° Documento"
                 error={!!errors.dni}
                 helperText={errors.dni?.message}
                 fullWidth
+                disabled={isLockedField('dni')}
                 onBlur={(e) => {
                   onBlur();
-                  if (isCreating) {
+                  if (isCreating && canEditField('dni')) {
                     setValue('password', e.target.value, { shouldValidate: true });
                   }
                 }}
               />
             )} />
 
-            <Controller name="nacionalidad" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 11 }} label="Nacionalidad" error={!!errors.nacionalidad} helperText={errors.nacionalidad?.message} fullWidth />} />
+            <Controller name="nacionalidad" control={control} render={({ field }) => <TextField {...field} inputProps={textInputProps('nacionalidad', 11)} label="Nacionalidad" error={!!errors.nacionalidad} helperText={errors.nacionalidad?.message} fullWidth disabled={isLockedField('nacionalidad')} />} />
 
             {isCreating && (
               <Controller name="password" control={control} render={({ field }) => (
                 <TextField
                   {...field}
-                  inputProps={{ tabIndex: 13 }}
+                  inputProps={textInputProps('password', 13)}
                   label="Contraseña"
                   type={showPassword ? 'text' : 'password'}
                   error={!!errors.password}
                   helperText={errors.password?.message}
                   fullWidth
+                  disabled={isLockedField('password')}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -774,7 +791,7 @@ const UserForm: React.FC<UserFormProps> = ({
             <Controller name="instruccion" control={control} render={({ field }) => (
               <FormControl fullWidth error={!!errors.instruccion}>
                 <InputLabel>Grado de Instrucción</InputLabel>
-                <Select {...field} label="Grado de Instrucción" inputProps={{ tabIndex: 14 }}>
+                <Select {...field} label="Grado de Instrucción" inputProps={{ tabIndex: isLockedField('instruccion') ? -1 : 14 }} disabled={isLockedField('instruccion')}>
                   <MenuItem value="Primaria">Primaria</MenuItem>
                   <MenuItem value="Secundaria">Secundaria</MenuItem>
                   <MenuItem value="Superior">Superior</MenuItem>
@@ -785,7 +802,7 @@ const UserForm: React.FC<UserFormProps> = ({
             <Controller name="estado_civil" control={control} render={({ field }) => (
               <FormControl fullWidth>
                 <InputLabel>Estado Civil</InputLabel>
-                <Select {...field} label="Estado Civil" inputProps={{ tabIndex: 15 }}>
+                <Select {...field} label="Estado Civil" inputProps={{ tabIndex: isLockedField('estado_civil') ? -1 : 15 }} disabled={isLockedField('estado_civil')}>
                   <MenuItem value="Soltero">Soltero</MenuItem>
                   <MenuItem value="Casado(a)">Casado(a)</MenuItem>
                   <MenuItem value="Viudo(a)">Viudo(a)</MenuItem>
@@ -794,12 +811,12 @@ const UserForm: React.FC<UserFormProps> = ({
               </FormControl>
             )} />
 
-            <Controller name="direccion" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 16 }} label="Dirección" error={!!errors.direccion} helperText={errors.direccion?.message} fullWidth />} />
-            <Controller name="distrito" control={control} render={({ field }) => <TextField {...field} inputProps={{ tabIndex: 17 }} label="Distrito" error={!!errors.distrito} helperText={errors.distrito?.message} fullWidth />} />
+            <Controller name="direccion" control={control} render={({ field }) => <TextField {...field} inputProps={textInputProps('direccion', 16)} label="Dirección" error={!!errors.direccion} helperText={errors.direccion?.message} fullWidth disabled={isLockedField('direccion')} />} />
+            <Controller name="distrito" control={control} render={({ field }) => <TextField {...field} inputProps={textInputProps('distrito', 17)} label="Distrito" error={!!errors.distrito} helperText={errors.distrito?.message} fullWidth disabled={isLockedField('distrito')} />} />
             <Controller name="rolId" control={control} render={({ field }) => (
               <FormControl fullWidth error={!!errors.rolId}>
                 <InputLabel>Rol</InputLabel>
-                <Select {...field} label="Rol" inputProps={{ tabIndex: 18 }}>
+                <Select {...field} label="Rol" inputProps={{ tabIndex: isLockedField('rolId') ? -1 : 18 }} disabled={isLockedField('rolId')}>
                   {field.value && !roles.some((role) => String(role.id) === String(field.value)) && (
                     <MenuItem value={field.value} disabled>
                       Rol actual no disponible en este formulario
@@ -819,7 +836,7 @@ const UserForm: React.FC<UserFormProps> = ({
               control={control}
               render={({ field }) => (
                 <FormControlLabel
-                  control={<Switch {...field} checked={field.value} inputProps={{ tabIndex: 20 }} />}
+                  control={<Switch {...field} checked={field.value} inputProps={{ tabIndex: isLockedField('bloqueado') ? -1 : 20 }} disabled={isLockedField('bloqueado')} />}
                   label="Bloqueado"
                 />
               )}
@@ -833,6 +850,7 @@ const UserForm: React.FC<UserFormProps> = ({
                   {...field}
                   label="Correo Institucional"
                   fullWidth
+                  disabled={isLockedField('correo_institucional')}
                   InputLabelProps={{ shrink: true }}
                   sx={{ gridColumn: { xs: 'span 1', sm: 'span 12' } }}
                 />
@@ -949,7 +967,7 @@ const UserForm: React.FC<UserFormProps> = ({
                         size="small"
                         startIcon={<DeleteOutline />}
                         onClick={handleRemoveDniImages}
-                        disabled={isSubmitting || removingDniImages}
+                        disabled={restrictFieldsFromMatriculaDocente || isSubmitting || removingDniImages}
                         sx={{ mt: 0.5 }}
                       >
                         {removingDniImages ? 'Eliminando DNI...' : 'Eliminar DNI'}

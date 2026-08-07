@@ -834,6 +834,36 @@ function semestreCodigo(value?: string | null) {
   return text.length > 4 ? text.slice(-4) : text;
 }
 
+const ROMAN_DIGIT_SUFFIX: Record<string, string> = {
+  "1": "I",
+  "2": "II",
+  "3": "III",
+  "4": "IV",
+  "5": "V",
+  "6": "VI",
+  "7": "VII",
+  "8": "VIII",
+  "9": "IX",
+};
+
+function semestreTitulo(data: ReporteDocumentoData) {
+  return cleanText(data.semestre?.titulo || data.grupoModulo.grupo?.semestre?.titulo || "");
+}
+
+function semestreConSufijoRomano(value?: string | null) {
+  const text = cleanText(value);
+  const match = text.match(/(\d)\s*$/);
+  if (!match) return text;
+  const roman = ROMAN_DIGIT_SUFFIX[match[1]];
+  return roman ? `${text.slice(0, match.index)}${roman}` : text;
+}
+
+function semestreUltimoDigitoRomano(value?: string | null) {
+  const match = cleanText(value).match(/(\d)\s*$/);
+  if (!match) return "";
+  return ROMAN_DIGIT_SUFFIX[match[1]] ?? match[1];
+}
+
 function grupoModuloDisplayName(grupoModulo: ReporteGrupoModuloOption) {
   return cleanText(grupoModulo.nombre || getModuloDocumentName(grupoModulo) || `Grupo-modulo ${grupoModulo.id}`);
 }
@@ -1435,121 +1465,6 @@ function setCellStyle(xml: string, ref: string, styleIndex: number) {
   return xml;
 }
 
-function buildLeftIndentStyleXml(baseStyleXml: string, fontId?: number) {
-  const applyAlignmentStyle = (tag: string) => setXmlAttribute(tag, "applyAlignment", "1");
-  const applyFontStyle = (tag: string) => {
-    if (fontId === undefined) return tag;
-    return setXmlAttribute(setXmlAttribute(tag, "applyFont", "1"), "fontId", String(fontId));
-  };
-  const alignmentAttrs = (tag: string) => {
-    const attrs = parseAttributes(tag);
-    attrs.set("horizontal", "left");
-    attrs.set("vertical", "center");
-    attrs.set("textRotation", "0");
-    attrs.delete("indent");
-    return Array.from(attrs.entries())
-      .map(([key, value]) => ` ${key}="${xmlEscape(value)}"`)
-      .join("");
-  };
-
-  if (/\/>\s*$/i.test(baseStyleXml)) {
-    const openTag = applyFontStyle(applyAlignmentStyle(baseStyleXml)).replace(/\/>\s*$/i, ">");
-    return `${openTag}<alignment horizontal="left" vertical="center" textRotation="0"/></xf>`;
-  }
-
-  const openTag = baseStyleXml.match(/^<xf\b[^>]*>/i)?.[0] ?? "<xf>";
-  let nextStyle = baseStyleXml.replace(/^<xf\b[^>]*>/i, applyFontStyle(applyAlignmentStyle(openTag)));
-  if (/<alignment\b[^>]*(?:\/>|>[\s\S]*?<\/alignment>)/i.test(nextStyle)) {
-    return nextStyle.replace(
-      /<alignment\b[^>]*(?:\/>|>[\s\S]*?<\/alignment>)/i,
-      (tag) => `<alignment${alignmentAttrs(tag)}/>`,
-    );
-  }
-  return nextStyle.replace(/<\/xf>\s*$/i, '<alignment horizontal="left" vertical="center" textRotation="0"/></xf>');
-}
-
-function buildFontSizeXml(baseFontXml: string, size: number) {
-  const sizeTag = `<sz val="${xmlEscape(String(size))}"/>`;
-  if (/<sz\b[^>]*(?:\/>|>[\s\S]*?<\/sz>)/i.test(baseFontXml)) {
-    return baseFontXml.replace(/<sz\b[^>]*(?:\/>|>[\s\S]*?<\/sz>)/i, sizeTag);
-  }
-  if (/^<font\b[^>]*\/>\s*$/i.test(baseFontXml)) {
-    return baseFontXml.replace(/\/>\s*$/i, `>${sizeTag}</font>`);
-  }
-  return baseFontXml.replace(/^<font\b[^>]*>/i, (tag) => `${tag}${sizeTag}`);
-}
-
-function addFontSize(stylesXml: string, baseFontIndex: number, size: number) {
-  const fontsMatch = stylesXml.match(/<fonts\b[^>]*>[\s\S]*?<\/fonts>/i);
-  if (!fontsMatch?.[0]) return { xml: stylesXml, fontIndex: undefined };
-
-  const fontTags = fontsMatch[0].match(FONT_XML_REGEX) ?? [];
-  const baseFontXml = fontTags[baseFontIndex];
-  if (!baseFontXml) return { xml: stylesXml, fontIndex: undefined };
-
-  const nextFontIndex = fontTags.length;
-  const nextFontXml = buildFontSizeXml(baseFontXml, size);
-  const nextFonts = fontsMatch[0]
-    .replace(/<fonts\b[^>]*>/i, (tag) => setXmlAttribute(tag, "count", String(nextFontIndex + 1)))
-    .replace(/<\/fonts>\s*$/i, `${nextFontXml}</fonts>`);
-
-  return {
-    xml: `${stylesXml.slice(0, fontsMatch.index)}${nextFonts}${stylesXml.slice((fontsMatch.index ?? 0) + fontsMatch[0].length)}`,
-    fontIndex: nextFontIndex,
-  };
-}
-
-function addLeftIndentStyle(stylesXml: string, baseStyleIndex: number) {
-  const cellXfsMatch = stylesXml.match(/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/i);
-  if (!cellXfsMatch?.[0]) return { xml: stylesXml, styleIndex: baseStyleIndex };
-
-  const xfTags = cellXfsMatch[0].match(XF_XML_REGEX) ?? [];
-  const baseStyleXml = xfTags[baseStyleIndex];
-  if (!baseStyleXml) return { xml: stylesXml, styleIndex: baseStyleIndex };
-
-  let nextStylesXml = stylesXml;
-  const baseFontId = Number(parseAttributes(baseStyleXml.match(/^<xf\b[^>]*>/i)?.[0] ?? "").get("fontId") ?? "0");
-  const fontResult = addFontSize(nextStylesXml, Number.isFinite(baseFontId) ? baseFontId : 0, 9);
-  nextStylesXml = fontResult.xml;
-
-  const nextCellXfsMatch = nextStylesXml.match(/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/i);
-  if (!nextCellXfsMatch?.[0]) return { xml: nextStylesXml, styleIndex: baseStyleIndex };
-  const nextXfTags = nextCellXfsMatch[0].match(XF_XML_REGEX) ?? [];
-  const nextStyleIndex = nextXfTags.length;
-  const nextStyleXml = buildLeftIndentStyleXml(baseStyleXml, fontResult.fontIndex);
-  const nextCellXfs = nextCellXfsMatch[0]
-    .replace(/<cellXfs\b[^>]*>/i, (tag) => setXmlAttribute(tag, "count", String(nextStyleIndex + 1)))
-    .replace(/<\/cellXfs>\s*$/i, `${nextStyleXml}</cellXfs>`);
-
-  return {
-    xml: `${nextStylesXml.slice(0, nextCellXfsMatch.index)}${nextCellXfs}${nextStylesXml.slice((nextCellXfsMatch.index ?? 0) + nextCellXfsMatch[0].length)}`,
-    styleIndex: nextStyleIndex,
-  };
-}
-
-async function createLeftIndentStyleWriter(zip: JSZip) {
-  const stylesFile = zip.file("xl/styles.xml");
-  let stylesXml = await stylesFile?.async("string");
-  const styleCache = new Map<number, number>();
-
-  const ensure = (baseStyleIndex: number | null) => {
-    if (!stylesFile || !stylesXml || baseStyleIndex === null) return baseStyleIndex;
-    const cached = styleCache.get(baseStyleIndex);
-    if (cached !== undefined) return cached;
-    const result = addLeftIndentStyle(stylesXml, baseStyleIndex);
-    stylesXml = result.xml;
-    styleCache.set(baseStyleIndex, result.styleIndex);
-    return result.styleIndex;
-  };
-
-  const save = () => {
-    if (!stylesFile || !stylesXml || styleCache.size === 0) return;
-    zip.file("xl/styles.xml", stylesXml);
-  };
-
-  return { ensure, save };
-}
-
 function parseAttributes(xml: string) {
   const attrs = new Map<string, string>();
   const attrRegex = /([\w:]+)="([^"]*)"/g;
@@ -1931,14 +1846,8 @@ function setRowHeight(xml: string, row: number, heightPoints: number) {
 
 function retiredStudentMergeRange(cell: string) {
   const { column, row } = cellParts(cell);
-  if (column === "X") return `X${row}:AB${row}`;
+  if (column === "X") return `X${row}:AC${row}`;
   return `L${row}:Q${row}`;
-}
-
-function retiredStudentMergeCells(cell: string) {
-  const { column, row } = cellParts(cell);
-  if (column === "X") return ["X", "Y", "Z", "AA", "AB"].map((mergeColumn) => `${mergeColumn}${row}`);
-  return ["L", "M", "N", "O", "P", "Q"].map((column) => `${column}${row}`);
 }
 
 function colTag(attrs: Map<string, string>) {
@@ -2205,14 +2114,13 @@ async function applyExcelUpdates(
   await adjustActaStudentClosureLine(zip, actaClosureLineAdjustment);
   const worksheet = await getFirstVisibleWorksheet(zip);
   const sharedStrings = await createSharedStringWriter(zip);
-  const leftIndentStyles = await createLeftIndentStyleWriter(zip);
   const sheetFile = zip.file(worksheet.path);
   const originalXml = await sheetFile?.async("string");
   if (!sheetFile || !originalXml) throw new Error(`No se pudo leer la hoja ${worksheet.path}.`);
 
   let nextXml = originalXml;
   const textUpdates: Array<{ cell: string; value: string }> = [];
-  const leftIndentCells: string[] = [];
+  const retiredStudentCells: string[] = [];
   for (const update of updates) {
     const cell = a1CellFromRange(update.range);
     const value = update.values[0]?.[0] ?? "";
@@ -2220,19 +2128,9 @@ async function applyExcelUpdates(
     if (typeof value === "string" && cleanText(value)) {
       textUpdates.push({ cell, value });
       if (normalizeText(value) === "retirado por inasistencia") {
-        leftIndentCells.push(cell);
+        retiredStudentCells.push(cell);
       }
     }
-  }
-  for (const cell of leftIndentCells) {
-    const baseStyle = getCellStyle(nextXml, cell);
-    const leftIndentStyle = leftIndentStyles.ensure(baseStyle);
-    if (leftIndentStyle !== null) {
-      for (const mergeCell of retiredStudentMergeCells(cell)) {
-        nextXml = setCellStyle(nextXml, mergeCell, leftIndentStyle);
-      }
-    }
-    nextXml = addWorksheetMergeRange(nextXml, retiredStudentMergeRange(cell));
   }
   if (adjustProgramUnitHeaders) {
     nextXml = adjustProgramUnitHeaderColumns(nextXml, textUpdates);
@@ -2240,12 +2138,14 @@ async function applyExcelUpdates(
   if (normalizeProgramaStyles) {
     nextXml = normalizeProgramaActaStudentStyles(nextXml);
   }
+  for (const cell of retiredStudentCells) {
+    nextXml = addWorksheetMergeRange(nextXml, retiredStudentMergeRange(cell));
+  }
   if (!preservePageLayout) {
     nextXml = ensureWorksheetPrintSetup(nextXml, printScale, printOrientation, forcePrintScale, paperSize, fitToPageWidth);
   }
   zip.file(worksheet.path, nextXml);
   sharedStrings.save();
-  leftIndentStyles.save();
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
 
@@ -2477,7 +2377,7 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   const turno = cleanText(data.grupoModulo.grupo?.turno?.nombre || data.grupoModulo.grupo?.turnoNombre || "");
   const nivel = cleanText(data.grupoModulo.modulo?.plan?.carrera?.nivel || "");
   const ciclo = cleanText(data.grupoModulo.modulo?.plan?.carrera?.ciclo || nivel);
-  const semestre = cleanText(data.semestre?.titulo || data.grupoModulo.grupo?.semestre?.titulo || "");
+  const semestre = semestreTitulo(data);
   const resolucion = formatPlanResolucion(data.grupoModulo.modulo?.plan) || cleanText(datos.rd || "");
   const horas = data.grupoModulo.modulo?.horas ?? "";
   const creditos = data.grupoModulo.modulo?.creditos ?? "";
@@ -2526,9 +2426,9 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   addCell(updates, sheetName, "AO5", carrera.toLocaleUpperCase("es-PE"));
   addCell(updates, sheetName, "AO6", modulo);
   addCell(updates, sheetName, "AO7", nivel.toLocaleUpperCase("es-PE"));
-  addCell(updates, sheetName, "AO8", semestre);
+  addCell(updates, sheetName, "AO8", semestreUltimoDigitoRomano(semestre));
   addCell(updates, sheetName, "AO9", data.seccion);
-  addCell(updates, sheetName, "AO10", turno);
+  addCell(updates, sheetName, "AO10", turno.toLocaleUpperCase("es-PE"));
   addCell(updates, sheetName, "AO11", formatDate(inicio));
   addCell(updates, sheetName, "AO12", formatDate(fin));
   addCell(updates, sheetName, "W41", creditos);
@@ -3610,6 +3510,9 @@ async function generateReporteDocumentoInternal(input: {
       "[Nombre Carrera]": getCarreraName(reportes[0].grupoModulo),
       "[Nombre Modulo]": getModuloDocumentName(reportes[0].grupoModulo),
       "[ciclo]": reportes[0].grupoModulo.modulo?.plan?.carrera?.ciclo || reportes[0].grupoModulo.modulo?.plan?.carrera?.nivel || "",
+      "[semestre]": isActaPrograma
+        ? semestreConSufijoRomano(semestreTitulo(reportes[0]))
+        : semestreTitulo(reportes[0]),
       "[fecha larga]": getDocumentDateLong(reportes[0], input.tipoDocumento === "nomina" ? "nomina" : "acta"),
       "[Director]": getPersonalName(reportes[0].semestre?.director).toLocaleUpperCase("es-PE"),
       "[director]": getPersonalName(reportes[0].semestre?.director).toLocaleUpperCase("es-PE"),

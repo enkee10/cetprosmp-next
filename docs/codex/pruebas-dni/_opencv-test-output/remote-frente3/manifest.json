@@ -1,0 +1,80 @@
+[
+  {
+    "side": "frente",
+    "selectedArea": "inferior",
+    "path": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\remote-frente3\\frente-frente3-remote.jpg",
+    "diag": {
+      "confidence": 0.765556795841746,
+      "layout": {
+        "bottomScore": 0.29524741333344684,
+        "confidence": 0.682108188596089,
+        "rotation": 0,
+        "topScore": 0.2205710638475652
+      },
+      "method": "ocr_tesseract_layout",
+      "ocr": {
+        "confidence": 0.765556795841746,
+        "enabled": true,
+        "evidence0": {
+          "averageConfidence": 21.545023696682463,
+          "keywordMatches": 0,
+          "readableCharacters": 212,
+          "readableTokens": 53,
+          "score": 0.2959666568366231
+        },
+        "evidence180": {
+          "averageConfidence": 46.608108108108105,
+          "keywordMatches": 3,
+          "readableCharacters": 226,
+          "readableTokens": 44,
+          "score": 0.5077425679409978
+        },
+        "rotation": 180,
+        "score0": 0.2959666568366231,
+        "score180": 0.5077425679409978
+      },
+      "rotationApplied": 180,
+      "side": "frente",
+      "sideVisual": null
+    }
+  },
+  {
+    "side": "reverso",
+    "selectedArea": "superior",
+    "path": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\remote-frente3\\reverso-frente3-remote.jpg",
+    "diag": {
+      "confidence": 0.7240912445909783,
+      "layout": {
+        "bottomScore": 0.23999340293547713,
+        "confidence": 0.6539860753921662,
+        "rotation": 180,
+        "topScore": 0.30528445079026245
+      },
+      "method": "ocr_tesseract_layout",
+      "ocr": {
+        "confidence": 0.7240912445909783,
+        "enabled": true,
+        "evidence0": {
+          "averageConfidence": 37.0125,
+          "keywordMatches": 1,
+          "readableCharacters": 150,
+          "readableTokens": 32,
+          "score": 0.4487748578318647
+        },
+        "evidence180": {
+          "averageConfidence": 24.813953488372093,
+          "keywordMatches": 0,
+          "readableCharacters": 134,
+          "readableTokens": 27,
+          "score": 0.28238904102953805
+        },
+        "rotation": 0,
+        "score0": 0.4487748578318647,
+        "score180": 0.28238904102953805
+      },
+      "rotationApplied": 0,
+      "side": "reverso",
+      "sideVisual": null
+    }
+  }
+]

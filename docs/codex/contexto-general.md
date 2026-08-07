@@ -21,9 +21,13 @@
   - https://www.googleapis.com/auth/admin.directory.group.member
   - se crearon endpoints para las entidades/tablas carreras, planes, modulos, paquetes, grupos, turnos, horarios, calendarios, eventos, unidades dicaticas, capacidades terminales, indicador de Capacidad, aprendizajes, actividad, con lista y CRUD incluidos.
   - Se crearon endpoints para registro auxiliar, matricula, Estructura Academica
-Se creo Sistema de Maticula con formulario
-Se creo Sistema de permisos
-Se creo Sistema de gestion Academica
-Se creo Sistema de generacion de documentos de pdf con google run y open office
+- Se creo Sistema de Maticula con formulario intranet y formulario suelto para periodo actual y periodo siguiente
+- se implemento un sistema de reconocimiento de datos para imagenes de documentos de identidad usando IA gemini 
+- Se creo un sistema de detección y corte de documento de identeidad con OpenCV
+- Se creo un sistema de recote de fotografia del documento de identidad con google cloud vision API.
+- Se creo un sistema de generacion de avatar de usuario usando gemini
+- Se creo Sistema de permisos
+- Se creo Sistema de gestion Academica
+- Se creo Sistema de generacion de documentos de pdf con google run y open office, Nominas y Actas, Certificados y titulos.
 ## Pendientes generales
 

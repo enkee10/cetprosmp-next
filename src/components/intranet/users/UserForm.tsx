@@ -102,6 +102,7 @@ interface UserFormValues {
 interface UserFormProps {
   onCancel?: () => void;
   onSubmit: (data: UserFormValues) => void | Promise<void>;
+  onAvatarRemoved?: () => void | Promise<void>;
   initialData?: Record<string, unknown>;
   isSubmitting?: boolean;
   submittingMessage?: string;
@@ -188,9 +189,39 @@ const getInitialString = (
   return typeof value === 'string' ? value.trim() : '';
 };
 
+const getSmallProcessedDniUrl = (url: string): string => {
+  if (!url) return '';
+
+  try {
+    const parsed = new URL(url);
+    const marker = '/o/';
+    const markerIndex = parsed.pathname.indexOf(marker);
+    if (markerIndex < 0) return url;
+
+    const encodedPath = parsed.pathname.slice(markerIndex + marker.length);
+    const storagePath = decodeURIComponent(encodedPath);
+    if (!storagePath.includes('/documentos-procesados/')) return url;
+
+    const smallPath = storagePath.replace(/(\.[a-z0-9]+)$/i, '-small$1');
+    if (smallPath === storagePath) return url;
+
+    parsed.pathname = `${parsed.pathname.slice(0, markerIndex + marker.length)}${encodeURIComponent(smallPath)}`;
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+};
+
+const focusNewImageTab = (url: string) => {
+  if (!url) return;
+  const opened = window.open(url, '_blank');
+  opened?.focus();
+};
+
 const UserForm: React.FC<UserFormProps> = ({
   onCancel,
   onSubmit,
+  onAvatarRemoved,
   initialData,
   isSubmitting = false,
   submittingMessage,
@@ -373,8 +404,8 @@ const UserForm: React.FC<UserFormProps> = ({
       : initialAvatarMedianoUrl || initialAvatarPequenoUrl || avatarUrl;
   const dniImagenFrenteProcesadaUrl = watch('dniImagenFrenteProcesadaUrl') || '';
   const dniImagenReversoProcesadaUrl = watch('dniImagenReversoProcesadaUrl') || '';
-  const dniImagenFrenteDisplayUrl = dniImagenFrenteProcesadaUrl;
-  const dniImagenReversoDisplayUrl = dniImagenReversoProcesadaUrl;
+  const dniImagenFrenteDisplayUrl = getSmallProcessedDniUrl(dniImagenFrenteProcesadaUrl);
+  const dniImagenReversoDisplayUrl = getSmallProcessedDniUrl(dniImagenReversoProcesadaUrl);
   const hasDniImages = Boolean(dniImagenFrenteDisplayUrl || dniImagenReversoDisplayUrl);
 
   const handleFileChange = async (
@@ -453,6 +484,7 @@ const UserForm: React.FC<UserFormProps> = ({
         shouldValidate: false,
         shouldDirty: true,
       });
+      await onAvatarRemoved?.();
       if (avatarInputRef.current) {
         avatarInputRef.current.value = '';
       }
@@ -922,20 +954,41 @@ const UserForm: React.FC<UserFormProps> = ({
                           Frente
                         </Typography>
                         <Box
-                          component="img"
-                          src={dniImagenFrenteDisplayUrl}
-                          alt="DNI frente"
+                          component="button"
+                          type="button"
+                          onClick={() => focusNewImageTab(dniImagenFrenteProcesadaUrl)}
                           sx={{
                             display: 'block',
                             width: '100%',
                             maxWidth: 400,
-                            height: 'auto',
+                            p: 0,
                             mt: 0.5,
-                            borderRadius: 1,
-                            border: '1px solid',
-                            borderColor: 'divider',
+                            border: 0,
+                            bgcolor: 'transparent',
+                            cursor: 'pointer',
+                            textAlign: 'left',
                           }}
-                        />
+                        >
+                          <Box
+                            component="img"
+                            src={dniImagenFrenteDisplayUrl}
+                            alt="DNI frente"
+                            onError={(event) => {
+                              if (!event.currentTarget.dataset.fallbackApplied) {
+                                event.currentTarget.dataset.fallbackApplied = 'true';
+                                event.currentTarget.src = dniImagenFrenteProcesadaUrl;
+                              }
+                            }}
+                            sx={{
+                              display: 'block',
+                              width: '100%',
+                              height: 'auto',
+                              borderRadius: 1,
+                              border: '1px solid',
+                              borderColor: 'divider',
+                            }}
+                          />
+                        </Box>
                       </Box>
                     )}
                     {dniImagenReversoDisplayUrl && (
@@ -944,20 +997,41 @@ const UserForm: React.FC<UserFormProps> = ({
                           Reverso
                         </Typography>
                         <Box
-                          component="img"
-                          src={dniImagenReversoDisplayUrl}
-                          alt="DNI reverso"
+                          component="button"
+                          type="button"
+                          onClick={() => focusNewImageTab(dniImagenReversoProcesadaUrl)}
                           sx={{
                             display: 'block',
                             width: '100%',
                             maxWidth: 400,
-                            height: 'auto',
+                            p: 0,
                             mt: 0.5,
-                            borderRadius: 1,
-                            border: '1px solid',
-                            borderColor: 'divider',
+                            border: 0,
+                            bgcolor: 'transparent',
+                            cursor: 'pointer',
+                            textAlign: 'left',
                           }}
-                        />
+                        >
+                          <Box
+                            component="img"
+                            src={dniImagenReversoDisplayUrl}
+                            alt="DNI reverso"
+                            onError={(event) => {
+                              if (!event.currentTarget.dataset.fallbackApplied) {
+                                event.currentTarget.dataset.fallbackApplied = 'true';
+                                event.currentTarget.src = dniImagenReversoProcesadaUrl;
+                              }
+                            }}
+                            sx={{
+                              display: 'block',
+                              width: '100%',
+                              height: 'auto',
+                              borderRadius: 1,
+                              border: '1px solid',
+                              borderColor: 'divider',
+                            }}
+                          />
+                        </Box>
                       </Box>
                     )}
                     <Box sx={{ gridColumn: { xs: 'span 1', md: 'span 2' } }}>

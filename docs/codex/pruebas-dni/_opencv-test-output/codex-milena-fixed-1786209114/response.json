@@ -1,0 +1,127 @@
+{
+  "errors": [],
+  "jobId": "codex-milena-fixed-1786209114",
+  "outputs": [
+    {
+      "hasTwoBodies": false,
+      "orientationDiagnostics": {
+        "confidence": 0.6147769946796559,
+        "layout": {
+          "bottomScore": 0.43515712318754685,
+          "confidence": 0.6594173708198694,
+          "rotation": 180,
+          "topScore": 0.5589062385919161
+        },
+        "method": "ocr_tesseract_layout",
+        "ocr": {
+          "confidence": 0.6147769946796559,
+          "enabled": true,
+          "evidence0": {
+            "averageConfidence": 45.70652173913044,
+            "keywordMatches": 0,
+            "readableCharacters": 187,
+            "readableTokens": 61,
+            "score": 0.3805022413092393
+          },
+          "evidence180": {
+            "averageConfidence": 23.251231527093594,
+            "keywordMatches": 0,
+            "readableCharacters": 206,
+            "readableTokens": 64,
+            "score": 0.30348571023752235
+          },
+          "rotation": 0,
+          "score0": 0.3805022413092393,
+          "score180": 0.30348571023752235
+        },
+        "rotationApplied": 0,
+        "side": "frente",
+        "sideVisual": {
+          "confidence": 0.8799999999999999,
+          "method": "front_portrait_left",
+          "rotation": 0,
+          "scores": {
+            "left": 0.4398420013398818,
+            "right": 0.3483572676265023
+          }
+        }
+      },
+      "output": {
+        "bucket": "cetprosmp-2026.firebasestorage.app",
+        "contentType": "image/jpeg",
+        "path": "matriculas/documentos-procesados/codex-milena-fixed-1786209114/dni-codex-milena-fixed-1786209114-procesado-frente.jpg",
+        "small": {
+          "bucket": "cetprosmp-2026.firebasestorage.app",
+          "contentType": "image/jpeg",
+          "path": "matriculas/documentos-procesados/codex-milena-fixed-1786209114/dni-codex-milena-fixed-1786209114-procesado-frente-small.jpg",
+          "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-milena-fixed-1786209114%2Fdni-codex-milena-fixed-1786209114-procesado-frente-small.jpg?alt=media&token=669a137a-47ad-4b81-9500-7747727ba5e3"
+        },
+        "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-milena-fixed-1786209114%2Fdni-codex-milena-fixed-1786209114-procesado-frente.jpg?alt=media&token=669a137a-47ad-4b81-9500-7747727ba5e3"
+      },
+      "selectedArea": "completa",
+      "side": "frente",
+      "sourcePath": "codex/pruebas-dni/codex-milena-fixed-1786209114/original-frente.pdf"
+    },
+    {
+      "hasTwoBodies": false,
+      "orientationDiagnostics": {
+        "confidence": 0.6497874431116595,
+        "layout": {
+          "bottomScore": 0.5969971823268052,
+          "confidence": 0.7478782138487546,
+          "rotation": 0,
+          "topScore": 0.39146580006582216
+        },
+        "method": "ocr_tesseract_layout",
+        "ocr": {
+          "confidence": 0.6497874431116595,
+          "enabled": true,
+          "evidence0": {
+            "averageConfidence": 37.44303797468354,
+            "keywordMatches": 1,
+            "readableCharacters": 323,
+            "readableTokens": 100,
+            "score": 0.39273639405193855
+          },
+          "evidence180": {
+            "averageConfidence": 23.149321266968325,
+            "keywordMatches": 0,
+            "readableCharacters": 256,
+            "readableTokens": 95,
+            "score": 0.29020630897757216
+          },
+          "rotation": 0,
+          "score0": 0.39273639405193855,
+          "score180": 0.29020630897757216
+        },
+        "rotationApplied": 0,
+        "side": "reverso",
+        "sideVisual": {
+          "confidence": 0.92,
+          "method": "reverse_pdf417_bottom_band",
+          "rotation": 0,
+          "scores": {
+            "bottom": 0.6485075250054517,
+            "top": 0.46912825905362654
+          }
+        }
+      },
+      "output": {
+        "bucket": "cetprosmp-2026.firebasestorage.app",
+        "contentType": "image/jpeg",
+        "path": "matriculas/documentos-procesados/codex-milena-fixed-1786209114/dni-codex-milena-fixed-1786209114-procesado-reverso.jpg",
+        "small": {
+          "bucket": "cetprosmp-2026.firebasestorage.app",
+          "contentType": "image/jpeg",
+          "path": "matriculas/documentos-procesados/codex-milena-fixed-1786209114/dni-codex-milena-fixed-1786209114-procesado-reverso-small.jpg",
+          "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-milena-fixed-1786209114%2Fdni-codex-milena-fixed-1786209114-procesado-reverso-small.jpg?alt=media&token=c7ad01a5-0290-4da3-a3e0-5c993157bc5d"
+        },
+        "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-milena-fixed-1786209114%2Fdni-codex-milena-fixed-1786209114-procesado-reverso.jpg?alt=media&token=c7ad01a5-0290-4da3-a3e0-5c993157bc5d"
+      },
+      "selectedArea": "completa",
+      "side": "reverso",
+      "sourcePath": "codex/pruebas-dni/codex-milena-fixed-1786209114/original-reverso.pdf"
+    }
+  ],
+  "status": "completed"
+}

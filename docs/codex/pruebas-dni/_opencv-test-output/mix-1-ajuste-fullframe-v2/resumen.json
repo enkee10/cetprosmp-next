@@ -1,0 +1,281 @@
+[
+  {
+    "name": "cristian",
+    "side": "frente",
+    "size": [
+      1015,
+      571
+    ],
+    "diag": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.6665275045348429,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6665275045348429,
+        "topScore": 0.27570103417007696,
+        "bottomScore": 0.21193463803394033
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7381373186051549,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 4.6876759800736405,
+          "bottomRight": 3.0
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": true
+    },
+    "contour": {
+      "bounds": [
+        0.0,
+        0.0,
+        2249.0,
+        3999.0
+      ],
+      "area": 0.999,
+      "ratio": 1.778,
+      "touches": [
+        "izquierdo",
+        "superior",
+        "derecho",
+        "inferior"
+      ],
+      "full": true
+    }
+  },
+  {
+    "name": "josue",
+    "side": "frente",
+    "size": [
+      959,
+      606
+    ],
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7172313797004422,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7172313797004422,
+        "topScore": 0.1930035409536461,
+        "bottomScore": 0.2763946353768638
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    },
+    "contour": {
+      "bounds": [
+        66.0,
+        156.0,
+        708.0,
+        1182.0
+      ],
+      "area": 0.715,
+      "ratio": 1.598,
+      "touches": [
+        "derecho"
+      ],
+      "full": false
+    }
+  },
+  {
+    "name": "clavijo",
+    "side": "reverso",
+    "size": [
+      1015,
+      663
+    ],
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.7,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5041021454502158,
+        "topScore": 0.15546053929121822,
+        "bottomScore": 0.1543191948164846
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -30.8621826171875,
+          "score180": -314.92742919921875
+        }
+      }
+    },
+    "contour": {
+      "bounds": [
+        223.7,
+        299.6,
+        1343.4,
+        1027.7
+      ],
+      "area": 0.395,
+      "ratio": 1.587,
+      "touches": [],
+      "full": false
+    }
+  },
+  {
+    "name": "sol",
+    "side": "reverso",
+    "size": [
+      1015,
+      761
+    ],
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.8371756513445636,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.8371756513445636,
+        "topScore": 0.18497670096852356,
+        "bottomScore": 0.3478964312617675
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8553142400697349,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.33337698959562073,
+          "bottom": 0.4276327211470284
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": false
+    },
+    "contour": {
+      "bounds": [
+        0.0,
+        0.0,
+        1599.0,
+        1199.0
+      ],
+      "area": 0.999,
+      "ratio": 1.334,
+      "touches": [
+        "izquierdo",
+        "superior",
+        "derecho",
+        "inferior"
+      ],
+      "full": true
+    }
+  },
+  {
+    "name": "vergaray",
+    "side": "reverso",
+    "size": [
+      1015,
+      637
+    ],
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.11045919917919203,
+        "bottomScore": 0.46187881611768167
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9111664666436042,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.36742598434723406,
+          "bottom": 0.5228311330796465
+        }
+      }
+    },
+    "contour": {
+      "bounds": [
+        323.0,
+        106.0,
+        1348.0,
+        778.0
+      ],
+      "area": 0.369,
+      "ratio": 1.56,
+      "touches": [],
+      "full": false
+    }
+  },
+  {
+    "name": "alejandro",
+    "side": "frente",
+    "size": [
+      1015,
+      571
+    ],
+    "diag": {
+      "rotationApplied": 180,
+      "method": "front_emblem_corner",
+      "confidence": 0.801858861446151,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6343670397472562,
+        "topScore": 0.12121940973256601,
+        "bottomScore": 0.0888556346916696
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.801858861446151,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 0.25557721464154215,
+          "bottomRight": 2.8535609495865564
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": true
+    },
+    "contour": {
+      "bounds": [
+        0.0,
+        0.0,
+        719.0,
+        1279.0
+      ],
+      "area": 0.998,
+      "ratio": 1.779,
+      "touches": [
+        "izquierdo",
+        "superior",
+        "derecho",
+        "inferior"
+      ],
+      "full": true
+    }
+  }
+]

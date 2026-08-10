@@ -1,0 +1,1993 @@
+[
+  {
+    "idx": 1,
+    "name": "any",
+    "side": "frente",
+    "area": "superior",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\any-frente-reverso.pdf",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\any-superior-frente.jpg",
+    "size": [
+      934,
+      593
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5024058043934599,
+        "topScore": 0.2697746973520585,
+        "bottomScore": 0.2706791432855785
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.3533157276279151,
+          "right": 0.2346210143553502
+        }
+      }
+    }
+  },
+  {
+    "idx": 2,
+    "name": "any",
+    "side": "reverso",
+    "area": "inferior",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\any-frente-reverso.pdf",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\any-inferior-reverso.jpg",
+    "size": [
+      1002,
+      634
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.7,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5084924463331858,
+        "topScore": 0.2679778162000134,
+        "bottomScore": 0.2648170006131204
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -31.226806640625,
+          "score180": -687.06396484375
+        }
+      }
+    }
+  },
+  {
+    "idx": 3,
+    "name": "diana",
+    "side": "frente",
+    "area": "superior",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\diana-frente-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\diana-superior-frente.jpg",
+    "size": [
+      922,
+      589
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.9,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6343679231947545,
+        "topScore": 0.29991690779463065,
+        "bottomScore": 0.24394577997330116
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 6.0,
+          "bottomRight": 1.3834173156207055
+        }
+      }
+    }
+  },
+  {
+    "idx": 4,
+    "name": "diana",
+    "side": "reverso",
+    "area": "inferior",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\diana-frente-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\diana-inferior-reverso.jpg",
+    "size": [
+      1009,
+      641
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.7,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6692113598915778,
+        "topScore": 0.30921365903920783,
+        "bottomScore": 0.23654357050715918
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -147.08740234375,
+          "score180": -364.634765625
+        }
+      }
+    }
+  },
+  {
+    "idx": 5,
+    "name": "alejandro",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\alejandro-frente.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\alejandro-frente.jpg",
+    "size": [
+      1015,
+      654
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "front_emblem_corner",
+      "confidence": 0.8258268159040885,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6033435237914868,
+        "topScore": 0.11005319416276327,
+        "bottomScore": 0.08661212043475494
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8258268159040885,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 0.0,
+          "bottomRight": 2.9403830843441203
+        }
+      }
+    }
+  },
+  {
+    "idx": 6,
+    "name": "alejandro",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\alejandro-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\alejandro-reverso.jpg",
+    "size": [
+      1015,
+      582
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.9199999999999999,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6245474506863322,
+        "topScore": 0.21318749929634437,
+        "bottomScore": 0.1724801020173185
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9199999999999999,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -470.4898681640625,
+          "score180": 201.9241943359375
+        }
+      }
+    }
+  },
+  {
+    "idx": 7,
+    "name": "aniel",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\aniel-frente.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\aniel-frente.jpg",
+    "size": [
+      1015,
+      657
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7773891136646831,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7773891136646831,
+        "topScore": 0.370721434787029,
+        "bottomScore": 0.22789630949248238
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 8,
+    "name": "aniel",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\aniel-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\aniel-reverso.jpg",
+    "size": [
+      909,
+      553
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9327476755909645,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.9327476755909645,
+        "topScore": 0.49470267802913487,
+        "bottomScore": 0.19736735299339403
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9182667584273282,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.6009343427006093,
+          "bottom": 0.4020727716426894
+        }
+      }
+    }
+  },
+  {
+    "idx": 9,
+    "name": "branny",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\branny-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\branny-frente.jpg",
+    "size": [
+      1015,
+      646
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7579973546561023,
+        "topScore": 0.22249282844313908,
+        "bottomScore": 0.3467400849183818
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.38199396003616526,
+          "right": 0.3113492488129612
+        }
+      }
+    }
+  },
+  {
+    "idx": 10,
+    "name": "branny",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\branny-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\branny-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.7,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5547224460641539,
+        "topScore": 0.20118560670504207,
+        "bottomScore": 0.21930926041999788
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -452.1597900390625,
+          "score180": -146.755126953125
+        }
+      }
+    }
+  },
+  {
+    "idx": 11,
+    "name": "camila",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\camila-frente.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\camila-frente.jpg",
+    "size": [
+      1015,
+      726
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.9,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5609522557752707,
+        "topScore": 0.2250459865494492,
+        "bottomScore": 0.20461771925125016
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 6.0,
+          "bottomRight": 2.0
+        }
+      }
+    }
+  },
+  {
+    "idx": 12,
+    "name": "camila",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\camila-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\camila-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.7,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.6344864674202642,
+        "topScore": 0.18731820077816863,
+        "bottomScore": 0.2331162549301782
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -142.117919921875,
+          "score180": -207.0390625
+        }
+      }
+    }
+  },
+  {
+    "idx": 13,
+    "name": "clavijo",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\clavijo-frente.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\clavijo-frente.jpg",
+    "size": [
+      980,
+      626
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.6111509549180589,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.6111509549180589,
+        "topScore": 0.16994688559586885,
+        "bottomScore": 0.2056607512632731
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 14,
+    "name": "clavijo",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\clavijo-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\clavijo-reverso.jpg",
+    "size": [
+      1015,
+      663
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.7,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5041021454502158,
+        "topScore": 0.15546053929121822,
+        "bottomScore": 0.1543191948164846
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -30.8621826171875,
+          "score180": -314.92742919921875
+        }
+      }
+    }
+  },
+  {
+    "idx": 15,
+    "name": "cristian",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\cristian-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\cristian-frente.jpg",
+    "size": [
+      1015,
+      571
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.6665275045348429,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6665275045348429,
+        "topScore": 0.27570103417007696,
+        "bottomScore": 0.21193463803394033
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7381373186051549,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 4.6876759800736405,
+          "bottomRight": 3.0
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": true
+    }
+  },
+  {
+    "idx": 16,
+    "name": "cristian",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\cristian-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\cristian-reverso.jpg",
+    "size": [
+      1015,
+      571
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9881021765431176,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.9881021765431176,
+        "topScore": 0.5079704022222566,
+        "bottomScore": 0.1636072647998034
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9177145191177679,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.5948597102954469,
+          "bottom": 0.42585229167364613
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": true
+    }
+  },
+  {
+    "idx": 17,
+    "name": "dalila",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\dalila-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\dalila-frente.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7403237713425976,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7403237713425976,
+        "topScore": 0.2144438608357323,
+        "bottomScore": 0.1356787196993928
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 18,
+    "name": "dalila",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\dalila-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\dalila-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.8829754698714624,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.6358663355730554,
+        "topScore": 0.26567695187080326,
+        "bottomScore": 0.32747197601534905
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8829754698714624,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4642865292901962,
+          "bottom": 0.5667326854774035
+        }
+      }
+    }
+  },
+  {
+    "idx": 19,
+    "name": "daniela",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\daniela-frentre.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\daniela-frente.jpg",
+    "size": [
+      1015,
+      636
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.8632577741884304,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.8632577741884304,
+        "topScore": 0.13230825289211717,
+        "bottomScore": 0.2670329868173259
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8742662264333476,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.3575014749172116,
+          "right": 0.30425346128479985
+        }
+      }
+    }
+  },
+  {
+    "idx": 20,
+    "name": "daniela",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\daniela-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\daniela-reverso.jpg",
+    "size": [
+      1015,
+      624
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.10704976342493575,
+        "bottomScore": 0.45866097010586365
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9101443687046241,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.1721927896981389,
+          "bottom": 0.5115880557508654
+        }
+      }
+    }
+  },
+  {
+    "idx": 21,
+    "name": "elena",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\elena-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\elena-frente.jpg",
+    "size": [
+      1003,
+      628
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.7509394755003451,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5561149585972569,
+        "topScore": 0.30674005496074264,
+        "bottomScore": 0.33266729297754316
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7509394755003451,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 3.91,
+          "bottomRight": 2.039436064280785
+        }
+      }
+    }
+  },
+  {
+    "idx": 22,
+    "name": "elena",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\elena-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\elena-reverso.jpg",
+    "size": [
+      958,
+      594
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.8477136704848844,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7577362993062814,
+        "topScore": 0.3427221981451754,
+        "bottomScore": 0.5338078293714472
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8477136704848844,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.5465217011565073,
+          "bottom": 0.6270927941482625
+        }
+      }
+    }
+  },
+  {
+    "idx": 23,
+    "name": "fiorela",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\fiorela-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\fiorela-frente.jpg",
+    "size": [
+      1015,
+      652
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.99,
+        "topScore": 0.3185130423366652,
+        "bottomScore": 0.05219041147568723
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.2704199633281578,
+          "right": 0.34965062866030294
+        }
+      }
+    }
+  },
+  {
+    "idx": 24,
+    "name": "fiorela",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\fiorela-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\fiorela-reverso.jpg",
+    "size": [
+      1015,
+      643
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.8151905531422594,
+        "topScore": 0.33924304780940207,
+        "bottomScore": 0.19073443129730291
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.38747099411003,
+          "bottom": 0.2549400514904133
+        }
+      }
+    }
+  },
+  {
+    "idx": 25,
+    "name": "graciela",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\graciela-frente.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\graciela-frente.jpg",
+    "size": [
+      1015,
+      650
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.662208403875485,
+        "topScore": 0.13233506942329099,
+        "bottomScore": 0.18129952199774968
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.36811923020317433,
+          "right": 0.2990574787446245
+        }
+      }
+    }
+  },
+  {
+    "idx": 26,
+    "name": "graciela",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\graciela-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\graciela-reverso.jpg",
+    "size": [
+      1015,
+      636
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.11367224024751255,
+        "bottomScore": 0.41588164057035104
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7942675385291458,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4750789124695463,
+          "bottom": 0.5309150074940057
+        }
+      }
+    }
+  },
+  {
+    "idx": 27,
+    "name": "janet",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\janet-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\janet-frente.jpg",
+    "size": [
+      1015,
+      662
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.6827123650218498,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.6827123650218498,
+        "topScore": 0.2756775612381969,
+        "bottomScore": 0.36942566917545694
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 28,
+    "name": "janet",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\janet-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\janet-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.808637760523272,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7477064147307569,
+        "topScore": 0.448274451018015,
+        "bottomScore": 0.29405159396652775
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.808637760523272,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.5310122758746616,
+          "bottom": 0.4673427011698023
+        }
+      }
+    }
+  },
+  {
+    "idx": 29,
+    "name": "jose",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\jose-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\jose-frente.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7790921599164387,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7790921599164387,
+        "topScore": 0.17594132096791387,
+        "bottomScore": 0.28731117839249554
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 30,
+    "name": "jose",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\jose-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\jose-reverso.jpg",
+    "size": [
+      1015,
+      627
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7740539640790449,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7740539640790449,
+        "topScore": 0.33038487429378527,
+        "bottomScore": 0.2046303125271619
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.7863034671464078,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.3962638956985627,
+          "bottom": 0.3382801863459767
+        }
+      }
+    }
+  },
+  {
+    "idx": 31,
+    "name": "josue",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\josue-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\josue-frente.jpg",
+    "size": [
+      981,
+      616
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7172313797004422,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7172313797004422,
+        "topScore": 0.1930035409536461,
+        "bottomScore": 0.2763946353768638
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 32,
+    "name": "josue",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\josue-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\josue-reverso.jpg",
+    "size": [
+      1015,
+      636
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7991728844582784,
+        "topScore": 0.3012504468657534,
+        "bottomScore": 0.17607549529190233
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.3952342684190421,
+          "bottom": 0.26397584120706913
+        }
+      }
+    }
+  },
+  {
+    "idx": 33,
+    "name": "monica",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\monica-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\monica-frente.jpg",
+    "size": [
+      1015,
+      658
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "front_portrait_left",
+      "confidence": 0.8551427553397789,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6248805152499314,
+        "topScore": 0.11716989875762078,
+        "bottomScore": 0.08771189894501437
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8551427553397789,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.2651805210395001,
+          "right": 0.31258525183776587
+        }
+      }
+    }
+  },
+  {
+    "idx": 34,
+    "name": "monica",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\monica-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\monica-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7798247246050589,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7798247246050589,
+        "topScore": 0.20886042900543642,
+        "bottomScore": 0.34163551950751514
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -201.12548828125,
+          "score180": -8.13592529296875
+        }
+      }
+    }
+  },
+  {
+    "idx": 35,
+    "name": "nestor",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\nestor-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\nestor-frente.jpg",
+    "size": [
+      1015,
+      687
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.8018438642796296,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.8018438642796296,
+        "topScore": 0.15927786533187954,
+        "bottomScore": 0.2742517764121538
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 36,
+    "name": "nestor",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\nestor-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\nestor-reverso.jpg",
+    "size": [
+      1015,
+      605
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.9199999999999999,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5258188668963777,
+        "topScore": 0.19722373187382308,
+        "bottomScore": 0.2055167956685498
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9199999999999999,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": 240.36395263671875,
+          "score180": -259.99383544921875
+        }
+      }
+    }
+  },
+  {
+    "idx": 37,
+    "name": "sandra",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\sandra-frente.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\sandra-frente.jpg",
+    "size": [
+      1015,
+      623
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9088320571091286,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.9088320571091286,
+        "topScore": 0.027077083484175594,
+        "bottomScore": 0.1295834360704301
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8545138447407933,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.27800166234408946,
+          "right": 0.2307890986732915
+        }
+      }
+    }
+  },
+  {
+    "idx": 38,
+    "name": "sandra",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\sandra-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\sandra-reverso.jpg",
+    "size": [
+      1015,
+      624
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.10124744967363342,
+        "bottomScore": 0.3338423998135043
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9089377867626982,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.27806159889831983,
+          "bottom": 0.4983156543896806
+        }
+      }
+    }
+  },
+  {
+    "idx": 39,
+    "name": "sol",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\sol-frente.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\sol-frente.jpg",
+    "size": [
+      1015,
+      643
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.942672895994935,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.942672895994935,
+        "topScore": 0.14707534926980187,
+        "bottomScore": 0.3818388103613678
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.32050821387562284,
+          "right": 0.42783700709401773
+        }
+      }
+    }
+  },
+  {
+    "idx": 40,
+    "name": "sol",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\sol-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\sol-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.12280400746189227,
+        "bottomScore": 0.5172974260206792
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9161989358163121,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.15187575096533582,
+          "bottom": 0.5781882939794323
+        }
+      }
+    }
+  },
+  {
+    "idx": 41,
+    "name": "venegas",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\venegas-frente.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\venegas-frente.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "bottom_mrz_band_guard",
+      "confidence": 0.99,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.99,
+        "topScore": 0.2747674696727429,
+        "bottomScore": 0.0335016344206383
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 42,
+    "name": "venegas",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\venegas-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\venegas-reverso.jpg",
+    "size": [
+      1015,
+      616
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.8525145802455499,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6577438325736223,
+        "topScore": 0.3563330989669881,
+        "bottomScore": 0.2782645591004762
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8525145802455499,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4466715249009461,
+          "bottom": 0.5341198173954391
+        }
+      }
+    }
+  },
+  {
+    "idx": 43,
+    "name": "vergaray",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\vergaray-frente.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\vergaray-frente.jpg",
+    "size": [
+      1015,
+      599
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.07934802563059995,
+        "bottomScore": 0.3679594006805349
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8761117384536468,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.3902861543638154,
+          "right": 0.3364742342807567
+        }
+      }
+    }
+  },
+  {
+    "idx": 44,
+    "name": "vergaray",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\vergaray-reverso.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\vergaray-reverso.jpg",
+    "size": [
+      1015,
+      668
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.134713137572601,
+        "bottomScore": 0.519379776810705
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9113829090959935,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.35879696957669704,
+          "bottom": 0.5252120000559287
+        }
+      }
+    }
+  },
+  {
+    "idx": 45,
+    "name": "victor",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\victor-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\victor-frente.jpg",
+    "size": [
+      1015,
+      678
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.8419306475035802,
+        "topScore": 0.3334730367044809,
+        "bottomScore": 0.17510546536371938
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.288513444656276,
+          "right": 0.36602854419652464
+        }
+      }
+    }
+  },
+  {
+    "idx": 46,
+    "name": "victor",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\victor-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\victor-reverso.jpg",
+    "size": [
+      1015,
+      624
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7744092730165315,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7744092730165315,
+        "topScore": 0.16824589523339395,
+        "bottomScore": 0.2718571936810926
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7687962572859642,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4143063532853051,
+          "bottom": 0.45977654904248466
+        }
+      }
+    }
+  },
+  {
+    "idx": 47,
+    "name": "vita",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\vita-frente.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\vita-frente.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8446049084599485,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5314139658173593,
+        "topScore": 0.23076112626585646,
+        "bottomScore": 0.220112131915574
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8446049084599485,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.35954608999804005,
+          "right": 0.3153612568575002
+        }
+      }
+    }
+  },
+  {
+    "idx": 48,
+    "name": "vita",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\vita-reverso.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\vita-reverso.jpg",
+    "size": [
+      904,
+      536
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9142448795354807,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.9142448795354807,
+        "topScore": 0.1986561902214072,
+        "bottomScore": 0.4678006920770804
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9185021004152136,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4195505256392974,
+          "bottom": 0.6035231045673499
+        }
+      }
+    }
+  },
+  {
+    "idx": 49,
+    "name": "gloria",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\gloria1.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\gloria-frente.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6184117205695346,
+        "topScore": 0.25276635976974476,
+        "bottomScore": 0.21098624757488538
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.3697004235383714,
+          "right": 0.3133127937278948
+        }
+      }
+    }
+  },
+  {
+    "idx": 50,
+    "name": "gloria",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\gloria2.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\gloria-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.7,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6336829154086301,
+        "topScore": 0.2572251179511772,
+        "bottomScore": 0.20946594616778538
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -224.177734375,
+          "score180": -161.6221923828125
+        }
+      }
+    }
+  },
+  {
+    "idx": 51,
+    "name": "liliana veneca",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\liliana veneca 1.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\liliana veneca-frente.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.5469044770141417,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5469044770141417,
+        "topScore": 0.12473640097004617,
+        "bottomScore": 0.136881245709413
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 52,
+    "name": "liliana veneca",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\liliana veneca 2.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\liliana veneca-reverso.jpg",
+    "size": [
+      1014,
+      598
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9312634718632893,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.9312634718632893,
+        "topScore": 0.24505043674741767,
+        "bottomScore": 0.09490972275723361
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8886976936358233,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.2889096470322119,
+          "bottom": 0.4026150792981258
+        }
+      }
+    }
+  },
+  {
+    "idx": 53,
+    "name": "sonia",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\sonia1.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\sonia-frente.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7401154213747272,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7401154213747272,
+        "topScore": 0.17374813991045765,
+        "bottomScore": 0.26068489446754073
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 54,
+    "name": "sonia",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\sonia2.jpg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\sonia-reverso.jpg",
+    "size": [
+      990,
+      606
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_visual_over_reverse_pdf417_guard",
+      "confidence": 0.9151744902784379,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7045211816730854,
+        "topScore": 0.13258519082125636,
+        "bottomScore": 0.19693233743961377
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9151744902784379,
+        "method": "front_visual_over_reverse_pdf417_guard",
+        "scores": {
+          "left": 0.3416224051415883,
+          "right": 0.23912341520416563
+        },
+        "conflict": {
+          "pdf417": {
+            "rotation": 180,
+            "confidence": 0.9051744902784379,
+            "method": "reverse_pdf417_bottom_band",
+            "scores": {
+              "top": 0.4569193930628165,
+              "bottom": 0.24087149616662218
+            }
+          },
+          "frontEmblem": {
+            "rotation": 0,
+            "confidence": 0.7870948844021342,
+            "method": "front_emblem_corner",
+            "scores": {
+              "topLeft": 2.3870697771733447,
+              "bottomRight": 0.0
+            }
+          },
+          "frontPortrait": {
+            "rotation": 0,
+            "confidence": 0.8799999999999999,
+            "method": "front_portrait_left",
+            "scores": {
+              "left": 0.3416224051415883,
+              "right": 0.23912341520416563
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "idx": 55,
+    "name": "walter guevara zelaya",
+    "side": "frente",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\Walter Guevara Zelaya 1.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\walter guevara zelaya-frente.jpg",
+    "size": [
+      1015,
+      571
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9285767192111609,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.9285767192111609,
+        "topScore": 0.38033536842063953,
+        "bottomScore": 0.1539424734238536
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.398315532230348,
+          "right": 0.46085028428517927
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": true
+    }
+  },
+  {
+    "idx": 56,
+    "name": "walter guevara zelaya",
+    "side": "reverso",
+    "area": null,
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\Walter Guevara Zelaya 2.jpeg",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-mix-1-local-ajustes-v8\\walter guevara zelaya-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_emblem_over_reverse_pdf417_guard",
+      "confidence": 0.8586850082886265,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7952149723258385,
+        "topScore": 0.20078606182709752,
+        "bottomScore": 0.34032735406673037
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8586850082886265,
+        "method": "front_emblem_over_reverse_pdf417_guard",
+        "scores": {
+          "topLeft": 2.0,
+          "bottomRight": 0.0
+        },
+        "conflict": {
+          "pdf417": {
+            "rotation": 180,
+            "confidence": 0.8486850082886265,
+            "method": "reverse_pdf417_bottom_band",
+            "scores": {
+              "top": 0.4117547234976293,
+              "bottom": 0.3203275978276825
+            }
+          },
+          "frontEmblem": {
+            "rotation": 0,
+            "confidence": 0.76,
+            "method": "front_emblem_corner",
+            "scores": {
+              "topLeft": 2.0,
+              "bottomRight": 0.0
+            }
+          }
+        }
+      }
+    }
+  }
+]

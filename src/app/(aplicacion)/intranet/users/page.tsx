@@ -167,7 +167,12 @@ const UserAvatarCell = ({
       }}
       imgProps={{
         referrerPolicy: 'no-referrer',
-        style: { objectFit: 'contain' },
+        style: {
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: '50% 10%',
+        },
         onError: () => {
           setSrc((current) => {
             if (current && normalSrc && current !== normalSrc) return normalSrc;
@@ -451,6 +456,20 @@ const UsersPage = () => {
     }
   };
 
+  const handleAvatarRemovedFromForm = useCallback(async () => {
+    setSelectedUser((current) => current
+      ? {
+        ...current,
+        avatar: undefined,
+        avatarTiny: undefined,
+        avatarPequeno: undefined,
+        avatarMediano: undefined,
+        recorteFotografia: null,
+      }
+      : current);
+    await fetchUsers();
+  }, [fetchUsers]);
+
   const columns = useMemo<GridColDef[]>(
     () => [
       {
@@ -714,6 +733,7 @@ const UsersPage = () => {
             key={`${selectedUser ? selectedUser.id : 'new-user'}-${userFormResetKey}`}
             onCancel={handleDismissUserModal}
             onSubmit={handleFormSubmit}
+            onAvatarRemoved={handleAvatarRemovedFromForm}
             isSubmitting={formSubmitting}
             submittingMessage={selectedUser ? 'Guardando cambios...' : 'Creando usuario...'}
             initialData={

@@ -1,0 +1,19 @@
+{
+  "name": "documentos/registros-academicos/acta-123.xlsx",
+  "bucket": "cetprosmp-2026.firebasestorage.app",
+  "metageneration": 1,
+  "generation": 1785951749515947,
+  "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "storageClass": "REGIONAL",
+  "contentDisposition": "inline",
+  "downloadTokens": [
+    "32d84a6c-6fc6-498a-b85b-7c44167cdd85"
+  ],
+  "etag": "CKvV9tyEipYDEAE=",
+  "customMetadata": {},
+  "timeCreated": "2026-08-05T17:42:29.532Z",
+  "updated": "2026-08-05T17:42:29.532Z",
+  "size": 142937,
+  "md5Hash": "9Sq2qrkDZgrmBJzss/5htg==",
+  "crc32c": "wRLU8A=="
+}

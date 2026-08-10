@@ -31,7 +31,7 @@ import { DataConnectUserInput } from "../core/types.js";
 
 const LIST_USERS_QUERY = `
   query ListUsersManual {
-    users(limit: 10000, orderBy: [{ id: DESC }]) {
+    users(limit: 3000, orderBy: [{ id: DESC }]) {
       id
       documentId
       username
@@ -266,6 +266,8 @@ function getExpectedDniStoragePaths(user: { tipoDocumento?: string | null; dni?:
     `matriculas/documentos/${number}/${prefix}-${number}-original-reverso`,
     `matriculas/documentos-procesados/${number}/${prefix}-${number}-procesado-frente.jpg`,
     `matriculas/documentos-procesados/${number}/${prefix}-${number}-procesado-reverso.jpg`,
+    `matriculas/documentos-procesados/${number}/${prefix}-${number}-procesado-frente-small.jpg`,
+    `matriculas/documentos-procesados/${number}/${prefix}-${number}-procesado-reverso-small.jpg`,
   ];
 }
 
@@ -904,24 +906,52 @@ export const updateUserProfile = https.onCall(async (data, context) => {
     if (!existingId) {
       throw new https.HttpsError("not-found", `No Data Connect user was found for documentId '${documentId}'.`);
     }
+    const currentAvatarResponse = await dataConnect.executeGraphql<{
+      users: Array<{
+        id: number;
+        avatar?: string | null;
+        recorteFotografia?: string | null;
+      }>;
+    }, { documentId: string }>(GET_USER_AVATAR_IMAGES_QUERY, { variables: { documentId } });
+    const currentAvatarUser = currentAvatarResponse.data.users?.[0] ?? null;
+    const currentAvatarUrl = asNullableString(currentAvatarUser?.avatar);
 
     const nowIso = new Date().toISOString();
     const payload = buildUserDataFromInput(data as Record<string, unknown>, { documentId });
     const requestedAvatar = asNullableString(data?.avatar ?? data?.foto);
     const avatarRemoved = data?.avatarRemoved === true;
-    const fallbackAvatar = asNullableString(data?.previousAvatar)
-      ?? asNullableString(data?.previousAvatarPequeno)
-      ?? asNullableString(data?.previousPhotoURL);
-    const avatarForPersist = avatarRemoved ? null : requestedAvatar ?? fallbackAvatar;
-    const avatarForWorkspace = !avatarRemoved && requestedAvatar && requestedAvatar !== fallbackAvatar
+    const previousAvatarCandidates = [
+      asNullableString(data?.previousAvatar),
+      asNullableString(data?.previousAvatarPequeno),
+      asNullableString(data?.previousPhotoURL),
+    ].filter((value): value is string => Boolean(value));
+    const requestedAvatarIsStaleClientFallback = Boolean(
+      requestedAvatar
+      && !currentAvatarUrl
+      && previousAvatarCandidates.includes(requestedAvatar),
+    );
+    const shouldPersistRequestedAvatar = Boolean(
+      requestedAvatar
+      && !requestedAvatarIsStaleClientFallback
+      && requestedAvatar !== currentAvatarUrl,
+    );
+    const avatarForWorkspace = !avatarRemoved && shouldPersistRequestedAvatar
       ? requestedAvatar
       : undefined;
-    if (avatarForPersist) {
-      payload.avatar = avatarForPersist;
-    } else if (avatarRemoved) {
+    if (avatarRemoved) {
       payload.avatar = null;
+      payload.recorteFotografia = null;
+    } else if (shouldPersistRequestedAvatar && requestedAvatar) {
+      payload.avatar = requestedAvatar;
     } else {
       delete payload.avatar;
+      delete payload.recorteFotografia;
+      if (requestedAvatarIsStaleClientFallback) {
+        console.warn("updateUserProfile ignored stale avatar from client fallback", {
+          documentId,
+          userId: existingId,
+        });
+      }
     }
     payload.fechaModificacion = nowIso;
     if (!payload.apellidoMaterno || !payload.celular || !payload.dni) {

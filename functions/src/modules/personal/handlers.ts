@@ -54,7 +54,7 @@ const PERSONAL_FIELDS = `
 
 const LIST_PERSONAL_QUERY = `
   query ListPersonalManual {
-    personals(limit: 1000) {
+    personals(limit: 40) {
       ${PERSONAL_FIELDS}
     }
   }

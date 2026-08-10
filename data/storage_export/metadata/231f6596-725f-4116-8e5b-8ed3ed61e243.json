@@ -1,0 +1,25 @@
+{
+  "name": "documentos/backups/acta-opcion-ocupacional-replace-20260722142207.xlsx",
+  "bucket": "cetprosmp-2026.firebasestorage.app",
+  "metageneration": 1,
+  "generation": 1784730128870415,
+  "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "storageClass": "REGIONAL",
+  "contentDisposition": "inline",
+  "downloadTokens": [
+    "81342424-2e0e-4ec9-bf68-6945110c614f"
+  ],
+  "etag": "CI/Y5+q95pUDEAE=",
+  "customMetadata": {
+    "sourceFileName": "acta-opcion-ocupacional-remote-check.xlsx",
+    "updatedBy": "codex",
+    "updatedAt": "2026-07-22T14:06:26.978Z",
+    "margins": "top=1.8cm,bottom=0.5cm,left=0.6cm,right=0.6cm,horizontalCentered=1",
+    "previousBackupPath": "documentos/backups/acta-opcion-ocupacional-margenes-20260722140626.xlsx"
+  },
+  "timeCreated": "2026-07-22T14:22:08.877Z",
+  "updated": "2026-07-22T14:22:08.877Z",
+  "size": 87267,
+  "md5Hash": "dSKz2D4BlmUnODvclPiz5g==",
+  "crc32c": "MfLBjA=="
+}

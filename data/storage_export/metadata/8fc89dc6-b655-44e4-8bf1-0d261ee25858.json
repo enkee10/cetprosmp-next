@@ -1,0 +1,22 @@
+{
+  "name": "documentos/backups/acta-opcion-ocupacional-20260722195540.xlsx",
+  "bucket": "cetprosmp-2026.firebasestorage.app",
+  "metageneration": 1,
+  "generation": 1784750140203777,
+  "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "storageClass": "REGIONAL",
+  "contentDisposition": "inline",
+  "downloadTokens": [
+    "72990578-30b1-420c-abc9-a27a4982fed5"
+  ],
+  "etag": "CIHG+rCI55UDEAE=",
+  "customMetadata": {
+    "uploadedAt": "2026-07-22T19:55:17.654Z",
+    "localSha256": "56ABECF7FECF8B685C02A9BB8A7F5EDA084D941BAB3A3BA66A0D7D1EABA7E9F7"
+  },
+  "timeCreated": "2026-07-22T19:55:40.208Z",
+  "updated": "2026-07-22T19:55:40.208Z",
+  "size": 89037,
+  "md5Hash": "2QR95RYaYe5ia8rgWsOcfA==",
+  "crc32c": "xMk8hw=="
+}

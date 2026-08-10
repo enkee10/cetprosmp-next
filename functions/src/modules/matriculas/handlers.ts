@@ -860,7 +860,7 @@ const MATRICULA_LIST_FIELDS = `
 
 const LIST_MATRICULAS_BY_SEMESTRE_QUERY = `
   query ListMatriculasBySemestreManual($semestreId: Int!) {
-    matriculas(where: { semestreId: { eq: $semestreId } }, limit: 5000, orderBy: [{id: DESC}]) {
+    matriculas(where: { semestreId: { eq: $semestreId } }, limit: 600, orderBy: [{id: DESC}]) {
       ${MATRICULA_LIST_FIELDS}
     }
   }
@@ -1145,6 +1145,23 @@ const LIST_MATRICULA_SEMESTRES_QUERY = `
       id
       semestreId
       archivado
+    }
+  }
+`;
+
+const LIST_MATRICULA_SEMESTRES_BY_IDS_QUERY = `
+  query ListMatriculaSemestresByIds($semestreIds: [Int!]!) {
+    semestres(where: { id: { in: $semestreIds } }, limit: 500) {
+      id
+      titulo
+      inicio
+      fin
+      archivado
+      anio {
+        id
+        nombre
+        titulo
+      }
     }
   }
 `;
@@ -2223,8 +2240,25 @@ export const getFormularioMatriculaConfiguracion = https.onCall(async (_data, co
 export const listMatriculaSemestres = https.onCall(async (data, context) => {
   await requireMatriculaSemestreAccess(context);
   const soloConMatriculas = Boolean(data?.soloConMatriculas);
+  const semestreIds = Array.from(toNumberSetFromInput(data?.semestreIds));
 
   try {
+    if (semestreIds.length > 0 && !soloConMatriculas) {
+      const response = await dataConnect.executeGraphql<{
+        semestres: MatriculaSemestreOption[];
+      }, { semestreIds: number[] }>(
+        LIST_MATRICULA_SEMESTRES_BY_IDS_QUERY,
+        { variables: { semestreIds } },
+      );
+      const orderById = new Map(semestreIds.map((id, index) => [id, index]));
+      return {
+        semestres: (response.data.semestres ?? [])
+          .slice()
+          .sort((a, b) => (orderById.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (orderById.get(b.id) ?? Number.MAX_SAFE_INTEGER))
+          .map((semestre) => addMatriculaSemestreDerivedFields(semestre)),
+      };
+    }
+
     const response = await dataConnect.executeGraphql<{
       semestres: MatriculaSemestreOption[];
       grupos: Array<{ id: number; semestreId?: number | null; archivado?: boolean | null }>;
@@ -3161,9 +3195,9 @@ async function generateCarnetAvatarImage(params: {
     "No alises, no rices, no ordenes, no estilices, no cambies volumen, no cambies direccion del cabello ni inventes un peinado nuevo aunque la referencia sea borrosa.",
     ageInstruction,
     "No embellezcas, no retoques la piel, no cambies facciones principales, estructura facial, nariz, ojos, boca, cejas, mandibula, forma del rostro, tono de piel, edad, genero, peso aparente ni expresion; no agregues maquillaje ni accesorios nuevos.",
-    "La indicacion de ropa formal aplica exclusivamente a la vestimenta visible debajo del cuello y hombros; no autoriza cambios de peinado, cabello, frente, orejas, cabeza, rostro, piel, edad aparente, expresion, contextura ni identidad facial.",
-    "Coloca unicamente ropa formal conservadora y sobria, preferentemente en tonos medios u oscuros para separarla claramente del fondo blanco; la ropa puede reemplazar la vestimenta original, pero bajo ninguna circunstancia debe modificar, estilizar, rejuvenecer, embellecer o reinterpretar la apariencia fisica exacta del rostro, cabeza, cuello, cabello, tono de piel, edad aparente, expresion ni las caracteristicas de identidad indicadas en las reglas anteriores.",
-    "Encuadre: rostro y hombros, frontal, estilo documento oficial, sin textos, sin logos, sin bordes, sin elementos del DNI.",
+    "La indicacion de ropa formal aplica exclusivamente a la vestimenta visible debajo del cuello y hombros; no autoriza cambios de peinado, cabello, color de cabello, frente, orejas, cabeza, rostro, piel, edad aparente, expresion, contextura ni identidad facial.",
+    "Coloca unicamente ropa formal conservadora y sobria, preferentemente en tonos medios u oscuros para separarla claramente del fondo blanco; la ropa puede reemplazar la vestimenta original, pero debe conservar exactamente el mismo peinado y color de cabello, sin modificarlos de ninguna forma; bajo ninguna circunstancia debe modificar, estilizar, rejuvenecer, embellecer o reinterpretar la apariencia fisica exacta del rostro, cabeza, cuello, cabello, tono de piel, edad aparente, expresion ni las caracteristicas de identidad indicadas en las reglas anteriores.",
+    "Encuadre: rostro y hombros, frontal, estilo documento oficial, con el rostro ocupando una proporcion ligeramente mayor en la composicion final; mostrar hombros solo de forma minima, sin alejar la camara para destacar la ropa, sin textos, sin logos, sin bordes, sin elementos del DNI.",
     "Composicion: centra a la persona en la imagen final; la cabeza, rostro, cuello y hombros deben quedar alineados al eje vertical central.",
     "Fondo obligatorio: toda el area de fondo debe ser blanco puro exacto #FFFFFF, completamente uniforme de borde a borde.",
     "No uses ningun gris, blanco humo, beige, celeste, sombra, degradado, viñeta, iluminacion ambiental, textura ni variacion tonal en el fondo.",
@@ -3981,6 +4015,32 @@ async function listMatriculasForList(semestreId: number) {
   );
 }
 
+function chunkArray<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
+}
+
+function timestampToMillis(value: unknown): number {
+  if (!value) return 0;
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  const timestamp = value as { toMillis?: () => number; seconds?: number; _seconds?: number };
+  if (typeof timestamp.toMillis === "function") {
+    const millis = timestamp.toMillis();
+    return Number.isFinite(millis) ? millis : 0;
+  }
+
+  const seconds = Number(timestamp.seconds ?? timestamp._seconds);
+  return Number.isFinite(seconds) ? seconds * 1000 : 0;
+}
+
 async function getLatestUserAvatarThumbnails(userIds: Set<number>): Promise<Map<number, {
   avatarTiny?: string;
   avatarPequeno?: string;
@@ -3988,22 +4048,40 @@ async function getLatestUserAvatarThumbnails(userIds: Set<number>): Promise<Map<
 }>> {
   if (userIds.size === 0) return new Map();
 
-  const snapshot = await getFirestore()
-    .collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION)
-    .orderBy("updatedAt", "desc")
-    .limit(1000)
-    .get();
+  const userIdChunks = chunkArray(Array.from(userIds), 30);
+  const snapshots = await Promise.all(
+    userIdChunks.map((chunk) =>
+      getFirestore()
+        .collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION)
+        .where("userId", "in", chunk)
+        .get(),
+    ),
+  );
+
+  const latestByUserId = new Map<number, {
+    data: Record<string, unknown>;
+    updatedAt: number;
+  }>();
+  snapshots.forEach((snapshot) => {
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data() as Record<string, unknown>;
+      const userId = toNumber(data.userId, 0);
+      if (!userIds.has(userId) || data.status !== "completed") return;
+
+      const updatedAt = timestampToMillis(data.updatedAt);
+      const previous = latestByUserId.get(userId);
+      if (!previous || updatedAt > previous.updatedAt) {
+        latestByUserId.set(userId, { data, updatedAt });
+      }
+    });
+  });
 
   const thumbnailByUserId = new Map<number, {
     avatarTiny?: string;
     avatarPequeno?: string;
     avatarMediano?: string;
   }>();
-  snapshot.docs.forEach((doc) => {
-    const data = doc.data();
-    const userId = toNumber(data.userId, 0);
-    if (!userIds.has(userId) || thumbnailByUserId.has(userId) || data.status !== "completed") return;
-
+  latestByUserId.forEach(({ data }, userId) => {
     const avatarTamanos = data.avatarTamanos as {
       tiny?: { url?: unknown } | null;
       pequeno?: { url?: unknown } | null;

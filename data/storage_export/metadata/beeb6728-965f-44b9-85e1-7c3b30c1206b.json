@@ -1,0 +1,25 @@
+{
+  "name": "documentos/backups/acta-opcion-ocupacional-final-margins-20260722163649.xlsx",
+  "bucket": "cetprosmp-2026.firebasestorage.app",
+  "metageneration": 1,
+  "generation": 1784738210569778,
+  "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "storageClass": "REGIONAL",
+  "contentDisposition": "inline",
+  "downloadTokens": [
+    "42ad0d9d-0a9c-4c09-9f48-53b927332245"
+  ],
+  "etag": "CLK8u/jb5pUDEAE=",
+  "customMetadata": {
+    "updatedAt": "2026-07-22T16:20:41.828Z",
+    "updatedBy": "codex",
+    "sourceFileName": "acta-opcion-ocupacional-current-check.xlsx",
+    "margins": "top=1.5cm,bottom=0.5cm,left=0.6cm,right=0.6cm,horizontalCentered=1",
+    "previousBackupPath": "documentos/backups/acta-opcion-ocupacional-top-15-20260722162041.xlsx"
+  },
+  "timeCreated": "2026-07-22T16:36:50.574Z",
+  "updated": "2026-07-22T16:36:50.574Z",
+  "size": 87234,
+  "md5Hash": "ydDKlYn+/MAmvQfplHweww==",
+  "crc32c": "VjuLaw=="
+}

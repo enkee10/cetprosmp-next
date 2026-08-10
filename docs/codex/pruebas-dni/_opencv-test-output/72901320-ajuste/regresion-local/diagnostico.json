@@ -1,0 +1,1118 @@
+[
+  {
+    "dni": "09914836",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9088320571091286,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.9088320571091286,
+        "topScore": 0.027077083484175594,
+        "bottomScore": 0.1295834360704301
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8545138447407933,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.27800166234408946,
+          "right": 0.2307890986732915
+        }
+      }
+    },
+    "shape": [
+      623,
+      1015
+    ]
+  },
+  {
+    "dni": "09914836",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.09450826203927959,
+        "bottomScore": 0.33554311164917927
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9083194439880838,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.2787272296758684,
+          "bottom": 0.4915138838689226
+        }
+      }
+    },
+    "shape": [
+      634,
+      1015
+    ]
+  },
+  {
+    "dni": "10698579",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.8274982097796717,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.8274982097796717,
+        "topScore": 0.09658161413660721,
+        "bottomScore": 0.20053619735024253
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    },
+    "shape": [
+      714,
+      1015
+    ]
+  },
+  {
+    "dni": "10698579",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.9199999999999999,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6015279717491,
+        "topScore": 0.07646628440310399,
+        "bottomScore": 0.05844420814278872
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9199999999999999,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": 175.122314453125,
+          "score180": -501.526123046875
+        }
+      }
+    },
+    "shape": [
+      615,
+      957
+    ]
+  },
+  {
+    "dni": "62606587",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7227147516199511,
+        "topScore": 0.14274798884139395,
+        "bottomScore": 0.21598733680434756
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.36316322367181963,
+          "right": 0.2854316281429941
+        }
+      }
+    },
+    "shape": [
+      564,
+      1015
+    ]
+  },
+  {
+    "dni": "62606587",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.1020523806097435,
+        "bottomScore": 0.43246481009487214
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.911813429611715,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.1680697737680013,
+          "bottom": 0.5299477257288638
+        }
+      }
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "72729761",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.7968690964015708,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7172313797004422,
+        "topScore": 0.1930035409536461,
+        "bottomScore": 0.2763946353768638
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7968690964015708,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.35647191601158645,
+          "right": 0.3268730254444398
+        }
+      }
+    },
+    "shape": [
+      606,
+      959
+    ]
+  },
+  {
+    "dni": "72729761",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 180,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9001786788100921,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.8016942298705416,
+        "topScore": 0.30295476057989645,
+        "bottomScore": 0.17601072838716564
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9001786788100921,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4019654669110122,
+          "bottom": 0.2658777952714118
+        }
+      }
+    },
+    "shape": [
+      641,
+      1015
+    ]
+  },
+  {
+    "dni": "09615124",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6165755786028925,
+        "topScore": 0.25576748198486055,
+        "bottomScore": 0.21435603448459667
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.3700618097229123,
+          "right": 0.3094131524097278
+        }
+      }
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "09615124",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.6276338147847782,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6276338147847782,
+        "topScore": 0.25429864582667056,
+        "bottomScore": 0.2091480818676042
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "61433593",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 180,
+      "method": "front_emblem_corner",
+      "confidence": 0.9,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.6775388894115832,
+        "topScore": 0.2169971456955114,
+        "bottomScore": 0.28801685844593405
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 1.122270046229874,
+          "bottomRight": 6.0
+        }
+      }
+    },
+    "shape": [
+      528,
+      840
+    ]
+  },
+  {
+    "dni": "61433593",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.6775388894115832,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.6775388894115832,
+        "topScore": 0.2169971456955114,
+        "bottomScore": 0.28801685844593405
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    },
+    "shape": [
+      615,
+      960
+    ]
+  },
+  {
+    "dni": "72901320",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left_over_noisy_top_layout",
+      "confidence": 0.86,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.99,
+        "topScore": 0.27737259039548023,
+        "bottomScore": 0.0366639057669766
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8304246383333684,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.3646559787502538,
+          "right": 0.324804005926169
+        }
+      }
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "72901320",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.913324223748415,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.655447421548323,
+        "topScore": 0.3295430324592263,
+        "bottomScore": 0.25839495650783456
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.913324223748415,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4194443572327087,
+          "bottom": 0.5465664612325658
+        }
+      }
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "72821013",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.9,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5609522557752707,
+        "topScore": 0.2250459865494492,
+        "bottomScore": 0.20461771925125016
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 6.0,
+          "bottomRight": 2.0
+        }
+      }
+    },
+    "shape": [
+      726,
+      1015
+    ]
+  },
+  {
+    "dni": "72821013",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.627877653831391,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.627877653831391,
+        "topScore": 0.18812560947660173,
+        "bottomScore": 0.23154064598656887
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "70534641",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.99,
+        "topScore": 0.25358484442505863,
+        "bottomScore": 0.031231385011632244
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7691386668429637,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.33221937910355026,
+          "right": 0.311093675345978
+        }
+      }
+    },
+    "shape": [
+      618,
+      1015
+    ]
+  },
+  {
+    "dni": "70534641",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9113192969385753,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5412533208076433,
+        "topScore": 0.20697364916899824,
+        "bottomScore": 0.220675756403927
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9113192969385753,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.3737600227510267,
+          "bottom": 0.5245122663243276
+        }
+      }
+    },
+    "shape": [
+      624,
+      1015
+    ]
+  },
+  {
+    "dni": "77512747",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9426953178088371,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.9426953178088371,
+        "topScore": 0.14697909161878187,
+        "bottomScore": 0.381619758921241
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.32078208344393766,
+          "right": 0.43596704368099914
+        }
+      }
+    },
+    "shape": [
+      655,
+      1015
+    ]
+  },
+  {
+    "dni": "77512747",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.12976183610334172,
+        "bottomScore": 0.5201080844166526
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9149754982593153,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.14222265957594826,
+          "bottom": 0.5647304808524682
+        }
+      }
+    },
+    "shape": [
+      622,
+      1015
+    ]
+  },
+  {
+    "dni": "61238048",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.8585087723095828,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.8585087723095828,
+        "topScore": 0.017517910617204962,
+        "bottomScore": 0.08736252696940675
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    },
+    "shape": [
+      639,
+      1015
+    ]
+  },
+  {
+    "dni": "61238048",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.03917956236418926,
+        "bottomScore": 0.2632129511082135
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8204931217380027,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4168583292283987,
+          "bottom": 0.48907404623105843
+        }
+      }
+    },
+    "shape": [
+      629,
+      1015
+    ]
+  },
+  {
+    "dni": "71814943",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7735004037340785,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7735004037340785,
+        "topScore": 0.36319601156593107,
+        "bottomScore": 0.22523176740219614
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    },
+    "shape": [
+      645,
+      1015
+    ]
+  },
+  {
+    "dni": "71814943",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9235251770314761,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.9235251770314761,
+        "topScore": 0.4825102794798658,
+        "bottomScore": 0.19868354123511972
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9187670190056102,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.6064372090617122,
+          "bottom": 0.40314408985192635
+        }
+      }
+    },
+    "shape": [
+      574,
+      907
+    ]
+  },
+  {
+    "dni": "09918911",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8320061401727259,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5454886282333106,
+        "topScore": 0.2324073695235051,
+        "bottomScore": 0.21693781526489722
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8320061401727259,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.35765372644892457,
+          "right": 0.31731851695170277
+        }
+      }
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "09918911",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9137055134681032,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.8719222930365838,
+        "topScore": 0.21032057898944667,
+        "bottomScore": 0.43504888087623866
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9137055134681032,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.3879306269137932,
+          "bottom": 0.550760648149136
+        }
+      }
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "06721973",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.747156080396016,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5593584910894761,
+        "topScore": 0.3045578411347519,
+        "bottomScore": 0.3319222947081282
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.747156080396016,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 3.8596273291925467,
+          "bottomRight": 2.043111894963747
+        }
+      }
+    },
+    "shape": [
+      627,
+      1010
+    ]
+  },
+  {
+    "dni": "06721973",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.8424157809722644,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.761152704702712,
+        "topScore": 0.34160524521612634,
+        "bottomScore": 0.5360296967562068
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8424157809722644,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.5462101138425888,
+          "bottom": 0.6238914489183693
+        }
+      }
+    },
+    "shape": [
+      594,
+      965
+    ]
+  },
+  {
+    "dni": "40233107",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.544533523610133,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.544533523610133,
+        "topScore": 0.3081480208399957,
+        "bottomScore": 0.3284642284404645
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    },
+    "shape": [
+      643,
+      1015
+    ]
+  },
+  {
+    "dni": "40233107",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9170546129145063,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7697539959983427,
+        "topScore": 0.317973207892823,
+        "bottomScore": 0.5084791594996363
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9170546129145063,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.45728257690183,
+          "bottom": 0.5876007420595696
+        }
+      }
+    },
+    "shape": [
+      615,
+      1015
+    ]
+  },
+  {
+    "dni": "41034541",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7467514876122574,
+        "topScore": 0.17933490715275557,
+        "bottomScore": 0.27284001908112143
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.37548550748798504,
+          "right": 0.2820097011608922
+        }
+      }
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "41034541",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.99,
+        "topScore": 0.1467274114166936,
+        "bottomScore": 0.5342646006289304
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9174075081834069,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.17272680168866755,
+          "bottom": 0.5914825900174753
+        }
+      }
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "08453588",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 180,
+      "method": "front_emblem_corner",
+      "confidence": 0.8258268159040885,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6033435237914868,
+        "topScore": 0.11005319416276327,
+        "bottomScore": 0.08661212043475494
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8258268159040885,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 0.0,
+          "bottomRight": 2.9403830843441203
+        }
+      }
+    },
+    "shape": [
+      575,
+      974
+    ]
+  },
+  {
+    "dni": "08453588",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.9199999999999999,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.6800663535408447,
+        "topScore": 0.153652205308603,
+        "bottomScore": 0.21240350490352772
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9199999999999999,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": 20.63134765625,
+          "score180": -517.5718994140625
+        }
+      }
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "75946469",
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left_over_emblem_tie",
+      "confidence": 0.8338463406595733,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6760186773016289,
+        "topScore": 0.17309095437586688,
+        "bottomScore": 0.12121480972177862
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8338463406595733,
+        "method": "front_portrait_left_over_emblem_tie",
+        "scores": {
+          "left": 0.33452392189518926,
+          "right": 0.29886828898161044
+        },
+        "conflict": {
+          "emblem": {
+            "rotation": 180,
+            "confidence": 0.8238463406595733,
+            "method": "front_emblem_corner",
+            "scores": {
+              "topLeft": 0.25566248663361524,
+              "bottomRight": 3.1677530674846626
+            }
+          },
+          "portrait": {
+            "rotation": 0,
+            "confidence": 0.8166911622626215,
+            "method": "front_portrait_left",
+            "scores": {
+              "left": 0.33452392189518926,
+              "right": 0.29886828898161044
+            }
+          }
+        }
+      }
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "dni": "75946469",
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.8700120565849457,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.618020870205375,
+        "topScore": 0.27190254780940265,
+        "bottomScore": 0.325210334932309
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8700120565849457,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.46674314725295274,
+          "bottom": 0.5623363508048322
+        }
+      }
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  }
+]

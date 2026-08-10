@@ -1,0 +1,252 @@
+[
+  {
+    "name": "monica",
+    "side": "frente",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-fullframe-vertical-guard-v1\\monica-frente.jpg",
+    "size": [
+      1015,
+      649
+    ],
+    "diag": {
+      "rotationApplied": 180,
+      "method": "front_portrait_left",
+      "confidence": 0.8502490653976912,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6232482779314958,
+        "topScore": 0.11833268509831207,
+        "bottomScore": 0.08908212276661541
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8502490653976912,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.2656378244325338,
+          "right": 0.31154726108182834
+        }
+      }
+    }
+  },
+  {
+    "name": "monica",
+    "side": "reverso",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-fullframe-vertical-guard-v1\\monica-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7865205013289613,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7865205013289613,
+        "topScore": 0.20609972593540138,
+        "bottomScore": 0.34232715302206573
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -188.6510009765625,
+          "score180": -8.03253173828125
+        }
+      }
+    }
+  },
+  {
+    "name": "dalila",
+    "side": "frente",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-fullframe-vertical-guard-v1\\dalila-frente.jpg",
+    "size": [
+      1015,
+      629
+    ],
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.8551494557658146,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.8551494557658146,
+        "topScore": 0.13532816970882233,
+        "bottomScore": 0.2670580700239027
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.35894565195345307,
+          "right": 0.30240014742464244
+        }
+      }
+    }
+  },
+  {
+    "name": "gloria",
+    "side": "reverso",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-fullframe-vertical-guard-v1\\gloria-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diag": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.6276338147847782,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6276338147847782,
+        "topScore": 0.25429864582667056,
+        "bottomScore": 0.2091480818676042
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "name": "venegas",
+    "side": "frente",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-fullframe-vertical-guard-v1\\venegas-frente.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diag": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.99,
+        "topScore": 0.27737259039548023,
+        "bottomScore": 0.0366639057669766
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "name": "walter2",
+    "side": "reverso",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-fullframe-vertical-guard-v1\\walter2-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diag": {
+      "rotationApplied": 180,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.8830243148456798,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7669061327150272,
+        "topScore": 0.20953252739580033,
+        "bottomScore": 0.3329628375439716
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8830243148456798,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4270463264145725,
+          "bottom": 0.3176469311969905
+        }
+      }
+    }
+  },
+  {
+    "name": "alejandro",
+    "side": "frente",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-fullframe-vertical-guard-v1\\alejandro-frente.jpg",
+    "size": [
+      1015,
+      571
+    ],
+    "diag": {
+      "rotationApplied": 180,
+      "method": "front_emblem_corner",
+      "confidence": 0.799477852530222,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6385741525127299,
+        "topScore": 0.12055193820327473,
+        "bottomScore": 0.08728714806859092
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.799477852530222,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 0.24691358024691357,
+          "bottomRight": 2.8108829021072284
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": true
+    }
+  },
+  {
+    "name": "camila",
+    "side": "frente",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-fullframe-vertical-guard-v1\\camila-frente.jpg",
+    "size": [
+      1015,
+      726
+    ],
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.9,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5609522557752707,
+        "topScore": 0.2250459865494492,
+        "bottomScore": 0.20461771925125016
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 6.0,
+          "bottomRight": 2.0
+        }
+      }
+    }
+  }
+]

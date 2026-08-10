@@ -1,0 +1,57 @@
+[
+  {
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5389107909371577,
+        "topScore": 0.3081164149344422,
+        "bottomScore": 0.29146495187080246
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.42774387007402703,
+          "right": 0.2799894117373646
+        }
+      },
+      "fullFrameDocument": true
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7385255602810621,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7385255602810621,
+        "topScore": 0.22324053148715556,
+        "bottomScore": 0.33383533872448234
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    },
+    "shape": [
+      576,
+      1015
+    ]
+  }
+]

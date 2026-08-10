@@ -1,0 +1,352 @@
+[
+  {
+    "name": "alejandro",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\alejandro-frente.jpeg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-portrait-strip-v1\\alejandro-frente.jpg",
+    "size": [
+      1015,
+      571
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "front_emblem_corner",
+      "confidence": 0.799477852530222,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6385741525127299,
+        "topScore": 0.12055193820327473,
+        "bottomScore": 0.08728714806859092
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.799477852530222,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 0.24691358024691357,
+          "bottomRight": 2.8108829021072284
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": true
+    }
+  },
+  {
+    "name": "alejandro",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\alejandro-reverso.jpeg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-portrait-strip-v1\\alejandro-reverso.jpg",
+    "size": [
+      1015,
+      571
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.9199999999999999,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6238114236558799,
+        "topScore": 0.20860621188008663,
+        "bottomScore": 0.16855325387928227
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9199999999999999,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -461.82861328125,
+          "score180": 238.9073486328125
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": true
+    }
+  },
+  {
+    "name": "camila",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\camila-frente.jpeg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-portrait-strip-v1\\camila-frente.jpg",
+    "size": [
+      1015,
+      726
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.9,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5609522557752707,
+        "topScore": 0.2250459865494492,
+        "bottomScore": 0.20461771925125016
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 6.0,
+          "bottomRight": 2.0
+        }
+      }
+    }
+  },
+  {
+    "name": "camila",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\camila-reverso.jpeg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-portrait-strip-v1\\camila-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.7,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.627877653831391,
+        "topScore": 0.18812560947660173,
+        "bottomScore": 0.23154064598656887
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -127.615966796875,
+          "score180": -191.0908203125
+        }
+      }
+    }
+  },
+  {
+    "name": "elena",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\elena-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-portrait-strip-v1\\elena-frente.jpg",
+    "size": [
+      1010,
+      627
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.747156080396016,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5593584910894761,
+        "topScore": 0.3045578411347519,
+        "bottomScore": 0.3319222947081282
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.747156080396016,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 3.8596273291925467,
+          "bottomRight": 2.043111894963747
+        }
+      }
+    }
+  },
+  {
+    "name": "elena",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\elena-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-portrait-strip-v1\\elena-reverso.jpg",
+    "size": [
+      965,
+      594
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.8424157809722644,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.761152704702712,
+        "topScore": 0.34160524521612634,
+        "bottomScore": 0.5360296967562068
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8424157809722644,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.5462101138425888,
+          "bottom": 0.6238914489183693
+        }
+      }
+    }
+  },
+  {
+    "name": "monica",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\monica-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-portrait-strip-v1\\monica-frente.jpg",
+    "size": [
+      1015,
+      761
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_mrz_bottom_band",
+      "confidence": 0.7844012578616352,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7506992395947032,
+        "topScore": 0.10510027306968017,
+        "bottomScore": 0.0498810097749085
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7844012578616352,
+        "method": "front_mrz_bottom_band",
+        "scores": {
+          "top": 13.311974842767297,
+          "bottom": 14.200000000000001
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": false
+    }
+  },
+  {
+    "name": "monica",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\monica-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-portrait-strip-v1\\monica-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7865205013289613,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7865205013289613,
+        "topScore": 0.20609972593540138,
+        "bottomScore": 0.34232715302206573
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -188.6510009765625,
+          "score180": -8.03253173828125
+        }
+      }
+    }
+  },
+  {
+    "name": "cristian",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\cristian-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-portrait-strip-v1\\cristian-reverso.jpg",
+    "size": [
+      1015,
+      571
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.99,
+        "topScore": 0.5031833844865337,
+        "bottomScore": 0.1518191016374252
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9175359324138397,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.5928952565522358,
+          "bottom": 0.42340951274505534
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": true
+    }
+  },
+  {
+    "name": "josue",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\mix-1\\josue-reverso.jpeg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-portrait-strip-v1\\josue-reverso.jpg",
+    "size": [
+      1015,
+      571
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.9199999999999999,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7006723386050611,
+        "topScore": 0.2595952143992024,
+        "bottomScore": 0.18724302167118828
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9199999999999999,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -193.55157470703125,
+          "score180": 342.4713134765625
+        }
+      },
+      "fullFrameDocument": true,
+      "fullFrameRotated90": true
+    }
+  }
+]

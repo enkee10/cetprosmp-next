@@ -1,0 +1,168 @@
+[
+  {
+    "name": "vita",
+    "side": "reverso",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-vita-contorno-v1\\vita-reverso.jpg",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9137055134681032,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.8719222930365838,
+        "topScore": 0.21032057898944667,
+        "bottomScore": 0.43504888087623866
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9137055134681032,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.3879306269137932,
+          "bottom": 0.550760648149136
+        }
+      }
+    }
+  },
+  {
+    "name": "elena",
+    "side": "frente",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-vita-contorno-v1\\elena-frente.jpg",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.747156080396016,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5593584910894761,
+        "topScore": 0.3045578411347519,
+        "bottomScore": 0.3319222947081282
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.747156080396016,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 3.8596273291925467,
+          "bottomRight": 2.043111894963747
+        }
+      }
+    }
+  },
+  {
+    "name": "elena",
+    "side": "reverso",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-vita-contorno-v1\\elena-reverso.jpg",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.8424157809722644,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.761152704702712,
+        "topScore": 0.34160524521612634,
+        "bottomScore": 0.5360296967562068
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8424157809722644,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.5462101138425888,
+          "bottom": 0.6238914489183693
+        }
+      }
+    }
+  },
+  {
+    "name": "camila",
+    "side": "frente",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-vita-contorno-v1\\camila-frente.jpg",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.9,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5609522557752707,
+        "topScore": 0.2250459865494492,
+        "bottomScore": 0.20461771925125016
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 6.0,
+          "bottomRight": 2.0
+        }
+      }
+    }
+  },
+  {
+    "name": "dalila",
+    "side": "frente",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-vita-contorno-v1\\dalila-frente.jpg",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_negative_chevron_layout_guard",
+      "confidence": 0.82,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7388522972893269,
+        "topScore": 0.2124285554311912,
+        "bottomScore": 0.13449249029954216
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "name": "liliana",
+    "side": "reverso",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-vita-contorno-v1\\liliana-reverso.jpg",
+    "diag": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9312634718632893,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.9312634718632893,
+        "topScore": 0.24505043674741767,
+        "bottomScore": 0.09490972275723361
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8886976936358233,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.2889096470322119,
+          "bottom": 0.4026150792981258
+        }
+      }
+    }
+  }
+]

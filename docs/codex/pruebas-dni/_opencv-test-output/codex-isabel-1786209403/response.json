@@ -1,0 +1,127 @@
+{
+  "errors": [],
+  "jobId": "codex-isabel-1786209403",
+  "outputs": [
+    {
+      "hasTwoBodies": false,
+      "orientationDiagnostics": {
+        "confidence": 0.5157592855979292,
+        "layout": {
+          "bottomScore": 0.4097133328652772,
+          "confidence": 0.604158670054758,
+          "rotation": 180,
+          "topScore": 0.47900909750443216
+        },
+        "method": "ocr_tesseract_layout",
+        "ocr": {
+          "confidence": 0.5157592855979292,
+          "enabled": true,
+          "evidence0": {
+            "averageConfidence": 29.294964028776977,
+            "keywordMatches": 0,
+            "readableCharacters": 139,
+            "readableTokens": 47,
+            "score": 0.2779515456715471
+          },
+          "evidence180": {
+            "averageConfidence": 22.065217391304348,
+            "keywordMatches": 0,
+            "readableCharacters": 184,
+            "readableTokens": 57,
+            "score": 0.2867125696723247
+          },
+          "rotation": 180,
+          "score0": 0.2779515456715471,
+          "score180": 0.2867125696723247
+        },
+        "rotationApplied": 180,
+        "side": "frente",
+        "sideVisual": {
+          "confidence": 0.8799999999999999,
+          "method": "front_portrait_left",
+          "rotation": 0,
+          "scores": {
+            "left": 0.3867281090678635,
+            "right": 0.2889075233259919
+          }
+        }
+      },
+      "output": {
+        "bucket": "cetprosmp-2026.firebasestorage.app",
+        "contentType": "image/jpeg",
+        "path": "matriculas/documentos-procesados/codex-isabel-1786209403/dni-codex-isabel-1786209403-procesado-frente.jpg",
+        "small": {
+          "bucket": "cetprosmp-2026.firebasestorage.app",
+          "contentType": "image/jpeg",
+          "path": "matriculas/documentos-procesados/codex-isabel-1786209403/dni-codex-isabel-1786209403-procesado-frente-small.jpg",
+          "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-isabel-1786209403%2Fdni-codex-isabel-1786209403-procesado-frente-small.jpg?alt=media&token=d2b094c9-b2bb-475d-8487-1ae6a41a9579"
+        },
+        "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-isabel-1786209403%2Fdni-codex-isabel-1786209403-procesado-frente.jpg?alt=media&token=d2b094c9-b2bb-475d-8487-1ae6a41a9579"
+      },
+      "selectedArea": "completa",
+      "side": "frente",
+      "sourcePath": "codex/pruebas-dni/codex-isabel-1786209403/original-frente.jpg"
+    },
+    {
+      "hasTwoBodies": false,
+      "orientationDiagnostics": {
+        "confidence": 0.9459755871872415,
+        "layout": {
+          "bottomScore": 0.5749226195593895,
+          "confidence": 0.9459755871872415,
+          "rotation": 0,
+          "topScore": 0.218809490607687
+        },
+        "method": "layout_mrz_barcode",
+        "ocr": {
+          "confidence": 0.5257082556540179,
+          "enabled": true,
+          "evidence0": {
+            "averageConfidence": 26.471830985915492,
+            "keywordMatches": 0,
+            "readableCharacters": 142,
+            "readableTokens": 55,
+            "score": 0.27096022558413435
+          },
+          "evidence180": {
+            "averageConfidence": 30.574626865671643,
+            "keywordMatches": 0,
+            "readableCharacters": 134,
+            "readableTokens": 53,
+            "score": 0.2851995980674048
+          },
+          "rotation": 180,
+          "score0": 0.27096022558413435,
+          "score180": 0.2851995980674048
+        },
+        "rotationApplied": 0,
+        "side": "reverso",
+        "sideVisual": {
+          "confidence": 0.92,
+          "method": "reverse_pdf417_bottom_band",
+          "rotation": 0,
+          "scores": {
+            "bottom": 0.6349871425857956,
+            "top": 0.4725007435858281
+          }
+        }
+      },
+      "output": {
+        "bucket": "cetprosmp-2026.firebasestorage.app",
+        "contentType": "image/jpeg",
+        "path": "matriculas/documentos-procesados/codex-isabel-1786209403/dni-codex-isabel-1786209403-procesado-reverso.jpg",
+        "small": {
+          "bucket": "cetprosmp-2026.firebasestorage.app",
+          "contentType": "image/jpeg",
+          "path": "matriculas/documentos-procesados/codex-isabel-1786209403/dni-codex-isabel-1786209403-procesado-reverso-small.jpg",
+          "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-isabel-1786209403%2Fdni-codex-isabel-1786209403-procesado-reverso-small.jpg?alt=media&token=0795a5dd-f2e9-4688-a97b-57ec5c02f74f"
+        },
+        "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-isabel-1786209403%2Fdni-codex-isabel-1786209403-procesado-reverso.jpg?alt=media&token=0795a5dd-f2e9-4688-a97b-57ec5c02f74f"
+      },
+      "selectedArea": "completa",
+      "side": "reverso",
+      "sourcePath": "codex/pruebas-dni/codex-isabel-1786209403/original-reverso.jpg"
+    }
+  ],
+  "status": "completed"
+}

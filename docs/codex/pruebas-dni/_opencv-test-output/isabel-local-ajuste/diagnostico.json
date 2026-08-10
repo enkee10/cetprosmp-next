@@ -1,0 +1,56 @@
+[
+  {
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.604158670054758,
+        "topScore": 0.47900909750443216,
+        "bottomScore": 0.4097133328652772
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.3867281090678635,
+          "right": 0.2889075233259919
+        }
+      }
+    }
+  },
+  {
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9459756127801133,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.9459756127801133,
+        "topScore": 0.218809490607687,
+        "bottomScore": 0.5749226732550518
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.92,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4725007435858281,
+          "bottom": 0.6349871425857956
+        }
+      }
+    }
+  }
+]

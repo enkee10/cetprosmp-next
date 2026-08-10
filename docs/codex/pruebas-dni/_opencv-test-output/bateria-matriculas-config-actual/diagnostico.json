@@ -1,0 +1,272 @@
+[
+  {
+    "doc": "09914836",
+    "frente": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9088320571091286,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\09914836-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\09914836-reverso.jpg"
+    }
+  },
+  {
+    "doc": "10698579",
+    "frente": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.8274982097796717,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\10698579-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.9199999999999999,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\10698579-reverso.jpg"
+    }
+  },
+  {
+    "doc": "62606587",
+    "frente": {
+      "rotation": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\62606587-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\62606587-reverso.jpg"
+    }
+  },
+  {
+    "doc": "72729761",
+    "frente": {
+      "rotation": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.7968690964015708,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\72729761-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 180,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9001786788100921,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\72729761-reverso.jpg"
+    }
+  },
+  {
+    "doc": "09615124",
+    "frente": {
+      "rotation": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\09615124-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.6276338147847782,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\09615124-reverso.jpg"
+    }
+  },
+  {
+    "doc": "61433593",
+    "frente": {
+      "rotation": 180,
+      "method": "front_emblem_corner",
+      "confidence": 0.9,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\61433593-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.6775388894115832,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\61433593-reverso.jpg"
+    }
+  },
+  {
+    "doc": "72901320",
+    "frente": {
+      "rotation": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\72901320-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.913324223748415,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\72901320-reverso.jpg"
+    }
+  },
+  {
+    "doc": "72821013",
+    "frente": {
+      "rotation": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.9,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\72821013-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.627877653831391,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\72821013-reverso.jpg"
+    }
+  },
+  {
+    "doc": "70534641",
+    "frente": {
+      "rotation": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\70534641-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9113192969385753,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\70534641-reverso.jpg"
+    }
+  },
+  {
+    "doc": "77512747",
+    "frente": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9426953178088371,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\77512747-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\77512747-reverso.jpg"
+    }
+  },
+  {
+    "doc": "61238048",
+    "frente": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.8585087723095828,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\61238048-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\61238048-reverso.jpg"
+    }
+  },
+  {
+    "doc": "71814943",
+    "frente": {
+      "rotation": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7735004037340785,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\71814943-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9235251770314761,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\71814943-reverso.jpg"
+    }
+  },
+  {
+    "doc": "09918911",
+    "frente": {
+      "rotation": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8320061401727259,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\09918911-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9137055134681032,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\09918911-reverso.jpg"
+    }
+  },
+  {
+    "doc": "06721973",
+    "frente": {
+      "rotation": 0,
+      "method": "front_emblem_corner",
+      "confidence": 0.747156080396016,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\06721973-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.8424157809722644,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\06721973-reverso.jpg"
+    }
+  },
+  {
+    "doc": "40233107",
+    "frente": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.544533523610133,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\40233107-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9170546129145063,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\40233107-reverso.jpg"
+    }
+  },
+  {
+    "doc": "41034541",
+    "frente": {
+      "rotation": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\41034541-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.99,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\41034541-reverso.jpg"
+    }
+  },
+  {
+    "doc": "08453588",
+    "frente": {
+      "rotation": 180,
+      "method": "front_emblem_corner",
+      "confidence": 0.8258268159040885,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\08453588-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.9199999999999999,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\08453588-reverso.jpg"
+    }
+  },
+  {
+    "doc": "75946469",
+    "frente": {
+      "rotation": 0,
+      "method": "front_portrait_left_over_emblem_tie",
+      "confidence": 0.8338463406595733,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\75946469-frente.jpg"
+    },
+    "reverso": {
+      "rotation": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.8700120565849457,
+      "path": "docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-matriculas-config-actual\\procesados\\75946469-reverso.jpg"
+    }
+  }
+]

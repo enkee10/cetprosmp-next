@@ -1,0 +1,66 @@
+[
+  {
+    "side": "frente",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_portrait_left",
+      "confidence": 0.8799999999999999,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.5389107909371577,
+        "topScore": 0.3081164149344422,
+        "bottomScore": 0.29146495187080246
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8799999999999999,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.42774387007402703,
+          "right": 0.2799894117373646
+        }
+      },
+      "fullFrameDocument": true
+    },
+    "shape": [
+      637,
+      1015
+    ]
+  },
+  {
+    "side": "reverso",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9156724597840399,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.8682557791621994,
+        "topScore": 0.23420486040933808,
+        "bottomScore": 0.47940375279820857
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.9156724597840399,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4482393583343958,
+          "bottom": 0.5723970576244384
+        }
+      },
+      "fullFrameDocument": true
+    },
+    "shape": [
+      643,
+      1015
+    ]
+  }
+]

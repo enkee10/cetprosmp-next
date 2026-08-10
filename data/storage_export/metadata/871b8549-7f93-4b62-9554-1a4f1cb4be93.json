@@ -1,0 +1,25 @@
+{
+  "name": "documentos/backups/acta-opcion-ocupacional-template-only-20260722155821.xlsx",
+  "bucket": "cetprosmp-2026.firebasestorage.app",
+  "metageneration": 1,
+  "generation": 1784735902649817,
+  "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "storageClass": "REGIONAL",
+  "contentDisposition": "inline",
+  "downloadTokens": [
+    "929d0a26-8da5-418c-a53b-d3b314042dda"
+  ],
+  "etag": "CNmb+6vT5pUDEAE=",
+  "customMetadata": {
+    "previousBackupPath": "documentos/backups/acta-opcion-ocupacional-before-margin-fix-20260722142243.xlsx",
+    "updatedAt": "2026-07-22T14:22:43.817Z",
+    "updatedBy": "codex",
+    "sourceFileName": "acta-opcion-ocupacional-remote-after-replace.xlsx",
+    "margins": "top=1.8cm,bottom=0.5cm,left=0.6cm,right=0.6cm,horizontalCentered=1"
+  },
+  "timeCreated": "2026-07-22T15:58:22.657Z",
+  "updated": "2026-07-22T15:58:22.657Z",
+  "size": 87234,
+  "md5Hash": "W4nNr1VhuSP6DEbbLTr66w==",
+  "crc32c": "y0whqA=="
+}

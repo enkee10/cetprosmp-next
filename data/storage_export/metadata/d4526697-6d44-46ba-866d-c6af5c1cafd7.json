@@ -1,0 +1,19 @@
+{
+  "name": "backups/predeploy-cetprosmp-db.sql.gz",
+  "bucket": "cetprosmp-2026.firebasestorage.app",
+  "metageneration": 1,
+  "generation": 1784784498697027,
+  "contentType": "application/x-sql",
+  "storageClass": "REGIONAL",
+  "contentDisposition": "inline",
+  "downloadTokens": [
+    "9af14b38-2add-4e8e-8a6d-2141caad3e7a"
+  ],
+  "etag": "CMPGrrCI6JUDEAE=",
+  "customMetadata": {},
+  "timeCreated": "2026-07-23T05:28:18.703Z",
+  "updated": "2026-07-23T05:28:18.703Z",
+  "size": 275971,
+  "md5Hash": "06ionVJAOSTfmsmhK4y4cQ==",
+  "crc32c": "z1Go0A=="
+}

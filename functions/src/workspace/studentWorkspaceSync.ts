@@ -357,11 +357,18 @@ async function syncWorkspaceAvatar(
     return;
   }
 
-  const photoData = await loadAvatarAsBase64(normalizedAvatar);
-  await directory.users.photos.update({
-    userKey,
-    requestBody: { photoData },
-  });
+  try {
+    const photoData = await loadAvatarAsBase64(normalizedAvatar);
+    await directory.users.photos.update({
+      userKey,
+      requestBody: { photoData },
+    });
+  } catch (error) {
+    console.warn("No se pudo sincronizar el avatar con Workspace; se continuara con el perfil.", {
+      userKey,
+      error: String((error as { message?: string } | null)?.message || error),
+    });
+  }
 }
 
 function findSchemaFieldName(

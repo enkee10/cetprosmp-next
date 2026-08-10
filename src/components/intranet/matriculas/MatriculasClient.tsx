@@ -46,7 +46,6 @@ import {
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { httpsCallable } from 'firebase/functions';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { useSearchParams } from 'next/navigation';
 import { functions, storage } from '@/lib/firebase';
 import { formatDateOnly, getDateOnlyLocalDate } from '@/lib/dateOnly';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
@@ -55,7 +54,7 @@ import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
 import { useAuth } from '@/context/AuthContext';
-import { useAppSettings } from '@/hooks/useAppSettings';
+import { useAppSettings, type AppSettings } from '@/hooks/useAppSettings';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 import UserForm from '@/components/intranet/users/UserForm';
 
@@ -66,6 +65,41 @@ interface SemestreOption {
   anioTitulo?: string | null;
   inicio?: string | null;
   fin?: string | null;
+  placeholder?: boolean;
+}
+
+function getConfiguredMatriculaSemestreIds(settings: AppSettings) {
+  return Array.from(new Set(settings.general.semestresConsultaIds
+    .map((id) => Number(id))
+    .filter((id) => Number.isFinite(id) && id > 0)));
+}
+
+function getCurrentMatriculaSemestreId(settings: AppSettings) {
+  const currentId = Number(settings.general.semestreActualId);
+  return Number.isFinite(currentId) && currentId > 0 ? String(currentId) : '';
+}
+
+function buildPlaceholderSemestreOptions(ids: number[]): SemestreOption[] {
+  return ids.map((id) => ({ id, titulo: `Semestre ${id}`, placeholder: true }));
+}
+
+function buildDisplayedSemestreIds(currentSemestreId: string, configuredIds: number[]) {
+  const currentId = Number(currentSemestreId);
+  return Array.from(new Set([
+    ...(Number.isFinite(currentId) && currentId > 0 ? [currentId] : []),
+    ...configuredIds,
+  ]));
+}
+
+function mergeCurrentSemestrePlaceholder(
+  currentSemestreId: string,
+  options: SemestreOption[],
+) {
+  const currentId = Number(currentSemestreId);
+  if (!Number.isFinite(currentId) || currentId <= 0 || options.some((semestre) => semestre.id === currentId)) {
+    return options;
+  }
+  return [{ id: currentId, titulo: `Semestre ${currentId}`, placeholder: true }, ...options];
 }
 
 interface PaqueteOption {
@@ -2754,8 +2788,6 @@ export function MatriculasPage() {
   const { user } = useAuth();
   const { can } = useIntranetPermissions();
   const { settings, loading: loadingSettings } = useAppSettings();
-  const searchParams = useSearchParams();
-  const grupoModuloId = Number(searchParams.get('grupoModuloId') || 0) || null;
   const isDocente = Number(user?.role ?? 0) === 4 && Number(user?.level ?? 0) < 600;
   const canCreateRecords = can('matriculas', 'create');
   const canEditRecords = can('matriculas', 'edit');
@@ -2767,10 +2799,7 @@ export function MatriculasPage() {
   const [semestreFilterOptions, setSemestreFilterOptions] = useState<SemestreOption[]>([]);
   const [selectedSemestreFilterId, setSelectedSemestreFilterId] = useState('');
   const [grupoModuloFilterOptions, setGrupoModuloFilterOptions] = useState<MatriculaGrupoModuloOption[]>([]);
-  const [grupoModuloFiltersReadyForSemestreId, setGrupoModuloFiltersReadyForSemestreId] = useState('');
-  const [selectedGrupoModuloFilterIds, setSelectedGrupoModuloFilterIds] = useState<string[]>(
-    grupoModuloId ? [String(grupoModuloId)] : [],
-  );
+  const [selectedGrupoModuloFilterIds, setSelectedGrupoModuloFilterIds] = useState<string[]>([]);
   const matriculasFetchRequestRef = useRef(0);
   const [openMatriculaModal, setOpenMatriculaModal] = useState(false);
   const [editingMatriculaId, setEditingMatriculaId] = useState<string | null>(null);
@@ -2805,64 +2834,65 @@ export function MatriculasPage() {
     [selectedSemestreFilterId, semestreFilterOptions],
   );
 
-  const selectedSemestreFilterLabel = getSemestreLabel(selectedSemestreFilter);
+  const selectedSemestreFilterLabel = selectedSemestreFilter?.placeholder ? '' : getSemestreLabel(selectedSemestreFilter);
+  const matriculaListSemestreTitulo = selectedGrupoModuloFilterIds.length > 0 ? selectedSemestreFilterLabel : '';
 
   useEffect(() => {
     if (loadingSettings) return;
 
     let active = true;
+    const configuredSemestreIds = getConfiguredMatriculaSemestreIds(settings);
+    const currentSemestreId = getCurrentMatriculaSemestreId(settings);
+
+    setSemestreFilterOptions(buildPlaceholderSemestreOptions(
+      buildDisplayedSemestreIds(currentSemestreId, configuredSemestreIds),
+    ));
+    setSelectedSemestreFilterId(currentSemestreId);
 
     const loadFilterSemestres = async () => {
       setLoadingFilters(true);
       try {
-        const listMatriculaSemestres = httpsCallable<{ soloConMatriculas?: boolean }, { semestres?: SemestreOption[] }>(
+        const listMatriculaSemestres = httpsCallable<{ semestreIds?: number[] }, { semestres?: SemestreOption[] }>(
           functions,
           'listMatriculaSemestres',
           { timeout: 12000 },
         );
         const result = await withTimeout(
-          listMatriculaSemestres({ soloConMatriculas: true }),
+          listMatriculaSemestres({ semestreIds: configuredSemestreIds }),
           14000,
           'listMatriculaSemestres',
         );
         if (!active) return;
         const nextSemestres = result.data.semestres || [];
-        setSemestreFilterOptions(nextSemestres);
-        const preferred = settings.general.semestreActualId
-          ? nextSemestres.find((semestre) => semestre.id === settings.general.semestreActualId)
-          : null;
-        const fallback = nextSemestres[0] ?? null;
-        setSelectedSemestreFilterId((current) => {
-          if (preferred && current !== String(preferred.id)) return String(preferred.id);
-          return current || (fallback?.id ?? '').toString();
-        });
+        setSemestreFilterOptions(mergeCurrentSemestrePlaceholder(currentSemestreId, nextSemestres));
       } catch (err) {
         console.error('Error fetching matricula semestres: ', err);
-        if (active) setError(getCallableErrorMessage(err, 'No se pudieron cargar los periodos.'));
+        if (active) {
+          setSemestreFilterOptions(buildPlaceholderSemestreOptions(
+            buildDisplayedSemestreIds(currentSemestreId, configuredSemestreIds),
+          ));
+        }
       } finally {
         if (active) setLoadingFilters(false);
       }
     };
 
-    void loadFilterSemestres();
+    if (configuredSemestreIds.length > 0) {
+      void loadFilterSemestres();
+    } else {
+      setLoadingFilters(false);
+    }
     return () => {
       active = false;
     };
-  }, [loadingSettings, settings.general.semestreActualId]);
+  }, [loadingSettings, settings]);
 
   useEffect(() => {
     let active = true;
 
     const loadGrupoModuloFilters = async () => {
-      const targetSemestreId = selectedSemestreFilterId;
-      setGrupoModuloFiltersReadyForSemestreId('');
       setGrupoModuloFilterOptions([]);
       if (!selectedSemestreFilterLabel) {
-        const nextIds = grupoModuloId ? [String(grupoModuloId)] : [];
-        setSelectedGrupoModuloFilterIds((current) =>
-          areStringArraysEqual(current, nextIds) ? current : nextIds,
-        );
-        setGrupoModuloFiltersReadyForSemestreId(targetSemestreId);
         return;
       }
 
@@ -2881,20 +2911,14 @@ export function MatriculasPage() {
         const options = result.data.grupoModulos || [];
         setGrupoModuloFilterOptions(options);
         setSelectedGrupoModuloFilterIds((current) => {
-          if (grupoModuloId) {
-            const nextIds = options.some((item) => item.id === grupoModuloId) ? [String(grupoModuloId)] : [];
-            return areStringArraysEqual(current, nextIds) ? current : nextIds;
-          }
           const availableIds = new Set(options.map((item) => String(item.id)));
           const nextIds = current.filter((id) => availableIds.has(id));
           return areStringArraysEqual(current, nextIds) ? current : nextIds;
         });
-        setGrupoModuloFiltersReadyForSemestreId(targetSemestreId);
       } catch (err) {
         console.error('Error fetching matricula grupo-modulos: ', err);
         if (active) {
           setError(getCallableErrorMessage(err, 'No se pudieron cargar los grupos-modulo.'));
-          setGrupoModuloFiltersReadyForSemestreId(targetSemestreId);
         }
       } finally {
         if (active) setLoadingFilters(false);
@@ -2905,7 +2929,7 @@ export function MatriculasPage() {
     return () => {
       active = false;
     };
-  }, [grupoModuloId, selectedSemestreFilterId, selectedSemestreFilterLabel]);
+  }, [selectedSemestreFilterId, selectedSemestreFilterLabel]);
 
   useEffect(() => {
     matriculasFetchRequestRef.current += 1;
@@ -2915,11 +2939,7 @@ export function MatriculasPage() {
   }, [selectedSemestreFilterId]);
 
   const fetchMatriculas = useCallback(async () => {
-    if (
-      loadingSettings
-      || loadingFilters
-      || (selectedSemestreFilterId && grupoModuloFiltersReadyForSemestreId !== selectedSemestreFilterId)
-    ) {
+    if (loadingSettings) {
       setLoading(true);
       return;
     }
@@ -2937,7 +2957,6 @@ export function MatriculasPage() {
     try {
       const listMatriculas = httpsCallable<
         {
-          grupoModuloId?: number | null;
           grupoModuloIds?: number[];
           semestreId?: number | null;
           semestreTitulo?: string | null;
@@ -2945,10 +2964,9 @@ export function MatriculasPage() {
         { matriculas?: MatriculaListItem[] }
       >(functions, 'listMatriculas');
       const result = await listMatriculas({
-        grupoModuloId,
         grupoModuloIds: selectedGrupoModuloFilterIds.map((id) => Number(id)).filter(Boolean),
         semestreId,
-        semestreTitulo: selectedSemestreFilterLabel || null,
+        semestreTitulo: matriculaListSemestreTitulo || null,
       });
       if (matriculasFetchRequestRef.current !== requestId) return;
       const nextMatriculas = (result.data.matriculas || [])
@@ -2963,13 +2981,10 @@ export function MatriculasPage() {
       if (matriculasFetchRequestRef.current === requestId) setLoading(false);
     }
   }, [
-    grupoModuloFiltersReadyForSemestreId,
-    grupoModuloId,
-    loadingFilters,
     loadingSettings,
     selectedGrupoModuloFilterIds,
     selectedSemestreFilterId,
-    selectedSemestreFilterLabel,
+    matriculaListSemestreTitulo,
   ]);
 
   useEffect(() => {
@@ -3131,7 +3146,6 @@ export function MatriculasPage() {
     matriculasFetchRequestRef.current += 1;
     setMatriculas([]);
     setLoading(true);
-    setGrupoModuloFiltersReadyForSemestreId('');
     setSelectedSemestreFilterId(String(event.target.value));
     setSelectedGrupoModuloFilterIds([]);
     setPaginationModel((current) => ({ ...current, page: 0 }));
@@ -3206,7 +3220,15 @@ export function MatriculasPage() {
                   bgcolor: 'transparent',
                   background: 'linear-gradient(180deg, #8fd8ff 0%, #ffffff 100%)',
                 }}
-                imgProps={{ referrerPolicy: 'no-referrer', style: { objectFit: 'contain' } }}
+                imgProps={{
+                  referrerPolicy: 'no-referrer',
+                  style: {
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: '50% 10%',
+                  },
+                }}
               >
                 {studentInitials(row.user)}
               </Avatar>

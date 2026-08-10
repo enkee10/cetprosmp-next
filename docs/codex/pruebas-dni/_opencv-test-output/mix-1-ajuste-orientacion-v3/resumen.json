@@ -1,0 +1,181 @@
+[
+  {
+    "name": "dalila",
+    "side": "frente",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-orientacion-v3\\dalila-frente.jpg",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "front_negative_chevron_layout_guard",
+      "confidence": 0.82,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7388522972893269,
+        "topScore": 0.2124285554311912,
+        "bottomScore": 0.13449249029954216
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "name": "aniel",
+    "side": "frente",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-orientacion-v3\\aniel-frente.jpg",
+    "diag": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7735004037340785,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7735004037340785,
+        "topScore": 0.36319601156593107,
+        "bottomScore": 0.22523176740219614
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "name": "liliana",
+    "side": "reverso",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-orientacion-v3\\liliana-reverso.jpg",
+    "diag": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9312634718632893,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.9312634718632893,
+        "topScore": 0.24505043674741767,
+        "bottomScore": 0.09490972275723361
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8886976936358233,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.2889096470322119,
+          "bottom": 0.4026150792981258
+        }
+      }
+    }
+  },
+  {
+    "name": "venegas",
+    "side": "reverso",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-orientacion-v3\\venegas-reverso.jpg",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.913324223748415,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.655447421548323,
+        "topScore": 0.3295430324592263,
+        "bottomScore": 0.25839495650783456
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.913324223748415,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4194443572327087,
+          "bottom": 0.5465664612325658
+        }
+      }
+    }
+  },
+  {
+    "name": "gloria",
+    "side": "reverso",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-orientacion-v3\\gloria-reverso.jpg",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "bottom_mrz_band_guard",
+      "confidence": 0.82,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6276338147847782,
+        "topScore": 0.25429864582667056,
+        "bottomScore": 0.2091480818676042
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "name": "monica",
+    "side": "frente",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-orientacion-v3\\monica-frente.jpg",
+    "diag": {
+      "rotationApplied": 180,
+      "method": "front_portrait_left",
+      "confidence": 0.8502490653976912,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6232482779314958,
+        "topScore": 0.11833268509831207,
+        "bottomScore": 0.08908212276661541
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8502490653976912,
+        "method": "front_portrait_left",
+        "scores": {
+          "left": 0.2656378244325338,
+          "right": 0.31154726108182834
+        }
+      }
+    }
+  },
+  {
+    "name": "vita",
+    "side": "reverso",
+    "out": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\mix-1-ajuste-orientacion-v3\\vita-reverso.jpg",
+    "diag": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.7905566748844087,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5092444729157104,
+        "topScore": 0.3082187045091146,
+        "bottomScore": 0.31222756459865697
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7905566748844087,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.384050533391762,
+          "bottom": 0.44225870143916673
+        }
+      }
+    }
+  }
+]

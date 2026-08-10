@@ -1,0 +1,466 @@
+[
+  {
+    "idx": 5,
+    "name": "alejandro",
+    "side": "frente",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\05-alejandro-frente.jpg",
+    "size": [
+      974,
+      575
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "front_emblem_corner",
+      "confidence": 0.8258268159040885,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6033435237914868,
+        "topScore": 0.11005319416276327,
+        "bottomScore": 0.08661212043475494
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8258268159040885,
+        "method": "front_emblem_corner",
+        "scores": {
+          "topLeft": 0.0,
+          "bottomRight": 2.9403830843441203
+        }
+      }
+    }
+  },
+  {
+    "idx": 6,
+    "name": "alejandro",
+    "side": "reverso",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\06-alejandro-reverso.jpg",
+    "size": [
+      1015,
+      582
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.9199999999999999,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.6245474506863322,
+        "topScore": 0.21318749929634437,
+        "bottomScore": 0.1724801020173185
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9199999999999999,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -470.4898681640625,
+          "score180": 201.9241943359375
+        }
+      }
+    }
+  },
+  {
+    "idx": 7,
+    "name": "aniel",
+    "side": "frente",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\07-aniel-frente.jpg",
+    "size": [
+      1015,
+      645
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7735004037340785,
+      "side": "frente",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7735004037340785,
+        "topScore": 0.36319601156593107,
+        "bottomScore": 0.22523176740219614
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 8,
+    "name": "aniel",
+    "side": "reverso",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\08-aniel-reverso.jpg",
+    "size": [
+      909,
+      553
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9327476755909645,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.9327476755909645,
+        "topScore": 0.49470267802913487,
+        "bottomScore": 0.19736735299339403
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9182667584273282,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.6009343427006093,
+          "bottom": 0.4020727716426894
+        }
+      }
+    }
+  },
+  {
+    "idx": 10,
+    "name": "branny",
+    "side": "reverso",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\10-branny-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.7,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5512759719493819,
+        "topScore": 0.20167100442383532,
+        "bottomScore": 0.21862874901396429
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -463.19287109375,
+          "score180": -101.55224609375
+        }
+      }
+    }
+  },
+  {
+    "idx": 12,
+    "name": "camila",
+    "side": "reverso",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\12-camila-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_mrz_chevrons",
+      "confidence": 0.7,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.627877653831391,
+        "topScore": 0.18812560947660173,
+        "bottomScore": 0.23154064598656887
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.7,
+        "method": "reverse_mrz_chevrons",
+        "scores": {
+          "score0": -127.615966796875,
+          "score180": -191.0908203125
+        }
+      }
+    }
+  },
+  {
+    "idx": 13,
+    "name": "clavijo",
+    "side": "frente",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\13-clavijo-frente.jpg",
+    "size": [
+      915,
+      609
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.5896726130297582,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5896726130297582,
+        "topScore": 0.16380183373688673,
+        "bottomScore": 0.1916378670971229
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 27,
+    "name": "janet",
+    "side": "frente",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\27-janet-frente.jpg",
+    "size": [
+      1015,
+      655
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.7018165686708204,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7018165686708204,
+        "topScore": 0.2739528034308753,
+        "bottomScore": 0.38064902608769124
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 28,
+    "name": "janet",
+    "side": "reverso",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\28-janet-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.8015669067325536,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.761724565857234,
+        "topScore": 0.4542124255409874,
+        "bottomScore": 0.2891033284831039
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.8015669067325536,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.5284163989153378,
+          "bottom": 0.4684749323793336
+        }
+      }
+    }
+  },
+  {
+    "idx": 32,
+    "name": "josue",
+    "side": "reverso",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\32-josue-reverso.jpg",
+    "size": [
+      1015,
+      636
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.9,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.7991728844582784,
+        "topScore": 0.3012504468657534,
+        "bottomScore": 0.17607549529190233
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 180,
+        "confidence": 0.9,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.3952342684190421,
+          "bottom": 0.26397584120706913
+        }
+      }
+    }
+  },
+  {
+    "idx": 42,
+    "name": "venegas",
+    "side": "reverso",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\42-venegas-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "reverse_pdf417_bottom_band",
+      "confidence": 0.913324223748415,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.655447421548323,
+        "topScore": 0.3295430324592263,
+        "bottomScore": 0.25839495650783456
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.913324223748415,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.4194443572327087,
+          "bottom": 0.5465664612325658
+        }
+      }
+    }
+  },
+  {
+    "idx": 51,
+    "name": "liliana veneca",
+    "side": "frente",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\51-liliana veneca-frente.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.5289641446451642,
+      "side": "frente",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.5289641446451642,
+        "topScore": 0.12588711022279098,
+        "bottomScore": 0.13327058517215684
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": null
+    }
+  },
+  {
+    "idx": 52,
+    "name": "liliana veneca",
+    "side": "reverso",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\52-liliana veneca-reverso.jpg",
+    "size": [
+      1014,
+      598
+    ],
+    "diagnostics": {
+      "rotationApplied": 180,
+      "method": "layout_mrz_barcode",
+      "confidence": 0.9312634718632893,
+      "side": "reverso",
+      "layout": {
+        "rotation": 180,
+        "confidence": 0.9312634718632893,
+        "topScore": 0.24505043674741767,
+        "bottomScore": 0.09490972275723361
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8886976936358233,
+        "method": "reverse_pdf417_bottom_band",
+        "scores": {
+          "top": 0.2889096470322119,
+          "bottom": 0.4026150792981258
+        }
+      }
+    }
+  },
+  {
+    "idx": 56,
+    "name": "walter guevara zelaya",
+    "side": "reverso",
+    "output": "d:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\debug-pulir-v6-foco-3\\56-walter guevara zelaya-reverso.jpg",
+    "size": [
+      1015,
+      637
+    ],
+    "diagnostics": {
+      "rotationApplied": 0,
+      "method": "front_emblem_over_reverse_pdf417_guard",
+      "confidence": 0.8930243148456798,
+      "side": "reverso",
+      "layout": {
+        "rotation": 0,
+        "confidence": 0.7669061327150272,
+        "topScore": 0.20953252739580033,
+        "bottomScore": 0.3329628375439716
+      },
+      "ocr": {
+        "enabled": true
+      },
+      "sideVisual": {
+        "rotation": 0,
+        "confidence": 0.8930243148456798,
+        "method": "front_emblem_over_reverse_pdf417_guard",
+        "scores": {
+          "topLeft": 2.0,
+          "bottomRight": 0.0
+        },
+        "conflict": {
+          "pdf417": {
+            "rotation": 180,
+            "confidence": 0.8830243148456798,
+            "method": "reverse_pdf417_bottom_band",
+            "scores": {
+              "top": 0.4270463264145725,
+              "bottom": 0.3176469311969905
+            }
+          },
+          "frontEmblem": {
+            "rotation": 0,
+            "confidence": 0.76,
+            "method": "front_emblem_corner",
+            "scores": {
+              "topLeft": 2.0,
+              "bottomRight": 0.0
+            }
+          }
+        }
+      }
+    }
+  }
+]

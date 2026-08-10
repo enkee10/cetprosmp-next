@@ -1,0 +1,422 @@
+[
+  {
+    "name": "ariana",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\ariana-frente.pdf",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\ariana\\frente-procesado.jpg",
+    "shape": "1015x598",
+    "rotation": 0,
+    "method": "front_emblem_corner",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "ariana",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\ariana-reverso.pdf",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\ariana\\reverso-procesado.jpg",
+    "shape": "1015x641",
+    "rotation": 0,
+    "method": "reverse_mrz_chevrons",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "bety",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\bety-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\bety\\frente-procesado.jpg",
+    "shape": "1015x626",
+    "rotation": 0,
+    "method": "layout_mrz_barcode",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "bety",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\bety-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\bety\\reverso-procesado.jpg",
+    "shape": "1015x628",
+    "rotation": 0,
+    "method": "layout_mrz_barcode",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "brenda",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\brenda-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\brenda\\frente-procesado.jpg",
+    "shape": "1015x623",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "brenda",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\brenda-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\brenda\\reverso-procesado.jpg",
+    "shape": "1015x628",
+    "rotation": 0,
+    "method": "layout_mrz_barcode",
+    "fullFrameDocument": false
+  },
+  {
+    "name": "celinda",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\celinda-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\celinda\\frente-procesado.jpg",
+    "shape": "1015x634",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "celinda",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\celinda-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\celinda\\reverso-procesado.jpg",
+    "shape": "1015x621",
+    "rotation": 0,
+    "method": "reverse_pdf417_bottom_band",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "deysi",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\deysi-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\deysi\\frente-procesado.jpg",
+    "shape": "1015x614",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "deysi",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\deysi-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\deysi\\reverso-procesado.jpg",
+    "shape": "1015x633",
+    "rotation": 0,
+    "method": "layout_mrz_barcode",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "elsa",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\elsa-frente.pdf",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\elsa\\frente-procesado.jpg",
+    "shape": "1015x609",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "elsa",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\elsa-reverso.pdf",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\elsa\\reverso-procesado.jpg",
+    "shape": "1015x599",
+    "rotation": 0,
+    "method": "reverse_pdf417_bottom_band",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "emily",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\emily-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\emily\\frente-procesado.jpg",
+    "shape": "1015x637",
+    "rotation": 0,
+    "method": "front_emblem_corner",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "emily",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\emily-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\emily\\reverso-procesado.jpg",
+    "shape": "1015x631",
+    "rotation": 0,
+    "method": "reverse_mrz_chevrons",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "flor",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\flor-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\flor\\frente-procesado.jpg",
+    "shape": "1015x636",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "flor",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\flor-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\flor\\reverso-procesado.jpg",
+    "shape": "1015x628",
+    "rotation": 0,
+    "method": "reverse_pdf417_bottom_band",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "gloria",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\gloria-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\gloria\\frente-procesado.jpg",
+    "shape": "1015x588",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "gloria",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\gloria-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\gloria\\reverso-procesado.jpg",
+    "shape": "1015x599",
+    "rotation": 0,
+    "method": "reverse_pdf417_bottom_band",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "gregoria",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\gregoria-frente.pdf",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\gregoria\\frente-procesado.jpg",
+    "shape": "1015x639",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "gregoria",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\gregoria-reverso.pdf",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\gregoria\\reverso-procesado.jpg",
+    "shape": "1015x623",
+    "rotation": 180,
+    "method": "reverse_mrz_chevrons_over_pdf417_tie",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "isabel",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\isabel-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\isabel\\frente-procesado.jpg",
+    "shape": "1015x619",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "isabel",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\isabel-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\isabel\\reverso-procesado.jpg",
+    "shape": "1015x571",
+    "rotation": 0,
+    "method": "layout_mrz_barcode",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "juana",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\juana-frente.pdf",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\juana\\frente-procesado.jpg",
+    "shape": "1015x636",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "juana",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\juana-reverso.pdf",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\juana\\reverso-procesado.jpg",
+    "shape": "1015x642",
+    "rotation": 0,
+    "method": "reverse_pdf417_bottom_band",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "karen",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\karen-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\karen\\frente-procesado.jpg",
+    "shape": "1015x648",
+    "rotation": 0,
+    "method": "front_emblem_corner",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "karen",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\karen-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\karen\\reverso-procesado.jpg",
+    "shape": "1015x631",
+    "rotation": 0,
+    "method": "reverse_mrz_chevrons",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "luz",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\luz-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\luz\\frente-procesado.jpg",
+    "shape": "1015x640",
+    "rotation": 0,
+    "method": "front_emblem_corner",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "luz",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\luz-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\luz\\reverso-procesado.jpg",
+    "shape": "1015x626",
+    "rotation": 0,
+    "method": "reverse_mrz_bottom_band_over_pdf417",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "marlene",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\marlene-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\marlene\\frente-procesado.jpg",
+    "shape": "1015x631",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "marlene",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\marlene-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\marlene\\reverso-procesado.jpg",
+    "shape": "1015x627",
+    "rotation": 0,
+    "method": "reverse_mrz_chevrons",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "milena",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\milena-frente.pdf",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\milena\\frente-procesado.jpg",
+    "shape": "1015x661",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "milena",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\milena-reverso.pdf",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\milena\\reverso-procesado.jpg",
+    "shape": "1015x620",
+    "rotation": 0,
+    "method": "reverse_pdf417_bottom_band",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "milene",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\milene-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\milene\\frente-procesado.jpg",
+    "shape": "1015x658",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "milene",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\milene-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\milene\\reverso-procesado.jpg",
+    "shape": "1015x621",
+    "rotation": 0,
+    "method": "reverse_pdf417_bottom_band",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "pilar",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\pilar-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\pilar\\frente-procesado.jpg",
+    "shape": "1015x651",
+    "rotation": 0,
+    "method": "layout_mrz_barcode",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "pilar",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\pilar-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\pilar\\reverso-procesado.jpg",
+    "shape": "1015x631",
+    "rotation": 0,
+    "method": "reverse_mrz_bottom_band_over_pdf417",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "susana",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\susana-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\susana\\frente-procesado.jpg",
+    "shape": "1015x634",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "susana",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\susana-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\susana\\reverso-procesado.jpg",
+    "shape": "1015x631",
+    "rotation": 0,
+    "method": "layout_mrz_barcode",
+    "fullFrameDocument": false
+  },
+  {
+    "name": "wanlu",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\wanlu-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\wanlu\\frente-procesado.jpg",
+    "shape": "1015x628",
+    "rotation": 0,
+    "method": "front_portrait_left",
+    "fullFrameDocument": true
+  },
+  {
+    "name": "wanlu",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\wanlu-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\wanlu\\reverso-procesado.jpg",
+    "shape": "1015x604",
+    "rotation": 0,
+    "method": "reverse_pdf417_bottom_band",
+    "fullFrameDocument": false
+  },
+  {
+    "name": "ydelma",
+    "side": "frente",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\ydelma-frente.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\ydelma\\frente-procesado.jpg",
+    "shape": "1015x654",
+    "rotation": 0,
+    "method": "layout_mrz_barcode",
+    "fullFrameDocument": false
+  },
+  {
+    "name": "ydelma",
+    "side": "reverso",
+    "source": "G:\\Mi unidad\\_Desarrollo2\\Files cetprosmp-strapi\\MEDIA\\prueba-dnis\\ydelma-reverso.jpg",
+    "output": "D:\\_Desarrollo\\cetprosmp-next\\docs\\codex\\pruebas-dni\\_opencv-test-output\\bateria-21-local-post-deysi-juana\\ydelma\\reverso-procesado.jpg",
+    "shape": "1015x641",
+    "rotation": 180,
+    "method": "layout_mrz_barcode",
+    "fullFrameDocument": false
+  }
+]

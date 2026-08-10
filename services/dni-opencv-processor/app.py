@@ -18,6 +18,7 @@ from flask import Flask, jsonify, request
 DOCUMENT_RATIO = 8.6 / 5.4
 DEFAULT_OUTPUT_WIDTH = 1015
 DEFAULT_OUTPUT_HEIGHT = 640
+SMALL_OUTPUT_WIDTH = 330
 OUTPUT_PREFIX = "matriculas/documentos-procesados"
 OCR_ORIENTATION_KEYWORDS = {
     "REPUBLICA": 3,
@@ -359,6 +360,8 @@ def rect_dimensions(rect: np.ndarray) -> tuple[float, float, float]:
     left_height = float(np.linalg.norm(rect[3] - rect[0]))
     rect_width = max(top_width, bottom_width)
     rect_height = max(left_height, right_height)
+    if rect_width <= 1.0 or rect_height <= 1.0:
+        return rect_width, rect_height, float("inf")
     ratio = rect_width / max(1.0, rect_height)
     return rect_width, rect_height, ratio if ratio >= 1 else 1 / ratio
 
@@ -391,6 +394,241 @@ def rect_border_touches(rect: np.ndarray, width: int, height: int, margin_ratio:
     if y2 >= height - margin_y:
         touches.append("inferior")
     return touches
+
+
+def rect_perspective_metrics(rect: np.ndarray) -> dict[str, float]:
+    ordered = order_points(rect)
+    top = ordered[1] - ordered[0]
+    bottom = ordered[2] - ordered[3]
+    left = ordered[3] - ordered[0]
+    right = ordered[2] - ordered[1]
+    top_width = max(1.0, float(np.linalg.norm(top)))
+    bottom_width = max(1.0, float(np.linalg.norm(bottom)))
+    left_height = max(1.0, float(np.linalg.norm(left)))
+    right_height = max(1.0, float(np.linalg.norm(right)))
+
+    def angle_degrees(vector: np.ndarray) -> float:
+        return abs(float(np.degrees(np.arctan2(vector[1], vector[0]))))
+
+    top_angle = min(angle_degrees(top), abs(180 - angle_degrees(top)))
+    bottom_angle = min(angle_degrees(bottom), abs(180 - angle_degrees(bottom)))
+    left_angle = abs(90 - angle_degrees(left))
+    right_angle = abs(90 - angle_degrees(right))
+    x1, y1, x2, y2 = rect_bounds(ordered)
+    bounds_area = max(1.0, (x2 - x1) * (y2 - y1))
+    polygon_area = rect_polygon_area(ordered)
+    return {
+        "max_angle_error": max(top_angle, bottom_angle, left_angle, right_angle),
+        "width_delta": abs(top_width - bottom_width) / max(top_width, bottom_width),
+        "height_delta": abs(left_height - right_height) / max(left_height, right_height),
+        "bounds_fill": polygon_area / bounds_area,
+    }
+
+
+def rect_needs_perspective_correction(rect: np.ndarray, output_side: Any = None) -> bool:
+    metrics = rect_perspective_metrics(rect)
+    side_name = normalize_side(output_side)
+
+    if side_name == "frente":
+        return (
+            metrics["max_angle_error"] >= 7.0
+            or metrics["width_delta"] >= 0.075
+            or metrics["height_delta"] >= 0.095
+            or metrics["bounds_fill"] <= 0.94
+        )
+
+    return (
+        metrics["max_angle_error"] >= 4.5
+        or metrics["width_delta"] >= 0.045
+        or metrics["height_delta"] >= 0.055
+        or metrics["bounds_fill"] <= 0.965
+    )
+
+
+def rect_needs_post_orientation_perspective_correction(rect: np.ndarray, output_side: Any = None) -> bool:
+    metrics = rect_perspective_metrics(rect)
+    side_name = normalize_side(output_side)
+
+    if side_name == "frente":
+        return (
+            metrics["max_angle_error"] >= 11.0
+            or metrics["width_delta"] >= 0.14
+            or metrics["height_delta"] >= 0.10
+            or metrics["bounds_fill"] <= 0.90
+        )
+
+    return (
+        metrics["max_angle_error"] >= 10.0
+        or metrics["width_delta"] >= 0.12
+        or metrics["height_delta"] >= 0.09
+        or metrics["bounds_fill"] <= 0.91
+    )
+
+
+def _fit_profile_line(points: np.ndarray) -> np.ndarray | None:
+    if points.shape[0] < 20:
+        return None
+    vx, vy, x0, y0 = cv2.fitLine(points.astype(np.float32), cv2.DIST_L2, 0, 0.01, 0.01).flatten()
+    return np.array([vy, -vx, vx * y0 - vy * x0], dtype=np.float64)
+
+
+def _intersect_profile_lines(line_a: np.ndarray, line_b: np.ndarray) -> np.ndarray | None:
+    point = np.cross(line_a, line_b)
+    if abs(float(point[2])) < 1e-6:
+        return None
+    return np.array([point[0] / point[2], point[1] / point[2]], dtype=np.float32)
+
+
+def _central_profile_points(points: list[list[float]], axis: int) -> np.ndarray:
+    array = np.asarray(points, dtype=np.float32)
+    if array.size == 0:
+        return array.reshape(0, 2)
+    values = array[:, axis]
+    low, high = np.percentile(values, [12, 88])
+    return array[(values >= low) & (values <= high)]
+
+
+def expand_profile_rect(rect: np.ndarray, image_width: int, image_height: int) -> np.ndarray:
+    ordered = order_points(rect)
+    top_vector = ordered[1] - ordered[0]
+    bottom_vector = ordered[2] - ordered[3]
+    left_vector = ordered[3] - ordered[0]
+    right_vector = ordered[2] - ordered[1]
+    top_width = max(1.0, float(np.linalg.norm(top_vector)))
+    bottom_width = max(1.0, float(np.linalg.norm(bottom_vector)))
+    left_height = max(1.0, float(np.linalg.norm(left_vector)))
+    right_height = max(1.0, float(np.linalg.norm(right_vector)))
+    horizontal_expand = max(top_width, bottom_width) * 0.060
+    vertical_expand = max(left_height, right_height) * 0.045
+
+    adjusted = ordered.copy()
+    adjusted[0] = adjusted[0] - (top_vector / top_width) * horizontal_expand - (left_vector / left_height) * vertical_expand
+    adjusted[1] = adjusted[1] + (top_vector / top_width) * horizontal_expand - (right_vector / right_height) * vertical_expand
+    adjusted[2] = adjusted[2] + (bottom_vector / bottom_width) * horizontal_expand + (right_vector / right_height) * vertical_expand
+    adjusted[3] = adjusted[3] - (bottom_vector / bottom_width) * horizontal_expand + (left_vector / left_height) * vertical_expand
+    adjusted[:, 0] = np.clip(adjusted[:, 0], 0, image_width - 1)
+    adjusted[:, 1] = np.clip(adjusted[:, 1], 0, image_height - 1)
+    return order_points(adjusted)
+
+
+def refine_rect_from_color_edge_profiles(
+    image: np.ndarray,
+    rect: np.ndarray,
+    output_side: Any = None,
+) -> np.ndarray:
+    side_name = normalize_side(output_side)
+    if side_name not in {"frente", "reverso"}:
+        return rect
+    if not rect_needs_perspective_correction(rect, output_side):
+        return rect
+
+    height, width = image.shape[:2]
+    scale = 1400 / max(height, width) if max(height, width) > 1400 else 1.0
+    resized = cv2.resize(image, (int(width * scale), int(height * scale))) if scale != 1.0 else image
+    hsv = cv2.cvtColor(resized, cv2.COLOR_BGR2HSV)
+    hue = hsv[:, :, 0]
+    saturation = hsv[:, :, 1]
+    value = hsv[:, :, 2]
+    blue_or_green = (hue >= 66) & (hue <= 135)
+    yellow_or_warm = (hue >= 10) & (hue <= 65)
+    mask = ((saturation > 35) & (value > 35) & (value < 252) & (blue_or_green | yellow_or_warm)).astype(np.uint8) * 255
+    kernel_size = max(9, int(min(resized.shape[:2]) * 0.012))
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+    close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernel_size, kernel_size))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, close_kernel, iterations=2)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8), iterations=1)
+
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours:
+        return rect
+    resized_area = max(1.0, float(resized.shape[0] * resized.shape[1]))
+    contour = max(contours, key=cv2.contourArea)
+    contour_area_ratio = cv2.contourArea(contour) / resized_area
+    if contour_area_ratio < 0.06 or contour_area_ratio > 0.78:
+        return rect
+
+    contour_mask = np.zeros(mask.shape[:2], dtype=np.uint8)
+    cv2.drawContours(contour_mask, [contour], -1, 255, -1)
+    ys, xs = np.where(contour_mask > 0)
+    if xs.size < 1000 or ys.size < 1000:
+        return rect
+
+    step_x = max(2, int(resized.shape[1] * 0.002))
+    step_y = max(2, int(resized.shape[0] * 0.002))
+    top_points: list[list[float]] = []
+    bottom_points: list[list[float]] = []
+    left_points: list[list[float]] = []
+    right_points: list[list[float]] = []
+
+    for x in range(int(xs.min()), int(xs.max()) + 1, step_x):
+        band = contour_mask[:, x : x + step_x]
+        y_band, _x_band = np.where(band > 0)
+        if y_band.size > 20:
+            x_mid = x + step_x / 2
+            top_points.append([x_mid, float(np.percentile(y_band, 2))])
+            bottom_points.append([x_mid, float(np.percentile(y_band, 98))])
+
+    for y in range(int(ys.min()), int(ys.max()) + 1, step_y):
+        band = contour_mask[y : y + step_y, :]
+        _y_band, x_band = np.where(band > 0)
+        if x_band.size > 20:
+            y_mid = y + step_y / 2
+            left_points.append([float(np.percentile(x_band, 2)), y_mid])
+            right_points.append([float(np.percentile(x_band, 98)), y_mid])
+
+    lines = [
+        _fit_profile_line(_central_profile_points(top_points, 0)),
+        _fit_profile_line(_central_profile_points(right_points, 1)),
+        _fit_profile_line(_central_profile_points(bottom_points, 0)),
+        _fit_profile_line(_central_profile_points(left_points, 1)),
+    ]
+    if any(line is None for line in lines):
+        return rect
+    top_line, right_line, bottom_line, left_line = [line for line in lines if line is not None]
+    corners = [
+        _intersect_profile_lines(top_line, left_line),
+        _intersect_profile_lines(top_line, right_line),
+        _intersect_profile_lines(bottom_line, right_line),
+        _intersect_profile_lines(bottom_line, left_line),
+    ]
+    if any(corner is None for corner in corners):
+        return rect
+
+    refined = order_points(np.asarray([corner for corner in corners if corner is not None], dtype=np.float32) / scale)
+    refined = expand_profile_rect(refined, width, height)
+    refined_width, refined_height, refined_ratio = rect_dimensions(refined)
+    refined_area_ratio = rect_polygon_area(refined) / max(1.0, float(width * height))
+    current_area_ratio = rect_polygon_area(rect) / max(1.0, float(width * height))
+    current_metrics = rect_perspective_metrics(rect)
+    refined_metrics = rect_perspective_metrics(refined)
+    if not 1.32 <= refined_ratio <= 1.95:
+        return rect
+    if refined_area_ratio < max(0.12, current_area_ratio * 0.55) or refined_area_ratio > min(0.78, current_area_ratio * 1.45):
+        return rect
+    if refined_width < width * 0.30 or refined_height < height * 0.18:
+        return rect
+    if (
+        side_name == "frente"
+        and current_metrics["max_angle_error"] <= 8.0
+        and refined_metrics["max_angle_error"] >= current_metrics["max_angle_error"] + 18.0
+        and refined_metrics["bounds_fill"] <= current_metrics["bounds_fill"] - 0.08
+    ):
+        app.logger.info(
+            "Skipped color-edge profile rect because it worsened front geometry current_metrics=%s refined_metrics=%s",
+            {key: round(float(value), 4) for key, value in current_metrics.items()},
+            {key: round(float(value), 4) for key, value in refined_metrics.items()},
+        )
+        return rect
+
+    app.logger.info(
+        "Color-edge profile perspective rect selected side=%s current_bounds=%s refined_bounds=%s area_ratio=%.3f",
+        side_name,
+        tuple(round(value, 1) for value in rect_bounds(rect)),
+        tuple(round(value, 1) for value in rect_bounds(refined)),
+        refined_area_ratio,
+    )
+    return refined
 
 
 def clipped_document_border_factor(rect: np.ndarray, width: int, height: int, margin_ratio: float = 0.015) -> float:
@@ -475,16 +713,112 @@ def should_preserve_reverso_near_frontal_crop(rect: np.ndarray, image_width: int
     bounds_fill = polygon_area / bounds_area
     area_ratio = polygon_area / frame_area
 
-    return (
+    if (
         area_ratio >= 0.38
-        and bounds_fill >= 0.91
-        and max_angle_error <= 6.5
-        and width_delta <= 0.13
-        and height_delta <= 0.10
+        and bounds_fill >= 0.90
+        and max_angle_error <= 8.5
+        and width_delta <= 0.12
+        and height_delta <= 0.08
+    ):
+        return True
+
+    return (
+        0.34 <= area_ratio <= 0.48
+        and bounds_fill >= 0.74
+        and max_angle_error <= 17.0
+        and width_delta <= 0.035
+        and 0.18 <= height_delta <= 0.45
     )
 
 
-def crop_nearly_frontal_document(image: np.ndarray, rect: np.ndarray) -> np.ndarray | None:
+def should_crop_border_clipped_near_frontal(
+    rect: np.ndarray,
+    image_width: int,
+    image_height: int,
+    output_side: Any = None,
+) -> bool:
+    touches = rect_border_touches(rect, image_width, image_height, 0.012)
+    if not touches:
+        return False
+
+    if not is_nearly_frontal_rect(rect, output_side):
+        return False
+
+    rect_area = rect_polygon_area(rect)
+    frame_area = max(1.0, float(image_width * image_height))
+    area_ratio = rect_area / frame_area
+    if area_ratio < 0.16:
+        return False
+
+    _rect_width, _rect_height, ratio = rect_dimensions(rect)
+    if not 1.30 <= ratio <= 1.95:
+        return False
+
+    return True
+
+
+def should_preserve_portrait_capture_without_perspective(
+    rect: np.ndarray,
+    image_width: int,
+    image_height: int,
+    output_side: Any = None,
+) -> bool:
+    if normalize_side(output_side) not in {"frente", "reverso"}:
+        return False
+    if image_height <= image_width * 1.08:
+        return False
+
+    frame_area = max(1.0, float(image_width * image_height))
+    area_ratio = rect_polygon_area(rect) / frame_area
+    if not 0.34 <= area_ratio <= 0.76:
+        return False
+
+    _rect_width, _rect_height, ratio = rect_dimensions(rect)
+    if not 1.30 <= ratio <= 1.95:
+        return False
+
+    x1, y1, x2, y2 = rect_bounds(rect)
+    width_coverage = (x2 - x1) / max(1.0, float(image_width))
+    height_coverage = (y2 - y1) / max(1.0, float(image_height))
+    if width_coverage < 0.48 or height_coverage < 0.56:
+        return False
+
+    touches = set(rect_border_touches(rect, image_width, image_height, 0.018))
+    if len(touches) >= 2:
+        return False
+
+    metrics = rect_perspective_metrics(rect)
+    side_name = normalize_side(output_side)
+    if side_name == "frente":
+        return (
+            (
+                0.56 <= area_ratio <= 0.615
+                and metrics["max_angle_error"] <= 1.6
+                and metrics["width_delta"] <= 0.04
+                and metrics["height_delta"] <= 0.04
+                and metrics["bounds_fill"] >= 0.95
+            )
+            or (
+                0.34 <= area_ratio <= 0.47
+                and metrics["max_angle_error"] >= 1.8
+                and metrics["max_angle_error"] <= 3.4
+                and metrics["width_delta"] <= 0.015
+                and metrics["height_delta"] >= 0.015
+                and metrics["height_delta"] <= 0.05
+                and metrics["bounds_fill"] >= 0.92
+            )
+        )
+
+    return (
+        0.38 <= area_ratio <= 0.48
+        and metrics["max_angle_error"] <= 15.0
+        and metrics["width_delta"] >= 0.10
+        and metrics["height_delta"] <= 0.08
+        and metrics["bounds_fill"] >= 0.72
+    )
+
+
+def crop_nearly_frontal_document(image: np.ndarray, rect: np.ndarray, output_side: Any = None) -> np.ndarray | None:
     height, width = image.shape[:2]
     x1, y1, x2, y2 = rect_bounds(rect)
     crop_width = x2 - x1
@@ -522,7 +856,9 @@ def crop_nearly_frontal_document(image: np.ndarray, rect: np.ndarray) -> np.ndar
         resized.shape[1],
         resized.shape[0],
     )
-    return trim_warped_document_margins(resized)
+    if rect_is_full_frame(rect, width, height):
+        return resized
+    return trim_warped_document_margins(resized, output_side)
 
 
 def collect_quadrilateral_candidates_v2(image: np.ndarray, limit: int) -> list[tuple[float, np.ndarray, str]]:
@@ -614,7 +950,10 @@ def collect_hough_candidates_v2(image: np.ndarray, limit: int) -> list[tuple[flo
 
         points: list[list[int]] = []
         for line in lines[:80]:
-            x1, y1, x2, y2 = line[0]
+            coords = np.asarray(line).reshape(-1)
+            if coords.size < 4:
+                continue
+            x1, y1, x2, y2 = (int(value) for value in coords[:4])
             length = float(np.hypot(x2 - x1, y2 - y1))
             if length < min(width, height) * 0.20:
                 continue
@@ -1003,8 +1342,6 @@ def should_prefer_border_clipped_candidate(
     alternative_area_ratio = alternative_area / frame_area
     if primary_area_ratio < 0.62 or alternative_area_ratio < 0.16:
         return False
-    if alternative_area_ratio >= primary_area_ratio * 0.78:
-        return False
 
     primary_touches = set(rect_border_touches(primary_rect, image_width, image_height, 0.012))
     alternative_touches = set(rect_border_touches(alternative_rect, image_width, image_height, 0.012))
@@ -1020,11 +1357,23 @@ def should_prefer_border_clipped_candidate(
 
     primary_height = rect_bounds(primary_rect)[3] - rect_bounds(primary_rect)[1]
     alternative_height = rect_bounds(alternative_rect)[3] - rect_bounds(alternative_rect)[1]
-    if alternative_height >= primary_height * 0.74:
-        return False
-
     _alt_width, _alt_height, alternative_ratio = rect_dimensions(alternative_rect)
     if not 1.30 <= alternative_ratio <= 1.95:
+        return False
+
+    if (
+        primary_area_ratio >= 0.86
+        and alternative_area_ratio < primary_area_ratio * 0.99
+        and alternative_area_ratio >= primary_area_ratio * 0.78
+        and alternative_height <= primary_height * 0.975
+        and alternative_height >= primary_height * 0.82
+    ):
+        return True
+
+    if alternative_area_ratio >= primary_area_ratio * 0.78:
+        return False
+
+    if alternative_height >= primary_height * 0.74:
         return False
 
     return True
@@ -1083,6 +1432,304 @@ def rect_mask_fill_ratio(mask: np.ndarray, rect: np.ndarray) -> float:
 
 def border_touch_penalty(rect: np.ndarray, image_width: int, image_height: int) -> float:
     return clipped_document_border_factor(rect, image_width, image_height, 0.018)
+
+
+def collect_tonal_document_candidates(image: np.ndarray, limit: int) -> list[tuple[float, np.ndarray, str]]:
+    height, width = image.shape[:2]
+    scale = 1200 / max(height, width) if max(height, width) > 1200 else 1.0
+    resized = cv2.resize(image, (int(width * scale), int(height * scale)))
+    image_area = resized.shape[0] * resized.shape[1]
+    min_area_fraction = 0.055 if limit > 1 else 0.085
+    candidates: list[tuple[float, np.ndarray, str]] = []
+
+    detection_masks = build_document_detection_masks(resized)
+    color_mask = next(mask for name, mask in detection_masks if name == "color_card")
+
+    for mask_name, mask in detection_masks:
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)[:30]
+
+        for contour in contours:
+            contour_area = cv2.contourArea(contour)
+            if contour_area > image_area * 0.94:
+                continue
+
+            peri = cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, 0.02 * peri, True)
+            if len(approx) < 4:
+                continue
+
+            rect = contour_to_rect(contour)
+            if rect is None:
+                continue
+            if mask_name == "yellow_card":
+                rect = shrink_wide_rect_to_document_ratio(rect, resized.shape[1])
+            w1 = np.linalg.norm(rect[2] - rect[3])
+            w2 = np.linalg.norm(rect[1] - rect[0])
+            h1 = np.linalg.norm(rect[1] - rect[2])
+            h2 = np.linalg.norm(rect[0] - rect[3])
+            rect_width = max(w1, w2)
+            rect_height = max(h1, h2)
+            rect_area = max(1.0, rect_width * rect_height)
+            rect_fraction = rect_area / image_area
+            if rect_fraction < min_area_fraction or rect_fraction > 0.92:
+                continue
+
+            ratio = rect_width / max(1.0, rect_height)
+            normalized_ratio = ratio if ratio >= 1 else 1 / ratio
+            max_ratio = 2.35 if mask_name == "yellow_card" else 1.82
+            if not 1.35 <= normalized_ratio <= max_ratio:
+                continue
+
+            fill_ratio = contour_area / rect_area
+            if mask_name in {"color_card", "foreground"} and fill_ratio < 0.20:
+                continue
+
+            color_fill_ratio = rect_mask_fill_ratio(color_mask, rect)
+            if mask_name == "color_card" and color_fill_ratio < 0.12:
+                continue
+            if mask_name == "yellow_card" and color_fill_ratio < 0.10:
+                continue
+            if mask_name == "blue_card" and color_fill_ratio < 0.09:
+                continue
+            if mask_name != "color_card" and color_fill_ratio < 0.055:
+                continue
+
+            ratio_score = 1.0 - min(abs(normalized_ratio - DOCUMENT_RATIO) / DOCUMENT_RATIO, 1.0)
+            area_score = min(rect_fraction / 0.20, 1.0)
+            mask_bonus = (
+                1.2
+                if mask_name == "blue_card"
+                else 1.05
+                if mask_name == "yellow_card"
+                else 0.85
+                if mask_name == "color_card"
+                else 0.35
+                if mask_name == "foreground"
+                else 0.0
+            )
+            color_bonus = min(color_fill_ratio * 2.4, 1.65)
+            border_penalty = border_touch_penalty(rect, resized.shape[1], resized.shape[0])
+            score = contour_area * (1.0 + ratio_score + area_score + mask_bonus + color_bonus) * border_penalty
+            candidates.append((score, clip_rect_to_image(rect / scale, width, height), f"tonal_{mask_name}"))
+
+    result: list[tuple[float, np.ndarray, str]] = []
+    for score, rect, source in sorted(candidates, key=lambda item: item[0], reverse=True):
+        if any(rect_iou(rect, existing_rect) > 0.45 for _, existing_rect, _ in result):
+            continue
+        result.append((score, rect, source))
+        if len(result) >= limit:
+            break
+
+    return result
+
+
+def should_prefer_large_tonal_candidate(
+    primary_rect: np.ndarray,
+    alternative_rect: np.ndarray,
+    image_width: int,
+    image_height: int,
+) -> bool:
+    frame_area = max(1.0, float(image_width * image_height))
+    primary_area_ratio = rect_polygon_area(primary_rect) / frame_area
+    alternative_area_ratio = rect_polygon_area(alternative_rect) / frame_area
+    if primary_area_ratio >= 0.12:
+        return False
+    if alternative_area_ratio < max(0.16, primary_area_ratio * 3.0):
+        return False
+    if alternative_area_ratio > 0.78:
+        return False
+
+    _alt_width, _alt_height, alternative_ratio = rect_dimensions(alternative_rect)
+    if not 1.30 <= alternative_ratio <= 1.95:
+        return False
+
+    touches = set(rect_border_touches(alternative_rect, image_width, image_height, 0.012))
+    if {"izquierdo", "derecho", "superior", "inferior"}.issubset(touches):
+        return False
+
+    return True
+
+
+def should_prefer_large_structural_candidate(
+    primary_rect: np.ndarray,
+    alternative_rect: np.ndarray,
+    image_width: int,
+    image_height: int,
+) -> bool:
+    frame_area = max(1.0, float(image_width * image_height))
+    primary_area_ratio = rect_polygon_area(primary_rect) / frame_area
+    alternative_area_ratio = rect_polygon_area(alternative_rect) / frame_area
+    if primary_area_ratio >= 0.12:
+        return False
+    if alternative_area_ratio < max(0.16, primary_area_ratio * 3.0):
+        return False
+    if alternative_area_ratio > 0.96:
+        return False
+    if alternative_area_ratio > 0.92 and primary_area_ratio >= 0.08:
+        return False
+
+    _alt_width, _alt_height, alternative_ratio = rect_dimensions(alternative_rect)
+    if not 1.30 <= alternative_ratio <= 1.95:
+        return False
+
+    touches = set(rect_border_touches(alternative_rect, image_width, image_height, 0.012))
+    if {"izquierdo", "derecho", "superior", "inferior"}.issubset(touches):
+        return False
+
+    x1, y1, x2, y2 = rect_bounds(alternative_rect)
+    if (x2 - x1) < image_width * 0.45 or (y2 - y1) < image_height * 0.45:
+        return False
+
+    return True
+
+
+def should_prefer_portrait_structural_candidate(
+    primary_rect: np.ndarray,
+    alternative_rect: np.ndarray,
+    image_width: int,
+    image_height: int,
+) -> bool:
+    if image_height <= image_width * 1.08:
+        return False
+
+    frame_area = max(1.0, float(image_width * image_height))
+    primary_area_ratio = rect_polygon_area(primary_rect) / frame_area
+    alternative_area_ratio = rect_polygon_area(alternative_rect) / frame_area
+    if not 0.16 <= alternative_area_ratio <= 0.78:
+        return False
+
+    _alt_width, _alt_height, alternative_ratio = rect_dimensions(alternative_rect)
+    if not 1.30 <= alternative_ratio <= 1.95:
+        return False
+
+    ax1, ay1, ax2, ay2 = rect_bounds(alternative_rect)
+    alternative_width_coverage = (ax2 - ax1) / max(1.0, float(image_width))
+    alternative_height_coverage = (ay2 - ay1) / max(1.0, float(image_height))
+    if alternative_width_coverage < 0.42 or alternative_height_coverage < 0.42:
+        return False
+
+    alternative_touches = set(rect_border_touches(alternative_rect, image_width, image_height, 0.018))
+    if {"izquierdo", "derecho", "superior", "inferior"}.issubset(alternative_touches):
+        return False
+
+    primary_touches = set(rect_border_touches(primary_rect, image_width, image_height, 0.018))
+    primary_is_internal_detail = primary_area_ratio < 0.32
+    primary_is_border_band = (
+        primary_area_ratio >= 0.50
+        and len(primary_touches) >= 2
+        and alternative_area_ratio >= primary_area_ratio * 0.55
+    )
+    primary_is_broad_but_weaker = (
+        primary_area_ratio >= 0.32
+        and len(primary_touches) >= 1
+        and alternative_area_ratio >= primary_area_ratio * 0.62
+    )
+    return primary_is_internal_detail or primary_is_border_band or primary_is_broad_but_weaker
+
+
+def should_keep_portrait_horizontal_document_strip(
+    rect: np.ndarray,
+    image_width: int,
+    image_height: int,
+) -> bool:
+    if image_height <= image_width * 1.08:
+        return False
+
+    frame_area = max(1.0, float(image_width * image_height))
+    area_ratio = rect_polygon_area(rect) / frame_area
+    _rect_width, _rect_height, ratio = rect_dimensions(rect)
+    x1, y1, x2, y2 = rect_bounds(rect)
+    width_coverage = (x2 - x1) / max(1.0, float(image_width))
+    height_coverage = (y2 - y1) / max(1.0, float(image_height))
+    touches = set(rect_border_touches(rect, image_width, image_height, 0.018))
+
+    return (
+        0.28 <= area_ratio <= 0.48
+        and 1.30 <= ratio <= 1.98
+        and width_coverage >= 0.76
+        and 0.30 <= height_coverage <= 0.53
+        and not {"superior", "inferior"}.issubset(touches)
+    )
+
+
+def should_prefer_portrait_horizontal_strip_candidate(
+    primary_rect: np.ndarray,
+    alternative_rect: np.ndarray,
+    image_width: int,
+    image_height: int,
+) -> bool:
+    if not should_keep_portrait_horizontal_document_strip(alternative_rect, image_width, image_height):
+        return False
+
+    frame_area = max(1.0, float(image_width * image_height))
+    primary_area_ratio = rect_polygon_area(primary_rect) / frame_area
+    px1, py1, px2, py2 = rect_bounds(primary_rect)
+    primary_width_coverage = (px2 - px1) / max(1.0, float(image_width))
+    primary_height_coverage = (py2 - py1) / max(1.0, float(image_height))
+    primary_touches = set(rect_border_touches(primary_rect, image_width, image_height, 0.018))
+
+    return (
+        primary_area_ratio >= 0.62
+        or primary_height_coverage >= 0.72
+        or (primary_width_coverage >= 0.94 and len(primary_touches) >= 2)
+        or len(primary_touches) >= 3
+    )
+
+
+def should_prefer_compact_tonal_candidate(
+    primary_rect: np.ndarray,
+    alternative_rect: np.ndarray,
+    image_width: int,
+    image_height: int,
+) -> bool:
+    frame_area = max(1.0, float(image_width * image_height))
+    primary_area_ratio = rect_polygon_area(primary_rect) / frame_area
+    alternative_area_ratio = rect_polygon_area(alternative_rect) / frame_area
+    if primary_area_ratio < 0.35 or alternative_area_ratio < 0.16:
+        return False
+
+    _primary_width, _primary_height, primary_ratio = rect_dimensions(primary_rect)
+    _alt_width, _alt_height, alternative_ratio = rect_dimensions(alternative_rect)
+    if not 1.30 <= alternative_ratio <= 1.95:
+        return False
+    primary_ratio_is_suspicious = primary_ratio < 1.30 or primary_ratio > 2.05
+    touches = set(rect_border_touches(primary_rect, image_width, image_height, 0.012))
+    if not touches:
+        return False
+    alternative_touches = set(rect_border_touches(alternative_rect, image_width, image_height, 0.012))
+    primary_ratio_score = 1.0 - min(abs(primary_ratio - DOCUMENT_RATIO) / DOCUMENT_RATIO, 1.0)
+    alternative_ratio_score = 1.0 - min(abs(alternative_ratio - DOCUMENT_RATIO) / DOCUMENT_RATIO, 1.0)
+    primary_lateral_clipped = {"izquierdo", "derecho"}.issubset(touches)
+    primary_is_overwide = primary_ratio > DOCUMENT_RATIO * 1.14
+    if (
+        primary_lateral_clipped
+        and primary_is_overwide
+        and not alternative_touches
+        and alternative_area_ratio >= primary_area_ratio * 0.72
+        and alternative_ratio_score >= primary_ratio_score + 0.08
+    ):
+        return True
+
+    if alternative_area_ratio >= primary_area_ratio * 0.94:
+        return False
+
+    tonal_has_better_shape = (
+        not alternative_touches
+        and alternative_area_ratio >= primary_area_ratio * 0.55
+        and alternative_ratio_score >= primary_ratio_score + 0.12
+    )
+    if not primary_ratio_is_suspicious and not tonal_has_better_shape:
+        return False
+
+    return True
+
+
+def clip_rect_to_image(rect: np.ndarray, image_width: int, image_height: int) -> np.ndarray:
+    clipped = rect.copy()
+    clipped[:, 0] = np.clip(clipped[:, 0], 0, image_width - 1)
+    clipped[:, 1] = np.clip(clipped[:, 1], 0, image_height - 1)
+    return order_points(clipped)
 
 
 def shrink_wide_rect_to_document_ratio(rect: np.ndarray, image_width: int) -> np.ndarray:
@@ -1328,6 +1975,155 @@ def expand_rect_horizontally(
     return adjusted
 
 
+def _largest_profile_range(profile: np.ndarray, threshold: float, min_size: int) -> tuple[int, int] | None:
+    active = np.where(profile > threshold)[0]
+    if active.size == 0:
+        return None
+
+    ranges: list[tuple[int, int]] = []
+    start = int(active[0])
+    previous = int(active[0])
+    for index_value in active[1:]:
+        index = int(index_value)
+        if index == previous + 1:
+            previous = index
+            continue
+        ranges.append((start, previous))
+        start = previous = index
+    ranges.append((start, previous))
+
+    valid = [item for item in ranges if item[1] - item[0] + 1 >= min_size]
+    if not valid:
+        return None
+    return max(valid, key=lambda item: item[1] - item[0])
+
+
+def refine_reverso_border_contaminated_rect(
+    image: np.ndarray,
+    rect: np.ndarray,
+    output_side: Any,
+) -> np.ndarray:
+    if normalize_side(output_side) != "reverso":
+        return rect
+
+    image_height, image_width = image.shape[:2]
+    frame_area = max(1.0, float(image_width * image_height))
+    rect_area = rect_polygon_area(rect)
+    if rect_area / frame_area < 0.34:
+        return rect
+
+    touches = rect_border_touches(rect, image_width, image_height, 0.012)
+    if not touches:
+        return rect
+
+    x1, y1, x2, y2 = rect_bounds(rect)
+    x1_i = int(max(0, min(image_width - 1, round(x1))))
+    x2_i = int(max(0, min(image_width, round(x2))))
+    y1_i = int(max(0, min(image_height - 1, round(y1))))
+    y2_i = int(max(0, min(image_height, round(y2))))
+    if x2_i - x1_i < image_width * 0.35 or y2_i - y1_i < image_height * 0.35:
+        return rect
+
+    roi = image[y1_i:y2_i, x1_i:x2_i]
+    if roi.size == 0:
+        return rect
+
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+    hue = hsv[:, :, 0]
+    saturation = hsv[:, :, 1]
+    value = hsv[:, :, 2]
+    blue_cyan = (
+        (hue >= 72)
+        & (hue <= 128)
+        & (saturation > 24)
+        & (value > 38)
+        & (value < 248)
+    )
+    yellow_green = (
+        (hue >= 14)
+        & (hue <= 64)
+        & (saturation > 30)
+        & (value > 50)
+        & (value < 248)
+    )
+    colored_core = (blue_cyan | yellow_green).astype(np.uint8)
+    if float(colored_core.mean()) < 0.08:
+        return rect
+
+    roi_height, roi_width = colored_core.shape[:2]
+    column_profile = colored_core.mean(axis=0).astype(np.float32)
+    row_profile = colored_core.mean(axis=1).astype(np.float32)
+    column_kernel = max(15, int(roi_width * 0.035))
+    row_kernel = max(15, int(roi_height * 0.035))
+    if column_kernel % 2 == 0:
+        column_kernel += 1
+    if row_kernel % 2 == 0:
+        row_kernel += 1
+    column_profile = cv2.GaussianBlur(column_profile.reshape(1, -1), (column_kernel, 1), 0).reshape(-1)
+    row_profile = cv2.GaussianBlur(row_profile.reshape(-1, 1), (1, row_kernel), 0).reshape(-1)
+
+    column_threshold = max(0.045, float(column_profile.max()) * 0.25)
+    row_threshold = max(0.045, float(row_profile.max()) * 0.25)
+    x_range = _largest_profile_range(column_profile, column_threshold, int(roi_width * 0.34))
+    y_range = _largest_profile_range(row_profile, row_threshold, int(roi_height * 0.34))
+    if x_range is None or y_range is None:
+        return rect
+
+    core_x1 = x1_i + x_range[0]
+    core_x2 = x1_i + x_range[1] + 1
+    core_y1 = y1_i + y_range[0]
+    core_y2 = y1_i + y_range[1] + 1
+    pad_x = max(8, int((x2_i - x1_i) * 0.060))
+    pad_y = max(8, int((y2_i - y1_i) * 0.045))
+    refined_x1 = max(0, core_x1 - pad_x)
+    refined_x2 = min(image_width, core_x2 + pad_x)
+    refined_y1 = max(0, core_y1 - pad_y)
+    refined_y2 = min(image_height, core_y2 + pad_y)
+
+    refined_width = refined_x2 - refined_x1
+    refined_height = refined_y2 - refined_y1
+    if refined_width <= 0 or refined_height <= 0:
+        return rect
+
+    refined_area = float(refined_width * refined_height)
+    if refined_area < rect_area * 0.48 or refined_area > rect_area * 0.97:
+        return rect
+
+    original_height = max(1.0, y2_i - y1_i)
+    refined_height_ratio = refined_height / original_height
+    bottom_removed_ratio = max(0.0, (y2_i - refined_y2) / original_height)
+    if refined_height_ratio < 0.91 or bottom_removed_ratio > 0.09:
+        app.logger.info(
+            "Skipped reverso border-contaminated rect refinement because it would crop too much height bounds=%s refined=%s height_ratio=%.3f bottom_removed=%.3f",
+            tuple(round(value, 1) for value in rect_bounds(rect)),
+            (refined_x1, refined_y1, refined_x2, refined_y2),
+            refined_height_ratio,
+            bottom_removed_ratio,
+        )
+        return rect
+
+    refined_ratio = max(refined_width, refined_height) / max(1.0, min(refined_width, refined_height))
+    if not 1.32 <= refined_ratio <= 1.95:
+        return rect
+
+    refined_rect = order_points(np.array(
+        [
+            [refined_x1, refined_y1],
+            [refined_x2, refined_y1],
+            [refined_x2, refined_y2],
+            [refined_x1, refined_y2],
+        ],
+        dtype="float32",
+    ))
+    app.logger.info(
+        "Reverso border-contaminated rect refined bounds=%s core=%s ratio=%.3f",
+        tuple(round(value, 1) for value in rect_bounds(refined_rect)),
+        (core_x1, core_y1, core_x2, core_y2),
+        refined_ratio,
+    )
+    return refined_rect
+
+
 def expand_rect_before_warp_for_side(
     rect: np.ndarray,
     image_width: int,
@@ -1352,8 +2148,9 @@ def expand_rect_before_warp_for_side(
         horizontal_expand = min(max(top_width, bottom_width) * 0.026, image_width * 0.023, 32)
         vertical_expand = min(max(left_height, right_height) * 0.030, image_height * 0.026, 26)
     else:
-        horizontal_expand = min(max(top_width, bottom_width) * 0.023, image_width * 0.020, 27)
-        vertical_expand = min(max(left_height, right_height) * 0.026, image_height * 0.023, 24)
+        horizontal_expand = min(max(top_width, bottom_width) * 0.026, image_width * 0.023, 32)
+        vertical_expand = min(max(left_height, right_height) * 0.030, image_height * 0.026, 26)
+    right_expand = min(horizontal_expand * 1.45, image_width * 0.034, 48)
     top_unit = top_vector / top_width
     bottom_unit = bottom_vector / bottom_width
     left_unit = left_vector / left_height
@@ -1361,8 +2158,8 @@ def expand_rect_before_warp_for_side(
 
     adjusted = ordered.copy()
     adjusted[0] = adjusted[0] - top_unit * horizontal_expand - left_unit * vertical_expand
-    adjusted[1] = adjusted[1] + top_unit * horizontal_expand - right_unit * vertical_expand
-    adjusted[2] = adjusted[2] + bottom_unit * horizontal_expand + right_unit * vertical_expand
+    adjusted[1] = adjusted[1] + top_unit * right_expand - right_unit * vertical_expand
+    adjusted[2] = adjusted[2] + bottom_unit * right_expand + right_unit * vertical_expand
     adjusted[3] = adjusted[3] - bottom_unit * horizontal_expand + left_unit * vertical_expand
     adjusted[:, 0] = np.clip(adjusted[:, 0], 0, image_width - 1)
     adjusted[:, 1] = np.clip(adjusted[:, 1], 0, image_height - 1)
@@ -1417,36 +2214,448 @@ def refine_low_quality_side_margins(image: np.ndarray, rect: np.ndarray) -> np.n
     return refined
 
 
+def full_frame_document_rect(image_width: int, image_height: int) -> np.ndarray:
+    return np.array(
+        [
+            [0, 0],
+            [image_width - 1, 0],
+            [image_width - 1, image_height - 1],
+            [0, image_height - 1],
+        ],
+        dtype="float32",
+    )
+
+
+def frame_has_document_ratio(image_width: int, image_height: int) -> bool:
+    if image_width <= 0 or image_height <= 0:
+        return False
+    ratio = image_width / max(1.0, float(image_height))
+    normalized_ratio = ratio if ratio >= 1.0 else 1.0 / ratio
+    return 1.30 <= normalized_ratio <= 1.95
+
+
+def rect_is_full_frame(rect: np.ndarray, image_width: int, image_height: int) -> bool:
+    x1, y1, x2, y2 = rect_bounds(rect)
+    return (
+        x1 <= 1.0
+        and y1 <= 1.0
+        and x2 >= image_width - 2.0
+        and y2 >= image_height - 2.0
+    )
+
+
+def frame_has_wide_bottom_mrz_band(image: np.ndarray) -> bool:
+    height, width = image.shape[:2]
+    if width < 500 or height < 300:
+        return False
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    region = gray[int(height * 0.58): int(height * 0.98), int(width * 0.02): int(width * 0.98)]
+    if region.size == 0:
+        return False
+
+    blurred = cv2.GaussianBlur(region, (3, 3), 0)
+    threshold = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+    dark_density = float(threshold.mean() / 255.0)
+    row_density = threshold.mean(axis=1) / 255.0
+    column_density = threshold.mean(axis=0) / 255.0
+    dense_rows = float(np.count_nonzero(row_density > 0.10)) / max(1, row_density.shape[0])
+    column_coverage = float((column_density > 0.035).mean())
+    return 0.035 <= dark_density <= 0.62 and dense_rows >= 0.08 and column_coverage >= 0.62
+
+
+def should_use_full_frame_for_clipped_document(
+    primary_rect: np.ndarray,
+    image_width: int,
+    image_height: int,
+    structural_candidates: list[np.ndarray] | None = None,
+    source_image: np.ndarray | None = None,
+) -> bool:
+    if not frame_has_document_ratio(image_width, image_height):
+        return False
+
+    frame_area = max(1.0, float(image_width * image_height))
+    primary_area_ratio = rect_polygon_area(primary_rect) / frame_area
+    x1, y1, x2, y2 = rect_bounds(primary_rect)
+    width_coverage = (x2 - x1) / max(1.0, float(image_width))
+    height_coverage = (y2 - y1) / max(1.0, float(image_height))
+    touches = set(rect_border_touches(primary_rect, image_width, image_height, 0.018))
+    _primary_width, _primary_height, primary_ratio = rect_dimensions(primary_rect)
+
+    if should_keep_portrait_horizontal_document_strip(primary_rect, image_width, image_height):
+        return False
+
+    if (
+        image_width > image_height * 1.08
+        and 0.16 <= primary_area_ratio <= 0.40
+        and 1.30 <= primary_ratio <= 1.98
+        and 0.26 <= width_coverage <= 0.56
+        and height_coverage >= 0.54
+        and not {"izquierdo", "derecho"}.issubset(touches)
+        and not {"superior", "inferior"}.issubset(touches)
+    ):
+        return False
+
+    if (
+        image_height > image_width * 1.08
+        and 0.18 <= primary_area_ratio <= 0.78
+        and 1.30 <= primary_ratio <= 1.95
+        and width_coverage >= 0.38
+        and height_coverage >= 0.42
+        and not touches
+    ):
+        return False
+
+    if (
+        image_width > image_height * 1.08
+        and primary_area_ratio >= 0.54
+        and "superior" in touches
+        and "izquierdo" not in touches
+        and len(touches) <= 2
+        and width_coverage >= 0.78
+        and height_coverage >= 0.78
+    ):
+        return False
+
+    if (
+        primary_area_ratio >= 0.70
+        and 1.42 <= primary_ratio <= 1.85
+        and width_coverage >= 0.70
+        and height_coverage >= 0.70
+        and not {"izquierdo", "derecho", "superior", "inferior"}.issubset(touches)
+    ):
+        return False
+
+    if (
+        image_height > image_width * 1.08
+        and 0.58 <= primary_area_ratio <= 0.74
+        and 1.30 <= primary_ratio <= 1.95
+        and width_coverage >= 0.82
+        and height_coverage >= 0.64
+        and len(touches) == 1
+        and bool(touches & {"izquierdo", "derecho"})
+        and (
+            ("izquierdo" in touches and x1 <= image_width * 0.006)
+            or ("derecho" in touches and x2 >= image_width * 0.994)
+        )
+    ):
+        return True
+
+    if (
+        primary_area_ratio >= 0.80
+        and width_coverage >= 0.96
+        and height_coverage >= 0.94
+        and len(touches) >= 2
+    ):
+        return True
+
+    if (
+        source_image is not None
+        and 0.18 <= primary_area_ratio <= 0.30
+        and (width_coverage < 0.76 or height_coverage < 0.70)
+        and frame_has_wide_bottom_mrz_band(source_image)
+    ):
+        return True
+
+    if (
+        source_image is not None
+        and 0.10 <= primary_area_ratio < 0.18
+        and width_coverage < 0.52
+        and height_coverage < 0.72
+        and frame_has_wide_bottom_mrz_band(source_image)
+    ):
+        return True
+
+    if primary_area_ratio < 0.08:
+        if structural_candidates:
+            for candidate in structural_candidates:
+                _width, _height, candidate_ratio = rect_dimensions(candidate)
+                candidate_area_ratio = rect_polygon_area(candidate) / frame_area
+                if candidate_area_ratio >= 0.55 and 1.30 <= candidate_ratio <= 1.95:
+                    return True
+        return True
+
+    if primary_area_ratio >= 0.54 and structural_candidates:
+        for candidate in structural_candidates:
+            _width, _height, candidate_ratio = rect_dimensions(candidate)
+            candidate_area_ratio = rect_polygon_area(candidate) / frame_area
+            cx1, cy1, cx2, cy2 = rect_bounds(candidate)
+            candidate_width_coverage = (cx2 - cx1) / max(1.0, float(image_width))
+            candidate_height_coverage = (cy2 - cy1) / max(1.0, float(image_height))
+            candidate_touches = set(rect_border_touches(candidate, image_width, image_height, 0.018))
+            if (
+                candidate_area_ratio >= 0.88
+                and 1.30 <= candidate_ratio <= 1.95
+                and (
+                    {"izquierdo", "derecho", "superior", "inferior"}.issubset(candidate_touches)
+                    or (candidate_width_coverage >= 0.94 and candidate_height_coverage >= 0.93)
+                )
+            ):
+                return True
+
+    if 0.18 <= primary_area_ratio < 0.58 and structural_candidates:
+        for candidate in structural_candidates:
+            _width, _height, candidate_ratio = rect_dimensions(candidate)
+            candidate_area_ratio = rect_polygon_area(candidate) / frame_area
+            if candidate_area_ratio < 0.28 or not 1.30 <= candidate_ratio <= 1.95:
+                continue
+
+            cx1, cy1, cx2, cy2 = rect_bounds(candidate)
+            union_width_coverage = (max(x2, cx2) - min(x1, cx1)) / max(1.0, float(image_width))
+            union_height_coverage = (max(y2, cy2) - min(y1, cy1)) / max(1.0, float(image_height))
+            if (
+                union_width_coverage >= 0.88
+                and union_height_coverage >= 0.88
+                and (width_coverage < 0.58 or height_coverage < 0.58)
+            ):
+                return True
+
+    if (
+        0.18 <= primary_area_ratio < 0.58
+        and len(touches) >= 2
+        and (
+            (width_coverage < 0.58 and height_coverage >= 0.85)
+            or (height_coverage < 0.58 and width_coverage >= 0.85)
+        )
+    ):
+        return True
+
+    return (
+        primary_area_ratio >= 0.54
+        and width_coverage >= 0.68
+        and height_coverage >= 0.68
+        and len(touches) >= 2
+        and (
+            width_coverage < 0.94
+            or height_coverage < 0.94
+            or not {"izquierdo", "derecho", "superior", "inferior"}.issubset(touches)
+        )
+    )
+
+
 def find_document_contours(image: np.ndarray, limit: int = 1) -> list[np.ndarray]:
     ai_contours = find_document_contours_ai(image, limit)
     if len(ai_contours) >= limit:
         if limit == 1:
-            v2_contours = find_document_contours_v2(image, 2)
-            replacement = next(
+            image_height, image_width = image.shape[:2]
+            primary = ai_contours[0]
+            frame_area = max(1.0, float(image_width * image_height))
+            primary_area_ratio = rect_polygon_area(primary) / frame_area
+            structural_candidates: list[np.ndarray] | None = None
+
+            def get_structural_candidates() -> list[np.ndarray]:
+                nonlocal structural_candidates
+                if structural_candidates is None:
+                    structural_candidates = find_document_contours_v2(image, 3)
+                return structural_candidates
+
+            portrait_structural_replacement = None
+            if not should_keep_portrait_horizontal_document_strip(primary, image_width, image_height):
+                portrait_structural_replacement = next(
+                    (
+                        rect
+                        for rect in get_structural_candidates()
+                        if should_prefer_portrait_structural_candidate(
+                            primary,
+                            rect,
+                            image_width,
+                            image_height,
+                        )
+                    ),
+                    None,
+                )
+            if portrait_structural_replacement is not None:
+                app.logger.warning(
+                    "DNI detector replaced portrait full-frame-prone contour bounds=%s area_ratio=%.3f with structural contour bounds=%s",
+                    tuple(round(value, 1) for value in rect_bounds(primary)),
+                    primary_area_ratio,
+                    tuple(round(value, 1) for value in rect_bounds(portrait_structural_replacement)),
+                )
+                return [portrait_structural_replacement]
+
+            portrait_strip_replacement = next(
                 (
                     rect
-                    for rect in v2_contours
-                    if should_prefer_border_clipped_candidate(
-                        ai_contours[0],
+                    for rect in get_structural_candidates()
+                    if should_prefer_portrait_horizontal_strip_candidate(
+                        primary,
                         rect,
-                        image.shape[1],
-                        image.shape[0],
+                        image_width,
+                        image_height,
                     )
                 ),
                 None,
             )
-            if replacement is not None:
-                app.logger.warning(
-                    "DNI detector replaced frame-like AI contour bounds=%s with border-clipped V2 contour bounds=%s",
-                    tuple(round(value, 1) for value in rect_bounds(ai_contours[0])),
-                    tuple(round(value, 1) for value in rect_bounds(replacement)),
+            if portrait_strip_replacement is None:
+                tonal_candidates = collect_tonal_document_candidates(image, 4)
+                portrait_strip_replacement = next(
+                    (
+                        rect
+                        for _score, rect, _source in tonal_candidates
+                        if should_prefer_portrait_horizontal_strip_candidate(
+                            primary,
+                            rect,
+                            image_width,
+                            image_height,
+                        )
+                    ),
+                    None,
                 )
-                return [replacement]
+            if portrait_strip_replacement is not None:
+                app.logger.warning(
+                    "DNI detector replaced portrait frame-like contour bounds=%s area_ratio=%.3f with horizontal document strip bounds=%s",
+                    tuple(round(value, 1) for value in rect_bounds(primary)),
+                    primary_area_ratio,
+                    tuple(round(value, 1) for value in rect_bounds(portrait_strip_replacement)),
+                )
+                return [portrait_strip_replacement]
+
+            if should_use_full_frame_for_clipped_document(
+                primary,
+                image_width,
+                image_height,
+                get_structural_candidates() if primary_area_ratio < 0.08 or primary_area_ratio >= 0.18 else None,
+                image,
+            ):
+                app.logger.warning(
+                    "DNI detector selected full frame because the document appears clipped by image bounds primary_bounds=%s area_ratio=%.3f frame_ratio=%.3f",
+                    tuple(round(value, 1) for value in rect_bounds(primary)),
+                    primary_area_ratio,
+                    image_width / max(1.0, float(image_height)),
+                )
+                return [full_frame_document_rect(image_width, image_height)]
+
+            if primary_area_ratio < 0.12:
+                structural_replacement = next(
+                    (
+                        rect
+                        for rect in get_structural_candidates()
+                        if should_prefer_large_structural_candidate(
+                            primary,
+                            rect,
+                            image_width,
+                            image_height,
+                        )
+                    ),
+                    None,
+                )
+                if structural_replacement is not None:
+                    app.logger.warning(
+                        "DNI detector replaced small AI contour bounds=%s area_ratio=%.3f with large structural contour bounds=%s",
+                        tuple(round(value, 1) for value in rect_bounds(primary)),
+                        primary_area_ratio,
+                        tuple(round(value, 1) for value in rect_bounds(structural_replacement)),
+                    )
+                    return [structural_replacement]
+
+                tonal_candidates = collect_tonal_document_candidates(image, 3)
+                replacement = next(
+                    (
+                        rect
+                        for _score, rect, _source in tonal_candidates
+                        if should_prefer_large_tonal_candidate(
+                            primary,
+                            rect,
+                            image_width,
+                            image_height,
+                        )
+                    ),
+                    None,
+                )
+                if replacement is not None:
+                    app.logger.warning(
+                        "DNI detector replaced small AI contour bounds=%s area_ratio=%.3f with tonal contour bounds=%s",
+                        tuple(round(value, 1) for value in rect_bounds(primary)),
+                        primary_area_ratio,
+                        tuple(round(value, 1) for value in rect_bounds(replacement)),
+                    )
+                    return [replacement]
+
+            if primary_area_ratio >= 0.35:
+                tonal_candidates = collect_tonal_document_candidates(image, 3)
+                replacement = next(
+                    (
+                        rect
+                        for _score, rect, _source in tonal_candidates
+                        if should_prefer_compact_tonal_candidate(
+                            primary,
+                            rect,
+                            image_width,
+                            image_height,
+                        )
+                    ),
+                    None,
+                )
+                if replacement is not None:
+                    app.logger.warning(
+                        "DNI detector replaced broad AI contour bounds=%s area_ratio=%.3f with compact tonal contour bounds=%s",
+                        tuple(round(value, 1) for value in rect_bounds(primary)),
+                        primary_area_ratio,
+                        tuple(round(value, 1) for value in rect_bounds(replacement)),
+                    )
+                    return [replacement]
+
+            primary_touches = set(rect_border_touches(primary, image_width, image_height, 0.012))
+            primary_frame_like = (
+                primary_area_ratio >= 0.62
+                and {"izquierdo", "derecho"}.issubset(primary_touches)
+                and bool(primary_touches & {"superior", "inferior"})
+            )
+            if primary_frame_like:
+                v2_contours = find_document_contours_v2(image, 2)
+                replacement = next(
+                    (
+                        rect
+                        for rect in v2_contours
+                        if should_prefer_border_clipped_candidate(
+                            primary,
+                            rect,
+                            image_width,
+                            image_height,
+                        )
+                    ),
+                    None,
+                )
+                if replacement is not None:
+                    app.logger.warning(
+                        "DNI detector replaced frame-like AI contour bounds=%s with border-clipped V2 contour bounds=%s",
+                        tuple(round(value, 1) for value in rect_bounds(primary)),
+                        tuple(round(value, 1) for value in rect_bounds(replacement)),
+                    )
+                    return [replacement]
         return ai_contours
 
     v2_contours = find_document_contours_v2(image, limit)
     if len(v2_contours) >= limit:
+        if limit == 1:
+            image_height, image_width = image.shape[:2]
+            primary = v2_contours[0]
+            if should_use_full_frame_for_clipped_document(primary, image_width, image_height, v2_contours[1:], image):
+                frame_area = max(1.0, float(image_width * image_height))
+                app.logger.warning(
+                    "DNI detector selected full frame from structural contour because the document appears clipped by image bounds primary_bounds=%s area_ratio=%.3f frame_ratio=%.3f",
+                    tuple(round(value, 1) for value in rect_bounds(primary)),
+                    rect_polygon_area(primary) / frame_area,
+                    image_width / max(1.0, float(image_height)),
+                )
+                return [full_frame_document_rect(image_width, image_height)]
         return v2_contours
+
+    tonal_candidates = collect_tonal_document_candidates(image, limit)
+    if len(tonal_candidates) >= limit:
+        app.logger.info(
+            "DNI tonal detector selected %s candidate(s): %s",
+            len(tonal_candidates),
+            [
+                {
+                    "score": round(score, 3),
+                    "source": source,
+                    "bounds": tuple(round(value, 1) for value in rect_bounds(rect)),
+                }
+                for score, rect, source in tonal_candidates
+            ],
+        )
+        return [rect for _score, rect, _source in tonal_candidates]
 
     height, width = image.shape[:2]
     scale = 1200 / max(height, width) if max(height, width) > 1200 else 1.0
@@ -1530,6 +2739,19 @@ def find_document_contours(image: np.ndarray, limit: int = 1) -> list[np.ndarray
         result.append(rect)
         if len(result) >= limit:
             break
+
+    if limit == 1 and result:
+        image_height, image_width = image.shape[:2]
+        primary = result[0]
+        if should_use_full_frame_for_clipped_document(primary, image_width, image_height, result[1:], image):
+            frame_area = max(1.0, float(image_width * image_height))
+            app.logger.warning(
+                "DNI detector selected full frame from final contour because the document appears clipped by image bounds primary_bounds=%s area_ratio=%.3f frame_ratio=%.3f",
+                tuple(round(value, 1) for value in rect_bounds(primary)),
+                rect_polygon_area(primary) / frame_area,
+                image_width / max(1.0, float(image_height)),
+            )
+            return [full_frame_document_rect(image_width, image_height)]
 
     return result
 
@@ -2004,10 +3226,448 @@ def _outside_in_card_bounds(image: np.ndarray) -> tuple[int, int, int, int] | No
     return int(x1), int(y1), int(x2), int(y2)
 
 
-def trim_warped_document_margins(image: np.ndarray) -> np.ndarray:
+def warped_margin_trim_preserves_document_shape(
+    original_width: int,
+    original_height: int,
+    cropped_width: int,
+    cropped_height: int,
+) -> bool:
+    if cropped_width <= 0 or cropped_height <= 0:
+        return False
+
+    original_ratio = max(original_width, original_height) / max(1.0, min(original_width, original_height))
+    cropped_ratio = max(cropped_width, cropped_height) / max(1.0, min(cropped_width, cropped_height))
+    if cropped_ratio < 1.24 or cropped_ratio > DOCUMENT_RATIO * 1.17:
+        return False
+
+    original_error = abs(original_ratio - DOCUMENT_RATIO)
+    cropped_error = abs(cropped_ratio - DOCUMENT_RATIO)
+    if original_error <= 0.18 and cropped_error > original_error + 0.17:
+        return False
+
+    return True
+
+
+def _reverso_color_card_trim_bounds(image: np.ndarray, output_side: Any = None) -> tuple[int, int, int, int] | None:
+    if normalize_side(output_side) != "reverso":
+        return None
+
+    height, width = image.shape[:2]
+    if width < 300 or height < 180:
+        return None
+
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hue = hsv[:, :, 0]
+    saturation = hsv[:, :, 1]
+    value = hsv[:, :, 2]
+
+    blue_cyan = (
+        (hue >= 70)
+        & (hue <= 128)
+        & (saturation > 44)
+        & (value > 38)
+        & (value < 252)
+    )
+    yellow_green = (
+        (hue >= 14)
+        & (hue <= 62)
+        & (saturation > 42)
+        & (value > 52)
+        & (value < 252)
+    )
+    colored_card = (blue_cyan | yellow_green).astype(np.uint8) * 255
+
+    column_profile = colored_card.mean(axis=0).astype(np.float32) / 255.0
+    row_profile = colored_card.mean(axis=1).astype(np.float32) / 255.0
+    column_kernel = max(15, int(width * 0.045))
+    row_kernel = max(15, int(height * 0.050))
+    if column_kernel % 2 == 0:
+        column_kernel += 1
+    if row_kernel % 2 == 0:
+        row_kernel += 1
+    column_profile = cv2.GaussianBlur(column_profile.reshape(1, -1), (column_kernel, 1), 0).reshape(-1)
+    row_profile = cv2.GaussianBlur(row_profile.reshape(-1, 1), (1, row_kernel), 0).reshape(-1)
+
+    x_range = _largest_profile_range(
+        column_profile,
+        max(0.045, float(column_profile.max()) * 0.25),
+        int(width * 0.48),
+    )
+    y_range = _largest_profile_range(
+        row_profile,
+        max(0.045, float(row_profile.max()) * 0.25),
+        int(height * 0.48),
+    )
+    if x_range is None or y_range is None:
+        return None
+
+    x1 = x_range[0]
+    x2 = x_range[1] + 1
+    y1 = y_range[0]
+    y2 = y_range[1] + 1
+
+    color_width = x2 - x1
+    color_height = y2 - y1
+    if color_width < width * 0.52 or color_height < height * 0.45:
+        return None
+
+    pad_x = max(5, int(width * 0.026))
+    pad_y = max(4, int(height * 0.036))
+    x1 = max(0, x1 - pad_x)
+    y1 = max(0, y1 - pad_y)
+    x2 = min(width, x2 + pad_x)
+    y2 = min(height, y2 + pad_y)
+
+    cropped_width = x2 - x1
+    cropped_height = y2 - y1
+    if cropped_width < width * 0.62 or cropped_height < height * 0.62:
+        return None
+    if not warped_margin_trim_preserves_document_shape(width, height, cropped_width, cropped_height):
+        return None
+
+    current_ratio = max(width, height) / max(1.0, min(width, height))
+    cropped_ratio = max(cropped_width, cropped_height) / max(1.0, min(cropped_width, cropped_height))
+    if abs(cropped_ratio - DOCUMENT_RATIO) > abs(current_ratio - DOCUMENT_RATIO) + 0.10:
+        return None
+
+    return int(x1), int(y1), int(x2), int(y2)
+
+
+def trim_oriented_front_neutral_card_margins(image: np.ndarray, output_side: Any = None) -> np.ndarray:
+    if normalize_side(output_side) != "frente":
+        return image
+
     height, width = image.shape[:2]
     if width < 300 or height < 180:
         return image
+
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    saturation = hsv[:, :, 1]
+    value = hsv[:, :, 2]
+    neutral_light = ((saturation < 52) & (value > 68)).astype(np.uint8)
+    column_profile = neutral_light.mean(axis=0).astype(np.float32)
+    row_profile = neutral_light.mean(axis=1).astype(np.float32)
+
+    column_kernel = max(15, int(width * 0.040))
+    row_kernel = max(15, int(height * 0.040))
+    if column_kernel % 2 == 0:
+        column_kernel += 1
+    if row_kernel % 2 == 0:
+        row_kernel += 1
+    column_profile = cv2.GaussianBlur(column_profile.reshape(1, -1), (column_kernel, 1), 0).reshape(-1)
+    row_profile = cv2.GaussianBlur(row_profile.reshape(-1, 1), (1, row_kernel), 0).reshape(-1)
+
+    x_range = _largest_profile_range(
+        column_profile,
+        max(0.38, float(column_profile.max()) * 0.45),
+        int(width * 0.50),
+    )
+    y_range = _largest_profile_range(
+        row_profile,
+        max(0.38, float(row_profile.max()) * 0.45),
+        int(height * 0.45),
+    )
+    if x_range is None or y_range is None:
+        return image
+
+    x_padding = max(8, int(width * 0.018))
+    right_padding = max(x_padding, int(width * 0.032))
+    y_padding = max(6, int(height * 0.016))
+    x1 = max(0, x_range[0] - x_padding)
+    x2 = min(width, x_range[1] + 1 + right_padding)
+    y1 = max(0, y_range[0] - y_padding)
+    y2 = min(height, y_range[1] + 1 + y_padding)
+
+    cropped_width = x2 - x1
+    cropped_height = y2 - y1
+    if cropped_width < width * 0.97 or cropped_height < height * 0.78:
+        return image
+    if x1 <= width * 0.01 and y1 <= height * 0.01 and x2 >= width * 0.99 and y2 >= height * 0.99:
+        return image
+    if not warped_margin_trim_preserves_document_shape(width, height, cropped_width, cropped_height):
+        return image
+
+    current_ratio = max(width, height) / max(1.0, min(width, height))
+    cropped_ratio = max(cropped_width, cropped_height) / max(1.0, min(cropped_width, cropped_height))
+    if abs(cropped_ratio - DOCUMENT_RATIO) > abs(current_ratio - DOCUMENT_RATIO) + 0.12:
+        return image
+
+    cropped = image[y1:y2, x1:x2]
+    if cropped.size == 0:
+        return image
+
+    app.logger.info(
+        "Oriented front neutral-card margin trim applied left=%s right=%s top=%s bottom=%s original=%sx%s cropped=%sx%s",
+        x1,
+        width - x2,
+        y1,
+        height - y2,
+        width,
+        height,
+        cropped.shape[1],
+        cropped.shape[0],
+    )
+    return cropped
+
+
+def _outer_vertical_line_candidates(image: np.ndarray) -> tuple[tuple[float, float, float, float] | None, tuple[float, float, float, float] | None]:
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    height, width = gray.shape[:2]
+    enhanced_gray = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(gray)
+    blurred = cv2.GaussianBlur(enhanced_gray, (5, 5), 1.0)
+    edges = cv2.Canny(blurred, 24, 82, apertureSize=3, L2gradient=True)
+    edges = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
+    lines = cv2.HoughLinesP(
+        edges,
+        1,
+        np.pi / 180,
+        threshold=max(35, int(min(width, height) * 0.060)),
+        minLineLength=max(80, int(height * 0.20)),
+        maxLineGap=max(12, int(min(width, height) * 0.040)),
+    )
+    if lines is None:
+        return None, None
+
+    candidates: list[tuple[float, float, float, float, float, float]] = []
+    for line in lines.reshape(-1, 4):
+        x1, y1, x2, y2 = (float(value) for value in line)
+        if abs(y2 - y1) < 1e-4:
+            continue
+        length = float(np.hypot(x2 - x1, y2 - y1))
+        if length < height * 0.20:
+            continue
+        angle = abs(float(np.degrees(np.arctan2(y2 - y1, x2 - x1))))
+        if angle > 90:
+            angle = 180 - angle
+        if not 76 <= angle <= 90:
+            continue
+        slope = (x2 - x1) / (y2 - y1)
+        intercept = x1 - slope * y1
+        midpoint_x = intercept + slope * (height / 2)
+        candidates.append((midpoint_x, length, angle, slope, intercept, max(y1, y2) - min(y1, y2)))
+
+    left_candidates = [item for item in candidates if item[0] < width * 0.18 and item[5] >= height * 0.20]
+    right_candidates = [item for item in candidates if item[0] > width * 0.82 and item[5] >= height * 0.20]
+    if not left_candidates or not right_candidates:
+        return None, None
+
+    left = min(left_candidates, key=lambda item: item[0])
+    right = max(right_candidates, key=lambda item: item[0])
+    return left, right
+
+
+def _outer_horizontal_line_candidates(image: np.ndarray) -> tuple[tuple[float, float, float, float] | None, tuple[float, float, float, float] | None]:
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    height, width = gray.shape[:2]
+    enhanced_gray = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(gray)
+    blurred = cv2.GaussianBlur(enhanced_gray, (5, 5), 1.0)
+    edges = cv2.Canny(blurred, 24, 82, apertureSize=3, L2gradient=True)
+    edges = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
+    lines = cv2.HoughLinesP(
+        edges,
+        1,
+        np.pi / 180,
+        threshold=max(35, int(min(width, height) * 0.058)),
+        minLineLength=max(110, int(width * 0.24)),
+        maxLineGap=max(14, int(min(width, height) * 0.045)),
+    )
+    if lines is None:
+        return None, None
+
+    candidates: list[tuple[float, float, float, float, float, float]] = []
+    for line in lines.reshape(-1, 4):
+        x1, y1, x2, y2 = (float(value) for value in line)
+        if abs(x2 - x1) < 1e-4:
+            continue
+        length = float(np.hypot(x2 - x1, y2 - y1))
+        if length < width * 0.24:
+            continue
+        angle = abs(float(np.degrees(np.arctan2(y2 - y1, x2 - x1))))
+        if angle > 90:
+            angle = 180 - angle
+        if angle > 14:
+            continue
+        slope = (y2 - y1) / (x2 - x1)
+        intercept = y1 - slope * x1
+        midpoint_y = intercept + slope * (width / 2)
+        span = max(x1, x2) - min(x1, x2)
+        candidates.append((midpoint_y, length, angle, slope, intercept, span))
+
+    top_candidates = [item for item in candidates if item[0] < height * 0.24 and item[5] >= width * 0.24]
+    bottom_candidates = [item for item in candidates if item[0] > height * 0.76 and item[5] >= width * 0.24]
+    if not top_candidates or not bottom_candidates:
+        return None, None
+
+    top = min(top_candidates, key=lambda item: item[0])
+    bottom = max(bottom_candidates, key=lambda item: item[0])
+    return top, bottom
+
+
+def _intersection_vertical_horizontal(
+    vertical: tuple[float, float, float, float, float, float],
+    horizontal: tuple[float, float, float, float, float, float],
+) -> tuple[float, float] | None:
+    _v_midpoint, _v_length, _v_angle, vertical_slope, vertical_intercept, _v_span = vertical
+    _h_midpoint, _h_length, _h_angle, horizontal_slope, horizontal_intercept, _h_span = horizontal
+    denominator = 1.0 - horizontal_slope * vertical_slope
+    if abs(denominator) < 1e-4:
+        return None
+    y = (horizontal_slope * vertical_intercept + horizontal_intercept) / denominator
+    x = vertical_slope * y + vertical_intercept
+    return float(x), float(y)
+
+
+def _outer_edge_intersection_rect(image: np.ndarray) -> np.ndarray | None:
+    height, width = image.shape[:2]
+    left, right = _outer_vertical_line_candidates(image)
+    top, bottom = _outer_horizontal_line_candidates(image)
+    if left is None or right is None or top is None or bottom is None:
+        return None
+
+    points = [
+        _intersection_vertical_horizontal(left, top),
+        _intersection_vertical_horizontal(right, top),
+        _intersection_vertical_horizontal(right, bottom),
+        _intersection_vertical_horizontal(left, bottom),
+    ]
+    if any(point is None for point in points):
+        return None
+
+    source = np.array(points, dtype="float32")
+    outside_allowance = max(width, height) * 0.055
+    if np.any(source[:, 0] < -outside_allowance) or np.any(source[:, 1] < -outside_allowance):
+        return None
+    if np.any(source[:, 0] > width + outside_allowance) or np.any(source[:, 1] > height + outside_allowance):
+        return None
+
+    source[:, 0] = np.clip(source[:, 0], 0, width - 1)
+    source[:, 1] = np.clip(source[:, 1], 0, height - 1)
+    source = order_points(source)
+    source_width, source_height, source_ratio = rect_dimensions(source)
+    if source_width < width * 0.72 or source_height < height * 0.70:
+        return None
+    if not 1.30 <= source_ratio <= 1.95:
+        return None
+    source_area_ratio = rect_polygon_area(source) / max(1.0, float(width * height))
+    if source_area_ratio < 0.64:
+        return None
+
+    return source
+
+
+def correct_oriented_document_perspective_from_outer_edges(image: np.ndarray, output_side: Any = None) -> np.ndarray:
+    side_name = normalize_side(output_side)
+    if side_name not in {"frente", "reverso"}:
+        return image
+
+    height, width = image.shape[:2]
+    if width < 300 or height < 180:
+        return image
+
+    full_edge_source = _outer_edge_intersection_rect(image)
+    if full_edge_source is not None and rect_needs_post_orientation_perspective_correction(full_edge_source, output_side):
+        destination = np.array(
+            [
+                [0, 0],
+                [width - 1, 0],
+                [width - 1, height - 1],
+                [0, height - 1],
+            ],
+            dtype="float32",
+        )
+        corrected = cv2.warpPerspective(image, cv2.getPerspectiveTransform(full_edge_source, destination), (width, height))
+        app.logger.info(
+            "Post-orientation DNI full-edge perspective correction applied side=%s source=%s",
+            side_name,
+            [tuple(round(float(value), 1) for value in point) for point in full_edge_source],
+        )
+        return corrected
+
+    left, right = _outer_vertical_line_candidates(image)
+    if left is None or right is None:
+        return image
+
+    _left_midpoint, left_length, _left_angle, left_slope, left_intercept, _left_span = left
+    _right_midpoint, right_length, _right_angle, right_slope, right_intercept, _right_span = right
+    left_shift = abs(left_slope) * height
+    right_shift = abs(right_slope) * height
+    if max(left_shift, right_shift) < width * 0.075:
+        return image
+    if left_length < height * 0.30 or right_length < height * 0.30:
+        return image
+
+    horizontal_padding = max(4, int(width * 0.012))
+    left_top = left_intercept - horizontal_padding
+    left_bottom = left_intercept + left_slope * (height - 1) - horizontal_padding
+    right_top = right_intercept + horizontal_padding
+    right_bottom = right_intercept + right_slope * (height - 1) + horizontal_padding
+
+    source = np.array(
+        [
+            [left_top, 0],
+            [right_top, 0],
+            [right_bottom, height - 1],
+            [left_bottom, height - 1],
+        ],
+        dtype="float32",
+    )
+    source[:, 0] = np.clip(source[:, 0], 0, width - 1)
+    source[:, 1] = np.clip(source[:, 1], 0, height - 1)
+
+    top_width = float(np.linalg.norm(source[1] - source[0]))
+    bottom_width = float(np.linalg.norm(source[2] - source[3]))
+    if min(top_width, bottom_width) < width * 0.72:
+        return image
+    if max(top_width, bottom_width) / max(1.0, min(top_width, bottom_width)) > 1.24:
+        return image
+
+    source_area_ratio = rect_polygon_area(source) / max(1.0, float(width * height))
+    if source_area_ratio < 0.72:
+        return image
+
+    destination = np.array(
+        [
+            [0, 0],
+            [width - 1, 0],
+            [width - 1, height - 1],
+            [0, height - 1],
+        ],
+        dtype="float32",
+    )
+    corrected = cv2.warpPerspective(image, cv2.getPerspectiveTransform(source, destination), (width, height))
+    app.logger.info(
+        "Post-orientation DNI perspective correction applied side=%s left_shift=%.1f right_shift=%.1f source=%s",
+        side_name,
+        left_shift,
+        right_shift,
+        [tuple(round(float(value), 1) for value in point) for point in source],
+    )
+    return corrected
+
+
+def trim_warped_document_margins(image: np.ndarray, output_side: Any = None) -> np.ndarray:
+    height, width = image.shape[:2]
+    if width < 300 or height < 180:
+        return image
+
+    reverso_color_bounds = _reverso_color_card_trim_bounds(image, output_side)
+    if reverso_color_bounds is not None:
+        x1, y1, x2, y2 = reverso_color_bounds
+        if not (x1 == 0 and x2 == width and y1 == 0 and y2 == height):
+            cropped = image[y1:y2, x1:x2]
+            if cropped.size:
+                app.logger.info(
+                    "Reverso color DNI trim applied left=%s right=%s top=%s bottom=%s original=%sx%s cropped=%sx%s",
+                    x1,
+                    width - x2,
+                    y1,
+                    height - y2,
+                    width,
+                    height,
+                    cropped.shape[1],
+                    cropped.shape[0],
+                )
+                return cropped
 
     outside_in_bounds = _outside_in_card_bounds(image)
     if outside_in_bounds is not None:
@@ -2016,6 +3676,15 @@ def trim_warped_document_margins(image: np.ndarray) -> np.ndarray:
             return image
         cropped = image[y1:y2, x1:x2]
         if cropped.size and cropped.shape[0] >= height * 0.68 and cropped.shape[1] >= width * 0.68:
+            if not warped_margin_trim_preserves_document_shape(width, height, cropped.shape[1], cropped.shape[0]):
+                app.logger.warning(
+                    "Skipped outside-in DNI margin trim because cropped ratio is implausible original=%sx%s cropped=%sx%s",
+                    width,
+                    height,
+                    cropped.shape[1],
+                    cropped.shape[0],
+                )
+                return image
             app.logger.info(
                 "Outside-in DNI margin trim applied left=%s right=%s top=%s bottom=%s original=%sx%s cropped=%sx%s",
                 x1,
@@ -2091,12 +3760,13 @@ def trim_warped_document_margins(image: np.ndarray) -> np.ndarray:
     if x1 == 0 and x2 == width and y1 == 0 and y2 == height:
         return image
 
-    safety_padding_x = max(3, int(width * 0.009))
-    safety_padding_y = max(3, int(height * 0.013))
+    safety_padding_x = max(4, int(width * 0.012))
+    right_safety_padding_x = max(safety_padding_x, int(width * (0.032 if normalize_side(output_side) == "reverso" else 0.024)))
+    safety_padding_y = max(4, int(height * 0.018))
     if x1 > 0:
         x1 = max(0, x1 - safety_padding_x)
     if x2 < width:
-        x2 = min(width, x2 + safety_padding_x)
+        x2 = min(width, x2 + right_safety_padding_x)
     if y1 > 0:
         y1 = max(0, y1 - safety_padding_y)
     if y2 < height:
@@ -2104,6 +3774,15 @@ def trim_warped_document_margins(image: np.ndarray) -> np.ndarray:
 
     cropped = image[y1:y2, x1:x2]
     if cropped.size == 0 or cropped.shape[0] < height * 0.68 or cropped.shape[1] < width * 0.68:
+        return image
+    if not warped_margin_trim_preserves_document_shape(width, height, cropped.shape[1], cropped.shape[0]):
+        app.logger.warning(
+            "Skipped post-warp DNI margin trim because cropped ratio is implausible original=%sx%s cropped=%sx%s",
+            width,
+            height,
+            cropped.shape[1],
+            cropped.shape[0],
+        )
         return image
 
     app.logger.info(
@@ -2122,19 +3801,62 @@ def trim_warped_document_margins(image: np.ndarray) -> np.ndarray:
 
 def warp_document(image: np.ndarray, contour: np.ndarray | None, output_side: Any = None) -> np.ndarray:
     rect = order_points(contour if contour is not None else fallback_document_box(image))
+    if (
+        contour is not None
+        and env_flag("ENABLE_REVERSO_NEAR_FRONTAL_CROP", True)
+        and should_preserve_reverso_near_frontal_crop(rect, image.shape[1], image.shape[0], output_side)
+    ):
+        conservative = crop_nearly_frontal_document(image, rect, output_side)
+        if conservative is not None:
+            app.logger.info("Skipped reverso perspective correction before refinement because DNI geometry is mild near-frontal")
+            return conservative
     if contour is not None and env_flag("ENABLE_PRE_WARP_REFINEMENT", True):
         rect = refine_low_quality_side_margins(image, rect)
+        rect = refine_reverso_border_contaminated_rect(image, rect, output_side)
+        rect = refine_rect_from_color_edge_profiles(image, rect, output_side)
+    if (
+        contour is not None
+        and env_flag("ENABLE_REVERSO_NEAR_FRONTAL_CROP", True)
+        and should_preserve_reverso_near_frontal_crop(rect, image.shape[1], image.shape[0], output_side)
+    ):
+        conservative = crop_nearly_frontal_document(image, rect, output_side)
+        if conservative is not None:
+            app.logger.info("Skipped reverso perspective correction because DNI geometry is mild near-frontal")
+            return conservative
+    needs_perspective = rect_needs_perspective_correction(rect, output_side)
+    if (
+        contour is not None
+        and not needs_perspective
+        and should_crop_border_clipped_near_frontal(rect, image.shape[1], image.shape[0], output_side)
+    ):
+        conservative = crop_nearly_frontal_document(image, rect, output_side)
+        if conservative is not None:
+            app.logger.info("Border-clipped near-frontal DNI conservative crop selected")
+            return conservative
     if env_flag("ENABLE_PRE_WARP_EXPANSION", True):
         rect = expand_rect_before_warp_for_side(rect, image.shape[1], image.shape[0], output_side)
     else:
         rect = order_points(rect)
-    if contour is not None and env_flag("ENABLE_NEAR_FRONTAL_CROP", True) and is_nearly_frontal_rect(rect, output_side):
-        conservative = crop_nearly_frontal_document(image, rect)
+    needs_perspective = rect_needs_perspective_correction(rect, output_side)
+    if (
+        contour is not None
+        and not needs_perspective
+        and env_flag("ENABLE_NEAR_FRONTAL_CROP", True)
+        and is_nearly_frontal_rect(rect, output_side)
+    ):
+        conservative = crop_nearly_frontal_document(image, rect, output_side)
         if conservative is not None:
+            app.logger.info("Skipped perspective correction because DNI geometry is near-frontal")
             return conservative
-    if contour is not None and env_flag("ENABLE_REVERSO_NEAR_FRONTAL_CROP", True) and should_preserve_reverso_near_frontal_crop(rect, image.shape[1], image.shape[0], output_side):
-        conservative = crop_nearly_frontal_document(image, rect)
+    if (
+        contour is not None
+        and not needs_perspective
+        and env_flag("ENABLE_REVERSO_NEAR_FRONTAL_CROP", True)
+        and should_preserve_reverso_near_frontal_crop(rect, image.shape[1], image.shape[0], output_side)
+    ):
+        conservative = crop_nearly_frontal_document(image, rect, output_side)
         if conservative is not None:
+            app.logger.info("Skipped reverso perspective correction because DNI geometry is near-frontal")
             return conservative
     width_a = np.linalg.norm(rect[2] - rect[3])
     width_b = np.linalg.norm(rect[1] - rect[0])
@@ -2179,7 +3901,7 @@ def warp_document(image: np.ndarray, contour: np.ndarray | None, output_side: An
             warped = cv2.rotate(warped, cv2.ROTATE_90_COUNTERCLOCKWISE)
     if warped.shape[0] > warped.shape[1]:
         warped = cv2.rotate(warped, cv2.ROTATE_90_CLOCKWISE)
-    warped = trim_warped_document_margins(warped)
+    warped = trim_warped_document_margins(warped, output_side)
     return warped
 
 
@@ -2438,7 +4160,7 @@ def front_portrait_orientation_analysis(image: np.ndarray) -> dict[str, Any] | N
     left_score = front_portrait_left_score(image, 0.02, 0.36)
     right_score = front_portrait_left_score(image, 0.64, 0.98)
     delta = left_score - right_score
-    if abs(delta) < 0.018:
+    if abs(delta) < 0.040:
         return None
 
     return {
@@ -2448,6 +4170,76 @@ def front_portrait_orientation_analysis(image: np.ndarray) -> dict[str, Any] | N
         "scores": {
             "left": float(left_score),
             "right": float(right_score),
+        },
+    }
+
+
+def front_mrz_band_score(image: np.ndarray, start_ratio: float, end_ratio: float) -> float:
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    height, width = gray.shape[:2]
+    region = gray[int(height * start_ratio): int(height * end_ratio), int(width * 0.03): int(width * 0.97)]
+    if region.size == 0:
+        return 0.0
+
+    if region.shape[1] < 800:
+        scale = 800 / max(1, region.shape[1])
+        region = cv2.resize(
+            region,
+            (int(region.shape[1] * scale), int(region.shape[0] * scale)),
+            interpolation=cv2.INTER_CUBIC,
+        )
+
+    blurred = cv2.GaussianBlur(region, (3, 3), 0)
+    threshold = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+    row_density = threshold.mean(axis=1) / 255.0
+    dark_ratio = float(threshold.mean() / 255.0)
+    dense_rows = float(np.count_nonzero(row_density > 0.10)) / max(1, row_density.shape[0])
+    very_dense_rows = float(np.count_nonzero(row_density > 0.17)) / max(1, row_density.shape[0])
+    column_density = threshold.mean(axis=0) / 255.0
+    column_coverage = float((column_density > 0.035).mean())
+    less_template = build_chevron_template("<")
+    greater_template = build_chevron_template(">")
+    less_match = cv2.matchTemplate(threshold, less_template, cv2.TM_CCOEFF_NORMED)
+    greater_match = cv2.matchTemplate(threshold, greater_template, cv2.TM_CCOEFF_NORMED)
+    chevron_score = 0.0
+    if np.any(less_match > 0.34):
+        chevron_score += min(float(less_match[less_match > 0.34].sum()) / 18.0, 2.0)
+    if np.any(greater_match > 0.34):
+        chevron_score += min(float(greater_match[greater_match > 0.34].sum()) / 18.0, 2.0)
+
+    score = 0.0
+    if dark_ratio > 0.035:
+        score += min((dark_ratio - 0.035) * 70, 3.2)
+    if dense_rows > 0.07:
+        score += min((dense_rows - 0.07) * 18, 3.2)
+    if very_dense_rows > 0.02:
+        score += min((very_dense_rows - 0.02) * 26, 2.2)
+    if column_coverage > 0.32:
+        score += min((column_coverage - 0.32) * 4.2, 1.6)
+    return score + chevron_score
+
+
+def front_mrz_orientation_analysis(image: np.ndarray) -> dict[str, Any] | None:
+    bottom_score = front_mrz_band_score(image, 0.58, 0.96)
+    top_score = front_mrz_band_score(image, 0.04, 0.42)
+    strongest = max(top_score, bottom_score)
+    delta = abs(bottom_score - top_score)
+    if strongest < 1.35 or delta < max(0.55, strongest * 0.12):
+        return None
+
+    confidence = min(
+        0.94,
+        0.70
+        + min(delta / 4.0, 1.0) * 0.20
+        + min(max(0.0, strongest - 1.35) / 5.0, 1.0) * 0.04,
+    )
+    return {
+        "rotation": 0 if bottom_score >= top_score else 180,
+        "confidence": confidence,
+        "method": "front_mrz_bottom_band",
+        "scores": {
+            "top": float(top_score),
+            "bottom": float(bottom_score),
         },
     }
 
@@ -2487,13 +4279,17 @@ def reverse_chevron_orientation_analysis(image: np.ndarray, rotated_180: np.ndar
     score_0 = mrz_chevron_score(image)
     score_180 = mrz_chevron_score(rotated_180)
     delta = abs(score_0 - score_180)
-    if max(score_0, score_180) <= 0.0:
+    signal = max(abs(score_0), abs(score_180), delta)
+    if signal < 30.0:
         return None
     if delta < 24.0:
         return None
+    confidence = min(0.92, 0.62 + min(delta / 220.0, 1.0) * 0.30)
+    if max(score_0, score_180) <= 0.0:
+        confidence = min(confidence, 0.70)
     return {
         "rotation": 0 if score_0 >= score_180 else 180,
-        "confidence": min(0.92, 0.62 + min(delta / 220.0, 1.0) * 0.30),
+        "confidence": confidence,
         "method": "reverse_mrz_chevrons",
         "scores": {
             "score0": score_0,
@@ -2567,11 +4363,33 @@ def reverse_pdf417_orientation_analysis(image: np.ndarray) -> dict[str, Any] | N
 def side_visual_orientation_analysis(image: np.ndarray, rotated_180: np.ndarray, output_side: Any) -> dict[str, Any] | None:
     side = normalize_side(output_side)
     if side == "frente":
+        mrz_orientation = front_mrz_orientation_analysis(image)
+        emblem_orientation = front_emblem_orientation_analysis(image)
+        portrait_orientation = front_portrait_orientation_analysis(image)
+        if (
+            emblem_orientation is not None
+            and portrait_orientation is not None
+            and str(emblem_orientation.get("method")) == "front_emblem_corner"
+            and str(portrait_orientation.get("method")) == "front_portrait_left"
+            and int(emblem_orientation["rotation"]) != int(portrait_orientation["rotation"])
+            and float(portrait_orientation["confidence"]) >= 0.80
+            and float(emblem_orientation["confidence"]) - float(portrait_orientation["confidence"]) <= 0.05
+        ):
+            adjusted = dict(portrait_orientation)
+            adjusted["confidence"] = max(float(portrait_orientation["confidence"]), float(emblem_orientation["confidence"]) + 0.01)
+            adjusted["method"] = "front_portrait_left_over_emblem_tie"
+            adjusted["conflict"] = {
+                "emblem": emblem_orientation,
+                "portrait": portrait_orientation,
+            }
+            return adjusted
+
         visual_candidates = [
             candidate
             for candidate in (
-                front_emblem_orientation_analysis(image),
-                front_portrait_orientation_analysis(image),
+                mrz_orientation,
+                emblem_orientation,
+                portrait_orientation,
             )
             if candidate is not None
         ]
@@ -2580,9 +4398,81 @@ def side_visual_orientation_analysis(image: np.ndarray, rotated_180: np.ndarray,
         return max(visual_candidates, key=lambda item: float(item["confidence"]))
     if side == "reverso":
         pdf417_orientation = reverse_pdf417_orientation_analysis(image)
+        chevron_orientation = reverse_chevron_orientation_analysis(image, rotated_180)
+        front_emblem_orientation = front_emblem_orientation_analysis(image)
+        front_portrait_orientation = front_portrait_orientation_analysis(image)
+        if (
+            pdf417_orientation is not None
+            and front_emblem_orientation is not None
+            and front_portrait_orientation is not None
+            and int(pdf417_orientation["rotation"]) == 180
+            and int(front_emblem_orientation["rotation"]) == 0
+            and int(front_portrait_orientation["rotation"]) == 0
+            and float(front_emblem_orientation["confidence"]) >= 0.75
+            and float(front_portrait_orientation["confidence"]) >= 0.82
+        ):
+            adjusted = dict(front_portrait_orientation)
+            adjusted["confidence"] = max(float(front_portrait_orientation["confidence"]), float(pdf417_orientation["confidence"]) + 0.01)
+            adjusted["method"] = "front_visual_over_reverse_pdf417_guard"
+            adjusted["conflict"] = {
+                "pdf417": pdf417_orientation,
+                "frontEmblem": front_emblem_orientation,
+                "frontPortrait": front_portrait_orientation,
+            }
+            return adjusted
+        if (
+            pdf417_orientation is not None
+            and front_emblem_orientation is not None
+            and int(pdf417_orientation["rotation"]) == 180
+            and int(front_emblem_orientation["rotation"]) == 0
+            and float(front_emblem_orientation["confidence"]) >= 0.75
+            and abs(
+                float(pdf417_orientation.get("scores", {}).get("top", 0.0))
+                - float(pdf417_orientation.get("scores", {}).get("bottom", 0.0))
+            )
+            <= 0.14
+        ):
+            adjusted = dict(front_emblem_orientation)
+            adjusted["confidence"] = max(float(front_emblem_orientation["confidence"]), float(pdf417_orientation["confidence"]) + 0.01)
+            adjusted["method"] = "front_emblem_over_reverse_pdf417_guard"
+            adjusted["conflict"] = {
+                "pdf417": pdf417_orientation,
+                "frontEmblem": front_emblem_orientation,
+            }
+            return adjusted
+        if (
+            pdf417_orientation is not None
+            and chevron_orientation is not None
+            and int(pdf417_orientation["rotation"]) == 180
+            and int(chevron_orientation["rotation"]) == 0
+            and float(chevron_orientation["confidence"]) >= 0.68
+            and frame_has_wide_bottom_mrz_band(image)
+        ):
+            adjusted = dict(chevron_orientation)
+            adjusted["confidence"] = max(float(chevron_orientation["confidence"]), 0.82)
+            adjusted["method"] = "reverse_mrz_bottom_band_over_pdf417"
+            adjusted["conflict"] = {
+                "pdf417": pdf417_orientation,
+                "chevrons": chevron_orientation,
+            }
+            return adjusted
+        if (
+            pdf417_orientation is not None
+            and chevron_orientation is not None
+            and int(pdf417_orientation["rotation"]) != int(chevron_orientation["rotation"])
+            and float(chevron_orientation["confidence"]) >= float(pdf417_orientation["confidence"]) - 0.02
+        ):
+            adjusted = dict(chevron_orientation)
+            adjusted["confidence"] = max(float(chevron_orientation["confidence"]), float(pdf417_orientation["confidence"]) + 0.01)
+            adjusted["method"] = "reverse_mrz_chevrons_over_pdf417_tie"
+            adjusted["conflict"] = {
+                "pdf417": pdf417_orientation,
+                "chevrons": chevron_orientation,
+            }
+            return adjusted
         if pdf417_orientation is not None:
             return pdf417_orientation
-        return reverse_chevron_orientation_analysis(image, rotated_180)
+        return chevron_orientation
     return None
 
 
@@ -2688,6 +4578,7 @@ def layout_orientation_analysis(image: np.ndarray) -> dict[str, Any]:
 
 
 def auto_orient_document(image: np.ndarray, output_side: Any = None) -> tuple[np.ndarray, dict[str, Any]]:
+    side_name = normalize_side(output_side)
     layout = layout_orientation_analysis(image)
     ocr_enabled = should_use_ocr_orientation()
     ocr_scores: dict[str, Any] = {"enabled": ocr_enabled}
@@ -2724,25 +4615,119 @@ def auto_orient_document(image: np.ndarray, output_side: Any = None) -> tuple[np
                 and visual_rotation != selected_rotation
                 and visual_confidence >= 0.81
                 and confidence < 0.98
+            ) or (
+                side_name == "frente"
+                and visual_method == "front_portrait_left"
+                and visual_rotation == 0
+                and selected_rotation == 180
+                and visual_confidence >= 0.84
+                and confidence < 0.66
+                and abs(float(ocr_scores.get("score0", 0.0)) - float(ocr_scores.get("score180", 0.0))) < 0.04
             )
         else:
-            should_override = (
-                visual_confidence >= confidence + 0.03
-                or (
-                    visual_method in {"front_emblem_corner", "front_portrait_left", "reverse_pdf417_bottom_band"}
-                    and visual_rotation != selected_rotation
-                    and visual_confidence >= 0.81
+            layout_over_pdf_guard = False
+            if (
+                side_name == "reverso"
+                and method == "layout_mrz_barcode"
+                and selected_rotation == 180
+                and visual_method == "reverse_pdf417_bottom_band"
+                and visual_rotation == 0
+                and confidence >= 0.90
+                and visual_confidence < 0.90
+            ):
+                chevron_orientation = reverse_chevron_orientation_analysis(image, rotated_180)
+                layout_over_pdf_guard = (
+                    chevron_orientation is not None
+                    and int(chevron_orientation["rotation"]) == 180
+                    and float(chevron_orientation["confidence"]) >= 0.66
                 )
-                or (
-                    visual_rotation != selected_rotation
-                    and confidence < 0.72
-                    and visual_confidence >= 0.68
+            should_override = (
+                not layout_over_pdf_guard
+                and (
+                    (
+                        visual_confidence >= confidence + 0.03
+                        and (
+                            visual_rotation == selected_rotation
+                            or visual_method not in {"front_emblem_corner"}
+                        )
+                    )
+                    or (
+                        visual_method in {"front_emblem_corner", "reverse_pdf417_bottom_band"}
+                        and visual_rotation != selected_rotation
+                        and visual_confidence >= 0.81
+                    )
+                    or (
+                        visual_method == "front_portrait_left"
+                        and visual_rotation != selected_rotation
+                        and confidence < 0.86
+                        and visual_confidence >= 0.81
+                    )
+                    or (
+                        visual_rotation != selected_rotation
+                        and visual_method not in {"front_emblem_corner"}
+                        and confidence < 0.72
+                        and visual_confidence >= 0.68
+                    )
                 )
             )
         if should_override:
             selected_rotation = visual_rotation
             confidence = max(confidence, visual_confidence)
             method = visual_method
+        elif (
+            side_name == "frente"
+            and method == "layout_mrz_barcode"
+            and selected_rotation == 180
+            and visual_method == "front_portrait_left"
+            and visual_rotation == 0
+            and visual_confidence >= 0.80
+            and float(layout.get("topScore", 0.0)) >= 0.20
+            and float(layout.get("bottomScore", 0.0)) <= 0.045
+        ):
+            selected_rotation = 0
+            confidence = max(0.86, visual_confidence)
+            method = "front_portrait_left_over_noisy_top_layout"
+
+    if (
+        side_name == "reverso"
+        and method == "reverse_pdf417_bottom_band"
+        and selected_rotation == 180
+        and int(layout.get("rotation", 0)) == 0
+        and float(layout.get("confidence", 0.0)) >= 0.68
+    ):
+        front_portrait_orientation = front_portrait_orientation_analysis(image)
+        if (
+            front_portrait_orientation is not None
+            and int(front_portrait_orientation["rotation"]) == 0
+            and float(front_portrait_orientation["confidence"]) >= 0.875
+        ):
+            selected_rotation = 0
+            confidence = max(confidence, float(front_portrait_orientation["confidence"]) + 0.01)
+            method = "front_portrait_over_reverse_pdf417_guard"
+
+    if (
+        side_visual is None
+        and method == "layout_mrz_barcode"
+        and selected_rotation == 180
+        and frame_has_wide_bottom_mrz_band(image)
+    ):
+        selected_rotation = 0
+        confidence = max(0.82, confidence)
+        method = "bottom_mrz_band_guard"
+
+    if (
+        side_name == "frente"
+        and side_visual is None
+        and method == "layout_mrz_barcode"
+        and selected_rotation == 180
+        and confidence < 0.80
+    ):
+        chevron_score_0 = mrz_chevron_score(image)
+        chevron_score_180 = mrz_chevron_score(rotated_180)
+        if chevron_score_0 < -30.0 and chevron_score_180 < -120.0 and abs(chevron_score_0 - chevron_score_180) > 80.0:
+            selected_rotation = 0
+            confidence = max(0.82, confidence)
+            method = "front_negative_chevron_layout_guard"
 
     output = cv2.rotate(image, cv2.ROTATE_180) if selected_rotation == 180 else image
     diagnostics = {
@@ -2841,8 +4826,39 @@ def classify_side_text(image: np.ndarray) -> tuple[float, float, str]:
 
 def process_selected_image(image: np.ndarray, output_side: Any = None) -> tuple[np.ndarray, dict[str, Any]]:
     contour = find_document_contour(image)
-    warped = warp_document(image, contour, output_side)
+    selected_full_frame = contour is not None and rect_is_full_frame(contour, image.shape[1], image.shape[0])
+    selected_conservative_crop = False
+    if selected_full_frame:
+        warped = warp_document(image, contour, output_side)
+        full_frame_rotated_90 = image.shape[0] > image.shape[1] * 1.08
+    elif (
+        contour is not None
+        and env_flag("ENABLE_PORTRAIT_CAPTURE_CONSERVATIVE_CROP", True)
+        and should_preserve_portrait_capture_without_perspective(
+            order_points(contour),
+            image.shape[1],
+            image.shape[0],
+            output_side,
+        )
+    ):
+        conservative = crop_nearly_frontal_document(image, order_points(contour), output_side)
+        if conservative is not None:
+            warped = conservative
+            selected_conservative_crop = True
+        else:
+            warped = warp_document(image, contour, output_side)
+    else:
+        warped = warp_document(image, contour, output_side)
     oriented, diagnostics = auto_orient_document(warped, output_side)
+    if not selected_full_frame and not selected_conservative_crop:
+        oriented = trim_oriented_front_neutral_card_margins(oriented, output_side)
+        oriented = correct_oriented_document_perspective_from_outer_edges(oriented, output_side)
+    else:
+        if selected_full_frame:
+            diagnostics["fullFrameDocument"] = True
+            diagnostics["fullFrameRotated90"] = full_frame_rotated_90
+        if selected_conservative_crop:
+            diagnostics["conservativeNoPerspective"] = True
     return enhance_image(oriented), diagnostics
 
 
@@ -3064,28 +5080,29 @@ def document_file_prefix(tipo_documento: Any) -> str:
     return "ce" if "CE" in text or "EXTRANJ" in text else "dni"
 
 
-def upload_output(
-    image: np.ndarray,
-    bucket_name: str | None,
-    job_id: str,
-    dni: str,
-    side_name: str,
-    tipo_documento: Any = None,
-) -> dict[str, str]:
-    init_firebase()
-    if bucket_name:
-        bucket = storage.bucket(bucket_name)
-    else:
-        bucket = storage.bucket()
+def resize_to_width(image: np.ndarray, width: int) -> np.ndarray:
+    current_height, current_width = image.shape[:2]
+    if current_width <= 0 or current_height <= 0 or current_width == width:
+        return image
+    ratio = width / float(current_width)
+    height = max(1, int(round(current_height * ratio)))
+    interpolation = cv2.INTER_AREA if width < current_width else cv2.INTER_CUBIC
+    return cv2.resize(image, (width, height), interpolation=interpolation)
 
-    ok, encoded = cv2.imencode(".jpg", image, [int(cv2.IMWRITE_JPEG_QUALITY), 94])
+
+def normalize_full_frame_document_capture(image: np.ndarray, target_width: int) -> tuple[np.ndarray, bool]:
+    height, width = image.shape[:2]
+    if height > width * 1.08 and frame_has_document_ratio(width, height):
+        image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+        return resize_to_width(image, target_width), True
+    return resize_to_width(image, target_width), False
+
+
+def upload_jpeg_image(bucket: Any, image: np.ndarray, path: str, token: str, quality: int) -> dict[str, str]:
+    ok, encoded = cv2.imencode(".jpg", image, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
     if not ok:
         raise RuntimeError("No se pudo codificar la imagen procesada.")
 
-    prefix = document_file_prefix(tipo_documento)
-    safe_document = safe_slug(dni, "documento")
-    path = f"{OUTPUT_PREFIX}/{safe_document}/{prefix}-{safe_document}-procesado-{safe_slug(side_name, 'lado')}.jpg"
-    token = str(uuid.uuid4())
     blob = bucket.blob(path)
     blob.metadata = {"firebaseStorageDownloadTokens": token}
     blob.upload_from_string(encoded.tobytes(), content_type="image/jpeg")
@@ -3099,6 +5116,32 @@ def upload_output(
         "contentType": "image/jpeg",
         "bucket": bucket.name,
     }
+
+
+def upload_output(
+    image: np.ndarray,
+    bucket_name: str | None,
+    job_id: str,
+    dni: str,
+    side_name: str,
+    tipo_documento: Any = None,
+) -> dict[str, Any]:
+    init_firebase()
+    if bucket_name:
+        bucket = storage.bucket(bucket_name)
+    else:
+        bucket = storage.bucket()
+
+    prefix = document_file_prefix(tipo_documento)
+    safe_document = safe_slug(dni, "documento")
+    safe_side = safe_slug(side_name, "lado")
+    path = f"{OUTPUT_PREFIX}/{safe_document}/{prefix}-{safe_document}-procesado-{safe_side}.jpg"
+    small_path = f"{OUTPUT_PREFIX}/{safe_document}/{prefix}-{safe_document}-procesado-{safe_side}-small.jpg"
+    token = str(uuid.uuid4())
+    output = upload_jpeg_image(bucket, image, path, token, 94)
+    small_image = resize_to_width(image, SMALL_OUTPUT_WIDTH)
+    output["small"] = upload_jpeg_image(bucket, small_image, small_path, token, 88)
+    return output
 
 
 def process_side(job: dict[str, Any], side: dict[str, Any]) -> dict[str, Any]:

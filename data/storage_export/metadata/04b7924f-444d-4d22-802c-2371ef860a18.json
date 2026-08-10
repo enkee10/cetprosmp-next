@@ -1,0 +1,24 @@
+{
+  "name": "documentos/backups/acta-opcion-ocupacional-margenes-20260722140626.xlsx",
+  "bucket": "cetprosmp-2026.firebasestorage.app",
+  "metageneration": 1,
+  "generation": 1784729187498238,
+  "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "storageClass": "REGIONAL",
+  "contentDisposition": "inline",
+  "downloadTokens": [
+    "28fd26ca-7671-417a-a607-6e93f4217387"
+  ],
+  "etag": "CP7x9qm65pUDEAE=",
+  "customMetadata": {
+    "updatedBy": "codex",
+    "updatedAt": "2026-07-22T14:00:59.146Z",
+    "sourceFileName": "Acta-Opcion-Ocupacional.xlsx",
+    "previousBackupPath": "documentos/backups/acta-opcion-ocupacional-20260722140059.xlsx"
+  },
+  "timeCreated": "2026-07-22T14:06:27.504Z",
+  "updated": "2026-07-22T14:06:27.504Z",
+  "size": 89079,
+  "md5Hash": "U1JOp4/GbTgd/GbZUgyrJA==",
+  "crc32c": "LFJY5g=="
+}

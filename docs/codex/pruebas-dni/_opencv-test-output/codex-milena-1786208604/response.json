@@ -1,0 +1,119 @@
+{
+  "errors": [],
+  "jobId": "codex-milena-1786208604",
+  "outputs": [
+    {
+      "hasTwoBodies": false,
+      "orientationDiagnostics": {
+        "confidence": 0.6147769946796559,
+        "layout": {
+          "bottomScore": 0.43515712318754685,
+          "confidence": 0.6594173708198694,
+          "rotation": 180,
+          "topScore": 0.5589062385919161
+        },
+        "method": "ocr_tesseract_layout",
+        "ocr": {
+          "confidence": 0.6147769946796559,
+          "enabled": true,
+          "evidence0": {
+            "averageConfidence": 45.70652173913044,
+            "keywordMatches": 0,
+            "readableCharacters": 187,
+            "readableTokens": 61,
+            "score": 0.3805022413092393
+          },
+          "evidence180": {
+            "averageConfidence": 23.251231527093594,
+            "keywordMatches": 0,
+            "readableCharacters": 206,
+            "readableTokens": 64,
+            "score": 0.30348571023752235
+          },
+          "rotation": 0,
+          "score0": 0.3805022413092393,
+          "score180": 0.30348571023752235
+        },
+        "rotationApplied": 0,
+        "side": "frente",
+        "sideVisual": {
+          "confidence": 0.8799999999999999,
+          "method": "front_portrait_left",
+          "rotation": 0,
+          "scores": {
+            "left": 0.4398420013398818,
+            "right": 0.3483572676265023
+          }
+        }
+      },
+      "output": {
+        "bucket": "cetprosmp-2026.firebasestorage.app",
+        "contentType": "image/jpeg",
+        "path": "matriculas/documentos-procesados/codex-milena-1786208604/dni-codex-milena-1786208604-procesado-frente.jpg",
+        "small": {
+          "bucket": "cetprosmp-2026.firebasestorage.app",
+          "contentType": "image/jpeg",
+          "path": "matriculas/documentos-procesados/codex-milena-1786208604/dni-codex-milena-1786208604-procesado-frente-small.jpg",
+          "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-milena-1786208604%2Fdni-codex-milena-1786208604-procesado-frente-small.jpg?alt=media&token=3d962cd9-774a-402b-b212-76a067c0e485"
+        },
+        "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-milena-1786208604%2Fdni-codex-milena-1786208604-procesado-frente.jpg?alt=media&token=3d962cd9-774a-402b-b212-76a067c0e485"
+      },
+      "selectedArea": "completa",
+      "side": "frente",
+      "sourcePath": "codex/pruebas-dni/codex-milena-1786208604/original-frente.pdf"
+    },
+    {
+      "hasTwoBodies": false,
+      "orientationDiagnostics": {
+        "confidence": 0.723808322912585,
+        "layout": {
+          "bottomScore": 0.2187881800447714,
+          "confidence": 0.723808322912585,
+          "rotation": 0,
+          "topScore": 0.1447463123867394
+        },
+        "method": "layout_mrz_barcode",
+        "ocr": {
+          "confidence": 0.5194092043710773,
+          "enabled": true,
+          "evidence0": {
+            "averageConfidence": 36.60294117647059,
+            "keywordMatches": 0,
+            "readableCharacters": 158,
+            "readableTokens": 66,
+            "score": 0.3134134268222057
+          },
+          "evidence180": {
+            "averageConfidence": 39.986577181208055,
+            "keywordMatches": 0,
+            "readableCharacters": 190,
+            "readableTokens": 78,
+            "score": 0.32517111796476456
+          },
+          "rotation": 180,
+          "score0": 0.3134134268222057,
+          "score180": 0.32517111796476456
+        },
+        "rotationApplied": 0,
+        "side": "reverso",
+        "sideVisual": null
+      },
+      "output": {
+        "bucket": "cetprosmp-2026.firebasestorage.app",
+        "contentType": "image/jpeg",
+        "path": "matriculas/documentos-procesados/codex-milena-1786208604/dni-codex-milena-1786208604-procesado-reverso.jpg",
+        "small": {
+          "bucket": "cetprosmp-2026.firebasestorage.app",
+          "contentType": "image/jpeg",
+          "path": "matriculas/documentos-procesados/codex-milena-1786208604/dni-codex-milena-1786208604-procesado-reverso-small.jpg",
+          "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-milena-1786208604%2Fdni-codex-milena-1786208604-procesado-reverso-small.jpg?alt=media&token=7587648e-6a94-4acb-9968-95bad127d65e"
+        },
+        "url": "https://firebasestorage.googleapis.com/v0/b/cetprosmp-2026.firebasestorage.app/o/matriculas%2Fdocumentos-procesados%2Fcodex-milena-1786208604%2Fdni-codex-milena-1786208604-procesado-reverso.jpg?alt=media&token=7587648e-6a94-4acb-9968-95bad127d65e"
+      },
+      "selectedArea": "completa",
+      "side": "reverso",
+      "sourcePath": "codex/pruebas-dni/codex-milena-1786208604/original-reverso.pdf"
+    }
+  ],
+  "status": "completed"
+}

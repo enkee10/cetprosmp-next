@@ -21,6 +21,7 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import UserForm from '@/components/intranet/users/UserForm';
+import { MatriculaForm } from '@/components/intranet/matriculas/MatriculasClient';
 import Modal1 from '@/components/Modal1';
 import { useAuth } from '@/context/AuthContext';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
@@ -56,8 +57,10 @@ interface User {
   direccion?: string;
   distrito?: string;
   fechaNacimiento?: string;
+  fechaVencimiento?: string;
   telefono?: string;
   sexo?: string;
+  nombreColegio?: string;
   correoInstitucional?: string;
   correo_institucional?: string;
   fechaCreacion?: string;
@@ -197,12 +200,15 @@ const UsersPage = () => {
   const { can } = useIntranetPermissions();
   const { settings: appSettings } = useAppSettings();
   const canDeleteRecords = can('users', 'delete');
+  const canCreateMatriculas = can('matriculas', 'create');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [matriculaUser, setMatriculaUser] = useState<User | null>(null);
+  const [matriculaFormResetKey, setMatriculaFormResetKey] = useState(0);
   const [userFormResetKey, setUserFormResetKey] = useState(0);
   const errorMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fetchUsersInFlightRef = useRef<Promise<void> | null>(null);
@@ -342,9 +348,24 @@ const UsersPage = () => {
     setMenuUser(null);
   };
 
+  const handleMatricularUser = (row: User) => {
+    setMatriculaUser(row);
+    setMatriculaFormResetKey((prev) => prev + 1);
+    setMenuAnchorEl(null);
+    setMenuUser(null);
+  };
+
   const handleDismissUserModal = () => {
     if (formSubmitting) return;
     setFormOpen(false);
+  };
+
+  const handleDismissMatriculaModal = () => {
+    setMatriculaUser(null);
+  };
+
+  const handleMatriculaSaved = () => {
+    setMatriculaUser(null);
   };
 
   const handleDeleteUser = async (
@@ -699,6 +720,15 @@ const UsersPage = () => {
         >
           Editar
         </MenuItem>
+        {canCreateMatriculas ? (
+          <MenuItem
+            onClick={() => {
+              if (menuUser) handleMatricularUser(menuUser);
+            }}
+          >
+            Matricular...
+          </MenuItem>
+        ) : null}
         {canDeleteRecords ? (
           <MenuItem
             onClick={() => {
@@ -739,6 +769,26 @@ const UsersPage = () => {
             initialData={
               selectedUser ? (selectedUser as unknown as Record<string, unknown>) : undefined
             }
+          />
+        ) : null}
+      </Modal1>
+
+      <Modal1
+        open={Boolean(matriculaUser)}
+        onClose={handleDismissMatriculaModal}
+        title="Nueva Matricula"
+        maxWidth="md"
+        disableAutoFocus
+      >
+        {matriculaUser ? (
+          <MatriculaForm
+            key={`${matriculaUser.id}-${matriculaFormResetKey}`}
+            isOpen={Boolean(matriculaUser)}
+            onCancel={handleDismissMatriculaModal}
+            onSaved={handleMatriculaSaved}
+            defaultSemestreId={appSettings.general.semestreActualId}
+            reconocimientoDniActivo={appSettings.formularioMatricula.activarReconocimientoDni}
+            initialUser={matriculaUser}
           />
         ) : null}
       </Modal1>

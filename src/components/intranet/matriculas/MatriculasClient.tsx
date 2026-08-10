@@ -254,6 +254,7 @@ interface MatriculaFormProps {
   onReset?: () => void;
   onSaved: (result?: { id?: number }) => void;
   defaultSemestreId?: number | null;
+  initialUser?: Partial<MatriculaUser> | null;
   reconocimientoDniActivo?: boolean;
   formVariant?: 'intranet' | 'standalone';
   standaloneFormKind?: 'actual' | 'siguiente';
@@ -627,13 +628,13 @@ const normalizeReciboInputValue = (value: unknown) => {
   if (RECIBO_OPTIONS.includes(text as typeof RECIBO_OPTIONS[number])) return text;
   const compactText = text.replace(/\s+/g, '');
   if (compactText === 'PORREGULARIZAR') return 'POR REGULARIZAR';
-  if (/^\d+$/.test(compactText)) return compactText.slice(0, 5);
+  if (/^\d+$/.test(compactText)) return compactText.slice(0, 6);
   return text;
 };
 
 const isValidReciboValue = (value: unknown) => {
   const text = normalizeReciboInputValue(value);
-  return Boolean(text && (RECIBO_OPTIONS.includes(text as typeof RECIBO_OPTIONS[number]) || /^\d{1,5}$/.test(text)));
+  return Boolean(text && (RECIBO_OPTIONS.includes(text as typeof RECIBO_OPTIONS[number]) || /^\d{1,6}$/.test(text)));
 };
 
 const getPaqueteOptionLabel = (paquete: PaqueteOption) =>
@@ -1021,6 +1022,30 @@ function valuesFromMatricula(matricula: MatriculaListItem): MatriculaFormValues 
   };
 }
 
+function valuesFromUser(user: Partial<MatriculaUser>, semestreId: string): MatriculaFormValues {
+  return {
+    ...initialValues,
+    semestreId,
+    tipoDocumento: user.tipoDocumento === 'CE' ? 'CE' : 'DNI',
+    dni: normalizeDocumentNumber(user.dni || ''),
+    apellidoPaterno: user.apellidoPaterno || '',
+    apellidoMaterno: user.apellidoMaterno || '',
+    nombre: user.nombre || '',
+    sexo: user.sexo === 'M' ? 'M' : user.sexo === 'F' ? 'F' : '',
+    nacionalidad: user.nacionalidad || 'PERUANA',
+    fechaNacimiento: asString(user.fechaNacimiento).split('T')[0],
+    fechaVencimiento: asString(user.fechaVencimiento).split('T')[0],
+    estadoCivil: normalizeAiCivilStatus(user.estadoCivil) || '',
+    instruccion: user.instruccion || 'Secundaria',
+    nombreColegio: user.nombreColegio || '',
+    direccion: user.direccion || '',
+    distrito: user.distrito || '',
+    celular: user.celular || '',
+    telefono: user.telefono || '',
+    email: user.email || '',
+  };
+}
+
 export function MatriculaForm({
   matriculaId,
   isOpen,
@@ -1028,6 +1053,7 @@ export function MatriculaForm({
   onReset,
   onSaved,
   defaultSemestreId,
+  initialUser,
   reconocimientoDniActivo = true,
   formVariant = 'intranet',
   standaloneFormKind = 'actual',
@@ -1037,6 +1063,7 @@ export function MatriculaForm({
 }: MatriculaFormProps) {
   const isEditing = Boolean(matriculaId);
   const isStandalone = formVariant === 'standalone';
+  const formRootRef = useRef<HTMLDivElement | null>(null);
   const dniInputRef = useRef<HTMLInputElement | null>(null);
   const birthDatePickerRef = useRef<HTMLInputElement | null>(null);
   const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -1151,6 +1178,18 @@ export function MatriculaForm({
 
   const markTouched = useCallback((key: string) => {
     setTouched((prev) => ({ ...prev, [key]: true }));
+  }, []);
+
+  const scrollToFormField = useCallback((key: string) => {
+    window.setTimeout(() => {
+      const target = formRootRef.current?.querySelector<HTMLElement>(`[data-matricula-field="${key}"]`);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const focusTarget = target.querySelector<HTMLElement>(
+        'input:not([type="hidden"]):not(:disabled), textarea:not(:disabled), button:not(:disabled), [role="combobox"]:not([aria-disabled="true"]), [tabindex]:not([tabindex="-1"])',
+      );
+      focusTarget?.focus({ preventScroll: true });
+    }, 0);
   }, []);
 
   const stopCameraCapture = useCallback(() => {
@@ -1339,12 +1378,29 @@ export function MatriculaForm({
           const configuredSemestre = defaultSemestreId
             ? nextSemestres.find((semestre) => semestre.id === defaultSemestreId)
             : null;
-          setValues((prev) => ({
-            ...prev,
-            semestreId: configuredSemestre ? String(configuredSemestre.id) : '',
-            paqueteId: '',
-            grupoId: '',
-          }));
+          const nextSemestreId = configuredSemestre ? String(configuredSemestre.id) : '';
+          if (initialUser) {
+            setValues(valuesFromUser(initialUser, nextSemestreId));
+            const frontUrl = initialUser.dniImagenFrenteUrl || initialUser.dniImagenFrenteProcesadaUrl || null;
+            const backUrl = initialUser.dniImagenReversoUrl || initialUser.dniImagenReversoProcesadaUrl || null;
+            setFrontImage(frontUrl ? { url: frontUrl, path: '', contentType: 'image/*' } : null);
+            setBackImage(backUrl ? { url: backUrl, path: '', contentType: 'image/*' } : null);
+            setDocumentVerified(Boolean(frontUrl && backUrl));
+            setIsExistingUserWithImages(Boolean(frontUrl && backUrl));
+            setShouldPersistDocumentImages(Boolean(frontUrl && backUrl));
+          } else {
+            setValues((prev) => ({
+              ...prev,
+              semestreId: nextSemestreId,
+              paqueteId: '',
+              grupoId: '',
+            }));
+            setFrontImage(null);
+            setBackImage(null);
+            setDocumentVerified(false);
+            setIsExistingUserWithImages(false);
+            setShouldPersistDocumentImages(true);
+          }
           const getMatriculaResponsableActual = httpsCallable<
             undefined,
             { responsable?: MatriculaResponsable | null; responsableUser?: MatriculaResponsableUser | null }
@@ -1361,14 +1417,14 @@ export function MatriculaForm({
       } catch (error) {
         if (mounted) setMessage(getCallableErrorMessage(error, 'No se pudieron cargar los datos de matricula.'));
       } finally {
-        if (mounted) setLoadingOptions(false);
+      if (mounted) setLoadingOptions(false);
       }
     };
     void loadInitialData();
     return () => {
       mounted = false;
     };
-  }, [defaultSemestreId, isStandalone, matriculaId]);
+  }, [defaultSemestreId, initialUser, isStandalone, matriculaId]);
 
   useEffect(() => {
     let mounted = true;
@@ -1523,6 +1579,15 @@ export function MatriculaForm({
     return null;
   };
 
+  const getSectionOneFirstInvalidField = () => {
+    if (!values.semestreId) return 'semestreId';
+    if (!values.tipoDocumento) return 'tipoDocumento';
+    if (getDocumentNumberValidationError(values.tipoDocumento, values.dni)) return 'dni';
+    if (!frontFile) return 'frontFile';
+    if (!backFile) return 'backFile';
+    return 'documentVerification';
+  };
+
   const getFieldError = useCallback((key: string) => {
     if (!touched[key]) return '';
     if (key === 'semestreId' && !values.semestreId) return 'Esta pregunta es obligatoria.';
@@ -1568,7 +1633,7 @@ export function MatriculaForm({
       return getEmailValidationError(values.email);
     }
     if (key === 'recibo' && values.recibo.trim() && !isValidReciboValue(values.recibo)) {
-      return 'Ingresa hasta 5 digitos o selecciona CONADIS/BECADO/POR REGULARIZAR.';
+      return 'Ingresa hasta 6 digitos o selecciona CONADIS/BECADO/POR REGULARIZAR.';
     }
     return '';
   }, [backFile, backFileVerificationError, frontFile, frontFileVerificationError, touched, values]);
@@ -1586,6 +1651,7 @@ export function MatriculaForm({
         backFile: true,
       }));
       setMessage(isStandalone ? null : sectionError);
+      scrollToFormField(getSectionOneFirstInvalidField());
       return;
     }
 
@@ -1811,7 +1877,7 @@ export function MatriculaForm({
     }
   };
 
-  const validateSectionTwo = () => {
+  const getSectionTwoValidationError = () => {
     const required: Array<[keyof MatriculaFormValues, string]> = [
       ['apellidoPaterno', 'Apellido Paterno'],
       ['apellidoMaterno', 'Apellido Materno'],
@@ -1827,26 +1893,38 @@ export function MatriculaForm({
       ['recibo', 'Numero de recibo'],
     ];
     const missing = required.find(([key]) => !String(values[key] || '').trim());
-    if (missing) return `Completa ${missing[1]}.`;
+    if (missing) return { field: missing[0], message: `Completa ${missing[1]}.` };
     if (values.instruccion === SECONDARY_INCOMPLETE_VALUE && !values.nombreColegio.trim()) {
-      return 'Completa Nombre de colegio.';
+      return { field: 'nombreColegio', message: 'Completa Nombre de colegio.' };
     }
     const birthDateError = getBirthDateValidationError(values.fechaNacimiento);
-    if (birthDateError) return birthDateError;
-    if (!/^9\d{8}$/.test(values.celular.trim())) return 'El celular debe tener 9 digitos y empezar con 9.';
+    if (birthDateError) return { field: 'fechaNacimiento', message: birthDateError };
+    if (!/^9\d{8}$/.test(values.celular.trim())) {
+      return { field: 'celular', message: 'El celular debe tener 9 digitos y empezar con 9.' };
+    }
     const emailError = getEmailValidationError(values.email);
-    if (emailError) return emailError;
-    if (!isValidReciboValue(values.recibo)) return 'El recibo debe ser CONADIS, BECADO, POR REGULARIZAR o hasta 5 digitos.';
+    if (emailError) return { field: 'email', message: emailError };
+    if (!isValidReciboValue(values.recibo)) {
+      return { field: 'recibo', message: 'El recibo debe ser CONADIS, BECADO, POR REGULARIZAR o hasta 6 digitos.' };
+    }
     return null;
   };
 
   const handleSubmit = async () => {
     if (!documentVerified) {
       setMessage('Primero verifica el documento de identidad.');
+      setTouched((prev) => ({
+        ...prev,
+        semestreId: true,
+        dni: true,
+        frontFile: true,
+        backFile: true,
+      }));
+      scrollToFormField(getSectionOneFirstInvalidField());
       return;
     }
-    const sectionTwoError = validateSectionTwo();
-    if (sectionTwoError) {
+    const sectionTwoValidation = getSectionTwoValidationError();
+    if (sectionTwoValidation) {
       setTouched((prev) => ({
         ...prev,
         apellidoPaterno: true,
@@ -1864,12 +1942,14 @@ export function MatriculaForm({
         email: true,
         recibo: true,
       }));
-      setMessage(isStandalone ? null : sectionTwoError);
+      setMessage(isStandalone ? null : sectionTwoValidation.message);
+      scrollToFormField(sectionTwoValidation.field);
       return;
     }
     if (!values.grupoId || !values.paqueteId) {
       markTouched('grupoId');
       setMessage(isStandalone ? null : 'Selecciona un modulo.');
+      scrollToFormField('grupoId');
       return;
     }
 
@@ -1954,7 +2034,7 @@ export function MatriculaForm({
     const hasFile = Boolean(file || image?.url);
 
     return (
-      <Box sx={isStandalone ? standaloneCardSx(errorKey) : undefined}>
+      <Box data-matricula-field={errorKey} sx={isStandalone ? standaloneCardSx(errorKey) : undefined}>
         {isStandalone ? (
           <>
             <Typography variant="subtitle1" sx={{ color: 'text.primary', mb: 1.25 }}>
@@ -2222,11 +2302,13 @@ export function MatriculaForm({
       />
     );
 
-    return isStandalone ? <Box sx={standaloneCardSx('recibo')}>{input}</Box> : input;
+    return isStandalone ? <Box data-matricula-field="recibo" sx={standaloneCardSx('recibo')}>{input}</Box> : (
+      <Box data-matricula-field="recibo">{input}</Box>
+    );
   };
 
   const renderBirthDateField = (disabled: boolean) => (
-    <Box sx={{ position: 'relative' }}>
+    <Box data-matricula-field="fechaNacimiento" sx={{ position: 'relative' }}>
       <TextField
         disabled={disabled}
         label={requiredLabel('Fecha de Nacimiento')}
@@ -2329,7 +2411,7 @@ export function MatriculaForm({
   })();
 
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box ref={formRootRef} sx={{ position: 'relative' }}>
       <FormLoadingOverlay open={loading} variant="contained" />
       <Stack spacing={isStandalone ? 1.5 : 2.5}>
         <AutoDismissAlert message={message} severity="error" sx={{ whiteSpace: 'pre-wrap' }} />
@@ -2359,7 +2441,7 @@ export function MatriculaForm({
         ) : null}
         <Box sx={gridSx}>
           {!hideSemestreControl ? (
-          <FormControl fullWidth error={Boolean(getFieldError('semestreId'))} variant={isStandalone ? 'standard' : 'outlined'} sx={selectLineSx}>
+          <FormControl data-matricula-field="semestreId" fullWidth error={Boolean(getFieldError('semestreId'))} variant={isStandalone ? 'standard' : 'outlined'} sx={selectLineSx}>
             <InputLabel>{requiredLabel('Periodo')}</InputLabel>
             <Select
               label={isStandalone ? undefined : 'Periodo (*)'}
@@ -2382,7 +2464,7 @@ export function MatriculaForm({
             ) : null}
           </FormControl>
           ) : null}
-          <FormControl fullWidth disabled={documentControlsLocked} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx() : selectLineSx}>
+          <FormControl data-matricula-field="tipoDocumento" fullWidth disabled={documentControlsLocked} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx() : selectLineSx}>
             {isStandalone ? <FormLabel>{requiredLabel('Tipo documento')}</FormLabel> : <InputLabel>{requiredLabel('Tipo documento')}</InputLabel>}
             {isStandalone ? (
               <RadioGroup
@@ -2405,6 +2487,7 @@ export function MatriculaForm({
             )}
           </FormControl>
           <TextField
+            data-matricula-field="dni"
             label={requiredLabel('Numero de Documento')}
             variant={textFieldVariant}
             placeholder={isStandalone ? 'Tu respuesta' : undefined}
@@ -2425,7 +2508,7 @@ export function MatriculaForm({
           {!isStandalone ? <Box sx={{ display: { xs: 'none', md: 'block' } }} /> : null}
           {renderDocumentFileControl('frente', frontFile, frontImage, requiredLabel('Imagen DNI ó Documento de Extranjeria (De Frente)'))}
           {renderDocumentFileControl('reverso', backFile, backImage, requiredLabel('Imagen DNI ó Documento de Extranjeria (De Reverso)'))}
-          <Box className="matricula-actions" sx={{ gridColumn: { xs: 'span 1', md: isStandalone ? 'span 1' : 'span 2' }, display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+          <Box data-matricula-field="documentVerification" className="matricula-actions" sx={{ gridColumn: { xs: 'span 1', md: isStandalone ? 'span 1' : 'span 2' }, display: 'flex', justifyContent: 'space-between', gap: 1 }}>
             <Button onClick={handleCancelFromVerification} disabled={loading}>{isStandalone ? 'RESETEAR' : 'Cancelar'}</Button>
             <Stack direction="row" spacing={1}>
               <Button variant="contained" onClick={handleVerifyDocument} disabled={verifyDocumentButtonLocked}>
@@ -2456,10 +2539,10 @@ export function MatriculaForm({
           </Typography>
         ) : null}
         <Box sx={gridSx}>
-          <TextField disabled={lockedUntilVerified} label={requiredLabel('Apellido Paterno')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('apellidoPaterno')} value={values.apellidoPaterno} onChange={(event) => updateValue('apellidoPaterno', event.target.value)} onBlur={() => markTouched('apellidoPaterno')} error={Boolean(getFieldError('apellidoPaterno'))} helperText={standaloneHelperText('apellidoPaterno')} fullWidth />
-          <TextField disabled={lockedUntilVerified} label={requiredLabel('Apellido Materno')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('apellidoMaterno')} value={values.apellidoMaterno} onChange={(event) => updateValue('apellidoMaterno', event.target.value)} onBlur={() => markTouched('apellidoMaterno')} error={Boolean(getFieldError('apellidoMaterno'))} helperText={standaloneHelperText('apellidoMaterno')} fullWidth />
-          <TextField disabled={lockedUntilVerified} label={requiredLabel('Nombres')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('nombre')} value={values.nombre} onChange={(event) => updateValue('nombre', event.target.value)} onBlur={() => markTouched('nombre')} error={Boolean(getFieldError('nombre'))} helperText={standaloneHelperText('nombre')} fullWidth />
-          <FormControl disabled={lockedUntilVerified} error={Boolean(getFieldError('sexo'))} onBlur={() => markTouched('sexo')} sx={standaloneRadioSx('sexo')}>
+          <TextField data-matricula-field="apellidoPaterno" disabled={lockedUntilVerified} label={requiredLabel('Apellido Paterno')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('apellidoPaterno')} value={values.apellidoPaterno} onChange={(event) => updateValue('apellidoPaterno', event.target.value)} onBlur={() => markTouched('apellidoPaterno')} error={Boolean(getFieldError('apellidoPaterno'))} helperText={standaloneHelperText('apellidoPaterno')} fullWidth />
+          <TextField data-matricula-field="apellidoMaterno" disabled={lockedUntilVerified} label={requiredLabel('Apellido Materno')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('apellidoMaterno')} value={values.apellidoMaterno} onChange={(event) => updateValue('apellidoMaterno', event.target.value)} onBlur={() => markTouched('apellidoMaterno')} error={Boolean(getFieldError('apellidoMaterno'))} helperText={standaloneHelperText('apellidoMaterno')} fullWidth />
+          <TextField data-matricula-field="nombre" disabled={lockedUntilVerified} label={requiredLabel('Nombres')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('nombre')} value={values.nombre} onChange={(event) => updateValue('nombre', event.target.value)} onBlur={() => markTouched('nombre')} error={Boolean(getFieldError('nombre'))} helperText={standaloneHelperText('nombre')} fullWidth />
+          <FormControl data-matricula-field="sexo" disabled={lockedUntilVerified} error={Boolean(getFieldError('sexo'))} onBlur={() => markTouched('sexo')} sx={standaloneRadioSx('sexo')}>
             <FormLabel>{requiredLabel('Sexo')}</FormLabel>
             <RadioGroup row={!isStandalone} value={values.sexo} onChange={(event) => updateValue('sexo', event.target.value === 'M' ? 'M' : 'F')}>
               <FormControlLabel value="F" control={<Radio />} label="Femenino" />
@@ -2467,10 +2550,10 @@ export function MatriculaForm({
             </RadioGroup>
             {isStandalone ? renderFieldError('sexo') : getFieldError('sexo') ? <Typography variant="caption" color="error">{getFieldError('sexo')}</Typography> : null}
           </FormControl>
-          <TextField disabled={lockedUntilVerified} label={requiredLabel('Nacionalidad')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('nacionalidad')} value={values.nacionalidad} onChange={(event) => updateValue('nacionalidad', event.target.value)} onBlur={() => markTouched('nacionalidad')} error={Boolean(getFieldError('nacionalidad'))} helperText={standaloneHelperText('nacionalidad')} fullWidth />
+          <TextField data-matricula-field="nacionalidad" disabled={lockedUntilVerified} label={requiredLabel('Nacionalidad')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('nacionalidad')} value={values.nacionalidad} onChange={(event) => updateValue('nacionalidad', event.target.value)} onBlur={() => markTouched('nacionalidad')} error={Boolean(getFieldError('nacionalidad'))} helperText={standaloneHelperText('nacionalidad')} fullWidth />
           {renderBirthDateField(lockedUntilVerified)}
           {!isStandalone ? <TextField disabled={lockedUntilVerified} label="Fecha de Vencimiento" variant={textFieldVariant} sx={textFieldSx()} type="date" value={values.fechaVencimiento} onChange={(event) => updateValue('fechaVencimiento', event.target.value)} InputLabelProps={{ shrink: true }} fullWidth /> : null}
-          <FormControl fullWidth disabled={lockedUntilVerified} error={Boolean(getFieldError('estadoCivil'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('estadoCivil') : selectLineSx}>
+          <FormControl data-matricula-field="estadoCivil" fullWidth disabled={lockedUntilVerified} error={Boolean(getFieldError('estadoCivil'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('estadoCivil') : selectLineSx}>
             {isStandalone ? (
               <>
                 <FormLabel>{requiredLabel('Estado Civil')}</FormLabel>
@@ -2495,10 +2578,10 @@ export function MatriculaForm({
               </>
             )}
           </FormControl>
-          <TextField disabled={lockedUntilVerified} label={requiredLabel('Domicilio Direccion')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('direccion')} value={values.direccion} onChange={(event) => updateValue('direccion', event.target.value)} onBlur={() => markTouched('direccion')} error={Boolean(getFieldError('direccion'))} helperText={standaloneHelperText('direccion')} fullWidth />
-          <TextField disabled={lockedUntilVerified} label={requiredLabel('Domicilio Distrito')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('distrito')} value={values.distrito} onChange={(event) => updateValue('distrito', event.target.value)} onBlur={() => markTouched('distrito')} error={Boolean(getFieldError('distrito'))} helperText={standaloneHelperText('distrito')} fullWidth />
-          <TextField disabled={lockedUntilVerified} label={requiredLabel('Numero de Celular')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('celular')} value={values.celular} onChange={(event) => updateValue('celular', event.target.value.replace(/\D/g, '').slice(0, 9))} onBlur={() => markTouched('celular')} error={Boolean(getFieldError('celular'))} helperText={standaloneHelperText('celular')} fullWidth />
-          <FormControl fullWidth disabled={lockedUntilVerified} error={Boolean(getFieldError('instruccion'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('instruccion') : selectLineSx}>
+          <TextField data-matricula-field="direccion" disabled={lockedUntilVerified} label={requiredLabel('Domicilio Direccion')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('direccion')} value={values.direccion} onChange={(event) => updateValue('direccion', event.target.value)} onBlur={() => markTouched('direccion')} error={Boolean(getFieldError('direccion'))} helperText={standaloneHelperText('direccion')} fullWidth />
+          <TextField data-matricula-field="distrito" disabled={lockedUntilVerified} label={requiredLabel('Domicilio Distrito')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('distrito')} value={values.distrito} onChange={(event) => updateValue('distrito', event.target.value)} onBlur={() => markTouched('distrito')} error={Boolean(getFieldError('distrito'))} helperText={standaloneHelperText('distrito')} fullWidth />
+          <TextField data-matricula-field="celular" disabled={lockedUntilVerified} label={requiredLabel('Numero de Celular')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('celular')} value={values.celular} onChange={(event) => updateValue('celular', event.target.value.replace(/\D/g, '').slice(0, 9))} onBlur={() => markTouched('celular')} error={Boolean(getFieldError('celular'))} helperText={standaloneHelperText('celular')} fullWidth />
+          <FormControl data-matricula-field="instruccion" fullWidth disabled={lockedUntilVerified} error={Boolean(getFieldError('instruccion'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('instruccion') : selectLineSx}>
             {isStandalone ? (
               <>
                 <FormLabel>{requiredLabel('Grado de Instruccion')}</FormLabel>
@@ -2524,10 +2607,10 @@ export function MatriculaForm({
             )}
           </FormControl>
           {values.instruccion === SECONDARY_INCOMPLETE_VALUE ? (
-            <TextField disabled={lockedUntilVerified} label={requiredLabel('Nombre de colegio (solo escolares)')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('nombreColegio')} value={values.nombreColegio} onChange={(event) => updateValue('nombreColegio', event.target.value)} onBlur={() => markTouched('nombreColegio')} error={Boolean(getFieldError('nombreColegio'))} helperText={standaloneHelperText('nombreColegio')} fullWidth />
+            <TextField data-matricula-field="nombreColegio" disabled={lockedUntilVerified} label={requiredLabel('Nombre de colegio (solo escolares)')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('nombreColegio')} value={values.nombreColegio} onChange={(event) => updateValue('nombreColegio', event.target.value)} onBlur={() => markTouched('nombreColegio')} error={Boolean(getFieldError('nombreColegio'))} helperText={standaloneHelperText('nombreColegio')} fullWidth />
           ) : null}
           <TextField disabled={lockedUntilVerified} label={optionalLabel('Numero de Telefono Fijo')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx()} value={values.telefono} onChange={(event) => updateValue('telefono', event.target.value)} fullWidth />
-          <TextField disabled={lockedUntilVerified} label={optionalLabel('Correo Electronico')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('email')} type="email" value={values.email} onChange={(event) => updateValue('email', event.target.value)} onBlur={() => markTouched('email')} error={Boolean(getFieldError('email'))} helperText={standaloneHelperText('email')} fullWidth />
+          <TextField data-matricula-field="email" disabled={lockedUntilVerified} label={optionalLabel('Correo Electronico')} variant={textFieldVariant} placeholder={isStandalone ? 'Tu respuesta' : undefined} sx={textFieldSx('email')} type="email" value={values.email} onChange={(event) => updateValue('email', event.target.value)} onBlur={() => markTouched('email')} error={Boolean(getFieldError('email'))} helperText={standaloneHelperText('email')} fullWidth />
         </Box>
       </Stack>
       ) : null}
@@ -2550,7 +2633,7 @@ export function MatriculaForm({
           </Typography>
         ) : null}
         <Stack spacing={2}>
-          <FormControl fullWidth error={Boolean(getFieldError('grupoId'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('grupoId') : undefined}>
+          <FormControl data-matricula-field="grupoId" fullWidth error={Boolean(getFieldError('grupoId'))} variant={isStandalone ? 'standard' : 'outlined'} sx={isStandalone ? standaloneRadioSx('grupoId') : undefined}>
             {isStandalone ? (
               <>
                 <FormLabel>{requiredLabel('Seleccione un Modulo')}</FormLabel>

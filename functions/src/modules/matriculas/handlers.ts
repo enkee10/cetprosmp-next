@@ -1291,8 +1291,8 @@ function normalizeMatriculaRecibo(value: unknown): string | null {
   if (VALID_RECIBO_TEXT_VALUES.has(text)) return text;
   const compactText = text.replace(/\s+/g, "");
   if (compactText === "PORREGULARIZAR") return "POR REGULARIZAR";
-  if (/^\d{1,5}$/.test(compactText)) return compactText.replace(/^0+(?=\d)/, "");
-  throw new https.HttpsError("invalid-argument", "El recibo debe ser CONADIS, BECADO, POR REGULARIZAR o un numero de hasta 5 digitos.");
+  if (/^\d{1,6}$/.test(compactText)) return compactText.replace(/^0+(?=\d)/, "");
+  throw new https.HttpsError("invalid-argument", "El recibo debe ser CONADIS, BECADO, POR REGULARIZAR o un numero de hasta 6 digitos.");
 }
 
 const sortPaqueteModulos = (items: DataConnectPaqueteModulo[]) =>

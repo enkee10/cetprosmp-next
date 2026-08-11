@@ -11,6 +11,7 @@ import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
 import { EventoForm } from '@/components/intranet/calendarios/EventoForm';
+import { formatDateTimeInAppTimeZone } from '@/lib/dateOnly';
 
 interface Evento {
   id: number;
@@ -39,10 +40,7 @@ interface SemestreOption {
 }
 
 const formatDateTime = (value: string | null) => {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short' }).format(date);
+  return formatDateTimeInAppTimeZone(value);
 };
 
 export default function EventosPage() {

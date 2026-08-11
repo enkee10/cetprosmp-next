@@ -21,6 +21,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CategoryIcon from '@mui/icons-material/Category';
 import BusinessIcon from '@mui/icons-material/Business';
 import EventNoteIcon from '@mui/icons-material/EventNote';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import FactoryIcon from '@mui/icons-material/Factory';
 import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
@@ -190,7 +191,6 @@ export const menuSections: IntranetMenuSection[] = [
       { id: 'paquetes', title: 'Paquetes', path: '/intranet/paquetes', icon: <Inventory2Icon /> },
       { id: 'grupos', title: 'Grupos', path: '/intranet/grupos', icon: <PeopleIcon /> },
       { id: 'grupo-modulos', title: 'Grupo-Modulo', path: '/intranet/grupo-modulos', icon: <AccountTreeIcon /> },
-      { id: 'personal', title: 'Personal', path: '/intranet/personal', icon: <PeopleIcon /> },
       { id: 'turnos', title: 'Turnos', path: '/intranet/turnos', icon: <ScheduleIcon /> },
       { id: 'horarios', title: 'Horarios', path: '/intranet/horarios', icon: <ScheduleIcon /> },
       { id: 'calendarios', title: 'Calendarios', path: '/intranet/calendarios', icon: <EventNoteIcon /> },
@@ -210,6 +210,7 @@ export const menuSections: IntranetMenuSection[] = [
       { id: 'anios', title: 'A\u00f1os', path: '/intranet/anios', icon: <CalendarMonthIcon /> },
       { id: 'semestres', title: 'Semestres', path: '/intranet/semestres', icon: <ScheduleIcon /> },
       { id: 'tipos-carrera', title: 'Tipos de Carrera', path: '/intranet/tipos-carrera', icon: <CategoryIcon /> },
+      { id: 'editor-documentos', title: 'Editor de Documentos', path: '/intranet/editor-documentos', icon: <EditNoteIcon /> },
     ],
   },
   {
@@ -220,6 +221,7 @@ export const menuSections: IntranetMenuSection[] = [
       { id: 'estructura-academica', title: 'Estructura Acad\u00e9mica', path: '/intranet/estructura-academica', icon: <AccountTreeIcon /> },
       { id: 'matriculas', title: 'Matr\u00edculas', path: '/intranet/matriculas', icon: <AssignmentIcon /> },
       { id: 'registro-auxiliar', title: 'Registro Auxiliar', path: '/intranet/registro-auxiliar', icon: <FactCheckIcon /> },
+      { id: 'personal', title: 'Personal', path: '/intranet/personal', icon: <PeopleIcon /> },
       { id: 'users', title: 'Users', path: '/intranet/users', icon: <PeopleIcon /> },
       { id: 'roles', title: 'Roles', path: '/intranet/roles', icon: <LockPersonIcon /> },
     ],

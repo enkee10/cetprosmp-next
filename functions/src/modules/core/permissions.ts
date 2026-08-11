@@ -38,6 +38,7 @@ export const PERMISSION_ENTITIES: PermissionEntity[] = [
   { id: "anios", title: "Anos", section: "Miscelanea" },
   { id: "semestres", title: "Semestres", section: "Miscelanea" },
   { id: "tipos-carrera", title: "Tipos de Carrera", section: "Miscelanea" },
+  { id: "editor-documentos", title: "Editor de Documentos", section: "Miscelanea" },
   { id: "estructura-academica", title: "Estructura Academica", section: "Registros" },
   { id: "matriculas", title: "Matriculas", section: "Registros" },
   { id: "registro-auxiliar", title: "Registro Auxiliar", section: "Registros" },

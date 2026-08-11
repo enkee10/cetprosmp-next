@@ -10,7 +10,7 @@ import { app, functions, storage } from '@/lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
-import { toDateOnlyInputValue } from '@/lib/dateOnly';
+import { formatDateTimeInAppTimeZone, toDateOnlyInputValue } from '@/lib/dateOnly';
 import { generateUserNames } from './userForm_utilities';
 
 const createValidationSchema = (isCreating: boolean) => yup.object().shape({
@@ -103,10 +103,14 @@ interface UserFormProps {
   onCancel?: () => void;
   onSubmit: (data: UserFormValues) => void | Promise<void>;
   onAvatarRemoved?: () => void | Promise<void>;
+  onEditDniSide?: (side: 'frente' | 'reverso') => void;
+  onGenerateAvatar?: () => void | Promise<void>;
   initialData?: Record<string, unknown>;
   isSubmitting?: boolean;
   submittingMessage?: string;
   restrictFieldsFromMatriculaDocente?: boolean;
+  isSuperUser?: boolean;
+  canEditDniImages?: boolean;
 }
 
 interface Role {
@@ -169,15 +173,14 @@ const formatDateTimeForDisplay = (value: unknown): string => {
   if (!value) return '';
   const raw = String(value).trim();
   if (!raw) return '';
-
-  const parsed = new Date(raw);
-  if (Number.isNaN(parsed.getTime())) return raw;
-
-  const pad = (number: number) => String(number).padStart(2, '0');
-  return [
-    `${pad(parsed.getDate())}/${pad(parsed.getMonth() + 1)}/${parsed.getFullYear()}`,
-    `${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`,
-  ].join(' ');
+  return formatDateTimeInAppTimeZone(raw, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
 };
 
 const getInitialString = (
@@ -222,10 +225,14 @@ const UserForm: React.FC<UserFormProps> = ({
   onCancel,
   onSubmit,
   onAvatarRemoved,
+  onEditDniSide,
+  onGenerateAvatar,
   initialData,
   isSubmitting = false,
   submittingMessage,
   restrictFieldsFromMatriculaDocente = false,
+  isSuperUser = false,
+  canEditDniImages = false,
 }) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -233,9 +240,12 @@ const UserForm: React.FC<UserFormProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [removingAvatar, setRemovingAvatar] = useState(false);
   const [removingDniImages, setRemovingDniImages] = useState(false);
+  const [generatingAvatar, setGeneratingAvatar] = useState(false);
   const [grupoModuloHistorial, setGrupoModuloHistorial] = useState<UserGrupoModuloHistorialItem[]>([]);
   const [loadingGrupoModuloHistorial, setLoadingGrupoModuloHistorial] = useState(false);
   const isCreating = !initialData;
+  const canUseSuperUserDocumentActions = Boolean(isSuperUser && !restrictFieldsFromMatriculaDocente && !isCreating);
+  const canUseDniEditActions = Boolean((isSuperUser || canEditDniImages) && !restrictFieldsFromMatriculaDocente && !isCreating);
   const canEditField = (field: keyof UserFormValues) =>
     !restrictFieldsFromMatriculaDocente || field === 'celular' || field === 'direccion' || field === 'distrito';
   const isLockedField = (field: keyof UserFormValues) => !canEditField(field);
@@ -461,7 +471,7 @@ const UserForm: React.FC<UserFormProps> = ({
   };
 
   const handleRemoveAvatar = async () => {
-    if (restrictFieldsFromMatriculaDocente) return;
+    if (!canUseSuperUserDocumentActions) return;
 
     setUploadError(null);
 
@@ -519,7 +529,7 @@ const UserForm: React.FC<UserFormProps> = ({
   };
 
   const handleRemoveDniImages = async () => {
-    if (restrictFieldsFromMatriculaDocente) return;
+    if (!canUseSuperUserDocumentActions) return;
 
     setUploadError(null);
     const documentId = typeof initialData?.documentId === 'string' ? initialData.documentId : '';
@@ -544,6 +554,23 @@ const UserForm: React.FC<UserFormProps> = ({
       setUploadError(message || 'No se pudieron quitar las imagenes de DNI.');
     } finally {
       setRemovingDniImages(false);
+    }
+  };
+
+  const handleGenerateAvatar = async () => {
+    if (!canUseSuperUserDocumentActions || !onGenerateAvatar) return;
+    setUploadError(null);
+    setGeneratingAvatar(true);
+    try {
+      await onGenerateAvatar();
+    } catch (error) {
+      console.error('Error generating avatar:', error);
+      const message = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message || '')
+        : '';
+      setUploadError(message || 'No se pudo iniciar la generacion del avatar.');
+    } finally {
+      setGeneratingAvatar(false);
     }
   };
 
@@ -713,17 +740,28 @@ const UserForm: React.FC<UserFormProps> = ({
                 <Button variant="outlined" size="small" onClick={() => avatarInputRef.current?.click()} disabled={restrictFieldsFromMatriculaDocente || isUploading || removingAvatar} tabIndex={23} sx={{ width: 'fit-content', maxWidth: '100%' }}>
                   {isUploading ? <CircularProgress size={24} /> : (avatarUrl ? 'Cambiar Avatar' : 'Subir Avatar')}
                 </Button>
-                {avatarUrl ? (
+                {canUseSuperUserDocumentActions && avatarUrl ? (
                   <Button
                     variant="outlined"
                     color="error"
                     size="small"
                     startIcon={<DeleteOutline />}
                     onClick={handleRemoveAvatar}
-                    disabled={restrictFieldsFromMatriculaDocente || isUploading || removingAvatar}
+                    disabled={isUploading || removingAvatar || generatingAvatar}
                     sx={{ width: 'fit-content', maxWidth: '100%' }}
                   >
                     {removingAvatar ? 'Eliminando Avatar...' : 'Eliminar Avatar'}
+                  </Button>
+                ) : null}
+                {canUseSuperUserDocumentActions ? (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handleGenerateAvatar}
+                    disabled={!dniImagenFrenteProcesadaUrl || isUploading || removingAvatar || generatingAvatar}
+                    sx={{ width: 'fit-content', maxWidth: '100%' }}
+                  >
+                    {generatingAvatar ? 'Generando Avatar...' : 'Generar Avatar'}
                   </Button>
                 ) : null}
               </Box>
@@ -1034,25 +1072,48 @@ const UserForm: React.FC<UserFormProps> = ({
                         </Box>
                       </Box>
                     )}
-                    <Box sx={{ gridColumn: { xs: 'span 1', md: 'span 2' } }}>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        startIcon={<DeleteOutline />}
-                        onClick={handleRemoveDniImages}
-                        disabled={restrictFieldsFromMatriculaDocente || isSubmitting || removingDniImages}
-                        sx={{ mt: 0.5 }}
-                      >
-                        {removingDniImages ? 'Eliminando DNI...' : 'Eliminar DNI'}
-                      </Button>
-                    </Box>
                   </Box>
                 ) : (
                   <Typography variant="body2" color="text.secondary">
                     Aun no hay imagenes procesadas para este usuario.
                   </Typography>
                 )}
+                {canUseDniEditActions || canUseSuperUserDocumentActions ? (
+                  <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {canUseDniEditActions ? (
+                      <>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => onEditDniSide?.('frente')}
+                          disabled={isSubmitting || removingDniImages}
+                        >
+                          Editar Frente
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => onEditDniSide?.('reverso')}
+                          disabled={isSubmitting || removingDniImages}
+                        >
+                          Editar Reverso
+                        </Button>
+                      </>
+                    ) : null}
+                    {canUseSuperUserDocumentActions && hasDniImages ? (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<DeleteOutline />}
+                        onClick={handleRemoveDniImages}
+                        disabled={isSubmitting || removingDniImages}
+                      >
+                        {removingDniImages ? 'Eliminando DNI...' : 'Eliminar DNI'}
+                      </Button>
+                    ) : null}
+                  </Box>
+                ) : null}
               </Box>
             )}
             {!isCreating && (loadingGrupoModuloHistorial || grupoModuloHistorial.length > 0) ? (
@@ -1117,7 +1178,7 @@ const UserForm: React.FC<UserFormProps> = ({
             Cancelar
           </Button>
         )}
-        <Button type="submit" form="user-form" variant="contained" disabled={isUploading || removingAvatar || removingDniImages || isSubmitting} tabIndex={21}>
+        <Button type="submit" form="user-form" variant="contained" disabled={isUploading || removingAvatar || removingDniImages || generatingAvatar || isSubmitting} tabIndex={21}>
           {isCreating ? 'Crear' : 'Guardar Cambios'}
         </Button>
       </Box>

@@ -720,9 +720,9 @@ const GET_PAQUETE_MODULOS_FOR_MATRICULA_QUERY = `
   }
 `;
 
-const FIND_USER_BY_DOCUMENT_QUERY = `
-  query FindUserByDocumentForMatricula($tipoDocumento: String!, $dni: String!) {
-    users(where: { tipoDocumento: { eq: $tipoDocumento }, dni: { eq: $dni } }, limit: 1) {
+const FIND_STUDENT_USER_BY_DOCUMENT_QUERY = `
+  query FindStudentUserByDocumentForMatricula($tipoDocumento: String!, $dni: String!, $rolId: Int!) {
+    users(where: { tipoDocumento: { eq: $tipoDocumento }, dni: { eq: $dni }, rolId: { eq: $rolId } }, limit: 1) {
       ${USER_FIELDS}
     }
   }
@@ -862,6 +862,65 @@ const LIST_MATRICULAS_BY_SEMESTRE_QUERY = `
   query ListMatriculasBySemestreManual($semestreId: Int!) {
     matriculas(where: { semestreId: { eq: $semestreId } }, limit: 600, orderBy: [{id: DESC}]) {
       ${MATRICULA_LIST_FIELDS}
+    }
+  }
+`;
+
+const EDITOR_DOCUMENTOS_MATRICULA_FIELDS = `
+  id
+  fecha
+  semestreId
+  userId
+  user {
+    id
+    documentId
+    dni
+    tipoDocumento
+    nombre
+    apellidoPaterno
+    apellidoMaterno
+    email
+    correoInstitucional
+    avatar
+    dniImagenFrenteUrl
+    dniImagenReversoUrl
+    dniImagenFrenteProcesadaUrl
+    dniImagenReversoProcesadaUrl
+  }
+  semestre {
+    id
+    titulo
+  }
+`;
+
+const LIST_EDITOR_DOCUMENTOS_MATRICULAS_QUERY = `
+  query ListEditorDocumentosMatriculas($semestreId: Int!) {
+    matriculas(where: { semestreId: { eq: $semestreId } }, limit: 600, orderBy: [{id: DESC}]) {
+      ${EDITOR_DOCUMENTOS_MATRICULA_FIELDS}
+    }
+  }
+`;
+
+const GET_EDITOR_DOCUMENTO_MATRICULA_QUERY = `
+  query GetEditorDocumentoMatricula($id: Int!) {
+    matricula(id: $id) {
+      ${EDITOR_DOCUMENTOS_MATRICULA_FIELDS}
+    }
+  }
+`;
+
+const GET_EDITOR_DOCUMENTO_USER_BY_ID_QUERY = `
+  query GetEditorDocumentoUserById($id: Int!) {
+    user(id: $id) {
+      ${USER_FIELDS}
+    }
+  }
+`;
+
+const GET_EDITOR_DOCUMENTO_USER_BY_DOCUMENT_ID_QUERY = `
+  query GetEditorDocumentoUserByDocumentId($documentId: String!) {
+    users(where: { documentId: { eq: $documentId } }, limit: 1) {
+      ${USER_FIELDS}
     }
   }
 `;
@@ -1753,12 +1812,16 @@ function mergeSavedUserWithOcr(saved: MatriculaUserRow | null, ocr: OcrIdentityD
   return result;
 }
 
-async function findUserByDocument(tipoDocumento: string, dni: string): Promise<MatriculaUserRow | null> {
+function isStudentMatriculaUser(user: MatriculaUserRow | null | undefined): user is MatriculaUserRow {
+  return Number(user?.rolId) === STUDENT_ROLE_ID;
+}
+
+async function findStudentUserByDocument(tipoDocumento: string, dni: string): Promise<MatriculaUserRow | null> {
   const response = await dataConnect.executeGraphql<{
     users: MatriculaUserRow[];
-  }, { tipoDocumento: string; dni: string }>(
-    FIND_USER_BY_DOCUMENT_QUERY,
-    { variables: { tipoDocumento, dni } },
+  }, { tipoDocumento: string; dni: string; rolId: number }>(
+    FIND_STUDENT_USER_BY_DOCUMENT_QUERY,
+    { variables: { tipoDocumento, dni, rolId: STUDENT_ROLE_ID } },
   );
 
   return response.data.users?.[0] ?? null;
@@ -3196,7 +3259,7 @@ async function generateCarnetAvatarImage(params: {
     ageInstruction,
     "No embellezcas, no retoques la piel, no cambies facciones principales, estructura facial, nariz, ojos, boca, cejas, mandibula, forma del rostro, tono de piel, edad, genero, peso aparente ni expresion; no agregues maquillaje ni accesorios nuevos.",
     "La indicacion de ropa formal aplica exclusivamente a la vestimenta visible debajo del cuello y hombros; no autoriza cambios de peinado, cabello, color de cabello, frente, orejas, cabeza, rostro, piel, edad aparente, expresion, contextura ni identidad facial.",
-    "Coloca unicamente ropa formal conservadora y sobria, preferentemente en tonos medios u oscuros para separarla claramente del fondo blanco; la ropa puede reemplazar la vestimenta original, pero debe conservar exactamente el mismo peinado y color de cabello, sin modificarlos de ninguna forma; bajo ninguna circunstancia debe modificar, estilizar, rejuvenecer, embellecer o reinterpretar la apariencia fisica exacta del rostro, cabeza, cuello, cabello, tono de piel, edad aparente, expresion ni las caracteristicas de identidad indicadas en las reglas anteriores.",
+    "Coloca unicamente ropa formal conservadora y sobria, varones con saco y corbata, damas con saco y blusa con cuello camisero, preferentemente en tonos medios u oscuros para separarla claramente del fondo blanco; la ropa puede reemplazar la vestimenta original, pero debe conservar exactamente el mismo peinado y color de cabello, sin modificarlos de ninguna forma; bajo ninguna circunstancia debe modificar, estilizar, rejuvenecer, embellecer o reinterpretar la apariencia fisica exacta del rostro, cabeza, cuello, cabello, tono de piel, edad aparente, expresion ni las caracteristicas de identidad indicadas en las reglas anteriores.",
     "Encuadre: rostro y hombros, frontal, estilo documento oficial, con el rostro ocupando una proporcion ligeramente mayor en la composicion final; mostrar hombros solo de forma minima, sin alejar la camara para destacar la ropa, sin textos, sin logos, sin bordes, sin elementos del DNI.",
     "Composicion: centra a la persona en la imagen final; la cabeza, rostro, cuello y hombros deben quedar alineados al eje vertical central.",
     "Fondo obligatorio: toda el area de fondo debe ser blanco puro exacto #FFFFFF, completamente uniforme de borde a borde.",
@@ -3530,6 +3593,178 @@ async function updateUserProcessedDocumentImages(
     { variables: { id: numericUserId, data } },
   );
   return getIdFromKeyOutput(updated.data.user_update) ?? numericUserId;
+}
+
+function parseStoragePathFromUrl(value: unknown): string | null {
+  const raw = asCleanString(value);
+  if (!raw) return null;
+  try {
+    const parsed = new URL(raw);
+    const marker = "/o/";
+    const markerIndex = parsed.pathname.indexOf(marker);
+    if (markerIndex >= 0) {
+      return decodeURIComponent(parsed.pathname.slice(markerIndex + marker.length));
+    }
+  } catch {
+    if (!raw.startsWith("http") && raw.includes("/")) return raw;
+  }
+  return null;
+}
+
+function buildDocumentOriginalPath(params: {
+  dni: string;
+  tipoDocumento?: string | null;
+  side: "frente" | "reverso";
+}) {
+  const safeDni = normalizeDocumentNumber(params.dni) || "documento";
+  const prefix = documentFilePrefix(params.tipoDocumento);
+  return `matriculas/documentos/${safeDni}/${prefix}-${safeDni}-original-${params.side}`;
+}
+
+function buildDocumentProcessedPaths(params: {
+  dni: string;
+  tipoDocumento?: string | null;
+  side: "frente" | "reverso";
+}) {
+  const safeDni = normalizeDocumentNumber(params.dni) || "documento";
+  const prefix = documentFilePrefix(params.tipoDocumento);
+  const base = `matriculas/documentos-procesados/${safeDni}/${prefix}-${safeDni}-procesado-${params.side}`;
+  return {
+    processedPath: `${base}.jpg`,
+    smallPath: `${base}-small.jpg`,
+  };
+}
+
+function parseDataUrl(value: unknown): { buffer: Buffer; contentType: string } {
+  const text = String(value ?? "").trim();
+  const commaIndex = text.indexOf(",");
+  const header = commaIndex >= 0 ? text.slice(0, commaIndex) : "";
+  const payload = commaIndex >= 0 ? text.slice(commaIndex + 1) : "";
+  if (!header.toLowerCase().startsWith("data:") || !payload) {
+    throw new https.HttpsError("invalid-argument", "La imagen editada no tiene un formato valido.");
+  }
+  const contentType = header.slice(5).split(";")[0] || "image/jpeg";
+  const buffer = Buffer.from(payload, "base64");
+  if (!buffer.length) {
+    throw new https.HttpsError("invalid-argument", "La imagen editada esta vacia.");
+  }
+  return { buffer, contentType };
+}
+
+async function overwriteStorageImage(params: {
+  path: string;
+  buffer: Buffer;
+  contentType: string;
+  bucketName?: string | null;
+}) {
+  const bucket = params.bucketName ? getStorage().bucket(params.bucketName) : getStorage().bucket();
+  const token = randomUUID();
+  await bucket.file(params.path).save(params.buffer, {
+    contentType: params.contentType,
+    metadata: {
+      metadata: { firebaseStorageDownloadTokens: token },
+    },
+  });
+  return {
+    path: params.path,
+    url: buildFirebaseStorageUrl(bucket.name, params.path, token),
+    bucket: bucket.name,
+    contentType: params.contentType,
+  };
+}
+
+async function downloadStorageImageAsDataUrl(params: {
+  path: string;
+  url?: string | null;
+}) {
+  const parsedUrlPath = parseStoragePathFromUrl(params.url);
+  const path = asCleanString(params.path) ?? parsedUrlPath;
+  if (path) {
+    const bucket = getStorage().bucket();
+    const file = bucket.file(path);
+    const [buffer] = await file.download();
+    const [metadata] = await file.getMetadata();
+    const contentType = asCleanString(metadata.contentType) ?? "image/jpeg";
+    return {
+      dataUrl: `data:${contentType};base64,${buffer.toString("base64")}`,
+      contentType,
+      path,
+      url: asCleanString(params.url) ?? null,
+    };
+  }
+
+  const url = asCleanString(params.url);
+  if (!url) {
+    throw new https.HttpsError("not-found", "No se encontro la ruta de la imagen.");
+  }
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new https.HttpsError("internal", `No se pudo descargar la imagen (${response.status}).`);
+  }
+  const contentType = response.headers.get("content-type") || "image/jpeg";
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return {
+    dataUrl: `data:${contentType};base64,${buffer.toString("base64")}`,
+    contentType,
+    path: null,
+    url,
+  };
+}
+
+function processorManualEditUrl(processorUrl: string) {
+  const normalized = processorUrl.endsWith("/") ? processorUrl : `${processorUrl}/`;
+  return new URL("manual-edit", normalized).toString();
+}
+
+async function callDocumentProcessorManualEdit(payload: Record<string, unknown>) {
+  const processorUrl = asCleanString(process.env.MATRICULA_DOCUMENT_PROCESSOR_URL);
+  if (!processorUrl) {
+    throw new https.HttpsError("failed-precondition", "Configura MATRICULA_DOCUMENT_PROCESSOR_URL para guardar desde el editor.");
+  }
+  const url = processorManualEditUrl(processorUrl);
+  const headers: Record<string, string> = { "content-type": "application/json" };
+  const processorToken = asCleanString(process.env.MATRICULA_DOCUMENT_PROCESSOR_TOKEN);
+  if (processorToken) headers.authorization = `Bearer ${processorToken}`;
+
+  let responseOk = false;
+  let responseStatus = 0;
+  let responseText = "";
+  if (processorToken) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+    responseOk = response.ok;
+    responseStatus = response.status;
+    responseText = await response.text();
+  } else {
+    const client = await google.auth.getIdTokenClient(processorUrl);
+    const response = await client.request({
+      url,
+      method: "POST",
+      headers,
+      data: payload,
+      validateStatus: () => true,
+    });
+    responseOk = response.status >= 200 && response.status < 300;
+    responseStatus = response.status;
+    responseText = typeof response.data === "string"
+      ? response.data
+      : JSON.stringify(response.data ?? {});
+  }
+
+  let parsed: Record<string, unknown> | null = null;
+  try {
+    parsed = JSON.parse(responseText) as Record<string, unknown>;
+  } catch {
+    parsed = null;
+  }
+  if (!responseOk) {
+    const message = asCleanString(parsed?.message) ?? `El procesador devolvio error ${responseStatus}.`;
+    throw new https.HttpsError("internal", message);
+  }
+  return parsed;
 }
 
 async function dispatchMatriculaDocumentProcessingJob(
@@ -4015,6 +4250,75 @@ async function listMatriculasForList(semestreId: number) {
   );
 }
 
+async function listEditorDocumentosMatriculasForList(semestreId: number) {
+  return dataConnect.executeGraphql<{
+    matriculas: MatriculaRow[];
+  }, { semestreId: number }>(
+    LIST_EDITOR_DOCUMENTOS_MATRICULAS_QUERY,
+    { variables: { semestreId } },
+  );
+}
+
+async function getEditorDocumentoMatriculaById(matriculaId: number) {
+  const response = await dataConnect.executeGraphql<{
+    matricula?: MatriculaRow | null;
+  }, { id: number }>(
+    GET_EDITOR_DOCUMENTO_MATRICULA_QUERY,
+    { variables: { id: matriculaId } },
+  );
+  return response.data.matricula ?? null;
+}
+
+async function getEditorDocumentoUserById(userId: number) {
+  const response = await dataConnect.executeGraphql<{
+    user?: MatriculaUserRow | null;
+  }, { id: number }>(
+    GET_EDITOR_DOCUMENTO_USER_BY_ID_QUERY,
+    { variables: { id: userId } },
+  );
+  return response.data.user ?? null;
+}
+
+async function getEditorDocumentoUserByDocumentId(documentId: string) {
+  const response = await dataConnect.executeGraphql<{
+    users: MatriculaUserRow[];
+  }, { documentId: string }>(
+    GET_EDITOR_DOCUMENTO_USER_BY_DOCUMENT_ID_QUERY,
+    { variables: { documentId } },
+  );
+  return response.data.users?.[0] ?? null;
+}
+
+async function getEditorDocumentoTargetFromInput(data: any): Promise<{
+  matricula: MatriculaRow | null;
+  user: MatriculaUserRow;
+  userId: number;
+}> {
+  const matriculaId = toNumberOrNull(data?.matriculaId);
+  if (matriculaId) {
+    const matricula = await getEditorDocumentoMatriculaById(matriculaId);
+    const user = matricula?.user ?? null;
+    const userId = toNumberOrNull(user?.id ?? matricula?.userId);
+    if (!matricula || !user || !userId) {
+      throw new https.HttpsError("not-found", "No se encontro el usuario de la matricula.");
+    }
+    return { matricula, user, userId };
+  }
+
+  const userId = toNumberOrNull(data?.userId);
+  const documentId = asCleanString(data?.documentId);
+  const user = userId
+    ? await getEditorDocumentoUserById(userId)
+    : documentId
+      ? await getEditorDocumentoUserByDocumentId(documentId)
+      : null;
+  const resolvedUserId = toNumberOrNull(user?.id);
+  if (!user || !resolvedUserId) {
+    throw new https.HttpsError("not-found", "No se encontro el usuario del documento.");
+  }
+  return { matricula: null, user, userId: resolvedUserId };
+}
+
 function chunkArray<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
   for (let index = 0; index < items.length; index += size) {
@@ -4265,6 +4569,243 @@ export const listMatriculas = https.onCall(async (data, context) => {
   }
 });
 
+export const listEditorDocumentosMatriculas = https.onCall(async (data, context) => {
+  await requirePermission(context, "editor-documentos", "view");
+
+  const requestedSemestreId = toNumberOrNull(data?.semestreId);
+  const settings = requestedSemestreId ? null : await getFormularioMatriculaSettingsData();
+  const semestreId = requestedSemestreId ?? settings?.general.semestreActualId ?? null;
+  if (!semestreId || semestreId <= 0) {
+    throw new https.HttpsError("invalid-argument", "No se encontro el semestre actual para cargar documentos.");
+  }
+
+  try {
+    const response = await listEditorDocumentosMatriculasForList(semestreId);
+    const matriculas = (response.data.matriculas ?? [])
+      .filter((matricula) => Number(matricula.semestreId) === semestreId)
+      .slice()
+      .sort((a, b) => b.id - a.id);
+    return { matriculas: await hydrateMatriculaListAvatarTiny(matriculas), semestreId };
+  } catch (error) {
+    console.error("Error in listEditorDocumentosMatriculas:", error);
+    throw new https.HttpsError("internal", "No se pudieron cargar los documentos.");
+  }
+});
+
+export const getEditorDocumentoMatricula = https.onCall(async (data, context) => {
+  await requirePermission(context, "editor-documentos", "view");
+  const matriculaId = toNumberOrNull(data?.matriculaId);
+  if (!matriculaId) {
+    throw new https.HttpsError("invalid-argument", "Debes indicar una matricula.");
+  }
+
+  try {
+    const matricula = await getEditorDocumentoMatriculaById(matriculaId);
+    if (!matricula) {
+      throw new https.HttpsError("not-found", "No se encontro la matricula.");
+    }
+    return { matricula: await hydrateMatriculaUserAvatarThumbnails(matricula) };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in getEditorDocumentoMatricula:", error);
+    throw new https.HttpsError("internal", "No se pudo cargar el documento.");
+  }
+});
+
+export const getEditorDocumentoImageData = runWith({ timeoutSeconds: 120, memory: "512MB" }).https.onCall(async (data, context) => {
+  await requirePermission(context, "editor-documentos", "view");
+  const matriculaId = toNumberOrNull(data?.matriculaId);
+  const userId = toNumberOrNull(data?.userId);
+  const documentId = asCleanString(data?.documentId);
+  const sideRaw = normalizeText(data?.side);
+  const sourceRaw = normalizeText(data?.source);
+  const side = sideRaw.includes("reverso") ? "reverso" : sideRaw.includes("frente") ? "frente" : null;
+  const source = sourceRaw.includes("proces") ? "procesada" : "original";
+  if ((!matriculaId && !userId && !documentId) || !side) {
+    throw new https.HttpsError("invalid-argument", "Debes indicar matricula o usuario y lado del documento.");
+  }
+
+  try {
+    const { matricula, user } = await getEditorDocumentoTargetFromInput(data);
+
+    const dni = normalizeDocumentNumber(user.dni) || String(user.id ?? matricula?.userId ?? "documento");
+    const tipoDocumento = asCleanString(user.tipoDocumento) ?? "DNI";
+    const url = side === "frente"
+      ? source === "procesada" ? user.dniImagenFrenteProcesadaUrl : user.dniImagenFrenteUrl
+      : source === "procesada" ? user.dniImagenReversoProcesadaUrl : user.dniImagenReversoUrl;
+    const fallbackPath = source === "procesada"
+      ? buildDocumentProcessedPaths({ dni, tipoDocumento, side }).processedPath
+      : buildDocumentOriginalPath({ dni, tipoDocumento, side });
+    const path = parseStoragePathFromUrl(url) ?? fallbackPath;
+    const image = await downloadStorageImageAsDataUrl({ path, url });
+    return { ...image, side, source };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in getEditorDocumentoImageData:", error);
+    throw new https.HttpsError("internal", "No se pudo cargar la imagen del documento.");
+  }
+});
+
+export const regenerateEditorDocumentoAvatar = runWith({ timeoutSeconds: 120, memory: "512MB" }).https.onCall(async (data, context) => {
+  await requirePermission(context, "editor-documentos", "edit");
+
+  try {
+    const { user, userId } = await getEditorDocumentoTargetFromInput(data);
+    const existingAvatarUrl = asCleanString(user.avatar);
+    if (existingAvatarUrl) {
+      return {
+        ok: true,
+        skipped: true,
+        message: "El usuario ya tiene avatar.",
+      };
+    }
+    const dni = normalizeDocumentNumber(user.dni) || String(userId);
+    const tipoDocumento = asCleanString(user.tipoDocumento) ?? "DNI";
+    const frenteProcesadoUrl = asCleanString(user.dniImagenFrenteProcesadaUrl);
+    const frenteProcesadoPath = parseStoragePathFromUrl(frenteProcesadoUrl);
+    if (!frenteProcesadoUrl || !frenteProcesadoPath) {
+      throw new https.HttpsError("failed-precondition", "El usuario no tiene DNI frente procesado para generar avatar.");
+    }
+
+    const jobId = await enqueueMatriculaAvatarExtractionJob({
+      userId,
+      tipoDocumento,
+      dni,
+      fechaNacimiento: user.fechaNacimiento,
+      documentProcessingJobId: `editor-documentos-regenerate-avatar-${Date.now()}`,
+      frenteProcesado: {
+        path: frenteProcesadoPath,
+        url: frenteProcesadoUrl,
+        contentType: detectDocumentContentType(frenteProcesadoUrl),
+      },
+      existingAvatarUrl: user.avatar,
+      existingRecorteFotografiaUrl: user.recorteFotografia,
+      forceRegenerate: false,
+    });
+    if (!jobId) {
+      throw new https.HttpsError("internal", "No se pudo crear el job para regenerar avatar.");
+    }
+
+    return { ok: true, jobId };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in regenerateEditorDocumentoAvatar:", error);
+    throw new https.HttpsError("internal", "No se pudo regenerar el avatar.");
+  }
+});
+
+export const saveEditorDocumentoImage = runWith({ timeoutSeconds: 180, memory: "1GB" }).https.onCall(async (data, context) => {
+  await requirePermission(context, "editor-documentos", "edit");
+
+  const matriculaId = toNumberOrNull(data?.matriculaId);
+  const userIdInput = toNumberOrNull(data?.userId);
+  const documentId = asCleanString(data?.documentId);
+  const sideRaw = normalizeText(data?.side);
+  const side = sideRaw.includes("reverso") ? "reverso" : sideRaw.includes("frente") ? "frente" : null;
+  if ((!matriculaId && !userIdInput && !documentId) || !side) {
+    throw new https.HttpsError("invalid-argument", "Debes indicar matricula o usuario y lado del documento.");
+  }
+  const imageDataUrl = asCleanString(data?.imageDataUrl);
+  if (!imageDataUrl) {
+    throw new https.HttpsError("invalid-argument", "Debes enviar la imagen editada.");
+  }
+
+  try {
+    const { user, userId } = await getEditorDocumentoTargetFromInput(data);
+
+    const dni = normalizeDocumentNumber(user.dni) || String(userId);
+    const tipoDocumento = asCleanString(user.tipoDocumento) ?? "DNI";
+    const originalUrl = side === "frente" ? user.dniImagenFrenteUrl : user.dniImagenReversoUrl;
+    const processedUrl = side === "frente" ? user.dniImagenFrenteProcesadaUrl : user.dniImagenReversoProcesadaUrl;
+    const originalPath = parseStoragePathFromUrl(originalUrl) ?? buildDocumentOriginalPath({ dni, tipoDocumento, side });
+    const parsedProcessedPath = parseStoragePathFromUrl(processedUrl);
+    const fallbackProcessedPaths = buildDocumentProcessedPaths({ dni, tipoDocumento, side });
+    const processedPath = parsedProcessedPath ?? fallbackProcessedPaths.processedPath;
+    const smallPath = processedPath.endsWith(".jpg")
+      ? processedPath.replace(/\.jpg$/i, "-small.jpg")
+      : fallbackProcessedPaths.smallPath;
+
+    const updateData: DataConnectUserInput = {};
+    const replacementOriginalDataUrl = asCleanString(data?.replacementOriginalDataUrl);
+    if (replacementOriginalDataUrl) {
+      const original = parseDataUrl(replacementOriginalDataUrl);
+      const savedOriginal = await overwriteStorageImage({
+        path: originalPath,
+        buffer: original.buffer,
+        contentType: original.contentType,
+      });
+      if (side === "frente") {
+        updateData.dniImagenFrenteUrl = savedOriginal.url;
+      } else {
+        updateData.dniImagenReversoUrl = savedOriginal.url;
+      }
+    }
+
+    const processorResult = await callDocumentProcessorManualEdit({
+      imageDataUrl,
+      perspectivePoints: Array.isArray(data?.perspectivePoints) ? data.perspectivePoints : null,
+      side,
+      dni,
+      tipoDocumento,
+      outputPath: processedPath,
+      smallPath,
+    }) ?? {};
+    const outputRaw = processorResult.output;
+    const output = outputRaw && typeof outputRaw === "object" && !Array.isArray(outputRaw)
+      ? outputRaw as Record<string, unknown>
+      : null;
+    const processedOutputUrl = asCleanString(output?.url);
+    const smallOutput = output?.small && typeof output.small === "object" && !Array.isArray(output.small)
+      ? output.small as Record<string, unknown>
+      : null;
+    const smallOutputUrl = asCleanString(smallOutput?.url);
+    if (!processedOutputUrl) {
+      throw new https.HttpsError("internal", "El procesador no devolvio la imagen procesada.");
+    }
+
+    if (side === "frente") {
+      updateData.dniImagenFrenteProcesadaUrl = processedOutputUrl;
+    } else {
+      updateData.dniImagenReversoProcesadaUrl = processedOutputUrl;
+    }
+
+    await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
+      UPDATE_USER_MUTATION,
+      { variables: { id: userId, data: updateData } },
+    );
+
+    if (side === "frente" && !asCleanString(user.avatar)) {
+      await enqueueMatriculaAvatarExtractionJob({
+        userId,
+        tipoDocumento,
+        dni,
+        fechaNacimiento: user.fechaNacimiento,
+        documentProcessingJobId: `editor-documentos-save-avatar-${Date.now()}`,
+        frenteProcesado: {
+          path: processedPath,
+          url: processedOutputUrl,
+          contentType: detectDocumentContentType(processedOutputUrl),
+        },
+        existingAvatarUrl: user.avatar,
+        existingRecorteFotografiaUrl: user.recorteFotografia,
+        forceRegenerate: false,
+      });
+    }
+
+    return {
+      ok: true,
+      side,
+      processedUrl: processedOutputUrl,
+      smallUrl: smallOutputUrl,
+      originalUrl: side === "frente" ? updateData.dniImagenFrenteUrl ?? originalUrl : updateData.dniImagenReversoUrl ?? originalUrl,
+    };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in saveEditorDocumentoImage:", error);
+    throw new https.HttpsError("internal", "No se pudo guardar la imagen editada.");
+  }
+});
+
 export const listMatriculaDocenteGrupos = https.onCall(async (data, context) => {
   await requirePermission(context, "matriculas", "view");
 
@@ -4318,7 +4859,7 @@ export const getMatriculaDocumentoEstado = https.onCall(async (data, context) =>
   }
 
   try {
-    const existingUser = await findUserByDocument(tipoDocumento, dni);
+    const existingUser = await findStudentUserByDocument(tipoDocumento, dni);
     return {
       userExists: Boolean(existingUser),
       user: existingUser,
@@ -4341,7 +4882,7 @@ export const verificarMatriculaReniec = https.onCall(async (data, context) => {
     throw new https.HttpsError("invalid-argument", "Ingresa tipo y numero de documento.");
   }
   if (tipoDocumento !== "DNI") {
-    const existingUser = await findUserByDocument(tipoDocumento, documentNumber);
+    const existingUser = await findStudentUserByDocument(tipoDocumento, documentNumber);
     return {
       userExists: Boolean(existingUser),
       datos: mergeSavedUserWithOcr(existingUser, {
@@ -4357,7 +4898,7 @@ export const verificarMatriculaReniec = https.onCall(async (data, context) => {
 
   try {
     const [existingUser, dniDataResult] = await Promise.allSettled([
-      findUserByDocument("DNI", documentNumber),
+      findStudentUserByDocument("DNI", documentNumber),
       fetchPeruDevsDni(documentNumber),
     ]);
     const existingUserValue = existingUser.status === "fulfilled" ? existingUser.value : null;
@@ -5131,7 +5672,7 @@ async function crearMatriculaFormularioData(data: any, context: https.CallableCo
   try {
     const [{ responsable, responsableUser }, existingUser] = await Promise.all([
       getMatriculaResponsableFromContext(context),
-      findUserByDocument(tipoDocumento, dni),
+      findStudentUserByDocument(tipoDocumento, dni),
     ]);
     const savedUser = await saveUserForMatricula(existingUser, {
       ...(data as Record<string, unknown>),
@@ -5261,9 +5802,12 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
     const previousWorkspaceEmail = resolveWorkspaceEmailForMatriculaUser(currentMatricula.user);
     const [previousWorkspaceGroups, documentUser] = await Promise.all([
       getMatriculaWorkspaceGroups(matriculaId),
-      findUserByDocument(tipoDocumento, dni),
+      findStudentUserByDocument(tipoDocumento, dni),
     ]);
-    const userToSave = documentUser ?? currentMatricula.user ?? null;
+    const currentStudentUser = isStudentMatriculaUser(currentMatricula.user)
+      ? currentMatricula.user
+      : null;
+    const userToSave = documentUser ?? currentStudentUser;
     const savedUser = await saveUserForMatricula(userToSave, {
       ...(data as Record<string, unknown>),
       tipoDocumento,

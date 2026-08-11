@@ -5144,6 +5144,135 @@ def upload_output(
     return output
 
 
+def parse_data_url_image(value: Any) -> tuple[np.ndarray, bytes]:
+    text = clean_text(value)
+    if not text:
+        raise RuntimeError("No se recibio imagen para editar.")
+    if "," in text and text.lower().startswith("data:"):
+        text = text.split(",", 1)[1]
+    import base64
+
+    content = base64.b64decode(text)
+    image = cv2.imdecode(np.frombuffer(content, dtype=np.uint8), cv2.IMREAD_COLOR)
+    if image is None:
+        raise RuntimeError("No se pudo decodificar la imagen del editor.")
+    return image, content
+
+
+def normalize_editor_points(points: Any, width: int, height: int) -> np.ndarray | None:
+    if not isinstance(points, list) or len(points) != 4:
+        return None
+    parsed: list[list[float]] = []
+    for point in points:
+        if not isinstance(point, dict):
+            return None
+        x = float(point.get("x", 0))
+        y = float(point.get("y", 0))
+        if 0 <= x <= 1 and 0 <= y <= 1:
+            x *= width
+            y *= height
+        parsed.append([
+            min(max(x, 0.0), float(width - 1)),
+            min(max(y, 0.0), float(height - 1)),
+        ])
+    return order_points(np.asarray(parsed, dtype="float32"))
+
+
+def apply_manual_perspective(image: np.ndarray, points: Any, output_side: Any = None) -> np.ndarray:
+    height, width = image.shape[:2]
+    rect = normalize_editor_points(points, width, height)
+    if rect is None:
+        return image
+
+    width_a = np.linalg.norm(rect[2] - rect[3])
+    width_b = np.linalg.norm(rect[1] - rect[0])
+    height_a = np.linalg.norm(rect[1] - rect[2])
+    height_b = np.linalg.norm(rect[0] - rect[3])
+    source_width = max(width_a, width_b)
+    source_height = max(height_a, height_b)
+    if source_width < 20 or source_height < 20:
+        return image
+
+    source_long = max(source_width, source_height)
+    source_short = max(1.0, min(source_width, source_height))
+    output_width = int(os.getenv("OUTPUT_WIDTH", str(DEFAULT_OUTPUT_WIDTH)))
+    output_width = max(800, min(max(output_width, int(source_long)), 2400))
+    normalized_ratio = source_long / source_short
+    if 1.35 <= normalized_ratio <= 1.90:
+        output_height = int(round(output_width / DOCUMENT_RATIO))
+    else:
+        output_height = max(1, int(round(output_width * (source_short / source_long))))
+
+    destination = np.array(
+        [
+            [0, 0],
+            [output_width - 1, 0],
+            [output_width - 1, output_height - 1],
+            [0, output_height - 1],
+        ],
+        dtype="float32",
+    )
+    warped = cv2.warpPerspective(image, cv2.getPerspectiveTransform(rect, destination), (output_width, output_height))
+    if warped.shape[0] > warped.shape[1]:
+        warped = cv2.rotate(warped, cv2.ROTATE_90_CLOCKWISE)
+    return trim_warped_document_margins(warped, output_side)
+
+
+def normalize_manual_output_size(image: np.ndarray) -> np.ndarray:
+    target_width = int(os.getenv("OUTPUT_WIDTH", str(DEFAULT_OUTPUT_WIDTH)))
+    target_width = max(800, min(target_width, 2400))
+    if image.shape[1] == target_width:
+        return image
+    return resize_to_width(image, target_width)
+
+
+def upload_manual_output(
+    image: np.ndarray,
+    bucket_name: str | None,
+    output_path: str,
+    small_path: str,
+) -> dict[str, Any]:
+    init_firebase()
+    bucket = storage.bucket(bucket_name) if bucket_name else storage.bucket()
+    token = str(uuid.uuid4())
+    output = upload_jpeg_image(bucket, image, output_path, token, 94)
+    output["small"] = upload_jpeg_image(bucket, resize_to_width(image, SMALL_OUTPUT_WIDTH), small_path, token, 88)
+    return output
+
+
+@app.post("/manual-edit")
+def manual_edit():
+    authorized, message = require_authorization()
+    if not authorized:
+        return jsonify({"status": "unauthorized", "message": message}), 401
+
+    payload = request.get_json(silent=True) or {}
+    output_path = clean_text(payload.get("outputPath"))
+    small_path = clean_text(payload.get("smallPath"))
+    if not output_path or not small_path:
+        return jsonify({"status": "rejected", "message": "Faltan rutas de salida procesada."}), 400
+
+    try:
+        image, _content = parse_data_url_image(payload.get("imageDataUrl"))
+        image = apply_manual_perspective(image, payload.get("perspectivePoints"), payload.get("side"))
+        image = normalize_manual_output_size(image)
+        image = enhance_image(image)
+        output = upload_manual_output(
+            image=image,
+            bucket_name=clean_text(payload.get("bucket")) or get_configured_bucket(),
+            output_path=output_path,
+            small_path=small_path,
+        )
+        return jsonify({
+            "status": "completed",
+            "side": normalize_side(payload.get("side")),
+            "output": output,
+        })
+    except Exception as exc:
+        app.logger.exception("Manual DNI edit failed")
+        return jsonify({"status": "failed", "message": str(exc)}), 422
+
+
 def process_side(job: dict[str, Any], side: dict[str, Any]) -> dict[str, Any]:
     source = side.get("source") if isinstance(side.get("source"), dict) else {}
     content_type = clean_text(source.get("contentType")) or "image/jpeg"

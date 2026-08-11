@@ -14,7 +14,7 @@ import { app } from '@/lib/firebase';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
-import { formatDateOnly } from '@/lib/dateOnly';
+import { formatDateOnly, formatDateTimeInAppTimeZone } from '@/lib/dateOnly';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { AcademicEntityForm, AcademicFieldConfig } from './AcademicEntityForm';
 
@@ -81,9 +81,7 @@ function renderNumberCellValue(value: unknown) {
 
 function renderTimestampCellValue(value: unknown) {
   if (typeof value !== 'string' || !value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short' }).format(date);
+  return formatDateTimeInAppTimeZone(value);
 }
 
 function renderDateCellValue(value: unknown) {

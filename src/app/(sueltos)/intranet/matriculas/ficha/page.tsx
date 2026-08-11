@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Box, GlobalStyles } from '@mui/material';
+import { Box, Button, GlobalStyles } from '@mui/material';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useSearchParams } from 'next/navigation';
 import { app } from '@/lib/firebase';
-import { formatDateOnly, getDateOnlyLocalDate } from '@/lib/dateOnly';
+import { formatDateOnly, formatDateTimeInAppTimeZone, getDateOnlyLocalDate } from '@/lib/dateOnly';
 import PrintDocumentViewer, {
   cmToMm,
   getA4PageSizeMm,
@@ -15,6 +15,9 @@ import PrintDocumentViewer, {
   type PrintMarginsCm,
   type PrintOrientation,
 } from '@/components/print/PrintDocumentViewer';
+import { EditorImagenesModal } from '@/components/intranet/editor-documentos/EditorDocumentosClient';
+
+type DocumentoSide = 'frente' | 'reverso';
 
 type MatriculaFichaUser = {
   id?: number | null;
@@ -219,18 +222,14 @@ const getNewModuloChangeName = (change: MatriculaFichaCambioModulo) =>
 const asDate = (value: string | null | undefined) => formatDateOnly(value) || '';
 
 const asDateTime = (value: string | null | undefined) => {
-  const raw = asValue(value);
-  if (!raw) return '';
-  const date = new Date(raw);
-  if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('es-PE', {
+  return formatDateTimeInAppTimeZone(value, {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  }).format(date);
+  });
 };
 
 const formatFichaActorName = (actor: MatriculaFichaActor | null | undefined) =>
@@ -1387,6 +1386,7 @@ type FichaDniImagesPageProps = {
   frenteUrl: string;
   reversoUrl: string;
   timelineRows?: FichaModuloTimelineRow[];
+  onEditSide?: (side: DocumentoSide) => void;
 };
 
 function FichaDniImagesPage({
@@ -1396,23 +1396,37 @@ function FichaDniImagesPage({
   frenteUrl,
   reversoUrl,
   timelineRows = [],
+  onEditSide,
 }: FichaDniImagesPageProps) {
   if (!frenteUrl && !reversoUrl && timelineRows.length === 0) return null;
 
-  const renderImage = (src: string, alt: string) =>
+  const renderImage = (src: string, alt: string, side: DocumentoSide) =>
     src ? (
-      <Box
-        component="img"
-        src={src}
-        alt={alt}
-        sx={{
-          width: '350px',
-          height: 'auto',
-          maxHeight: '38%',
-          objectFit: 'contain',
-          display: 'block',
-        }}
-      />
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <Box
+          component="img"
+          src={src}
+          alt={alt}
+          sx={{
+            width: '350px',
+            height: 'auto',
+            maxHeight: '38%',
+            objectFit: 'contain',
+            display: 'block',
+          }}
+        />
+        {onEditSide ? (
+          <Button
+            className="no-print"
+            variant="outlined"
+            size="small"
+            onClick={() => onEditSide(side)}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            {side === 'frente' ? 'Editar Frente' : 'Editar Reverso'}
+          </Button>
+        ) : null}
+      </Box>
     ) : null;
 
   return (
@@ -1469,8 +1483,8 @@ function FichaDniImagesPage({
             </Box>
           ) : null}
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '150px' }}>
-            {renderImage(frenteUrl, 'DNI frente')}
-            {renderImage(reversoUrl, 'DNI reverso')}
+            {renderImage(frenteUrl, 'DNI frente', 'frente')}
+            {renderImage(reversoUrl, 'DNI reverso', 'reverso')}
           </Box>
         </Box>
       </Box>
@@ -1490,6 +1504,8 @@ export default function FichaMatriculaProgramaPage() {
   const [margins, setMargins] = useState<PrintMarginsCm>(DEFAULT_MARGINS);
   const [showOverflow, setShowOverflow] = useState(false);
   const [scalePercent, setScalePercent] = useState(100);
+  const [editorTarget, setEditorTarget] = useState<DocumentoSide | null>(null);
+  const [dniImageVersion, setDniImageVersion] = useState(0);
 
   const pageSizeMm = useMemo(() => getA4PageSizeMm(orientation), [orientation]);
   const contentWidthMm = useMemo(() => getPrintContentWidthMm(pageSizeMm, margins), [pageSizeMm, margins]);
@@ -1562,8 +1578,12 @@ export default function FichaMatriculaProgramaPage() {
   const efsrtHoras = asValue(modulo?.duracionEfsrt);
   const horarioModulo = getHorarioFromGrupoModuloName(grupoModulo?.nombre);
   const directorSemestre = getFichaPersonalName(matricula?.semestre?.director);
-  const dniFrenteUrl = asValue(user?.dniImagenFrenteProcesadaUrl || user?.dniImagenFrenteUrl);
-  const dniReversoUrl = asValue(user?.dniImagenReversoProcesadaUrl || user?.dniImagenReversoUrl);
+  const addDniImageVersion = (url: string) => {
+    if (!url || !dniImageVersion) return url;
+    return `${url}${url.includes('?') ? '&' : '?'}v=${dniImageVersion}`;
+  };
+  const dniFrenteUrl = addDniImageVersion(asValue(user?.dniImagenFrenteProcesadaUrl || user?.dniImagenFrenteUrl));
+  const dniReversoUrl = addDniImageVersion(asValue(user?.dniImagenReversoProcesadaUrl || user?.dniImagenReversoUrl));
   const cambiosModuloOrdenados = (matricula?.cambiosModulo ?? [])
     .slice()
     .sort((a, b) =>
@@ -1618,6 +1638,33 @@ export default function FichaMatriculaProgramaPage() {
     }
   }, [isOpcionOcupacional, matricula]);
 
+  const handleFichaDniSaved = (payload: {
+    side: DocumentoSide;
+    processedUrl?: string | null;
+    originalUrl?: string | null;
+  }) => {
+    setMatricula((current) => {
+      if (!current?.user) return current;
+      return {
+        ...current,
+        user: {
+          ...current.user,
+          ...(payload.side === 'frente'
+            ? {
+              dniImagenFrenteProcesadaUrl: payload.processedUrl || current.user.dniImagenFrenteProcesadaUrl,
+              dniImagenFrenteUrl: payload.originalUrl || current.user.dniImagenFrenteUrl,
+            }
+            : {
+              dniImagenReversoProcesadaUrl: payload.processedUrl || current.user.dniImagenReversoProcesadaUrl,
+              dniImagenReversoUrl: payload.originalUrl || current.user.dniImagenReversoUrl,
+            }),
+        },
+      };
+    });
+    setDniImageVersion(Date.now());
+    setEditorTarget(null);
+  };
+
   return (
     <PrintDocumentViewer
       title="Ficha de Matricula"
@@ -1640,6 +1687,7 @@ export default function FichaMatriculaProgramaPage() {
       <GlobalStyles
         styles={{
           '@media print': {
+            '.no-print': { display: 'none !important' },
             '.print-viewer': { overflow: 'visible !important', padding: '0 !important' },
             '.print-viewer-inner': { minWidth: '0 !important', width: 'auto !important' },
             '.print-page': {
@@ -2065,6 +2113,16 @@ export default function FichaMatriculaProgramaPage() {
             frenteUrl={dniFrenteUrl}
             reversoUrl={dniReversoUrl}
             timelineRows={cambiosModuloTimeline}
+            onEditSide={setEditorTarget}
+          />
+          <EditorImagenesModal
+            open={Boolean(editorTarget)}
+            matriculaId={matriculaId}
+            side={editorTarget ?? 'frente'}
+            variant="simple"
+            instructionText="Gira la imagen a su posision correcta y haz clic en las 4 esquinas del documento, luego guarda para terminar la edicion."
+            onClose={() => setEditorTarget(null)}
+            onSaved={handleFichaDniSaved}
           />
         </>
       )}

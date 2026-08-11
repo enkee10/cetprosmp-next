@@ -1,3 +1,11 @@
+export const APP_LOCALE = 'es-PE';
+export const APP_TIME_ZONE = 'America/Lima';
+
+const hasTimeComponent = (value: string) => /[T\s]\d{2}:\d{2}/.test(value);
+
+const isUtcMidnightDateOnlyTimestamp = (value: string) =>
+  /^\d{4}-\d{2}-\d{2}T00:00:00(?:\.000)?Z$/i.test(value);
+
 export function getDateOnlyParts(value: string | null | undefined) {
   if (!value) return null;
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value).trim());
@@ -40,9 +48,31 @@ export function toDateOnlyInputValue(value: string | null | undefined) {
 }
 
 export function formatDateOnly(value: string | null | undefined, options?: Intl.DateTimeFormatOptions) {
-  const date = getDateOnlyLocalDate(value);
-  if (!date) return '';
-  return new Intl.DateTimeFormat('es-PE', options).format(date);
+  const raw = String(value || '').trim();
+  const shouldUseAppTimeZone = raw && hasTimeComponent(raw) && !isUtcMidnightDateOnlyTimestamp(raw);
+  const date = shouldUseAppTimeZone
+    ? new Date(raw)
+    : getDateOnlyLocalDate(value);
+  if (!date || Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat(APP_LOCALE, {
+    ...options,
+    ...(shouldUseAppTimeZone ? { timeZone: APP_TIME_ZONE } : {}),
+  }).format(date);
+}
+
+export function formatDateTimeInAppTimeZone(value: string | null | undefined, options?: Intl.DateTimeFormatOptions) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return raw;
+  const hasExplicitFormatOptions = Boolean(
+    options && Object.keys(options).some((key) => key !== 'timeZone'),
+  );
+  return new Intl.DateTimeFormat(APP_LOCALE, {
+    ...(hasExplicitFormatOptions ? {} : { dateStyle: 'short', timeStyle: 'short' }),
+    ...options,
+    timeZone: APP_TIME_ZONE,
+  }).format(date);
 }
 
 export function dateOnlyTimestamp(value: string | null | undefined) {

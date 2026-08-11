@@ -22,6 +22,7 @@ import { functions } from '@/lib/firebase';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import UserForm from '@/components/intranet/users/UserForm';
 import { MatriculaForm } from '@/components/intranet/matriculas/MatriculasClient';
+import { EditorImagenesModal } from '@/components/intranet/editor-documentos/EditorDocumentosClient';
 import Modal1 from '@/components/Modal1';
 import { useAuth } from '@/context/AuthContext';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
@@ -76,6 +77,7 @@ interface User {
 }
 
 type UserFormSubmitData = Parameters<React.ComponentProps<typeof UserForm>['onSubmit']>[0];
+type DocumentoSide = 'frente' | 'reverso';
 
 const getCallableErrorMessage = (error: unknown, fallback: string) => {
   const code = (error as { code?: string } | null)?.code;
@@ -197,10 +199,21 @@ const isStudentUser = (user: Pick<User, 'rolId' | 'rolTitulo'>) => {
 
 const UsersPage = () => {
   const { user, loading: authLoading } = useAuth();
-  const { can } = useIntranetPermissions();
+  const { can, isSuperUser } = useIntranetPermissions();
   const { settings: appSettings } = useAppSettings();
   const canDeleteRecords = can('users', 'delete');
   const canCreateMatriculas = can('matriculas', 'create');
+  const canEditDniImagesInUserForm = useMemo(() => {
+    if (isSuperUser) return true;
+    const normalizedTitle = String(user?.roleTitle || user?.cargo || '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    return normalizedTitle.includes('administrativo')
+      || normalizedTitle.includes('coordinador')
+      || normalizedTitle.includes('director');
+  }, [isSuperUser, user?.cargo, user?.roleTitle]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -208,6 +221,7 @@ const UsersPage = () => {
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [matriculaUser, setMatriculaUser] = useState<User | null>(null);
+  const [editorTarget, setEditorTarget] = useState<{ user: User; side: DocumentoSide } | null>(null);
   const [matriculaFormResetKey, setMatriculaFormResetKey] = useState(0);
   const [userFormResetKey, setUserFormResetKey] = useState(0);
   const errorMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -491,6 +505,54 @@ const UsersPage = () => {
     await fetchUsers();
   }, [fetchUsers]);
 
+  const updateUserLocally = useCallback((userId: number, patch: Partial<User>) => {
+    setUsers((current) =>
+      current.map((item) => item.id === userId ? { ...item, ...patch } : item),
+    );
+    setSelectedUser((current) => current?.id === userId ? { ...current, ...patch } : current);
+  }, []);
+
+  const handleEditUserDniSide = useCallback((side: DocumentoSide) => {
+    if (!selectedUser) return;
+    setEditorTarget({ user: selectedUser, side });
+  }, [selectedUser]);
+
+  const handleUserDniSaved = useCallback((payload: {
+    side: DocumentoSide;
+    processedUrl?: string | null;
+    originalUrl?: string | null;
+  }) => {
+    if (!editorTarget?.user?.id) {
+      setEditorTarget(null);
+      return;
+    }
+
+    const patch: Partial<User> = payload.side === 'frente'
+      ? {
+        dniImagenFrenteProcesadaUrl: payload.processedUrl || editorTarget.user.dniImagenFrenteProcesadaUrl,
+        dniImagenFrenteUrl: payload.originalUrl || editorTarget.user.dniImagenFrenteUrl,
+      }
+      : {
+        dniImagenReversoProcesadaUrl: payload.processedUrl || editorTarget.user.dniImagenReversoProcesadaUrl,
+        dniImagenReversoUrl: payload.originalUrl || editorTarget.user.dniImagenReversoUrl,
+      };
+    updateUserLocally(editorTarget.user.id, patch);
+    setUserFormResetKey((prev) => prev + 1);
+    setEditorTarget(null);
+  }, [editorTarget, updateUserLocally]);
+
+  const handleGenerateAvatarForUser = useCallback(async (targetUser: User) => {
+    if (!targetUser.id) {
+      throw new Error('El usuario no tiene id.');
+    }
+    const callable = httpsCallable<{ userId: number }, { ok?: boolean; jobId?: string }>(
+      functions,
+      'regenerateEditorDocumentoAvatar',
+      { timeout: 120000 },
+    );
+    await callable({ userId: targetUser.id });
+  }, []);
+
   const columns = useMemo<GridColDef[]>(
     () => [
       {
@@ -764,6 +826,10 @@ const UsersPage = () => {
             onCancel={handleDismissUserModal}
             onSubmit={handleFormSubmit}
             onAvatarRemoved={handleAvatarRemovedFromForm}
+            onEditDniSide={handleEditUserDniSide}
+            onGenerateAvatar={selectedUser ? () => handleGenerateAvatarForUser(selectedUser) : undefined}
+            isSuperUser={isSuperUser}
+            canEditDniImages={canEditDniImagesInUserForm}
             isSubmitting={formSubmitting}
             submittingMessage={selectedUser ? 'Guardando cambios...' : 'Creando usuario...'}
             initialData={
@@ -792,6 +858,14 @@ const UsersPage = () => {
           />
         ) : null}
       </Modal1>
+
+      <EditorImagenesModal
+        open={Boolean(editorTarget)}
+        userId={editorTarget?.user.id ?? null}
+        side={editorTarget?.side ?? 'frente'}
+        onClose={() => setEditorTarget(null)}
+        onSaved={handleUserDniSaved}
+      />
     </IntranetListLayout>
   );
 };

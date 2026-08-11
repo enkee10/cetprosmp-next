@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { httpsCallable } from 'firebase/functions';
+import { usePathname } from 'next/navigation';
 import { functions } from '@/lib/firebase';
 import { DatosGenerales, datosGeneralesFallback, mergeDatosGenerales } from '@/lib/datosGenerales';
 
@@ -14,8 +15,10 @@ interface DatosGeneralesContextType {
 const DatosGeneralesContext = createContext<DatosGeneralesContextType | undefined>(undefined);
 
 export function DatosGeneralesProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [datosGenerales, setDatosGenerales] = useState<DatosGenerales>(datosGeneralesFallback);
   const [loading, setLoading] = useState(true);
+  const isIntranetRoute = pathname?.startsWith('/intranet');
 
   const refreshDatosGenerales = useCallback(async () => {
     setLoading(true);
@@ -38,8 +41,13 @@ export function DatosGeneralesProvider({ children }: { children: React.ReactNode
   }, []);
 
   useEffect(() => {
+    if (isIntranetRoute) {
+      setLoading(false);
+      return;
+    }
+
     void refreshDatosGenerales();
-  }, [refreshDatosGenerales]);
+  }, [isIntranetRoute, refreshDatosGenerales]);
 
   const value = useMemo(
     () => ({ datosGenerales, loading, refreshDatosGenerales }),

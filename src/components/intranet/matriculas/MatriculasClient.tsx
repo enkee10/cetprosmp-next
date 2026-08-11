@@ -8,17 +8,12 @@ import {
   Box,
   Button,
   Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControl,
   FormControlLabel,
   FormLabel,
   IconButton,
   InputAdornment,
   InputLabel,
-  LinearProgress,
   ListItemText,
   Menu,
   MenuItem,
@@ -43,13 +38,15 @@ import {
   GridColumnVisibilityModel,
   GridPaginationModel,
 } from '@mui/x-data-grid';
+import { useSearchParams } from 'next/navigation';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { httpsCallable } from 'firebase/functions';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { functions, storage } from '@/lib/firebase';
-import { formatDateOnly, getDateOnlyLocalDate } from '@/lib/dateOnly';
+import { formatDateOnly, formatDateTimeInAppTimeZone, getDateOnlyLocalDate } from '@/lib/dateOnly';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import CameraCaptureDialog from '@/components/intranet/CameraCaptureDialog';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
@@ -57,6 +54,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useAppSettings, type AppSettings } from '@/hooks/useAppSettings';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 import UserForm from '@/components/intranet/users/UserForm';
+import { imageFileToOptimizedDataUrl } from '@/lib/imageOptimization';
 
 interface SemestreOption {
   id: number;
@@ -269,7 +267,15 @@ interface MatriculaGrupoModuloOption {
   moduloId?: number | null;
   grupo?: {
     nombreDisplay?: string | null;
-    semestre?: { titulo?: string | null } | null;
+    semestreId?: number | null;
+    semestre?: {
+      id?: number | null;
+      titulo?: string | null;
+      nombre?: string | null;
+      anioTitulo?: string | null;
+      inicio?: string | null;
+      fin?: string | null;
+    } | null;
   } | null;
   modulo?: {
     titulo?: string | null;
@@ -463,31 +469,6 @@ const getCurrentSemestre = (semestres: SemestreOption[], now = new Date()) =>
   }) ?? null;
 
 const asString = (value: unknown) => (typeof value === 'string' ? value : '');
-
-const imageFileToOptimizedDataUrl = async (file: File) => {
-  const objectUrl = URL.createObjectURL(file);
-  try {
-    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error('No se pudo preparar la imagen para validar.'));
-      img.src = objectUrl;
-    });
-    const maxSide = 2200;
-    const ratio = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
-    const width = Math.max(1, Math.round(image.naturalWidth * ratio));
-    const height = Math.max(1, Math.round(image.naturalHeight * ratio));
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const context = canvas.getContext('2d');
-    if (!context) throw new Error('No se pudo preparar la imagen para validar.');
-    context.drawImage(image, 0, 0, width, height);
-    return canvas.toDataURL('image/jpeg', 0.9);
-  } finally {
-    URL.revokeObjectURL(objectUrl);
-  }
-};
 
 const fileToGenerativePart = async (file: File) => {
   const contentType = detectDocumentContentType(file);
@@ -890,6 +871,26 @@ const studentInitials = (user?: MatriculaUser | null) => {
 const getSemestreLabel = (semestre?: SemestreOption | null) =>
   semestre?.titulo || semestre?.nombre || (semestre?.id ? `Semestre ${semestre.id}` : '');
 
+const getGrupoModuloSemestreId = (grupoModulo?: MatriculaGrupoModuloOption | null) => {
+  const id = Number(grupoModulo?.grupo?.semestre?.id ?? grupoModulo?.grupo?.semestreId ?? 0);
+  return Number.isFinite(id) && id > 0 ? id : 0;
+};
+
+const getGrupoModuloSemestreOption = (grupoModulo: MatriculaGrupoModuloOption): SemestreOption | null => {
+  const id = getGrupoModuloSemestreId(grupoModulo);
+  if (!id) return null;
+  const semestre = grupoModulo.grupo?.semestre;
+  return {
+    id,
+    titulo: semestre?.titulo ?? `Semestre ${id}`,
+    nombre: semestre?.nombre ?? null,
+    anioTitulo: semestre?.anioTitulo ?? null,
+    inicio: semestre?.inicio ?? null,
+    fin: semestre?.fin ?? null,
+    placeholder: !semestre?.titulo && !semestre?.nombre,
+  };
+};
+
 const getGrupoModuloFilterLabel = (grupoModulo: MatriculaGrupoModuloOption) => {
   const nombre = String(grupoModulo.nombre || '').trim();
   if (nombre) return nombre;
@@ -925,18 +926,19 @@ const formatDate = (value?: string | null) => {
 };
 
 const formatDateTimeForDisplay = (value?: string | null) => {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  const pad = (number: number) => String(number).padStart(2, '0');
-  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return formatDateTimeInAppTimeZone(value);
 };
 
 const firstCleanValue = (...values: Array<string | null | undefined>) =>
   values.map((value) => asString(value).trim()).find(Boolean) || null;
 
 const DOCENTE_MAX_MODULO_CHANGE_EVENTS = 3;
-const SECONDARY_INCOMPLETE_VALUE = 'Secundaria incompleta';
+const SECONDARY_INCOMPLETE_LEGACY_VALUE = 'Secundaria incompleta';
+const SECONDARY_INCOMPLETE_VALUE = 'Secundaria en curso..';
+const normalizeInstructionValue = (value: unknown) => {
+  const text = asString(value).trim();
+  return text === SECONDARY_INCOMPLETE_LEGACY_VALUE ? SECONDARY_INCOMPLETE_VALUE : text;
+};
 
 type MatriculaModuloChange = NonNullable<MatriculaListItem['cambiosModulo']>[number];
 
@@ -1009,7 +1011,7 @@ function valuesFromMatricula(matricula: MatriculaListItem): MatriculaFormValues 
     fechaNacimiento: asString(user?.fechaNacimiento).split('T')[0],
     fechaVencimiento: asString(user?.fechaVencimiento).split('T')[0],
     estadoCivil: normalizeAiCivilStatus(user?.estadoCivil) || '',
-    instruccion: user?.instruccion || 'Secundaria',
+    instruccion: normalizeInstructionValue(user?.instruccion) || 'Secundaria',
     nombreColegio: user?.nombreColegio || '',
     direccion: user?.direccion || '',
     distrito: user?.distrito || '',
@@ -1036,7 +1038,7 @@ function valuesFromUser(user: Partial<MatriculaUser>, semestreId: string): Matri
     fechaNacimiento: asString(user.fechaNacimiento).split('T')[0],
     fechaVencimiento: asString(user.fechaVencimiento).split('T')[0],
     estadoCivil: normalizeAiCivilStatus(user.estadoCivil) || '',
-    instruccion: user.instruccion || 'Secundaria',
+    instruccion: normalizeInstructionValue(user.instruccion) || 'Secundaria',
     nombreColegio: user.nombreColegio || '',
     direccion: user.direccion || '',
     distrito: user.distrito || '',
@@ -1066,8 +1068,6 @@ export function MatriculaForm({
   const formRootRef = useRef<HTMLDivElement | null>(null);
   const dniInputRef = useRef<HTMLInputElement | null>(null);
   const birthDatePickerRef = useRef<HTMLInputElement | null>(null);
-  const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
-  const cameraStreamRef = useRef<MediaStream | null>(null);
   const [values, setValues] = useState<MatriculaFormValues>(initialValues);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [paquetes, setPaquetes] = useState<PaqueteOption[]>([]);
@@ -1083,9 +1083,6 @@ export function MatriculaForm({
   const [shouldPersistDocumentImages, setShouldPersistDocumentImages] = useState(true);
   const [verificationFailureCount, setVerificationFailureCount] = useState(0);
   const [cameraSide, setCameraSide] = useState<'frente' | 'reverso' | null>(null);
-  const [cameraStarting, setCameraStarting] = useState(false);
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const [cameraPreview, setCameraPreview] = useState<{ file: File; url: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
@@ -1192,122 +1189,18 @@ export function MatriculaForm({
     }, 0);
   }, []);
 
-  const stopCameraCapture = useCallback(() => {
-    cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
-    cameraStreamRef.current = null;
-    if (cameraVideoRef.current) {
-      cameraVideoRef.current.srcObject = null;
-    }
-    setCameraPreview((current) => {
-      if (current?.url) URL.revokeObjectURL(current.url);
-      return null;
-    });
-    setCameraSide(null);
-    setCameraStarting(false);
-    setCameraError(null);
-  }, []);
-
   const openCameraCapture = useCallback((side: 'frente' | 'reverso') => {
-    setCameraPreview((current) => {
-      if (current?.url) URL.revokeObjectURL(current.url);
-      return null;
-    });
-    setCameraError(null);
     setCameraSide(side);
   }, []);
 
-  useEffect(() => {
-    if (!cameraSide) return undefined;
-    let cancelled = false;
-
-    const startCamera = async () => {
-      setCameraStarting(true);
-      setCameraError(null);
-      try {
-        if (!navigator.mediaDevices?.getUserMedia) {
-          throw new Error('Tu navegador no permite abrir la camara desde esta pagina.');
-        }
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } },
-          audio: false,
-        });
-        if (cancelled) {
-          stream.getTracks().forEach((track) => track.stop());
-          return;
-        }
-        cameraStreamRef.current = stream;
-        if (cameraVideoRef.current) {
-          cameraVideoRef.current.srcObject = stream;
-          await cameraVideoRef.current.play().catch(() => undefined);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setCameraError(getCallableErrorMessage(error, 'No se pudo abrir la camara.'));
-        }
-      } finally {
-        if (!cancelled) setCameraStarting(false);
-      }
-    };
-
-    void startCamera();
-    return () => {
-      cancelled = true;
-      cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
-      cameraStreamRef.current = null;
-    };
-  }, [cameraSide]);
-
-  useEffect(() => {
-    if (!cameraSide || cameraPreview || !cameraStreamRef.current || !cameraVideoRef.current) return;
-    cameraVideoRef.current.srcObject = cameraStreamRef.current;
-    void cameraVideoRef.current.play().catch(() => undefined);
-  }, [cameraPreview, cameraSide]);
-
-  const handleCaptureCameraImage = useCallback(async () => {
-    const side = cameraSide;
-    const video = cameraVideoRef.current;
-    if (!side || !video || !video.videoWidth || !video.videoHeight) {
-      setCameraError('La camara todavia no esta lista.');
-      return;
-    }
-
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const context = canvas.getContext('2d');
-    if (!context) {
-      setCameraError('No se pudo capturar la imagen.');
-      return;
-    }
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
-    if (!blob) {
-      setCameraError('No se pudo generar la imagen.');
-      return;
-    }
-
-    const file = new File([blob], `dni-${side}-${Date.now()}.jpg`, { type: 'image/jpeg' });
-    const url = URL.createObjectURL(file);
-    setCameraPreview((current) => {
-      if (current?.url) URL.revokeObjectURL(current.url);
-      return { file, url };
-    });
-  }, [cameraSide]);
-
-  const handleRetakeCameraImage = useCallback(() => {
-    setCameraPreview((current) => {
-      if (current?.url) URL.revokeObjectURL(current.url);
-      return null;
-    });
-    setCameraError(null);
+  const closeCameraCapture = useCallback(() => {
+    setCameraSide(null);
   }, []);
 
-  const handleAcceptCameraImage = useCallback(() => {
-    if (!cameraSide || !cameraPreview) return;
-    setDocumentFile(cameraSide, cameraPreview.file);
-    stopCameraCapture();
-  }, [cameraPreview, cameraSide, setDocumentFile, stopCameraCapture]);
+  const handleAcceptCameraImage = useCallback((file: File) => {
+    if (!cameraSide) return;
+    setDocumentFile(cameraSide, file);
+  }, [cameraSide, setDocumentFile]);
 
   useEffect(() => {
     if (!isOpen || isEditing) return;
@@ -1461,6 +1354,17 @@ export function MatriculaForm({
     const cleanDni = normalizeDocumentNumber(values.dni);
     const documentPrefix = values.tipoDocumento === 'CE' ? 'ce' : 'dni';
     const contentType = detectDocumentContentType(file);
+    let uploadContent: File | Blob = file;
+    let uploadContentType = contentType;
+    if (contentType.startsWith('image/') && contentType !== 'image/gif') {
+      try {
+        const optimizedDataUrl = await imageFileToOptimizedDataUrl(file);
+        uploadContent = await (await fetch(optimizedDataUrl)).blob();
+        uploadContentType = 'image/jpeg';
+      } catch (error) {
+        console.warn('No se pudo optimizar la imagen original; se subira el archivo recibido.', error);
+      }
+    }
     const path = [
       'matriculas',
       'documentos',
@@ -1468,9 +1372,9 @@ export function MatriculaForm({
       `${documentPrefix}-${cleanDni || 'documento'}-original-${side}`,
     ].join('/');
     const storageRef = ref(storage, path);
-    await uploadBytes(storageRef, file, { contentType });
+    await uploadBytes(storageRef, uploadContent, { contentType: uploadContentType });
     const url = await getDownloadURL(storageRef);
-    return { path, url, contentType };
+    return { path, url, contentType: uploadContentType };
   };
 
   const uploadVerifiedDocumentImages = async (
@@ -1522,7 +1426,7 @@ export function MatriculaForm({
       estadoCivil: normalizeAiCivilStatus(aiResult?.estadoCivil) || normalizeAiCivilStatus(reniecDatos?.estadoCivil) || prev.estadoCivil,
       direccion: asString(aiResult?.direccion) || asString(reniecDatos?.direccion) || prev.direccion,
       distrito: asString(aiResult?.distrito) || asString(reniecDatos?.distrito) || prev.distrito,
-      instruccion: asString(reniecDatos?.instruccion) || prev.instruccion,
+      instruccion: normalizeInstructionValue(reniecDatos?.instruccion) || prev.instruccion,
       nombreColegio: asString(reniecDatos?.nombreColegio) || prev.nombreColegio,
       celular: asString(reniecDatos?.celular) || prev.celular,
       telefono: asString(reniecDatos?.telefono) || prev.telefono,
@@ -2802,66 +2706,14 @@ export function MatriculaForm({
         </Box>
       ) : null}
 
-      <Dialog open={Boolean(cameraSide)} onClose={stopCameraCapture} fullWidth maxWidth="sm">
-        <DialogTitle>
-          {cameraSide === 'frente' ? 'Capturar DNI frente' : 'Capturar DNI reverso'}
-        </DialogTitle>
-        <DialogContent>
-          <Stack spacing={1.5}>
-            {cameraError ? <Alert severity="error">{cameraError}</Alert> : null}
-            {cameraStarting ? <LinearProgress /> : null}
-            {cameraPreview ? (
-              <Box
-                component="img"
-                src={cameraPreview.url}
-                alt="Vista previa del documento"
-                sx={{
-                  width: '100%',
-                  aspectRatio: '4 / 3',
-                  bgcolor: 'common.black',
-                  borderRadius: 1,
-                  objectFit: 'contain',
-                }}
-              />
-            ) : (
-              <Box
-                component="video"
-                ref={cameraVideoRef}
-                muted
-                playsInline
-                autoPlay
-                sx={{
-                  width: '100%',
-                  aspectRatio: '4 / 3',
-                  bgcolor: 'common.black',
-                  borderRadius: 1,
-                  objectFit: 'contain',
-                }}
-              />
-            )}
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={stopCameraCapture}>Cancelar</Button>
-          {cameraPreview ? (
-            <>
-              <Button onClick={handleRetakeCameraImage}>Tomar otra</Button>
-              <Button variant="contained" onClick={handleAcceptCameraImage}>
-                Aceptar foto
-              </Button>
-            </>
-          ) : (
-            <Button
-              variant="contained"
-              startIcon={<CameraAltIcon />}
-              onClick={() => void handleCaptureCameraImage()}
-              disabled={cameraStarting || Boolean(cameraError)}
-            >
-              Tomar foto
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+      <CameraCaptureDialog
+        open={Boolean(cameraSide)}
+        title={cameraSide === 'frente' ? 'Capturar DNI frente' : 'Capturar DNI reverso'}
+        fileName={`dni-${cameraSide || 'documento'}-${Date.now()}.jpg`}
+        onClose={closeCameraCapture}
+        onAccept={handleAcceptCameraImage}
+        formatError={getCallableErrorMessage}
+      />
     </Stack>
     </Box>
   );
@@ -2871,6 +2723,7 @@ export function MatriculasPage() {
   const { user } = useAuth();
   const { can } = useIntranetPermissions();
   const { settings, loading: loadingSettings } = useAppSettings();
+  const searchParams = useSearchParams();
   const isDocente = Number(user?.role ?? 0) === 4 && Number(user?.level ?? 0) < 600;
   const canCreateRecords = can('matriculas', 'create');
   const canEditRecords = can('matriculas', 'edit');
@@ -2912,13 +2765,21 @@ export function MatriculasPage() {
       actions: true,
     });
 
+  const directGrupoModuloId = useMemo(() => {
+    const id = Number(searchParams.get('grupoModuloId') || 0);
+    return Number.isFinite(id) && id > 0 ? String(id) : '';
+  }, [searchParams]);
+  const isDirectGrupoModuloView = isDocente && Boolean(directGrupoModuloId);
+
   const selectedSemestreFilter = useMemo(
     () => semestreFilterOptions.find((semestre) => String(semestre.id) === selectedSemestreFilterId) ?? null,
     [selectedSemestreFilterId, semestreFilterOptions],
   );
 
   const selectedSemestreFilterLabel = selectedSemestreFilter?.placeholder ? '' : getSemestreLabel(selectedSemestreFilter);
-  const matriculaListSemestreTitulo = selectedGrupoModuloFilterIds.length > 0 ? selectedSemestreFilterLabel : '';
+  const matriculaListSemestreTitulo = !isDirectGrupoModuloView && selectedGrupoModuloFilterIds.length > 0
+    ? selectedSemestreFilterLabel
+    : '';
 
   useEffect(() => {
     if (loadingSettings) return;
@@ -2930,7 +2791,9 @@ export function MatriculasPage() {
     setSemestreFilterOptions(buildPlaceholderSemestreOptions(
       buildDisplayedSemestreIds(currentSemestreId, configuredSemestreIds),
     ));
-    setSelectedSemestreFilterId(currentSemestreId);
+    if (!isDirectGrupoModuloView) {
+      setSelectedSemestreFilterId(currentSemestreId);
+    }
 
     const loadFilterSemestres = async () => {
       setLoadingFilters(true);
@@ -2968,14 +2831,16 @@ export function MatriculasPage() {
     return () => {
       active = false;
     };
-  }, [loadingSettings, settings]);
+  }, [isDirectGrupoModuloView, loadingSettings, settings]);
 
   useEffect(() => {
+    if (loadingSettings) return;
+
     let active = true;
 
     const loadGrupoModuloFilters = async () => {
       setGrupoModuloFilterOptions([]);
-      if (!selectedSemestreFilterLabel) {
+      if (!isDirectGrupoModuloView && !selectedSemestreFilterLabel) {
         return;
       }
 
@@ -2986,12 +2851,40 @@ export function MatriculasPage() {
           { grupoModulos?: MatriculaGrupoModuloOption[]; semestreTitulo?: string | null }
         >(functions, 'listMatriculaDocenteGrupos', { timeout: 12000 });
         const result = await withTimeout(
-          listMatriculaDocenteGrupos({ semestreTitulo: selectedSemestreFilterLabel }),
+          listMatriculaDocenteGrupos({
+            semestreTitulo: isDirectGrupoModuloView ? null : selectedSemestreFilterLabel,
+          }),
           14000,
           'listMatriculaDocenteGrupos',
         );
         if (!active) return;
         const options = result.data.grupoModulos || [];
+        if (isDirectGrupoModuloView) {
+          const directGrupoModulo = options.find((item) => String(item.id) === directGrupoModuloId) ?? null;
+          const directSemestre = directGrupoModulo ? getGrupoModuloSemestreOption(directGrupoModulo) : null;
+
+          if (!directGrupoModulo || !directSemestre) {
+            setGrupoModuloFilterOptions([]);
+            setSelectedGrupoModuloFilterIds([]);
+            setError('No se pudo ubicar el grupo-modulo indicado para este docente.');
+            return;
+          }
+
+          setSemestreFilterOptions((current) => {
+            if (current.some((semestre) => semestre.id === directSemestre.id)) return current;
+            return [directSemestre, ...current];
+          });
+          setSelectedSemestreFilterId((current) =>
+            current === String(directSemestre.id) ? current : String(directSemestre.id),
+          );
+          setGrupoModuloFilterOptions(options);
+          setSelectedGrupoModuloFilterIds((current) =>
+            areStringArraysEqual(current, [directGrupoModuloId]) ? current : [directGrupoModuloId],
+          );
+          setError(null);
+          return;
+        }
+
         setGrupoModuloFilterOptions(options);
         setSelectedGrupoModuloFilterIds((current) => {
           const availableIds = new Set(options.map((item) => String(item.id)));
@@ -3012,7 +2905,13 @@ export function MatriculasPage() {
     return () => {
       active = false;
     };
-  }, [selectedSemestreFilterId, selectedSemestreFilterLabel]);
+  }, [
+    directGrupoModuloId,
+    isDirectGrupoModuloView,
+    loadingSettings,
+    selectedSemestreFilterId,
+    selectedSemestreFilterLabel,
+  ]);
 
   useEffect(() => {
     matriculasFetchRequestRef.current += 1;
@@ -3031,6 +2930,12 @@ export function MatriculasPage() {
     if (!semestreId) {
       setMatriculas([]);
       setLoading(false);
+      return;
+    }
+
+    if (isDirectGrupoModuloView && !selectedGrupoModuloFilterIds.includes(directGrupoModuloId)) {
+      setMatriculas([]);
+      setLoading(true);
       return;
     }
 
@@ -3064,6 +2969,8 @@ export function MatriculasPage() {
       if (matriculasFetchRequestRef.current === requestId) setLoading(false);
     }
   }, [
+    directGrupoModuloId,
+    isDirectGrupoModuloView,
     loadingSettings,
     selectedGrupoModuloFilterIds,
     selectedSemestreFilterId,
@@ -3162,7 +3069,7 @@ export function MatriculasPage() {
           tipo_documento: editingUser.tipoDocumento ?? 'DNI',
           dni: editingUser.dni ?? '',
           nacionalidad: editingUser.nacionalidad ?? 'PERUANA',
-          instruccion: editingUser.instruccion ?? 'Primaria',
+          instruccion: normalizeInstructionValue(editingUser.instruccion) || 'Primaria',
           estado_civil: editingUser.estadoCivil ?? 'Soltero',
           rolId: editingUser.rolId ? String(editingUser.rolId) : '',
           avatar: editingUser.avatar ?? '',
@@ -3263,7 +3170,7 @@ export function MatriculasPage() {
       },
       {
         field: 'avatar',
-        headerName: 'Foto',
+        headerName: 'Avatar',
         width: 68,
         minWidth: 68,
         maxWidth: 68,

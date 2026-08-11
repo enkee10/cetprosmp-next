@@ -31,6 +31,7 @@ import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
 import PostForm, { type PostFormValues } from '@/components/intranet/posts/PostForm';
+import { formatDateTimeInAppTimeZone } from '@/lib/dateOnly';
 
 type Post = ListPostsData['posts'][number];
 
@@ -48,15 +49,13 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 const formatDate = (value: unknown) => {
   const raw = String(value || '').trim();
   if (!raw) return '';
-  const date = new Date(raw);
-  if (Number.isNaN(date.getTime())) return raw;
-  return new Intl.DateTimeFormat('es-PE', {
+  return formatDateTimeInAppTimeZone(raw, {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(date);
+  });
 };
 
 export default function PostsPage() {

@@ -2,14 +2,17 @@
 
 import { Box, Container, Grid, Typography, Link as MuiLink } from '@mui/material';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useDatosGenerales } from '@/context/DatosGeneralesContext';
 import MapaInteractivo from '@/components/Footer/MapaInteractivo';
 import WhatsappFlotante from '@/components/Footer/WhatsappFlotante';
 
 const Footer = () => {
+  const pathname = usePathname();
   const { user } = useAuth();
   const { datosGenerales: datoGeneral } = useDatosGenerales();
+  const isIntranet = pathname?.startsWith('/intranet');
   const redesSociales = [
     { nombre: 'tiktok', url: datoGeneral.tiktok, icono: '/imagenes/redes_sociales/tiktok.png' },
     { nombre: 'facebook', url: datoGeneral.facebook, icono: '/imagenes/redes_sociales/facebook.png' },
@@ -17,6 +20,8 @@ const Footer = () => {
     { nombre: 'instagram', url: datoGeneral.instagram, icono: '/imagenes/redes_sociales/instagram.png' },
     { nombre: 'youtube', url: datoGeneral.youtube, icono: '/imagenes/redes_sociales/youtube.png' },
   ].filter((red) => Boolean(red.url));
+
+  if (isIntranet) return null;
 
   return (
     <Box

@@ -174,6 +174,11 @@ export {
   verificarMatriculaReniec,
 } from "./matriculas/handlers.js";
 export {
+  getMatriculasGoogleSheetInfo,
+  sortMatriculasGoogleSheetsDaily,
+  syncMatriculasGoogleSheetsCurrentSemester,
+} from "./matriculas/googleSheetsSync.js";
+export {
   listEstructuraAcademica,
   listEstructuraAcademicaDocente,
   getEstructuraAcademicaDocenteMenu,

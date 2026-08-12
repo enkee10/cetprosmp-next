@@ -23,6 +23,7 @@ import {
   Select,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -32,6 +33,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import TableChartIcon from '@mui/icons-material/TableChart';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {
   GridColDef,
@@ -2731,6 +2733,7 @@ export function MatriculasPage() {
   const [matriculas, setMatriculas] = useState<MatriculaListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingFilters, setLoadingFilters] = useState(true);
+  const [exportingDocenteSheet, setExportingDocenteSheet] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [semestreFilterOptions, setSemestreFilterOptions] = useState<SemestreOption[]>([]);
   const [selectedSemestreFilterId, setSelectedSemestreFilterId] = useState('');
@@ -2980,6 +2983,53 @@ export function MatriculasPage() {
   useEffect(() => {
     void fetchMatriculas();
   }, [fetchMatriculas]);
+
+  const handleExportDocenteSheet = useCallback(async () => {
+    const grupoModuloId = Number(directGrupoModuloId);
+    if (!Number.isFinite(grupoModuloId) || grupoModuloId <= 0) {
+      setError('No se pudo identificar el grupo-modulo para exportar.');
+      return;
+    }
+
+    const sheetWindow = window.open('', '_blank');
+    if (sheetWindow) {
+      sheetWindow.document.title = 'Generando Google Sheets';
+      sheetWindow.document.body.style.fontFamily = 'Arial, sans-serif';
+      sheetWindow.document.body.style.padding = '24px';
+      sheetWindow.document.body.textContent = 'Generando Google Sheets...';
+    }
+
+    setExportingDocenteSheet(true);
+    try {
+      const exportSheet = httpsCallable<
+        { grupoModuloId: number },
+        { ok?: boolean; name?: string; rows?: number; spreadsheetUrl?: string }
+      >(
+        functions,
+        'exportMatriculadosDocenteGrupoGoogleSheet',
+        { timeout: 180000 },
+      );
+      const result = await exportSheet({ grupoModuloId });
+      const spreadsheetUrl = result.data.spreadsheetUrl;
+      if (!spreadsheetUrl) {
+        sheetWindow?.close();
+        throw new Error('Google Sheets no devolvio el enlace del archivo.');
+      }
+      if (sheetWindow) {
+        sheetWindow.opener = null;
+        sheetWindow.location.href = spreadsheetUrl;
+      } else {
+        window.open(spreadsheetUrl, '_blank', 'noopener,noreferrer');
+      }
+      setError(null);
+    } catch (err) {
+      sheetWindow?.close();
+      console.error('Error exporting docente matriculados sheet: ', err);
+      setError(getCallableErrorMessage(err, 'No se pudo generar el Google Sheets del grupo.'));
+    } finally {
+      setExportingDocenteSheet(false);
+    }
+  }, [directGrupoModuloId]);
 
   const handleDismissModal = useCallback(() => {
     setOpenMatriculaModal(false);
@@ -3428,6 +3478,20 @@ export function MatriculasPage() {
             <Button variant="outlined" startIcon={<AddIcon />} onClick={handleCreateMatricula}>
               Nueva Matricula
             </Button>
+          ) : null}
+          {isDirectGrupoModuloView ? (
+            <Tooltip title={exportingDocenteSheet ? 'Generando Google Sheets...' : 'Abrir Google Sheets del grupo'}>
+              <span>
+                <IconButton
+                  color="primary"
+                  aria-label="Abrir Google Sheets del grupo"
+                  onClick={handleExportDocenteSheet}
+                  disabled={exportingDocenteSheet || loadingFilters || loading}
+                >
+                  <TableChartIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
           ) : null}
         </Stack>
       }

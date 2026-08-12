@@ -2,12 +2,14 @@ import { getFirestore } from "firebase-admin/firestore";
 import { google } from "googleapis";
 import { https, runWith } from "firebase-functions/v1";
 import { dataConnect } from "../core/dataConnectCore.js";
-import { requirePermission, requireSuperUser } from "../core/permissions.js";
+import { getRequesterRoleId, isSuperUserContext, requirePermission, requireSuperUser } from "../core/permissions.js";
 import { getDatosGeneralesGlobales } from "../datos-generales/service.js";
 
 const MATRICULAS_SHEETS_FOLDER_ID = "1RttPJVARZA-KXYtiNG9DrWjTCcHazi9a";
 const MATRICULAS_SHEETS_FILE_NAME = "Matriculas 2026-2 (Respuestas)";
 const MATRICULAS_SHEETS_TAB_NAME = "Respuestas";
+const DOCENTE_MATRICULADOS_SHEETS_FOLDER_ID = "0ACqCsSJSoVmTUk9PVA";
+const DOCENTE_MATRICULADOS_SHEETS_TAB_NAME = "Matriculados";
 const GOOGLE_SHEETS_MIME_TYPE = "application/vnd.google-apps.spreadsheet";
 const CURRENT_SEMESTRE_ID_KEY = "general.semestreActualId";
 const FORMULARIO_MATRICULA_SEMESTRE_ID_KEY = "formularioMatricula.semestreId";
@@ -43,6 +45,27 @@ const MATRICULAS_SHEETS_HEADERS = [
   "responsable (llenado del formulario)",
 ] as const;
 
+const DOCENTE_MATRICULADOS_SHEETS_HEADERS = [
+  "fecha matricula",
+  "numero matricula - recibo",
+  "apellido paterno",
+  "apellido materno",
+  "nombres",
+  "Apellidos y Nombres",
+  "fecha de nacimiento",
+  "edad anos",
+  "estado civil",
+  "numero celular",
+  "grado de instruccion",
+  "domicilio",
+  "distrito domicilio",
+  "numero fijo",
+  "correo electronico",
+  "avatar (mediano)",
+  "dni-procesado-frente",
+  "dni-procesado-reverso",
+] as const;
+
 type SheetsFileInfo = {
   spreadsheetId: string;
   spreadsheetUrl: string;
@@ -61,7 +84,9 @@ type SheetsUserRow = {
   fechaNacimiento?: string | null;
   direccion?: string | null;
   distrito?: string | null;
+  telefono?: string | null;
   celular?: string | null;
+  email?: string | null;
   correoInstitucional?: string | null;
   avatar?: string | null;
   dniImagenFrenteProcesadaUrl?: string | null;
@@ -131,8 +156,12 @@ type SheetsModuloEstudianteRow = {
 
 type SheetsMatriculaRow = {
   id: number;
+  recibo?: string | null;
   fecha?: string | null;
+  semestreId?: number | null;
+  archivado?: boolean | null;
   semestre?: {
+    id?: number | null;
     titulo?: string | null;
   } | null;
   user?: SheetsUserRow | null;
@@ -149,12 +178,52 @@ type SheetWritableRow = {
   grupo: string;
 };
 
+type DocenteGrupoModuloSheetRow = {
+  id: number;
+  nombre?: string | null;
+  orden?: number | null;
+  instancia?: number | null;
+  sufijo?: string | null;
+  grupoId?: number | null;
+  moduloId?: number | null;
+  grupo?: {
+    id?: number | null;
+    nombreDisplay?: string | null;
+    semestreId?: number | null;
+    personalId?: number | null;
+    semestre?: {
+      id?: number | null;
+      titulo?: string | null;
+      inicio?: string | null;
+      fin?: string | null;
+    } | null;
+  } | null;
+  modulo?: {
+    id?: number | null;
+    titulo?: string | null;
+    tituloComercial?: string | null;
+    orden?: number | null;
+  } | null;
+};
+
+type DocenteModuloEstudianteSheetRow = {
+  id?: number | null;
+  matriculaId?: number | null;
+  grupoId?: number | null;
+  grupoModuloId?: number | null;
+  moduloId?: number | null;
+  matricula?: SheetsMatriculaRow | null;
+};
+
 const LIST_MATRICULAS_FOR_SHEETS_QUERY = `
   query ListMatriculasForSheets($semestreId: Int!) {
     matriculas(where: { semestreId: { eq: $semestreId }, archivado: { ne: true } }, limit: 5000) {
       id
+      recibo
       fecha
+      semestreId
       semestre {
+        id
         titulo
       }
       user {
@@ -170,7 +239,9 @@ const LIST_MATRICULAS_FOR_SHEETS_QUERY = `
         fechaNacimiento
         direccion
         distrito
+        telefono
         celular
+        email
         correoInstitucional
         avatar
         dniImagenFrenteProcesadaUrl
@@ -295,6 +366,107 @@ const LIST_MODULO_ESTUDIANTES_FOR_SHEETS_QUERY = `
   }
 `;
 
+const DOCENTE_MATRICULADO_SHEET_MATRICULA_FIELDS = `
+  id
+  recibo
+  fecha
+  semestreId
+  archivado
+  semestre {
+    id
+    titulo
+  }
+  user {
+    id
+    dni
+    tipoDocumento
+    nombre
+    apellidoPaterno
+    apellidoMaterno
+    estadoCivil
+    instruccion
+    fechaNacimiento
+    direccion
+    distrito
+    telefono
+    celular
+    email
+    correoInstitucional
+    avatar
+    dniImagenFrenteProcesadaUrl
+    dniImagenReversoProcesadaUrl
+  }
+`;
+
+const GET_DOCENTE_GRUPO_MODULO_FOR_SHEETS_QUERY = `
+  query GetDocenteGrupoModuloForSheets($grupoModuloId: Int!, $uid: String!) {
+    users(where: { documentId: { eq: $uid } }, limit: 1) {
+      id
+    }
+    personals(limit: 10000) {
+      id
+      userId
+    }
+    grupoModulo(id: $grupoModuloId) {
+      id
+      nombre
+      orden
+      instancia
+      sufijo
+      grupoId
+      moduloId
+      grupo {
+        id
+        nombreDisplay
+        semestreId
+        personalId
+        semestre {
+          id
+          titulo
+          inicio
+          fin
+        }
+      }
+      modulo {
+        id
+        titulo
+        tituloComercial
+        orden
+      }
+    }
+  }
+`;
+
+const LIST_DOCENTE_MATRICULADOS_BY_GRUPO_MODULO_FOR_SHEETS_QUERY = `
+  query ListDocenteMatriculadosByGrupoModuloForSheets($grupoModuloId: Int!) {
+    modulosEstudiantes(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 5000) {
+      id
+      matriculaId
+      grupoId
+      grupoModuloId
+      moduloId
+      matricula {
+        ${DOCENTE_MATRICULADO_SHEET_MATRICULA_FIELDS}
+      }
+    }
+  }
+`;
+
+const LIST_DOCENTE_MATRICULADOS_BY_GROUP_MODULE_FOR_SHEETS_QUERY = `
+  query ListDocenteMatriculadosByGroupModuleForSheets($grupoId: Int!, $moduloId: Int!) {
+    modulosEstudiantes(where: { grupoId: { eq: $grupoId }, moduloId: { eq: $moduloId } }, limit: 5000) {
+      id
+      matriculaId
+      grupoId
+      grupoModuloId
+      moduloId
+      matricula {
+        ${DOCENTE_MATRICULADO_SHEET_MATRICULA_FIELDS}
+      }
+    }
+  }
+`;
+
 const GET_CURRENT_SEMESTRE_SETTING_QUERY = `
   query GetCurrentSemestreForSheets {
     current: appSettings(where: { settingKey: { eq: "${CURRENT_SEMESTRE_ID_KEY}" } }, limit: 1) {
@@ -375,6 +547,41 @@ function joinNameParts(parts: Array<unknown>): string {
   return parts.map((part) => asCleanString(part)).filter(Boolean).join(" ");
 }
 
+function toUpperName(value: unknown): string {
+  return asCleanString(value)?.toLocaleUpperCase("es-PE") ?? "";
+}
+
+function toTitleName(value: unknown): string {
+  const text = asCleanString(value);
+  if (!text) return "";
+  return text
+    .toLocaleLowerCase("es-PE")
+    .replace(/(^|[\s'-])(\p{L})/gu, (_match, prefix: string, letter: string) =>
+      `${prefix}${letter.toLocaleUpperCase("es-PE")}`,
+    );
+}
+
+function buildApellidosYNombres(user: SheetsUserRow | null | undefined): string {
+  const apellidos = joinNameParts([user?.apellidoPaterno, user?.apellidoMaterno]).toLocaleUpperCase("es-PE");
+  const nombres = toTitleName(user?.nombre);
+  return [apellidos, nombres].filter(Boolean).join(", ");
+}
+
+function escapeSheetFormulaString(value: string): string {
+  return value.replace(/"/g, "\"\"");
+}
+
+function buildHyperlinkFormula(url: unknown, label: string): string {
+  const cleanUrl = asCleanString(url);
+  if (!cleanUrl) return "";
+  return `=HYPERLINK("${escapeSheetFormulaString(cleanUrl)}","${escapeSheetFormulaString(label)}")`;
+}
+
+function buildAgeFormula(rowNumber: number): string {
+  const cell = `G${rowNumber}`;
+  return `=IF(${cell}="","",DATEDIF(DATE(VALUE(RIGHT(${cell},4)),VALUE(MID(${cell},4,2)),VALUE(LEFT(${cell},2))),TODAY(),"Y"))`;
+}
+
 function getPersonDisplayName(person: SheetsPersonalRow | null | undefined): string {
   return asCleanString(person?.displayName)
     ?? getUserDisplayName(person?.user)
@@ -453,13 +660,13 @@ function getSheetsAuth() {
   });
 }
 
-async function ensureSpreadsheet(): Promise<SheetsFileInfo> {
+async function ensureSpreadsheetFile(fileName: string, folderId: string): Promise<SheetsFileInfo> {
   const auth = getSheetsAuth();
   const drive = google.drive({ version: "v3", auth });
-  const escapedName = MATRICULAS_SHEETS_FILE_NAME.replace(/'/g, "\\'");
+  const escapedName = fileName.replace(/'/g, "\\'");
   const response = await drive.files.list({
     q: [
-      `'${MATRICULAS_SHEETS_FOLDER_ID}' in parents`,
+      `'${folderId}' in parents`,
       `name = '${escapedName}'`,
       `mimeType = '${GOOGLE_SHEETS_MIME_TYPE}'`,
       "trashed = false",
@@ -479,9 +686,9 @@ async function ensureSpreadsheet(): Promise<SheetsFileInfo> {
 
   const created = await drive.files.create({
     requestBody: {
-      name: MATRICULAS_SHEETS_FILE_NAME,
+      name: fileName,
       mimeType: GOOGLE_SHEETS_MIME_TYPE,
-      parents: [MATRICULAS_SHEETS_FOLDER_ID],
+      parents: [folderId],
     },
     fields: "id, webViewLink",
     supportsAllDrives: true,
@@ -510,6 +717,10 @@ async function ensureSpreadsheet(): Promise<SheetsFileInfo> {
   };
 }
 
+async function ensureSpreadsheet(): Promise<SheetsFileInfo> {
+  return ensureSpreadsheetFile(MATRICULAS_SHEETS_FILE_NAME, MATRICULAS_SHEETS_FOLDER_ID);
+}
+
 async function ensureResponsesTab(spreadsheetId: string): Promise<number> {
   const sheets = google.sheets({ version: "v4", auth: getSheetsAuth() });
   const spreadsheet = await sheets.spreadsheets.get({
@@ -536,6 +747,34 @@ async function ensureResponsesTab(spreadsheetId: string): Promise<number> {
   const sheetId = created.data.replies?.[0]?.addSheet?.properties?.sheetId;
   if (sheetId == null) {
     throw new https.HttpsError("internal", "No se pudo crear la pestana Respuestas en Google Sheets.");
+  }
+  return sheetId;
+}
+
+async function ensureSheetTab(spreadsheetId: string, title: string): Promise<number> {
+  const sheets = google.sheets({ version: "v4", auth: getSheetsAuth() });
+  const spreadsheet = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: "sheets(properties(sheetId,title))",
+  });
+  const existing = spreadsheet.data.sheets?.find((sheet) => sheet.properties?.title === title);
+  if (existing?.properties?.sheetId != null) return existing.properties.sheetId;
+
+  const created = await sheets.spreadsheets.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      requests: [
+        {
+          addSheet: {
+            properties: { title },
+          },
+        },
+      ],
+    },
+  });
+  const sheetId = created.data.replies?.[0]?.addSheet?.properties?.sheetId;
+  if (sheetId == null) {
+    throw new https.HttpsError("internal", `No se pudo crear la pestana ${title} en Google Sheets.`);
   }
   return sheetId;
 }
@@ -623,6 +862,286 @@ function buildWritableRows(
     || a.fechaMs - b.fechaMs
     || normalizeForSort(a.grupo).localeCompare(normalizeForSort(b.grupo), "es", { numeric: true }),
   );
+}
+
+function buildDocenteMatriculadosFileName(grupoModulo: DocenteGrupoModuloSheetRow): string {
+  const semestreTitulo = asCleanString(grupoModulo.grupo?.semestre?.titulo);
+  const semestrePrefix = semestreTitulo ? semestreTitulo.slice(-4) : "";
+  const baseName =
+    asCleanString(grupoModulo.nombre)
+    ?? asCleanString(grupoModulo.grupo?.nombreDisplay)
+    ?? asCleanString(grupoModulo.modulo?.titulo)
+    ?? `Grupo ${grupoModulo.id}`;
+  if (!semestrePrefix) return baseName;
+  return normalizeForSort(baseName).startsWith(normalizeForSort(semestrePrefix))
+    ? baseName
+    : `${semestrePrefix} ${baseName}`;
+}
+
+async function loadDocenteGrupoModuloForSheet(
+  grupoModuloId: number,
+  context: https.CallableContext,
+): Promise<DocenteGrupoModuloSheetRow> {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
+  }
+
+  const response = await dataConnect.executeGraphql<{
+    users: Array<{ id: number }>;
+    personals: Array<{ id: number; userId?: number | null }>;
+    grupoModulo?: DocenteGrupoModuloSheetRow | null;
+  }, { grupoModuloId: number; uid: string }>(
+    GET_DOCENTE_GRUPO_MODULO_FOR_SHEETS_QUERY,
+    { variables: { grupoModuloId, uid } },
+  );
+
+  const grupoModulo = response.data.grupoModulo ?? null;
+  if (!grupoModulo) {
+    throw new https.HttpsError("not-found", "No se encontro el grupo-modulo indicado.");
+  }
+
+  if (isSuperUserContext(context)) {
+    return grupoModulo;
+  }
+
+  if (getRequesterRoleId(context) !== 4) {
+    throw new https.HttpsError("permission-denied", "Solo el docente asignado puede exportar esta lista.");
+  }
+
+  const requesterUserId = response.data.users?.[0]?.id ?? null;
+  const personalIds = new Set(
+    (response.data.personals ?? [])
+      .filter((personal) => personal.userId === requesterUserId)
+      .map((personal) => personal.id),
+  );
+  const grupoPersonalId = toNumberOrNull(grupoModulo.grupo?.personalId);
+  if (!grupoPersonalId || !personalIds.has(grupoPersonalId)) {
+    throw new https.HttpsError("permission-denied", "No tienes acceso a este grupo.");
+  }
+
+  return grupoModulo;
+}
+
+async function listDocenteMatriculadosForSheet(
+  grupoModulo: DocenteGrupoModuloSheetRow,
+): Promise<SheetsMatriculaRow[]> {
+  const grupoModuloId = Number(grupoModulo.id);
+  const grupoId = toNumberOrNull(grupoModulo.grupoId);
+  const moduloId = toNumberOrNull(grupoModulo.moduloId);
+
+  const [byGrupoModulo, byPair] = await Promise.all([
+    dataConnect.executeGraphql<{
+      modulosEstudiantes: DocenteModuloEstudianteSheetRow[];
+    }, { grupoModuloId: number }>(
+      LIST_DOCENTE_MATRICULADOS_BY_GRUPO_MODULO_FOR_SHEETS_QUERY,
+      { variables: { grupoModuloId } },
+    ),
+    grupoId && moduloId
+      ? dataConnect.executeGraphql<{
+        modulosEstudiantes: DocenteModuloEstudianteSheetRow[];
+      }, { grupoId: number; moduloId: number }>(
+        LIST_DOCENTE_MATRICULADOS_BY_GROUP_MODULE_FOR_SHEETS_QUERY,
+        { variables: { grupoId, moduloId } },
+      )
+      : Promise.resolve({ data: { modulosEstudiantes: [] } }),
+  ]);
+
+  const byMatriculaId = new Map<number, SheetsMatriculaRow>();
+  for (const item of [...(byGrupoModulo.data.modulosEstudiantes ?? []), ...(byPair.data.modulosEstudiantes ?? [])]) {
+    const itemGrupoModuloId = toNumberOrNull(item.grupoModuloId);
+    const belongsToGrupoModulo = itemGrupoModuloId
+      ? itemGrupoModuloId === grupoModuloId
+      : toNumberOrNull(item.grupoId) === grupoId && toNumberOrNull(item.moduloId) === moduloId;
+    const matricula = item.matricula ?? null;
+    if (!belongsToGrupoModulo || !matricula || matricula.archivado === true) continue;
+    if (grupoModulo.grupo?.semestreId && Number(matricula.semestreId) !== Number(grupoModulo.grupo.semestreId)) continue;
+    byMatriculaId.set(matricula.id, matricula);
+  }
+
+  return Array.from(byMatriculaId.values()).sort((a, b) =>
+    getDateMs(a.fecha) - getDateMs(b.fecha) || a.id - b.id,
+  );
+}
+
+function buildDocenteSheetRows(
+  matriculas: SheetsMatriculaRow[],
+  avatarMedianoByUserId: Map<number, string>,
+): string[][] {
+  return matriculas.map((matricula, index) => {
+    const user = matricula.user ?? null;
+    const rowNumber = index + 2;
+    const recibo = asCleanString(matricula.recibo);
+    const avatarMediano = user?.id ? avatarMedianoByUserId.get(user.id) : null;
+    return [
+      formatLimaDate(matricula.fecha),
+      recibo ? `${matricula.id} - ${recibo}` : String(matricula.id),
+      toUpperName(user?.apellidoPaterno),
+      toUpperName(user?.apellidoMaterno),
+      toTitleName(user?.nombre),
+      buildApellidosYNombres(user),
+      formatLimaDate(user?.fechaNacimiento),
+      buildAgeFormula(rowNumber),
+      asCleanString(user?.estadoCivil) ?? "",
+      asCleanString(user?.celular) ?? "",
+      asCleanString(user?.instruccion) ?? "",
+      asCleanString(user?.direccion) ?? "",
+      asCleanString(user?.distrito) ?? "",
+      asCleanString(user?.telefono) ?? "",
+      asCleanString(user?.email) ?? asCleanString(user?.correoInstitucional) ?? "",
+      buildHyperlinkFormula(avatarMediano ?? user?.avatar, "avatar"),
+      buildHyperlinkFormula(user?.dniImagenFrenteProcesadaUrl, "frente"),
+      buildHyperlinkFormula(user?.dniImagenReversoProcesadaUrl, "reverso"),
+    ];
+  });
+}
+
+async function writeDocenteMatriculadosSheet(params: {
+  fileInfo: SheetsFileInfo;
+  rows: string[][];
+}) {
+  const sheets = google.sheets({ version: "v4", auth: getSheetsAuth() });
+  const sheetId = await ensureSheetTab(params.fileInfo.spreadsheetId, DOCENTE_MATRICULADOS_SHEETS_TAB_NAME);
+  const rowCount = params.rows.length + 1;
+  const columnCount = DOCENTE_MATRICULADOS_SHEETS_HEADERS.length;
+
+  await sheets.spreadsheets.values.clear({
+    spreadsheetId: params.fileInfo.spreadsheetId,
+    range: `${DOCENTE_MATRICULADOS_SHEETS_TAB_NAME}!A:R`,
+  });
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: params.fileInfo.spreadsheetId,
+    range: `${DOCENTE_MATRICULADOS_SHEETS_TAB_NAME}!A1:R${rowCount}`,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [[...DOCENTE_MATRICULADOS_SHEETS_HEADERS], ...params.rows],
+    },
+  });
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: params.fileInfo.spreadsheetId,
+    requestBody: {
+      requests: [
+        {
+          updateSheetProperties: {
+            properties: {
+              sheetId,
+              gridProperties: {
+                frozenRowCount: 1,
+                rowCount: Math.max(rowCount, 50),
+                columnCount,
+              },
+            },
+            fields: "gridProperties.frozenRowCount,gridProperties.rowCount,gridProperties.columnCount",
+          },
+        },
+        {
+          repeatCell: {
+            range: {
+              sheetId,
+              startRowIndex: 0,
+              endRowIndex: 1,
+              startColumnIndex: 0,
+              endColumnIndex: columnCount,
+            },
+            cell: {
+              userEnteredFormat: {
+                backgroundColor: { red: 0.1, green: 0.34, blue: 0.62 },
+                horizontalAlignment: "CENTER",
+                textFormat: {
+                  bold: true,
+                  foregroundColor: { red: 1, green: 1, blue: 1 },
+                },
+              },
+            },
+            fields: "userEnteredFormat(backgroundColor,horizontalAlignment,textFormat)",
+          },
+        },
+        {
+          updateBorders: {
+            range: {
+              sheetId,
+              startRowIndex: 0,
+              endRowIndex: rowCount,
+              startColumnIndex: 0,
+              endColumnIndex: columnCount,
+            },
+            top: { style: "SOLID", width: 1, color: { red: 0.74, green: 0.78, blue: 0.84 } },
+            bottom: { style: "SOLID", width: 1, color: { red: 0.74, green: 0.78, blue: 0.84 } },
+            left: { style: "SOLID", width: 1, color: { red: 0.74, green: 0.78, blue: 0.84 } },
+            right: { style: "SOLID", width: 1, color: { red: 0.74, green: 0.78, blue: 0.84 } },
+            innerHorizontal: { style: "SOLID", width: 1, color: { red: 0.88, green: 0.9, blue: 0.94 } },
+            innerVertical: { style: "SOLID", width: 1, color: { red: 0.88, green: 0.9, blue: 0.94 } },
+          },
+        },
+        {
+          setBasicFilter: {
+            filter: {
+              range: {
+                sheetId,
+                startRowIndex: 0,
+                endRowIndex: rowCount,
+                startColumnIndex: 0,
+                endColumnIndex: columnCount,
+              },
+            },
+          },
+        },
+        {
+          autoResizeDimensions: {
+            dimensions: {
+              sheetId,
+              dimension: "COLUMNS",
+              startIndex: 0,
+              endIndex: 15,
+            },
+          },
+        },
+        {
+          updateDimensionProperties: {
+            range: {
+              sheetId,
+              dimension: "COLUMNS",
+              startIndex: 15,
+              endIndex: 18,
+            },
+            properties: { pixelSize: 100 },
+            fields: "pixelSize",
+          },
+        },
+      ],
+    },
+  });
+}
+
+export async function exportDocenteMatriculadosGrupoSheet(
+  grupoModuloId: number,
+  context: https.CallableContext,
+) {
+  if (!grupoModuloId || grupoModuloId <= 0) {
+    throw new https.HttpsError("invalid-argument", "Debes indicar el grupo-modulo.");
+  }
+
+  const grupoModulo = await loadDocenteGrupoModuloForSheet(grupoModuloId, context);
+  const fileName = buildDocenteMatriculadosFileName(grupoModulo);
+  const [fileInfo, matriculas] = await Promise.all([
+    ensureSpreadsheetFile(fileName, DOCENTE_MATRICULADOS_SHEETS_FOLDER_ID),
+    listDocenteMatriculadosForSheet(grupoModulo),
+  ]);
+  const userIds = matriculas
+    .map((matricula) => toNumberOrNull(matricula.user?.id))
+    .filter((id): id is number => Boolean(id && id > 0));
+  const avatarMedianoByUserId = await hydrateAvatarMediano(userIds);
+  const rows = buildDocenteSheetRows(matriculas, avatarMedianoByUserId);
+  await writeDocenteMatriculadosSheet({ fileInfo, rows });
+
+  return {
+    ok: true,
+    name: fileName,
+    rows: rows.length,
+    spreadsheetId: fileInfo.spreadsheetId,
+    spreadsheetUrl: fileInfo.spreadsheetUrl,
+  };
 }
 
 export async function syncMatriculasCurrentSemesterSheet() {
@@ -732,6 +1251,13 @@ export const getMatriculasGoogleSheetInfo = https.onCall(async (_data, context) 
     ...fileInfo,
   };
 });
+
+export const exportMatriculadosDocenteGrupoGoogleSheet = runWith({ timeoutSeconds: 540, memory: "512MB" }).https.onCall(
+  async (data, context) => {
+    await requirePermission(context, "matriculas", "view");
+    return exportDocenteMatriculadosGrupoSheet(toNumberOrNull(data?.grupoModuloId) ?? 0, context);
+  },
+);
 
 export const syncMatriculasGoogleSheetsCurrentSemester = runWith({ timeoutSeconds: 540, memory: "512MB" }).https.onCall(
   async (_data, context) => {

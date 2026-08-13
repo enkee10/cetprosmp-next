@@ -285,7 +285,7 @@ export function EditorDocumentosPage() {
   const [matriculas, setMatriculas] = useState<EditorMatricula[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
-  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 50 });
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 30 });
   const [editorTarget, setEditorTarget] = useState<{ matriculaId: number; side: DocumentoSide } | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuRow, setMenuRow] = useState<EditorMatricula | null>(null);
@@ -486,6 +486,7 @@ export function EditorDocumentosPage() {
         rowHeight={86}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[30]}
       />
       <Menu
         anchorEl={menuAnchorEl}

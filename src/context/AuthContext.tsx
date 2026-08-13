@@ -17,6 +17,7 @@ interface UserData { // define la forma de los datos del usuario expuestos al re
     roleTitle?: string | null; // guarda el nombre legible del rol/cargo del usuario autenticado
     cargo?: string | null; // mantiene un alias semantico para mostrar el cargo en la interfaz
     level: number; // guarda el nivel numerico del usuario autenticado
+    profileResolved?: boolean; // indica si ya se resolvio el perfil final usado por menus/permisos
     [key: string]: any; // permite exponer campos adicionales almacenados en Firestore
 } // cierra la interfaz de datos del usuario
 
@@ -167,6 +168,7 @@ const loadUserDataFromFirebaseUser = async (firebaseUser: FirebaseUser): Promise
         roleTitle,
         cargo: roleTitle,
         level: profileLevel ?? (Number(claims.level ?? 0) || 0),
+        profileResolved: true,
     };
 };
 
@@ -182,6 +184,7 @@ const loadFallbackUserDataFromFirebaseUser = async (firebaseUser: FirebaseUser):
         roleTitle: null,
         cargo: null,
         level: (claims.level as number) || 0,
+        profileResolved: false,
     };
 };
 
@@ -228,8 +231,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                     if (!active) return;
                     if (fallbackUserData && canAccessIntranet(fallbackUserData.role, fallbackUserData.level, fallbackUserData.roleTitle, fallbackUserData.email)) {
                         setUser((current) => {
-                            if (current?.uid === firebaseUser.uid) return current;
-                            return fallbackUserData;
+                            if (current?.uid === firebaseUser.uid) return { ...current, profileResolved: true };
+                            return { ...fallbackUserData, profileResolved: true };
                         });
                     } else {
                         setUser((current) => (current?.uid === firebaseUser.uid ? current : null));

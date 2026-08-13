@@ -3,8 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { httpsCallable } from 'firebase/functions';
 import {
+  Divider,
   ListItem,
   ListItemButton,
   ListItemIcon,
@@ -36,9 +36,6 @@ import SettingsApplicationsIcon from '@mui/icons-material/SettingsApplications';
 import TuneIcon from '@mui/icons-material/Tune';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import { useAuth } from '@/context/AuthContext';
-import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
-import { functions } from '@/lib/firebase';
 import FullCustomAccordion, {
   CustomList,
 } from '../FullCustomAccordion/FullCustomAccordion2';
@@ -48,6 +45,7 @@ export type IntranetMenuItem = {
   title: string;
   path: string;
   icon: React.ReactNode;
+  divider?: boolean;
 };
 
 export type IntranetMenuSection = {
@@ -55,37 +53,6 @@ export type IntranetMenuSection = {
   title: string;
   icon: React.ReactNode;
   items: IntranetMenuItem[];
-};
-
-type RegistroAuxiliarDocenteModulo = {
-  id: number;
-  nombre?: string | null;
-  moduloId: number;
-  grupo?: {
-    semestre?: { titulo?: string | null } | null;
-  } | null;
-  modulo?: {
-    titulo?: string | null;
-    tituloComercial?: string | null;
-  } | null;
-};
-
-type MatriculaDocenteGrupoModulo = {
-  id: number;
-  nombre?: string | null;
-  moduloId: number;
-  grupo?: {
-    semestre?: { titulo?: string | null } | null;
-  } | null;
-  modulo?: {
-    titulo?: string | null;
-    tituloComercial?: string | null;
-  } | null;
-};
-
-type EstructuraAcademicaDocenteMenu = {
-  title?: string | null;
-  hasModulos?: boolean | null;
 };
 
 interface Props {
@@ -97,64 +64,6 @@ interface Props {
 }
 
 const rootId = 'intranet';
-const TEACHER_ROLE_ID = 4;
-
-const formatPeriodoMenu = (value: string | null | undefined) => {
-  const text = String(value ?? '').trim();
-  return text.replace(/^20(\d{2})\s*-\s*/, '$1-') || 'Periodo';
-};
-
-const getGrupoModuloMenuName = (value: string | null | undefined) => {
-  const text = String(value ?? '').trim();
-  if (!text) return '';
-  return text.split('[')[0]?.trim() || text;
-};
-
-const getModuloMenuName = (modulo: RegistroAuxiliarDocenteModulo) =>
-  getGrupoModuloMenuName(modulo.nombre) ||
-  modulo.modulo?.titulo ||
-  modulo.modulo?.tituloComercial ||
-  `Modulo ${modulo.moduloId}`;
-
-const buildDocenteRegistroItems = (
-  modulos: RegistroAuxiliarDocenteModulo[],
-  semestreTitulo?: string | null,
-): IntranetMenuItem[] =>
-  modulos.map((modulo) => {
-    const periodo = formatPeriodoMenu(modulo.grupo?.semestre?.titulo || semestreTitulo);
-    const moduloName = getModuloMenuName(modulo);
-    return {
-      id: `registro-auxiliar-${modulo.id}`,
-      title: `Notas ${moduloName} ${periodo}`,
-      path: `/intranet/registro-auxiliar?grupoModuloId=${modulo.id}`,
-      icon: <FactCheckIcon />,
-    };
-  });
-
-const buildDocenteMatriculaItems = (
-  modulos: MatriculaDocenteGrupoModulo[],
-  semestreTitulo?: string | null,
-): IntranetMenuItem[] =>
-  modulos.map((modulo) => {
-    const periodo = formatPeriodoMenu(modulo.grupo?.semestre?.titulo || semestreTitulo);
-    const moduloName = getGrupoModuloMenuName(modulo.nombre)
-      || modulo.modulo?.titulo
-      || modulo.modulo?.tituloComercial
-      || `Modulo ${modulo.moduloId}`;
-    return {
-      id: `matriculas-${modulo.id}`,
-      title: `Lista ${moduloName} ${periodo}`,
-      path: `/intranet/matriculas?grupoModuloId=${modulo.id}`,
-      icon: <AssignmentIcon />,
-    };
-  });
-
-const buildDocenteEstructuraItem = (title: string | null | undefined): IntranetMenuItem => ({
-  id: 'estructura-academica-docente',
-  title: String(title || '').trim() || 'Estructura Academica',
-  path: '/intranet/estructura-academica-docente',
-  icon: <AccountTreeIcon />,
-});
 
 const isMenuItemActive = (itemPath: string, pathname: string, searchParams: URLSearchParams) => {
   const [itemPathname, itemQuery = ''] = itemPath.split('?');
@@ -291,6 +200,19 @@ function IntranetMenuItems({
   return (
     <CustomList>
       {items.map((item) => {
+        if (item.divider) {
+          return (
+            <Divider
+              key={item.id}
+              component="li"
+              sx={{
+                my: 0.75,
+                borderColor: variant === 'mobileDrawer' ? 'rgba(0,0,0,0.16)' : 'rgba(255,248,232,0.18)',
+              }}
+            />
+          );
+        }
+
         const active = isMenuItemActive(item.path, pathname, searchParams);
 
         return (
@@ -344,162 +266,10 @@ export default function AcordionIntranet({
   variant = 'intranetPage',
 }: Props) {
   const rootAncestors = showRoot ? [rootId] : [];
-  const { user } = useAuth();
-  const { can, filterSections, loading: loadingPermissions } = useIntranetPermissions();
-  const [docenteRegistroItems, setDocenteRegistroItems] = React.useState<IntranetMenuItem[]>([]);
-  const [docenteRegistroLoaded, setDocenteRegistroLoaded] = React.useState(false);
-  const [docenteMatriculaItems, setDocenteMatriculaItems] = React.useState<IntranetMenuItem[]>([]);
-  const [docenteMatriculaLoaded, setDocenteMatriculaLoaded] = React.useState(false);
-  const [docenteEstructuraItem, setDocenteEstructuraItem] = React.useState<IntranetMenuItem | null>(null);
-  const [docenteEstructuraLoaded, setDocenteEstructuraLoaded] = React.useState(false);
-  const isDocente = Number(user?.role ?? 0) === TEACHER_ROLE_ID && Number(user?.level ?? 0) < 600;
-  const canViewRegistroAuxiliar = can('registro-auxiliar', 'view');
-  const canViewEstructuraAcademica = can('estructura-academica', 'view');
-  const canViewMatriculas = can('matriculas', 'view');
-
-  React.useEffect(() => {
-    let active = true;
-
-    const loadDocenteRegistroItems = async () => {
-      if (!isDocente || loadingPermissions || !canViewRegistroAuxiliar) {
-        setDocenteRegistroItems([]);
-        setDocenteRegistroLoaded(false);
-        return;
-      }
-
-      setDocenteRegistroLoaded(false);
-      try {
-        const listRegistroAuxiliarDocenteModulos = httpsCallable<
-          undefined,
-          { modulos?: RegistroAuxiliarDocenteModulo[]; semestreTitulo?: string | null }
-        >(functions, 'listRegistroAuxiliarDocenteModulos');
-        const result = await listRegistroAuxiliarDocenteModulos();
-        if (!active) return;
-        setDocenteRegistroItems(buildDocenteRegistroItems(result.data.modulos || [], result.data.semestreTitulo));
-      } catch (error) {
-        console.error('Error loading docente registro auxiliar modules:', error);
-        if (active) setDocenteRegistroItems([]);
-      } finally {
-        if (active) setDocenteRegistroLoaded(true);
-      }
-    };
-
-    void loadDocenteRegistroItems();
-    return () => {
-      active = false;
-    };
-  }, [canViewRegistroAuxiliar, isDocente, loadingPermissions]);
-
-  React.useEffect(() => {
-    let active = true;
-
-    const loadDocenteMatriculaItems = async () => {
-      if (!isDocente || loadingPermissions || !canViewMatriculas) {
-        setDocenteMatriculaItems([]);
-        setDocenteMatriculaLoaded(false);
-        return;
-      }
-
-      setDocenteMatriculaLoaded(false);
-      try {
-        const listMatriculaDocenteGrupos = httpsCallable<
-          undefined,
-          { grupoModulos?: MatriculaDocenteGrupoModulo[]; semestreTitulo?: string | null }
-        >(functions, 'listMatriculaDocenteGrupos');
-        const result = await listMatriculaDocenteGrupos();
-        if (!active) return;
-        setDocenteMatriculaItems(buildDocenteMatriculaItems(result.data.grupoModulos || [], result.data.semestreTitulo));
-      } catch (error) {
-        console.error('Error loading docente matricula groups:', error);
-        if (active) setDocenteMatriculaItems([]);
-      } finally {
-        if (active) setDocenteMatriculaLoaded(true);
-      }
-    };
-
-    void loadDocenteMatriculaItems();
-    return () => {
-      active = false;
-    };
-  }, [canViewMatriculas, isDocente, loadingPermissions]);
-
-  React.useEffect(() => {
-    let active = true;
-
-    const loadDocenteEstructuraItem = async () => {
-      if (!isDocente || loadingPermissions || !canViewEstructuraAcademica) {
-        setDocenteEstructuraItem(null);
-        setDocenteEstructuraLoaded(false);
-        return;
-      }
-
-      setDocenteEstructuraLoaded(false);
-      try {
-        const getEstructuraAcademicaDocenteMenu = httpsCallable<undefined, EstructuraAcademicaDocenteMenu>(
-          functions,
-          'getEstructuraAcademicaDocenteMenu',
-        );
-        const result = await getEstructuraAcademicaDocenteMenu();
-        if (!active) return;
-        setDocenteEstructuraItem(result.data.hasModulos === false ? null : buildDocenteEstructuraItem(result.data.title));
-      } catch (error) {
-        console.error('Error loading docente estructura academica menu:', error);
-        if (active) setDocenteEstructuraItem(null);
-      } finally {
-        if (active) setDocenteEstructuraLoaded(true);
-      }
-    };
-
-    void loadDocenteEstructuraItem();
-    return () => {
-      active = false;
-    };
-  }, [canViewEstructuraAcademica, isDocente, loadingPermissions]);
-
-  const visibleSections = React.useMemo(() => {
-    const filteredSections = filterSections(intranetSections);
-    const docenteSections = isDocente && !filteredSections.some((section) => section.id === 'registros')
-      ? [
-        ...filteredSections,
-        {
-          ...(intranetSections.find((section) => section.id === 'registros') || {
-            id: 'registros',
-            title: 'Registros',
-            icon: <AssignmentIcon />,
-            items: [],
-          }),
-          items: [],
-        },
-      ]
-      : filteredSections;
-
-    return docenteSections
-      .map((section) => {
-        if (!isDocente || section.id !== 'registros') return section;
-
-        const items = section.items.flatMap((item) => {
-          if (item.id === 'matriculas') return docenteMatriculaLoaded ? docenteMatriculaItems : [item];
-          if (item.id !== 'registro-auxiliar') return [item];
-          return docenteRegistroLoaded ? docenteRegistroItems : [item];
-        });
-        const withDocenteEstructura = docenteEstructuraLoaded && docenteEstructuraItem
-          ? [docenteEstructuraItem, ...items.filter((item) => item.id !== 'estructura-academica')]
-          : items;
-
-        return { ...section, items: withDocenteEstructura };
-      })
-      .filter((section) => section.items.length > 0);
-  }, [
-    docenteEstructuraItem,
-    docenteEstructuraLoaded,
-    docenteMatriculaItems,
-    docenteMatriculaLoaded,
-    docenteRegistroItems,
-    docenteRegistroLoaded,
-    filterSections,
-    intranetSections,
-    isDocente,
-  ]);
+  const visibleSections = React.useMemo(
+    () => intranetSections.filter((section) => section.items.length > 0),
+    [intranetSections],
+  );
 
   const sections = (
     <>

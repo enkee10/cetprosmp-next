@@ -85,6 +85,7 @@ type PrintDocumentViewerProps = {
   globalStyles?: Record<string, unknown>;
   printTitleBlank?: boolean;
   printButtonLabel?: string;
+  backgroundColor?: string;
 };
 
 export default function PrintDocumentViewer({
@@ -114,6 +115,7 @@ export default function PrintDocumentViewer({
   globalStyles,
   printTitleBlank = true,
   printButtonLabel = 'Imprimir',
+  backgroundColor = '#f3f6fb',
 }: PrintDocumentViewerProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsSnapshotRef = useRef<SettingsSnapshot | null>(null);
@@ -168,7 +170,7 @@ export default function PrintDocumentViewer({
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f3f6fb', color: '#111' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: backgroundColor, color: '#111' }}>
       <GlobalStyles
         styles={{
           '@page': {
@@ -185,10 +187,21 @@ export default function PrintDocumentViewer({
             '.print-toolbar, .print-floating-scrollbar': {
               display: 'none !important',
             },
+            '.print-viewer': {
+              overflow: 'visible !important',
+              padding: '0 !important',
+            },
+            '.print-viewer-inner': {
+              minWidth: '0 !important',
+              width: 'auto !important',
+              margin: '0 !important',
+            },
           },
           '.print-page': {
             width: `${pageSizeMm.width}mm`,
             height: `${pageSizeMm.height}mm`,
+            boxSizing: 'border-box',
+            flexShrink: 0,
           },
           ...(globalStyles || {}),
         } as Record<string, CSSProperties | Record<string, CSSProperties>>}

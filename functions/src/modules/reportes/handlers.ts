@@ -264,6 +264,8 @@ const XF_XML_REGEX = /<xf\b[^>]*\/>|<xf\b[^>]*>[\s\S]*?<\/xf>/gi;
 type ReportTemplate = {
   name: string;
   storageName: string;
+  worksheetName?: string;
+  hideOtherWorksheets?: boolean;
 };
 
 const execFileAsync = promisify(execFile);
@@ -277,9 +279,15 @@ const TEMPLATES = {
     name: "Acta - Programa de Estudios",
     storageName: "acta-programa-estudios",
   },
-  nomina: {
-    name: "Nomina - todos",
-    storageName: "nomina-todos",
+  nominaPrograma: {
+    name: "Nomina - Programa de Estudios",
+    storageName: "nomina-programa-estudios",
+    worksheetName: "nomina",
+  },
+  nominaOpcion: {
+    name: "Nomina - Opcion Ocupacional",
+    storageName: "nomina-opcion-ocupacional",
+    worksheetName: "nomina",
   },
   certificadoPlanEstudios: {
     name: "Certificado - Plan de Estudios",
@@ -762,6 +770,10 @@ function cleanText(value: unknown) {
   return String(value ?? "").replace(/\s+/g, " ").trim();
 }
 
+function upperText(value: unknown) {
+  return cleanText(value).toLocaleUpperCase("es-PE");
+}
+
 async function getBooleanAppSetting(settingKey: string, defaultValue = false) {
   try {
     const response = await dataConnect.executeGraphql<
@@ -943,6 +955,18 @@ function formatDate(value: string | null | undefined) {
   return date ? date.toLocaleDateString("es-PE", { timeZone: "America/Lima" }) : "";
 }
 
+function formatMonthName(value: string | null | undefined) {
+  const calendarDate = getCalendarDateParts(value);
+  return calendarDate ? MONTH_NAMES_ES_PE[calendarDate.month - 1] ?? "" : "";
+}
+
+function getReportYear(data: ReporteDocumentoData) {
+  const inicio = getCalendarDateParts(data.grupoModulo.inicio || data.semestre?.inicio);
+  if (inicio) return String(inicio.year);
+  const semestreYear = semestreTitulo(data).match(/\b(19|20)\d{2}\b/)?.[0];
+  return semestreYear ?? "";
+}
+
 function getCivilDatePartsFromValue(value: string | Date | null | undefined) {
   const calendarDate = typeof value === "string" ? getCalendarDateParts(value) : null;
   if (calendarDate) return calendarDate;
@@ -1038,6 +1062,23 @@ function formatPlanResolucion(plan?: {
     plan.anio != null ? String(plan.anio) : "",
     cleanText(plan.genera),
   ].filter(Boolean).join("_");
+}
+
+function formatDocumentoResolucion(plan?: {
+  resolucionTipo?: string | null;
+  nro?: string | null;
+  anio?: number | null;
+} | null) {
+  if (!plan) return "";
+  const tipo = cleanText(plan.resolucionTipo);
+  const nro = cleanText(plan.nro);
+  const anio = plan.anio != null ? String(plan.anio) : "";
+  if (!nro && !anio) return tipo;
+
+  const numero = nro && anio && !new RegExp(`-${anio}$`).test(nro)
+    ? `${nro}-${anio}`
+    : nro || anio;
+  return [tipo, "N°", numero].filter(Boolean).join(" ");
 }
 
 function formatActaOpcionResolucion(value: unknown) {
@@ -1296,7 +1337,8 @@ async function ensureAllTemplatesInStorage() {
   await Promise.all([
     ensureTemplateInStorage(TEMPLATES.actaOpcion),
     ensureTemplateInStorage(TEMPLATES.actaPrograma),
-    ensureTemplateInStorage(TEMPLATES.nomina),
+    ensureTemplateInStorage(TEMPLATES.nominaPrograma),
+    ensureTemplateInStorage(TEMPLATES.nominaOpcion),
     ensureTemplateInStorage(TEMPLATES.certificadoPlanEstudios),
   ]);
 }
@@ -1491,7 +1533,7 @@ function normalizeZipPath(basePath: string, target: string) {
   return parts.join("/");
 }
 
-async function getFirstVisibleWorksheet(zip: JSZip) {
+async function getFirstVisibleWorksheet(zip: JSZip, preferredName?: string) {
   const workbookXml = await zip.file("xl/workbook.xml")?.async("string");
   const relsXml = await zip.file("xl/_rels/workbook.xml.rels")?.async("string");
   if (!workbookXml || !relsXml) throw new Error("La plantilla Excel no tiene workbook.xml valido.");
@@ -1505,16 +1547,55 @@ async function getFirstVisibleWorksheet(zip: JSZip) {
     if (id && target) rels.set(id, normalizeZipPath("xl/workbook.xml", target));
   }
 
+  const worksheets: Array<{ name: string; path: string; state?: string }> = [];
   const sheetRegex = /<sheet\b[^>]*>/g;
   for (const sheet of workbookXml.match(sheetRegex) ?? []) {
     const attrs = parseAttributes(sheet);
-    if (attrs.get("state") === "hidden" || attrs.get("state") === "veryHidden") continue;
     const name = attrs.get("name");
     const relId = attrs.get("r:id");
     const path = relId ? rels.get(relId) : undefined;
-    if (name && path) return { name, path };
+    if (name && path) worksheets.push({ name, path, state: attrs.get("state") });
+  }
+
+  const normalizedPreferredName = cleanText(preferredName).toLocaleLowerCase("es-PE");
+  if (normalizedPreferredName) {
+    const preferred = worksheets.find((worksheet) =>
+      worksheet.name.toLocaleLowerCase("es-PE") === normalizedPreferredName,
+    );
+    if (preferred) return { name: preferred.name, path: preferred.path };
+  }
+
+  const visible = worksheets.find((worksheet) =>
+    worksheet.state !== "hidden" && worksheet.state !== "veryHidden",
+  );
+  if (visible) {
+    return { name: visible.name, path: visible.path };
   }
   throw new Error("La plantilla Excel no tiene hojas visibles.");
+}
+
+async function hideNonSelectedWorksheets(zip: JSZip, selectedName: string) {
+  const workbookFile = zip.file("xl/workbook.xml");
+  const workbookXml = await workbookFile?.async("string");
+  if (!workbookFile || !workbookXml) return;
+
+  let selectedSheetIndex = 0;
+  let sheetIndex = 0;
+  const nextWorkbookXml = workbookXml
+    .replace(/<sheet\b[^>]*>/g, (sheetTag) => {
+      const attrs = parseAttributes(sheetTag);
+      const isSelected = attrs.get("name") === selectedName;
+      if (isSelected) selectedSheetIndex = sheetIndex;
+      sheetIndex += 1;
+      return isSelected
+        ? removeXmlAttribute(sheetTag, "state")
+        : setXmlAttribute(sheetTag, "state", "hidden");
+    })
+    .replace(/<workbookView\b[^>]*>/i, (tag) =>
+      setXmlAttribute(tag, "activeTab", String(selectedSheetIndex)),
+    );
+
+  zip.file("xl/workbook.xml", nextWorkbookXml);
 }
 
 function a1CellFromRange(range: string) {
@@ -1653,7 +1734,7 @@ type ActaClosureLineConfig = {
 };
 
 type ActaClosureLineAdjustment = {
-  kind: "programa" | "opcion" | "nomina";
+  kind: "programa" | "opcion" | "nominaPrograma" | "nominaOpcion";
   studentCount: number;
 };
 
@@ -1691,19 +1772,34 @@ const ACTA_CLOSURE_LINE_CONFIGS: Record<ActaClosureLineAdjustment["kind"], ActaC
     toCol: 37,
     toColOff: 0,
   },
-  nomina: {
-    name: "Grupo 86",
+  nominaPrograma: {
+    name: "Grupo 12",
     maxStudents: 30,
     firstPageLimit: 30,
-    firstPageStartRow: 16,
-    secondPageStartRow: 16,
-    firstPageEndRow: 45,
-    secondPageEndRow: 45,
-    firstPageRowHeightPx: 22,
-    secondPageRowHeightPx: 22,
+    firstPageStartRow: 17,
+    secondPageStartRow: 17,
+    firstPageEndRow: 46,
+    secondPageEndRow: 46,
+    firstPageRowHeightPx: 20.8,
+    secondPageRowHeightPx: 20.8,
     fromCol: 1,
     fromColOff: 0,
-    toCol: 36,
+    toCol: 11,
+    toColOff: 0,
+  },
+  nominaOpcion: {
+    name: "Grupo 5",
+    maxStudents: 30,
+    firstPageLimit: 30,
+    firstPageStartRow: 15,
+    secondPageStartRow: 15,
+    firstPageEndRow: 44,
+    secondPageEndRow: 44,
+    firstPageRowHeightPx: 19.2,
+    secondPageRowHeightPx: 19.2,
+    fromCol: 1,
+    fromColOff: 0,
+    toCol: 23,
     toColOff: 0,
   },
 };
@@ -2108,11 +2204,13 @@ async function applyExcelUpdates(
   preservePageLayout = false,
   tokenReplacements: TemplateTokenReplacements = {},
   actaClosureLineAdjustment?: ActaClosureLineAdjustment | null,
+  worksheetName?: string,
+  hideOtherWorksheetTabs = false,
 ) {
   const zip = await JSZip.loadAsync(templateBuffer);
   await replaceTemplateTokensInWorkbook(zip, tokenReplacements);
   await adjustActaStudentClosureLine(zip, actaClosureLineAdjustment);
-  const worksheet = await getFirstVisibleWorksheet(zip);
+  const worksheet = await getFirstVisibleWorksheet(zip, worksheetName);
   const sharedStrings = await createSharedStringWriter(zip);
   const sheetFile = zip.file(worksheet.path);
   const originalXml = await sheetFile?.async("string");
@@ -2145,6 +2243,9 @@ async function applyExcelUpdates(
     nextXml = ensureWorksheetPrintSetup(nextXml, printScale, printOrientation, forcePrintScale, paperSize, fitToPageWidth);
   }
   zip.file(worksheet.path, nextXml);
+  if (hideOtherWorksheetTabs) {
+    await hideNonSelectedWorksheets(zip, worksheet.name);
+  }
   sharedStrings.save();
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
@@ -2379,6 +2480,7 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   const ciclo = cleanText(data.grupoModulo.modulo?.plan?.carrera?.ciclo || nivel);
   const semestre = semestreTitulo(data);
   const resolucion = formatPlanResolucion(data.grupoModulo.modulo?.plan) || cleanText(datos.rd || "");
+  const resolucionDocumento = formatDocumentoResolucion(data.grupoModulo.modulo?.plan) || resolucion;
   const horas = data.grupoModulo.modulo?.horas ?? "";
   const creditos = data.grupoModulo.modulo?.creditos ?? "";
   const codigoModular = cleanText(datos.codigoModular || "");
@@ -2392,13 +2494,13 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
       addCell(updates, sheetName, "Y7", "NUMERO DOCUMENTO");
     }
     addCell(updates, sheetName, "F12", modulo);
-    addCell(updates, sheetName, "AB12", formatPlanResolucion(data.grupoModulo.modulo?.plan));
-    addCell(updates, sheetName, "R11", carrera.toLocaleUpperCase("es-PE"));
+    addCell(updates, sheetName, "AB12", resolucionDocumento);
+    addCell(updates, sheetName, "R11", upperText(carrera));
     addCell(updates, sheetName, "AJ12", nivel ? nivel.replace(/\s+/g, "\n").toLocaleUpperCase("es-PE") : "");
     addCell(updates, sheetName, "I13", formatDate(inicio));
     addCell(updates, sheetName, "T13", formatDate(fin));
     addCell(updates, sheetName, "Y13", horas);
-    addCell(updates, sheetName, "AD13", turno);
+    addCell(updates, sheetName, "AD13", upperText(turno));
     addCell(updates, sheetName, "AJ13", data.seccion);
     addCell(updates, sheetName, "T54", coordinador);
     addCell(updates, sheetName, "AC54", director);
@@ -2447,35 +2549,60 @@ const dataHelpers: { datosGenerales: Awaited<ReturnType<typeof getDatosGenerales
 };
 
 function fillNomina(updates: SpreadsheetUpdate[], sheetName: string, data: ReporteDocumentoData) {
-  fillInstitutionHeader(updates, sheetName, data, "nomina");
   const students = data.estudiantes.slice(0, 30);
-  const isPlanEstudios = !data.opcionOcupacional;
-  if (isPlanEstudios) {
-    addCell(updates, sheetName, "B14", "Documento");
-    addCell(updates, sheetName, "B15", "Identidad");
-  }
+  const studentStartRow = data.opcionOcupacional ? 15 : 17;
+  const codeColumn = "B";
+  const nameColumn = data.opcionOcupacional ? "F" : "D";
+  const sexColumn = data.opcionOcupacional ? "O" : "H";
+  const ageColumn = data.opcionOcupacional ? "Q" : "I";
+  const conditionColumn = data.opcionOcupacional ? "S" : "J";
+  const studentCode = (student: ReporteEstudiante) =>
+    cleanText(student.matricula?.codigoInscripcion) || cleanText(student.matricula?.user?.dni);
+
   let men = 0;
   let women = 0;
+  for (let index = 0; index < 30; index += 1) {
+    const row = studentStartRow + index;
+    addCell(updates, sheetName, `A${row}`, index + 1);
+    addCell(updates, sheetName, `${codeColumn}${row}`, "");
+    addCell(updates, sheetName, `${nameColumn}${row}`, "");
+    addCell(updates, sheetName, `${sexColumn}${row}`, "");
+    addCell(updates, sheetName, `${ageColumn}${row}`, "");
+    addCell(updates, sheetName, `${conditionColumn}${row}`, "");
+  }
+
   students.forEach((student, index) => {
-    const row = 16 + index;
+    const row = studentStartRow + index;
     const sex = studentSex(student);
     if (sex === "M") men += 1;
     if (sex === "F") women += 1;
     addCell(updates, sheetName, `A${row}`, index + 1);
-    addCell(updates, sheetName, `B${row}`, isPlanEstudios ? student.matricula?.user?.dni || "" : student.matricula?.codigoInscripcion || "");
-    addCell(updates, sheetName, `O${row}`, getStudentName(student));
-    addCell(updates, sheetName, `AE${row}`, sex);
-    addCell(updates, sheetName, `AG${row}`, calculateAge(student.matricula?.user?.fechaNacimiento));
-    addCell(updates, sheetName, `AI${row}`, "G");
+    addCell(updates, sheetName, `${codeColumn}${row}`, studentCode(student));
+    addCell(updates, sheetName, `${nameColumn}${row}`, getStudentName(student));
+    addCell(updates, sheetName, `${sexColumn}${row}`, sex);
+    addCell(updates, sheetName, `${ageColumn}${row}`, calculateAge(student.matricula?.user?.fechaNacimiento));
+    addCell(updates, sheetName, `${conditionColumn}${row}`, "G");
   });
+
+  if (data.opcionOcupacional) {
+    addCell(updates, sheetName, "A48", men);
+    addCell(updates, sheetName, "C48", women);
+    addCell(updates, sheetName, "E48", students.length);
+    addCell(updates, sheetName, "I48", students.length);
+    addCell(updates, sheetName, "K48", 0);
+    addCell(updates, sheetName, "M48", 0);
+    addCell(updates, sheetName, "O48", students.length);
+    addCell(updates, sheetName, "C50", `SMP, ${getDocumentDateLong(data, "nomina")}`);
+    return;
+  }
+
   addCell(updates, sheetName, "A49", men);
-  addCell(updates, sheetName, "E49", women);
-  addCell(updates, sheetName, "M49", students.length);
-  addCell(updates, sheetName, "R49", students.length);
-  addCell(updates, sheetName, "V49", 0);
-  addCell(updates, sheetName, "W49", 0);
-  addCell(updates, sheetName, "Y49", students.length);
-  addCell(updates, sheetName, "E51", `S.M.P., ${getDocumentDateLong(data, "nomina")}`);
+  addCell(updates, sheetName, "C49", women);
+  addCell(updates, sheetName, "D49", students.length);
+  addCell(updates, sheetName, "G49", students.length);
+  addCell(updates, sheetName, "H49", 0);
+  addCell(updates, sheetName, "I49", 0);
+  addCell(updates, sheetName, "A51", `SMP, ${getDocumentDateLong(data, "nomina")}`);
 }
 
 function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data: ReporteDocumentoData) {
@@ -2983,9 +3110,11 @@ async function getGrupoModuloIdsForSemestre(semestreId: number) {
     .map((item) => item.id);
 }
 
-function selectTemplate(tipoDocumento: ReportDocumentType, reportes: ReporteDocumentoData[]) {
-  if (tipoDocumento === "nomina") return TEMPLATES.nomina;
+function selectTemplate(tipoDocumento: ReportDocumentType, reportes: ReporteDocumentoData[]): ReportTemplate {
   const first = reportes[0];
+  if (tipoDocumento === "nomina") {
+    return first?.opcionOcupacional ? TEMPLATES.nominaOpcion : TEMPLATES.nominaPrograma;
+  }
   return first?.opcionOcupacional ? TEMPLATES.actaOpcion : TEMPLATES.actaPrograma;
 }
 
@@ -3494,40 +3623,86 @@ async function generateReporteDocumentoInternal(input: {
   const isActaOpcion = input.tipoDocumento === "acta" && reportes[0].opcionOcupacional;
   const isActaPrograma = input.tipoDocumento === "acta" && !reportes[0].opcionOcupacional;
   const isNomina = input.tipoDocumento === "nomina";
+  const reporte = reportes[0];
+  const inicioModulo = reporte.grupoModulo.inicio || reporte.semestre?.inicio || null;
+  const finModulo = reporte.grupoModulo.fin || reporte.semestre?.fin || null;
+  const carreraNombre = getCarreraName(reporte.grupoModulo);
+  const moduloNombre = getModuloDocumentName(reporte.grupoModulo);
+  const carrera = reporte.grupoModulo.modulo?.plan?.carrera;
+  const nivel = cleanText(carrera?.nivel || "");
+  const ciclo = cleanText(carrera?.ciclo || nivel);
+  const turno = cleanText(reporte.grupoModulo.grupo?.turno?.nombre || reporte.grupoModulo.grupo?.turnoNombre || "");
+  const resolucionPlan = formatPlanResolucion(reporte.grupoModulo.modulo?.plan) || cleanText(dataHelpers.datosGenerales.rd || "");
+  const resolucionDocumento = formatDocumentoResolucion(reporte.grupoModulo.modulo?.plan) || resolucionPlan;
+  const directorNombre = getPersonalName(reporte.semestre?.director).toLocaleUpperCase("es-PE");
+  const coordinadorNombre = getPersonalName(reporte.semestre?.coordinador1).toLocaleUpperCase("es-PE");
+  const docenteNombre = getPersonalName(reporte.grupoModulo.grupo?.personal).toLocaleUpperCase("es-PE");
+  const semestreTexto = isActaPrograma
+    ? semestreConSufijoRomano(semestreTitulo(reporte))
+    : semestreTitulo(reporte);
+  const carreraNombreToken = isNomina ? upperText(carreraNombre) : carreraNombre;
+  const moduloNombreToken = isNomina ? upperText(moduloNombre) : moduloNombre;
+  const nivelToken = isNomina ? upperText(nivel) : nivel;
+  const cicloToken = isNomina ? upperText(ciclo) : ciclo;
+  const turnoToken = isNomina ? upperText(turno) : turno;
+  const resolucionToken = isNomina ? resolucionDocumento : resolucionPlan;
+  const tokenReplacements: TemplateTokenReplacements = {
+    "[Nombre Carrera]": carreraNombre,
+    "[Nombre Modulo]": moduloNombre,
+    "[ciclo]": cicloToken,
+    "[semestre]": semestreTexto,
+    "[fecha larga]": getDocumentDateLong(reporte, input.tipoDocumento === "nomina" ? "nomina" : "acta"),
+    "[Director]": directorNombre,
+    "[director]": directorNombre,
+    "[Coordinador1]": coordinadorNombre,
+    "[coordinador1]": coordinadorNombre,
+    "[Docente]": docenteNombre,
+    "[docente]": docenteNombre,
+    "[programa de estudios]": carreraNombreToken,
+    "[opcion ocupacional]": carreraNombreToken,
+    "[modulo]": moduloNombreToken,
+    "[nivel]": nivelToken,
+    "[turno]": turnoToken,
+    "[seccion]": reporte.seccion,
+    "[resolucion del programa]": resolucionToken,
+    "[resolucion modulo]": resolucionToken,
+    "[creditos modulo]": reporte.grupoModulo.modulo?.creditos ?? "",
+    "[duracion horas]": reporte.grupoModulo.modulo?.horas ?? "",
+    "[duracion modulo]": reporte.grupoModulo.modulo?.horas ?? "",
+    "[fecha inicio]": formatDate(inicioModulo),
+    "[fecha termino]": formatDate(finModulo),
+    "[inicio modulo]": formatDate(inicioModulo),
+    "[fin modulo]": formatDate(finModulo),
+    "[mes inicio]": formatMonthName(inicioModulo).toLocaleUpperCase("es-PE"),
+    "[mes fin]": formatMonthName(finModulo).toLocaleUpperCase("es-PE"),
+    "[año]": getReportYear(reporte),
+  };
+  const closureLineAdjustment: ActaClosureLineAdjustment | null = isActaPrograma
+    ? { kind: "programa", studentCount: Math.min(reporte.estudiantes.length, 40) }
+    : isActaOpcion
+      ? { kind: "opcion", studentCount: Math.min(reporte.estudiantes.length, 30) }
+      : isNomina
+        ? {
+          kind: reporte.opcionOcupacional ? "nominaOpcion" : "nominaPrograma",
+          studentCount: Math.min(reporte.estudiantes.length, 30),
+        }
+        : null;
 
   const xlsxBuffer = await applyExcelUpdates(
     templateBuffer,
     updates,
     printableScaleForDocument(input.tipoDocumento),
-    input.tipoDocumento === "acta" && !reportes[0].opcionOcupacional,
+    input.tipoDocumento === "acta" && !reporte.opcionOcupacional,
     undefined,
     false,
     "9",
     false,
     isActaPrograma || isActaOpcion,
     isActaPrograma,
-    {
-      "[Nombre Carrera]": getCarreraName(reportes[0].grupoModulo),
-      "[Nombre Modulo]": getModuloDocumentName(reportes[0].grupoModulo),
-      "[ciclo]": reportes[0].grupoModulo.modulo?.plan?.carrera?.ciclo || reportes[0].grupoModulo.modulo?.plan?.carrera?.nivel || "",
-      "[semestre]": isActaPrograma
-        ? semestreConSufijoRomano(semestreTitulo(reportes[0]))
-        : semestreTitulo(reportes[0]),
-      "[fecha larga]": getDocumentDateLong(reportes[0], input.tipoDocumento === "nomina" ? "nomina" : "acta"),
-      "[Director]": getPersonalName(reportes[0].semestre?.director).toLocaleUpperCase("es-PE"),
-      "[director]": getPersonalName(reportes[0].semestre?.director).toLocaleUpperCase("es-PE"),
-      "[Coordinador1]": getPersonalName(reportes[0].semestre?.coordinador1).toLocaleUpperCase("es-PE"),
-      "[coordinador1]": getPersonalName(reportes[0].semestre?.coordinador1).toLocaleUpperCase("es-PE"),
-      "[Docente]": getPersonalName(reportes[0].grupoModulo.grupo?.personal).toLocaleUpperCase("es-PE"),
-      "[docente]": getPersonalName(reportes[0].grupoModulo.grupo?.personal).toLocaleUpperCase("es-PE"),
-    },
-    isActaPrograma
-      ? { kind: "programa", studentCount: Math.min(reportes[0].estudiantes.length, 40) }
-      : isActaOpcion
-        ? { kind: "opcion", studentCount: Math.min(reportes[0].estudiantes.length, 30) }
-        : isNomina
-          ? { kind: "nomina", studentCount: Math.min(reportes[0].estudiantes.length, 30) }
-          : null,
+    tokenReplacements,
+    closureLineAdjustment,
+    template.worksheetName,
+    Boolean(template.hideOtherWorksheets),
   );
   const grupoModuloId = reportes[0].grupoModulo.id;
   const semestreTitle = cleanText(reportes[0].semestre?.titulo || String(input.semestreId || ""));

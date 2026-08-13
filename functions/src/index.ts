@@ -122,6 +122,7 @@ export {
   getMatricula,
   getMatriculaDocumentoEstado,
   getMatriculaResponsableActual,
+  exportListaMatriculasGeneralGoogleSheet,
   exportMatriculadosDocenteGrupoGoogleSheet,
   listEditorDocumentosMatriculas,
   listFormularioMatriculaPaquetesBySemestre,

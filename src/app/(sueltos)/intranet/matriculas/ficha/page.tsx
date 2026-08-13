@@ -36,6 +36,7 @@ type MatriculaFichaUser = {
   email?: string | null;
   correoInstitucional?: string | null;
   avatar?: string | null;
+  avatarMediano?: string | null;
   dniImagenFrenteUrl?: string | null;
   dniImagenReversoUrl?: string | null;
   dniImagenFrenteProcesadaUrl?: string | null;
@@ -496,8 +497,16 @@ function FichaMatriculaModularTemplate({
               fontWeight: 800,
               fontSize: '12pt',
               marginLeft: 'auto',
+              overflow: 'hidden',
+              lineHeight: 0,
             },
-            '& .photo-box img': { width: '100%', height: '100%', objectFit: 'cover' },
+            '& .photo-box img': {
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center center',
+              display: 'block',
+            },
           }}
         >
           <Box sx={{ display: 'grid', gridTemplateColumns: '45mm 1fr 31mm', alignItems: 'start', gap: '6mm' }}>
@@ -798,11 +807,14 @@ function FichaMatriculaModularTemplateV2({
               marginLeft: 'auto',
               fontSize: '11pt',
               fontWeight: 800,
+              overflow: 'hidden',
+              lineHeight: 0,
             },
             '& .modular-photo-box img': {
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              objectPosition: 'center center',
               display: 'block',
             },
             '& .signature-line': {
@@ -1158,11 +1170,14 @@ function FichaMatriculaModularTemplateV3({
               fontSize: '10.6pt',
               fontWeight: 800,
               marginLeft: 'auto',
+              overflow: 'hidden',
+              lineHeight: 0,
             },
             '& .photo-box img': {
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              objectPosition: 'center center',
               display: 'block',
             },
             '& .signature-line': {
@@ -1555,6 +1570,7 @@ export default function FichaMatriculaProgramaPage() {
   const modulo = grupoModulo?.modulo ?? null;
   const carrera = modulo?.plan?.carrera ?? null;
   const user = matricula?.user ?? null;
+  const fichaAvatar = asValue(user?.avatarMediano || user?.avatar);
   const tipoCarrera = normalizeText(carrera?.tipoCarrera?.nombre);
   const isOpcionOcupacional = tipoCarrera.includes('opcion') || tipoCarrera.includes('ocupacional');
   const programaNombre = asUpper(carrera?.titulo || carrera?.nombre || modulo?.plan?.planEstudio);
@@ -1731,7 +1747,7 @@ export default function FichaMatriculaProgramaPage() {
               scalePercent={scalePercent}
               periodoLectivo={periodoLectivo}
               codigoInscripcion={codigoInscripcion}
-              avatar={asValue(user?.avatar)}
+              avatar={fichaAvatar}
               apellidoPaterno={asUpper(user?.apellidoPaterno)}
               apellidoMaterno={asUpper(user?.apellidoMaterno)}
               nombres={asUpper(user?.nombre)}
@@ -1818,11 +1834,17 @@ export default function FichaMatriculaProgramaPage() {
                   top: '50%',
                   transform: 'translate(-50%, -50%)',
                 },
-                '& .photo-cell': { padding: '0.7mm', textAlign: 'center' },
+                '& .photo-cell': {
+                  padding: '0.7mm',
+                  textAlign: 'center',
+                  overflow: 'hidden',
+                  lineHeight: 0,
+                },
                 '& .photo-cell img': {
                   width: '19mm',
                   height: '24mm',
                   objectFit: 'cover',
+                  objectPosition: 'center center',
                   display: 'block',
                   margin: '0 auto',
                 },
@@ -1875,7 +1897,7 @@ export default function FichaMatriculaProgramaPage() {
                     <td className="blue">DRE:</td>
                     <td className="center">LIMA- METROPOLITANA</td>
                     <td rowSpan={4} className="photo-cell">
-                      {user?.avatar ? <Box component="img" src={user.avatar} alt="Fotografia" /> : '\u00a0'}
+                      {fichaAvatar ? <Box component="img" src={fichaAvatar} alt="Fotografia" /> : '\u00a0'}
                     </td>
                   </tr>
                   <tr className="thin-row">

@@ -27,10 +27,41 @@ const actionField: Record<PermissionAction, keyof IntranetPermission> = {
 const normalizePermissions = (items: IntranetPermission[] | undefined | null) =>
   (items ?? []).filter((item) => typeof item.entity === 'string' && item.entity.trim().length > 0);
 
+const permissionsCache = new Map<string, IntranetPermission[]>();
+const permissionsRequests = new Map<string, Promise<IntranetPermission[]>>();
+
+async function loadPermissionsForUser(userUid: string) {
+  const cached = permissionsCache.get(userUid);
+  if (cached) return cached;
+
+  const currentRequest = permissionsRequests.get(userUid);
+  if (currentRequest) return currentRequest;
+
+  const request = (async () => {
+    const listMisPermisos = httpsCallable<undefined, { permissions?: IntranetPermission[] }>(
+      functions,
+      'listMisPermisos',
+    );
+    const result = await listMisPermisos();
+    const permissions = normalizePermissions(result.data.permissions);
+    permissionsCache.set(userUid, permissions);
+    return permissions;
+  })();
+
+  permissionsRequests.set(userUid, request);
+  try {
+    return await request;
+  } finally {
+    permissionsRequests.delete(userUid);
+  }
+}
+
 export function useIntranetPermissions() {
   const { user } = useAuth();
   const [permissions, setPermissions] = useState<IntranetPermission[]>([]);
   const [loading, setLoading] = useState(true);
+  const userUid = user?.uid ?? '';
+  const profileResolved = !user || user.profileResolved !== false;
   const isSuperUser =
     Number(user?.level ?? 0) >= 600
     || isSuperUserRole(user?.role)
@@ -41,9 +72,14 @@ export function useIntranetPermissions() {
     let active = true;
 
     const loadPermissions = async () => {
-      if (!user) {
+      if (!userUid) {
         setPermissions([]);
         setLoading(false);
+        return;
+      }
+
+      if (!profileResolved) {
+        setLoading(true);
         return;
       }
 
@@ -53,14 +89,17 @@ export function useIntranetPermissions() {
         return;
       }
 
+      const cachedPermissions = permissionsCache.get(userUid);
+      if (cachedPermissions) {
+        setPermissions(cachedPermissions);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
-        const listMisPermisos = httpsCallable<undefined, { permissions?: IntranetPermission[] }>(
-          functions,
-          'listMisPermisos',
-        );
-        const result = await listMisPermisos();
-        if (active) setPermissions(normalizePermissions(result.data.permissions));
+        const nextPermissions = await loadPermissionsForUser(userUid);
+        if (active) setPermissions(nextPermissions);
       } catch (error) {
         console.error('Error loading intranet permissions:', error);
         if (active) setPermissions([]);
@@ -73,7 +112,7 @@ export function useIntranetPermissions() {
     return () => {
       active = false;
     };
-  }, [isSuperUser, user]);
+  }, [isSuperUser, profileResolved, userUid]);
 
   const permissionsByEntity = useMemo(() => {
     return new Map(permissions.map((permission) => [permission.entity, permission]));

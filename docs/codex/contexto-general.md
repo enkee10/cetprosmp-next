@@ -2,6 +2,7 @@
 
 ## comportamiento CODEX
  - nunca hacer nada que no se te pida explicitamente, sin embargo puedes sugerirlo.
+ - priorizar la experiencia de usuario en cuanto a la velocidad de respuesta, economia, evitar codigo redundante ineficiente, sucio o muy parcheado para ahorrar recursos, tener el codigo siempre bien optimizado.
  - Al hacer deploy cuando es function darle timeout de 180 para que no falle, cuando es hosting  darle timeout largo porque usa firebase hosting con next de framework
  - cuando vayas hacer pruebas en local usa siempre el puerto 3001 y no el 3000
  - cuando registres fechas que se muestren convirtiendo el ISO a zona horaria America/Lima

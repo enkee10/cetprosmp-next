@@ -174,6 +174,7 @@ export {
   verificarMatriculaReniec,
 } from "./matriculas/handlers.js";
 export {
+  exportListaMatriculasGeneralGoogleSheet,
   exportMatriculadosDocenteGrupoGoogleSheet,
   getMatriculasGoogleSheetInfo,
   sortMatriculasGoogleSheetsDaily,

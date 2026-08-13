@@ -33,7 +33,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import TableChartIcon from '@mui/icons-material/TableChart';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {
   GridColDef,
@@ -66,6 +66,7 @@ interface SemestreOption {
   inicio?: string | null;
   fin?: string | null;
   placeholder?: boolean;
+  coordinador1?: MatriculaResponsable | null;
 }
 
 function getConfiguredMatriculaSemestreIds(settings: AppSettings) {
@@ -211,9 +212,13 @@ interface MatriculaListItem {
       nombre?: string | null;
       inicio?: string | null;
       fin?: string | null;
+      grupoId?: number | null;
+      moduloId?: number | null;
       grupo?: {
         id?: number | null;
         nombreDisplay?: string | null;
+        personalId?: number | null;
+        personal?: MatriculaResponsable | null;
         semestre?: { id?: number | null; titulo?: string | null } | null;
       } | null;
       modulo?: {
@@ -268,6 +273,7 @@ interface MatriculaGrupoModuloOption {
   nombre?: string | null;
   moduloId?: number | null;
   grupo?: {
+    id?: number | null;
     nombreDisplay?: string | null;
     semestreId?: number | null;
     semestre?: {
@@ -277,7 +283,9 @@ interface MatriculaGrupoModuloOption {
       anioTitulo?: string | null;
       inicio?: string | null;
       fin?: string | null;
+      coordinador1?: MatriculaResponsable | null;
     } | null;
+    personal?: MatriculaResponsable | null;
   } | null;
   modulo?: {
     titulo?: string | null;
@@ -873,6 +881,11 @@ const studentInitials = (user?: MatriculaUser | null) => {
 const getSemestreLabel = (semestre?: SemestreOption | null) =>
   semestre?.titulo || semestre?.nombre || (semestre?.id ? `Semestre ${semestre.id}` : '');
 
+const formatSemestreShortLabel = (value: string | null | undefined) => {
+  const text = String(value || '').trim();
+  return text.replace(/^20(\d{2})\s*-\s*/, '$1-') || 'Periodo';
+};
+
 const getGrupoModuloSemestreId = (grupoModulo?: MatriculaGrupoModuloOption | null) => {
   const id = Number(grupoModulo?.grupo?.semestre?.id ?? grupoModulo?.grupo?.semestreId ?? 0);
   return Number.isFinite(id) && id > 0 ? id : 0;
@@ -889,6 +902,7 @@ const getGrupoModuloSemestreOption = (grupoModulo: MatriculaGrupoModuloOption): 
     anioTitulo: semestre?.anioTitulo ?? null,
     inicio: semestre?.inicio ?? null,
     fin: semestre?.fin ?? null,
+    coordinador1: semestre?.coordinador1 ?? null,
     placeholder: !semestre?.titulo && !semestre?.nombre,
   };
 };
@@ -902,6 +916,52 @@ const getGrupoModuloFilterLabel = (grupoModulo: MatriculaGrupoModuloOption) => {
     || `Grupo-modulo ${grupoModulo.id}`;
 };
 
+const getGrupoModuloMenuName = (grupoModulo: MatriculaGrupoModuloOption) => {
+  const nombre = String(grupoModulo.nombre || '').trim();
+  const cleanNombre = nombre.split('[')[0]?.trim();
+  return cleanNombre
+    || grupoModulo.modulo?.titulo
+    || grupoModulo.modulo?.tituloComercial
+    || grupoModulo.grupo?.nombreDisplay
+    || `Grupo-modulo ${grupoModulo.id}`;
+};
+
+const getGrupoModuloPrintGroupName = (grupoModulo: MatriculaGrupoModuloOption) => {
+  const grupoNombre = asString(grupoModulo.grupo?.nombreDisplay).trim();
+  const moduloNombre = getGrupoModuloFilterLabel(grupoModulo);
+  const normalizeLabel = (value: string) => value.trim().toLocaleLowerCase('es').replace(/\s+/g, ' ');
+  if (grupoNombre && moduloNombre && normalizeLabel(grupoNombre) !== normalizeLabel(moduloNombre)) {
+    return `${grupoNombre} - ${moduloNombre}`;
+  }
+  return moduloNombre || grupoNombre || `Grupo-modulo ${grupoModulo.id}`;
+};
+
+const matriculaBelongsToGrupoModulo = (
+  matricula: MatriculaListItem,
+  grupoModulo: MatriculaGrupoModuloOption,
+) => {
+  const grupoModuloId = Number(grupoModulo.id);
+  const grupoId = Number(grupoModulo.grupo?.id ?? 0);
+  const moduloId = Number(grupoModulo.moduloId ?? 0);
+  return (matricula.modulosEstudiantes || []).some((link) => {
+    const linkGrupoModuloId = Number(link.grupoModuloId ?? link.grupoModulo?.id ?? 0);
+    if (linkGrupoModuloId > 0 && linkGrupoModuloId === grupoModuloId) return true;
+
+    const linkGrupoId = Number(link.grupoId ?? link.grupoModulo?.grupoId ?? link.grupoModulo?.grupo?.id ?? 0);
+    const linkModuloId = Number(link.moduloId ?? link.grupoModulo?.moduloId ?? link.grupoModulo?.modulo?.id ?? 0);
+    return Boolean(grupoId > 0 && moduloId > 0 && linkGrupoId === grupoId && linkModuloId === moduloId);
+  });
+};
+
+const toMatriculaPrintRow = (matricula: MatriculaListItem) => ({
+  id: matricula.id,
+  apellidosNombres: studentListName(matricula.user),
+  dni: matricula.user?.dni || '',
+  celular: matricula.user?.celular || '',
+  fechaNacimiento: matricula.user?.fechaNacimiento || '',
+  edad: calculateAgeToday(matricula.user?.fechaNacimiento),
+});
+
 const responsableName = (responsable?: MatriculaResponsable | null) =>
   responsable?.displayName
   || responsable?.user?.username
@@ -912,6 +972,9 @@ const responsableName = (responsable?: MatriculaResponsable | null) =>
   || responsable?.user?.correoInstitucional
   || responsable?.user?.email
   || '';
+
+const uniqueCleanValues = (values: string[]) =>
+  Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
 
 const responsableUserName = (user?: MatriculaResponsableUser | null) =>
   user?.username
@@ -927,6 +990,16 @@ const formatDate = (value?: string | null) => {
   return formatDateOnly(value, { dateStyle: 'short' }) || value || '';
 };
 
+const calculateAgeToday = (value?: string | null) => {
+  const date = getDateOnlyLocalDate(value);
+  if (!date) return '';
+  const today = new Date();
+  let age = today.getFullYear() - date.getFullYear();
+  const monthDiff = today.getMonth() - date.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) age -= 1;
+  return Number.isFinite(age) && age >= 0 ? String(age) : '';
+};
+
 const formatDateTimeForDisplay = (value?: string | null) => {
   return formatDateTimeInAppTimeZone(value);
 };
@@ -937,6 +1010,7 @@ const firstCleanValue = (...values: Array<string | null | undefined>) =>
 const DOCENTE_MAX_MODULO_CHANGE_EVENTS = 3;
 const SECONDARY_INCOMPLETE_LEGACY_VALUE = 'Secundaria incompleta';
 const SECONDARY_INCOMPLETE_VALUE = 'Secundaria en curso..';
+const MATRICULA_LIST_PRINT_STORAGE_KEY = 'cetprosmp.matriculas.listaPrintPayload';
 const normalizeInstructionValue = (value: unknown) => {
   const text = asString(value).trim();
   return text === SECONDARY_INCOMPLETE_LEGACY_VALUE ? SECONDARY_INCOMPLETE_VALUE : text;
@@ -1731,22 +1805,6 @@ export function MatriculaForm({
       }
 
       const detectedExpiration = normalizeDateInput(aiResult.fechaVencimiento);
-      if (isExpiredDate(detectedExpiration)) {
-        handleDocumentValidationFailure({
-          frontSignature: currentFrontSignature,
-          backSignature: currentBackSignature,
-          reason: 'expired',
-          message: 'Documento vencido.',
-          frontError: 'Documento vencido.',
-          backError: null,
-          aiResult,
-          reniecDatos,
-          analysisMetadata,
-        });
-        setSuccessMessage(null);
-        return;
-      }
-
       const shouldPersist = applyDocumentImagePolicy(documentPolicy);
       const { uploadedFront, uploadedBack } = await uploadVerifiedDocumentImages(
         shouldPersist,
@@ -2773,6 +2831,14 @@ export function MatriculasPage() {
     return Number.isFinite(id) && id > 0 ? String(id) : '';
   }, [searchParams]);
   const isDirectGrupoModuloView = isDocente && Boolean(directGrupoModuloId);
+  const directGrupoModuloNameParam = useMemo(
+    () => asString(searchParams.get('moduloNombre')).trim(),
+    [searchParams],
+  );
+  const directSemestrePeriodoParam = useMemo(
+    () => asString(searchParams.get('periodo')).trim(),
+    [searchParams],
+  );
 
   const selectedSemestreFilter = useMemo(
     () => semestreFilterOptions.find((semestre) => String(semestre.id) === selectedSemestreFilterId) ?? null,
@@ -2780,9 +2846,7 @@ export function MatriculasPage() {
   );
 
   const selectedSemestreFilterLabel = selectedSemestreFilter?.placeholder ? '' : getSemestreLabel(selectedSemestreFilter);
-  const matriculaListSemestreTitulo = !isDirectGrupoModuloView && selectedGrupoModuloFilterIds.length > 0
-    ? selectedSemestreFilterLabel
-    : '';
+  const matriculaListSemestreTitulo = !isDirectGrupoModuloView ? selectedSemestreFilterLabel : '';
 
   useEffect(() => {
     if (loadingSettings) return;
@@ -2960,8 +3024,7 @@ export function MatriculasPage() {
         semestreTitulo: matriculaListSemestreTitulo || null,
       });
       if (matriculasFetchRequestRef.current !== requestId) return;
-      const nextMatriculas = (result.data.matriculas || [])
-        .filter((matricula) => Number(matricula.semestreId) === semestreId);
+      const nextMatriculas = result.data.matriculas || [];
       setMatriculas(nextMatriculas);
       setError(null);
     } catch (err) {
@@ -2984,6 +3047,58 @@ export function MatriculasPage() {
     void fetchMatriculas();
   }, [fetchMatriculas]);
 
+  const grupoModuloFilterLabelById = useMemo(
+    () => new Map(grupoModuloFilterOptions.map((item) => [String(item.id), getGrupoModuloFilterLabel(item)])),
+    [grupoModuloFilterOptions],
+  );
+
+  const selectedGrupoModuloFilterOptions = useMemo(() => {
+    if (isDirectGrupoModuloView) {
+      return grupoModuloFilterOptions.filter((item) => String(item.id) === directGrupoModuloId);
+    }
+    if (selectedGrupoModuloFilterIds.length === 0) return [];
+    const selectedIds = new Set(selectedGrupoModuloFilterIds);
+    return grupoModuloFilterOptions.filter((item) => selectedIds.has(String(item.id)));
+  }, [directGrupoModuloId, grupoModuloFilterOptions, isDirectGrupoModuloView, selectedGrupoModuloFilterIds]);
+
+  const pageTitle = useMemo(() => {
+    const isDocenteRoute = isDocente || Boolean(directGrupoModuloId);
+    if (!isDocenteRoute) return 'Gestion de Matriculas';
+
+    const targetGrupoModulo = isDirectGrupoModuloView
+      ? grupoModuloFilterOptions.find((item) => String(item.id) === directGrupoModuloId) ?? null
+      : selectedGrupoModuloFilterOptions.length === 1
+        ? selectedGrupoModuloFilterOptions[0]
+        : null;
+
+    if (targetGrupoModulo) {
+      const semestreLabel = getSemestreLabel(getGrupoModuloSemestreOption(targetGrupoModulo))
+        || selectedSemestreFilterLabel;
+      return `Lista ${getGrupoModuloMenuName(targetGrupoModulo)} ${formatSemestreShortLabel(semestreLabel)}`;
+    }
+
+    if (directGrupoModuloNameParam) {
+      const periodo = directSemestrePeriodoParam
+        || (selectedSemestreFilterLabel ? formatSemestreShortLabel(selectedSemestreFilterLabel) : '');
+      return ['Lista', directGrupoModuloNameParam, periodo ? formatSemestreShortLabel(periodo) : '']
+        .filter(Boolean)
+        .join(' ');
+    }
+
+    return selectedSemestreFilterLabel
+      ? `Lista de Matriculas ${formatSemestreShortLabel(selectedSemestreFilterLabel)}`
+      : 'Lista de Matriculas';
+  }, [
+    directGrupoModuloId,
+    directGrupoModuloNameParam,
+    directSemestrePeriodoParam,
+    grupoModuloFilterOptions,
+    isDirectGrupoModuloView,
+    isDocente,
+    selectedGrupoModuloFilterOptions,
+    selectedSemestreFilterLabel,
+  ]);
+
   const handleExportDocenteSheet = useCallback(async () => {
     const grupoModuloId = Number(directGrupoModuloId);
     if (!Number.isFinite(grupoModuloId) || grupoModuloId <= 0) {
@@ -2994,8 +3109,11 @@ export function MatriculasPage() {
     const sheetWindow = window.open('', '_blank');
     if (sheetWindow) {
       sheetWindow.document.title = 'Generando Google Sheets';
+      sheetWindow.document.body.style.margin = '0';
       sheetWindow.document.body.style.fontFamily = 'Arial, sans-serif';
       sheetWindow.document.body.style.padding = '24px';
+      sheetWindow.document.body.style.background = '#000';
+      sheetWindow.document.body.style.color = '#fff';
       sheetWindow.document.body.textContent = 'Generando Google Sheets...';
     }
 
@@ -3030,6 +3148,171 @@ export function MatriculasPage() {
       setExportingDocenteSheet(false);
     }
   }, [directGrupoModuloId]);
+
+  const handleExportGeneralSheet = useCallback(async () => {
+    const matriculaIds = matriculas.map((item) => Number(item.id)).filter((id) => Number.isFinite(id) && id > 0);
+    if (matriculaIds.length === 0) {
+      setError('No hay matriculas cargadas para exportar.');
+      return;
+    }
+
+    const sheetWindow = window.open('', '_blank');
+    if (sheetWindow) {
+      sheetWindow.document.title = 'Generando Google Sheets';
+      sheetWindow.document.body.style.margin = '0';
+      sheetWindow.document.body.style.fontFamily = 'Arial, sans-serif';
+      sheetWindow.document.body.style.padding = '24px';
+      sheetWindow.document.body.style.background = '#000';
+      sheetWindow.document.body.style.color = '#fff';
+      sheetWindow.document.body.textContent = 'Generando Google Sheets...';
+    }
+
+    setExportingDocenteSheet(true);
+    try {
+      const exportSheet = httpsCallable<
+        { matriculaIds: number[] },
+        { ok?: boolean; name?: string; rows?: number; spreadsheetUrl?: string }
+      >(
+        functions,
+        'exportListaMatriculasGeneralGoogleSheet',
+        { timeout: 180000 },
+      );
+      const result = await exportSheet({ matriculaIds });
+      const spreadsheetUrl = result.data.spreadsheetUrl;
+      if (!spreadsheetUrl) {
+        sheetWindow?.close();
+        throw new Error('Google Sheets no devolvio el enlace del archivo.');
+      }
+      if (sheetWindow) {
+        sheetWindow.opener = null;
+        sheetWindow.location.href = spreadsheetUrl;
+      } else {
+        window.open(spreadsheetUrl, '_blank', 'noopener,noreferrer');
+      }
+      setError(null);
+    } catch (err) {
+      sheetWindow?.close();
+      console.error('Error exporting general matriculas sheet: ', err);
+      setError(getCallableErrorMessage(err, 'No se pudo generar el Google Sheets de la lista.'));
+    } finally {
+      setExportingDocenteSheet(false);
+    }
+  }, [matriculas]);
+
+  const getCurrentListGroupName = useCallback(() => {
+    if (isDirectGrupoModuloView) {
+      const directGrupoModulo = grupoModuloFilterOptions.find((item) => String(item.id) === directGrupoModuloId);
+      return directGrupoModulo ? getGrupoModuloFilterLabel(directGrupoModulo) : 'Lista de matriculados';
+    }
+    if (selectedGrupoModuloFilterIds.length === 1) {
+      return grupoModuloFilterLabelById.get(selectedGrupoModuloFilterIds[0]) || 'Lista de matriculados';
+    }
+    if (selectedGrupoModuloFilterIds.length > 1) return `${selectedGrupoModuloFilterIds.length} grupos seleccionados`;
+    return selectedSemestreFilterLabel ? `Todos - ${selectedSemestreFilterLabel}` : 'Lista de matriculados';
+  }, [
+    directGrupoModuloId,
+    grupoModuloFilterLabelById,
+    grupoModuloFilterOptions,
+    isDirectGrupoModuloView,
+    selectedGrupoModuloFilterIds,
+    selectedSemestreFilterLabel,
+  ]);
+
+  const getCurrentListDocenteName = useCallback(() => {
+    const docenteNames = uniqueCleanValues(
+      selectedGrupoModuloFilterOptions.map((item) => responsableName(item.grupo?.personal)),
+    );
+    if (docenteNames.length === 1) return docenteNames[0];
+    if (isDirectGrupoModuloView) return user?.displayName || user?.email || '';
+    return '';
+  }, [isDirectGrupoModuloView, selectedGrupoModuloFilterOptions, user?.displayName, user?.email]);
+
+  const getCurrentListCoordinadorName = useCallback(() => {
+    const coordinadorNames = uniqueCleanValues([
+      responsableName(selectedSemestreFilter?.coordinador1),
+      ...selectedGrupoModuloFilterOptions.map((item) => responsableName(item.grupo?.semestre?.coordinador1)),
+    ]);
+    return coordinadorNames[0] || '';
+  }, [selectedGrupoModuloFilterOptions, selectedSemestreFilter?.coordinador1]);
+
+  const getListaPrintTargetGrupoModulos = useCallback(() => {
+    if (isDirectGrupoModuloView) {
+      return grupoModuloFilterOptions.filter((item) => String(item.id) === directGrupoModuloId);
+    }
+    if (selectedGrupoModuloFilterIds.length > 0) {
+      const selectedIds = new Set(selectedGrupoModuloFilterIds);
+      return grupoModuloFilterOptions.filter((item) => selectedIds.has(String(item.id)));
+    }
+    return grupoModuloFilterOptions;
+  }, [directGrupoModuloId, grupoModuloFilterOptions, isDirectGrupoModuloView, selectedGrupoModuloFilterIds]);
+
+  const buildListaMatriculadosPrintGroups = useCallback(() => {
+    const targetGrupoModulos = getListaPrintTargetGrupoModulos();
+    const fallbackRows = matriculas.map(toMatriculaPrintRow);
+    if (targetGrupoModulos.length === 0) {
+      return [{
+        id: 'lista-general',
+        grupoNombre: getCurrentListGroupName(),
+        coordinadorNombre: getCurrentListCoordinadorName(),
+        docenteNombre: getCurrentListDocenteName(),
+        rows: fallbackRows,
+      }];
+    }
+
+    const groups = targetGrupoModulos.map((grupoModulo) => {
+      const matchedMatriculas = matriculas.filter((matricula) => matriculaBelongsToGrupoModulo(matricula, grupoModulo));
+      const rows = targetGrupoModulos.length === 1 && matchedMatriculas.length === 0
+        ? fallbackRows
+        : matchedMatriculas.map(toMatriculaPrintRow);
+      return {
+        id: String(grupoModulo.id),
+        grupoNombre: getGrupoModuloPrintGroupName(grupoModulo),
+        coordinadorNombre: responsableName(grupoModulo.grupo?.semestre?.coordinador1) || getCurrentListCoordinadorName(),
+        docenteNombre: responsableName(grupoModulo.grupo?.personal) || getCurrentListDocenteName(),
+        rows,
+      };
+    });
+    const groupsWithRows = groups.filter((group) => group.rows.length > 0);
+    return groupsWithRows.length > 0
+      ? groupsWithRows
+      : [{
+        id: 'lista-general',
+        grupoNombre: getCurrentListGroupName(),
+        coordinadorNombre: getCurrentListCoordinadorName(),
+        docenteNombre: getCurrentListDocenteName(),
+        rows: fallbackRows,
+      }];
+  }, [
+    getCurrentListCoordinadorName,
+    getCurrentListDocenteName,
+    getCurrentListGroupName,
+    getListaPrintTargetGrupoModulos,
+    matriculas,
+  ]);
+
+  const handleOpenListaMatriculadosPrint = useCallback(() => {
+    if (matriculas.length === 0) {
+      setError('No hay matriculas cargadas para visualizar.');
+      return;
+    }
+    const groups = buildListaMatriculadosPrintGroups();
+    const payload = {
+      title: 'Lista de Matriculados',
+      grupoNombre: getCurrentListGroupName(),
+      coordinadorNombre: getCurrentListCoordinadorName(),
+      docenteNombre: getCurrentListDocenteName(),
+      groups,
+      rows: groups.flatMap((group) => group.rows),
+    };
+    window.localStorage.setItem(MATRICULA_LIST_PRINT_STORAGE_KEY, JSON.stringify(payload));
+    window.open('/intranet/matriculas/lista', '_blank', 'noopener,noreferrer')?.focus();
+  }, [
+    buildListaMatriculadosPrintGroups,
+    getCurrentListCoordinadorName,
+    getCurrentListDocenteName,
+    getCurrentListGroupName,
+    matriculas,
+  ]);
 
   const handleDismissModal = useCallback(() => {
     setOpenMatriculaModal(false);
@@ -3197,11 +3480,6 @@ export function MatriculasPage() {
     setSelectedGrupoModuloFilterIds(nextValues.includes('__ALL__') ? [] : nextValues);
     setPaginationModel((current) => ({ ...current, page: 0 }));
   }, []);
-
-  const grupoModuloFilterLabelById = useMemo(
-    () => new Map(grupoModuloFilterOptions.map((item) => [String(item.id), getGrupoModuloFilterLabel(item)])),
-    [grupoModuloFilterOptions],
-  );
 
   const columns = useMemo<GridColDef[]>(
     () => [
@@ -3418,7 +3696,7 @@ export function MatriculasPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Matriculas"
+      title={pageTitle}
       commands={
         <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
           {!isDocente ? (
@@ -3479,20 +3757,51 @@ export function MatriculasPage() {
               Nueva Matricula
             </Button>
           ) : null}
+          <Tooltip title="Vista de impresion">
+            <span>
+              <IconButton
+                color="primary"
+                aria-label="Vista de impresion"
+                onClick={handleOpenListaMatriculadosPrint}
+                disabled={loading || matriculas.length === 0}
+              >
+                <VisibilityIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
           {isDirectGrupoModuloView ? (
-            <Tooltip title={exportingDocenteSheet ? 'Generando Google Sheets...' : 'Abrir Google Sheets del grupo'}>
-              <span>
-                <IconButton
-                  color="primary"
-                  aria-label="Abrir Google Sheets del grupo"
-                  onClick={handleExportDocenteSheet}
-                  disabled={exportingDocenteSheet || loadingFilters || loading}
-                >
-                  <TableChartIcon />
-                </IconButton>
-              </span>
-            </Tooltip>
-          ) : null}
+            <Button
+              variant="outlined"
+              onClick={handleExportDocenteSheet}
+              disabled={exportingDocenteSheet || loadingFilters || loading}
+              startIcon={
+                <Box
+                  component="img"
+                  src="/icons/sheets.png"
+                  alt=""
+                  sx={{ width: 20, height: 20, objectFit: 'contain' }}
+                />
+              }
+            >
+              Descargar
+            </Button>
+          ) : (
+            <Button
+              variant="outlined"
+              onClick={handleExportGeneralSheet}
+              disabled={exportingDocenteSheet || loading}
+              startIcon={
+                <Box
+                  component="img"
+                  src="/icons/sheets.png"
+                  alt=""
+                  sx={{ width: 20, height: 20, objectFit: 'contain' }}
+                />
+              }
+            >
+              Descargar
+            </Button>
+          )}
         </Stack>
       }
       columnToggleItems={columnToggleItems}

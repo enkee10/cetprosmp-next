@@ -6,10 +6,12 @@ import { useAuth } from '@/context/AuthContext';
 import AcordionPrincipal from './AcordionPrincipal/AcordionPrincipal';
 import AcordionIntranet from './AcordionIntranet/AcordionIntranet';
 import { canAccessIntranet } from '@/lib/intranetPermissions';
+import { useIntranetMenuSections } from '@/hooks/useIntranetMenuSections';
 
 export default function AcordionGeneral() {
   const { user } = useAuth();
   const hasIntranetAccess = canAccessIntranet(user?.role, user?.level, user?.roleTitle, user?.email);
+  const { sections: intranetSections } = useIntranetMenuSections();
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
 
   useEffect(() => {
@@ -64,6 +66,7 @@ export default function AcordionGeneral() {
           <AcordionIntranet
             openAccordions={openAccordions}
             handleAccordionChange={handleAccordionChange}
+            sections={intranetSections}
             variant="mobileDrawer"
           />
         </Box>

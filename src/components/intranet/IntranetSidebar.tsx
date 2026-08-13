@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   Box,
@@ -16,8 +16,8 @@ import {
   Typography,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import AcordionIntranet, { IntranetMenuSection, menuSections } from '@/components/Sidebar/AcordionIntranet/AcordionIntranet';
-import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
+import AcordionIntranet from '@/components/Sidebar/AcordionIntranet/AcordionIntranet';
+import { useIntranetMenuSections } from '@/hooks/useIntranetMenuSections';
 
 export default function IntranetSidebar() {
   const [openAccordions, setOpenAccordions] = useState<string[]>(['intranet-registros']);
@@ -25,11 +25,7 @@ export default function IntranetSidebar() {
   const [hoveredSectionId, setHoveredSectionId] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { filterSections } = useIntranetPermissions();
-
-  const visibleSections = useMemo<IntranetMenuSection[]>(() => {
-    return filterSections(menuSections);
-  }, [filterSections]);
+  const { sections: visibleSections } = useIntranetMenuSections();
 
   const hoveredSection = visibleSections.find((section) => section.id === hoveredSectionId) ?? null;
 
@@ -126,13 +122,31 @@ export default function IntranetSidebar() {
         }}
       >
         {!collapsed && (
-          <Box sx={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+          <Box
+            component={Link}
+            href="/intranet"
+            aria-label="Ir a bienvenida de Intranet"
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              textAlign: 'center',
+              color: 'inherit',
+              textDecoration: 'none',
+              borderRadius: 1,
+              py: 0.5,
+              '&:hover .intranet-brand-title': {
+                color: '#d7f3ff',
+              },
+            }}
+          >
             <Typography
+              className="intranet-brand-title"
               sx={{
                 fontSize: 18,
                 fontWeight: 800,
                 letterSpacing: 0,
                 lineHeight: 1,
+                transition: 'color 160ms ease',
               }}
             >
               INTRANET-SMP
@@ -248,22 +262,26 @@ export default function IntranetSidebar() {
                 <List dense disablePadding>
                   {hoveredSection.items.length > 0 ? (
                     hoveredSection.items.map((item) => (
-                      <ListItemButton
-                        key={item.id}
-                        component={Link}
-                        href={item.path}
-                        sx={{
-                          minHeight: 42,
-                          px: 2,
-                          color: 'rgba(247,240,223,0.78)',
-                          '&:hover': { bgcolor: 'rgba(255,255,255,0.08)', color: '#fffaf0' },
-                        }}
-                      >
-                        <ListItemIcon sx={{ minWidth: 34, color: 'inherit', '& svg': { fontSize: 20 } }}>
-                          {item.icon}
-                        </ListItemIcon>
-                        <ListItemText primary={item.title} primaryTypographyProps={{ fontSize: 13.5 }} />
-                      </ListItemButton>
+                      item.divider ? (
+                        <Divider key={item.id} sx={{ my: 0.75, borderColor: 'rgba(247,240,223,0.18)' }} />
+                      ) : (
+                        <ListItemButton
+                          key={item.id}
+                          component={Link}
+                          href={item.path}
+                          sx={{
+                            minHeight: 42,
+                            px: 2,
+                            color: 'rgba(247,240,223,0.78)',
+                            '&:hover': { bgcolor: 'rgba(255,255,255,0.08)', color: '#fffaf0' },
+                          }}
+                        >
+                          <ListItemIcon sx={{ minWidth: 34, color: 'inherit', '& svg': { fontSize: 20 } }}>
+                            {item.icon}
+                          </ListItemIcon>
+                          <ListItemText primary={item.title} primaryTypographyProps={{ fontSize: 13.5 }} />
+                        </ListItemButton>
+                      )
                     ))
                   ) : (
                     <Box sx={{ px: 2, py: 1.5, color: 'rgba(247,240,223,0.58)', fontSize: 13 }}>
@@ -280,7 +298,7 @@ export default function IntranetSidebar() {
           openAccordions={openAccordions}
           handleAccordionChange={handleAccordionChange}
           showRoot={false}
-          sections={menuSections}
+          sections={visibleSections}
         />
       )}
       <Divider />

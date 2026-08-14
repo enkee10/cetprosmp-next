@@ -1512,6 +1512,15 @@ const CHECK_RECIBO_MATRICULA_QUERY = `
   }
 `;
 
+const LIST_RECIBOS_MATRICULA_QUERY = `
+  query ListRecibosMatricula {
+    matriculas(limit: 50000) {
+      id
+      recibo
+    }
+  }
+`;
+
 const CHECK_DUPLICATE_MATRICULA_QUERY = `
   query CheckDuplicateMatricula($userId: Int!, $semestreId: Int!, $paqueteId: Int!) {
     matriculas(where: { userId: { eq: $userId }, semestreId: { eq: $semestreId }, paqueteId: { eq: $paqueteId } }, limit: 1) {
@@ -1520,20 +1529,48 @@ const CHECK_DUPLICATE_MATRICULA_QUERY = `
   }
 `;
 
-const VALID_RECIBO_TEXT_VALUES = new Set(["CONADIS", "BECADO", "POR REGULARIZAR"]);
+const HALF_BECA_RECIBO_LABEL = "1/2 BECA";
+const HALF_BECA_RECIBO_REGULARIZAR = `${HALF_BECA_RECIBO_LABEL} - POR REGULARIZAR`;
+const VALID_RECIBO_TEXT_VALUES = new Set(["CONADIS", "BECADO", "POR REGULARIZAR", HALF_BECA_RECIBO_REGULARIZAR]);
 
 function isRepeatableMatriculaRecibo(recibo: string) {
   return VALID_RECIBO_TEXT_VALUES.has(recibo);
+}
+
+function normalizeMatriculaReciboNumber(compactText: string): string | null {
+  if (!/^\d{1,6}$/.test(compactText)) return null;
+  return compactText.replace(/^0+(?=\d)/, "");
 }
 
 function normalizeMatriculaRecibo(value: unknown): string | null {
   const text = asCleanString(value)?.toUpperCase().replace(/\s+/g, " ") ?? null;
   if (!text) return null;
   if (VALID_RECIBO_TEXT_VALUES.has(text)) return text;
+  const halfBecaMatch = /^1\/2\s*BECA(?:\s*-\s*(.+))?$/.exec(text);
+  if (halfBecaMatch) {
+    const detail = asCleanString(halfBecaMatch[1]);
+    if (!detail) {
+      throw new https.HttpsError("invalid-argument", "Completa el numero de recibo o POR REGULARIZAR para 1/2 BECA.");
+    }
+    const detailCompactText = detail.toUpperCase().replace(/\s+/g, "");
+    if (detailCompactText === "PORREGULARIZAR") return HALF_BECA_RECIBO_REGULARIZAR;
+    const detailNumber = normalizeMatriculaReciboNumber(detailCompactText);
+    if (detailNumber) return `${HALF_BECA_RECIBO_LABEL} - ${detailNumber}`;
+    throw new https.HttpsError("invalid-argument", "El recibo de 1/2 BECA debe ser POR REGULARIZAR o un numero de hasta 6 digitos.");
+  }
   const compactText = text.replace(/\s+/g, "");
   if (compactText === "PORREGULARIZAR") return "POR REGULARIZAR";
-  if (/^\d{1,6}$/.test(compactText)) return compactText.replace(/^0+(?=\d)/, "");
-  throw new https.HttpsError("invalid-argument", "El recibo debe ser CONADIS, BECADO, POR REGULARIZAR o un numero de hasta 6 digitos.");
+  const reciboNumber = normalizeMatriculaReciboNumber(compactText);
+  if (reciboNumber) return reciboNumber;
+  throw new https.HttpsError("invalid-argument", "El recibo debe ser CONADIS, BECADO, POR REGULARIZAR, 1/2 BECA con detalle, o un numero de hasta 6 digitos.");
+}
+
+function getMatriculaReciboNumericKey(value: unknown): string | null {
+  const text = asCleanString(value)?.toUpperCase().replace(/\s+/g, " ") ?? null;
+  if (!text) return null;
+  const halfBecaMatch = /^1\/2\s*BECA\s*-\s*(.+)$/.exec(text);
+  const numericCandidate = halfBecaMatch?.[1] ?? text;
+  return normalizeMatriculaReciboNumber(numericCandidate.replace(/\s+/g, ""));
 }
 
 const sortPaqueteModulos = (items: DataConnectPaqueteModulo[]) =>
@@ -5645,6 +5682,7 @@ async function ensureNoMatriculaDuplicates(
   recibo: string,
   currentMatriculaId?: number | null,
 ) {
+  const reciboNumericKey = getMatriculaReciboNumericKey(recibo);
   const [duplicateResponse, reciboResponse] = await Promise.all([
     dataConnect.executeGraphql<
       { matriculas: Array<{ id: number }> },
@@ -5653,15 +5691,24 @@ async function ensureNoMatriculaDuplicates(
       CHECK_DUPLICATE_MATRICULA_QUERY,
       { variables: { userId, semestreId, paqueteId } },
     ),
-    isRepeatableMatriculaRecibo(recibo)
+    reciboNumericKey
+      ? dataConnect.executeGraphql<{ matriculas: Array<{ id: number; recibo?: string | null }> }, Record<string, never>>(
+        LIST_RECIBOS_MATRICULA_QUERY,
+        { variables: {} },
+      )
+      : isRepeatableMatriculaRecibo(recibo)
       ? Promise.resolve(null)
-      : dataConnect.executeGraphql<{ matriculas: Array<{ id: number }> }, { recibo: string }>(
+      : dataConnect.executeGraphql<{ matriculas: Array<{ id: number; recibo?: string | null }> }, { recibo: string }>(
         CHECK_RECIBO_MATRICULA_QUERY,
         { variables: { recibo } },
       ),
   ]);
 
-  const hasSameRecibo = (reciboResponse?.data.matriculas ?? []).some((item) => item.id !== currentMatriculaId);
+  const hasSameRecibo = reciboNumericKey
+    ? (reciboResponse?.data.matriculas ?? []).some((item) =>
+      item.id !== currentMatriculaId && getMatriculaReciboNumericKey(item.recibo) === reciboNumericKey,
+    )
+    : (reciboResponse?.data.matriculas ?? []).some((item) => item.id !== currentMatriculaId);
   const hasDuplicateMatricula = (duplicateResponse.data.matriculas ?? []).some((item) => item.id !== currentMatriculaId);
 
   if (hasSameRecibo) {

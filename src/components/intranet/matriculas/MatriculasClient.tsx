@@ -612,20 +612,72 @@ const getEmailValidationError = (value: unknown) => (
   isValidEmail(value) ? '' : 'Ingresa un correo electronico valido.'
 );
 
-const RECIBO_OPTIONS = ['CONADIS', 'BECADO', 'POR REGULARIZAR'] as const;
+const HALF_BECA_RECIBO_OPTION = '1/2 BECA';
+const HALF_BECA_RECIBO_SEPARATOR = ' - ';
+const HALF_BECA_RECIBO_REGULARIZAR = 'POR REGULARIZAR';
+const RECIBO_STANDARD_OPTIONS = ['CONADIS', 'BECADO', 'POR REGULARIZAR'] as const;
+const RECIBO_OPTIONS = [...RECIBO_STANDARD_OPTIONS, HALF_BECA_RECIBO_OPTION] as const;
+
+const normalizeReciboNumberValue = (value: unknown) => {
+  const text = String(value ?? '').replace(/\D/g, '').slice(0, 6);
+  return text.replace(/^0+(?=\d)/, '');
+};
+
+const normalizeHalfBecaReciboDetailValue = (value: unknown) => {
+  const text = String(value ?? '').toUpperCase().replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+  const compactText = text.replace(/\s+/g, '');
+  if (compactText === 'PORREGULARIZAR') return HALF_BECA_RECIBO_REGULARIZAR;
+  if ('PORREGULARIZAR'.startsWith(compactText) && /^[A-Z\s]+$/.test(text)) return text;
+  return normalizeReciboNumberValue(compactText);
+};
+
+const buildHalfBecaReciboValue = (detail: unknown) => {
+  const normalizedDetail = normalizeHalfBecaReciboDetailValue(detail);
+  return normalizedDetail
+    ? `${HALF_BECA_RECIBO_OPTION}${HALF_BECA_RECIBO_SEPARATOR}${normalizedDetail}`
+    : HALF_BECA_RECIBO_OPTION;
+};
+
+const parseHalfBecaReciboValue = (value: unknown) => {
+  const text = String(value ?? '').toUpperCase().replace(/\s+/g, ' ').trim();
+  const match = /^1\/2\s*BECA(?:\s*-\s*(.*))?$/.exec(text);
+  if (!match) return null;
+  return {
+    detail: normalizeHalfBecaReciboDetailValue(match[1] ?? ''),
+  };
+};
 
 const normalizeReciboInputValue = (value: unknown) => {
   const text = String(value ?? '').toUpperCase().replace(/\s+/g, ' ').trim();
+  const halfBeca = parseHalfBecaReciboValue(text);
+  if (halfBeca) return buildHalfBecaReciboValue(halfBeca.detail);
   if (RECIBO_OPTIONS.includes(text as typeof RECIBO_OPTIONS[number])) return text;
   const compactText = text.replace(/\s+/g, '');
   if (compactText === 'PORREGULARIZAR') return 'POR REGULARIZAR';
-  if (/^\d+$/.test(compactText)) return compactText.slice(0, 6);
+  if (/^\d+$/.test(compactText)) return normalizeReciboNumberValue(compactText);
   return text;
 };
 
 const isValidReciboValue = (value: unknown) => {
   const text = normalizeReciboInputValue(value);
-  return Boolean(text && (RECIBO_OPTIONS.includes(text as typeof RECIBO_OPTIONS[number]) || /^\d{1,6}$/.test(text)));
+  const halfBeca = parseHalfBecaReciboValue(text);
+  if (halfBeca) {
+    return Boolean(
+      halfBeca.detail
+      && (
+        halfBeca.detail === HALF_BECA_RECIBO_REGULARIZAR
+        || /^\d{1,6}$/.test(halfBeca.detail)
+      ),
+    );
+  }
+  return Boolean(
+    text
+    && (
+      RECIBO_STANDARD_OPTIONS.includes(text as typeof RECIBO_STANDARD_OPTIONS[number])
+      || /^\d{1,6}$/.test(text)
+    ),
+  );
 };
 
 const getPaqueteOptionLabel = (paquete: PaqueteOption) =>
@@ -1613,7 +1665,7 @@ export function MatriculaForm({
       return getEmailValidationError(values.email);
     }
     if (key === 'recibo' && values.recibo.trim() && !isValidReciboValue(values.recibo)) {
-      return 'Ingresa hasta 6 digitos o selecciona CONADIS/BECADO/POR REGULARIZAR.';
+      return 'Ingresa hasta 6 digitos, selecciona CONADIS/BECADO/POR REGULARIZAR, o completa 1/2 BECA.';
     }
     return '';
   }, [backFile, backFileVerificationError, frontFile, frontFileVerificationError, touched, values]);
@@ -1869,7 +1921,7 @@ export function MatriculaForm({
     const emailError = getEmailValidationError(values.email);
     if (emailError) return { field: 'email', message: emailError };
     if (!isValidReciboValue(values.recibo)) {
-      return { field: 'recibo', message: 'El recibo debe ser CONADIS, BECADO, POR REGULARIZAR o hasta 6 digitos.' };
+      return { field: 'recibo', message: 'El recibo debe ser CONADIS, BECADO, POR REGULARIZAR, 1/2 BECA con detalle, o hasta 6 digitos.' };
     }
     return null;
   };
@@ -2241,30 +2293,98 @@ export function MatriculaForm({
     gap: isStandalone ? 1.5 : 2,
   };
   const renderReciboField = (disabled: boolean) => {
-    const input = (
+    const halfBeca = parseHalfBecaReciboValue(values.recibo);
+    const isHalfBeca = Boolean(halfBeca);
+    const reciboMainValue = isHalfBeca ? HALF_BECA_RECIBO_OPTION : values.recibo;
+    const halfBecaDetail = halfBeca?.detail ?? '';
+    const updateReciboMainValue = (nextValue: unknown) => {
+      const normalizedValue = normalizeReciboInputValue(nextValue);
+      if (normalizedValue === HALF_BECA_RECIBO_OPTION) {
+        updateValue('recibo', buildHalfBecaReciboValue(halfBecaDetail));
+        return;
+      }
+      updateValue('recibo', normalizedValue);
+    };
+    const updateHalfBecaDetail = (nextValue: unknown) => {
+      updateValue('recibo', buildHalfBecaReciboValue(nextValue));
+    };
+    const detailInputLineSx = isStandalone
+      ? {
+        ...inputLineSx,
+        '& .MuiInputBase-root': {
+          width: '100%',
+          transform: 'translateY(-5px)',
+        },
+      }
+      : undefined;
+    const reciboError = getFieldError('recibo');
+    const mainInput = (
       <Autocomplete
         freeSolo
         options={[...RECIBO_OPTIONS]}
-        value={values.recibo || null}
-        inputValue={values.recibo}
+        value={reciboMainValue || null}
+        inputValue={reciboMainValue}
         disabled={disabled}
-        onInputChange={(_event, nextValue) => updateValue('recibo', normalizeReciboInputValue(nextValue))}
-        onChange={(_event, nextValue) => updateValue('recibo', normalizeReciboInputValue(nextValue))}
+        onInputChange={(_event, nextValue) => updateReciboMainValue(nextValue)}
+        onChange={(_event, nextValue) => updateReciboMainValue(nextValue)}
         renderInput={(params) => (
           <TextField
             {...params}
             label={requiredLabel('Numero de recibo')}
             variant={textFieldVariant}
-            placeholder={isStandalone ? 'Tu respuesta' : undefined}
+            placeholder="Hasta 6 digitos"
             sx={isStandalone ? inputLineSx : undefined}
             onBlur={() => markTouched('recibo')}
-            error={Boolean(getFieldError('recibo'))}
-            helperText={standaloneHelperText('recibo')}
+            error={Boolean(reciboError) && !isHalfBeca}
+            helperText={!isHalfBeca ? standaloneHelperText('recibo') : ''}
             fullWidth
           />
         )}
       />
     );
+    const halfBecaDetailInput = isHalfBeca ? (
+      <Autocomplete
+        freeSolo
+        options={[HALF_BECA_RECIBO_REGULARIZAR]}
+        value={halfBecaDetail || null}
+        inputValue={halfBecaDetail}
+        disabled={disabled}
+        onInputChange={(_event, nextValue) => updateHalfBecaDetail(nextValue)}
+        onChange={(_event, nextValue) => updateHalfBecaDetail(nextValue)}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Numero"
+            variant={textFieldVariant}
+            placeholder="Hasta 6 digitos"
+            sx={detailInputLineSx}
+            onBlur={() => markTouched('recibo')}
+            error={Boolean(reciboError)}
+            helperText={standaloneHelperText('recibo')}
+            fullWidth
+            inputProps={{
+              ...params.inputProps,
+              inputMode: 'numeric',
+              maxLength: HALF_BECA_RECIBO_REGULARIZAR.length,
+            }}
+          />
+        )}
+      />
+    ) : null;
+    const input = halfBecaDetailInput ? (
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={1.25}
+        alignItems={{ xs: 'stretch', sm: isStandalone ? 'flex-start' : 'flex-start' }}
+      >
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {mainInput}
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: 190 }, flexShrink: 0 }}>
+          {halfBecaDetailInput}
+        </Box>
+      </Stack>
+    ) : mainInput;
 
     return isStandalone ? <Box data-matricula-field="recibo" sx={standaloneCardSx('recibo')}>{input}</Box> : (
       <Box data-matricula-field="recibo">{input}</Box>

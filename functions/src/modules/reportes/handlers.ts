@@ -16,8 +16,10 @@ import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
 
 type ReportDocumentType = "acta" | "nomina";
 
-const USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY =
-  "general.usarAvataresEnCertificadosTitulos";
+const SHOW_STUDENT_AVATAR_IN_CERTIFICATES_KEY =
+  "visualizaciones.visualizarAvatarEstudianteCertificados";
+const SHOW_STUDENT_AVATAR_IN_TITLES_KEY =
+  "visualizaciones.visualizarAvatarEstudianteTitulos";
 
 type ReportInput = {
   tipoDocumento?: unknown;
@@ -2773,6 +2775,12 @@ function certificadoTituloStorageBase(tipoDocumento: CertificadoTituloTipo, grup
   return `documentos/certificados-titulos/${tipoDocumento}-${grupoModuloId}-${moduloEstudianteId}`;
 }
 
+function certificadoTituloAvatarSettingKey(tipoDocumento: CertificadoTituloTipo) {
+  return tipoDocumento === "titulo"
+    ? SHOW_STUDENT_AVATAR_IN_TITLES_KEY
+    : SHOW_STUDENT_AVATAR_IN_CERTIFICATES_KEY;
+}
+
 type CertificateUnitTableRow = {
   competencia: string;
   unidad: string;
@@ -2973,7 +2981,7 @@ async function generateCertificadoPlanEstudios(input: {
   }
 
   const { buffer: templateBuffer } = await ensureTemplateInStorage(TEMPLATES.certificadoPlanEstudios);
-  const useAvatars = await getBooleanAppSetting(USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY, false);
+  const useAvatars = await getBooleanAppSetting(certificadoTituloAvatarSettingKey("certificado"), true);
   const avatarUrl = useAvatars ? cleanText(student.matricula?.user?.avatar || "") : "";
   const xlsxBuffer = await applyCertificatePlanEstudiosUpdates(
     templateBuffer,

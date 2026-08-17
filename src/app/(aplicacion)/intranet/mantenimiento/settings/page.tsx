@@ -99,6 +99,9 @@ const normalizeDraftSettings = (value: Partial<AppSettings> | null | undefined):
       ...defaultAppSettings.visualizaciones,
       ...value?.visualizaciones,
       mostrarImagenAvatarEstudiantesEnListas: value?.visualizaciones?.mostrarImagenAvatarEstudiantesEnListas !== false,
+      visualizarAvatarEstudianteCertificados: value?.visualizaciones?.visualizarAvatarEstudianteCertificados !== false,
+      visualizarAvatarEstudianteFichaMatricula: value?.visualizaciones?.visualizarAvatarEstudianteFichaMatricula !== false,
+      visualizarAvatarEstudianteTitulos: value?.visualizaciones?.visualizarAvatarEstudianteTitulos !== false,
       usarGeneradorImagenesAvatar: activarReconocimientoDni
         ? value?.visualizaciones?.usarGeneradorImagenesAvatar !== false
         : false,
@@ -312,25 +315,6 @@ export default function SettingsPage() {
               Generar codigos de inscripcion
             </Button>
           </Box>
-
-          <FormControlLabel
-            control={
-              <Switch
-                checked={safeDraft.general.usarAvataresEnCertificadosTitulos}
-                disabled={loading || saving || !canEditSettings}
-                onChange={(event) =>
-                  setDraft((current) => ({
-                    ...current,
-                    general: {
-                      ...normalizeDraftSettings(current).general,
-                      usarAvataresEnCertificadosTitulos: event.target.checked,
-                    },
-                  }))
-                }
-              />
-            }
-            label="Usar avatares en certificados y titulos"
-          />
 
           <FormControlLabel
             control={
@@ -603,6 +587,63 @@ export default function SettingsPage() {
               />
             }
             label="Mostrar imagen de avatar de estudiantes en listas"
+          />
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={safeDraft.visualizaciones.visualizarAvatarEstudianteCertificados}
+                disabled={loading || saving || !canEditSettings}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    visualizaciones: {
+                      ...normalizeDraftSettings(current).visualizaciones,
+                      visualizarAvatarEstudianteCertificados: event.target.checked,
+                    },
+                  }))
+                }
+              />
+            }
+            label="Visualizar avatar del estudiante en certificados"
+          />
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={safeDraft.visualizaciones.visualizarAvatarEstudianteFichaMatricula}
+                disabled={loading || saving || !canEditSettings}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    visualizaciones: {
+                      ...normalizeDraftSettings(current).visualizaciones,
+                      visualizarAvatarEstudianteFichaMatricula: event.target.checked,
+                    },
+                  }))
+                }
+              />
+            }
+            label="Visualizar avatar del estudiante en ficha de matricula"
+          />
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={safeDraft.visualizaciones.visualizarAvatarEstudianteTitulos}
+                disabled={loading || saving || !canEditSettings}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    visualizaciones: {
+                      ...normalizeDraftSettings(current).visualizaciones,
+                      visualizarAvatarEstudianteTitulos: event.target.checked,
+                    },
+                  }))
+                }
+              />
+            }
+            label="Visualizar avatar en titulos"
           />
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>

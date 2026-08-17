@@ -15,6 +15,12 @@ const AVATAR_GENERATION_MODEL_KEY =
   "visualizaciones.modeloGeneradorImagenesAvatar";
 const SHOW_STUDENT_AVATARS_IN_LISTS_KEY =
   "visualizaciones.mostrarImagenAvatarEstudiantesEnListas";
+const SHOW_STUDENT_AVATAR_IN_CERTIFICATES_KEY =
+  "visualizaciones.visualizarAvatarEstudianteCertificados";
+const SHOW_STUDENT_AVATAR_IN_FICHA_MATRICULA_KEY =
+  "visualizaciones.visualizarAvatarEstudianteFichaMatricula";
+const SHOW_STUDENT_AVATAR_IN_TITLES_KEY =
+  "visualizaciones.visualizarAvatarEstudianteTitulos";
 const USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY =
   "general.usarAvataresEnCertificadosTitulos";
 const USE_DNI_RECOGNITION_KEY =
@@ -60,6 +66,9 @@ const DEFAULT_SETTINGS = {
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: false,
     mostrarImagenAvatarEstudiantesEnListas: true,
+    visualizarAvatarEstudianteCertificados: true,
+    visualizarAvatarEstudianteFichaMatricula: true,
+    visualizarAvatarEstudianteTitulos: true,
     usarGeneradorImagenesAvatar: true,
     modeloGeneradorImagenesAvatar: "gemini-3.1-flash-image-512",
   },
@@ -176,6 +185,24 @@ const SETTING_DEFINITIONS: Record<string, SettingDefinition> = {
   [SHOW_STUDENT_AVATARS_IN_LISTS_KEY]: {
     section: "visualizaciones",
     label: "Mostrar imagen de avatar de estudiantes en listas",
+    valueType: "boolean",
+    defaultValue: true,
+  },
+  [SHOW_STUDENT_AVATAR_IN_CERTIFICATES_KEY]: {
+    section: "visualizaciones",
+    label: "Visualizar avatar del estudiante en certificados",
+    valueType: "boolean",
+    defaultValue: true,
+  },
+  [SHOW_STUDENT_AVATAR_IN_FICHA_MATRICULA_KEY]: {
+    section: "visualizaciones",
+    label: "Visualizar avatar del estudiante en ficha de matricula",
+    valueType: "boolean",
+    defaultValue: true,
+  },
+  [SHOW_STUDENT_AVATAR_IN_TITLES_KEY]: {
+    section: "visualizaciones",
+    label: "Visualizar avatar en titulos",
     valueType: "boolean",
     defaultValue: true,
   },
@@ -359,6 +386,15 @@ function buildSettingsResponse(items: DataConnectAppSetting[]) {
     }
     if (item.settingKey === SHOW_STUDENT_AVATARS_IN_LISTS_KEY) {
       settings.visualizaciones.mostrarImagenAvatarEstudiantesEnListas = item.boolValue !== false;
+    }
+    if (item.settingKey === SHOW_STUDENT_AVATAR_IN_CERTIFICATES_KEY) {
+      settings.visualizaciones.visualizarAvatarEstudianteCertificados = item.boolValue !== false;
+    }
+    if (item.settingKey === SHOW_STUDENT_AVATAR_IN_FICHA_MATRICULA_KEY) {
+      settings.visualizaciones.visualizarAvatarEstudianteFichaMatricula = item.boolValue !== false;
+    }
+    if (item.settingKey === SHOW_STUDENT_AVATAR_IN_TITLES_KEY) {
+      settings.visualizaciones.visualizarAvatarEstudianteTitulos = item.boolValue !== false;
     }
   });
 
@@ -572,6 +608,12 @@ export const saveAppSettings = https.onCall(async (data, context) => {
     : DEFAULT_SETTINGS.visualizaciones.modeloGeneradorImagenesAvatar;
   const mostrarImagenAvatarEstudiantesEnListas =
     visualizaciones?.mostrarImagenAvatarEstudiantesEnListas !== false;
+  const visualizarAvatarEstudianteCertificados =
+    visualizaciones?.visualizarAvatarEstudianteCertificados !== false;
+  const visualizarAvatarEstudianteFichaMatricula =
+    visualizaciones?.visualizarAvatarEstudianteFichaMatricula !== false;
+  const visualizarAvatarEstudianteTitulos =
+    visualizaciones?.visualizarAvatarEstudianteTitulos !== false;
   const normalizedSemestresConsultaIds = semestreActualId
     ? Array.from(new Set([semestreActualId, ...semestresConsultaIds]))
     : semestresConsultaIds;
@@ -637,6 +679,18 @@ export const saveAppSettings = https.onCall(async (data, context) => {
       SHOW_STUDENT_AVATARS_IN_LISTS_KEY,
       mostrarImagenAvatarEstudiantesEnListas,
     );
+    await upsertSetting(
+      SHOW_STUDENT_AVATAR_IN_CERTIFICATES_KEY,
+      visualizarAvatarEstudianteCertificados,
+    );
+    await upsertSetting(
+      SHOW_STUDENT_AVATAR_IN_FICHA_MATRICULA_KEY,
+      visualizarAvatarEstudianteFichaMatricula,
+    );
+    await upsertSetting(
+      SHOW_STUDENT_AVATAR_IN_TITLES_KEY,
+      visualizarAvatarEstudianteTitulos,
+    );
 
     return {
       settings: {
@@ -659,6 +713,9 @@ export const saveAppSettings = https.onCall(async (data, context) => {
         visualizaciones: {
           usarRecorteFotografiaComoAvatarEstudiantes,
           mostrarImagenAvatarEstudiantesEnListas,
+          visualizarAvatarEstudianteCertificados,
+          visualizarAvatarEstudianteFichaMatricula,
+          visualizarAvatarEstudianteTitulos,
           usarGeneradorImagenesAvatar,
           modeloGeneradorImagenesAvatar,
         },

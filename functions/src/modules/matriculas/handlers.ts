@@ -854,6 +854,16 @@ const MATRICULA_LIST_FIELDS = `
   user {
     ${MATRICULA_LIST_USER_FIELDS}
   }
+  responsableUser {
+    id
+    documentId
+    username
+    nombre
+    apellidoPaterno
+    apellidoMaterno
+    email
+    correoInstitucional
+  }
   paquete {
     id
     titulo
@@ -889,6 +899,7 @@ const EDITOR_DOCUMENTOS_MATRICULA_FIELDS = `
   fecha
   semestreId
   userId
+  responsableUserId
   user {
     id
     documentId
@@ -905,6 +916,16 @@ const EDITOR_DOCUMENTOS_MATRICULA_FIELDS = `
     dniImagenFrenteProcesadaUrl
     dniImagenReversoProcesadaUrl
   }
+  responsableUser {
+    id
+    documentId
+    username
+    nombre
+    apellidoPaterno
+    apellidoMaterno
+    email
+    correoInstitucional
+  }
   semestre {
     id
     titulo
@@ -913,7 +934,7 @@ const EDITOR_DOCUMENTOS_MATRICULA_FIELDS = `
 
 const LIST_EDITOR_DOCUMENTOS_MATRICULAS_QUERY = `
   query ListEditorDocumentosMatriculas($semestreId: Int!) {
-    matriculas(where: { semestreId: { eq: $semestreId } }, limit: 60, orderBy: [{id: DESC}]) {
+    matriculas(where: { semestreId: { eq: $semestreId } }, limit: 30, orderBy: [{id: DESC}]) {
       ${EDITOR_DOCUMENTOS_MATRICULA_FIELDS}
     }
   }
@@ -4989,8 +5010,10 @@ export const listEditorDocumentosMatriculas = https.onCall(async (data, context)
     const matriculas = (response.data.matriculas ?? [])
       .filter((matricula) => Number(matricula.semestreId) === semestreId)
       .slice()
-      .sort((a, b) => b.id - a.id);
-    return { matriculas: await hydrateMatriculaListAvatarTiny(matriculas), semestreId };
+      .sort((a, b) => b.id - a.id)
+      .slice(0, 30);
+    const matriculasWithModuloLinks = await hydrateMatriculaListModuloLinks(matriculas);
+    return { matriculas: await hydrateMatriculaListAvatarTiny(matriculasWithModuloLinks), semestreId };
   } catch (error) {
     console.error("Error in listEditorDocumentosMatriculas:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar los documentos.");

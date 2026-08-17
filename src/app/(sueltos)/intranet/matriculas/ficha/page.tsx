@@ -7,6 +7,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useSearchParams } from 'next/navigation';
 import { app } from '@/lib/firebase';
 import { formatDateOnly, formatDateTimeInAppTimeZone, getDateOnlyLocalDate } from '@/lib/dateOnly';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import PrintDocumentViewer, {
   cmToMm,
   getA4PageSizeMm,
@@ -523,7 +524,7 @@ function FichaMatriculaModularTemplate({
               </Box>
             </Box>
             <Box className="photo-box">
-              {avatar ? <Box component="img" src={avatar} alt="Foto" /> : 'Foto'}
+              {avatar ? <Box component="img" src={avatar} alt="Foto" /> : '\u00a0'}
             </Box>
           </Box>
 
@@ -842,7 +843,7 @@ function FichaMatriculaModularTemplateV2({
                 EDUCACION TECNICO - PRODUCTIVA
               </Box>
             </Box>
-            <Box className="modular-photo-box">{avatar ? <Box component="img" src={avatar} alt="Foto" /> : 'Foto'}</Box>
+            <Box className="modular-photo-box">{avatar ? <Box component="img" src={avatar} alt="Foto" /> : '\u00a0'}</Box>
           </Box>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: '46mm 1fr', gap: '31mm', mt: '5.5mm', mb: '5.8mm' }}>
@@ -1205,7 +1206,7 @@ function FichaMatriculaModularTemplateV3({
                 EDUCACION TECNICO - PRODUCTIVA
               </Box>
             </Box>
-            <Box className="photo-box">{avatar ? <Box component="img" src={avatar} alt="Foto" /> : 'Foto'}</Box>
+            <Box className="photo-box">{avatar ? <Box component="img" src={avatar} alt="Foto" /> : '\u00a0'}</Box>
           </Box>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: '45mm 1fr', gap: '31mm', mt: '5.2mm', mb: '5.2mm' }}>
@@ -1512,6 +1513,7 @@ export default function FichaMatriculaProgramaPage() {
   const matriculaId = Number(searchParams.get('matriculaId') || 0);
   const auth = getAuth(app);
   const functions = useMemo(() => getFunctions(app), []);
+  const { settings, loading: loadingSettings } = useAppSettings();
   const [matricula, setMatricula] = useState<MatriculaFicha | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1570,7 +1572,8 @@ export default function FichaMatriculaProgramaPage() {
   const modulo = grupoModulo?.modulo ?? null;
   const carrera = modulo?.plan?.carrera ?? null;
   const user = matricula?.user ?? null;
-  const fichaAvatar = asValue(user?.avatarMediano || user?.avatar);
+  const mostrarAvatarFicha = settings.visualizaciones.visualizarAvatarEstudianteFichaMatricula !== false;
+  const fichaAvatar = mostrarAvatarFicha ? asValue(user?.avatarMediano || user?.avatar) : '';
   const tipoCarrera = normalizeText(carrera?.tipoCarrera?.nombre);
   const isOpcionOcupacional = tipoCarrera.includes('opcion') || tipoCarrera.includes('ocupacional');
   const programaNombre = asUpper(carrera?.titulo || carrera?.nombre || modulo?.plan?.planEstudio);
@@ -1694,9 +1697,9 @@ export default function FichaMatriculaProgramaPage() {
       onScalePercentChange={setScalePercent}
       minScalePercent={55}
       maxScalePercent={100}
-      loading={loading}
+      loading={loading || loadingSettings}
       error={error}
-      canPrint={Boolean(matricula)}
+      canPrint={Boolean(matricula) && !loadingSettings}
       pageSizeMm={pageSizeMm}
       contentMinWidthMm={pageSizeMm.width}
     >

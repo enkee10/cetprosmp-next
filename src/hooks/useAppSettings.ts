@@ -25,6 +25,9 @@ export type AppSettings = {
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: boolean;
     mostrarImagenAvatarEstudiantesEnListas: boolean;
+    visualizarAvatarEstudianteCertificados: boolean;
+    visualizarAvatarEstudianteFichaMatricula: boolean;
+    visualizarAvatarEstudianteTitulos: boolean;
     usarGeneradorImagenesAvatar: boolean;
     modeloGeneradorImagenesAvatar: string;
   };
@@ -50,6 +53,9 @@ export const defaultAppSettings: AppSettings = {
   visualizaciones: {
     usarRecorteFotografiaComoAvatarEstudiantes: false,
     mostrarImagenAvatarEstudiantesEnListas: true,
+    visualizarAvatarEstudianteCertificados: true,
+    visualizarAvatarEstudianteFichaMatricula: true,
+    visualizarAvatarEstudianteTitulos: true,
     usarGeneradorImagenesAvatar: true,
     modeloGeneradorImagenesAvatar: 'gemini-3.1-flash-image-512',
   },
@@ -97,6 +103,9 @@ const normalizeSettings = (value: Partial<AppSettings> | undefined | null): AppS
       value?.visualizaciones?.usarRecorteFotografiaComoAvatarEstudiantes,
     ),
     mostrarImagenAvatarEstudiantesEnListas: value?.visualizaciones?.mostrarImagenAvatarEstudiantesEnListas !== false,
+    visualizarAvatarEstudianteCertificados: value?.visualizaciones?.visualizarAvatarEstudianteCertificados !== false,
+    visualizarAvatarEstudianteFichaMatricula: value?.visualizaciones?.visualizarAvatarEstudianteFichaMatricula !== false,
+    visualizarAvatarEstudianteTitulos: value?.visualizaciones?.visualizarAvatarEstudianteTitulos !== false,
     usarGeneradorImagenesAvatar: value?.visualizaciones?.usarGeneradorImagenesAvatar !== false,
     modeloGeneradorImagenesAvatar: [
       'gemini-3.1-flash-lite-image-1024',

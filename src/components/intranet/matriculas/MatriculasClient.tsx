@@ -1005,6 +1005,13 @@ const matriculaBelongsToGrupoModulo = (
   });
 };
 
+const getMatriculaGrupoListName = (matricula: MatriculaListItem) => {
+  const nombres = (matricula.modulosEstudiantes || [])
+    .map((link) => asString(link.grupoModulo?.grupo?.nombreDisplay).trim())
+    .filter(Boolean);
+  return Array.from(new Set(nombres)).join(' / ');
+};
+
 const toMatriculaPrintRow = (matricula: MatriculaListItem) => ({
   id: matricula.id,
   apellidosNombres: studentListName(matricula.user),
@@ -2940,8 +2947,9 @@ export function MatriculasPage() {
       documento: true,
       celular: true,
       periodo: false,
-      modulo: true,
+      grupo: true,
       recibo: true,
+      responsableFormulario: false,
       archivado: false,
       actions: true,
     });
@@ -3687,6 +3695,7 @@ export function MatriculasPage() {
         headerName: 'Estudiante',
         flex: 1.4,
         minWidth: 220,
+        maxWidth: 220,
         valueGetter: (_value, row: MatriculaListItem) => studentListName(row.user),
         renderCell: (params) => {
           const row = params.row as MatriculaListItem;
@@ -3749,12 +3758,11 @@ export function MatriculasPage() {
         valueGetter: (_value, row: MatriculaListItem) => row.user?.celular || '',
       },
       {
-        field: 'modulo',
-        headerName: 'Modulo',
+        field: 'grupo',
+        headerName: 'Grupo',
         flex: 1.2,
         minWidth: 190,
-        valueGetter: (_value, row: MatriculaListItem) =>
-          row.paquete?.titulo || (row.paqueteId ? `Modulo ${row.paqueteId}` : ''),
+        valueGetter: (_value, row: MatriculaListItem) => getMatriculaGrupoListName(row),
       },
       {
         field: 'recibo',
@@ -3763,6 +3771,13 @@ export function MatriculasPage() {
         minWidth: 70,
         maxWidth: 70,
         valueGetter: (_value, row: MatriculaListItem) => row.recibo || '',
+      },
+      {
+        field: 'responsableFormulario',
+        headerName: 'Responsable (formulario)',
+        flex: 1,
+        minWidth: 180,
+        valueGetter: (_value, row: MatriculaListItem) => responsableUserName(row.responsableUser),
       },
       {
         field: 'archivado',

@@ -30,7 +30,7 @@ import ThreeSixtyIcon from '@mui/icons-material/ThreeSixty';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
+import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
 import { useSearchParams } from 'next/navigation';
 import { httpsCallable } from 'firebase/functions';
 import CameraCaptureDialog from '@/components/intranet/CameraCaptureDialog';
@@ -62,11 +62,31 @@ interface EditorUser {
   dniImagenReversoProcesadaUrl?: string | null;
 }
 
+interface EditorResponsableUser {
+  id?: number | null;
+  username?: string | null;
+  nombre?: string | null;
+  apellidoPaterno?: string | null;
+  apellidoMaterno?: string | null;
+  email?: string | null;
+  correoInstitucional?: string | null;
+}
+
 interface EditorMatricula {
   id: number;
   semestreId?: number | null;
   userId?: number | null;
+  responsableUserId?: number | null;
   user?: EditorUser | null;
+  responsableUser?: EditorResponsableUser | null;
+  modulosEstudiantes?: Array<{
+    grupoModulo?: {
+      nombre?: string | null;
+      grupo?: {
+        nombreDisplay?: string | null;
+      } | null;
+    } | null;
+  }>;
 }
 
 interface Point {
@@ -102,6 +122,21 @@ interface EditorImagenesContentProps {
 
 const studentName = (user?: EditorUser | null) =>
   [user?.apellidoPaterno, user?.apellidoMaterno, user?.nombre].filter(Boolean).join(' ').trim() || user?.email || '';
+
+const editorMatriculaGroupName = (matricula?: EditorMatricula | null) =>
+  matricula?.modulosEstudiantes
+    ?.map((link) => String(link.grupoModulo?.grupo?.nombreDisplay || '').trim())
+    .find(Boolean) || '';
+
+const responsableFormularioName = (user?: EditorResponsableUser | null) =>
+  user?.username
+  || [user?.apellidoPaterno, user?.apellidoMaterno, user?.nombre]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+  || user?.correoInstitucional
+  || user?.email
+  || '';
 
 const getSmallProcessedDniUrl = (url: string): string => {
   if (!url) return '';
@@ -290,6 +325,15 @@ export function EditorDocumentosPage() {
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuRow, setMenuRow] = useState<EditorMatricula | null>(null);
   const [generatingAvatarId, setGeneratingAvatarId] = useState<number | null>(null);
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
+    avatar: true,
+    estudiante: true,
+    documento: true,
+    dniFrente: true,
+    dniReverso: true,
+    responsableFormulario: false,
+    acciones: true,
+  });
 
   const semestreActualId = Number(settings.general.semestreActualId || 0);
 
@@ -389,7 +433,6 @@ export function EditorDocumentosPage() {
 
   const columns = useMemo<GridColDef<EditorMatricula>[]>(
     () => [
-      { field: 'numero', headerName: '#', width: 70, valueGetter: (_value, row) => row.id },
       {
         field: 'avatar',
         headerName: 'Avatar',
@@ -409,7 +452,22 @@ export function EditorDocumentosPage() {
         headerName: 'Estudiante',
         flex: 1,
         minWidth: 220,
-        valueGetter: (_value, row) => studentName(row.user),
+        valueGetter: (_value, row) => [studentName(row.user), editorMatriculaGroupName(row)].filter(Boolean).join(' '),
+        renderCell: ({ row }) => {
+          const groupName = editorMatriculaGroupName(row);
+          return (
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.25 }}>
+                {studentName(row.user)}
+              </Typography>
+              {groupName ? (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.25 }}>
+                  {groupName}
+                </Typography>
+              ) : null}
+            </Box>
+          );
+        },
       },
       {
         field: 'documento',
@@ -468,8 +526,29 @@ export function EditorDocumentosPage() {
           </IconButton>
         ),
       },
+      {
+        field: 'responsableFormulario',
+        headerName: 'Responsable (formulario)',
+        flex: 1,
+        minWidth: 180,
+        valueGetter: (_value, row) => responsableFormularioName(row.responsableUser),
+      },
     ],
     [generatingAvatarId, openEditor],
+  );
+
+  const columnToggleItems = useMemo(
+    () =>
+      columns.map((column) => ({
+        field: column.field,
+        label:
+          typeof column.headerName === 'string' && column.headerName.trim().length > 0
+            ? column.headerName
+            : column.field,
+        checked: columnVisibilityModel[column.field] !== false,
+        disabled: column.field === 'acciones',
+      })),
+    [columnVisibilityModel, columns],
   );
 
   return (
@@ -477,10 +556,17 @@ export function EditorDocumentosPage() {
       title="Editor de Documentos"
       message={message}
       commands={<Typography variant="body2" color="text.secondary">Semestre actual</Typography>}
+      columnToggleItems={columnToggleItems}
+      onToggleColumn={(field, checked) =>
+        setColumnVisibilityModel((prev) => ({ ...prev, [field]: checked }))
+      }
+      columnToggleLabel="Campos"
     >
       <IntranetDataGrid
         rows={matriculas}
         columns={columns}
+        columnVisibilityModel={columnVisibilityModel}
+        onColumnVisibilityModelChange={setColumnVisibilityModel}
         loading={loading}
         getRowId={(row) => row.id}
         rowHeight={86}

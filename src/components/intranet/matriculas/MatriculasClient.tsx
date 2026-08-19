@@ -14,10 +14,8 @@ import {
   IconButton,
   InputAdornment,
   InputLabel,
-  ListItemText,
   Menu,
   MenuItem,
-  OutlinedInput,
   Radio,
   RadioGroup,
   Select,
@@ -51,6 +49,7 @@ import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import CameraCaptureDialog from '@/components/intranet/CameraCaptureDialog';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
+import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 import Modal1 from '@/components/Modal1';
 import { useAuth } from '@/context/AuthContext';
 import { useAppSettings, type AppSettings } from '@/hooks/useAppSettings';
@@ -101,6 +100,11 @@ function mergeCurrentSemestrePlaceholder(
     return options;
   }
   return [{ id: currentId, titulo: `Semestre ${currentId}`, placeholder: true }, ...options];
+}
+
+function truncateMiddleText(value: string, maxLength = 30) {
+  if (value.length <= maxLength) return value;
+  return `${value.slice(0, maxLength)}...`;
 }
 
 interface PaqueteOption {
@@ -1324,6 +1328,13 @@ export function MatriculaForm({
     }, 0);
   }, []);
 
+  const scrollToFormMessage = useCallback(() => {
+    window.setTimeout(() => {
+      const target = formRootRef.current?.querySelector<HTMLElement>('[data-matricula-form-message]');
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }, []);
+
   const openCameraCapture = useCallback((side: 'frente' | 'reverso') => {
     setCameraSide(side);
   }, []);
@@ -2023,6 +2034,7 @@ export function MatriculaForm({
       onSaved({ id: result.data.id });
     } catch (error) {
       setMessage(getCallableErrorMessage(error, isEditing ? 'No se pudo actualizar la matricula.' : 'No se pudo registrar la matricula.'));
+      scrollToFormMessage();
     } finally {
       setLoading(false);
     }
@@ -2109,7 +2121,7 @@ export function MatriculaForm({
               )}
             >
               <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {file?.name || (side === 'frente' ? 'dni-frente' : 'dni-reverso')}
+                {truncateMiddleText(file?.name || (side === 'frente' ? 'dni-frente' : 'dni-reverso'))}
               </Box>
             </Button>
           ) : (
@@ -2345,6 +2357,15 @@ export function MatriculaForm({
             error={Boolean(reciboError) && !isHalfBeca}
             helperText={!isHalfBeca ? standaloneHelperText('recibo') : ''}
             fullWidth
+            inputProps={{
+              ...params.inputProps,
+              autoComplete: 'off',
+              autoCorrect: 'off',
+              autoCapitalize: 'off',
+              spellCheck: false,
+              inputMode: 'text',
+              name: 'matricula-recibo-control',
+            }}
           />
         )}
       />
@@ -2371,7 +2392,12 @@ export function MatriculaForm({
             fullWidth
             inputProps={{
               ...params.inputProps,
+              autoComplete: 'off',
+              autoCorrect: 'off',
+              autoCapitalize: 'off',
+              spellCheck: false,
               inputMode: 'numeric',
+              name: 'matricula-recibo-detalle',
               maxLength: HALF_BECA_RECIBO_REGULARIZAR.length,
             }}
           />
@@ -2505,7 +2531,9 @@ export function MatriculaForm({
     <Box ref={formRootRef} sx={{ position: 'relative' }}>
       <FormLoadingOverlay open={loading} variant="contained" />
       <Stack spacing={isStandalone ? 1.5 : 2.5}>
-        <AutoDismissAlert message={message} severity="error" sx={{ whiteSpace: 'pre-wrap' }} />
+        <Box data-matricula-form-message>
+          <AutoDismissAlert message={message} severity="error" sx={{ whiteSpace: 'pre-wrap' }} />
+        </Box>
         <AutoDismissAlert message={successMessage} severity="success" sx={{ whiteSpace: 'pre-wrap' }} />
         <Box sx={questionCardSx}>
         <Typography variant="subtitle2" fontWeight={700} gutterBottom>
@@ -3602,10 +3630,8 @@ export function MatriculasPage() {
     setPaginationModel((current) => ({ ...current, page: 0 }));
   }, []);
 
-  const handleGrupoModuloFilterChange = useCallback((event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value;
-    const nextValues = typeof value === 'string' ? value.split(',') : value;
-    setSelectedGrupoModuloFilterIds(nextValues.includes('__ALL__') ? [] : nextValues);
+  const handleGrupoModuloFilterChange = useCallback((nextValues: string[]) => {
+    setSelectedGrupoModuloFilterIds(nextValues);
     setPaginationModel((current) => ({ ...current, page: 0 }));
   }, []);
 
@@ -3853,38 +3879,29 @@ export function MatriculasPage() {
                   ))}
                 </Select>
               </FormControl>
-              <FormControl size="small" sx={{ width: 320, maxWidth: '100%' }}>
-                <InputLabel id="matriculas-grupo-modulo-filter-label">Grupo-modulo</InputLabel>
-                <Select
-                  labelId="matriculas-grupo-modulo-filter-label"
-                  multiple
-                  label="Grupo-modulo"
-                  value={selectedGrupoModuloFilterIds}
-                  onChange={handleGrupoModuloFilterChange}
-                  input={<OutlinedInput label="Grupo-modulo" />}
-                  disabled={loadingFilters || grupoModuloFilterOptions.length === 0}
-                  renderValue={(selected) => {
-                    if (selected.length === 0) return 'Todos';
-                    if (selected.length === 1) return grupoModuloFilterLabelById.get(selected[0]) || selected[0];
-                    return `${selected.length} seleccionados`;
-                  }}
-                  MenuProps={{ disableScrollLock: true }}
-                >
-                  <MenuItem value="__ALL__">
-                    <Checkbox checked={selectedGrupoModuloFilterIds.length === 0} />
-                    <ListItemText primary="Todos" />
-                  </MenuItem>
-                  {grupoModuloFilterOptions.map((grupoModulo) => {
-                    const id = String(grupoModulo.id);
-                    return (
-                      <MenuItem key={id} value={id}>
-                        <Checkbox checked={selectedGrupoModuloFilterIds.includes(id)} />
-                        <ListItemText primary={getGrupoModuloFilterLabel(grupoModulo)} />
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
+              <MultiSelectWithActions
+                label="Grupo-modulo"
+                labelId="matriculas-grupo-modulo-filter-label"
+                value={selectedGrupoModuloFilterIds}
+                onChange={handleGrupoModuloFilterChange}
+                disabled={loadingFilters || grupoModuloFilterOptions.length === 0}
+                sx={{ width: 320, maxWidth: '100%' }}
+                options={grupoModuloFilterOptions.map((grupoModulo) => ({
+                  value: String(grupoModulo.id),
+                  label: getGrupoModuloFilterLabel(grupoModulo),
+                }))}
+                allOption={{
+                  value: '__ALL__',
+                  label: 'Todos',
+                  isSelected: (selected) => selected.length === 0,
+                  getValue: () => [],
+                }}
+                renderValue={(selected) => {
+                  if (selected.length === 0) return 'Todos';
+                  if (selected.length === 1) return grupoModuloFilterLabelById.get(selected[0]) || selected[0];
+                  return `${selected.length} seleccionados`;
+                }}
+              />
             </>
           ) : null}
           {canCreateRecords ? (

@@ -12,15 +12,14 @@ import {
   FormControl,
   FormControlLabel,
   InputLabel,
-  ListItemText,
   MenuItem,
-  OutlinedInput,
   Select,
   TextField,
   Typography,
 } from '@mui/material';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
+import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 
 interface ModuloFormProps {
   moduloId?: string;
@@ -309,37 +308,28 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
             sx={{ gridColumn: '1 / -1' }}
           />
 
-          <FormControl fullWidth sx={{ gridColumn: '1 / -1' }}>
-            <InputLabel>Planes</InputLabel>
-            <Select
-              multiple
-              label="Planes"
-              value={planIds}
-              onChange={(event) => {
-                const value = event.target.value;
-                const nextIds = typeof value === 'string' ? value.split(',') : value;
-                setPlanIds(Array.from(new Set(nextIds)));
-              }}
-              input={<OutlinedInput label="Planes" />}
-              renderValue={() => selectedPlanNames || 'Sin plan'}
-              disabled={loadingPlanes}
-            >
-              {planIds
+          <MultiSelectWithActions
+            label="Planes"
+            value={planIds}
+            onChange={(nextIds) => setPlanIds(Array.from(new Set(nextIds)))}
+            disabled={loadingPlanes}
+            sx={{ gridColumn: '1 / -1' }}
+            size="medium"
+            options={[
+              ...planIds
                 .filter((id) => !planes.some((plan) => String(plan.id) === id))
-                .map((id) => (
-                  <MenuItem key={`missing-${id}`} value={id} disabled>
-                    <Checkbox checked />
-                    <ListItemText primary="Plan actual no disponible" />
-                  </MenuItem>
-                ))}
-              {planes.map((plan) => (
-                <MenuItem key={plan.id} value={String(plan.id)}>
-                  <Checkbox checked={planIds.includes(String(plan.id))} />
-                  <ListItemText primary={getPlanLabel(plan, carreraTitleById)} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+                .map((id) => ({
+                  value: id,
+                  label: 'Plan actual no disponible',
+                  disabled: true,
+                })),
+              ...planes.map((plan) => ({
+                value: String(plan.id),
+                label: getPlanLabel(plan, carreraTitleById),
+              })),
+            ]}
+            renderValue={() => selectedPlanNames || 'Sin plan'}
+          />
 
           <TextField
             label="Orden"

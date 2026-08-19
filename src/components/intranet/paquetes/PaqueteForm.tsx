@@ -8,19 +8,14 @@ import {
   Checkbox,
   CircularProgress,
   Container,
-  FormControl,
   FormControlLabel,
-  InputLabel,
-  ListItemText,
-  MenuItem,
-  OutlinedInput,
-  Select,
   TextField,
   Typography,
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
+import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 
 interface PaqueteFormProps {
   paqueteId?: string;
@@ -138,6 +133,13 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
 
   const moduloIds = moduloItems.map((item) => String(item.moduloId));
   const totalInstances = moduloItems.reduce((sum, item) => sum + Math.max(1, Number(item.multiplicador ?? 1)), 0);
+  const getPendingTotalInstances = (ids: string[]) => {
+    const moduloItemById = new Map(moduloItems.map((item) => [String(item.moduloId), item]));
+    return ids.reduce((sum, id) => {
+      const previous = moduloItemById.get(String(id));
+      return sum + Math.max(1, Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(previous?.multiplicador ?? 1)));
+    }, 0);
+  };
 
   const selectedModuloNames = moduloItems
     .map((item) => {
@@ -251,48 +253,39 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
           helperText="Se genera automaticamente con los modulos seleccionados."
         />
 
-        <FormControl fullWidth margin="normal" required disabled={loadingModulos}>
-          <InputLabel>Modulos del paquete</InputLabel>
-          <Select
-            multiple
-            value={moduloIds}
-            onChange={(event) => {
-              const nextValue = event.target.value;
-              const nextIds = typeof nextValue === 'string' ? nextValue.split(',') : nextValue;
-              const uniqueIds = Array.from(new Set(nextIds.map((value) => String(value))));
-              setModuloItems((prev) => {
-                const previousById = new Map(prev.map((item) => [String(item.moduloId), item]));
-                const nextItems: PaqueteModuloItemData[] = [];
-                let nextTotal = 0;
-                for (const id of uniqueIds) {
-                  const previous = previousById.get(id);
-                  const multiplicador = Math.max(1, Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(previous?.multiplicador ?? 1)));
-                  if (nextTotal + multiplicador > MAX_INSTANCIAS_PER_PAQUETE) continue;
-                  nextItems.push(previous ?? { moduloId: Number(id), multiplicador: 1, sufijos: [''] });
-                  nextTotal += multiplicador;
-                }
-                return nextItems;
-              });
-            }}
-            input={<OutlinedInput label="Modulos del paquete" />}
-            renderValue={() => selectedModuloNames}
-          >
-            {modulos.map((modulo) => {
-              const value = String(modulo.id);
-              const checked = moduloIds.includes(value);
-              const disabled = !checked && totalInstances >= MAX_INSTANCIAS_PER_PAQUETE;
-              return (
-                <MenuItem key={modulo.id} value={value} disabled={disabled}>
-                  <Checkbox checked={checked} />
-                  <ListItemText
-                    primary={getModuloLabel(modulo)}
-                    secondary={modulo.activo === false ? 'Inactivo' : undefined}
-                  />
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </FormControl>
+        <MultiSelectWithActions
+          label="Modulos del paquete"
+          value={moduloIds}
+          onChange={(nextIds) => {
+            const uniqueIds = Array.from(new Set(nextIds.map((value) => String(value))));
+            setModuloItems((prev) => {
+              const previousById = new Map(prev.map((item) => [String(item.moduloId), item]));
+              const nextItems: PaqueteModuloItemData[] = [];
+              let nextTotal = 0;
+              for (const id of uniqueIds) {
+                const previous = previousById.get(id);
+                const multiplicador = Math.max(1, Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(previous?.multiplicador ?? 1)));
+                if (nextTotal + multiplicador > MAX_INSTANCIAS_PER_PAQUETE) continue;
+                nextItems.push(previous ?? { moduloId: Number(id), multiplicador: 1, sufijos: [''] });
+                nextTotal += multiplicador;
+              }
+              return nextItems;
+            });
+          }}
+          renderValue={() => selectedModuloNames}
+          margin="normal"
+          size="medium"
+          required
+          disabled={loadingModulos}
+          options={modulos.map((modulo) => ({
+            value: String(modulo.id),
+            label: getModuloLabel(modulo),
+            secondary: modulo.activo === false ? 'Inactivo' : undefined,
+          }))}
+          getOptionDisabled={(option, pendingValue) =>
+            !pendingValue.includes(option.value) && getPendingTotalInstances(pendingValue) >= MAX_INSTANCIAS_PER_PAQUETE
+          }
+        />
 
         {moduloItems.length > 0 && (
           <Box sx={{ mt: 1.5, display: 'grid', gap: 1.5 }}>

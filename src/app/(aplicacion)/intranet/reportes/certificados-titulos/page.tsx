@@ -5,15 +5,12 @@ import {
   Alert,
   Box,
   Button,
-  Checkbox,
   FormControl,
   IconButton,
   InputLabel,
   Link,
-  ListItemText,
   Menu,
   MenuItem,
-  OutlinedInput,
   Paper,
   Select,
   Stack,
@@ -31,6 +28,7 @@ import { httpsCallable } from 'firebase/functions';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
+import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 import { dateOnlyTimestamp } from '@/lib/dateOnly';
 import { functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
@@ -444,56 +442,38 @@ export default function CertificadosTitulosPage() {
             </Select>
           </FormControl>
 
-          <FormControl size="small" sx={{ minWidth: 220 }}>
-            <InputLabel id="semestres-label">Semestres</InputLabel>
-            <Select
-              multiple
-              labelId="semestres-label"
-              label="Semestres"
-              value={semestreIds}
-              input={<OutlinedInput label="Semestres" />}
-              MenuProps={selectMenuProps}
-              renderValue={(selected) => renderSelectedNames(selected as number[], semestres.map((item) => ({ id: item.id, titulo: item.titulo })))}
-              onChange={(event) => {
-                const value = event.target.value;
-                setSemestreIds(typeof value === 'string' ? value.split(',').map(Number) : value as number[]);
-                setGrupoModuloIds([]);
-              }}
-              disabled={loadingOptions}
-            >
-              {semestres.map((semestre) => (
-                <MenuItem key={semestre.id} value={semestre.id}>
-                  <Checkbox checked={semestreIds.includes(semestre.id)} />
-                  <ListItemText primary={semestre.titulo || `Semestre ${semestre.id}`} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <MultiSelectWithActions
+            label="Semestres"
+            labelId="semestres-label"
+            value={semestreIds}
+            onChange={(nextIds) => {
+              setSemestreIds(nextIds);
+              setGrupoModuloIds([]);
+            }}
+            options={semestres.map((semestre) => ({
+              value: semestre.id,
+              label: semestre.titulo || `Semestre ${semestre.id}`,
+            }))}
+            renderValue={(selected) => renderSelectedNames(selected, semestres.map((item) => ({ id: item.id, titulo: item.titulo })))}
+            disabled={loadingOptions}
+            sx={{ minWidth: 220 }}
+            MenuProps={selectMenuProps}
+          />
 
-          <FormControl size="small" sx={{ minWidth: 280, flex: 1 }}>
-            <InputLabel id="grupo-modulos-label">Grupo-modulo</InputLabel>
-            <Select
-              multiple
-              labelId="grupo-modulos-label"
-              label="Grupo-modulo"
-              value={grupoModuloIds}
-              input={<OutlinedInput label="Grupo-modulo" />}
-              MenuProps={selectMenuProps}
-              renderValue={(selected) => renderSelectedNames(selected as number[], filteredGrupoModulos)}
-              onChange={(event) => {
-                const value = event.target.value;
-                setGrupoModuloIds(typeof value === 'string' ? value.split(',').map(Number) : value as number[]);
-              }}
-              disabled={loadingOptions}
-            >
-              {filteredGrupoModulos.map((grupoModulo) => (
-                <MenuItem key={grupoModulo.id} value={grupoModulo.id}>
-                  <Checkbox checked={grupoModuloIds.includes(grupoModulo.id)} />
-                  <ListItemText primary={grupoModulo.nombre} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <MultiSelectWithActions
+            label="Grupo-modulo"
+            labelId="grupo-modulos-label"
+            value={grupoModuloIds}
+            onChange={setGrupoModuloIds}
+            options={filteredGrupoModulos.map((grupoModulo) => ({
+              value: grupoModulo.id,
+              label: grupoModulo.nombre,
+            }))}
+            renderValue={(selected) => renderSelectedNames(selected, filteredGrupoModulos)}
+            disabled={loadingOptions}
+            sx={{ minWidth: 280, flex: 1 }}
+            MenuProps={selectMenuProps}
+          />
 
           <Button variant="outlined" startIcon={<VisibilityIcon />} disabled={!singleSelectedRow?.documento?.pdfUrl} onClick={() => openUrl(singleSelectedRow?.documento?.pdfUrl)}>
             Visualizar

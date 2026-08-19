@@ -5,15 +5,12 @@ import {
   Alert,
   Box,
   Button,
-  Checkbox,
   CircularProgress,
   Divider,
   FormControl,
   FormControlLabel,
   InputLabel,
-  ListItemText,
   MenuItem,
-  OutlinedInput,
   Select,
   Stack,
   Switch,
@@ -24,6 +21,7 @@ import NumbersIcon from '@mui/icons-material/Numbers';
 import SaveIcon from '@mui/icons-material/Save';
 import { httpsCallable } from 'firebase/functions';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
+import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 import { functions } from '@/lib/firebase';
 import { AppSettings, defaultAppSettings, useAppSettings } from '@/hooks/useAppSettings';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
@@ -372,50 +370,39 @@ export default function SettingsPage() {
             </Select>
           </FormControl>
 
-          <FormControl fullWidth size="small" disabled={loading || saving || loadingSemestres || !canEditSettings}>
-            <InputLabel>Usar solo los siguientes semestres para devolver datos</InputLabel>
-            <Select
-              multiple
-              label="Usar solo los siguientes semestres para devolver datos"
-              value={safeDraft.general.semestresConsultaIds.map(String)}
-              MenuProps={selectMenuProps}
-              input={<OutlinedInput label="Usar solo los siguientes semestres para devolver datos" />}
-              renderValue={(selected) =>
-                (selected as string[])
-                  .map((id) => semestreConsultaOptions.find((semestre) => String(semestre.id) === id))
-                  .filter((semestre): semestre is SemestreOption => Boolean(semestre))
-                  .map(getSemestreLabel)
-                  .join(', ')
-              }
-              onChange={(event) => {
-                const value = event.target.value;
-                const selected = typeof value === 'string' ? value.split(',') : value;
-                const selectedIds = selected
-                  .map((id) => Number(id))
-                  .filter((id) => Number.isFinite(id) && id > 0);
-                const nextSelectedIds = safeDraft.general.semestreActualId
-                  ? Array.from(new Set([safeDraft.general.semestreActualId, ...selectedIds]))
-                  : selectedIds;
-                setDraft((current) => ({
-                  ...normalizeDraftSettings(current),
-                  general: {
-                    ...normalizeDraftSettings(current).general,
-                    semestresConsultaIds: nextSelectedIds,
-                  },
-                }));
-              }}
-            >
-              {semestreConsultaOptions.map((semestre) => (
-                <MenuItem key={semestre.id} value={String(semestre.id)}>
-                  <Checkbox
-                    checked={safeDraft.general.semestresConsultaIds.includes(semestre.id)}
-                    disabled={safeDraft.general.semestreActualId === semestre.id}
-                  />
-                  <ListItemText primary={getSemestreLabel(semestre)} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <MultiSelectWithActions
+            label="Usar solo los siguientes semestres para devolver datos"
+            value={safeDraft.general.semestresConsultaIds.map(String)}
+            onChange={(selected) => {
+              const selectedIds = selected
+                .map((id) => Number(id))
+                .filter((id) => Number.isFinite(id) && id > 0);
+              const nextSelectedIds = safeDraft.general.semestreActualId
+                ? Array.from(new Set([safeDraft.general.semestreActualId, ...selectedIds]))
+                : selectedIds;
+              setDraft((current) => ({
+                ...normalizeDraftSettings(current),
+                general: {
+                  ...normalizeDraftSettings(current).general,
+                  semestresConsultaIds: nextSelectedIds,
+                },
+              }));
+            }}
+            disabled={loading || saving || loadingSemestres || !canEditSettings}
+            options={semestreConsultaOptions.map((semestre) => ({
+              value: String(semestre.id),
+              label: getSemestreLabel(semestre),
+              disabled: safeDraft.general.semestreActualId === semestre.id,
+            }))}
+            renderValue={(selected) =>
+              selected
+                .map((id) => semestreConsultaOptions.find((semestre) => String(semestre.id) === id))
+                .filter((semestre): semestre is SemestreOption => Boolean(semestre))
+                .map(getSemestreLabel)
+                .join(', ')
+            }
+            MenuProps={selectMenuProps}
+          />
 
           <Box>
             <Typography variant="h6" component="h2" sx={{ mb: 1 }}>

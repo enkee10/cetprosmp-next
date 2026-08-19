@@ -4,18 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Avatar,
   Button,
-  Checkbox,
   FormControl,
   IconButton,
   InputLabel,
-  ListItemText,
   Menu,
   MenuItem,
-  OutlinedInput,
   Select,
   Stack,
 } from '@mui/material';
-import type { SelectChangeEvent } from '@mui/material/Select';
 import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
@@ -23,6 +19,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
+import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 import Modal1 from '@/components/Modal1';
 import { PlanForm } from '@/components/intranet/planes/PlanForm';
 
@@ -213,11 +210,8 @@ export default function PlanesPage() {
     setOpenPlanModal(true);
   }, []);
 
-  const handlePlanFilterChange = useCallback((event: SelectChangeEvent<string[]>) => {
-    const rawValue = event.target.value;
-    const nextValue = typeof rawValue === 'string' ? rawValue.split(',') : rawValue;
-
-    setSelectedPlanEstudioFilters(nextValue.includes('__all__') ? [] : nextValue);
+  const handlePlanFilterChange = useCallback((nextValue: string[]) => {
+    setSelectedPlanEstudioFilters(nextValue);
     setPaginationModel((prev) => ({ ...prev, page: 0 }));
   }, []);
 
@@ -458,36 +452,26 @@ export default function PlanesPage() {
       title="Gestion de Planes"
       commands={
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-          <FormControl size="small" sx={{ width: 150 }}>
-            <InputLabel id="planes-filter-label" shrink>
-              Plan de Estudios
-            </InputLabel>
-            <Select
-              labelId="planes-filter-label"
-              multiple
-              displayEmpty
-              value={selectedPlanEstudioFilters}
-              onChange={handlePlanFilterChange}
-              input={<OutlinedInput notched label="Plan de Estudios" />}
-              renderValue={(selected) => {
-                if (selected.length === 0) return 'Todos';
-                if (selected.length === 1) return selected[0];
-                return `${selected.length} planes seleccionados`;
-              }}
-              MenuProps={{ disableScrollLock: true }}
-            >
-              <MenuItem value="__all__">
-                <Checkbox checked={selectedPlanEstudioFilters.length === 0} />
-                <ListItemText primary="Todos" />
-              </MenuItem>
-              {planFilterOptions.map((planEstudio) => (
-                <MenuItem key={planEstudio} value={planEstudio}>
-                  <Checkbox checked={selectedPlanEstudioFilters.includes(planEstudio)} />
-                  <ListItemText primary={planEstudio} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <MultiSelectWithActions
+            label="Plan de Estudios"
+            labelId="planes-filter-label"
+            displayEmpty
+            value={selectedPlanEstudioFilters}
+            onChange={handlePlanFilterChange}
+            sx={{ width: 150 }}
+            options={planFilterOptions.map((planEstudio) => ({ value: planEstudio, label: planEstudio }))}
+            allOption={{
+              value: '__all__',
+              label: 'Todos',
+              isSelected: (selected) => selected.length === 0,
+              getValue: () => [],
+            }}
+            renderValue={(selected) => {
+              if (selected.length === 0) return 'Todos';
+              if (selected.length === 1) return selected[0];
+              return `${selected.length} planes seleccionados`;
+            }}
+          />
           <Button variant="outlined" onClick={handleCreatePlan}>
             Crear Plan
           </Button>

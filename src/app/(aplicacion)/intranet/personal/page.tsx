@@ -6,12 +6,10 @@ import {
   Avatar,
   Box,
   Button,
-  Checkbox,
   CircularProgress,
   FormControl,
   IconButton,
   InputLabel,
-  ListItemText,
   Menu,
   MenuItem,
   Select,
@@ -25,6 +23,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
+import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 import Modal1 from '@/components/Modal1';
 
 interface Personal {
@@ -174,31 +173,20 @@ function PersonalForm({
           disabled
         />
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Especialidades</InputLabel>
-          <Select
-            multiple
-            label="Especialidades"
-            value={especialidadIds}
-            onChange={(event) => {
-              const value = event.target.value;
-              setEspecialidadIds(typeof value === 'string' ? value.split(',') : value);
-            }}
-            renderValue={(selected) =>
-              selected.map((id) => especialidadTitleById.get(String(id)) || `Especialidad ${id}`).join(' / ')
-            }
-          >
-            {especialidades.map((especialidad) => {
-              const value = String(especialidad.id);
-              return (
-                <MenuItem key={especialidad.id} value={value}>
-                  <Checkbox checked={especialidadIds.includes(value)} />
-                  <ListItemText primary={getEspecialidadLabel(especialidad)} />
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </FormControl>
+        <MultiSelectWithActions
+          label="Especialidades"
+          value={especialidadIds}
+          onChange={setEspecialidadIds}
+          margin="normal"
+          size="medium"
+          options={especialidades.map((especialidad) => ({
+            value: String(especialidad.id),
+            label: getEspecialidadLabel(especialidad),
+          }))}
+          renderValue={(selected) =>
+            selected.map((id) => especialidadTitleById.get(String(id)) || `Especialidad ${id}`).join(' / ')
+          }
+        />
 
         <TextField
           label="Memo"

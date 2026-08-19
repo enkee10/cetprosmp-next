@@ -878,9 +878,11 @@ const MATRICULA_LIST_FIELDS = `
   }
 `;
 
+const MATRICULA_LIST_QUERY_LIMIT = 5000;
+
 const LIST_MATRICULAS_BY_SEMESTRE_QUERY = `
   query ListMatriculasBySemestreManual($semestreId: Int!) {
-    matriculas(where: { semestreId: { eq: $semestreId } }, limit: 600, orderBy: [{id: DESC}]) {
+    matriculas(where: { semestreId: { eq: $semestreId } }, limit: ${MATRICULA_LIST_QUERY_LIMIT}, orderBy: [{id: DESC}]) {
       ${MATRICULA_LIST_FIELDS}
     }
   }
@@ -888,7 +890,7 @@ const LIST_MATRICULAS_BY_SEMESTRE_QUERY = `
 
 const LIST_MATRICULAS_BY_IDS_QUERY = `
   query ListMatriculasByIdsManual($matriculaIds: [Int!]!, $semestreId: Int!) {
-    matriculas(where: { id: { in: $matriculaIds }, semestreId: { eq: $semestreId } }, limit: 600, orderBy: [{id: DESC}]) {
+    matriculas(where: { id: { in: $matriculaIds }, semestreId: { eq: $semestreId } }, limit: ${MATRICULA_LIST_QUERY_LIMIT}, orderBy: [{id: DESC}]) {
       ${MATRICULA_LIST_FIELDS}
     }
   }

@@ -36,7 +36,9 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {
   GridColDef,
   GridColumnVisibilityModel,
+  GridFilterModel,
   GridPaginationModel,
+  GridSortModel,
 } from '@mui/x-data-grid';
 import { useSearchParams } from 'next/navigation';
 import type { SelectChangeEvent } from '@mui/material/Select';
@@ -1074,6 +1076,45 @@ const DOCENTE_MAX_MODULO_CHANGE_EVENTS = 3;
 const SECONDARY_INCOMPLETE_LEGACY_VALUE = 'Secundaria incompleta';
 const SECONDARY_INCOMPLETE_VALUE = 'Secundaria en curso..';
 const MATRICULA_LIST_PRINT_STORAGE_KEY = 'cetprosmp.matriculas.listaPrintPayload';
+const MATRICULA_DOCENTE_GRID_PREFERENCES_VERSION = 1;
+const MATRICULA_DOCENTE_GRID_PREFERENCES_KEY_PREFIX = 'cetprosmp.matriculas.docenteGrid.';
+
+type MatriculaDocenteGridPreferences = {
+  version?: number;
+  columnVisibilityModel?: GridColumnVisibilityModel;
+  sortModel?: GridSortModel;
+  filterModel?: GridFilterModel;
+};
+
+const baseMatriculaColumnVisibilityModel: GridColumnVisibilityModel = {
+  numero: true,
+  avatar: true,
+  fecha: true,
+  estudiante: true,
+  documento: true,
+  celular: true,
+  periodo: false,
+  grupo: true,
+  recibo: true,
+  responsableFormulario: false,
+  archivado: false,
+  actions: true,
+};
+
+const docenteMatriculaColumnVisibilityOverrides: GridColumnVisibilityModel = {
+  grupo: false,
+  fechaNacimiento: true,
+  edad: true,
+  sexo: false,
+  direccion: false,
+  distrito: false,
+};
+
+const defaultMatriculaColumnVisibilityModel = (isDocente: boolean): GridColumnVisibilityModel => ({
+  ...baseMatriculaColumnVisibilityModel,
+  ...(isDocente ? docenteMatriculaColumnVisibilityOverrides : {}),
+});
+
 const normalizeInstructionValue = (value: unknown) => {
   const text = asString(value).trim();
   return text === SECONDARY_INCOMPLETE_LEGACY_VALUE ? SECONDARY_INCOMPLETE_VALUE : text;
@@ -2966,27 +3007,22 @@ export function MatriculasPage() {
     page: 0,
     pageSize: 50,
   });
+  const [sortModel, setSortModel] = useState<GridSortModel>([]);
+  const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
   const [columnVisibilityModel, setColumnVisibilityModel] =
-    useState<GridColumnVisibilityModel>({
-      numero: true,
-      avatar: true,
-      fecha: true,
-      estudiante: true,
-      documento: true,
-      celular: true,
-      periodo: false,
-      grupo: true,
-      recibo: true,
-      responsableFormulario: false,
-      archivado: false,
-      actions: true,
-    });
+    useState<GridColumnVisibilityModel>(() => defaultMatriculaColumnVisibilityModel(isDocente));
+  const docenteGridPreferencesLoadedKeyRef = useRef('');
 
   const directGrupoModuloId = useMemo(() => {
     const id = Number(searchParams.get('grupoModuloId') || 0);
     return Number.isFinite(id) && id > 0 ? String(id) : '';
   }, [searchParams]);
   const isDirectGrupoModuloView = isDocente && Boolean(directGrupoModuloId);
+  const docenteGridPreferencesKey = useMemo(() => {
+    if (!isDocente) return '';
+    const userKey = String(user?.uid || user?.email || '').trim();
+    return userKey ? `${MATRICULA_DOCENTE_GRID_PREFERENCES_KEY_PREFIX}${userKey}` : '';
+  }, [isDocente, user?.email, user?.uid]);
   const directGrupoModuloNameParam = useMemo(
     () => asString(searchParams.get('moduloNombre')).trim(),
     [searchParams],
@@ -2995,6 +3031,57 @@ export function MatriculasPage() {
     () => asString(searchParams.get('periodo')).trim(),
     [searchParams],
   );
+
+  useEffect(() => {
+    if (!isDocente) {
+      docenteGridPreferencesLoadedKeyRef.current = '';
+      return;
+    }
+    if (!docenteGridPreferencesKey || docenteGridPreferencesLoadedKeyRef.current === docenteGridPreferencesKey) return;
+
+    let preferences: MatriculaDocenteGridPreferences | null = null;
+    try {
+      const raw = window.localStorage.getItem(docenteGridPreferencesKey);
+      preferences = raw ? JSON.parse(raw) as MatriculaDocenteGridPreferences : null;
+    } catch {
+      preferences = null;
+    }
+
+    setColumnVisibilityModel({
+      ...defaultMatriculaColumnVisibilityModel(true),
+      ...(preferences?.columnVisibilityModel ?? {}),
+    });
+    setSortModel(Array.isArray(preferences?.sortModel) ? preferences.sortModel : []);
+    setFilterModel(
+      preferences?.filterModel && Array.isArray(preferences.filterModel.items)
+        ? preferences.filterModel
+        : { items: [] },
+    );
+    docenteGridPreferencesLoadedKeyRef.current = docenteGridPreferencesKey;
+  }, [docenteGridPreferencesKey, isDocente]);
+
+  useEffect(() => {
+    if (
+      !isDocente
+      || !docenteGridPreferencesKey
+      || docenteGridPreferencesLoadedKeyRef.current !== docenteGridPreferencesKey
+    ) {
+      return;
+    }
+
+    const preferences: MatriculaDocenteGridPreferences = {
+      version: MATRICULA_DOCENTE_GRID_PREFERENCES_VERSION,
+      columnVisibilityModel,
+      sortModel,
+      filterModel,
+    };
+
+    try {
+      window.localStorage.setItem(docenteGridPreferencesKey, JSON.stringify(preferences));
+    } catch {
+      // localStorage can be unavailable in private or restricted browser modes.
+    }
+  }, [columnVisibilityModel, docenteGridPreferencesKey, filterModel, isDocente, sortModel]);
 
   const selectedSemestreFilter = useMemo(
     () => semestreFilterOptions.find((semestre) => String(semestre.id) === selectedSemestreFilterId) ?? null,
@@ -3635,6 +3722,24 @@ export function MatriculasPage() {
     setPaginationModel((current) => ({ ...current, page: 0 }));
   }, []);
 
+  const handleColumnVisibilityModelChange = useCallback((nextModel: GridColumnVisibilityModel) => {
+    setColumnVisibilityModel(nextModel);
+  }, []);
+
+  const handleColumnToggle = useCallback((field: string, checked: boolean) => {
+    setColumnVisibilityModel((prev) => ({ ...prev, [field]: checked }));
+  }, []);
+
+  const handleSortModelChange = useCallback((nextModel: GridSortModel) => {
+    setSortModel(nextModel);
+  }, []);
+
+  const handleFilterModelChange = useCallback((nextModel: GridFilterModel) => {
+    setFilterModel(nextModel);
+  }, []);
+
+  const isGrupoColumnVisible = columnVisibilityModel.grupo !== false;
+
   const columns = useMemo<GridColDef[]>(
     () => [
       {
@@ -3719,9 +3824,8 @@ export function MatriculasPage() {
       {
         field: 'estudiante',
         headerName: 'Estudiante',
-        flex: 1.4,
+        ...(isGrupoColumnVisible ? { width: 220 } : { flex: 1.4 }),
         minWidth: 220,
-        maxWidth: 220,
         valueGetter: (_value, row: MatriculaListItem) => studentListName(row.user),
         renderCell: (params) => {
           const row = params.row as MatriculaListItem;
@@ -3758,6 +3862,50 @@ export function MatriculasPage() {
           );
         },
       },
+      ...(isDocente
+        ? ([
+          {
+            field: 'fechaNacimiento',
+            headerName: 'Fecha de nacimiento',
+            width: 145,
+            minWidth: 145,
+            maxWidth: 145,
+            valueGetter: (_value, row: MatriculaListItem) => formatDate(row.user?.fechaNacimiento),
+          },
+          {
+            field: 'edad',
+            headerName: 'Edad',
+            type: 'number',
+            width: 70,
+            minWidth: 70,
+            maxWidth: 70,
+            valueGetter: (_value, row: MatriculaListItem) => getAgeFromBirthDate(row.user?.fechaNacimiento),
+          },
+          {
+            field: 'sexo',
+            headerName: 'Sexo',
+            width: 80,
+            minWidth: 80,
+            maxWidth: 80,
+            valueGetter: (_value, row: MatriculaListItem) => row.user?.sexo || '',
+          },
+          {
+            field: 'direccion',
+            headerName: 'Direccion',
+            flex: 1,
+            minWidth: 180,
+            valueGetter: (_value, row: MatriculaListItem) => row.user?.direccion || '',
+          },
+          {
+            field: 'distrito',
+            headerName: 'Distrito',
+            width: 130,
+            minWidth: 130,
+            maxWidth: 130,
+            valueGetter: (_value, row: MatriculaListItem) => row.user?.distrito || '',
+          },
+        ] as GridColDef[])
+        : []),
       {
         field: 'documento',
         headerName: 'Documento',
@@ -3786,7 +3934,7 @@ export function MatriculasPage() {
       {
         field: 'grupo',
         headerName: 'Grupo',
-        flex: 1.2,
+        flex: 1,
         minWidth: 190,
         valueGetter: (_value, row: MatriculaListItem) => getMatriculaGrupoListName(row),
       },
@@ -3836,7 +3984,7 @@ export function MatriculasPage() {
         ),
       },
     ],
-    [handleOpenUserForm],
+    [handleOpenUserForm, isDocente, isGrupoColumnVisible],
   );
 
   const columnToggleItems = useMemo(
@@ -3957,16 +4105,18 @@ export function MatriculasPage() {
         </Stack>
       }
       columnToggleItems={columnToggleItems}
-      onToggleColumn={(field, checked) =>
-        setColumnVisibilityModel((prev) => ({ ...prev, [field]: checked }))
-      }
+      onToggleColumn={handleColumnToggle}
       columnToggleLabel="Campos"
     >
       <IntranetDataGrid
         rows={matriculas}
         columns={columns}
         columnVisibilityModel={columnVisibilityModel}
-        onColumnVisibilityModelChange={setColumnVisibilityModel}
+        onColumnVisibilityModelChange={handleColumnVisibilityModelChange}
+        sortModel={sortModel}
+        onSortModelChange={handleSortModelChange}
+        filterModel={filterModel}
+        onFilterModelChange={handleFilterModelChange}
         loading={loading}
         getRowId={(row) => row.id}
         paginationModel={paginationModel}

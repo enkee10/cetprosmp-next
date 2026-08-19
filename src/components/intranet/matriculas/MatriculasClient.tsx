@@ -1251,19 +1251,13 @@ export function MatriculaForm({
     setSuccessMessage(null);
     setTouched((prev) => ({ ...prev, [key]: false }));
     if (documentIdentityChanged) {
-      setFrontFile(null);
-      setBackFile(null);
-      setFrontImage(null);
-      setBackImage(null);
       setDocumentVerified(false);
-      setIsExistingUserWithImages(false);
       setShouldPersistDocumentImages(true);
       setDocumentAnalysisMetadata(null);
       setVerificationFailureCount(0);
       setFrontFileVerificationError(null);
       setBackFileVerificationError(null);
       setLastVerificationFailure(null);
-      setTouched((prev) => ({ ...prev, frontFile: false, backFile: false }));
     }
   }, [values.dni, values.tipoDocumento]);
 
@@ -2359,12 +2353,15 @@ export function MatriculaForm({
             fullWidth
             inputProps={{
               ...params.inputProps,
-              autoComplete: 'off',
+              autoComplete: 'new-password',
               autoCorrect: 'off',
               autoCapitalize: 'off',
               spellCheck: false,
               inputMode: 'text',
-              name: 'matricula-recibo-control',
+              name: 'registro-control-texto',
+              'data-1p-ignore': 'true',
+              'data-form-type': 'other',
+              'data-lpignore': 'true',
             }}
           />
         )}
@@ -2392,12 +2389,15 @@ export function MatriculaForm({
             fullWidth
             inputProps={{
               ...params.inputProps,
-              autoComplete: 'off',
+              autoComplete: 'new-password',
               autoCorrect: 'off',
               autoCapitalize: 'off',
               spellCheck: false,
               inputMode: 'numeric',
-              name: 'matricula-recibo-detalle',
+              name: 'registro-detalle-numero',
+              'data-1p-ignore': 'true',
+              'data-form-type': 'other',
+              'data-lpignore': 'true',
               maxLength: HALF_BECA_RECIBO_REGULARIZAR.length,
             }}
           />
@@ -2528,7 +2528,7 @@ export function MatriculaForm({
   })();
 
   return (
-    <Box ref={formRootRef} sx={{ position: 'relative' }}>
+    <Box ref={formRootRef} sx={{ position: 'relative', pb: isStandalone ? '100px' : undefined }}>
       <FormLoadingOverlay open={loading} variant="contained" />
       <Stack spacing={isStandalone ? 1.5 : 2.5}>
         <Box data-matricula-form-message>

@@ -394,7 +394,7 @@ export default function ListaMatriculadosPrintPage() {
               {renderTable(page.rows, page.startIndex)}
               {page.isLastGroupPage ? (
                 <Box className="matricula-list-signatures">
-                  <SignatureBlock name={asText(page.group.coordinadorNombre)} cargo="Coordinador(a)" />
+                  <SignatureBlock name={asText(page.group.coordinadorNombre)} cargo="COORDINADOR" />
                   <SignatureBlock name={asText(page.group.docenteNombre)} cargo="Docente" />
                 </Box>
               ) : null}

@@ -169,6 +169,7 @@ interface MatriculaResponsable {
   id: number;
   displayName?: string | null;
   userId?: number | null;
+  monitoreadoPor?: MatriculaResponsable | null;
   user?: {
     id?: number | null;
     username?: string | null;
@@ -1040,6 +1041,9 @@ const responsableName = (responsable?: MatriculaResponsable | null) =>
 
 const uniqueCleanValues = (values: string[]) =>
   Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+
+const grupoModuloMonitorName = (grupoModulo?: MatriculaGrupoModuloOption | null) =>
+  responsableName(grupoModulo?.grupo?.personal?.monitoreadoPor);
 
 const responsableUserName = (user?: MatriculaResponsableUser | null) =>
   user?.username
@@ -3471,12 +3475,11 @@ export function MatriculasPage() {
   }, [isDirectGrupoModuloView, selectedGrupoModuloFilterOptions, user?.displayName, user?.email]);
 
   const getCurrentListCoordinadorName = useCallback(() => {
-    const coordinadorNames = uniqueCleanValues([
-      responsableName(selectedSemestreFilter?.coordinador1),
-      ...selectedGrupoModuloFilterOptions.map((item) => responsableName(item.grupo?.semestre?.coordinador1)),
-    ]);
-    return coordinadorNames[0] || '';
-  }, [selectedGrupoModuloFilterOptions, selectedSemestreFilter?.coordinador1]);
+    const coordinadorNames = uniqueCleanValues(
+      selectedGrupoModuloFilterOptions.map(grupoModuloMonitorName),
+    );
+    return coordinadorNames.length === 1 ? coordinadorNames[0] : '';
+  }, [selectedGrupoModuloFilterOptions]);
 
   const getListaPrintTargetGrupoModulos = useCallback(() => {
     if (isDirectGrupoModuloView) {
@@ -3510,7 +3513,7 @@ export function MatriculasPage() {
       return {
         id: String(grupoModulo.id),
         grupoNombre: getGrupoModuloPrintGroupName(grupoModulo),
-        coordinadorNombre: responsableName(grupoModulo.grupo?.semestre?.coordinador1) || getCurrentListCoordinadorName(),
+        coordinadorNombre: grupoModuloMonitorName(grupoModulo),
         docenteNombre: responsableName(grupoModulo.grupo?.personal) || getCurrentListDocenteName(),
         rows,
       };

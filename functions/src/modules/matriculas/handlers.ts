@@ -104,6 +104,7 @@ interface MatriculaResponsableRow {
   id: number;
   displayName?: string | null;
   userId?: number | null;
+  monitoreadoPor?: MatriculaResponsableRow | null;
   user?: {
     id?: number | null;
     documentId?: string | null;
@@ -1009,6 +1010,18 @@ const LIST_MATRICULA_GRUPOS_BY_SEMESTRE_IDS_QUERY = `
       personal {
         id
         displayName
+        monitoreadoPor {
+          id
+          displayName
+          user {
+            username
+            nombre
+            apellidoPaterno
+            apellidoMaterno
+            email
+            correoInstitucional
+          }
+        }
         user {
           username
           nombre
@@ -1076,6 +1089,18 @@ const LIST_MATRICULA_GRUPO_MODULOS_BY_IDS_QUERY = `
         personal {
           id
           displayName
+          monitoreadoPor {
+            id
+            displayName
+            user {
+              username
+              nombre
+              apellidoPaterno
+              apellidoMaterno
+              email
+              correoInstitucional
+            }
+          }
           user {
             username
             nombre

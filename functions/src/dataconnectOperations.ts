@@ -329,13 +329,13 @@ export const DELETE_DATO_GENERAL_MUTATION = `
 `;
 
 export const INSERT_PERSONAL_MUTATION = `
-  mutation InsertPersonal($data: Personal_Data! @allow(fields: "displayName memo userId")) {
+  mutation InsertPersonal($data: Personal_Data! @allow(fields: "displayName memo userId monitoreadoPorId")) {
     personal_insert(data: $data)
   }
 `;
 
 export const UPDATE_PERSONAL_MUTATION = `
-  mutation UpdatePersonal($id: Int!, $data: Personal_Data! @allow(fields: "displayName memo userId")) {
+  mutation UpdatePersonal($id: Int!, $data: Personal_Data! @allow(fields: "displayName memo userId monitoreadoPorId")) {
     personal_update(id: $id, data: $data)
   }
 `;

@@ -30,6 +30,7 @@ const PERSONAL_FIELDS = `
     username
     nombre
     apellidoPaterno
+    apellidoMaterno
     email
     avatar
     rolId
@@ -37,6 +38,17 @@ const PERSONAL_FIELDS = `
       id
       titulo
       scala
+    }
+  }
+  monitoreadoPorId
+  monitoreadoPor {
+    id
+    displayName
+    user {
+      username
+      nombre
+      apellidoPaterno
+      apellidoMaterno
     }
   }
   personalEspecialidads_on_personal(limit: 100, orderBy: [{ orden: ASC }, { id: ASC }]) {
@@ -77,13 +89,36 @@ const GET_PERSONAL_BY_USER_QUERY = `
   }
 `;
 
+function getNombreCompleto(user: DataConnectPersonal["user"] | null | undefined) {
+  const nombreCompleto = [
+    user?.nombre,
+    user?.apellidoPaterno,
+    user?.apellidoMaterno,
+  ]
+    .map((part) => String(part ?? "").trim())
+    .filter(Boolean)
+    .join(" ");
+
+  return nombreCompleto || null;
+}
+
+function getPersonalDisplayName(personal: Pick<DataConnectPersonal, "displayName" | "user"> | null | undefined) {
+  return personal?.displayName
+    ?? getNombreCompleto(personal?.user)
+    ?? personal?.user?.username
+    ?? null;
+}
+
 const addDerivedFields = (personal: DataConnectPersonal): DataConnectPersonal => {
   const especialidades = personal.personalEspecialidads_on_personal ?? [];
+  const nombreCompleto = getNombreCompleto(personal.user);
   return {
     ...personal,
     userUsername: personal.user?.username ?? personal.displayName ?? null,
+    nombreCompleto: personal.displayName ?? nombreCompleto ?? personal.user?.username ?? null,
     avatar: personal.user?.avatar ?? null,
     cargo: personal.user?.rol?.titulo ?? null,
+    monitoreadoPorNombre: getPersonalDisplayName(personal.monitoreadoPor),
     especialidadIds: especialidades
       .map((item) => item.especialidadId)
       .filter((id): id is number => typeof id === "number"),

@@ -23866,6 +23866,18 @@ input Personal_Data {
   """
   id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId` of type `Int`
+  """
+  monitoreadoPorId: Int
+  """
+  ✨ `_expr` server value variant of `monitoreadoPorId` (✨ Generated from Field `Personal`.`monitoreadoPorId` of type `Int`)
+  """
+  monitoreadoPorId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `monitoreadoPorId` (✨ Generated from Field `Personal`.`monitoreadoPorId` of type `Int`)
+  """
+  monitoreadoPorId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Personal`.`userId` of type `Int`
   """
   userId: Int
@@ -23877,6 +23889,10 @@ input Personal_Data {
   ✨ `_update` server value variant of `userId` (✨ Generated from Field `Personal`.`userId` of type `Int`)
   """
   userId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Personal`.`monitoreadoPor` of type `Personal`
+  """
+  monitoreadoPor: Personal_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Personal`.`user` of type `User`
   """
@@ -23905,6 +23921,10 @@ input Personal_Data {
   ✨ Generated from Field `Personal`.`matriculas_on_responsable` of type `[Matricula!]!`
   """
   matriculas_on_responsable: [Matricula_Data!]
+  """
+  ✨ Generated from Field `Personal`.`personals_on_monitoreadoPor` of type `[Personal!]!`
+  """
+  personals_on_monitoreadoPor: [Personal_Data!]
   """
   ✨ Generated from Field `Personal`.`personalEspecialidads_on_personal` of type `[PersonalEspecialidad!]!`
   """
@@ -23943,9 +23963,17 @@ input Personal_Filter {
   """
   id: Int_Filter
   """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId` of type `Int`
+  """
+  monitoreadoPorId: Int_Filter
+  """
   ✨ Generated from Field `Personal`.`userId` of type `Int`
   """
   userId: Int_Filter
+  """
+  ✨ Generated from Field `Personal`.`monitoreadoPor` of type `Personal`
+  """
+  monitoreadoPor: Personal_Filter
   """
   ✨ Generated from Field `Personal`.`user` of type `User`
   """
@@ -23966,6 +23994,10 @@ input Personal_Filter {
   ✨ Generated from Field `Personal`.`matriculas_on_responsable` of type `[Matricula!]!`
   """
   matriculas_on_responsable: Matricula_ListFilter
+  """
+  ✨ Generated from Field `Personal`.`personals_on_monitoreadoPor` of type `[Personal!]!`
+  """
+  personals_on_monitoreadoPor: Personal_ListFilter
   """
   ✨ Generated from Field `Personal`.`personalEspecialidads_on_personal` of type `[PersonalEspecialidad!]!`
   """
@@ -24037,6 +24069,10 @@ input Personal_Having {
   """
   memo_count: Int_Filter
   """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId_count` of type `Int!`
+  """
+  monitoreadoPorId_count: Int_Filter
+  """
   ✨ Generated from Field `Personal`.`userId_count` of type `Int!`
   """
   userId_count: Int_Filter
@@ -24044,6 +24080,10 @@ input Personal_Having {
   ✨ Generated from Field `Personal`.`id_sum` of type `Int`
   """
   id_sum: Int_Filter
+  """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId_sum` of type `Int`
+  """
+  monitoreadoPorId_sum: Int_Filter
   """
   ✨ Generated from Field `Personal`.`userId_sum` of type `Int`
   """
@@ -24053,6 +24093,10 @@ input Personal_Having {
   """
   id_avg: Float_Filter
   """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId_avg` of type `Float`
+  """
+  monitoreadoPorId_avg: Float_Filter
+  """
   ✨ Generated from Field `Personal`.`userId_avg` of type `Float`
   """
   userId_avg: Float_Filter
@@ -24061,6 +24105,10 @@ input Personal_Having {
   """
   id_min: Int_Filter
   """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId_min` of type `Int`
+  """
+  monitoreadoPorId_min: Int_Filter
+  """
   ✨ Generated from Field `Personal`.`userId_min` of type `Int`
   """
   userId_min: Int_Filter
@@ -24068,6 +24116,10 @@ input Personal_Having {
   ✨ Generated from Field `Personal`.`id_max` of type `Int`
   """
   id_max: Int_Filter
+  """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId_max` of type `Int`
+  """
+  monitoreadoPorId_max: Int_Filter
   """
   ✨ Generated from Field `Personal`.`userId_max` of type `Int`
   """
@@ -24108,9 +24160,17 @@ input Personal_Order {
   """
   id: OrderDirection
   """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId` of type `Int`
+  """
+  monitoreadoPorId: OrderDirection
+  """
   ✨ Generated from Field `Personal`.`userId` of type `Int`
   """
   userId: OrderDirection
+  """
+  ✨ Generated from Field `Personal`.`monitoreadoPor` of type `Personal`
+  """
+  monitoreadoPor: Personal_Order
   """
   ✨ Generated from Field `Personal`.`user` of type `User`
   """
@@ -24140,6 +24200,10 @@ input Personal_Order {
   """
   memo_count: OrderDirection
   """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId_count` of type `Int!`
+  """
+  monitoreadoPorId_count: OrderDirection
+  """
   ✨ Generated from Field `Personal`.`userId_count` of type `Int!`
   """
   userId_count: OrderDirection
@@ -24147,6 +24211,10 @@ input Personal_Order {
   ✨ Generated from Field `Personal`.`id_sum` of type `Int`
   """
   id_sum: OrderDirection
+  """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId_sum` of type `Int`
+  """
+  monitoreadoPorId_sum: OrderDirection
   """
   ✨ Generated from Field `Personal`.`userId_sum` of type `Int`
   """
@@ -24156,6 +24224,10 @@ input Personal_Order {
   """
   id_avg: OrderDirection
   """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId_avg` of type `Float`
+  """
+  monitoreadoPorId_avg: OrderDirection
+  """
   ✨ Generated from Field `Personal`.`userId_avg` of type `Float`
   """
   userId_avg: OrderDirection
@@ -24164,6 +24236,10 @@ input Personal_Order {
   """
   id_min: OrderDirection
   """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId_min` of type `Int`
+  """
+  monitoreadoPorId_min: OrderDirection
+  """
   ✨ Generated from Field `Personal`.`userId_min` of type `Int`
   """
   userId_min: OrderDirection
@@ -24171,6 +24247,10 @@ input Personal_Order {
   ✨ Generated from Field `Personal`.`id_max` of type `Int`
   """
   id_max: OrderDirection
+  """
+  ✨ Generated from Field `Personal`.`monitoreadoPorId_max` of type `Int`
+  """
+  monitoreadoPorId_max: OrderDirection
   """
   ✨ Generated from Field `Personal`.`userId_max` of type `Int`
   """

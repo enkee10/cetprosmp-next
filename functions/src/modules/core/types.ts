@@ -54,6 +54,7 @@ export interface DataConnectPersonal {
     nickName?: string | null;
     nombre?: string | null;
     apellidoPaterno?: string | null;
+    apellidoMaterno?: string | null;
     email?: string | null;
     correoInstitucional?: string | null;
     avatar?: string | null;
@@ -64,9 +65,13 @@ export interface DataConnectPersonal {
       scala?: number | null;
     } | null;
   } | null;
+  monitoreadoPorId?: number | null;
+  monitoreadoPor?: Pick<DataConnectPersonal, "id" | "displayName" | "user"> | null;
   userUsername?: string | null;
+  nombreCompleto?: string | null;
   avatar?: string | null;
   cargo?: string | null;
+  monitoreadoPorNombre?: string | null;
   especialidadIds?: number[];
   especialidadesTitulo?: string | null;
   personalEspecialidads_on_personal?: Array<{
@@ -86,6 +91,7 @@ export interface DataConnectPersonalInput {
   displayName?: string | null;
   memo?: string | null;
   userId?: number | null;
+  monitoreadoPorId?: number | null;
 }
 
 export interface DataConnectRoleInput {

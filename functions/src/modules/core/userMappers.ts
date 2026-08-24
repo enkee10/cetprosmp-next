@@ -448,6 +448,7 @@ export function buildPersonalDataFromInput(input: Record<string, unknown>): Data
     displayName: asNullableString(input.displayName),
     memo: asNullableString(input.memo),
     userId: toNumberOrNull(input.userId),
+    monitoreadoPorId: toNumberOrNull(input.monitoreadoPorId ?? input.monitoreado_por),
   });
 }
 

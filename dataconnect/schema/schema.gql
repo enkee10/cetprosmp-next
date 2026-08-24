@@ -527,6 +527,9 @@ type Personal @table(name: "personales") {
 
   user: User @ref(fields: "userId", references: "id")
   userId: Int @col(name: "user_id")
+
+  monitoreadoPor: Personal @ref(fields: "monitoreadoPorId", references: "id")
+  monitoreadoPorId: Int @col(name: "monitoreado_por")
 }
 
 type PersonalEspecialidad @table(name: "personal_especialidades", key: ["personal", "especialidad"]) {

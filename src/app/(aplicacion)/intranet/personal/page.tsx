@@ -25,14 +25,18 @@ import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 import Modal1 from '@/components/Modal1';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 interface Personal {
   id: number;
   memo: string | null;
   userId: number | null;
+  monitoreadoPorId: number | null;
   userUsername: string | null;
+  nombreCompleto?: string | null;
   avatar?: string | null;
   cargo: string | null;
+  monitoreadoPorNombre?: string | null;
   especialidadIds?: number[];
   especialidadesTitulo?: string | null;
 }
@@ -50,26 +54,98 @@ interface EspecialidadOption {
   tituloComercial: string | null;
 }
 
+interface SemestreOption {
+  id: number;
+  titulo?: string | null;
+  inicio?: string | null;
+  fin?: string | null;
+  directorId?: number | null;
+  coordinador1Id?: number | null;
+  coordinador2Id?: number | null;
+}
+
+interface MonitorOption {
+  id: number;
+  label: string;
+}
+
 const getEspecialidadLabel = (especialidad: EspecialidadOption) =>
   especialidad.tituloComercial || especialidad.titulo || `Especialidad ${especialidad.id}`;
 
 const isStudentRole = (value: string | null | undefined) =>
   String(value ?? '').trim().toLowerCase() === 'estudiante';
 
+const getPersonalLabel = (item: Pick<Personal, 'id' | 'nombreCompleto' | 'userUsername'> | null | undefined, id?: number) =>
+  item?.nombreCompleto?.trim() || item?.userUsername?.trim() || `Personal ${id ?? item?.id ?? ''}`.trim();
+
+const sortSemestresAsc = (items: SemestreOption[]) =>
+  items
+    .slice()
+    .sort((a, b) =>
+      String(a.titulo ?? '').localeCompare(String(b.titulo ?? ''), 'es', { numeric: true }) ||
+      a.id - b.id,
+    );
+
+const isSemestreVigente = (semestre: SemestreOption, today = new Date()) => {
+  if (!semestre.inicio || !semestre.fin) return false;
+  const start = new Date(`${semestre.inicio}T00:00:00`);
+  const end = new Date(`${semestre.fin}T23:59:59`);
+  return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start <= today && today <= end;
+};
+
+const pickMonitorSemestre = (semestres: SemestreOption[], semestreActualId: number | null | undefined) => {
+  const ordered = sortSemestresAsc(semestres);
+  return ordered.find((semestre) => semestre.id === semestreActualId)
+    || ordered.find((semestre) => isSemestreVigente(semestre))
+    || ordered[ordered.length - 1]
+    || null;
+};
+
+const buildMonitorOptions = (
+  semestres: SemestreOption[],
+  semestreActualId: number | null | undefined,
+  personal: Personal[],
+): MonitorOption[] => {
+  const semestre = pickMonitorSemestre(semestres, semestreActualId);
+  if (!semestre) return [];
+
+  const personalById = new Map(personal.map((item) => [item.id, item]));
+  const sources = [
+    { id: semestre.directorId, label: 'Director' },
+    { id: semestre.coordinador1Id, label: 'Coordinador 1' },
+    { id: semestre.coordinador2Id, label: 'Coordinador 2' },
+  ];
+  const seen = new Set<number>();
+
+  return sources.flatMap((source) => {
+    const id = Number(source.id);
+    if (!Number.isFinite(id) || id <= 0 || seen.has(id)) return [];
+    seen.add(id);
+    return [{
+      id,
+      label: `${source.label}: ${getPersonalLabel(personalById.get(id), id)}`,
+    }];
+  });
+};
+
 function PersonalForm({
   personalId,
   users,
   especialidades,
+  monitorOptions,
   onSaved,
   onCancel,
 }: {
   personalId?: string;
   users: UserOption[];
   especialidades: EspecialidadOption[];
+  monitorOptions: MonitorOption[];
   onSaved: () => void;
   onCancel: () => void;
 }) {
   const [userId, setUserId] = useState('');
+  const [monitoreadoPorId, setMonitoreadoPorId] = useState('');
+  const [monitorFallbackLabel, setMonitorFallbackLabel] = useState<string | null>(null);
   const [memo, setMemo] = useState('');
   const [especialidadIds, setEspecialidadIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,6 +164,8 @@ function PersonalForm({
         const personal = result.data.personal;
         if (personal) {
           setUserId(personal.userId != null ? String(personal.userId) : '');
+          setMonitoreadoPorId(personal.monitoreadoPorId != null ? String(personal.monitoreadoPorId) : '');
+          setMonitorFallbackLabel(personal.monitoreadoPorNombre || null);
           setMemo(personal.memo || '');
           setEspecialidadIds((personal.especialidadIds || []).map(String));
         }
@@ -107,6 +185,19 @@ function PersonalForm({
     () => new Map(especialidades.map((especialidad) => [String(especialidad.id), getEspecialidadLabel(especialidad)])),
     [especialidades],
   );
+  const displayedMonitorOptions = useMemo(() => {
+    if (!monitoreadoPorId || monitorOptions.some((option) => String(option.id) === monitoreadoPorId)) {
+      return monitorOptions;
+    }
+
+    return [
+      ...monitorOptions,
+      {
+        id: Number(monitoreadoPorId),
+        label: monitorFallbackLabel ? `Actual: ${monitorFallbackLabel}` : `Personal ${monitoreadoPorId}`,
+      },
+    ];
+  }, [monitoreadoPorId, monitorFallbackLabel, monitorOptions]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -121,13 +212,20 @@ function PersonalForm({
 
     try {
       const createOrUpdatePersonal = httpsCallable<
-        { id?: number; userId: number; memo?: string | null; especialidadIds: number[] },
+        {
+          id?: number;
+          userId: number;
+          monitoreadoPorId?: number | null;
+          memo?: string | null;
+          especialidadIds: number[];
+        },
         { id: number | null }
       >(functions, 'createOrUpdatePersonal');
 
       await createOrUpdatePersonal({
         id: personalId ? Number(personalId) : undefined,
         userId: Number(userId),
+        monitoreadoPorId: monitoreadoPorId ? Number(monitoreadoPorId) : null,
         memo: memo || null,
         especialidadIds: especialidadIds.map(Number),
       });
@@ -173,6 +271,22 @@ function PersonalForm({
           disabled
         />
 
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Monitoreado por</InputLabel>
+          <Select
+            label="Monitoreado por"
+            value={monitoreadoPorId}
+            onChange={(event) => setMonitoreadoPorId(String(event.target.value))}
+          >
+            <MenuItem value="">Sin asignar</MenuItem>
+            {displayedMonitorOptions.map((option) => (
+              <MenuItem key={option.id} value={String(option.id)}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
         <MultiSelectWithActions
           label="Especialidades"
           value={especialidadIds}
@@ -215,6 +329,7 @@ export default function PersonalPage() {
   const [personal, setPersonal] = useState<Personal[]>([]);
   const [users, setUsers] = useState<UserOption[]>([]);
   const [especialidades, setEspecialidades] = useState<EspecialidadOption[]>([]);
+  const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
@@ -228,6 +343,7 @@ export default function PersonalPage() {
     avatar: true,
     personal: true,
     cargo: true,
+    monitoreadoPor: true,
     especialidades: true,
     memo: false,
     actions: true,
@@ -235,6 +351,7 @@ export default function PersonalPage() {
 
   const auth = getAuth(app);
   const functions = useMemo(() => getFunctions(app), []);
+  const { settings } = useAppSettings();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -249,10 +366,15 @@ export default function PersonalPage() {
         functions,
         'listEspecialidades',
       );
-      const [personalResult, usersResult, especialidadesResult] = await Promise.all([
+      const listSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(functions, 'listSemestres');
+      const [personalResult, usersResult, especialidadesResult, semestresResult] = await Promise.all([
         listPersonal(),
         listUsers(),
         listEspecialidades(),
+        listSemestres().catch((err) => {
+          console.warn('No se pudieron cargar semestres para monitoreo: ', err);
+          return null;
+        }),
       ]);
 
       const users = usersResult.data.users || [];
@@ -280,6 +402,7 @@ export default function PersonalPage() {
           .slice()
           .sort((a, b) => getEspecialidadLabel(a).localeCompare(getEspecialidadLabel(b), 'es', { numeric: true })),
       );
+      setSemestres(sortSemestresAsc(semestresResult?.data.semestres || []));
       setError(null);
     } catch (err) {
       console.error('Error fetching personal: ', err);
@@ -292,6 +415,11 @@ export default function PersonalPage() {
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
+
+  const monitorOptions = useMemo(
+    () => buildMonitorOptions(semestres, settings.general.semestreActualId, personal),
+    [personal, semestres, settings.general.semestreActualId],
+  );
 
   const handleSaved = useCallback(() => {
     setOpenModal(false);
@@ -387,6 +515,13 @@ export default function PersonalPage() {
         flex: 0.9,
         minWidth: 150,
         valueGetter: (_value, row: Personal) => row.cargo || '',
+      },
+      {
+        field: 'monitoreadoPor',
+        headerName: 'Monitoreado por',
+        flex: 1,
+        minWidth: 180,
+        valueGetter: (_value, row: Personal) => row.monitoreadoPorNombre || '',
       },
       {
         field: 'especialidades',
@@ -510,6 +645,7 @@ export default function PersonalPage() {
           personalId={editingId ?? undefined}
           users={users}
           especialidades={especialidades}
+          monitorOptions={monitorOptions}
           onCancel={() => setOpenModal(false)}
           onSaved={handleSaved}
         />

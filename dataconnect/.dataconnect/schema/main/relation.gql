@@ -12394,6 +12394,40 @@ extend type Personal {
     having: Matricula_Having
   ): [Matricula!]! @fdc_generated(from: "Matricula.responsable", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `Personal` objects in a one-to-many relationship (where `Personal`.`monitoreadoPor` is this object).
+  """
+  personals_on_monitoreadoPor(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Personal_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Personal_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Personal_Having
+  ): [Personal!]! @fdc_generated(from: "Personal.monitoreadoPor", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `PersonalEspecialidad` objects in a one-to-many relationship (where `PersonalEspecialidad`.`personal` is this object).
   """
   personalEspecialidads_on_personal(
@@ -12599,6 +12633,15 @@ extend type Personal {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Personal.memo", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Personal` table where the `monitoreadoPorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  monitoreadoPorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Personal.monitoreadoPorId", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Personal` table where the `userId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   userId_count(
@@ -12616,6 +12659,15 @@ extend type Personal {
     """
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Personal.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `monitoreadoPorId` field in the `Personal` table.
+  """
+  monitoreadoPorId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Personal.monitoreadoPorId", purpose: QUERY_SUM)
   """
   ✨ Sum the `userId` field in the `Personal` table.
   """
@@ -12635,6 +12687,15 @@ extend type Personal {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Personal.id", purpose: QUERY_AVG)
   """
+  ✨ Average the `monitoreadoPorId` field in the `Personal` table.
+  """
+  monitoreadoPorId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Personal.monitoreadoPorId", purpose: QUERY_AVG)
+  """
   ✨ Average the `userId` field in the `Personal` table.
   """
   userId_avg(
@@ -12648,6 +12709,10 @@ extend type Personal {
   """
   id_min: Int @fdc_generated(from: "Personal.id", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `monitoreadoPorId` field in the `Personal` table.
+  """
+  monitoreadoPorId_min: Int @fdc_generated(from: "Personal.monitoreadoPorId", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `userId` field in the `Personal` table.
   """
   userId_min: Int @fdc_generated(from: "Personal.userId", purpose: QUERY_MIN)
@@ -12655,6 +12720,10 @@ extend type Personal {
   ✨ Maximum of the `id` field in the `Personal` table.
   """
   id_max: Int @fdc_generated(from: "Personal.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `monitoreadoPorId` field in the `Personal` table.
+  """
+  monitoreadoPorId_max: Int @fdc_generated(from: "Personal.monitoreadoPorId", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `userId` field in the `Personal` table.
   """

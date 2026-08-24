@@ -43,7 +43,11 @@ const createValidationSchema = (isCreating: boolean) => yup.object().shape({
   telefono: yup.string().nullable(),
   email: yup.string().email('Debe ser un email válido').required('El email es requerido'),
   tipo_documento: yup.string().oneOf(['DNI', 'CE']).required(),
-  dni: yup.string().matches(/^\d{8}$/, 'El DNI debe tener 8 dígitos'),
+  dni: yup.string().when('tipo_documento', {
+    is: 'CE',
+    then: (schema) => schema.matches(/^\d{9}$/, 'El CE debe tener 9 dígitos numéricos'),
+    otherwise: (schema) => schema.matches(/^\d{8}$/, 'El DNI debe tener 8 dígitos numéricos'),
+  }),
   nacionalidad: yup.string().required('La nacionalidad es requerida'),
   password: isCreating
     ? yup.string().min(8, 'La contraseña debe tener al menos 8 caracteres').required('La contraseña es requerida')
@@ -301,6 +305,8 @@ const UserForm: React.FC<UserFormProps> = ({
   const apellido_materno = watch('apellido_materno');
   const dni = watch('dni');
   const rolId = watch('rolId');
+  const tipoDocumento = watch('tipo_documento');
+  const documentNumberMaxLength = tipoDocumento === 'CE' ? 9 : 8;
 
   useEffect(() => {
     generateUserNames(nombre, apellido_paterno, apellido_materno, setValue);
@@ -817,7 +823,11 @@ const UserForm: React.FC<UserFormProps> = ({
             <Controller name="dni" control={control} render={({ field: { onBlur, ...field } }) => (
               <TextField
                 {...field}
-                inputProps={textInputProps('dni', 10)}
+                inputProps={{
+                  ...textInputProps('dni', 10),
+                  inputMode: 'numeric',
+                  maxLength: documentNumberMaxLength,
+                }}
                 label="N° Documento"
                 error={!!errors.dni}
                 helperText={errors.dni?.message}

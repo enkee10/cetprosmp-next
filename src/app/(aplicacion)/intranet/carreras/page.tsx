@@ -19,6 +19,7 @@ interface Carrera {
   descripcion: string | null;
   nivel: string | null;
   ciclo: string | null;
+  codigoLag: number | null;
   imagenPortadaUrl: string | null;
   actEconomicaId: number | null;
   especialidadId: number | null;

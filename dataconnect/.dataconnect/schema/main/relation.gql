@@ -2318,6 +2318,15 @@ extend type Carrera {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Carrera.ciclo", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Carrera` table where the `codigoLag` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  codigoLag_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Carrera.codigoLag", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Carrera` table where the `codigo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   codigo_count(
@@ -2462,6 +2471,15 @@ extend type Carrera {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Carrera.actEconomicaId", purpose: QUERY_SUM)
   """
+  ✨ Sum the `codigoLag` field in the `Carrera` table.
+  """
+  codigoLag_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Carrera.codigoLag", purpose: QUERY_SUM)
+  """
   ✨ Sum the `creditos` field in the `Carrera` table.
   """
   creditos_sum(
@@ -2507,6 +2525,15 @@ extend type Carrera {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Carrera.actEconomicaId", purpose: QUERY_AVG)
   """
+  ✨ Average the `codigoLag` field in the `Carrera` table.
+  """
+  codigoLag_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Carrera.codigoLag", purpose: QUERY_AVG)
+  """
   ✨ Average the `creditos` field in the `Carrera` table.
   """
   creditos_avg(
@@ -2551,6 +2578,10 @@ extend type Carrera {
   """
   actualizadoEn_min: Timestamp @fdc_generated(from: "Carrera.actualizadoEn", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `codigoLag` field in the `Carrera` table.
+  """
+  codigoLag_min: Int @fdc_generated(from: "Carrera.codigoLag", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `creadoEn` field in the `Carrera` table.
   """
   creadoEn_min: Timestamp @fdc_generated(from: "Carrera.creadoEn", purpose: QUERY_MIN)
@@ -2578,6 +2609,10 @@ extend type Carrera {
   ✨ Maximum of the `actualizadoEn` field in the `Carrera` table.
   """
   actualizadoEn_max: Timestamp @fdc_generated(from: "Carrera.actualizadoEn", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `codigoLag` field in the `Carrera` table.
+  """
+  codigoLag_max: Int @fdc_generated(from: "Carrera.codigoLag", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `creadoEn` field in the `Carrera` table.
   """

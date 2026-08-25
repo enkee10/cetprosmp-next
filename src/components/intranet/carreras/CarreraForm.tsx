@@ -33,6 +33,7 @@ interface CarreraData {
   descripcion: string | null;
   nivel: string | null;
   ciclo: string | null;
+  codigoLag: number | null;
   imagenPortadaUrl: string | null;
   actEconomicaId: number | null;
   especialidadId: number | null;
@@ -64,6 +65,7 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
   const [descripcion, setDescripcion] = useState('');
   const [nivel, setNivel] = useState('');
   const [ciclo, setCiclo] = useState('');
+  const [codigoLag, setCodigoLag] = useState('');
   const [imagenPortadaUrl, setImagenPortadaUrl] = useState('');
   const [actEconomicaId, setActEconomicaId] = useState('');
   const [especialidadId, setEspecialidadId] = useState('');
@@ -126,6 +128,7 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
           setDescripcion(fetched.descripcion || '');
           setNivel(fetched.nivel || '');
           setCiclo(fetched.ciclo || '');
+          setCodigoLag(fetched.codigoLag != null ? String(fetched.codigoLag) : '');
           setImagenPortadaUrl(fetched.imagenPortadaUrl || '');
           setActEconomicaId(fetched.actEconomicaId != null ? String(fetched.actEconomicaId) : '');
           setEspecialidadId(fetched.especialidadId != null ? String(fetched.especialidadId) : '');
@@ -157,6 +160,7 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
           descripcion: string;
           nivel?: string | null;
           ciclo?: string | null;
+          codigoLag?: number | null;
           imagenPortadaUrl?: string | null;
           actEconomicaId?: number | null;
           especialidadId?: number | null;
@@ -172,6 +176,7 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
         descripcion,
         nivel: nivel || null,
         ciclo: ciclo || null,
+        codigoLag: codigoLag.trim() ? Number(codigoLag) : null,
         imagenPortadaUrl: imagenPortadaUrl.trim() || null,
         actEconomicaId: actEconomicaId ? Number(actEconomicaId) : null,
         especialidadId: especialidadId ? Number(especialidadId) : null,
@@ -303,26 +308,39 @@ export function CarreraForm({ carreraId, asModal = false, onSaved, onCancel }: C
             ))}
           </Select>
         </FormControl>
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Especialidad</InputLabel>
-          <Select
-            label="Especialidad"
-            value={especialidadId}
-            onChange={(event) => setEspecialidadId(String(event.target.value))}
-          >
-            <MenuItem value="">Sin especialidad</MenuItem>
-            {especialidadId && !especialidades.some((especialidad) => String(especialidad.id) === especialidadId) ? (
-              <MenuItem value={especialidadId} disabled>
-                Especialidad actual no disponible
-              </MenuItem>
-            ) : null}
-            {especialidades.map((especialidad) => (
-              <MenuItem key={especialidad.id} value={String(especialidad.id)}>
-                {especialidad.tituloComercial || especialidad.titulo || `Especialidad ${especialidad.id}`}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'minmax(0, 4fr) minmax(120px, 1fr)' }, gap: 2 }}>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Especialidad</InputLabel>
+            <Select
+              label="Especialidad"
+              value={especialidadId}
+              onChange={(event) => setEspecialidadId(String(event.target.value))}
+            >
+              <MenuItem value="">Sin especialidad</MenuItem>
+              {especialidadId && !especialidades.some((especialidad) => String(especialidad.id) === especialidadId) ? (
+                <MenuItem value={especialidadId} disabled>
+                  Especialidad actual no disponible
+                </MenuItem>
+              ) : null}
+              {especialidades.map((especialidad) => (
+                <MenuItem key={especialidad.id} value={String(especialidad.id)}>
+                  {especialidad.tituloComercial || especialidad.titulo || `Especialidad ${especialidad.id}`}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField
+            label="Codigo LAG"
+            value={codigoLag}
+            onChange={(event) => {
+              const value = event.target.value.replace(/\D/g, '');
+              setCodigoLag(value);
+            }}
+            fullWidth
+            margin="normal"
+            inputProps={{ inputMode: 'numeric' }}
+          />
+        </Box>
         <CoverImageField
           value={imagenPortadaUrl}
           onChange={setImagenPortadaUrl}

@@ -5291,6 +5291,18 @@ input Carrera_Data {
   """
   codigo_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Carrera`.`codigoLag` of type `Int`
+  """
+  codigoLag: Int
+  """
+  ✨ `_expr` server value variant of `codigoLag` (✨ Generated from Field `Carrera`.`codigoLag` of type `Int`)
+  """
+  codigoLag_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `codigoLag` (✨ Generated from Field `Carrera`.`codigoLag` of type `Int`)
+  """
+  codigoLag_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Carrera`.`creadoEn` of type `Timestamp`
   """
   creadoEn: Timestamp
@@ -5452,6 +5464,10 @@ input Carrera_Filter {
   """
   codigo: String_Filter
   """
+  ✨ Generated from Field `Carrera`.`codigoLag` of type `Int`
+  """
+  codigoLag: Int_Filter
+  """
   ✨ Generated from Field `Carrera`.`creadoEn` of type `Timestamp`
   """
   creadoEn: Timestamp_Filter
@@ -5550,6 +5566,10 @@ input Carrera_Having {
   """
   ciclo_count: Int_Filter
   """
+  ✨ Generated from Field `Carrera`.`codigoLag_count` of type `Int!`
+  """
+  codigoLag_count: Int_Filter
+  """
   ✨ Generated from Field `Carrera`.`codigo_count` of type `Int!`
   """
   codigo_count: Int_Filter
@@ -5614,6 +5634,10 @@ input Carrera_Having {
   """
   actEconomicaId_sum: Int_Filter
   """
+  ✨ Generated from Field `Carrera`.`codigoLag_sum` of type `Int`
+  """
+  codigoLag_sum: Int_Filter
+  """
   ✨ Generated from Field `Carrera`.`creditos_sum` of type `Int`
   """
   creditos_sum: Int_Filter
@@ -5633,6 +5657,10 @@ input Carrera_Having {
   ✨ Generated from Field `Carrera`.`actEconomicaId_avg` of type `Float`
   """
   actEconomicaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Carrera`.`codigoLag_avg` of type `Float`
+  """
+  codigoLag_avg: Float_Filter
   """
   ✨ Generated from Field `Carrera`.`creditos_avg` of type `Float`
   """
@@ -5657,6 +5685,10 @@ input Carrera_Having {
   ✨ Generated from Field `Carrera`.`actualizadoEn_min` of type `Timestamp`
   """
   actualizadoEn_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Carrera`.`codigoLag_min` of type `Int`
+  """
+  codigoLag_min: Int_Filter
   """
   ✨ Generated from Field `Carrera`.`creadoEn_min` of type `Timestamp`
   """
@@ -5685,6 +5717,10 @@ input Carrera_Having {
   ✨ Generated from Field `Carrera`.`actualizadoEn_max` of type `Timestamp`
   """
   actualizadoEn_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `Carrera`.`codigoLag_max` of type `Int`
+  """
+  codigoLag_max: Int_Filter
   """
   ✨ Generated from Field `Carrera`.`creadoEn_max` of type `Timestamp`
   """
@@ -5777,6 +5813,10 @@ input Carrera_Order {
   """
   codigo: OrderDirection
   """
+  ✨ Generated from Field `Carrera`.`codigoLag` of type `Int`
+  """
+  codigoLag: OrderDirection
+  """
   ✨ Generated from Field `Carrera`.`creadoEn` of type `Timestamp`
   """
   creadoEn: OrderDirection
@@ -5836,6 +5876,10 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`ciclo_count` of type `Int!`
   """
   ciclo_count: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`codigoLag_count` of type `Int!`
+  """
+  codigoLag_count: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`codigo_count` of type `Int!`
   """
@@ -5901,6 +5945,10 @@ input Carrera_Order {
   """
   actEconomicaId_sum: OrderDirection
   """
+  ✨ Generated from Field `Carrera`.`codigoLag_sum` of type `Int`
+  """
+  codigoLag_sum: OrderDirection
+  """
   ✨ Generated from Field `Carrera`.`creditos_sum` of type `Int`
   """
   creditos_sum: OrderDirection
@@ -5920,6 +5968,10 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`actEconomicaId_avg` of type `Float`
   """
   actEconomicaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`codigoLag_avg` of type `Float`
+  """
+  codigoLag_avg: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`creditos_avg` of type `Float`
   """
@@ -5944,6 +5996,10 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`actualizadoEn_min` of type `Timestamp`
   """
   actualizadoEn_min: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`codigoLag_min` of type `Int`
+  """
+  codigoLag_min: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`creadoEn_min` of type `Timestamp`
   """
@@ -5972,6 +6028,10 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`actualizadoEn_max` of type `Timestamp`
   """
   actualizadoEn_max: OrderDirection
+  """
+  ✨ Generated from Field `Carrera`.`codigoLag_max` of type `Int`
+  """
+  codigoLag_max: OrderDirection
   """
   ✨ Generated from Field `Carrera`.`creadoEn_max` of type `Timestamp`
   """

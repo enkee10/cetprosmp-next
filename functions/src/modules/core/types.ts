@@ -219,6 +219,7 @@ export interface DataConnectCarrera {
   descripcion?: string | null;
   nivel?: string | null;
   ciclo?: string | null;
+  codigoLag?: number | null;
   imagenPortadaUrl?: string | null;
   creadoEn?: string | null;
   actualizadoEn?: string | null;
@@ -239,6 +240,7 @@ export interface DataConnectCarreraInput {
   descripcion?: string | null;
   nivel?: string | null;
   ciclo?: string | null;
+  codigoLag?: number | null;
   imagenPortadaUrl?: string | null;
   creadoEn?: string | null;
   actualizadoEn?: string | null;

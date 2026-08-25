@@ -23,6 +23,7 @@ const LIST_CARRERAS_QUERY = `
       descripcion
       nivel
       ciclo
+      codigoLag
       imagenPortadaUrl
       creadoEn
       actualizadoEn
@@ -48,6 +49,7 @@ const GET_CARRERA_QUERY = `
       descripcion
       nivel
       ciclo
+      codigoLag
       imagenPortadaUrl
       creadoEn
       actualizadoEn

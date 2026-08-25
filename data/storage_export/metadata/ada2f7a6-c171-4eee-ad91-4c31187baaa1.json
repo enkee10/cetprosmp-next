@@ -1,8 +1,8 @@
 {
   "name": "documentos/certificados-plan-estudios.xlsx",
   "bucket": "cetprosmp-2026.firebasestorage.app",
-  "metageneration": 1,
-  "generation": 1784573944697179,
+  "metageneration": 2,
+  "generation": 1787697170363000,
   "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "storageClass": "REGIONAL",
   "contentDisposition": "inline",
@@ -12,8 +12,8 @@
   "etag": "CNuisoD44ZUDEAE=",
   "customMetadata": {},
   "timeCreated": "2026-07-20T18:59:04.713Z",
-  "updated": "2026-07-20T18:59:04.713Z",
-  "size": 98588,
-  "md5Hash": "2ehsgZh30vhiMROmA/yOXw==",
-  "crc32c": "3fPx9g=="
+  "updated": "2026-08-25T22:32:50.363Z",
+  "size": 97954,
+  "md5Hash": "KWhgIRMdr5sitA8uvlnAuQ==",
+  "crc32c": "ha1H0Q=="
 }

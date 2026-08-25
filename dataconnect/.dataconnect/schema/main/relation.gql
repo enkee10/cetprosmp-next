@@ -2249,6 +2249,40 @@ extend type CapacidadTerminalEstudiante {
 }
 extend type Carrera {
   """
+  ✨ List `Certificado` objects in a one-to-many relationship (where `Certificado`.`carrera` is this object).
+  """
+  certificados_on_carrera(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Certificado_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Certificado_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Certificado_Having
+  ): [Certificado!]! @fdc_generated(from: "Certificado.carrera", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `Plan` objects in a one-to-many relationship (where `Plan`.`carrera` is this object).
   """
   planes_on_carrera(
@@ -2637,6 +2671,500 @@ extend type Carrera {
   A generated field that is used for caching results in SDKs.
   """
   _id: ID! @fdc_generated(from: "Carrera.id", purpose: ENTITY_ID)
+}
+extend type Certificado {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Certificado", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Certificado` table.
+  """
+  _count: Int! @fdc_generated(from: "Certificado.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `actualizadoEn` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  actualizadoEn_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.actualizadoEn", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `anio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  anio_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.anio", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `carreraId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  carreraId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.carreraId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `codigoInstitucional` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  codigoInstitucional_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.codigoInstitucional", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `codigoLag` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  codigoLag_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.codigoLag", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `correlativo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  correlativo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.correlativo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `creadoEn` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  creadoEn_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.creadoEn", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `docenteId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  docenteId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.docenteId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `estudianteId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  estudianteId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.estudianteId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `generadoEn` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  generadoEn_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.generadoEn", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `grupoModuloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoModuloId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.grupoModuloId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `matriculaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  matriculaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.matriculaId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `moduloEstudianteId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  moduloEstudianteId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.moduloEstudianteId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `periodoNumero` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  periodoNumero_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.periodoNumero", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Certificado` table where the `semestreId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  semestreId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado.semestreId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `anio` field in the `Certificado` table.
+  """
+  anio_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.anio", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `carreraId` field in the `Certificado` table.
+  """
+  carreraId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.carreraId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `codigoLag` field in the `Certificado` table.
+  """
+  codigoLag_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.codigoLag", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `correlativo` field in the `Certificado` table.
+  """
+  correlativo_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.correlativo", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `docenteId` field in the `Certificado` table.
+  """
+  docenteId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.docenteId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `estudianteId` field in the `Certificado` table.
+  """
+  estudianteId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.estudianteId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `grupoModuloId` field in the `Certificado` table.
+  """
+  grupoModuloId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.grupoModuloId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `Certificado` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `matriculaId` field in the `Certificado` table.
+  """
+  matriculaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.matriculaId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `moduloEstudianteId` field in the `Certificado` table.
+  """
+  moduloEstudianteId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.moduloEstudianteId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `periodoNumero` field in the `Certificado` table.
+  """
+  periodoNumero_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.periodoNumero", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `semestreId` field in the `Certificado` table.
+  """
+  semestreId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Certificado.semestreId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `anio` field in the `Certificado` table.
+  """
+  anio_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.anio", purpose: QUERY_AVG)
+  """
+  ✨ Average the `carreraId` field in the `Certificado` table.
+  """
+  carreraId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.carreraId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `codigoLag` field in the `Certificado` table.
+  """
+  codigoLag_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.codigoLag", purpose: QUERY_AVG)
+  """
+  ✨ Average the `correlativo` field in the `Certificado` table.
+  """
+  correlativo_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.correlativo", purpose: QUERY_AVG)
+  """
+  ✨ Average the `docenteId` field in the `Certificado` table.
+  """
+  docenteId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.docenteId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `estudianteId` field in the `Certificado` table.
+  """
+  estudianteId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.estudianteId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `grupoModuloId` field in the `Certificado` table.
+  """
+  grupoModuloId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.grupoModuloId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `Certificado` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `matriculaId` field in the `Certificado` table.
+  """
+  matriculaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.matriculaId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `moduloEstudianteId` field in the `Certificado` table.
+  """
+  moduloEstudianteId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.moduloEstudianteId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `periodoNumero` field in the `Certificado` table.
+  """
+  periodoNumero_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.periodoNumero", purpose: QUERY_AVG)
+  """
+  ✨ Average the `semestreId` field in the `Certificado` table.
+  """
+  semestreId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Certificado.semestreId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `actualizadoEn` field in the `Certificado` table.
+  """
+  actualizadoEn_min: Timestamp @fdc_generated(from: "Certificado.actualizadoEn", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `anio` field in the `Certificado` table.
+  """
+  anio_min: Int @fdc_generated(from: "Certificado.anio", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `carreraId` field in the `Certificado` table.
+  """
+  carreraId_min: Int @fdc_generated(from: "Certificado.carreraId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `codigoLag` field in the `Certificado` table.
+  """
+  codigoLag_min: Int @fdc_generated(from: "Certificado.codigoLag", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `correlativo` field in the `Certificado` table.
+  """
+  correlativo_min: Int @fdc_generated(from: "Certificado.correlativo", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `creadoEn` field in the `Certificado` table.
+  """
+  creadoEn_min: Timestamp @fdc_generated(from: "Certificado.creadoEn", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `docenteId` field in the `Certificado` table.
+  """
+  docenteId_min: Int @fdc_generated(from: "Certificado.docenteId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `estudianteId` field in the `Certificado` table.
+  """
+  estudianteId_min: Int @fdc_generated(from: "Certificado.estudianteId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `generadoEn` field in the `Certificado` table.
+  """
+  generadoEn_min: Timestamp @fdc_generated(from: "Certificado.generadoEn", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `grupoModuloId` field in the `Certificado` table.
+  """
+  grupoModuloId_min: Int @fdc_generated(from: "Certificado.grupoModuloId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `Certificado` table.
+  """
+  id_min: Int @fdc_generated(from: "Certificado.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `matriculaId` field in the `Certificado` table.
+  """
+  matriculaId_min: Int @fdc_generated(from: "Certificado.matriculaId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `moduloEstudianteId` field in the `Certificado` table.
+  """
+  moduloEstudianteId_min: Int @fdc_generated(from: "Certificado.moduloEstudianteId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `periodoNumero` field in the `Certificado` table.
+  """
+  periodoNumero_min: Int @fdc_generated(from: "Certificado.periodoNumero", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `semestreId` field in the `Certificado` table.
+  """
+  semestreId_min: Int @fdc_generated(from: "Certificado.semestreId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `actualizadoEn` field in the `Certificado` table.
+  """
+  actualizadoEn_max: Timestamp @fdc_generated(from: "Certificado.actualizadoEn", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `anio` field in the `Certificado` table.
+  """
+  anio_max: Int @fdc_generated(from: "Certificado.anio", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `carreraId` field in the `Certificado` table.
+  """
+  carreraId_max: Int @fdc_generated(from: "Certificado.carreraId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `codigoLag` field in the `Certificado` table.
+  """
+  codigoLag_max: Int @fdc_generated(from: "Certificado.codigoLag", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `correlativo` field in the `Certificado` table.
+  """
+  correlativo_max: Int @fdc_generated(from: "Certificado.correlativo", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `creadoEn` field in the `Certificado` table.
+  """
+  creadoEn_max: Timestamp @fdc_generated(from: "Certificado.creadoEn", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `docenteId` field in the `Certificado` table.
+  """
+  docenteId_max: Int @fdc_generated(from: "Certificado.docenteId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `estudianteId` field in the `Certificado` table.
+  """
+  estudianteId_max: Int @fdc_generated(from: "Certificado.estudianteId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `generadoEn` field in the `Certificado` table.
+  """
+  generadoEn_max: Timestamp @fdc_generated(from: "Certificado.generadoEn", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `grupoModuloId` field in the `Certificado` table.
+  """
+  grupoModuloId_max: Int @fdc_generated(from: "Certificado.grupoModuloId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `Certificado` table.
+  """
+  id_max: Int @fdc_generated(from: "Certificado.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `matriculaId` field in the `Certificado` table.
+  """
+  matriculaId_max: Int @fdc_generated(from: "Certificado.matriculaId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `moduloEstudianteId` field in the `Certificado` table.
+  """
+  moduloEstudianteId_max: Int @fdc_generated(from: "Certificado.moduloEstudianteId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `periodoNumero` field in the `Certificado` table.
+  """
+  periodoNumero_max: Int @fdc_generated(from: "Certificado.periodoNumero", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `semestreId` field in the `Certificado` table.
+  """
+  semestreId_max: Int @fdc_generated(from: "Certificado.semestreId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Certificado.id", purpose: ENTITY_ID)
 }
 extend type CertificadoTituloDocumento {
   """
@@ -7511,6 +8039,40 @@ extend type Grupo {
 }
 extend type GrupoModulo {
   """
+  ✨ List `Certificado` objects in a one-to-many relationship (where `Certificado`.`grupoModulo` is this object).
+  """
+  certificados_on_grupoModulo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Certificado_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Certificado_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Certificado_Having
+  ): [Certificado!]! @fdc_generated(from: "Certificado.grupoModulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `CertificadoTituloDocumento` objects in a one-to-many relationship (where `CertificadoTituloDocumento`.`grupoModulo` is this object).
   """
   certificadoTituloDocumentos_on_grupoModulo(
@@ -8955,6 +9517,40 @@ extend type Matricula {
     """
     having: CapacidadTerminalEstudiante_Having
   ): [CapacidadTerminalEstudiante!]! @fdc_generated(from: "CapacidadTerminalEstudiante.matricula", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Certificado` objects in a one-to-many relationship (where `Certificado`.`matricula` is this object).
+  """
+  certificados_on_matricula(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Certificado_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Certificado_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Certificado_Having
+  ): [Certificado!]! @fdc_generated(from: "Certificado.matricula", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `EvaluacionEstudiante` objects in a one-to-many relationship (where `EvaluacionEstudiante`.`matricula` is this object).
   """
@@ -11196,6 +11792,40 @@ extend type Modulo {
 }
 extend type ModuloEstudiante {
   """
+  ✨ List `Certificado` objects in a one-to-many relationship (where `Certificado`.`moduloEstudiante` is this object).
+  """
+  certificados_on_moduloEstudiante(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Certificado_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Certificado_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Certificado_Having
+  ): [Certificado!]! @fdc_generated(from: "Certificado.moduloEstudiante", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `CertificadoTituloDocumento` objects in a one-to-many relationship (where `CertificadoTituloDocumento`.`moduloEstudiante` is this object).
   """
   certificadoTituloDocumentos_on_moduloEstudiante(
@@ -12360,6 +12990,40 @@ extend type PaqueteModulo {
   _id: ID! @fdc_generated(from: "PaqueteModulo.id", purpose: ENTITY_ID)
 }
 extend type Personal {
+  """
+  ✨ List `Certificado` objects in a one-to-many relationship (where `Certificado`.`docente` is this object).
+  """
+  certificados_on_docente(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Certificado_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Certificado_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Certificado_Having
+  ): [Certificado!]! @fdc_generated(from: "Certificado.docente", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `Grupo` objects in a one-to-many relationship (where `Grupo`.`personal` is this object).
   """
@@ -14941,6 +15605,40 @@ extend type Semestre {
     having: Calendario_Having
   ): [Calendario!]! @fdc_generated(from: "Calendario.semestre", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `Certificado` objects in a one-to-many relationship (where `Certificado`.`semestre` is this object).
+  """
+  certificados_on_semestre(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Certificado_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Certificado_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Certificado_Having
+  ): [Certificado!]! @fdc_generated(from: "Certificado.semestre", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `Evento` objects in a one-to-many relationship (where `Evento`.`semestre` is this object).
   """
   eventos_on_semestre(
@@ -16499,6 +17197,40 @@ extend type User {
     """
     having: Asistencia_Having
   ): [Asistencia!]! @fdc_generated(from: "Asistencia.registradoPor", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Certificado` objects in a one-to-many relationship (where `Certificado`.`estudiante` is this object).
+  """
+  certificados_on_estudiante(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Certificado_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Certificado_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Certificado_Having
+  ): [Certificado!]! @fdc_generated(from: "Certificado.estudiante", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `EfsrtPppEstudiante` objects in a one-to-many relationship (where `EfsrtPppEstudiante`.`registradoPor` is this object).
   """

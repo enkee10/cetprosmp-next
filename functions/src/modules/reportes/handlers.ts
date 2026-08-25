@@ -108,9 +108,11 @@ type ReporteGrupoModuloOption = {
       anio?: number | null;
       genera?: string | null;
       carrera?: {
+        id?: number | null;
         nombre?: string | null;
         titulo?: string | null;
         tituloComercial?: string | null;
+        codigoLag?: number | null;
         nivel?: string | null;
         ciclo?: string | null;
         tipoCarrera?: { nombre?: string | null } | null;
@@ -240,6 +242,25 @@ type CertificadoTituloDocumento = {
   generadoEn?: string | null;
 };
 
+type CertificadoRegistro = {
+  id: number;
+  codigoInstitucional: string;
+  correlativo: number;
+  codigoLag?: number | null;
+  periodoNumero?: number | null;
+  anio?: number | null;
+  semestreId: number;
+  estudianteId?: number | null;
+  matriculaId: number;
+  grupoModuloId: number;
+  moduloEstudianteId: number;
+  docenteId?: number | null;
+  carreraId?: number | null;
+  generadoEn?: string | null;
+  creadoEn?: string | null;
+  actualizadoEn?: string | null;
+};
+
 type CertificadoTituloRow = {
   id: string;
   grupoModuloId: number;
@@ -324,6 +345,7 @@ const REPORTE_OPTIONS_QUERY = `
         semestreId
         semestre { id titulo }
         personal {
+          id
           displayName
           user { username nombre apellidoPaterno apellidoMaterno }
         }
@@ -346,9 +368,11 @@ const REPORTE_OPTIONS_QUERY = `
           anio
           genera
           carrera {
+            id
             nombre
             titulo
             tituloComercial
+            codigoLag
             nivel
             ciclo
             tipoCarrera { nombre }
@@ -393,6 +417,7 @@ const REPORTE_DETALLE_QUERY = `
           }
         }
         personal {
+          id
           displayName
           user { username nombre apellidoPaterno apellidoMaterno }
         }
@@ -415,9 +440,11 @@ const REPORTE_DETALLE_QUERY = `
           anio
           genera
           carrera {
+            id
             nombre
             titulo
             tituloComercial
+            codigoLag
             nivel
             ciclo
             tipoCarrera { nombre }
@@ -438,6 +465,7 @@ const REPORTE_DETALLE_QUERY = `
         turnoNombre
         semestreId
         personal {
+          id
           displayName
           user { username nombre apellidoPaterno apellidoMaterno }
         }
@@ -621,6 +649,7 @@ const CERTIFICADOS_TITULOS_OPTIONS_QUERY = `
           semestreId
           semestre { id titulo }
           personal {
+            id
             displayName
             user { username nombre apellidoPaterno apellidoMaterno }
           }
@@ -633,9 +662,11 @@ const CERTIFICADOS_TITULOS_OPTIONS_QUERY = `
           tituloComercial
           plan {
             carrera {
+              id
               nombre
               titulo
               tituloComercial
+              codigoLag
               tipoCarrera { nombre }
               especialidad { titulo tituloComercial }
             }
@@ -726,6 +757,50 @@ const INSERT_CERTIFICADO_TITULO_DOCUMENTO_MUTATION = `
 const UPDATE_CERTIFICADO_TITULO_DOCUMENTO_MUTATION = `
   mutation UpdateCertificadoTituloDocumento($id: Int!, $data: CertificadoTituloDocumento_Data! @allow(fields: "semestreCodigo pdfPath pdfUrl excelPath excelUrl generadoEn")) {
     certificadoTituloDocumento_update(id: $id, data: $data)
+  }
+`;
+
+const GET_CERTIFICADO_REGISTRO_QUERY = `
+  query GetCertificadoRegistroManual($grupoModuloId: Int!, $moduloEstudianteId: Int!) {
+    certificados(
+      where: {
+        grupoModuloId: { eq: $grupoModuloId },
+        moduloEstudianteId: { eq: $moduloEstudianteId }
+      },
+      limit: 1
+    ) {
+      id
+      codigoInstitucional
+      correlativo
+      codigoLag
+      periodoNumero
+      anio
+      semestreId
+      estudianteId
+      matriculaId
+      grupoModuloId
+      moduloEstudianteId
+      docenteId
+      carreraId
+      generadoEn
+      creadoEn
+      actualizadoEn
+    }
+  }
+`;
+
+const GET_LAST_CERTIFICADO_CORRELATIVO_QUERY = `
+  query GetLastCertificadoCorrelativoManual {
+    certificados(limit: 1, orderBy: [{ correlativo: DESC }]) {
+      id
+      correlativo
+    }
+  }
+`;
+
+const INSERT_CERTIFICADO_REGISTRO_MUTATION = `
+  mutation InsertCertificadoRegistro($data: Certificado_Data! @allow(fields: "codigoInstitucional correlativo codigoLag periodoNumero anio semestreId estudianteId matriculaId grupoModuloId moduloEstudianteId docenteId carreraId generadoEn creadoEn actualizadoEn")) {
+    certificado_insert(data: $data)
   }
 `;
 
@@ -967,6 +1042,39 @@ function getReportYear(data: ReporteDocumentoData) {
   if (inicio) return String(inicio.year);
   const semestreYear = semestreTitulo(data).match(/\b(19|20)\d{2}\b/)?.[0];
   return semestreYear ?? "";
+}
+
+function getCertificadoSemestreParts(data: ReporteDocumentoData) {
+  const title = semestreTitulo(data);
+  const compactTitle = cleanText(title);
+  const titleMatch = compactTitle.match(/\b((?:19|20)?\d{2})\D+(\d)\b/);
+  const periodMatch = compactTitle.match(/(\d)\D*$/);
+  const fourDigitYear = compactTitle.match(/\b(19|20)\d{2}\b/)?.[0];
+  const rawYear = fourDigitYear || titleMatch?.[1] || "";
+  const parsedYear = Number(rawYear);
+  const anio = rawYear.length === 2
+    ? 2000 + parsedYear
+    : parsedYear;
+  const periodoNumero = Number(titleMatch?.[2] || periodMatch?.[1] || 0);
+  const inicio = getCalendarDateParts(data.semestre?.inicio || data.grupoModulo.inicio);
+  return {
+    anio: Number.isFinite(anio) && anio > 0 ? anio : inicio?.year ?? null,
+    periodoNumero: Number.isFinite(periodoNumero) && periodoNumero > 0 ? periodoNumero : null,
+  };
+}
+
+function getCertificadoCodigoLag(data: ReporteDocumentoData) {
+  const codigoLag = Number(data.grupoModulo.modulo?.plan?.carrera?.codigoLag);
+  return Number.isInteger(codigoLag) && codigoLag > 0 ? codigoLag : null;
+}
+
+function formatCodigoInstitucionalCertificado(input: {
+  correlativo: number;
+  codigoLag: number;
+  periodoNumero: number;
+  anio: number;
+}) {
+  return `${String(input.correlativo).padStart(4, "0")}-${input.codigoLag}CM${input.periodoNumero}-${input.anio}`;
 }
 
 function getCivilDatePartsFromValue(value: string | Date | null | undefined) {
@@ -1314,6 +1422,102 @@ async function upsertCertificadoTituloDocumento(input: {
     id: Number((inserted.data.certificadoTituloDocumento_insert as { id?: number } | null)?.id ?? 0),
     ...insertData,
   } satisfies CertificadoTituloDocumento;
+}
+
+async function findCertificadoRegistro(grupoModuloId: number, moduloEstudianteId: number) {
+  const response = await dataConnect.executeGraphql<{
+    certificados: CertificadoRegistro[];
+  }, { grupoModuloId: number; moduloEstudianteId: number }>(
+    GET_CERTIFICADO_REGISTRO_QUERY,
+    { variables: { grupoModuloId, moduloEstudianteId } },
+  );
+  return response.data.certificados?.[0] ?? null;
+}
+
+async function nextCertificadoCorrelativo() {
+  const response = await dataConnect.executeGraphql<{
+    certificados: Array<{ correlativo?: number | null }>;
+  }, Record<string, never>>(GET_LAST_CERTIFICADO_CORRELATIVO_QUERY);
+  const current = Number(response.data.certificados?.[0]?.correlativo ?? 0);
+  return Math.max(86, Number.isFinite(current) ? current : 0) + 1;
+}
+
+function isDuplicateRecordError(error: unknown) {
+  const reason = JSON.stringify({
+    message: (error as { message?: unknown } | null)?.message,
+    errors: (error as { errors?: unknown } | null)?.errors,
+    responseData: (error as { response?: { data?: unknown } } | null)?.response?.data,
+  }).toLowerCase();
+  return reason.includes("unique")
+    || reason.includes("duplicate")
+    || reason.includes("already exists")
+    || reason.includes("constraint");
+}
+
+async function ensureCertificadoRegistro(data: ReporteDocumentoData, student: ReporteEstudiante, generadoEn: string) {
+  const grupoModuloId = data.grupoModulo.id;
+  const moduloEstudianteId = student.id;
+  const semestreId = data.semestre?.id ?? data.grupoModulo.grupo?.semestreId ?? null;
+  const matriculaId = student.matriculaId;
+  const estudianteId = student.matricula?.user?.id ?? null;
+  const docenteId = data.grupoModulo.grupo?.personal?.id ?? null;
+  const carreraId = data.grupoModulo.modulo?.plan?.carrera?.id ?? null;
+  const codigoLag = getCertificadoCodigoLag(data);
+  const { periodoNumero, anio } = getCertificadoSemestreParts(data);
+
+  if (!semestreId) {
+    throw new https.HttpsError("failed-precondition", "El grupo-modulo no tiene semestre para generar el codigo institucional.");
+  }
+  if (!codigoLag) {
+    throw new https.HttpsError("failed-precondition", "La carrera no tiene codigo LAG configurado.");
+  }
+  if (!periodoNumero || !anio) {
+    throw new https.HttpsError("failed-precondition", "No se pudo determinar el periodo y anio del semestre.");
+  }
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const existing = await findCertificadoRegistro(grupoModuloId, moduloEstudianteId);
+    if (existing) return existing;
+
+    const correlativo = await nextCertificadoCorrelativo();
+    const insertData = {
+      codigoInstitucional: formatCodigoInstitucionalCertificado({ correlativo, codigoLag, periodoNumero, anio }),
+      correlativo,
+      codigoLag,
+      periodoNumero,
+      anio,
+      semestreId,
+      estudianteId,
+      matriculaId,
+      grupoModuloId,
+      moduloEstudianteId,
+      docenteId,
+      carreraId,
+      generadoEn,
+      creadoEn: generadoEn,
+      actualizadoEn: generadoEn,
+    };
+
+    try {
+      const inserted = await dataConnect.executeGraphql<
+        { certificado_insert: unknown },
+        { data: typeof insertData }
+      >(
+        INSERT_CERTIFICADO_REGISTRO_MUTATION,
+        { variables: { data: insertData } },
+      );
+      return {
+        id: Number((inserted.data.certificado_insert as { id?: number } | null)?.id ?? 0),
+        ...insertData,
+      } satisfies CertificadoRegistro;
+    } catch (error) {
+      if (!isDuplicateRecordError(error) || attempt === 2) throw error;
+    }
+  }
+
+  const existing = await findCertificadoRegistro(grupoModuloId, moduloEstudianteId);
+  if (existing) return existing;
+  throw new https.HttpsError("internal", "No se pudo crear el codigo institucional del certificado.");
 }
 
 function templateStoragePath(template: ReportTemplate) {
@@ -2822,6 +3026,7 @@ function buildCertificateTokens(
   data: ReporteDocumentoData,
   student: ReporteEstudiante,
   avatarUrl: string,
+  codigoInstitucional: string,
 ) {
   const unitMap = unidadPromedioMap(data);
   const capacitiesByUnit = new Map<number, string[]>();
@@ -2841,8 +3046,9 @@ function buildCertificateTokens(
 
   return {
     "[APELLIDO PATERNO APELLIDO MATERNO, Nombres]": getStudentName(student),
-    "[codigo inscripcion]": cleanText(student.matricula?.codigoInscripcion || student.matricula?.user?.dni || ""),
+    "[codigo inscripcion]": cleanText(codigoInstitucional),
     "[NOMBRE MODULO]": getModuloDocumentName(data.grupoModulo).toLocaleUpperCase("es-PE"),
+    "[carrera]": getCarreraName(data.grupoModulo),
     "[CARRERA]": getCarreraName(data.grupoModulo).toLocaleUpperCase("es-PE"),
     "[INICIO MODULO]": formatDate(data.grupoModulo.inicio || data.semestre?.inicio),
     "[FIN MODULO]": formatDate(data.grupoModulo.fin || data.semestre?.fin),
@@ -2983,9 +3189,11 @@ async function generateCertificadoPlanEstudios(input: {
   const { buffer: templateBuffer } = await ensureTemplateInStorage(TEMPLATES.certificadoPlanEstudios);
   const useAvatars = await getBooleanAppSetting(certificadoTituloAvatarSettingKey("certificado"), true);
   const avatarUrl = useAvatars ? cleanText(student.matricula?.user?.avatar || "") : "";
+  const generatedAt = new Date().toISOString();
+  const certificado = await ensureCertificadoRegistro(data, student, generatedAt);
   const xlsxBuffer = await applyCertificatePlanEstudiosUpdates(
     templateBuffer,
-    buildCertificateTokens(data, student, avatarUrl),
+    buildCertificateTokens(data, student, avatarUrl, certificado.codigoInstitucional),
     buildCertificateUnitRows(data, student),
     avatarUrl,
   );
@@ -3006,7 +3214,7 @@ async function generateCertificadoPlanEstudios(input: {
     moduloEstudianteId: input.moduloEstudianteId,
     pdf,
     excel,
-    generadoEn: new Date().toISOString(),
+    generadoEn: generatedAt,
   });
   return { pdf, excel, documento };
 }
@@ -3153,6 +3361,7 @@ async function docenteNameByGrupoModuloId() {
         id
         grupo {
           personal {
+            id
             displayName
             user { username nombre apellidoPaterno apellidoMaterno }
           }

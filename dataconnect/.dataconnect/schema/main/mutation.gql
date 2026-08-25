@@ -117,6 +117,15 @@ extend type Mutation {
     data: Carrera_Data!
   ): Carrera_KeyOutput! @fdc_generated(from: "Carrera", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Certificado` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  certificado_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Certificado_Data!
+  ): Certificado_KeyOutput! @fdc_generated(from: "Certificado", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `CertificadoTituloDocumento` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   certificadoTituloDocumento_insert(
@@ -764,6 +773,15 @@ extend type Mutation {
     """
     data: [Carrera_Data!]!
   ): [Carrera_KeyOutput!]! @fdc_generated(from: "Carrera", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Certificado` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  certificado_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Certificado_Data!]!
+  ): [Certificado_KeyOutput!]! @fdc_generated(from: "Certificado", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `CertificadoTituloDocumento` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1413,6 +1431,15 @@ extend type Mutation {
     data: Carrera_Data!
   ): Carrera_KeyOutput! @fdc_generated(from: "Carrera", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Certificado` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Certificado`.
+  """
+  certificado_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Certificado_Data!
+  ): Certificado_KeyOutput! @fdc_generated(from: "Certificado", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `CertificadoTituloDocumento` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CertificadoTituloDocumento`.
   """
   certificadoTituloDocumento_upsert(
@@ -2060,6 +2087,15 @@ extend type Mutation {
     """
     data: [Carrera_Data!]!
   ): [Carrera_KeyOutput!]! @fdc_generated(from: "Carrera", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Certificado` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Certificado`.
+  """
+  certificado_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Certificado_Data!]!
+  ): [Certificado_KeyOutput!]! @fdc_generated(from: "Certificado", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `CertificadoTituloDocumento` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CertificadoTituloDocumento`.
   """
@@ -2968,6 +3004,35 @@ extend type Mutation {
     """
     data: Carrera_Data!
   ): Carrera_KeyOutput @fdc_generated(from: "Carrera", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Certificado` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Certificado` or `null` if not found.
+  """
+  certificado_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Certificado_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Certificado_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Certificado_Data!
+  ): Certificado_KeyOutput @fdc_generated(from: "Certificado", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `CertificadoTituloDocumento` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `CertificadoTituloDocumento` or `null` if not found.
   """
@@ -4877,6 +4942,25 @@ extend type Mutation {
     data: Carrera_Data!
   ): Int! @fdc_generated(from: "Carrera", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Certificado` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  certificado_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Certificado_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Certificado_Data!
+  ): Int! @fdc_generated(from: "Certificado", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `CertificadoTituloDocumento` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   certificadoTituloDocumento_updateMany(
@@ -6309,6 +6393,30 @@ extend type Mutation {
     """
     first: Carrera_FirstRow
   ): Carrera_KeyOutput @fdc_generated(from: "Carrera", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Certificado` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  certificado_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Certificado_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Certificado_FirstRow
+  ): Certificado_KeyOutput @fdc_generated(from: "Certificado", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `CertificadoTituloDocumento` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -7857,6 +7965,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Carrera", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Certificado` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  certificado_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Certificado_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Certificado", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `CertificadoTituloDocumento` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

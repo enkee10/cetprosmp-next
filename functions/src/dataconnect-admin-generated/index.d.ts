@@ -78,6 +78,11 @@ export interface CertificadoTituloDocumento_Key {
   __typename?: 'CertificadoTituloDocumento_Key';
 }
 
+export interface Certificado_Key {
+  id: number;
+  __typename?: 'Certificado_Key';
+}
+
 export interface CreatePostData {
   post_insert: Post_Key;
 }

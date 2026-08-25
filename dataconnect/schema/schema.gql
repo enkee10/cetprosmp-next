@@ -707,6 +707,39 @@ type CertificadoTituloDocumento @table(name: "certificado_titulo_documentos", si
   moduloEstudianteId: Int! @col(name: "modulo_estudiante_id")
 }
 
+type Certificado @table(name: "certificados", singular: "certificado", plural: "certificados") @unique(fields: ["grupoModulo", "moduloEstudiante"]) @unique(fields: ["codigoInstitucional"]) @index(fields: ["semestreId"]) @index(fields: ["estudianteId"]) @index(fields: ["matriculaId"]) {
+  id: Int! @col(dataType: "serial")
+  codigoInstitucional: String! @col(name: "codigo_institucional", dataType: "varchar(20)")
+  correlativo: Int!
+  codigoLag: Int @col(name: "codigo_lag")
+  periodoNumero: Int @col(name: "periodo_numero")
+  anio: Int
+  generadoEn: Timestamp @col(name: "generado_en")
+  creadoEn: Timestamp @col(name: "creado_en")
+  actualizadoEn: Timestamp @col(name: "actualizado_en")
+
+  semestre: Semestre! @ref(fields: "semestreId", references: "id")
+  semestreId: Int! @col(name: "semestre_id")
+
+  estudiante: User @ref(fields: "estudianteId", references: "id")
+  estudianteId: Int @col(name: "estudiante_id")
+
+  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
+  matriculaId: Int! @col(name: "matricula_id")
+
+  grupoModulo: GrupoModulo! @ref(fields: "grupoModuloId", references: "id")
+  grupoModuloId: Int! @col(name: "grupo_modulo_id")
+
+  moduloEstudiante: ModuloEstudiante! @ref(fields: "moduloEstudianteId", references: "id")
+  moduloEstudianteId: Int! @col(name: "modulo_estudiante_id")
+
+  docente: Personal @ref(fields: "docenteId", references: "id")
+  docenteId: Int @col(name: "docente_id")
+
+  carrera: Carrera @ref(fields: "carreraId", references: "id")
+  carreraId: Int @col(name: "carrera_id")
+}
+
 type GrupoModuloUnidadDidactica @table(name: "grupo_modulo_unidades_didacticas", singular: "grupoModuloUnidadDidactica", plural: "grupoModuloUnidadesDidacticas") @unique(fields: ["grupoModulo", "unidadDidactica"]) @index(fields: ["grupoModuloId"]) @index(fields: ["unidadDidacticaId"]) {
   id: Int! @col(dataType: "serial")
   orden: Int

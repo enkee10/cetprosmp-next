@@ -456,7 +456,7 @@ export default function CertificadosTitulosPage() {
             }))}
             renderValue={(selected) => renderSelectedNames(selected, semestres.map((item) => ({ id: item.id, titulo: item.titulo })))}
             disabled={loadingOptions}
-            sx={{ minWidth: 220 }}
+            sx={{ width: 100, minWidth: 100, maxWidth: 100 }}
             MenuProps={selectMenuProps}
           />
 

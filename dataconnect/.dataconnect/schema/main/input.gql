@@ -77,6 +77,12 @@ It has the same format as `Carrera_Key`, but is only used as mutation return val
 """
 scalar Carrera_KeyOutput
 """
+✨ `Certificado_KeyOutput` returns the primary key fields of table type `Certificado`.
+
+It has the same format as `Certificado_Key`, but is only used as mutation return value.
+"""
+scalar Certificado_KeyOutput
+"""
 ✨ `CertificadoTituloDocumento_KeyOutput` returns the primary key fields of table type `CertificadoTituloDocumento`.
 
 It has the same format as `CertificadoTituloDocumento_Key`, but is only used as mutation return value.
@@ -5403,6 +5409,10 @@ input Carrera_Data {
   """
   tituloComercial_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Carrera`.`certificados_on_carrera` of type `[Certificado!]!`
+  """
+  certificados_on_carrera: [Certificado_Data!]
+  """
   ✨ Generated from Field `Carrera`.`planes_on_carrera` of type `[Plan!]!`
   """
   planes_on_carrera: [Plan_Data!]
@@ -5511,6 +5521,10 @@ input Carrera_Filter {
   ✨ Generated from Field `Carrera`.`tituloComercial` of type `String`
   """
   tituloComercial: String_Filter
+  """
+  ✨ Generated from Field `Carrera`.`certificados_on_carrera` of type `[Certificado!]!`
+  """
+  certificados_on_carrera: Certificado_ListFilter
   """
   ✨ Generated from Field `Carrera`.`planes_on_carrera` of type `[Plan!]!`
   """
@@ -6052,6 +6066,1073 @@ input Carrera_Order {
   ✨ Generated from Field `Carrera`.`tipoCarreraId_max` of type `Int`
   """
   tipoCarreraId_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Certificado'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Certificado_Data {
+  """
+  ✨ Generated from Field `Certificado`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Certificado`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `Certificado`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`carreraId` of type `Int`
+  """
+  carreraId: Int
+  """
+  ✨ `_expr` server value variant of `carreraId` (✨ Generated from Field `Certificado`.`carreraId` of type `Int`)
+  """
+  carreraId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `carreraId` (✨ Generated from Field `Certificado`.`carreraId` of type `Int`)
+  """
+  carreraId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`docenteId` of type `Int`
+  """
+  docenteId: Int
+  """
+  ✨ `_expr` server value variant of `docenteId` (✨ Generated from Field `Certificado`.`docenteId` of type `Int`)
+  """
+  docenteId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `docenteId` (✨ Generated from Field `Certificado`.`docenteId` of type `Int`)
+  """
+  docenteId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId` of type `Int`
+  """
+  estudianteId: Int
+  """
+  ✨ `_expr` server value variant of `estudianteId` (✨ Generated from Field `Certificado`.`estudianteId` of type `Int`)
+  """
+  estudianteId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `estudianteId` (✨ Generated from Field `Certificado`.`estudianteId` of type `Int`)
+  """
+  estudianteId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int
+  """
+  ✨ `_expr` server value variant of `grupoModuloId` (✨ Generated from Field `Certificado`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoModuloId` (✨ Generated from Field `Certificado`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int
+  """
+  ✨ `_expr` server value variant of `matriculaId` (✨ Generated from Field `Certificado`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `matriculaId` (✨ Generated from Field `Certificado`.`matriculaId` of type `Int!`)
+  """
+  matriculaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId` of type `Int!`
+  """
+  moduloEstudianteId: Int
+  """
+  ✨ `_expr` server value variant of `moduloEstudianteId` (✨ Generated from Field `Certificado`.`moduloEstudianteId` of type `Int!`)
+  """
+  moduloEstudianteId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `moduloEstudianteId` (✨ Generated from Field `Certificado`.`moduloEstudianteId` of type `Int!`)
+  """
+  moduloEstudianteId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`semestreId` of type `Int!`
+  """
+  semestreId: Int
+  """
+  ✨ `_expr` server value variant of `semestreId` (✨ Generated from Field `Certificado`.`semestreId` of type `Int!`)
+  """
+  semestreId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `semestreId` (✨ Generated from Field `Certificado`.`semestreId` of type `Int!`)
+  """
+  semestreId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`carrera` of type `Carrera`
+  """
+  carrera: Carrera_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`docente` of type `Personal`
+  """
+  docente: Personal_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`estudiante` of type `User`
+  """
+  estudiante: User_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudiante` of type `ModuloEstudiante!`
+  """
+  moduloEstudiante: ModuloEstudiante_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`semestre` of type `Semestre!`
+  """
+  semestre: Semestre_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`actualizadoEn` of type `Timestamp`
+  """
+  actualizadoEn: Timestamp
+  """
+  ✨ `_expr` server value variant of `actualizadoEn` (✨ Generated from Field `Certificado`.`actualizadoEn` of type `Timestamp`)
+  """
+  actualizadoEn_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `actualizadoEn` (✨ Generated from Field `Certificado`.`actualizadoEn` of type `Timestamp`)
+  """
+  actualizadoEn_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `actualizadoEn` (✨ Generated from Field `Certificado`.`actualizadoEn` of type `Timestamp`)
+  """
+  actualizadoEn_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`anio` of type `Int`
+  """
+  anio: Int
+  """
+  ✨ `_expr` server value variant of `anio` (✨ Generated from Field `Certificado`.`anio` of type `Int`)
+  """
+  anio_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `anio` (✨ Generated from Field `Certificado`.`anio` of type `Int`)
+  """
+  anio_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`codigoInstitucional` of type `String!`
+  """
+  codigoInstitucional: String
+  """
+  ✨ `_expr` server value variant of `codigoInstitucional` (✨ Generated from Field `Certificado`.`codigoInstitucional` of type `String!`)
+  """
+  codigoInstitucional_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag` of type `Int`
+  """
+  codigoLag: Int
+  """
+  ✨ `_expr` server value variant of `codigoLag` (✨ Generated from Field `Certificado`.`codigoLag` of type `Int`)
+  """
+  codigoLag_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `codigoLag` (✨ Generated from Field `Certificado`.`codigoLag` of type `Int`)
+  """
+  codigoLag_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`correlativo` of type `Int!`
+  """
+  correlativo: Int
+  """
+  ✨ `_expr` server value variant of `correlativo` (✨ Generated from Field `Certificado`.`correlativo` of type `Int!`)
+  """
+  correlativo_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `correlativo` (✨ Generated from Field `Certificado`.`correlativo` of type `Int!`)
+  """
+  correlativo_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`creadoEn` of type `Timestamp`
+  """
+  creadoEn: Timestamp
+  """
+  ✨ `_expr` server value variant of `creadoEn` (✨ Generated from Field `Certificado`.`creadoEn` of type `Timestamp`)
+  """
+  creadoEn_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `creadoEn` (✨ Generated from Field `Certificado`.`creadoEn` of type `Timestamp`)
+  """
+  creadoEn_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `creadoEn` (✨ Generated from Field `Certificado`.`creadoEn` of type `Timestamp`)
+  """
+  creadoEn_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`generadoEn` of type `Timestamp`
+  """
+  generadoEn: Timestamp
+  """
+  ✨ `_expr` server value variant of `generadoEn` (✨ Generated from Field `Certificado`.`generadoEn` of type `Timestamp`)
+  """
+  generadoEn_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `generadoEn` (✨ Generated from Field `Certificado`.`generadoEn` of type `Timestamp`)
+  """
+  generadoEn_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `generadoEn` (✨ Generated from Field `Certificado`.`generadoEn` of type `Timestamp`)
+  """
+  generadoEn_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero` of type `Int`
+  """
+  periodoNumero: Int
+  """
+  ✨ `_expr` server value variant of `periodoNumero` (✨ Generated from Field `Certificado`.`periodoNumero` of type `Int`)
+  """
+  periodoNumero_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `periodoNumero` (✨ Generated from Field `Certificado`.`periodoNumero` of type `Int`)
+  """
+  periodoNumero_update: [Int_Update!] @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'Certificado'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Certificado_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Certificado_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Certificado_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Certificado_Filter!]
+  """
+  ✨ Generated from Field `Certificado`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`carreraId` of type `Int`
+  """
+  carreraId: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`docenteId` of type `Int`
+  """
+  docenteId: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId` of type `Int`
+  """
+  estudianteId: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId` of type `Int!`
+  """
+  matriculaId: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId` of type `Int!`
+  """
+  moduloEstudianteId: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`semestreId` of type `Int!`
+  """
+  semestreId: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`carrera` of type `Carrera`
+  """
+  carrera: Carrera_Filter
+  """
+  ✨ Generated from Field `Certificado`.`docente` of type `Personal`
+  """
+  docente: Personal_Filter
+  """
+  ✨ Generated from Field `Certificado`.`estudiante` of type `User`
+  """
+  estudiante: User_Filter
+  """
+  ✨ Generated from Field `Certificado`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Filter
+  """
+  ✨ Generated from Field `Certificado`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Filter
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudiante` of type `ModuloEstudiante!`
+  """
+  moduloEstudiante: ModuloEstudiante_Filter
+  """
+  ✨ Generated from Field `Certificado`.`semestre` of type `Semestre!`
+  """
+  semestre: Semestre_Filter
+  """
+  ✨ Generated from Field `Certificado`.`actualizadoEn` of type `Timestamp`
+  """
+  actualizadoEn: Timestamp_Filter
+  """
+  ✨ Generated from Field `Certificado`.`anio` of type `Int`
+  """
+  anio: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`codigoInstitucional` of type `String!`
+  """
+  codigoInstitucional: String_Filter
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag` of type `Int`
+  """
+  codigoLag: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`correlativo` of type `Int!`
+  """
+  correlativo: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`creadoEn` of type `Timestamp`
+  """
+  creadoEn: Timestamp_Filter
+  """
+  ✨ Generated from Field `Certificado`.`generadoEn` of type `Timestamp`
+  """
+  generadoEn: Timestamp_Filter
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero` of type `Int`
+  """
+  periodoNumero: Int_Filter
+}
+"""
+✨ Generated first-row input type for table 'Certificado'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Certificado_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Certificado_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Certificado_Filter
+}
+"""
+✨ Generated having input type for table 'Certificado'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Certificado_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Certificado_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Certificado_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Certificado_Having!]
+  """
+  ✨ Generated from Field `Certificado`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`actualizadoEn_count` of type `Int!`
+  """
+  actualizadoEn_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`anio_count` of type `Int!`
+  """
+  anio_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`carreraId_count` of type `Int!`
+  """
+  carreraId_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`codigoInstitucional_count` of type `Int!`
+  """
+  codigoInstitucional_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag_count` of type `Int!`
+  """
+  codigoLag_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`correlativo_count` of type `Int!`
+  """
+  correlativo_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`creadoEn_count` of type `Int!`
+  """
+  creadoEn_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`docenteId_count` of type `Int!`
+  """
+  docenteId_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId_count` of type `Int!`
+  """
+  estudianteId_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`generadoEn_count` of type `Int!`
+  """
+  generadoEn_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId_count` of type `Int!`
+  """
+  matriculaId_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId_count` of type `Int!`
+  """
+  moduloEstudianteId_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero_count` of type `Int!`
+  """
+  periodoNumero_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`semestreId_count` of type `Int!`
+  """
+  semestreId_count: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`anio_sum` of type `Int`
+  """
+  anio_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`carreraId_sum` of type `Int`
+  """
+  carreraId_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag_sum` of type `Int`
+  """
+  codigoLag_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`correlativo_sum` of type `Int`
+  """
+  correlativo_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`docenteId_sum` of type `Int`
+  """
+  docenteId_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId_sum` of type `Int`
+  """
+  estudianteId_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId_sum` of type `Int`
+  """
+  matriculaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId_sum` of type `Int`
+  """
+  moduloEstudianteId_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero_sum` of type `Int`
+  """
+  periodoNumero_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`semestreId_sum` of type `Int`
+  """
+  semestreId_sum: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`anio_avg` of type `Float`
+  """
+  anio_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`carreraId_avg` of type `Float`
+  """
+  carreraId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag_avg` of type `Float`
+  """
+  codigoLag_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`correlativo_avg` of type `Float`
+  """
+  correlativo_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`docenteId_avg` of type `Float`
+  """
+  docenteId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId_avg` of type `Float`
+  """
+  estudianteId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId_avg` of type `Float`
+  """
+  matriculaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId_avg` of type `Float`
+  """
+  moduloEstudianteId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero_avg` of type `Float`
+  """
+  periodoNumero_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`semestreId_avg` of type `Float`
+  """
+  semestreId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Certificado`.`actualizadoEn_min` of type `Timestamp`
+  """
+  actualizadoEn_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Certificado`.`anio_min` of type `Int`
+  """
+  anio_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`carreraId_min` of type `Int`
+  """
+  carreraId_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag_min` of type `Int`
+  """
+  codigoLag_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`correlativo_min` of type `Int`
+  """
+  correlativo_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`creadoEn_min` of type `Timestamp`
+  """
+  creadoEn_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Certificado`.`docenteId_min` of type `Int`
+  """
+  docenteId_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId_min` of type `Int`
+  """
+  estudianteId_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`generadoEn_min` of type `Timestamp`
+  """
+  generadoEn_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId_min` of type `Int`
+  """
+  matriculaId_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId_min` of type `Int`
+  """
+  moduloEstudianteId_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero_min` of type `Int`
+  """
+  periodoNumero_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`semestreId_min` of type `Int`
+  """
+  semestreId_min: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`actualizadoEn_max` of type `Timestamp`
+  """
+  actualizadoEn_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `Certificado`.`anio_max` of type `Int`
+  """
+  anio_max: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`carreraId_max` of type `Int`
+  """
+  carreraId_max: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag_max` of type `Int`
+  """
+  codigoLag_max: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`correlativo_max` of type `Int`
+  """
+  correlativo_max: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`creadoEn_max` of type `Timestamp`
+  """
+  creadoEn_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `Certificado`.`docenteId_max` of type `Int`
+  """
+  docenteId_max: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId_max` of type `Int`
+  """
+  estudianteId_max: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`generadoEn_max` of type `Timestamp`
+  """
+  generadoEn_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId_max` of type `Int`
+  """
+  matriculaId_max: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId_max` of type `Int`
+  """
+  moduloEstudianteId_max: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero_max` of type `Int`
+  """
+  periodoNumero_max: Int_Filter
+  """
+  ✨ Generated from Field `Certificado`.`semestreId_max` of type `Int`
+  """
+  semestreId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'Certificado'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Certificado_Key {
+  """
+  ✨ Generated from Field `Certificado`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Certificado`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'Certificado'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Certificado_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Certificado_Filter
+}
+"""
+✨ Generated order input type for table 'Certificado'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Certificado_Order {
+  """
+  ✨ Generated from Field `Certificado`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`carreraId` of type `Int`
+  """
+  carreraId: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`docenteId` of type `Int`
+  """
+  docenteId: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId` of type `Int`
+  """
+  estudianteId: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId` of type `Int!`
+  """
+  matriculaId: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId` of type `Int!`
+  """
+  moduloEstudianteId: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`semestreId` of type `Int!`
+  """
+  semestreId: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`carrera` of type `Carrera`
+  """
+  carrera: Carrera_Order
+  """
+  ✨ Generated from Field `Certificado`.`docente` of type `Personal`
+  """
+  docente: Personal_Order
+  """
+  ✨ Generated from Field `Certificado`.`estudiante` of type `User`
+  """
+  estudiante: User_Order
+  """
+  ✨ Generated from Field `Certificado`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Order
+  """
+  ✨ Generated from Field `Certificado`.`matricula` of type `Matricula!`
+  """
+  matricula: Matricula_Order
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudiante` of type `ModuloEstudiante!`
+  """
+  moduloEstudiante: ModuloEstudiante_Order
+  """
+  ✨ Generated from Field `Certificado`.`semestre` of type `Semestre!`
+  """
+  semestre: Semestre_Order
+  """
+  ✨ Generated from Field `Certificado`.`actualizadoEn` of type `Timestamp`
+  """
+  actualizadoEn: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`anio` of type `Int`
+  """
+  anio: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`codigoInstitucional` of type `String!`
+  """
+  codigoInstitucional: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag` of type `Int`
+  """
+  codigoLag: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`correlativo` of type `Int!`
+  """
+  correlativo: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`creadoEn` of type `Timestamp`
+  """
+  creadoEn: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`generadoEn` of type `Timestamp`
+  """
+  generadoEn: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero` of type `Int`
+  """
+  periodoNumero: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`actualizadoEn_count` of type `Int!`
+  """
+  actualizadoEn_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`anio_count` of type `Int!`
+  """
+  anio_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`carreraId_count` of type `Int!`
+  """
+  carreraId_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`codigoInstitucional_count` of type `Int!`
+  """
+  codigoInstitucional_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag_count` of type `Int!`
+  """
+  codigoLag_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`correlativo_count` of type `Int!`
+  """
+  correlativo_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`creadoEn_count` of type `Int!`
+  """
+  creadoEn_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`docenteId_count` of type `Int!`
+  """
+  docenteId_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId_count` of type `Int!`
+  """
+  estudianteId_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`generadoEn_count` of type `Int!`
+  """
+  generadoEn_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId_count` of type `Int!`
+  """
+  matriculaId_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId_count` of type `Int!`
+  """
+  moduloEstudianteId_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero_count` of type `Int!`
+  """
+  periodoNumero_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`semestreId_count` of type `Int!`
+  """
+  semestreId_count: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`anio_sum` of type `Int`
+  """
+  anio_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`carreraId_sum` of type `Int`
+  """
+  carreraId_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag_sum` of type `Int`
+  """
+  codigoLag_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`correlativo_sum` of type `Int`
+  """
+  correlativo_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`docenteId_sum` of type `Int`
+  """
+  docenteId_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId_sum` of type `Int`
+  """
+  estudianteId_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId_sum` of type `Int`
+  """
+  matriculaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId_sum` of type `Int`
+  """
+  moduloEstudianteId_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero_sum` of type `Int`
+  """
+  periodoNumero_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`semestreId_sum` of type `Int`
+  """
+  semestreId_sum: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`anio_avg` of type `Float`
+  """
+  anio_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`carreraId_avg` of type `Float`
+  """
+  carreraId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag_avg` of type `Float`
+  """
+  codigoLag_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`correlativo_avg` of type `Float`
+  """
+  correlativo_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`docenteId_avg` of type `Float`
+  """
+  docenteId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId_avg` of type `Float`
+  """
+  estudianteId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId_avg` of type `Float`
+  """
+  matriculaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId_avg` of type `Float`
+  """
+  moduloEstudianteId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero_avg` of type `Float`
+  """
+  periodoNumero_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`semestreId_avg` of type `Float`
+  """
+  semestreId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`actualizadoEn_min` of type `Timestamp`
+  """
+  actualizadoEn_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`anio_min` of type `Int`
+  """
+  anio_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`carreraId_min` of type `Int`
+  """
+  carreraId_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag_min` of type `Int`
+  """
+  codigoLag_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`correlativo_min` of type `Int`
+  """
+  correlativo_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`creadoEn_min` of type `Timestamp`
+  """
+  creadoEn_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`docenteId_min` of type `Int`
+  """
+  docenteId_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId_min` of type `Int`
+  """
+  estudianteId_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`generadoEn_min` of type `Timestamp`
+  """
+  generadoEn_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId_min` of type `Int`
+  """
+  matriculaId_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId_min` of type `Int`
+  """
+  moduloEstudianteId_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero_min` of type `Int`
+  """
+  periodoNumero_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`semestreId_min` of type `Int`
+  """
+  semestreId_min: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`actualizadoEn_max` of type `Timestamp`
+  """
+  actualizadoEn_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`anio_max` of type `Int`
+  """
+  anio_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`carreraId_max` of type `Int`
+  """
+  carreraId_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`codigoLag_max` of type `Int`
+  """
+  codigoLag_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`correlativo_max` of type `Int`
+  """
+  correlativo_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`creadoEn_max` of type `Timestamp`
+  """
+  creadoEn_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`docenteId_max` of type `Int`
+  """
+  docenteId_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`estudianteId_max` of type `Int`
+  """
+  estudianteId_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`generadoEn_max` of type `Timestamp`
+  """
+  generadoEn_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`matriculaId_max` of type `Int`
+  """
+  matriculaId_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`moduloEstudianteId_max` of type `Int`
+  """
+  moduloEstudianteId_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`periodoNumero_max` of type `Int`
+  """
+  periodoNumero_max: OrderDirection
+  """
+  ✨ Generated from Field `Certificado`.`semestreId_max` of type `Int`
+  """
+  semestreId_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'CertificadoTituloDocumento'. It includes all necessary fields for creating or upserting rows into table.
@@ -15927,6 +17008,10 @@ input GrupoModulo_Data {
   """
   sufijo_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `GrupoModulo`.`certificados_on_grupoModulo` of type `[Certificado!]!`
+  """
+  certificados_on_grupoModulo: [Certificado_Data!]
+  """
   ✨ Generated from Field `GrupoModulo`.`certificadoTituloDocumentos_on_grupoModulo` of type `[CertificadoTituloDocumento!]!`
   """
   certificadoTituloDocumentos_on_grupoModulo: [CertificadoTituloDocumento_Data!]
@@ -16031,6 +17116,10 @@ input GrupoModulo_Filter {
   ✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`
   """
   sufijo: String_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`certificados_on_grupoModulo` of type `[Certificado!]!`
+  """
+  certificados_on_grupoModulo: Certificado_ListFilter
   """
   ✨ Generated from Field `GrupoModulo`.`certificadoTituloDocumentos_on_grupoModulo` of type `[CertificadoTituloDocumento!]!`
   """
@@ -18258,6 +19347,10 @@ input Matricula_Data {
   """
   capacidadesTerminalesEstudiantes_on_matricula: [CapacidadTerminalEstudiante_Data!]
   """
+  ✨ Generated from Field `Matricula`.`certificados_on_matricula` of type `[Certificado!]!`
+  """
+  certificados_on_matricula: [Certificado_Data!]
+  """
   ✨ Generated from Field `Matricula`.`evaluacionesEstudiantes_on_matricula` of type `[EvaluacionEstudiante!]!`
   """
   evaluacionesEstudiantes_on_matricula: [EvaluacionEstudiante_Data!]
@@ -18378,6 +19471,10 @@ input Matricula_Filter {
   ✨ Generated from Field `Matricula`.`capacidadesTerminalesEstudiantes_on_matricula` of type `[CapacidadTerminalEstudiante!]!`
   """
   capacidadesTerminalesEstudiantes_on_matricula: CapacidadTerminalEstudiante_ListFilter
+  """
+  ✨ Generated from Field `Matricula`.`certificados_on_matricula` of type `[Certificado!]!`
+  """
+  certificados_on_matricula: Certificado_ListFilter
   """
   ✨ Generated from Field `Matricula`.`evaluacionesEstudiantes_on_matricula` of type `[EvaluacionEstudiante!]!`
   """
@@ -21943,6 +23040,10 @@ input ModuloEstudiante_Data {
   """
   puntaje_update: [Float_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `ModuloEstudiante`.`certificados_on_moduloEstudiante` of type `[Certificado!]!`
+  """
+  certificados_on_moduloEstudiante: [Certificado_Data!]
+  """
   ✨ Generated from Field `ModuloEstudiante`.`certificadoTituloDocumentos_on_moduloEstudiante` of type `[CertificadoTituloDocumento!]!`
   """
   certificadoTituloDocumentos_on_moduloEstudiante: [CertificadoTituloDocumento_Data!]
@@ -22011,6 +23112,10 @@ input ModuloEstudiante_Filter {
   ✨ Generated from Field `ModuloEstudiante`.`puntaje` of type `Float`
   """
   puntaje: Float_Filter
+  """
+  ✨ Generated from Field `ModuloEstudiante`.`certificados_on_moduloEstudiante` of type `[Certificado!]!`
+  """
+  certificados_on_moduloEstudiante: Certificado_ListFilter
   """
   ✨ Generated from Field `ModuloEstudiante`.`certificadoTituloDocumentos_on_moduloEstudiante` of type `[CertificadoTituloDocumento!]!`
   """
@@ -23974,6 +25079,10 @@ input Personal_Data {
   """
   memo_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Personal`.`certificados_on_docente` of type `[Certificado!]!`
+  """
+  certificados_on_docente: [Certificado_Data!]
+  """
   ✨ Generated from Field `Personal`.`grupos_on_personal` of type `[Grupo!]!`
   """
   grupos_on_personal: [Grupo_Data!]
@@ -24046,6 +25155,10 @@ input Personal_Filter {
   ✨ Generated from Field `Personal`.`memo` of type `String`
   """
   memo: String_Filter
+  """
+  ✨ Generated from Field `Personal`.`certificados_on_docente` of type `[Certificado!]!`
+  """
+  certificados_on_docente: Certificado_ListFilter
   """
   ✨ Generated from Field `Personal`.`grupos_on_personal` of type `[Grupo!]!`
   """
@@ -29441,6 +30554,10 @@ input Semestre_Data {
   """
   calendarios_on_semestre: [Calendario_Data!]
   """
+  ✨ Generated from Field `Semestre`.`certificados_on_semestre` of type `[Certificado!]!`
+  """
+  certificados_on_semestre: [Certificado_Data!]
+  """
   ✨ Generated from Field `Semestre`.`eventos_on_semestre` of type `[Evento!]!`
   """
   eventos_on_semestre: [Evento_Data!]
@@ -29553,6 +30670,10 @@ input Semestre_Filter {
   ✨ Generated from Field `Semestre`.`calendarios_on_semestre` of type `[Calendario!]!`
   """
   calendarios_on_semestre: Calendario_ListFilter
+  """
+  ✨ Generated from Field `Semestre`.`certificados_on_semestre` of type `[Certificado!]!`
+  """
+  certificados_on_semestre: Certificado_ListFilter
   """
   ✨ Generated from Field `Semestre`.`eventos_on_semestre` of type `[Evento!]!`
   """
@@ -32318,6 +33439,10 @@ input User_Data {
   """
   asistencias_on_registradoPor: [Asistencia_Data!]
   """
+  ✨ Generated from Field `User`.`certificados_on_estudiante` of type `[Certificado!]!`
+  """
+  certificados_on_estudiante: [Certificado_Data!]
+  """
   ✨ Generated from Field `User`.`efsrtPppEstudiantes_on_registradoPor` of type `[EfsrtPppEstudiante!]!`
   """
   efsrtPppEstudiantes_on_registradoPor: [EfsrtPppEstudiante_Data!]
@@ -32518,6 +33643,10 @@ input User_Filter {
   ✨ Generated from Field `User`.`asistencias_on_registradoPor` of type `[Asistencia!]!`
   """
   asistencias_on_registradoPor: Asistencia_ListFilter
+  """
+  ✨ Generated from Field `User`.`certificados_on_estudiante` of type `[Certificado!]!`
+  """
+  certificados_on_estudiante: Certificado_ListFilter
   """
   ✨ Generated from Field `User`.`efsrtPppEstudiantes_on_registradoPor` of type `[EfsrtPppEstudiante!]!`
   """

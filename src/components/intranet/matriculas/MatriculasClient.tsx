@@ -422,6 +422,8 @@ interface LastVerificationFailure {
   analysisMetadata?: DocumentoAnalisisTemporal | null;
 }
 
+const MISSING_DOCUMENT_IMAGE_API_FALLBACK_ATTEMPT = 7;
+
 const initialValues: MatriculaFormValues = {
   semestreId: '',
   tipoDocumento: 'DNI',
@@ -1263,6 +1265,7 @@ export function MatriculaForm({
   const [responsable, setResponsable] = useState<MatriculaResponsable | null>(null);
   const [responsableUser, setResponsableUser] = useState<MatriculaResponsableUser | null>(null);
   const [documentVerified, setDocumentVerified] = useState(false);
+  const [documentVerifiedByDniApiOnly, setDocumentVerifiedByDniApiOnly] = useState(false);
   const [isExistingUserWithImages, setIsExistingUserWithImages] = useState(false);
   const [shouldPersistDocumentImages, setShouldPersistDocumentImages] = useState(true);
   const [verificationFailureCount, setVerificationFailureCount] = useState(0);
@@ -1297,6 +1300,7 @@ export function MatriculaForm({
     setTouched((prev) => ({ ...prev, [key]: false }));
     if (documentIdentityChanged) {
       setDocumentVerified(false);
+      setDocumentVerifiedByDniApiOnly(false);
       setShouldPersistDocumentImages(true);
       setDocumentAnalysisMetadata(null);
       setVerificationFailureCount(0);
@@ -1339,6 +1343,7 @@ export function MatriculaForm({
       setBackImage(null);
     }
     setDocumentVerified(false);
+    setDocumentVerifiedByDniApiOnly(false);
     setDocumentAnalysisMetadata(null);
     setShouldPersistDocumentImages(true);
     if (side === 'frente') {
@@ -1447,6 +1452,7 @@ export function MatriculaForm({
             ? { url: matricula.user.dniImagenReversoUrl, path: '', contentType: 'image/*' }
             : null);
           setDocumentVerified(true);
+          setDocumentVerifiedByDniApiOnly(false);
           setIsExistingUserWithImages(Boolean(matricula.user?.dniImagenFrenteUrl && matricula.user?.dniImagenReversoUrl));
         } else {
           setCourseChangeExpired(false);
@@ -1464,6 +1470,7 @@ export function MatriculaForm({
             setFrontImage(frontUrl ? { url: frontUrl, path: '', contentType: 'image/*' } : null);
             setBackImage(backUrl ? { url: backUrl, path: '', contentType: 'image/*' } : null);
             setDocumentVerified(Boolean(frontUrl && backUrl));
+            setDocumentVerifiedByDniApiOnly(false);
             setIsExistingUserWithImages(Boolean(frontUrl && backUrl));
             setShouldPersistDocumentImages(Boolean(frontUrl && backUrl));
           } else {
@@ -1476,6 +1483,7 @@ export function MatriculaForm({
             setFrontImage(null);
             setBackImage(null);
             setDocumentVerified(false);
+            setDocumentVerifiedByDniApiOnly(false);
             setIsExistingUserWithImages(false);
             setShouldPersistDocumentImages(true);
           }
@@ -1619,6 +1627,21 @@ export function MatriculaForm({
     }));
   }, []);
 
+  const allowContinueWithDniApiOnly = useCallback((reniecDatos: Partial<MatriculaFormValues> | null | undefined) => {
+    const documentNumber = normalizeDocumentNumber(values.dni);
+    applyVerifiedDocumentData(null, reniecDatos, 'DNI', documentNumber, '');
+    setDocumentVerified(true);
+    setDocumentVerifiedByDniApiOnly(true);
+    setShouldPersistDocumentImages(false);
+    setIsExistingUserWithImages(false);
+    setDocumentAnalysisMetadata(null);
+    setFrontFileVerificationError(null);
+    setBackFileVerificationError(null);
+    setLastVerificationFailure(null);
+    setVerificationFailureCount(MISSING_DOCUMENT_IMAGE_API_FALLBACK_ATTEMPT);
+    setSuccessMessage('Datos verificados con API de DNI. Completa los datos faltantes antes de guardar.');
+  }, [applyVerifiedDocumentData, values.dni]);
+
   const allowContinueAfterThirdFailure = useCallback((failure: LastVerificationFailure) => {
     const aiResult = failure.aiResult ?? null;
     const detectedType = normalizeAiDocumentType(aiResult?.tipoDocumento) || (values.tipoDocumento === 'CE' ? 'CE' : 'DNI');
@@ -1626,6 +1649,7 @@ export function MatriculaForm({
     const detectedExpiration = normalizeDateInput(aiResult?.fechaVencimiento);
     applyVerifiedDocumentData(aiResult, failure.reniecDatos, detectedType, detectedNumber, detectedExpiration);
     setDocumentVerified(true);
+    setDocumentVerifiedByDniApiOnly(false);
     setDocumentAnalysisMetadata(failure.analysisMetadata ?? null);
     setFrontFileVerificationError(null);
     setBackFileVerificationError(null);
@@ -1658,13 +1682,19 @@ export function MatriculaForm({
     return shouldPersist;
   };
 
+  const getMissingDocumentImageError = () => {
+    if (!frontFile) return 'Sube la imagen del DNI frente.';
+    if (!backFile) return 'Sube la imagen del DNI reverso.';
+    return null;
+  };
+
   const validateSectionOne = () => {
     if (!values.semestreId) return 'Selecciona un periodo.';
     if (!values.tipoDocumento) return 'Selecciona el tipo de documento.';
     const documentNumberError = getDocumentNumberValidationError(values.tipoDocumento, values.dni);
     if (documentNumberError) return documentNumberError;
-    if (!frontFile) return 'Sube la imagen del DNI frente.';
-    if (!backFile) return 'Sube la imagen del DNI reverso.';
+    const missingDocumentImageError = getMissingDocumentImageError();
+    if (missingDocumentImageError) return missingDocumentImageError;
     return null;
   };
 
@@ -1732,6 +1762,10 @@ export function MatriculaForm({
 
     const sectionError = validateSectionOne();
     if (sectionError) {
+      const missingDocumentImageError = getMissingDocumentImageError();
+      const nextFailureCount = missingDocumentImageError
+        ? verificationFailureCount + 1
+        : verificationFailureCount;
       setTouched((prev) => ({
         ...prev,
         semestreId: true,
@@ -1739,6 +1773,39 @@ export function MatriculaForm({
         frontFile: true,
         backFile: true,
       }));
+
+      if (
+        missingDocumentImageError
+        && values.tipoDocumento === 'DNI'
+        && nextFailureCount >= MISSING_DOCUMENT_IMAGE_API_FALLBACK_ATTEMPT
+      ) {
+        setLoading(true);
+        setMessage(null);
+        setSuccessMessage(null);
+        setFrontFileVerificationError(null);
+        setBackFileVerificationError(null);
+        setDocumentAnalysisMetadata(null);
+        try {
+          const reniecResult = await fetchReniecForVerification();
+          allowContinueWithDniApiOnly(reniecResult?.datos ?? null);
+        } catch (error) {
+          setVerificationFailureCount(nextFailureCount);
+          const errorMessage = getCallableErrorMessage(error, 'No se pudo verificar el DNI con el API.');
+          setMessage(isStandalone ? null : errorMessage);
+          setFrontFileVerificationError(!frontFile ? missingDocumentImageError : null);
+          setBackFileVerificationError(!backFile ? missingDocumentImageError : null);
+          scrollToFormField('dni');
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (missingDocumentImageError) {
+        setVerificationFailureCount(nextFailureCount);
+        setFrontFileVerificationError(!frontFile ? missingDocumentImageError : null);
+        setBackFileVerificationError(!backFile ? missingDocumentImageError : null);
+      }
       setMessage(isStandalone ? null : sectionError);
       scrollToFormField(getSectionOneFirstInvalidField());
       return;
@@ -1846,6 +1913,7 @@ export function MatriculaForm({
           '',
         );
         setDocumentVerified(true);
+        setDocumentVerifiedByDniApiOnly(false);
         setVerificationFailureCount(0);
         setLastVerificationFailure(null);
         setFrontFileVerificationError(null);
@@ -1926,6 +1994,7 @@ export function MatriculaForm({
 
       applyVerifiedDocumentData(aiResult, reniecDatos, detectedType, detectedNumber, detectedExpiration);
       setDocumentVerified(true);
+      setDocumentVerifiedByDniApiOnly(false);
       setVerificationFailureCount(0);
       setLastVerificationFailure(null);
       setFrontFileVerificationError(null);
@@ -2030,11 +2099,12 @@ export function MatriculaForm({
     setMessage(null);
     setSuccessMessage(null);
     try {
+      const shouldProcessDocumentImages = shouldPersistDocumentImages && !documentVerifiedByDniApiOnly;
       const [finalFrontImage, finalBackImage] = await Promise.all([
-        shouldPersistDocumentImages && !frontImage && frontFile
+        shouldProcessDocumentImages && !frontImage && frontFile
           ? uploadDocumentImage(frontFile, 'frente')
           : Promise.resolve(frontImage),
-        shouldPersistDocumentImages && !backImage && backFile
+        shouldProcessDocumentImages && !backImage && backFile
           ? uploadDocumentImage(backFile, 'reverso')
           : Promise.resolve(backImage),
       ]);
@@ -2060,9 +2130,9 @@ export function MatriculaForm({
         paqueteId: Number(values.paqueteId),
         grupoId: Number(values.grupoId),
         ...(isStandalone ? { formularioMatriculaTipo: standaloneFormKind } : {}),
-        dniImagenFrente: shouldPersistDocumentImages ? finalFrontImage : null,
-        dniImagenReverso: shouldPersistDocumentImages ? finalBackImage : null,
-        procesarImagenesDni: shouldPersistDocumentImages,
+        dniImagenFrente: shouldProcessDocumentImages ? finalFrontImage : null,
+        dniImagenReverso: shouldProcessDocumentImages ? finalBackImage : null,
+        procesarImagenesDni: shouldProcessDocumentImages,
         analisisDocumentoTemporal: documentAnalysisMetadata,
       });
       const workspaceWarnings = result.data.workspaceWarnings || [];

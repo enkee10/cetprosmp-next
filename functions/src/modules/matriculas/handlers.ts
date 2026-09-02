@@ -937,7 +937,7 @@ const EDITOR_DOCUMENTOS_MATRICULA_FIELDS = `
 
 const LIST_EDITOR_DOCUMENTOS_MATRICULAS_QUERY = `
   query ListEditorDocumentosMatriculas($semestreId: Int!) {
-    matriculas(where: { semestreId: { eq: $semestreId } }, limit: 30, orderBy: [{id: DESC}]) {
+    matriculas(where: { semestreId: { eq: $semestreId } }, limit: 60, orderBy: [{id: DESC}]) {
       ${EDITOR_DOCUMENTOS_MATRICULA_FIELDS}
     }
   }
@@ -5038,7 +5038,7 @@ export const listEditorDocumentosMatriculas = https.onCall(async (data, context)
       .filter((matricula) => Number(matricula.semestreId) === semestreId)
       .slice()
       .sort((a, b) => b.id - a.id)
-      .slice(0, 30);
+      .slice(0, 60);
     const matriculasWithModuloLinks = await hydrateMatriculaListModuloLinks(matriculas);
     return { matriculas: await hydrateMatriculaListAvatarTiny(matriculasWithModuloLinks), semestreId };
   } catch (error) {

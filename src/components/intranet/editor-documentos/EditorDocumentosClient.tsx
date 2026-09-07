@@ -451,10 +451,14 @@ export function EditorDocumentosPage() {
         field: 'estudiante',
         headerName: 'Estudiante',
         flex: 1,
-        minWidth: 220,
-        valueGetter: (_value, row) => [studentName(row.user), editorMatriculaGroupName(row)].filter(Boolean).join(' '),
+        minWidth: 260,
+        valueGetter: (_value, row) =>
+          [studentName(row.user), editorMatriculaGroupName(row), responsableFormularioName(row.responsableUser)]
+            .filter(Boolean)
+            .join(' '),
         renderCell: ({ row }) => {
           const groupName = editorMatriculaGroupName(row);
+          const responsable = responsableFormularioName(row.responsableUser);
           return (
             <Box sx={{ minWidth: 0 }}>
               <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.25 }}>
@@ -463,6 +467,11 @@ export function EditorDocumentosPage() {
               {groupName ? (
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.25 }}>
                   {groupName}
+                </Typography>
+              ) : null}
+              {responsable ? (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.25 }}>
+                  Llenado por: {responsable}
                 </Typography>
               ) : null}
             </Box>

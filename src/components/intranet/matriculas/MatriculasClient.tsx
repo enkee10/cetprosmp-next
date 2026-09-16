@@ -611,6 +611,26 @@ const getDocumentNumberValidationError = (tipoDocumento: string, value: unknown)
   return '';
 };
 
+const hasDocumentLookupData = (lookupDatos: Partial<MatriculaFormValues> | null | undefined) => {
+  const keys: Array<keyof MatriculaFormValues> = [
+    'apellidoPaterno',
+    'apellidoMaterno',
+    'nombre',
+    'sexo',
+    'nacionalidad',
+    'fechaNacimiento',
+    'estadoCivil',
+    'direccion',
+    'distrito',
+    'instruccion',
+    'nombreColegio',
+    'celular',
+    'telefono',
+    'email',
+  ];
+  return keys.some((key) => Boolean(asString(lookupDatos?.[key]).trim()));
+};
+
 const isValidEmail = (value: unknown) => {
   const text = asString(value).trim();
   if (!text) return true;
@@ -988,13 +1008,14 @@ const getGrupoModuloMenuName = (grupoModulo: MatriculaGrupoModuloOption) => {
 };
 
 const getGrupoModuloPrintGroupName = (grupoModulo: MatriculaGrupoModuloOption) => {
+  const nombre = asString(grupoModulo.nombre).trim();
+  if (nombre) return nombre;
+
+  const moduloNombre = asString(grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial).trim();
+  if (moduloNombre) return moduloNombre;
+
   const grupoNombre = asString(grupoModulo.grupo?.nombreDisplay).trim();
-  const moduloNombre = getGrupoModuloFilterLabel(grupoModulo);
-  const normalizeLabel = (value: string) => value.trim().toLocaleLowerCase('es').replace(/\s+/g, ' ');
-  if (grupoNombre && moduloNombre && normalizeLabel(grupoNombre) !== normalizeLabel(moduloNombre)) {
-    return `${grupoNombre} - ${moduloNombre}`;
-  }
-  return moduloNombre || grupoNombre || `Grupo-modulo ${grupoModulo.id}`;
+  return grupoNombre || `Grupo-modulo ${grupoModulo.id}`;
 };
 
 const matriculaBelongsToGrupoModulo = (
@@ -1627,9 +1648,18 @@ export function MatriculaForm({
     }));
   }, []);
 
-  const allowContinueWithDniApiOnly = useCallback((reniecDatos: Partial<MatriculaFormValues> | null | undefined) => {
+  const allowContinueWithDocumentLookupOnly = useCallback((lookupDatos: Partial<MatriculaFormValues> | null | undefined) => {
+    const documentType = lookupDatos?.tipoDocumento === 'CE' || values.tipoDocumento === 'CE' ? 'CE' : 'DNI';
     const documentNumber = normalizeDocumentNumber(values.dni);
-    applyVerifiedDocumentData(null, reniecDatos, 'DNI', documentNumber, '');
+    if (hasDocumentLookupData(lookupDatos)) {
+      applyVerifiedDocumentData(null, lookupDatos, documentType, documentNumber, '');
+    } else {
+      setValues((prev) => ({
+        ...prev,
+        tipoDocumento: documentType,
+        dni: documentNumber || prev.dni,
+      }));
+    }
     setDocumentVerified(true);
     setDocumentVerifiedByDniApiOnly(true);
     setShouldPersistDocumentImages(false);
@@ -1639,8 +1669,8 @@ export function MatriculaForm({
     setBackFileVerificationError(null);
     setLastVerificationFailure(null);
     setVerificationFailureCount(MISSING_DOCUMENT_IMAGE_API_FALLBACK_ATTEMPT);
-    setSuccessMessage('Datos verificados con API de DNI. Completa los datos faltantes antes de guardar.');
-  }, [applyVerifiedDocumentData, values.dni]);
+    setSuccessMessage('Documento habilitado sin imagenes. Completa los datos faltantes antes de guardar.');
+  }, [applyVerifiedDocumentData, values.dni, values.tipoDocumento]);
 
   const allowContinueAfterThirdFailure = useCallback((failure: LastVerificationFailure) => {
     const aiResult = failure.aiResult ?? null;
@@ -1776,7 +1806,8 @@ export function MatriculaForm({
 
       if (
         missingDocumentImageError
-        && values.tipoDocumento === 'DNI'
+        && sectionError === missingDocumentImageError
+        && (values.tipoDocumento === 'DNI' || values.tipoDocumento === 'CE')
         && nextFailureCount >= MISSING_DOCUMENT_IMAGE_API_FALLBACK_ATTEMPT
       ) {
         setLoading(true);
@@ -1787,10 +1818,10 @@ export function MatriculaForm({
         setDocumentAnalysisMetadata(null);
         try {
           const reniecResult = await fetchReniecForVerification();
-          allowContinueWithDniApiOnly(reniecResult?.datos ?? null);
+          allowContinueWithDocumentLookupOnly(reniecResult?.datos ?? null);
         } catch (error) {
           setVerificationFailureCount(nextFailureCount);
-          const errorMessage = getCallableErrorMessage(error, 'No se pudo verificar el DNI con el API.');
+          const errorMessage = getCallableErrorMessage(error, 'No se pudo verificar el documento.');
           setMessage(isStandalone ? null : errorMessage);
           setFrontFileVerificationError(!frontFile ? missingDocumentImageError : null);
           setBackFileVerificationError(!backFile ? missingDocumentImageError : null);
@@ -3519,10 +3550,15 @@ export function MatriculasPage() {
   const getCurrentListGroupName = useCallback(() => {
     if (isDirectGrupoModuloView) {
       const directGrupoModulo = grupoModuloFilterOptions.find((item) => String(item.id) === directGrupoModuloId);
-      return directGrupoModulo ? getGrupoModuloFilterLabel(directGrupoModulo) : 'Lista de matriculados';
+      return directGrupoModulo ? getGrupoModuloPrintGroupName(directGrupoModulo) : 'Lista de matriculados';
     }
     if (selectedGrupoModuloFilterIds.length === 1) {
-      return grupoModuloFilterLabelById.get(selectedGrupoModuloFilterIds[0]) || 'Lista de matriculados';
+      const selectedGrupoModulo = selectedGrupoModuloFilterOptions.find(
+        (item) => String(item.id) === selectedGrupoModuloFilterIds[0],
+      );
+      return selectedGrupoModulo
+        ? getGrupoModuloPrintGroupName(selectedGrupoModulo)
+        : grupoModuloFilterLabelById.get(selectedGrupoModuloFilterIds[0]) || 'Lista de matriculados';
     }
     if (selectedGrupoModuloFilterIds.length > 1) return `${selectedGrupoModuloFilterIds.length} grupos seleccionados`;
     return selectedSemestreFilterLabel ? `Todos - ${selectedSemestreFilterLabel}` : 'Lista de matriculados';
@@ -3531,6 +3567,7 @@ export function MatriculasPage() {
     grupoModuloFilterLabelById,
     grupoModuloFilterOptions,
     isDirectGrupoModuloView,
+    selectedGrupoModuloFilterOptions,
     selectedGrupoModuloFilterIds,
     selectedSemestreFilterLabel,
   ]);

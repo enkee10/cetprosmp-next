@@ -5352,18 +5352,25 @@ export const verificarMatriculaReniec = https.onCall(async (data, context) => {
   }
 
   try {
-    const [existingUser, dniDataResult] = await Promise.allSettled([
-      findStudentUserByDocument("DNI", documentNumber),
-      fetchPeruDevsDni(documentNumber),
-    ]);
-    const existingUserValue = existingUser.status === "fulfilled" ? existingUser.value : null;
-    if (existingUser.status === "rejected") {
-      console.error("Error finding existing user for matricula verification:", existingUser.reason);
+    const existingUser = await findStudentUserByDocument("DNI", documentNumber);
+    if (existingUser) {
+      return {
+        userExists: true,
+        datos: mergeSavedUserWithOcr(existingUser, {
+          tipoDocumento: "DNI",
+          dni: documentNumber,
+        }),
+        documentImagePolicy: getDocumentImagePolicy(existingUser),
+      };
     }
-    if (dniDataResult.status === "rejected" && !existingUserValue) {
-      throw dniDataResult.reason;
+
+    let dniData: PeruDevsDniResult | null = null;
+    try {
+      dniData = await fetchPeruDevsDni(documentNumber);
+    } catch (apiError) {
+      console.warn("DNI API returned no data for matricula verification:", apiError);
     }
-    const dniData = dniDataResult.status === "fulfilled" ? dniDataResult.value : null;
+
     const reniecData: OcrIdentityData = dniData ? {
       tipoDocumento: "DNI",
       dni: documentNumber,
@@ -5379,9 +5386,9 @@ export const verificarMatriculaReniec = https.onCall(async (data, context) => {
     };
 
     return {
-      userExists: Boolean(existingUserValue),
-      datos: mergeSavedUserWithOcr(existingUserValue, reniecData),
-      documentImagePolicy: getDocumentImagePolicy(existingUserValue),
+      userExists: false,
+      datos: reniecData,
+      documentImagePolicy: getDocumentImagePolicy(null),
     };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;

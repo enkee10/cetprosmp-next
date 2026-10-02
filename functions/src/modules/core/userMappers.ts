@@ -477,6 +477,7 @@ export function buildModuloDataFromInput(input: Record<string, unknown>): DataCo
     tituloComercial: asNullableString(input.tituloComercial),
     orden: toIntegerOrNull(input.orden),
     descripcion: asNullableString(input.descripcion),
+    tipoCompetencia: asNullableString(input.tipoCompetencia),
     competencia: asNullableString(input.competencia),
     horas: toNumberOrNull(input.horas),
     creditos: toNumberOrNull(input.creditos),

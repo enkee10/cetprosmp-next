@@ -22197,6 +22197,14 @@ input Modulo_Data {
   """
   slug_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Modulo`.`tipoCompetencia` of type `String`
+  """
+  tipoCompetencia: String
+  """
+  ✨ `_expr` server value variant of `tipoCompetencia` (✨ Generated from Field `Modulo`.`tipoCompetencia` of type `String`)
+  """
+  tipoCompetencia_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Modulo`.`titulo` of type `String`
   """
   titulo: String
@@ -22325,6 +22333,10 @@ input Modulo_Filter {
   ✨ Generated from Field `Modulo`.`slug` of type `String`
   """
   slug: String_Filter
+  """
+  ✨ Generated from Field `Modulo`.`tipoCompetencia` of type `String`
+  """
+  tipoCompetencia: String_Filter
   """
   ✨ Generated from Field `Modulo`.`titulo` of type `String`
   """
@@ -22463,6 +22475,10 @@ input Modulo_Having {
   ✨ Generated from Field `Modulo`.`slug_count` of type `Int!`
   """
   slug_count: Int_Filter
+  """
+  ✨ Generated from Field `Modulo`.`tipoCompetencia_count` of type `Int!`
+  """
+  tipoCompetencia_count: Int_Filter
   """
   ✨ Generated from Field `Modulo`.`tituloComercial_count` of type `Int!`
   """
@@ -22711,6 +22727,10 @@ input Modulo_Order {
   """
   slug: OrderDirection
   """
+  ✨ Generated from Field `Modulo`.`tipoCompetencia` of type `String`
+  """
+  tipoCompetencia: OrderDirection
+  """
   ✨ Generated from Field `Modulo`.`titulo` of type `String`
   """
   titulo: OrderDirection
@@ -22782,6 +22802,10 @@ input Modulo_Order {
   ✨ Generated from Field `Modulo`.`slug_count` of type `Int!`
   """
   slug_count: OrderDirection
+  """
+  ✨ Generated from Field `Modulo`.`tipoCompetencia_count` of type `Int!`
+  """
+  tipoCompetencia_count: OrderDirection
   """
   ✨ Generated from Field `Modulo`.`tituloComercial_count` of type `Int!`
   """

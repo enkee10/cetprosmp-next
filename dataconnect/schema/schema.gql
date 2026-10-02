@@ -178,6 +178,7 @@ type Modulo @table(name: "modulos") @index(fields: ["carreraId"]) {
   orden: Int
   descripcion: String
   descripcion2: String @col(name: "descripcion_2")
+  tipoCompetencia: String @col(name: "tipo_competencia")
   competencia: String @col(dataType: "text")
   horas: Int
   creditos: Int

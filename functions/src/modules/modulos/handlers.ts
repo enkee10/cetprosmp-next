@@ -50,6 +50,8 @@ const LIST_MODULOS_QUERY = `
       tituloComercial
       orden
       descripcion
+      tipoCompetencia
+      competencia
       horas
       creditos
       duracionEfsrt
@@ -112,6 +114,7 @@ const GET_MODULO_QUERY = `
       tituloComercial
       orden
       descripcion
+      tipoCompetencia
       competencia
       horas
       creditos

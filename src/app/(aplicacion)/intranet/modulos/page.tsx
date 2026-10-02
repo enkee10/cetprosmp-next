@@ -18,6 +18,7 @@ interface Modulo {
   tituloComercial: string | null;
   orden: number | null;
   descripcion: string | null;
+  tipoCompetencia: string | null;
   horas: number | null;
   creditos: number | null;
   duracionEfsrt: number | null;
@@ -143,6 +144,7 @@ export default function ModulosPage() {
       plan: true,
       horas: true,
       creditos: true,
+      tipoCompetencia: true,
       duracionEfsrt: true,
       creditosEfsrt: true,
       actions: true,
@@ -349,6 +351,13 @@ export default function ModulosPage() {
         minWidth: 70,
         maxWidth: 70,
         valueGetter: (_value, row: Modulo) => (row.creditos != null ? row.creditos : null),
+      },
+      {
+        field: 'tipoCompetencia',
+        headerName: 'Tipo comp.',
+        width: 145,
+        minWidth: 145,
+        valueGetter: (_value, row: Modulo) => row.tipoCompetencia || '',
       },
       {
         field: 'duracionEfsrt',

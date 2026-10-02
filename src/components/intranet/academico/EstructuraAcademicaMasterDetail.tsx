@@ -72,6 +72,7 @@ interface ModuloDetalle {
   tituloComercial: string | null;
   orden: number | null;
   descripcion: string | null;
+  tipoCompetencia: string | null;
   competencia: string | null;
   horas: number | null;
   creditos: number | null;

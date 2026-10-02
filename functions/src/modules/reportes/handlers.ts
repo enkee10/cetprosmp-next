@@ -2763,7 +2763,9 @@ function fillNomina(updates: SpreadsheetUpdate[], sheetName: string, data: Repor
   const ageColumn = data.opcionOcupacional ? "Q" : "I";
   const conditionColumn = data.opcionOcupacional ? "S" : "J";
   const studentCode = (student: ReporteEstudiante) =>
-    cleanText(student.matricula?.codigoInscripcion) || cleanText(student.matricula?.user?.dni);
+    data.opcionOcupacional
+      ? cleanText(student.matricula?.codigoInscripcion) || cleanText(student.matricula?.user?.dni)
+      : cleanText(student.matricula?.user?.dni) || cleanText(student.matricula?.codigoInscripcion);
 
   let men = 0;
   let women = 0;

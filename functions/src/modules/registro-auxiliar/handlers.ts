@@ -1629,9 +1629,12 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
       throw new https.HttpsError("failed-precondition", "El grupo-modulo no tiene grupo, modulo, paquete o semestre asociado.");
     }
 
-    const dniData = await fetchPeruDevsDni(dni);
     const existingUser = await findRegistroAuxiliarUserByDni(dni);
-    const userId = await ensureRegistroAuxiliarStudentUser(dni, dniData, existingUser, context);
+    let userId = existingUser?.id ?? null;
+    if (!userId) {
+      const dniData = await fetchPeruDevsDni(dni);
+      userId = await ensureRegistroAuxiliarStudentUser(dni, dniData, null, context);
+    }
 
     const duplicates = await dataConnect.executeGraphql<{
       modulosEstudiantesByGrupoModulo: RegistroAuxiliarModuloEstudiante[];

@@ -219,6 +219,7 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
       tituloComercial
       orden
       descripcion
+      tipoCompetencia
       competencia
       horas
       creditos
@@ -332,6 +333,7 @@ const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
         tituloComercial
         orden
         descripcion
+        tipoCompetencia
         competencia
         horas
         creditos
@@ -721,6 +723,7 @@ const editableAcademicFields: Record<EditableAcademicEntity, Record<string, Edit
     orden: "number",
     descripcion: "text",
     competencia: "text",
+    tipoCompetencia: "text",
     horas: "number",
     creditos: "number",
     metas: "number",
@@ -932,6 +935,7 @@ function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
       tituloComercial: moduloWithPlan.tituloComercial ?? null,
       orden: moduloWithPlan.orden ?? null,
       descripcion: moduloWithPlan.descripcion ?? null,
+      tipoCompetencia: moduloWithPlan.tipoCompetencia ?? null,
       competencia: moduloWithPlan.competencia ?? null,
       horas: moduloWithPlan.horas ?? null,
       creditos: moduloWithPlan.creditos ?? null,

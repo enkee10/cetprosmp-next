@@ -413,13 +413,13 @@ export const UPDATE_EVENTO_OCURRENCIA_MUTATION = `
 `;
 
 export const INSERT_MODULO_MUTATION = `
-  mutation InsertModulo($data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion tipoCompetencia competencia horas creditos duracionEfsrt creditosEfsrt metas activo slug comun planId")) {
+  mutation InsertModulo($data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos duracionEfsrt creditosEfsrt metas activo slug comun planId")) {
     modulo_insert(data: $data)
   }
 `;
 
 export const UPDATE_MODULO_MUTATION = `
-  mutation UpdateModulo($id: Int!, $data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion tipoCompetencia competencia horas creditos duracionEfsrt creditosEfsrt metas activo slug comun planId")) {
+  mutation UpdateModulo($id: Int!, $data: Modulo_Data! @allow(fields: "titulo tituloComercial orden descripcion horas creditos duracionEfsrt creditosEfsrt metas activo slug comun planId")) {
     modulo_update(id: $id, data: $data)
   }
 `;
@@ -484,27 +484,27 @@ export const DELETE_UNIDAD_DIDACTICA_MUTATION = `
   }
 `;
 
-export const INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION = `
-  mutation InsertUnidadDidacticaModulo($data: UnidadDidacticaModulo_Data! @allow(fields: "unidadDidacticaId moduloId orden")) {
-    unidadDidacticaModulo_insert(data: $data)
+export const INSERT_COMPETENCIA_UNIDAD_DIDACTICA_MUTATION = `
+  mutation InsertUnidadDidacticaModulo($data: CompetenciaUnidadDidactica_Data! @allow(fields: "unidadDidacticaId competenciaId orden")) {
+    competenciaUnidadDidactica_insert(data: $data)
   }
 `;
 
-export const UPDATE_UNIDAD_DIDACTICA_MODULO_MUTATION = `
-  mutation UpdateUnidadDidacticaModulo($id: Int!, $data: UnidadDidacticaModulo_Data! @allow(fields: "orden")) {
-    unidadDidacticaModulo_update(id: $id, data: $data)
+export const UPDATE_COMPETENCIA_UNIDAD_DIDACTICA_MUTATION = `
+  mutation UpdateUnidadDidacticaModulo($id: Int!, $data: CompetenciaUnidadDidactica_Data! @allow(fields: "orden")) {
+    competenciaUnidadDidactica_update(id: $id, data: $data)
   }
 `;
 
-export const DELETE_UNIDAD_DIDACTICA_MODULOS_BY_UNIDAD_MUTATION = `
+export const DELETE_COMPETENCIA_UNIDADES_BY_UNIDAD_MUTATION = `
   mutation DeleteUnidadDidacticaModulosByUnidad($unidadDidacticaId: Int!) {
-    unidadDidacticaModulo_deleteMany(where: { unidadDidacticaId: { eq: $unidadDidacticaId } })
+    competenciaUnidadDidactica_deleteMany(where: { unidadDidacticaId: { eq: $unidadDidacticaId } })
   }
 `;
 
-export const DELETE_UNIDAD_DIDACTICA_MODULO_RELATION_MUTATION = `
+export const DELETE_COMPETENCIA_UNIDAD_RELATION_MUTATION = `
   mutation DeleteUnidadDidacticaModuloRelation($id: Int!) {
-    unidadDidacticaModulo_delete(id: $id)
+    competenciaUnidadDidactica_delete(id: $id)
   }
 `;
 

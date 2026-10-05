@@ -86,6 +86,16 @@ export interface Certificado_Key {
   __typename?: 'Certificado_Key';
 }
 
+export interface CompetenciaUnidadDidactica_Key {
+  id: number;
+  __typename?: 'CompetenciaUnidadDidactica_Key';
+}
+
+export interface Competencia_Key {
+  id: number;
+  __typename?: 'Competencia_Key';
+}
+
 export interface CreatePostData {
   post_insert: Post_Key;
 }
@@ -489,11 +499,6 @@ export interface Turno_Key {
 export interface UnidadDidacticaEstudiante_Key {
   id: number;
   __typename?: 'UnidadDidacticaEstudiante_Key';
-}
-
-export interface UnidadDidacticaModulo_Key {
-  id: number;
-  __typename?: 'UnidadDidacticaModulo_Key';
 }
 
 export interface UnidadDidactica_Key {

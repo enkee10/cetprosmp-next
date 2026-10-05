@@ -1,0 +1,52 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+process.env.GOOGLE_CLOUD_PROJECT = 'cetprosmp-2026';
+const { dataConnect } = await import('../functions/lib/modules/core/dataConnectCore.js');
+const competenciaHandlers = await import('../functions/lib/modules/competencias/handlers.js');
+const academicHandlers = await import('../functions/lib/modules/academico/handlers.js');
+const moduloHandlers = await import('../functions/lib/modules/modulos/handlers.js');
+const context = { auth:{uid:'competencias-verification',token:{level:600,roleId:600}} };
+const result = await competenciaHandlers.listCompetencias.run({},context);
+assert.ok(result.competencias.length);
+const opciones = await competenciaHandlers.listCompetenciaFormularioOpciones.run({},context);
+assert.ok(opciones.modulos.length);
+const estructura = await academicHandlers.listEstructuraAcademica.run({},context);
+assert.equal(estructura.modulos.length,36);
+const capacidades = await academicHandlers.listCapacidadesTerminales.run({},context);
+assert.equal(capacidades.capacidadesTerminales.length,158);
+const modulo = await moduloHandlers.getModulo.run({id:1},context);
+assert.ok(modulo.modulo.competencias.length);
+assert.ok(!('competencia' in modulo.modulo));
+assert.ok(!('tipoCompetencia' in modulo.modulo));
+await assert.rejects(()=>dataConnect.executeGraphql('query RemovedModuloFields { modulo(id:1) { competencia tipoCompetencia } }'));
+const formOpciones = await competenciaHandlers.listCompetenciaOpciones.run({},context);
+assert.ok(formOpciones.competencias.length);
+assert.ok(Array.isArray(opciones.unidades));
+const occupational = result.competencias.find(c=>c.moduloId===3);
+await assert.rejects(()=>competenciaHandlers.createOrUpdateCompetencia.run({...occupational,tipo:'EMPLEABILIDAD'},context),error=>error.code==='invalid-argument');
+const technical = result.competencias.find(c=>c.moduloId===1 && c.tipo==='TECNICA');
+const existing = await competenciaHandlers.getCompetencia.run({id:technical.id},context);
+// Write the exact same values to test the full transaction without changing academic content.
+await competenciaHandlers.createOrUpdateCompetencia.run(existing.competencia,context);
+await competenciaHandlers.createOrUpdateCompetencia.run({...existing.competencia,unidadIds:undefined},context);
+const afterNameUpdate = await competenciaHandlers.getCompetencia.run({id:technical.id},context);
+assert.deepEqual(afterNameUpdate.competencia.unidadIds.sort((a,b)=>a-b),existing.competencia.unidadIds.sort((a,b)=>a-b));
+await assert.rejects(()=>competenciaHandlers.deleteCompetencia.run({id:technical.id},context));
+const capacidad = capacidades.capacidadesTerminales.find(c=>c.id===58);
+assert.ok(!('competenciaIds' in capacidad));
+await academicHandlers.createOrUpdateCapacidadTerminal.run(capacidad,context);
+const gradesBefore = JSON.parse(fs.readFileSync(new URL('../tmp/competencias-grades-backup-20261005.json',import.meta.url),'utf8'));
+const reportSource = fs.readFileSync(new URL('../functions/src/modules/reportes/handlers.ts',import.meta.url),'utf8');
+const reportOptionsQuery = reportSource.match(/const REPORTE_OPTIONS_QUERY = `([\s\S]*?)`;/)[1];
+const reportDetailQuery = reportSource.match(/const REPORTE_DETALLE_QUERY = `([\s\S]*?)`;/)[1];
+const reportOptions = (await dataConnect.executeGraphql(reportOptionsQuery)).data;
+const group = reportOptions.grupoModulos.find(g=>g.moduloId===1 && g.grupo?.semestreId);
+assert.ok(group);
+const reportDetail = (await dataConnect.executeGraphql(reportDetailQuery,{variables:{grupoModuloId:group.id,grupoId:group.grupoId,moduloId:group.moduloId,semestreId:group.grupo.semestreId}})).data;
+assert.ok(reportDetail.grupoModulo.modulo.competencias.length);
+const gradesAfter = (await dataConnect.executeGraphql(`query VerifyGrades {
+  capacidadesTerminalesEstudiantes(limit:100000) { id matriculaId capacidadTerminalId promedio }
+  indicadoresCapacidadEstudiantes(limit:100000) { id matriculaId indicadorCapacidadId promedio }
+}`)).data;
+for(const key of Object.keys(gradesBefore)) assert.deepEqual(gradesAfter[key].sort((a,b)=>a.id-b.id),gradesBefore[key].sort((a,b)=>a.id-b.id));
+console.log(JSON.stringify({competencias:result.competencias.length,modulos:estructura.modulos.length,capacidades:capacidades.capacidadesTerminales.length,verificado:['consultas','formularios','actualizacion transaccional','rechazo de tipo incompatible','proteccion de competencias vinculadas','conservacion de notas']}));

@@ -9,11 +9,7 @@ import {
   Checkbox,
   CircularProgress,
   Container,
-  FormControl,
   FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -34,8 +30,6 @@ interface ModuloData {
   tituloComercial: string | null;
   orden: number | null;
   descripcion: string | null;
-  tipoCompetencia: string | null;
-  competencia: string | null;
   horas: number | null;
   creditos: number | null;
   duracionEfsrt: number | null;
@@ -74,15 +68,12 @@ const getPlanLabel = (plan: PlanOption, carreraTitleById: Map<number, string>) =
   plan.tituloComercial ||
   `Plan ${plan.id}`;
 
-const TIPO_COMPETENCIA_OPTIONS = ['Técnica', 'Para la empleabilidad'] as const;
 
 export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: ModuloFormProps) {
   const [titulo, setTitulo] = useState('');
   const [tituloComercial, setTituloComercial] = useState('');
   const [orden, setOrden] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [tipoCompetencia, setTipoCompetencia] = useState('');
-  const [competencia, setCompetencia] = useState('');
   const [horas, setHoras] = useState('');
   const [creditos, setCreditos] = useState('');
   const [duracionEfsrt, setDuracionEfsrt] = useState('');
@@ -153,8 +144,6 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           setTituloComercial(fetched.tituloComercial || '');
           setOrden(fetched.orden != null ? String(fetched.orden) : '');
           setDescripcion(fetched.descripcion || '');
-          setTipoCompetencia(fetched.tipoCompetencia || '');
-          setCompetencia(fetched.competencia || '');
           setHoras(fetched.horas != null ? String(fetched.horas) : '');
           setCreditos(fetched.creditos != null ? String(fetched.creditos) : '');
           setDuracionEfsrt(fetched.duracionEfsrt != null ? String(fetched.duracionEfsrt) : '');
@@ -212,8 +201,6 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
           tituloComercial: string;
           orden?: number | null;
           descripcion: string;
-          tipoCompetencia: string | null;
-          competencia: string;
           horas?: number | null;
           creditos?: number | null;
           duracionEfsrt?: number | null;
@@ -233,8 +220,6 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
         tituloComercial,
         orden: orden ? Number(orden) : null,
         descripcion,
-        tipoCompetencia: tipoCompetencia || null,
-        competencia,
         horas: horas ? Number(horas) : null,
         creditos: creditos ? Number(creditos) : null,
         duracionEfsrt: duracionEfsrt ? Number(duracionEfsrt) : null,
@@ -410,34 +395,6 @@ export function ModuloForm({ moduloId, asModal = false, onSaved, onCancel }: Mod
             sx={{ gridColumn: '1 / -1' }}
           />
 
-          <FormControl fullWidth sx={{ gridColumn: { xs: '1 / -1', md: 'span 4' } }}>
-            <InputLabel id="tipo-competencia-label">Tipo de competencia</InputLabel>
-            <Select
-              labelId="tipo-competencia-label"
-              label="Tipo de competencia"
-              value={tipoCompetencia}
-              onChange={(event) => setTipoCompetencia(event.target.value)}
-            >
-              <MenuItem value="">
-                <em>Sin tipo</em>
-              </MenuItem>
-              {TIPO_COMPETENCIA_OPTIONS.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <TextField
-            label="Competencia"
-            value={competencia}
-            onChange={(e) => setCompetencia(e.target.value)}
-            fullWidth
-            minRows={4}
-            multiline
-            sx={{ gridColumn: '1 / -1' }}
-          />
         </Box>
 
         <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>

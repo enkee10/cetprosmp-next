@@ -11,6 +11,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { projectUnidadRelations } from "../competencias/model.js";
 import { requirePermission } from "../core/permissions.js";
 import {
   DataConnectGrupo,
@@ -21,7 +22,7 @@ import {
   DataConnectGrupoModuloUnidadDidacticaInput,
   DataConnectPaqueteModulo,
   DataConnectPersonal,
-  DataConnectUnidadDidacticaModulo,
+  DataConnectCompetenciaUnidadDidactica,
 } from "../core/types.js";
 import {
   buildGrupoModuloNombreRelacional,
@@ -296,11 +297,10 @@ const GET_PAQUETE_MODULOS_FOR_GRUPO_QUERY = `
         }
       }
     }
-    unidadDidacticaModulos(limit: 3000) {
+    competenciaUnidadesDidacticas(limit: 3000) {
       id
       orden
       unidadDidacticaId
-      moduloId
       unidadDidactica {
         id
         nombre
@@ -308,7 +308,10 @@ const GET_PAQUETE_MODULOS_FOR_GRUPO_QUERY = `
         creditos
         sigla
       }
-    }
+
+      competenciaId
+      competencia { id nombre tipo moduloId }
+}
   }
 `;
 
@@ -665,7 +668,7 @@ async function getPaqueteModulosOrThrow(paqueteId: number) {
   const paqueteResponse = await dataConnect.executeGraphql<{
     paquete: { id: number; titulo?: string | null } | null;
     paqueteModulos: DataConnectPaqueteModulo[];
-    unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
+    competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
   }, { paqueteId: number }>(GET_PAQUETE_MODULOS_FOR_GRUPO_QUERY, { variables: { paqueteId } });
 
   const paqueteModulos = sortPaqueteModulos(paqueteResponse.data.paqueteModulos ?? []);
@@ -680,7 +683,7 @@ async function getPaqueteModulosOrThrow(paqueteId: number) {
   return {
     paquete: paqueteResponse.data.paquete,
     paqueteModulos: expandedPaqueteModulos,
-    unidadDidacticaModulos: paqueteResponse.data.unidadDidacticaModulos ?? [],
+    competenciaUnidadesDidacticas: projectUnidadRelations(paqueteResponse.data.competenciaUnidadesDidacticas ?? []),
   };
 }
 
@@ -689,7 +692,7 @@ async function syncGrupoModulos(
   paqueteId: number,
   detalleInput: Map<string, GrupoModuloDetalleInput> = new Map(),
 ) {
-  const { paqueteModulos, unidadDidacticaModulos } = await getPaqueteModulosOrThrow(paqueteId);
+  const { paqueteModulos, competenciaUnidadesDidacticas } = await getPaqueteModulosOrThrow(paqueteId);
   const existingResponse = await dataConnect.executeGraphql<{
     grupo: GrupoModuloNombreContext;
     grupoModulos: Array<Pick<DataConnectGrupoModulo, "id" | "nombre" | "moduloId" | "instancia" | "calendarioId" | "inicio" | "fin">>;
@@ -718,13 +721,13 @@ async function syncGrupoModulos(
     previousUnidadByModuloUnidad.set(`${expandedGrupoModuloKey(moduloId, itemGrupoModulo?.instancia ?? 1)}:${item.unidadDidacticaId}`, item);
   }
 
-  const unidadDidacticaModulosByModuloId = new Map<number, DataConnectUnidadDidacticaModulo[]>();
+  const competenciaUnidadesDidacticasByModuloId = new Map<number, DataConnectCompetenciaUnidadDidactica[]>();
   const paqueteModuloIds = new Set(paqueteModulos.map((item) => item.moduloId));
-  for (const item of unidadDidacticaModulos) {
+  for (const item of competenciaUnidadesDidacticas) {
     if (!paqueteModuloIds.has(item.moduloId)) continue;
-    const current = unidadDidacticaModulosByModuloId.get(item.moduloId) ?? [];
+    const current = competenciaUnidadesDidacticasByModuloId.get(item.moduloId) ?? [];
     current.push(item);
-    unidadDidacticaModulosByModuloId.set(item.moduloId, current);
+    competenciaUnidadesDidacticasByModuloId.set(item.moduloId, current);
   }
 
   const nextGrupoModuloKeys = new Set(
@@ -784,7 +787,7 @@ async function syncGrupoModulos(
       const detalleUnidadById = new Map(
         (detalle?.unidadDidacticas ?? []).map((item) => [item.unidadDidacticaId, item]),
       );
-      const baseUnidades = (unidadDidacticaModulosByModuloId.get(expandedModulo.moduloId) ?? [])
+      const baseUnidades = (competenciaUnidadesDidacticasByModuloId.get(expandedModulo.moduloId) ?? [])
         .slice()
         .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.unidadDidacticaId - b.unidadDidacticaId);
       const baseUnidadIds = new Set(baseUnidades.map((item) => item.unidadDidacticaId));

@@ -43,14 +43,14 @@ const LIST_MODULOS_QUERY = `
       titulo
       tituloComercial
       slug
-      competencia
+      competencias: competencias_on_modulo(where:{tipo:{eq:TECNICA}}) { id nombre }
     }
   }
 `;
 
 const UPDATE_MODULO_COMPETENCIA_MUTATION = `
-  mutation UpdateModuloCompetencia($id: Int!, $data: Modulo_Data! @allow(fields: "competencia")) {
-    modulo_update(id: $id, data: $data)
+  mutation UpdateCompetencia($id: Int!, $data: Competencia_Data! @allow(fields: "nombre")) {
+    competencia_update(id: $id, data: $data)
   }
 `;
 
@@ -290,7 +290,7 @@ function buildMappings(excelModules, modulos) {
         reason: modulo ? "manual-override" : "override-target-missing",
         matchedModuloId: modulo?.id ?? null,
         matchedModuloTitulo: modulo ? displayModuleName(modulo) : null,
-        currentCompetencia: modulo?.competencia ?? null,
+        currentCompetencia: modulo?.competencias?.map(c => c.nombre).join('\n\n') ?? null,
         score: modulo ? 1 : 0,
       };
     }
@@ -308,7 +308,7 @@ function buildMappings(excelModules, modulos) {
       reason: matched ? "fuzzy" : "low-confidence",
       matchedModuloId: matched ? best.modulo.id : best?.modulo?.id ?? null,
       matchedModuloTitulo: matched ? displayModuleName(best.modulo) : best ? displayModuleName(best.modulo) : null,
-      currentCompetencia: matched ? best.modulo.competencia ?? null : null,
+      currentCompetencia: matched ? best.modulo.competencias?.map(c => c.nombre).join('\n\n') ?? null : null,
       score: best ? Number(best.score.toFixed(4)) : 0,
     };
   });
@@ -365,9 +365,17 @@ async function main() {
 
   if (!unresolved.length && options.apply) {
     for (const update of updates.filter((item) => item.changed)) {
-      await dataConnect.executeGraphql(UPDATE_MODULO_COMPETENCIA_MUTATION, {
-        variables: { id: update.id, data: { competencia: update.newCompetencia } },
-      });
+      const competencias = modulos.find(modulo => modulo.id === update.id)?.competencias ?? [];
+      if (competencias.length > 1) throw new Error(`El modulo ${update.id} tiene varias competencias; actualicelas individualmente en la gestion de competencias.`);
+      if (competencias.length) {
+        await dataConnect.executeGraphql(UPDATE_MODULO_COMPETENCIA_MUTATION, {
+          variables: { id: competencias[0].id, data: { nombre: update.newCompetencia } },
+        });
+      } else {
+        await dataConnect.executeGraphql(`mutation InsertCompetencia($data:Competencia_Data! @allow(fields:"nombre tipo moduloId")) { competencia_insert(data:$data) }`, {
+          variables: { data: { moduloId: update.id, tipo: 'TECNICA', nombre: update.newCompetencia } },
+        });
+      }
     }
     report.status = "applied";
   }

@@ -106,6 +106,7 @@ export const menuSections: IntranetMenuSection[] = [
       { id: 'eventos', title: 'Eventos', path: '/intranet/eventos', icon: <EventNoteIcon /> },
       { id: 'unidades-didacticas', title: 'Unidades Did\u00e1cticas', path: '/intranet/unidades-didacticas', icon: <MenuBookIcon /> },
       { id: 'capacidades-terminales', title: 'Capacidades Terminales', path: '/intranet/capacidades-terminales', icon: <TrackChangesIcon /> },
+      { id: 'competencias', title: 'Competencias', path: '/intranet/competencias', icon: <TrackChangesIcon /> },
       { id: 'indicadores-capacidad', title: 'Indicador de Capacidad', path: '/intranet/indicadores-capacidad', icon: <FactCheckIcon /> },
       { id: 'aprendizajes', title: 'Aprendizajes', path: '/intranet/aprendizajes', icon: <PsychologyIcon /> },
       { id: 'actividades', title: 'Actividad', path: '/intranet/actividades', icon: <EventNoteIcon /> },

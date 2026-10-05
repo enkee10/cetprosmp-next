@@ -228,3 +228,6 @@ export {
   listCertificadosTitulosOptions,
   listReporteDocumentosOptions,
 } from "./reportes/handlers.js";
+
+
+export { listCompetencias, getCompetencia, createOrUpdateCompetencia, deleteCompetencia, listCompetenciaOpciones, listCompetenciaFormularioOpciones } from "./competencias/handlers.js";

@@ -51,12 +51,15 @@ interface CapacidadDetalle {
   sigla: string | null;
   orden: number | null;
   unidadDidacticaId: number | null;
+  competencias?: Array<{ id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; moduloId: number }>;
   indicadoresCapacidad: IndicadorDetalle[];
 }
 
 interface UnidadDidacticaDetalle {
   id: number;
   relacionId: number;
+  competenciaId: number;
+  competencia: { id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; moduloId: number };
   orden: number | null;
   nombre: string | null;
   duracion: number | null;
@@ -72,8 +75,7 @@ interface ModuloDetalle {
   tituloComercial: string | null;
   orden: number | null;
   descripcion: string | null;
-  tipoCompetencia: string | null;
-  competencia: string | null;
+  competencias: Array<{ id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD' }>;
   horas: number | null;
   creditos: number | null;
   metas: number | null;
@@ -102,10 +104,10 @@ interface ModuloDetalle {
   unidadesDidacticas: UnidadDidacticaDetalle[];
 }
 
-type EditableAcademicEntity = 'modulo' | 'unidadDidactica' | 'unidadDidacticaModulo' | 'capacidadTerminal' | 'indicadorCapacidad';
+type EditableAcademicEntity = 'modulo' | 'unidadDidactica' | 'competenciaUnidadDidactica' | 'capacidadTerminal' | 'indicadorCapacidad';
 type EditableValueType = 'text' | 'number' | 'boolean';
 type EditableCellValue = string | number | boolean | null;
-type ReorderAcademicEntity = 'unidadDidacticaModulo' | 'capacidadTerminal' | 'indicadorCapacidad';
+type ReorderAcademicEntity = 'competenciaUnidadDidactica' | 'capacidadTerminal' | 'indicadorCapacidad';
 
 interface EstructuraOpciones {
   modulosComunes: Array<{
@@ -289,7 +291,7 @@ function applyEditableCellUpdate(
     return {
       ...modulo,
       unidadesDidacticas: modulo.unidadesDidacticas.map((unidad) => {
-        if (target.entity === 'unidadDidacticaModulo' && unidad.relacionId === target.id) {
+        if (target.entity === 'competenciaUnidadDidactica' && unidad.relacionId === target.id) {
           return { ...unidad, [target.field]: value } as UnidadDidacticaDetalle;
         }
 
@@ -325,7 +327,7 @@ function isCommonUnidadTarget(items: ModuloDetalle[], target: EditableCellTarget
       if (!unidad.comun) continue;
 
       if (target.entity === 'unidadDidactica' && unidad.id === target.id) return true;
-      if (target.entity === 'unidadDidacticaModulo' && unidad.relacionId === target.id) return true;
+      if (target.entity === 'competenciaUnidadDidactica' && unidad.relacionId === target.id) return true;
 
       for (const capacidad of unidad.capacidadesTerminales) {
         if (target.entity === 'capacidadTerminal' && capacidad.id === target.id) return true;
@@ -671,6 +673,7 @@ export default function EstructuraAcademicaMasterDetail({
   const [search, setSearch] = useState('');
   const [selectedPlanId, setSelectedPlanId] = useState('all');
   const [selectedModuloId, setSelectedModuloId] = useState<number | null>(null);
+  const [selectedCompetenciaId, setSelectedCompetenciaId] = useState<number | null>(null);
   const [selectedUnidadId, setSelectedUnidadId] = useState<number | null>(null);
   const [selectedCapacidadId, setSelectedCapacidadId] = useState<number | null>(null);
   const [selectedIndicadorId, setSelectedIndicadorId] = useState<number | null>(null);
@@ -685,31 +688,6 @@ export default function EstructuraAcademicaMasterDetail({
   const allowEdit = !readOnly && canEdit;
   const allowCreate = !readOnly && canCreate;
   const allowDelete = !readOnly && canDelete;
-
-  const saveEditableCell = useCallback(async (target: EditableCellTarget, value: EditableCellValue) => {
-    if (!allowEdit) {
-      throw new Error('No tienes permiso para editar la estructura academica.');
-    }
-    if (isCommonUnidadTarget(modulos, target)) {
-      throw new Error('Las unidades didacticas comunes no se pueden editar desde esta vista.');
-    }
-    try {
-      if (auth.currentUser) {
-        await auth.currentUser.getIdToken(true);
-      }
-      const updateEstructuraAcademicaCell = httpsCallable<
-        EditableCellTarget & { value: EditableCellValue },
-        { id: number }
-      >(functions, 'updateEstructuraAcademicaCell');
-      await updateEstructuraAcademicaCell({ ...target, value });
-      setModulos((current) => applyEditableCellUpdate(current, target, value));
-      setError(null);
-    } catch (err) {
-      console.error('Error saving academic structure cell: ', err);
-      setError('No se pudo guardar la celda. Verifica tus permisos y el valor ingresado.');
-      throw err;
-    }
-  }, [allowEdit, auth, functions, modulos]);
 
   const fetchEstructura = useCallback(async () => {
     setLoading(true);
@@ -737,6 +715,34 @@ export default function EstructuraAcademicaMasterDetail({
       setLoading(false);
     }
   }, [auth, callableName, errorMessage, functions, title]);
+
+  const saveEditableCell = useCallback(async (target: EditableCellTarget, value: EditableCellValue) => {
+    if (!allowEdit) {
+      throw new Error('No tienes permiso para editar la estructura academica.');
+    }
+    if (isCommonUnidadTarget(modulos, target)) {
+      throw new Error('Las unidades didacticas comunes no se pueden editar desde esta vista.');
+    }
+    try {
+      if (auth.currentUser) {
+        await auth.currentUser.getIdToken(true);
+      }
+      const updateEstructuraAcademicaCell = httpsCallable<
+        EditableCellTarget & { value: EditableCellValue },
+        { id: number }
+      >(functions, 'updateEstructuraAcademicaCell');
+      await updateEstructuraAcademicaCell({ ...target, value });
+      if (target.entity === 'modulo' && target.field === 'horas') await fetchEstructura();
+      else setModulos((current) => applyEditableCellUpdate(current, target, value));
+      setError(null);
+    } catch (err) {
+      console.error('Error saving academic structure cell: ', err);
+      setError('No se pudo guardar la celda. Verifica tus permisos y el valor ingresado.');
+      throw err;
+    }
+  }, [allowEdit, auth, fetchEstructura, functions, modulos]);
+
+
 
   useEffect(() => {
     setResolvedTitle(title);
@@ -782,7 +788,10 @@ export default function EstructuraAcademicaMasterDetail({
     [filteredModulos, selectedModuloId],
   );
 
-  const unidades = selectedModulo?.unidadesDidacticas ?? [];
+  const todasUnidades = useMemo(() => selectedModulo?.unidadesDidacticas ?? [], [selectedModulo]);
+  const unidades = useMemo(() => selectedCompetenciaId == null ? todasUnidades
+    : todasUnidades.filter(unidad => unidad.competenciaId === selectedCompetenciaId), [todasUnidades, selectedCompetenciaId]);
+  useEffect(() => { setSelectedCompetenciaId(null); }, [selectedModulo?.id]);
   const selectedUnidad = useMemo(
     () => unidades.find((unidad) => unidad.id === selectedUnidadId) ?? unidades[0] ?? null,
     [selectedUnidadId, unidades],
@@ -923,6 +932,7 @@ export default function EstructuraAcademicaMasterDetail({
         entity,
         items: items.map((item, index) => ({ id: item.id, orden: item.orden ?? index + 1 })),
       });
+      if (entity === 'competenciaUnidadDidactica') await fetchEstructura();
       setError(null);
     } catch (err) {
       console.error('Error reordering academic structure: ', err);
@@ -935,7 +945,7 @@ export default function EstructuraAcademicaMasterDetail({
 
   const handleUnidadDrop = useCallback((targetRelacionId: number, position: DropPosition) => {
     const currentDrag = dragStateRef.current;
-    if (!selectedModulo?.id || !currentDrag || currentDrag.entity !== 'unidadDidacticaModulo') return;
+    if (!selectedModulo?.id || !currentDrag || currentDrag.entity !== 'competenciaUnidadDidactica') return;
     if (currentDrag.id === targetRelacionId) return;
     const source = unidades.find((unidad) => unidad.relacionId === currentDrag.id);
     const target = unidades.find((unidad) => unidad.relacionId === targetRelacionId);
@@ -950,7 +960,7 @@ export default function EstructuraAcademicaMasterDetail({
     setModulos((current) => current.map((modulo) => (
       modulo.id === selectedModulo.id ? { ...modulo, unidadesDidacticas: ordered } : modulo
     )));
-    void persistReorder('unidadDidacticaModulo', ordered.map((unidad) => ({ id: unidad.relacionId, orden: unidad.orden })));
+    void persistReorder('competenciaUnidadDidactica', ordered.map((unidad) => ({ id: unidad.relacionId, orden: unidad.orden })));
   }, [persistReorder, selectedModulo?.id, unidades]);
 
   const handleCapacidadDrop = useCallback((targetCapacidadId: number, position: DropPosition) => {
@@ -1000,6 +1010,7 @@ export default function EstructuraAcademicaMasterDetail({
 
   const handleCreateUnidad = useCallback(() => {
     if (!selectedModulo?.id) return;
+    setSelectedCompetenciaId(null);
     void runStructureAction('createEstructuraAcademicaItem', {
       entity: 'unidadDidactica',
       moduloId: selectedModulo.id,
@@ -1219,12 +1230,11 @@ export default function EstructuraAcademicaMasterDetail({
                       value: selectedModulo.titulo,
                       target: { entity: 'modulo', id: selectedModulo.id, field: 'titulo', valueType: 'text' },
                     },
-                    {
-                      label: 'Unidad de Competencia',
-                      value: selectedModulo.competencia,
+                    ...selectedModulo.competencias.map(competencia => ({
+                      label: competencia.tipo === 'TECNICA' ? 'Competencia técnica' : 'Competencia para la empleabilidad',
+                      value: competencia.nombre,
                       lines: 4,
-                      target: { entity: 'modulo', id: selectedModulo.id, field: 'competencia', valueType: 'text' },
-                    },
+                    })),
                     {
                       label: 'Horas',
                       value: selectedModulo.horas,
@@ -1320,11 +1330,28 @@ export default function EstructuraAcademicaMasterDetail({
               </>
             ) : undefined}
             details={
-              selectedUnidad ? (
+              <Stack spacing={1}>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="competencia-unidad-filter-label">Competencia</InputLabel>
+                  <Select labelId="competencia-unidad-filter-label" label="Competencia" value={selectedCompetenciaId ?? ''}
+                    onChange={event => { setSelectedCompetenciaId(event.target.value === '' ? null : Number(event.target.value)); setSelectedUnidadId(null); }}
+                    MenuProps={{ PaperProps: { sx: { maxWidth: 'calc(100vw - 32px)' } } }}>
+                    <MenuItem value="">Todas</MenuItem>
+                    {(selectedModulo?.competencias ?? []).map(competencia => <MenuItem key={competencia.id} value={competencia.id} sx={{ whiteSpace: 'normal' }}>
+                      {competencia.tipo === 'TECNICA' ? 'Técnica' : 'Para la empleabilidad'}: {competencia.nombre || 'Sin nombre'}
+                    </MenuItem>)}
+                  </Select>
+                </FormControl>
+              {selectedUnidad ? (
                 <DetailFields
                   onSave={saveEditableCell}
                   readOnly={!allowEdit || selectedUnidadIsComun}
                   rows={[
+                    {
+                      label: 'Competencia',
+                      value: selectedUnidad.competencia?.nombre || 'Sin nombre',
+                      lines: 3,
+                    },
                     {
                       label: 'Nombre',
                       value: selectedUnidad.nombre,
@@ -1342,7 +1369,8 @@ export default function EstructuraAcademicaMasterDetail({
                     },
                   ]}
                 />
-              ) : undefined
+              ) : null}
+              </Stack>
             }
           >
             {unidades.length === 0 ? (
@@ -1352,18 +1380,18 @@ export default function EstructuraAcademicaMasterDetail({
                 {unidades.map((unidad) => {
                   const unidadComun = Boolean(unidad.comun);
                   const unidadReadOnly = !allowEdit || unidadComun;
-                  const canDragUnidad = allowEdit && !unidadComun && !actionLoading;
+                  const canDragUnidad = allowEdit && !unidadComun && !actionLoading && selectedCompetenciaId == null;
 
                   return (
                     <ListItemButton
                       key={`${unidad.relacionId}-${unidad.id}`}
                       onDragOver={(event) => updateDropIndicator(
                         event,
-                        'unidadDidacticaModulo',
+                        'competenciaUnidadDidactica',
                         unidad.relacionId,
                         canDragUnidad,
                       )}
-                      onDragLeave={() => clearDropIndicator('unidadDidacticaModulo', unidad.relacionId)}
+                      onDragLeave={() => clearDropIndicator('competenciaUnidadDidactica', unidad.relacionId)}
                       onDrop={(event) => {
                         event.preventDefault();
                         handleUnidadDrop(unidad.relacionId, dropIndicatorRef.current?.position ?? getDropPosition(event));
@@ -1381,7 +1409,7 @@ export default function EstructuraAcademicaMasterDetail({
                         px: 1,
                         py: 0.9,
                         minHeight: 68,
-                        ...dropIndicatorSx('unidadDidacticaModulo', unidad.relacionId),
+                        ...dropIndicatorSx('competenciaUnidadDidactica', unidad.relacionId),
                         bgcolor: unidadComun ? 'rgba(244, 143, 177, 0.16)' : undefined,
                         '&:hover': {
                           bgcolor: unidadComun ? 'rgba(244, 143, 177, 0.24)' : undefined,
@@ -1402,7 +1430,7 @@ export default function EstructuraAcademicaMasterDetail({
                             <DragHandle
                               enabled={canDragUnidad}
                               onDragStart={(event) => beginDrag(event, {
-                                entity: 'unidadDidacticaModulo',
+                                entity: 'competenciaUnidadDidactica',
                                 id: unidad.relacionId,
                               })}
                             />
@@ -1539,6 +1567,8 @@ export default function EstructuraAcademicaMasterDetail({
                       }
                       secondary={
                         <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
+                          {selectedUnidad?.competencia && <Chip size="small"
+                            label={selectedUnidad.competencia.tipo === 'TECNICA' ? 'Técnica' : 'Para la empleabilidad'} title={selectedUnidad.competencia.nombre} />}
                           <Chip size="small" label={`Id ${capacidad.id}`} />
                           <Chip size="small" label={`IND ${capacidad.indicadoresCapacidad.length}`} />
                         </Stack>

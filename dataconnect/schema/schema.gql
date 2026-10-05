@@ -178,8 +178,6 @@ type Modulo @table(name: "modulos") @index(fields: ["carreraId"]) {
   orden: Int
   descripcion: String
   descripcion2: String @col(name: "descripcion_2")
-  tipoCompetencia: String @col(name: "tipo_competencia")
-  competencia: String @col(dataType: "text")
   horas: Int
   creditos: Int
   duracionEfsrt: Int @col(name: "duracion_efsrt")
@@ -206,6 +204,19 @@ type PlanModulo @table(name: "plan_modulos", singular: "planModulo", plural: "pl
   moduloId: Int! @col(name: "modulo_id")
 }
 
+enum TipoCompetencia {
+  TECNICA
+  EMPLEABILIDAD
+}
+
+type Competencia @table(name: "competencias", singular: "competencia", plural: "competencias") @index(fields: ["moduloId"]) {
+  id: Int! @col(dataType: "serial")
+  nombre: String! @col(dataType: "text")
+  tipo: TipoCompetencia!
+  modulo: Modulo! @ref(fields: "moduloId", references: "id")
+  moduloId: Int! @col(name: "modulo_id")
+}
+
 type UnidadDidactica @table(name: "unidades_didacticas", singular: "unidadDidactica", plural: "unidadesDidacticas") {
   id: Int! @col(dataType: "serial")
   nombre: String
@@ -215,15 +226,13 @@ type UnidadDidactica @table(name: "unidades_didacticas", singular: "unidadDidact
   comun: Boolean @default(value: false)
 }
 
-type UnidadDidacticaModulo @table(name: "unidad_didactica_modulos", singular: "unidadDidacticaModulo", plural: "unidadDidacticaModulos") @unique(fields: ["unidadDidactica", "modulo"]) @index(fields: ["unidadDidacticaId"]) @index(fields: ["moduloId"]) {
+type CompetenciaUnidadDidactica @table(name: "competencia_unidades_didacticas", singular: "competenciaUnidadDidactica", plural: "competenciaUnidadesDidacticas") @unique(fields: ["competencia", "unidadDidactica"]) @index(fields: ["unidadDidacticaId"]) @index(fields: ["competenciaId"]) {
   id: Int! @col(dataType: "serial")
   orden: Int
-
+  competencia: Competencia! @ref(fields: "competenciaId", references: "id")
+  competenciaId: Int! @col(name: "competencia_id")
   unidadDidactica: UnidadDidactica! @ref(fields: "unidadDidacticaId", references: "id")
   unidadDidacticaId: Int! @col(name: "unidad_didactica_id")
-
-  modulo: Modulo! @ref(fields: "moduloId", references: "id")
-  moduloId: Int! @col(name: "modulo_id")
 }
 
 type CapacidadTerminal @table(name: "capacidades_terminales", singular: "capacidadTerminal", plural: "capacidadesTerminales") {

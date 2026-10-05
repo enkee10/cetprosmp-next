@@ -7,7 +7,6 @@ import {
   INSERT_MODULO_MUTATION,
   INSERT_CAPACIDAD_TERMINAL_MUTATION,
   INSERT_INDICADOR_CAPACIDAD_MUTATION,
-  INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION,
   INSERT_UNIDAD_DIDACTICA_MUTATION,
 } from "../functions/lib/dataconnectOperations.js";
 
@@ -37,10 +36,10 @@ const IMPORT_STATE_QUERY = `
       creditos
       sigla
     }
-    unidadDidacticaModulos(limit: 50000) {
+    competenciaUnidadesDidacticas(limit: 50000) {
       id
       unidadDidacticaId
-      moduloId
+      competencia { moduloId }
       orden
     }
     capacidadesTerminales(limit: 50000) {
@@ -500,9 +499,9 @@ function createImportContext(state, options, dataConnect) {
     addMapSet(context.unitIdsByNorm, normalizeText(unit.nombre), id);
   }
 
-  for (const link of state.unidadDidacticaModulos ?? []) {
+  for (const link of state.competenciaUnidadesDidacticas ?? []) {
     const unitId = Number(link.unidadDidacticaId);
-    const moduloId = Number(link.moduloId);
+    const moduloId = Number(link.competencia.moduloId);
     const unit = context.unitsById.get(unitId);
     const unitNorm = normalizeText(unit?.nombre);
     context.linksByKey.set(`${moduloId}:${unitId}`, link);
@@ -626,9 +625,15 @@ async function ensureLink(context, row, moduloId, unitId, order) {
   }
 
   const data = { unidadDidacticaId: unitId, moduloId, orden: order ?? null };
-  const id = context.apply
-    ? await insertAndReturnId(context.dataConnect, INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION, "unidadDidacticaModulo_insert", { data })
-    : context.tempId();
+  let id = context.tempId();
+  if (context.apply) {
+    const { attachUnidadToModulo } = await import("../functions/lib/modules/competencias/service.js");
+    await attachUnidadToModulo(moduloId, unitId, order ?? 1);
+    const result = await context.dataConnect.executeGraphql(`query ImportedUnitLink($unitId: Int!, $moduloId: Int!) {
+      competenciaUnidadesDidacticas(where: { unidadDidacticaId: { eq: $unitId }, competencia: { moduloId: { eq: $moduloId } } }) { id }
+    }`, { variables: { unitId, moduloId } });
+    id = result.data.competenciaUnidadesDidacticas[0].id;
+  }
 
   const link = { id, ...data };
   context.linksByKey.set(key, link);
@@ -636,7 +641,7 @@ async function ensureLink(context, row, moduloId, unitId, order) {
   const unitNorm = normalizeText(context.unitsById.get(unitId)?.nombre);
   if (unitNorm) context.unitIdByModuleUnitNorm.set(`${moduloId}:${unitNorm}`, unitId);
   context.counts.created.relaciones += 1;
-  context.actions.push({ action: "createUnidadDidacticaModulo", row: row.rowNumber, id, data });
+  context.actions.push({ action: "attachUnidadToCompetencia", row: row.rowNumber, id, data });
   return id;
 }
 

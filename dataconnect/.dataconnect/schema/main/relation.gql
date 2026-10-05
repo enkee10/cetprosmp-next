@@ -3356,6 +3356,296 @@ extend type CertificadoTituloDocumento {
   """
   _id: ID! @fdc_generated(from: "CertificadoTituloDocumento.id", purpose: ENTITY_ID)
 }
+extend type Competencia {
+  """
+  ✨ List `CompetenciaUnidadDidactica` objects in a one-to-many relationship (where `CompetenciaUnidadDidactica`.`competencia` is this object).
+  """
+  competenciaUnidadesDidacticas_on_competencia(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: CompetenciaUnidadDidactica_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [CompetenciaUnidadDidactica_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: CompetenciaUnidadDidactica_Having
+  ): [CompetenciaUnidadDidactica!]! @fdc_generated(from: "CompetenciaUnidadDidactica.competencia", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Competencia", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Competencia` table.
+  """
+  _count: Int! @fdc_generated(from: "Competencia.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Competencia` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Competencia.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Competencia` table where the `moduloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  moduloId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Competencia.moduloId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Competencia` table where the `nombre` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nombre_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Competencia.nombre", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Competencia` table where the `tipo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tipo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Competencia.tipo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Competencia` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Competencia.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `moduloId` field in the `Competencia` table.
+  """
+  moduloId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Competencia.moduloId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Competencia` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Competencia.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `moduloId` field in the `Competencia` table.
+  """
+  moduloId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Competencia.moduloId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `Competencia` table.
+  """
+  id_min: Int @fdc_generated(from: "Competencia.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `moduloId` field in the `Competencia` table.
+  """
+  moduloId_min: Int @fdc_generated(from: "Competencia.moduloId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `Competencia` table.
+  """
+  id_max: Int @fdc_generated(from: "Competencia.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `moduloId` field in the `Competencia` table.
+  """
+  moduloId_max: Int @fdc_generated(from: "Competencia.moduloId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Competencia.id", purpose: ENTITY_ID)
+}
+extend type CompetenciaUnidadDidactica {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "CompetenciaUnidadDidactica", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `CompetenciaUnidadDidactica` table.
+  """
+  _count: Int! @fdc_generated(from: "CompetenciaUnidadDidactica.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CompetenciaUnidadDidactica` table where the `competenciaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  competenciaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CompetenciaUnidadDidactica.competenciaId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CompetenciaUnidadDidactica` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CompetenciaUnidadDidactica.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CompetenciaUnidadDidactica` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  orden_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CompetenciaUnidadDidactica.orden", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `CompetenciaUnidadDidactica` table where the `unidadDidacticaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  unidadDidacticaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "CompetenciaUnidadDidactica.unidadDidacticaId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `competenciaId` field in the `CompetenciaUnidadDidactica` table.
+  """
+  competenciaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "CompetenciaUnidadDidactica.competenciaId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `CompetenciaUnidadDidactica` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "CompetenciaUnidadDidactica.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `orden` field in the `CompetenciaUnidadDidactica` table.
+  """
+  orden_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "CompetenciaUnidadDidactica.orden", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `unidadDidacticaId` field in the `CompetenciaUnidadDidactica` table.
+  """
+  unidadDidacticaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "CompetenciaUnidadDidactica.unidadDidacticaId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `competenciaId` field in the `CompetenciaUnidadDidactica` table.
+  """
+  competenciaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "CompetenciaUnidadDidactica.competenciaId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `CompetenciaUnidadDidactica` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "CompetenciaUnidadDidactica.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `orden` field in the `CompetenciaUnidadDidactica` table.
+  """
+  orden_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "CompetenciaUnidadDidactica.orden", purpose: QUERY_AVG)
+  """
+  ✨ Average the `unidadDidacticaId` field in the `CompetenciaUnidadDidactica` table.
+  """
+  unidadDidacticaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "CompetenciaUnidadDidactica.unidadDidacticaId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `competenciaId` field in the `CompetenciaUnidadDidactica` table.
+  """
+  competenciaId_min: Int @fdc_generated(from: "CompetenciaUnidadDidactica.competenciaId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `CompetenciaUnidadDidactica` table.
+  """
+  id_min: Int @fdc_generated(from: "CompetenciaUnidadDidactica.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `orden` field in the `CompetenciaUnidadDidactica` table.
+  """
+  orden_min: Int @fdc_generated(from: "CompetenciaUnidadDidactica.orden", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `unidadDidacticaId` field in the `CompetenciaUnidadDidactica` table.
+  """
+  unidadDidacticaId_min: Int @fdc_generated(from: "CompetenciaUnidadDidactica.unidadDidacticaId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `competenciaId` field in the `CompetenciaUnidadDidactica` table.
+  """
+  competenciaId_max: Int @fdc_generated(from: "CompetenciaUnidadDidactica.competenciaId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `CompetenciaUnidadDidactica` table.
+  """
+  id_max: Int @fdc_generated(from: "CompetenciaUnidadDidactica.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `orden` field in the `CompetenciaUnidadDidactica` table.
+  """
+  orden_max: Int @fdc_generated(from: "CompetenciaUnidadDidactica.orden", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `unidadDidacticaId` field in the `CompetenciaUnidadDidactica` table.
+  """
+  unidadDidacticaId_max: Int @fdc_generated(from: "CompetenciaUnidadDidactica.unidadDidacticaId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "CompetenciaUnidadDidactica.id", purpose: ENTITY_ID)
+}
 extend type DatoGeneral {
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
@@ -11119,6 +11409,40 @@ extend type Metodo {
 }
 extend type Modulo {
   """
+  ✨ List `Competencia` objects in a one-to-many relationship (where `Competencia`.`modulo` is this object).
+  """
+  competencias_on_modulo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Competencia_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Competencia_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Competencia_Having
+  ): [Competencia!]! @fdc_generated(from: "Competencia.modulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `GrupoModulo` objects in a one-to-many relationship (where `GrupoModulo`.`modulo` is this object).
   """
   grupoModulos_on_modulo(
@@ -11357,40 +11681,6 @@ extend type Modulo {
     having: PlanModulo_Having
   ): [PlanModulo!]! @fdc_generated(from: "PlanModulo.modulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
-  ✨ List `UnidadDidacticaModulo` objects in a one-to-many relationship (where `UnidadDidacticaModulo`.`modulo` is this object).
-  """
-  unidadDidacticaModulos_on_modulo(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: UnidadDidacticaModulo_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [UnidadDidacticaModulo_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: UnidadDidacticaModulo_Having
-  ): [UnidadDidacticaModulo!]! @fdc_generated(from: "UnidadDidacticaModulo.modulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
-  """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
   _metadata: _Metadata @fdc_generated(from: "Modulo", purpose: METADATA_FIELD)
@@ -11416,15 +11706,6 @@ extend type Modulo {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Modulo.carreraId", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `Modulo` table where the `competencia` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  competencia_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Modulo.competencia", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Modulo` table where the `comun` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -11533,15 +11814,6 @@ extend type Modulo {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Modulo.slug", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `Modulo` table where the `tipoCompetencia` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  tipoCompetencia_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Modulo.tipoCompetencia", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Modulo` table where the `tituloComercial` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -16617,6 +16889,40 @@ extend type UnidadDidactica {
     having: CapacidadTerminal_Having
   ): [CapacidadTerminal!]! @fdc_generated(from: "CapacidadTerminal.unidadDidactica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `CompetenciaUnidadDidactica` objects in a one-to-many relationship (where `CompetenciaUnidadDidactica`.`unidadDidactica` is this object).
+  """
+  competenciaUnidadesDidacticas_on_unidadDidactica(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: CompetenciaUnidadDidactica_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [CompetenciaUnidadDidactica_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: CompetenciaUnidadDidactica_Having
+  ): [CompetenciaUnidadDidactica!]! @fdc_generated(from: "CompetenciaUnidadDidactica.unidadDidactica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `GrupoModuloUnidadDidactica` objects in a one-to-many relationship (where `GrupoModuloUnidadDidactica`.`unidadDidactica` is this object).
   """
   grupoModuloUnidadesDidacticas_on_unidadDidactica(
@@ -16684,40 +16990,6 @@ extend type UnidadDidactica {
     """
     having: UnidadDidacticaEstudiante_Having
   ): [UnidadDidacticaEstudiante!]! @fdc_generated(from: "UnidadDidacticaEstudiante.unidadDidactica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
-  """
-  ✨ List `UnidadDidacticaModulo` objects in a one-to-many relationship (where `UnidadDidacticaModulo`.`unidadDidactica` is this object).
-  """
-  unidadDidacticaModulos_on_unidadDidactica(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: UnidadDidacticaModulo_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [UnidadDidacticaModulo_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: UnidadDidacticaModulo_Having
-  ): [UnidadDidacticaModulo!]! @fdc_generated(from: "UnidadDidacticaModulo.unidadDidactica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
@@ -17016,160 +17288,6 @@ extend type UnidadDidacticaEstudiante {
   A generated field that is used for caching results in SDKs.
   """
   _id: ID! @fdc_generated(from: "UnidadDidacticaEstudiante.id", purpose: ENTITY_ID)
-}
-extend type UnidadDidacticaModulo {
-  """
-  Implicit metadata field that cannot be written. It provides extra information about query results.
-  """
-  _metadata: _Metadata @fdc_generated(from: "UnidadDidacticaModulo", purpose: METADATA_FIELD)
-  """
-  ✨ Count the number of rows in the `UnidadDidacticaModulo` table.
-  """
-  _count: Int! @fdc_generated(from: "UnidadDidacticaModulo.", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `UnidadDidacticaModulo` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  id_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `UnidadDidacticaModulo` table where the `moduloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  moduloId_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "UnidadDidacticaModulo.moduloId", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `UnidadDidacticaModulo` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  orden_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "UnidadDidacticaModulo.orden", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `UnidadDidacticaModulo` table where the `unidadDidacticaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  unidadDidacticaId_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "UnidadDidacticaModulo.unidadDidacticaId", purpose: QUERY_COUNT)
-  """
-  ✨ Sum the `id` field in the `UnidadDidacticaModulo` table.
-  """
-  id_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: QUERY_SUM)
-  """
-  ✨ Sum the `moduloId` field in the `UnidadDidacticaModulo` table.
-  """
-  moduloId_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "UnidadDidacticaModulo.moduloId", purpose: QUERY_SUM)
-  """
-  ✨ Sum the `orden` field in the `UnidadDidacticaModulo` table.
-  """
-  orden_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "UnidadDidacticaModulo.orden", purpose: QUERY_SUM)
-  """
-  ✨ Sum the `unidadDidacticaId` field in the `UnidadDidacticaModulo` table.
-  """
-  unidadDidacticaId_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "UnidadDidacticaModulo.unidadDidacticaId", purpose: QUERY_SUM)
-  """
-  ✨ Average the `id` field in the `UnidadDidacticaModulo` table.
-  """
-  id_avg(
-    """
-    Set to true to average the distinct values.
-    """
-    distinct: Boolean = false
-  ): Float @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: QUERY_AVG)
-  """
-  ✨ Average the `moduloId` field in the `UnidadDidacticaModulo` table.
-  """
-  moduloId_avg(
-    """
-    Set to true to average the distinct values.
-    """
-    distinct: Boolean = false
-  ): Float @fdc_generated(from: "UnidadDidacticaModulo.moduloId", purpose: QUERY_AVG)
-  """
-  ✨ Average the `orden` field in the `UnidadDidacticaModulo` table.
-  """
-  orden_avg(
-    """
-    Set to true to average the distinct values.
-    """
-    distinct: Boolean = false
-  ): Float @fdc_generated(from: "UnidadDidacticaModulo.orden", purpose: QUERY_AVG)
-  """
-  ✨ Average the `unidadDidacticaId` field in the `UnidadDidacticaModulo` table.
-  """
-  unidadDidacticaId_avg(
-    """
-    Set to true to average the distinct values.
-    """
-    distinct: Boolean = false
-  ): Float @fdc_generated(from: "UnidadDidacticaModulo.unidadDidacticaId", purpose: QUERY_AVG)
-  """
-  ✨ Minimum of the `id` field in the `UnidadDidacticaModulo` table.
-  """
-  id_min: Int @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: QUERY_MIN)
-  """
-  ✨ Minimum of the `moduloId` field in the `UnidadDidacticaModulo` table.
-  """
-  moduloId_min: Int @fdc_generated(from: "UnidadDidacticaModulo.moduloId", purpose: QUERY_MIN)
-  """
-  ✨ Minimum of the `orden` field in the `UnidadDidacticaModulo` table.
-  """
-  orden_min: Int @fdc_generated(from: "UnidadDidacticaModulo.orden", purpose: QUERY_MIN)
-  """
-  ✨ Minimum of the `unidadDidacticaId` field in the `UnidadDidacticaModulo` table.
-  """
-  unidadDidacticaId_min: Int @fdc_generated(from: "UnidadDidacticaModulo.unidadDidacticaId", purpose: QUERY_MIN)
-  """
-  ✨ Maximum of the `id` field in the `UnidadDidacticaModulo` table.
-  """
-  id_max: Int @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: QUERY_MAX)
-  """
-  ✨ Maximum of the `moduloId` field in the `UnidadDidacticaModulo` table.
-  """
-  moduloId_max: Int @fdc_generated(from: "UnidadDidacticaModulo.moduloId", purpose: QUERY_MAX)
-  """
-  ✨ Maximum of the `orden` field in the `UnidadDidacticaModulo` table.
-  """
-  orden_max: Int @fdc_generated(from: "UnidadDidacticaModulo.orden", purpose: QUERY_MAX)
-  """
-  ✨ Maximum of the `unidadDidacticaId` field in the `UnidadDidacticaModulo` table.
-  """
-  unidadDidacticaId_max: Int @fdc_generated(from: "UnidadDidacticaModulo.unidadDidacticaId", purpose: QUERY_MAX)
-  """
-  A generated field that is used for caching results in SDKs.
-  """
-  _id: ID! @fdc_generated(from: "UnidadDidacticaModulo.id", purpose: ENTITY_ID)
 }
 extend type User {
   """

@@ -7,13 +7,14 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { projectUnidadRelations } from "../competencias/model.js";
 import { requirePermission } from "../core/permissions.js";
 import {
   DataConnectPaquete,
   DataConnectPaqueteInput,
   DataConnectPaqueteModulo,
   DataConnectPaqueteModuloInput,
-  DataConnectUnidadDidacticaModulo,
+  DataConnectCompetenciaUnidadDidactica,
 } from "../core/types.js";
 import {
   DELETE_PAQUETE_MODULOS_BY_PAQUETE_MUTATION,
@@ -52,11 +53,10 @@ const LIST_PAQUETES_QUERY = `
         }
       }
     }
-    unidadDidacticaModulos(limit: 3000) {
+    competenciaUnidadesDidacticas(limit: 3000) {
       id
       orden
       unidadDidacticaId
-      moduloId
       unidadDidactica {
         id
         nombre
@@ -64,7 +64,10 @@ const LIST_PAQUETES_QUERY = `
         creditos
         sigla
       }
-    }
+
+      competenciaId
+      competencia { id nombre tipo moduloId }
+}
   }
 `;
 
@@ -97,11 +100,10 @@ const GET_PAQUETE_QUERY = `
         }
       }
     }
-    unidadDidacticaModulos(limit: 3000) {
+    competenciaUnidadesDidacticas(limit: 3000) {
       id
       orden
       unidadDidacticaId
-      moduloId
       unidadDidactica {
         id
         nombre
@@ -109,7 +111,10 @@ const GET_PAQUETE_QUERY = `
         creditos
         sigla
       }
-    }
+
+      competenciaId
+      competencia { id nombre tipo moduloId }
+}
   }
 `;
 
@@ -190,10 +195,10 @@ const sortPaqueteModulos = (items: DataConnectPaqueteModulo[]) =>
 
 const attachUnidadDidacticasToPaqueteModulos = (
   paqueteModulos: DataConnectPaqueteModulo[],
-  unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[],
+  competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[],
 ) => {
-  const unidadesByModuloId = new Map<number, DataConnectUnidadDidacticaModulo[]>();
-  for (const item of unidadDidacticaModulos) {
+  const unidadesByModuloId = new Map<number, DataConnectCompetenciaUnidadDidactica[]>();
+  for (const item of competenciaUnidadesDidacticas) {
     const current = unidadesByModuloId.get(item.moduloId) ?? [];
     current.push(item);
     unidadesByModuloId.set(item.moduloId, current);
@@ -216,7 +221,7 @@ export const listPaquetes = https.onCall(async (_data, context) => {
     const response = await dataConnect.executeGraphql<{
       paquetes: DataConnectPaquete[];
       paqueteModulos: DataConnectPaqueteModulo[];
-      unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
+      competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
     }, Record<string, never>>(LIST_PAQUETES_QUERY);
 
     const moduloIdsByPaqueteId = new Map<number, DataConnectPaqueteModulo[]>();
@@ -232,7 +237,7 @@ export const listPaquetes = https.onCall(async (_data, context) => {
       .map((paquete) => {
         const paqueteModulos = attachUnidadDidacticasToPaqueteModulos(
           sortPaqueteModulos(moduloIdsByPaqueteId.get(paquete.id) ?? []),
-          response.data.unidadDidacticaModulos ?? [],
+          projectUnidadRelations(response.data.competenciaUnidadesDidacticas ?? []),
         );
         return {
           ...paquete,
@@ -265,7 +270,7 @@ export const getPaquete = https.onCall(async (data, context) => {
     const response = await dataConnect.executeGraphql<{
       paquete: DataConnectPaquete | null;
       paqueteModulos: DataConnectPaqueteModulo[];
-      unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
+      competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
     }, { id: number }>(GET_PAQUETE_QUERY, { variables: { id: paqueteId } });
 
     const paquete = response.data.paquete;
@@ -273,7 +278,7 @@ export const getPaquete = https.onCall(async (data, context) => {
 
     const paqueteModulos = attachUnidadDidacticasToPaqueteModulos(
       sortPaqueteModulos(response.data.paqueteModulos ?? []),
-      response.data.unidadDidacticaModulos ?? [],
+      projectUnidadRelations(response.data.competenciaUnidadesDidacticas ?? []),
     );
     return {
       paquete: {

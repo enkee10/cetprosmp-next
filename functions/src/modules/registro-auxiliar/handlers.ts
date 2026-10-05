@@ -292,12 +292,14 @@ const REGISTRO_AUXILIAR_DETAIL_QUERY = `
       grupoModuloId
       unidadDidacticaId
     }
-    unidadDidacticaModulos(where: { moduloId: { eq: $moduloId } }, limit: 500) {
+    competenciaUnidadesDidacticas(where: { competencia: { moduloId: { eq: $moduloId } } }, limit: 500) {
       id
       orden
       unidadDidacticaId
-      moduloId
-    }
+
+      competenciaId
+      competencia { id nombre tipo moduloId }
+}
     unidadesDidacticas(limit: 50000) {
       id
       nombre
@@ -1270,9 +1272,9 @@ async function upsertEfsrtPppPromedio(grupoModuloId: number, moduloEstudianteId:
 
 function buildUnidadIds(response: {
   grupoModuloUnidadesDidacticas?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-  unidadDidacticaModulos?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
+  competenciaUnidadesDidacticas?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
 }) {
-  const moduleUnits = response.unidadDidacticaModulos ?? [];
+  const moduleUnits = response.competenciaUnidadesDidacticas ?? [];
   const source = moduleUnits.length > 0 ? moduleUnits : response.grupoModuloUnidadesDidacticas ?? [];
   const unitsById = new Map<number, { orden?: number | null; unidadDidacticaId: number }>();
   for (const item of source) {
@@ -1451,7 +1453,7 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
 
     const response = await dataConnect.executeGraphql<{
       grupoModuloUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-      unidadDidacticaModulos: Array<{ orden?: number | null; unidadDidacticaId: number }>;
+      competenciaUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
       unidadesDidacticas: RegistroAuxiliarUnidad[];
       capacidadesTerminales: RegistroAuxiliarCapacidad[];
       indicadoresCapacidad: RegistroAuxiliarIndicador[];
@@ -1934,7 +1936,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
 
     const contextResponse = await dataConnect.executeGraphql<{
       grupoModuloUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-      unidadDidacticaModulos: Array<{ orden?: number | null; unidadDidacticaId: number }>;
+      competenciaUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
       unidadesDidacticas: Array<Pick<RegistroAuxiliarUnidad, "id" | "creditos">>;
       capacidadesTerminales: RegistroAuxiliarCapacidad[];
       indicadoresCapacidad: RegistroAuxiliarIndicador[];
@@ -1947,10 +1949,13 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
             orden
             unidadDidacticaId
           }
-          unidadDidacticaModulos(where: { moduloId: { eq: $moduloId } }, limit: 500) {
+          competenciaUnidadesDidacticas(where: { competencia: { moduloId: { eq: $moduloId } } }, limit: 500) {
             orden
             unidadDidacticaId
-          }
+
+      competenciaId
+      competencia { id nombre tipo moduloId }
+}
           unidadesDidacticas(limit: 50000) {
             id
             creditos

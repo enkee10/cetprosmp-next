@@ -17,11 +17,12 @@ import {
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 
-export type AcademicFieldType = 'text' | 'number' | 'number-list' | 'textarea' | 'timestamp' | 'date' | 'select' | 'boolean';
+export type AcademicFieldType = 'text' | 'number' | 'number-list' | 'textarea' | 'timestamp' | 'date' | 'select' | 'multi-select' | 'boolean';
 
 export interface AcademicSelectOption {
   value: string | number;
   label: string;
+  source?: Record<string, unknown>;
 }
 
 export interface AcademicFieldConfig {
@@ -35,6 +36,8 @@ export interface AcademicFieldConfig {
   optionValueField?: string;
   optionLabelField?: string;
   optionValueType?: 'string' | 'number';
+  optionFilters?: Array<{ optionField: string; formField: string }>;
+
 }
 
 interface AcademicEntityFormProps {
@@ -53,7 +56,7 @@ type EntityData = Record<string, unknown>;
 function formatInitialValue(value: unknown, type?: AcademicFieldType) {
   if (value === null || value === undefined) return '';
   if (type === 'boolean') return value === true ? 'true' : 'false';
-  if (type === 'number-list' && Array.isArray(value)) return value.join(', ');
+  if ((type === 'number-list' || type === 'multi-select') && Array.isArray(value)) return value.join(',');
   if (type === 'date' && typeof value === 'string') return value.slice(0, 10);
   if (type === 'timestamp' && typeof value === 'string') return value.slice(0, 16);
   return String(value);
@@ -64,7 +67,7 @@ function buildPayload(fields: AcademicFieldConfig[], values: Record<string, stri
     const raw = values[field.name]?.trim() ?? '';
     if (field.type === 'number') {
       payload[field.name] = raw ? Number(raw) : null;
-    } else if (field.type === 'number-list') {
+    } else if (field.type === 'number-list' || field.type === 'multi-select') {
       payload[field.name] = raw
         ? raw
           .split(',')
@@ -120,7 +123,7 @@ export function AcademicEntityForm({
 
   useEffect(() => {
     const fetchSelectOptions = async () => {
-      const selectFields = fields.filter((field) => field.type === 'select');
+      const selectFields = fields.filter((field) => field.type === 'select' || field.type === 'multi-select');
       if (selectFields.length === 0) {
         setSelectOptions({});
         return;
@@ -128,6 +131,7 @@ export function AcademicEntityForm({
 
       const functions = getFunctions(app);
       const nextOptions: Record<string, AcademicSelectOption[]> = {};
+      const results = new Map<string, Record<string, Record<string, unknown>[]>>();
 
       for (const field of selectFields) {
         if (field.options) {
@@ -144,14 +148,15 @@ export function AcademicEntityForm({
           functions,
           field.optionsCallableName,
         );
-        const result = await listOptions();
-        const rows = result.data[field.optionsRowsKey] ?? [];
+        if (!results.has(field.optionsCallableName)) results.set(field.optionsCallableName, (await listOptions()).data);
+        const rows = results.get(field.optionsCallableName)?.[field.optionsRowsKey] ?? [];
         const valueField = field.optionValueField ?? 'id';
 
         nextOptions[field.name] = rows
           .map((row) => ({
             value: String(row[valueField] ?? ''),
             label: getOptionLabel(row, field),
+            source: row,
           }))
           .filter((option) => option.value !== '');
       }
@@ -247,22 +252,36 @@ export function AcademicEntityForm({
 
       <form onSubmit={handleSubmit}>
         {fields.map((field) => {
-          if (field.type === 'select') {
+          if (field.type === 'select' || field.type === 'multi-select') {
+            const multiple = field.type === 'multi-select';
+            const options = (selectOptions[field.name] ?? []).filter(option =>
+              (field.optionFilters ?? []).every(filter => {
+                const source = option.source?.[filter.optionField];
+                return Array.isArray(source) ? source.some(value => String(value) === values[filter.formField])
+                  : String(source) === values[filter.formField];
+              }));
             return (
               <FormControl key={field.name} fullWidth margin="normal" required={field.required}>
                 <InputLabel>{field.label}</InputLabel>
                 <Select
                   label={field.label}
-                  value={values[field.name] ?? ''}
+                  multiple={multiple}
+                  MenuProps={{ PaperProps: { sx: { maxWidth: 'calc(100vw - 32px)' } } }}
+                  value={multiple ? (values[field.name] || '').split(',').filter(Boolean) : values[field.name] ?? ''}
                   onChange={(event) =>
-                    setValues((prev) => ({ ...prev, [field.name]: String(event.target.value) }))
+                    setValues((prev) => {
+                      const next = { ...prev, [field.name]: Array.isArray(event.target.value) ? event.target.value.join(',') : String(event.target.value) };
+                      for (const dependent of fields) {
+                        if (dependent.optionFilters?.some(filter => filter.formField === field.name)) next[dependent.name] = '';
+                      }
+                      return next;
+                    })
                   }
                 >
-                  <MenuItem value="">
-                    <em>Seleccionar</em>
-                  </MenuItem>
-                  {(selectOptions[field.name] ?? []).map((option) => (
-                    <MenuItem key={option.value} value={String(option.value)}>
+                  {!multiple && <MenuItem value=""><em>Seleccionar</em></MenuItem>}
+                  {options.map((option) => (
+                    <MenuItem key={option.value} value={String(option.value)} sx={{ whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
+                      {multiple && <Checkbox checked={(values[field.name] || '').split(',').includes(String(option.value))} />}
                       {option.label}
                     </MenuItem>
                   ))}

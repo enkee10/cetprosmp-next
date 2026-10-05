@@ -1,4 +1,5 @@
 import { getStorage } from "firebase-admin/storage";
+import { projectUnidadRelations } from "../competencias/model.js";
 import { getFirestore } from "firebase-admin/firestore";
 import { firestore as functionsFirestore, https, runWith } from "firebase-functions/v1";
 import { randomUUID } from "crypto";
@@ -1295,9 +1296,9 @@ const GET_MATRICULA_QUERY = `
       grupoModuloId
       unidadDidacticaId
     }
-    unidadDidacticaModulos(limit: 50000) {
+    competenciaUnidadesDidacticas(limit: 50000) {
       orden
-      moduloId
+      competencia { moduloId }
       unidadDidacticaId
     }
     unidadesDidacticas(limit: 50000) {
@@ -2779,7 +2780,7 @@ async function getMatriculaById(matriculaId: number): Promise<MatriculaRow | nul
     grupoModulos?: MatriculaFichaGrupoModulo[];
     modulos?: MatriculaFichaModulo[];
     grupoModuloUnidadesDidacticas?: Array<{ orden?: number | null; grupoModuloId?: number | null; unidadDidacticaId: number }>;
-    unidadDidacticaModulos?: Array<{ orden?: number | null; moduloId?: number | null; unidadDidacticaId: number }>;
+    competenciaUnidadesDidacticas?: Array<{ orden?: number | null; competencia: { moduloId: number }; unidadDidacticaId: number }>;
     unidadesDidacticas?: MatriculaFichaUnidadDidactica[];
     planModulos?: MatriculaFichaPlanModulo[];
     matriculaCambiosModulo?: MatriculaCambioModuloRow[];
@@ -2825,7 +2826,7 @@ async function getMatriculaById(matriculaId: number): Promise<MatriculaRow | nul
   const unidadesById = new Map((response.data.unidadesDidacticas ?? []).map((unidad) => [unidad.id, unidad]));
   const grupoModuloUnidadLinks = (response.data.grupoModuloUnidadesDidacticas ?? [])
     .filter((item) => grupoModuloId && Number(item.grupoModuloId) === Number(grupoModuloId));
-  const moduloUnidadLinks = (response.data.unidadDidacticaModulos ?? [])
+  const moduloUnidadLinks = projectUnidadRelations(response.data.competenciaUnidadesDidacticas ?? [])
     .filter((item) => moduloId && Number(item.moduloId) === Number(moduloId));
   const unidadLinks = grupoModuloUnidadLinks.length > 0 ? grupoModuloUnidadLinks : moduloUnidadLinks;
   const fichaUnidadesDidacticas: MatriculaFichaUnidadDidactica[] = unidadLinks

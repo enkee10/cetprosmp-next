@@ -5,6 +5,7 @@ import { AcademicCrudPage } from '@/components/intranet/academico/AcademicCrudPa
 const fields = [
   { name: 'descripcion', label: 'Descripcion', type: 'textarea' as const, required: true },
   { name: 'sigla', label: 'Sigla' },
+  { name: 'orden', label: 'Orden', type: 'number' as const },
   { name: 'unidadDidacticaId', label: 'Unidad Didactica ID', type: 'number' as const, required: true },
 ];
 

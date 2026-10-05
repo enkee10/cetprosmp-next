@@ -9,6 +9,7 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { reconcileModuloUnits, getModuloCompetenciaContext } from "../competencias/service.js";
 import { requirePermission } from "../core/permissions.js";
 import {
   DataConnectModulo,
@@ -50,8 +51,7 @@ const LIST_MODULOS_QUERY = `
       tituloComercial
       orden
       descripcion
-      tipoCompetencia
-      competencia
+      competencias: competencias_on_modulo { id nombre tipo moduloId }
       horas
       creditos
       duracionEfsrt
@@ -114,8 +114,7 @@ const GET_MODULO_QUERY = `
       tituloComercial
       orden
       descripcion
-      tipoCompetencia
-      competencia
+      competencias: competencias_on_modulo { id nombre tipo moduloId }
       horas
       creditos
       duracionEfsrt
@@ -652,6 +651,10 @@ export const createOrUpdateModulo = https.onCall(async (data, context) => {
 
   const moduloId = toNumberOrNull(data?.id);
   await requirePermission(context, "modulos", moduloId ? "edit" : "create");
+  if (moduloId && input.horas !== undefined) {
+    const current = await getModuloCompetenciaContext(moduloId);
+    if (current.programa && current.relations.length && (!payload.horas || payload.horas <= 0)) throw new https.HttpsError("invalid-argument", "Complete las horas del modulo.");
+  }
 
   try {
     if (moduloId) {
@@ -666,6 +669,7 @@ export const createOrUpdateModulo = https.onCall(async (data, context) => {
         await syncPlanModulos(moduloId, planIds, payload.orden);
       }
       await syncModuloNameDependents(moduloId);
+      if (input.horas !== undefined || planIds !== undefined) await reconcileModuloUnits(moduloId);
 
       return { id: getIdFromKeyOutput(updated.data.modulo_update) ?? moduloId };
     }

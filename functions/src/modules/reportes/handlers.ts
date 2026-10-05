@@ -96,7 +96,7 @@ type ReporteGrupoModuloOption = {
     id: number;
     titulo?: string | null;
     tituloComercial?: string | null;
-    competencia?: string | null;
+    competencias?: Array<{ nombre: string; tipo: string }>;
     horas?: number | null;
     creditos?: number | null;
     duracionEfsrt?: number | null;
@@ -128,6 +128,7 @@ type ReporteUnidad = {
   sigla?: string | null;
   duracion?: number | null;
   creditos?: number | null;
+  competencia?: { id: number; nombre: string; tipo: string } | null;
 };
 
 type ReporteCapacidad = {
@@ -186,7 +187,7 @@ type ReporteEfsrt = {
 type ReporteDetalleData = {
   grupoModulo: ReporteGrupoModuloOption | null;
   grupoModuloUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-  unidadDidacticaModulos: Array<{ orden?: number | null; unidadDidacticaId: number }>;
+  competenciaUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number; competencia: NonNullable<ReporteUnidad["competencia"]> }>;
   unidadesDidacticas: ReporteUnidad[];
   capacidadesTerminales: ReporteCapacidad[];
   modulosEstudiantesByGrupoModulo: ReporteEstudiante[];
@@ -356,7 +357,7 @@ const REPORTE_OPTIONS_QUERY = `
         id
         titulo
         tituloComercial
-        competencia
+        competencias: competencias_on_modulo { nombre tipo }
         horas
         creditos
         duracionEfsrt
@@ -428,7 +429,7 @@ const REPORTE_DETALLE_QUERY = `
         id
         titulo
         tituloComercial
-        competencia
+        competencias: competencias_on_modulo { nombre tipo }
         horas
         creditos
         duracionEfsrt
@@ -476,10 +477,13 @@ const REPORTE_DETALLE_QUERY = `
       orden
       unidadDidacticaId
     }
-    unidadDidacticaModulos(where: { moduloId: { eq: $moduloId } }, limit: 500) {
+    competenciaUnidadesDidacticas(where: { competencia: { moduloId: { eq: $moduloId } } }, limit: 500) {
       orden
       unidadDidacticaId
-    }
+
+      competenciaId
+      competencia { id nombre tipo moduloId }
+}
     unidadesDidacticas(limit: 50000) {
       id
       nombre
@@ -1211,9 +1215,9 @@ function hasFiniteGrade(values: Array<number | null | undefined>) {
 
 function buildUnidadIds(response: {
   grupoModuloUnidadesDidacticas?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-  unidadDidacticaModulos?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
+  competenciaUnidadesDidacticas?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
 }) {
-  const moduleUnits = response.unidadDidacticaModulos ?? [];
+  const moduleUnits = response.competenciaUnidadesDidacticas ?? [];
   const source = moduleUnits.length > 0 ? moduleUnits : response.grupoModuloUnidadesDidacticas ?? [];
   const unitsById = new Map<number, { orden?: number | null; unidadDidacticaId: number }>();
   for (const item of source) {
@@ -2489,7 +2493,15 @@ async function applyCertificatePlanEstudiosUpdates(
   }
 
   nextXml = removeWorksheetMergeRanges(nextXml, (range) => /^A39:A\d+$/i.test(range));
-  nextXml = addWorksheetMergeRange(nextXml, `A39:A${totalsRow}`);
+  const competenciaStarts = new Set<number>();
+  for (let start = 0; start < unitRows.length;) {
+    let end = start + 1;
+    while (end < unitRows.length && unitRows[end].competencia === unitRows[start].competencia) end += 1;
+    competenciaStarts.add(start);
+    if (end - start > 1) nextXml = addWorksheetMergeRange(nextXml, `A${firstDataRow + start}:A${firstDataRow + end - 1}`);
+    start = end;
+  }
+  nextXml = setSheetCellValue(nextXml, `A${totalsRow}`, "", sharedStrings.add);
   for (let row = firstDataRow; row <= lastDataRow; row += 1) {
     nextXml = addWorksheetMergeRange(nextXml, `B${row}:C${row}`);
     nextXml = addWorksheetMergeRange(nextXml, `F${row}:H${row}`);
@@ -2521,7 +2533,7 @@ async function applyCertificatePlanEstudiosUpdates(
       nota: "",
     };
 
-    nextXml = setSheetCellValue(nextXml, `A${row}`, index === 0 ? competencia : "", sharedStrings.add);
+    nextXml = setSheetCellValue(nextXml, `A${row}`, competenciaStarts.has(index) ? item.competencia : "", sharedStrings.add);
     nextXml = setSheetCellValue(nextXml, `B${row}`, item.unidad, sharedStrings.add);
     nextXml = setSheetCellValue(nextXml, `D${row}`, item.creditos, sharedStrings.add);
     nextXml = setSheetCellValue(nextXml, `E${row}`, item.horas, sharedStrings.add);
@@ -3007,9 +3019,9 @@ function buildCertificateUnitRows(data: ReporteDocumentoData, student: ReporteEs
     capacitiesByUnit.set(capacidad.unidadDidacticaId, current);
   }
 
-  const competencia = cleanText(data.grupoModulo.modulo?.competencia);
+  const competencia = (data.grupoModulo.modulo?.competencias ?? []).filter(c => c.tipo === "TECNICA").map(c => cleanText(c.nombre)).join("\n\n");
   return data.unidades.map((unit) => ({
-    competencia,
+    competencia: cleanText(unit.competencia?.nombre ?? competencia),
     unidad: cleanText(unit.nombre || unit.sigla || ""),
     creditos: unit.creditos ?? "",
     horas: unit.duracion ?? "",
@@ -3058,7 +3070,7 @@ function buildCertificateTokens(
     "[HORAS MODULO]": data.grupoModulo.modulo?.horas ?? "",
     "[fecha actual larga]": getDocumentDateLong(data, "certificado"),
     "[director]": getPersonalName(data.semestre?.director),
-    "[UNIDAD DE COMPETENCIA]": cleanText(data.grupoModulo.modulo?.competencia),
+    "[UNIDAD DE COMPETENCIA]": (data.grupoModulo.modulo?.competencias ?? []).filter(c => c.tipo === "TECNICA").map(c => cleanText(c.nombre)).join("\n\n"),
     "[UNIDAD DIDACTICA 1]": units.map((unit) => cleanText(unit.nombre || unit.sigla || "")).join("\n"),
     "[suma creditos]": sumaCreditos,
     "[suma horas]": sumaHoras,
@@ -3265,7 +3277,8 @@ async function buildReporteData(grupoModuloId: number) {
   const unidadesById = new Map((response.data.unidadesDidacticas ?? []).map((unidad) => [unidad.id, unidad]));
   const unidades = unidadIds
     .map((id) => unidadesById.get(id))
-    .filter((unidad): unidad is ReporteUnidad => Boolean(unidad));
+    .filter((unidad): unidad is ReporteUnidad => Boolean(unidad))
+    .map((unidad) => ({ ...unidad, competencia: response.data.competenciaUnidadesDidacticas.find((link) => link.unidadDidacticaId === unidad.id)?.competencia }));
   const capacidades = (response.data.capacidadesTerminales ?? [])
     .filter((capacidad) => capacidad.unidadDidacticaId && unidadIdSet.has(capacidad.unidadDidacticaId))
     .sort((a, b) =>

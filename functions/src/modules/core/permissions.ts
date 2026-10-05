@@ -22,6 +22,7 @@ export const PERMISSION_ENTITIES: PermissionEntity[] = [
   { id: "carreras", title: "Carreras", section: "Entidades" },
   { id: "planes", title: "Planes", section: "Entidades" },
   { id: "modulos", title: "Modulos", section: "Entidades" },
+  { id: "competencias", title: "Competencias", section: "Entidades" },
   { id: "paquetes", title: "Paquetes", section: "Entidades" },
   { id: "grupos", title: "Grupos", section: "Entidades" },
   { id: "grupo-modulos", title: "Grupo-Modulo", section: "Entidades" },

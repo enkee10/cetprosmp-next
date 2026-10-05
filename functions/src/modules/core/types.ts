@@ -676,8 +676,7 @@ export interface DataConnectModulo {
   tituloComercial?: string | null;
   orden?: number | null;
   descripcion?: string | null;
-  tipoCompetencia?: string | null;
-  competencia?: string | null;
+  competencias?: Array<{ id: number; nombre: string; tipo: "TECNICA" | "EMPLEABILIDAD"; moduloId: number }>;
   horas?: number | null;
   creditos?: number | null;
   duracionEfsrt?: number | null;
@@ -713,8 +712,6 @@ export interface DataConnectModuloInput {
   tituloComercial?: string | null;
   orden?: number | null;
   descripcion?: string | null;
-  tipoCompetencia?: string | null;
-  competencia?: string | null;
   horas?: number | null;
   creditos?: number | null;
   duracionEfsrt?: number | null;
@@ -835,6 +832,7 @@ export interface DataConnectUnidadDidactica {
   sigla?: string | null;
   comun?: boolean | null;
   moduloIds?: number[];
+  competenciaIds?: number[];
 }
 
 export interface DataConnectUnidadDidacticaInput {
@@ -845,7 +843,9 @@ export interface DataConnectUnidadDidacticaInput {
   comun?: boolean;
 }
 
-export interface DataConnectUnidadDidacticaModulo {
+export interface DataConnectCompetenciaUnidadDidactica {
+  competenciaId: number;
+  competencia: { id: number; nombre: string; tipo: "TECNICA" | "EMPLEABILIDAD"; moduloId: number };
   id: number;
   orden?: number | null;
   unidadDidacticaId: number;
@@ -853,13 +853,14 @@ export interface DataConnectUnidadDidacticaModulo {
   unidadDidactica?: DataConnectUnidadDidactica | null;
 }
 
-export interface DataConnectUnidadDidacticaModuloInput {
+export interface DataConnectCompetenciaUnidadDidacticaInput {
   orden?: number | null;
   unidadDidacticaId: number;
-  moduloId: number;
+  competenciaId: number;
 }
 
 export interface DataConnectCapacidadTerminal {
+  unidadDidactica?: { competencias: Array<{ competencia: { id: number; nombre: string; tipo: "TECNICA" | "EMPLEABILIDAD"; moduloId: number } }> };
   id: number;
   descripcion?: string | null;
   sigla?: string | null;

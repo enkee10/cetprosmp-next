@@ -360,6 +360,54 @@ extend type Query {
     first: CertificadoTituloDocumento_FirstRow
   ): CertificadoTituloDocumento @fdc_generated(from: "CertificadoTituloDocumento", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `Competencia` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  competencia(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Competencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Competencia_FirstRow
+  ): Competencia @fdc_generated(from: "Competencia", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `CompetenciaUnidadDidactica` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  competenciaUnidadDidactica(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CompetenciaUnidadDidactica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CompetenciaUnidadDidactica_FirstRow
+  ): CompetenciaUnidadDidactica @fdc_generated(from: "CompetenciaUnidadDidactica", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `DatoGeneral` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   datoGeneral(
@@ -1606,30 +1654,6 @@ extend type Query {
     first: UnidadDidacticaEstudiante_FirstRow
   ): UnidadDidacticaEstudiante @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: QUERY_SINGLE)
   """
-  ✨ Look up a single `UnidadDidacticaModulo` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
-  """
-  unidadDidacticaModulo(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: UnidadDidacticaModulo_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: UnidadDidacticaModulo_FirstRow
-  ): UnidadDidacticaModulo @fdc_generated(from: "UnidadDidacticaModulo", purpose: QUERY_SINGLE)
-  """
   ✨ Look up a single `User` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   user(
@@ -2211,6 +2235,74 @@ extend type Query {
     """
     having: CertificadoTituloDocumento_Having
   ): [CertificadoTituloDocumento!]! @fdc_generated(from: "CertificadoTituloDocumento", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Competencia` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  competencias(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Competencia_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Competencia_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Competencia_Having
+  ): [Competencia!]! @fdc_generated(from: "Competencia", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `CompetenciaUnidadDidactica` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  competenciaUnidadesDidacticas(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: CompetenciaUnidadDidactica_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [CompetenciaUnidadDidactica_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: CompetenciaUnidadDidactica_Having
+  ): [CompetenciaUnidadDidactica!]! @fdc_generated(from: "CompetenciaUnidadDidactica", purpose: QUERY_MULTIPLE)
   """
   ✨ List `DatoGeneral` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -4047,40 +4139,6 @@ extend type Query {
     """
     having: UnidadDidacticaEstudiante_Having
   ): [UnidadDidacticaEstudiante!]! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: QUERY_MULTIPLE)
-  """
-  ✨ List `UnidadDidacticaModulo` objects in the table and return selected fields, optionally filtered by `where` conditions
-  """
-  unidadDidacticaModulos(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: UnidadDidacticaModulo_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [UnidadDidacticaModulo_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: UnidadDidacticaModulo_Having
-  ): [UnidadDidacticaModulo!]! @fdc_generated(from: "UnidadDidacticaModulo", purpose: QUERY_MULTIPLE)
   """
   ✨ List `User` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

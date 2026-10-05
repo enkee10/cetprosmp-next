@@ -12,6 +12,8 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { attachUnidadToModulo, syncUnidadCompetencias, parseAcademicIds, validateUnidadCompetencias, reconcileModuloUnits, reconcileRelationModules } from "../competencias/service.js";
+import { projectUnidadRelations } from "../competencias/model.js";
 import { getRequesterRoleId, requireAuthenticated, requirePermission } from "../core/permissions.js";
 import {
   getConfiguredSemestreConsultaIds,
@@ -35,8 +37,8 @@ import {
   DataConnectPlanModuloInput,
   DataConnectUnidadDidactica,
   DataConnectUnidadDidacticaInput,
-  DataConnectUnidadDidacticaModulo,
-  DataConnectUnidadDidacticaModuloInput,
+  DataConnectCompetenciaUnidadDidactica,
+  DataConnectCompetenciaUnidadDidacticaInput,
 } from "../core/types.js";
 import {
   DELETE_ACTIVIDAD_MUTATION,
@@ -47,8 +49,8 @@ import {
   DELETE_PLAN_MODULO_MUTATION,
   DELETE_PLAN_MODULO_RELATION_MUTATION,
   DELETE_UNIDAD_DIDACTICA_MUTATION,
-  DELETE_UNIDAD_DIDACTICA_MODULO_RELATION_MUTATION,
-  DELETE_UNIDAD_DIDACTICA_MODULOS_BY_UNIDAD_MUTATION,
+  DELETE_COMPETENCIA_UNIDAD_RELATION_MUTATION,
+  DELETE_COMPETENCIA_UNIDADES_BY_UNIDAD_MUTATION,
   INSERT_ACTIVIDAD_MUTATION,
   INSERT_APRENDIZAJE_MUTATION,
   INSERT_CAPACIDAD_TERMINAL_MUTATION,
@@ -56,7 +58,6 @@ import {
   INSERT_INDICADOR_CAPACIDAD_MUTATION,
   INSERT_MODULO_MUTATION,
   INSERT_PLAN_MODULO_MUTATION,
-  INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION,
   INSERT_UNIDAD_DIDACTICA_MUTATION,
   UPDATE_ACTIVIDAD_MUTATION,
   UPDATE_APRENDIZAJE_MUTATION,
@@ -64,7 +65,7 @@ import {
   UPDATE_INDICADOR_CAPACIDAD_MUTATION,
   UPDATE_MODULO_MUTATION,
   UPDATE_UNIDAD_DIDACTICA_MUTATION,
-  UPDATE_UNIDAD_DIDACTICA_MODULO_MUTATION,
+  UPDATE_COMPETENCIA_UNIDAD_DIDACTICA_MUTATION,
 } from "../../dataconnectOperations.js";
 
 const LIST_UNIDADES_DIDACTICAS_QUERY = `
@@ -77,12 +78,15 @@ const LIST_UNIDADES_DIDACTICAS_QUERY = `
       sigla
       comun
     }
-    unidadDidacticaModulos(limit: 2000) {
+    competenciaUnidadesDidacticas(limit: 2000) {
       id
       unidadDidacticaId
-      moduloId
+
       orden
-    }
+
+      competenciaId
+      competencia { id nombre tipo moduloId }
+}
   }
 `;
 
@@ -96,12 +100,15 @@ const GET_UNIDAD_DIDACTICA_QUERY = `
       sigla
       comun
     }
-    unidadDidacticaModulos(where: { unidadDidacticaId: { eq: $id } }, limit: 2000) {
+    competenciaUnidadesDidacticas(where: { unidadDidacticaId: { eq: $id } }, limit: 2000) {
       id
       unidadDidacticaId
-      moduloId
+
       orden
-    }
+
+      competenciaId
+      competencia { id nombre tipo moduloId }
+}
   }
 `;
 
@@ -113,6 +120,7 @@ const LIST_CAPACIDADES_TERMINALES_QUERY = `
       sigla
       orden
       unidadDidacticaId
+      unidadDidactica { competencias: competenciaUnidadesDidacticas_on_unidadDidactica { competencia { id nombre tipo moduloId } } }
     }
   }
 `;
@@ -125,6 +133,7 @@ const GET_CAPACIDAD_TERMINAL_QUERY = `
       sigla
       orden
       unidadDidacticaId
+      unidadDidactica { competencias: competenciaUnidadesDidacticas_on_unidadDidactica { competencia { id nombre tipo moduloId } } }
     }
   }
 `;
@@ -219,8 +228,7 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
       tituloComercial
       orden
       descripcion
-      tipoCompetencia
-      competencia
+      competencias: competencias_on_modulo { id nombre tipo moduloId }
       horas
       creditos
       metas
@@ -267,12 +275,15 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
         }
       }
     }
-    unidadDidacticaModulos(limit: 50000, orderBy: [{ moduloId: ASC }, { orden: ASC }, { unidadDidacticaId: ASC }]) {
+    competenciaUnidadesDidacticas(limit: 50000, orderBy: [{ orden: ASC }, { unidadDidacticaId: ASC }]) {
       id
       orden
-      moduloId
+
       unidadDidacticaId
-    }
+
+      competenciaId
+      competencia { id nombre tipo moduloId }
+}
     unidadesDidacticas(limit: 50000, orderBy: [{ id: ASC }]) {
       id
       nombre
@@ -287,6 +298,7 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
       sigla
       orden
       unidadDidacticaId
+      unidadDidactica { competencias: competenciaUnidadesDidacticas_on_unidadDidactica { competencia { id nombre tipo moduloId } } }
     }
     indicadoresCapacidad(limit: 100000, orderBy: [{ capacidadTerminalId: ASC }, { orden: ASC }, { id: ASC }]) {
       id
@@ -333,8 +345,7 @@ const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
         tituloComercial
         orden
         descripcion
-        tipoCompetencia
-        competencia
+        competencias: competencias_on_modulo { id nombre tipo moduloId }
         horas
         creditos
         metas
@@ -382,12 +393,15 @@ const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
         }
       }
     }
-    unidadDidacticaModulos(limit: 50000, orderBy: [{ moduloId: ASC }, { orden: ASC }, { unidadDidacticaId: ASC }]) {
+    competenciaUnidadesDidacticas(limit: 50000, orderBy: [{ orden: ASC }, { unidadDidacticaId: ASC }]) {
       id
       orden
-      moduloId
+
       unidadDidacticaId
-    }
+
+      competenciaId
+      competencia { id nombre tipo moduloId }
+}
     unidadesDidacticas(limit: 50000, orderBy: [{ id: ASC }]) {
       id
       nombre
@@ -402,6 +416,7 @@ const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
       sigla
       orden
       unidadDidacticaId
+      unidadDidactica { competencias: competenciaUnidadesDidacticas_on_unidadDidactica { competencia { id nombre tipo moduloId } } }
     }
     indicadoresCapacidad(limit: 100000, orderBy: [{ capacidadTerminalId: ASC }, { orden: ASC }, { id: ASC }]) {
       id
@@ -456,12 +471,16 @@ const LIST_PLAN_MODULO_RELATIONS_BY_PLAN_QUERY = `
 
 const LIST_UNIDAD_RELATIONS_BY_MODULO_QUERY = `
   query ListUnidadRelationsByModulo($moduloId: Int!) {
-    unidadDidacticaModulos(where: { moduloId: { eq: $moduloId } }, limit: 1000) {
+    competenciaUnidadesDidacticas(where: { competencia: { moduloId: { eq: $moduloId } } }, limit: 1000) {
       id
       orden
-      moduloId
+
       unidadDidacticaId
-    }
+      unidadDidactica { competencias: competenciaUnidadesDidacticas_on_unidadDidactica { competencia { id nombre tipo moduloId } } }
+
+      competenciaId
+      competencia { id nombre tipo moduloId }
+}
   }
 `;
 
@@ -481,7 +500,7 @@ const LIST_GRUPO_MODULO_UNIDAD_SYNC_QUERY = `
 interface EstructuraAcademicaQueryResponse {
   modulos: EstructuraModulo[];
   planModulos: DataConnectPlanModulo[];
-  unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
+  competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
   unidadesDidacticas: DataConnectUnidadDidactica[];
   capacidadesTerminales: DataConnectCapacidadTerminal[];
   indicadoresCapacidad: DataConnectIndicadorCapacidad[];
@@ -527,7 +546,7 @@ function sortByOrdenThenId<T extends { id: number; orden?: number | null }>(item
     .sort((a, b) => (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id);
 }
 
-function sortRelations(items: DataConnectUnidadDidacticaModulo[]) {
+function sortRelations(items: DataConnectCompetenciaUnidadDidactica[]) {
   return items
     .slice()
     .sort(
@@ -671,6 +690,7 @@ function buildCapacidadesForUnidad(
       sigla: capacidad.sigla ?? null,
       orden: capacidad.orden ?? null,
       unidadDidacticaId: capacidad.unidadDidacticaId ?? null,
+      competencias: (capacidad.unidadDidactica?.competencias ?? []).map(r => r.competencia),
       indicadoresCapacidad: sortByOrdenThenId(indicadoresByCapacidadId.get(capacidad.id) ?? [])
         .map((indicador) => ({
           id: indicador.id,
@@ -684,7 +704,7 @@ function buildCapacidadesForUnidad(
 
 function buildUnidadesForModulo(
   moduloId: number,
-  relationsByModuloId: Map<number, DataConnectUnidadDidacticaModulo[]>,
+  relationsByModuloId: Map<number, DataConnectCompetenciaUnidadDidactica[]>,
   unidadesById: Map<number, DataConnectUnidadDidactica>,
   capacidadesByUnidadId: Map<number, DataConnectCapacidadTerminal[]>,
   indicadoresByCapacidadId: Map<number, DataConnectIndicadorCapacidad[]>,
@@ -697,6 +717,8 @@ function buildUnidadesForModulo(
       return {
         id: unidad.id,
         relacionId: relation.id,
+        competenciaId: relation.competenciaId,
+        competencia: relation.competencia,
         orden: relation.orden ?? null,
         nombre: unidad.nombre ?? null,
         duracion: unidad.duracion ?? null,
@@ -713,7 +735,7 @@ function buildUnidadesForModulo(
     .filter(Boolean);
 }
 
-type EditableAcademicEntity = "modulo" | "unidadDidactica" | "unidadDidacticaModulo" | "capacidadTerminal" | "indicadorCapacidad";
+type EditableAcademicEntity = "modulo" | "unidadDidactica" | "competenciaUnidadDidactica" | "capacidadTerminal" | "indicadorCapacidad";
 type EditableAcademicValueType = "text" | "number" | "boolean";
 
 const editableAcademicFields: Record<EditableAcademicEntity, Record<string, EditableAcademicValueType>> = {
@@ -722,8 +744,6 @@ const editableAcademicFields: Record<EditableAcademicEntity, Record<string, Edit
     tituloComercial: "text",
     orden: "number",
     descripcion: "text",
-    competencia: "text",
-    tipoCompetencia: "text",
     horas: "number",
     creditos: "number",
     metas: "number",
@@ -738,7 +758,7 @@ const editableAcademicFields: Record<EditableAcademicEntity, Record<string, Edit
     sigla: "text",
     comun: "boolean",
   },
-  unidadDidacticaModulo: {
+  competenciaUnidadDidactica: {
     orden: "number",
   },
   capacidadTerminal: {
@@ -809,10 +829,12 @@ export const updateEstructuraAcademicaCell = https.onCall(async (data, context) 
 
   try {
     if (entity === "modulo") {
+      if (field === "horas" && (typeof value !== "number" || value <= 0)) throw new https.HttpsError("invalid-argument", "Las horas del modulo deben ser positivas.");
       const updated = await dataConnect.executeGraphql<
         { modulo_update: unknown },
         { id: number; data: DataConnectModuloInput }
       >(UPDATE_MODULO_MUTATION, { variables: { id, data: payload } });
+      if (field === "horas") await reconcileModuloUnits(id);
       return { id: getIdFromKeyOutput(updated.data.modulo_update) ?? id };
     }
 
@@ -824,14 +846,15 @@ export const updateEstructuraAcademicaCell = https.onCall(async (data, context) 
       return { id: getIdFromKeyOutput(updated.data.unidadDidactica_update) ?? id };
     }
 
-    if (entity === "unidadDidacticaModulo") {
+    if (entity === "competenciaUnidadDidactica") {
       const updated = await dataConnect.executeGraphql<
-        { unidadDidacticaModulo_update: unknown },
-        { id: number; data: DataConnectUnidadDidacticaModuloInput }
-      >(UPDATE_UNIDAD_DIDACTICA_MODULO_MUTATION, {
-        variables: { id, data: payload as unknown as DataConnectUnidadDidacticaModuloInput },
+        { competenciaUnidadDidactica_update: unknown },
+        { id: number; data: DataConnectCompetenciaUnidadDidacticaInput }
+      >(UPDATE_COMPETENCIA_UNIDAD_DIDACTICA_MUTATION, {
+        variables: { id, data: payload as unknown as DataConnectCompetenciaUnidadDidacticaInput },
       });
-      return { id: getIdFromKeyOutput(updated.data.unidadDidacticaModulo_update) ?? id };
+      await reconcileRelationModules([id]);
+      return { id: getIdFromKeyOutput(updated.data.competenciaUnidadDidactica_update) ?? id };
     }
 
     if (entity === "capacidadTerminal") {
@@ -853,11 +876,11 @@ export const updateEstructuraAcademicaCell = https.onCall(async (data, context) 
   }
 });
 
-type ReorderAcademicEntity = "unidadDidacticaModulo" | "capacidadTerminal" | "indicadorCapacidad";
+type ReorderAcademicEntity = "competenciaUnidadDidactica" | "capacidadTerminal" | "indicadorCapacidad";
 
 function parseReorderAcademicEntity(value: unknown): ReorderAcademicEntity {
   const entity = String(value ?? "");
-  if (["unidadDidacticaModulo", "capacidadTerminal", "indicadorCapacidad"].includes(entity)) {
+  if (["competenciaUnidadDidactica", "capacidadTerminal", "indicadorCapacidad"].includes(entity)) {
     return entity as ReorderAcademicEntity;
   }
   throw new https.HttpsError("invalid-argument", "Invalid reorder entity.");
@@ -885,12 +908,12 @@ export const reorderEstructuraAcademicaItems = https.onCall(async (data, context
 
   try {
     await Promise.all(items.map(({ id, orden }) => {
-      if (entity === "unidadDidacticaModulo") {
+      if (entity === "competenciaUnidadDidactica") {
         return dataConnect.executeGraphql<
-          { unidadDidacticaModulo_update: unknown },
-          { id: number; data: DataConnectUnidadDidacticaModuloInput }
-        >(UPDATE_UNIDAD_DIDACTICA_MODULO_MUTATION, {
-          variables: { id, data: { orden } as unknown as DataConnectUnidadDidacticaModuloInput },
+          { competenciaUnidadDidactica_update: unknown },
+          { id: number; data: DataConnectCompetenciaUnidadDidacticaInput }
+        >(UPDATE_COMPETENCIA_UNIDAD_DIDACTICA_MUTATION, {
+          variables: { id, data: { orden } as unknown as DataConnectCompetenciaUnidadDidacticaInput },
         });
       }
       if (entity === "capacidadTerminal") {
@@ -905,6 +928,7 @@ export const reorderEstructuraAcademicaItems = https.onCall(async (data, context
       >(UPDATE_INDICADOR_CAPACIDAD_MUTATION, { variables: { id, data: { orden } } });
     }));
 
+    if (entity === "competenciaUnidadDidactica") await reconcileRelationModules(items.map(item => item.id));
     return { updated: items.length };
   } catch (error) {
     console.error("Error in reorderEstructuraAcademicaItems:", error);
@@ -917,7 +941,7 @@ interface EstructuraModulo extends DataConnectModulo {}
 function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
   const unidadesById = new Map((response.unidadesDidacticas ?? []).map((unidad) => [unidad.id, unidad]));
   const planRelationsByModuloId = groupByNumber(response.planModulos ?? [], (relation) => relation.moduloId);
-  const relationsByModuloId = groupByNumber(response.unidadDidacticaModulos ?? [], (relation) => relation.moduloId);
+  const relationsByModuloId = groupByNumber(projectUnidadRelations(response.competenciaUnidadesDidacticas ?? []), (relation) => relation.moduloId);
   const capacidadesByUnidadId = groupByNumber(
     response.capacidadesTerminales ?? [],
     (capacidad) => capacidad.unidadDidacticaId,
@@ -935,8 +959,7 @@ function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
       tituloComercial: moduloWithPlan.tituloComercial ?? null,
       orden: moduloWithPlan.orden ?? null,
       descripcion: moduloWithPlan.descripcion ?? null,
-      tipoCompetencia: moduloWithPlan.tipoCompetencia ?? null,
-      competencia: moduloWithPlan.competencia ?? null,
+      competencias: moduloWithPlan.competencias ?? [],
       horas: moduloWithPlan.horas ?? null,
       creditos: moduloWithPlan.creditos ?? null,
       metas: moduloWithPlan.metas ?? null,
@@ -960,7 +983,7 @@ function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
 }
 
 function buildEstructuraAcademicaOpciones(response: EstructuraAcademicaQueryResponse) {
-  const unidadRelationsByUnidadId = groupByNumber(response.unidadDidacticaModulos ?? [], (relation) => relation.unidadDidacticaId);
+  const unidadRelationsByUnidadId = groupByNumber(projectUnidadRelations(response.competenciaUnidadesDidacticas ?? []), (relation) => relation.unidadDidacticaId);
 
   const modulosComunes: Array<{
     id: number;
@@ -1029,7 +1052,7 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
       semestres: EstructuraAcademicaSemestreOption[];
       grupoModulos: EstructuraAcademicaDocenteGrupoModulo[];
       planModulos: DataConnectPlanModulo[];
-      unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
+      competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
       unidadesDidacticas: DataConnectUnidadDidactica[];
       capacidadesTerminales: DataConnectCapacidadTerminal[];
       indicadoresCapacidad: DataConnectIndicadorCapacidad[];
@@ -1076,7 +1099,7 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
     const estructuraResponse: EstructuraAcademicaQueryResponse = {
       modulos: Array.from(moduloById.values()),
       planModulos: (response.data.planModulos ?? []).filter((relation) => moduloIds.has(relation.moduloId)),
-      unidadDidacticaModulos: (response.data.unidadDidacticaModulos ?? [])
+      competenciaUnidadesDidacticas: projectUnidadRelations(response.data.competenciaUnidadesDidacticas ?? [])
         .filter((relation) => moduloIds.has(relation.moduloId)),
       unidadesDidacticas: response.data.unidadesDidacticas ?? [],
       capacidadesTerminales: response.data.capacidadesTerminales ?? [],
@@ -1172,10 +1195,10 @@ async function nextPlanModuloOrder(planId: number) {
 
 async function nextUnidadModuloOrder(moduloId: number) {
   const response = await dataConnect.executeGraphql<
-    { unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[] },
+    { competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[] },
     { moduloId: number }
   >(LIST_UNIDAD_RELATIONS_BY_MODULO_QUERY, { variables: { moduloId } });
-  return nextOrder((response.data.unidadDidacticaModulos ?? []).map((relation) => relation.orden));
+  return nextOrder(projectUnidadRelations(response.data.competenciaUnidadesDidacticas ?? []).map((relation) => relation.orden));
 }
 
 async function syncUnidadDidacticaToExistingGrupoModulos(
@@ -1264,10 +1287,7 @@ export const createEstructuraAcademicaItem = https.onCall(async (data, context) 
       >(INSERT_UNIDAD_DIDACTICA_MUTATION, { variables: { data: payload } });
       const unidadDidacticaId = getIdFromKeyOutput(created.data.unidadDidactica_insert);
       if (!unidadDidacticaId) throw new Error("No se pudo obtener el id de la unidad didactica creada.");
-      await dataConnect.executeGraphql<
-        { unidadDidacticaModulo_insert: unknown },
-        { data: DataConnectUnidadDidacticaModuloInput }
-      >(INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION, { variables: { data: { unidadDidacticaId, moduloId, orden } } });
+      await attachUnidadToModulo(moduloId, unidadDidacticaId, orden, toNumberOrNull(data?.competenciaId) ?? undefined);
       await syncUnidadDidacticaToExistingGrupoModulos(moduloId, unidadDidacticaId, orden);
       return { id: unidadDidacticaId };
     }
@@ -1321,10 +1341,7 @@ export const reuseEstructuraAcademicaItem = https.onCall(async (data, context) =
         throw new https.HttpsError("invalid-argument", "moduloId and unidadDidacticaId are required.");
       }
       const orden = await nextUnidadModuloOrder(moduloId);
-      await dataConnect.executeGraphql<
-        { unidadDidacticaModulo_insert: unknown },
-        { data: DataConnectUnidadDidacticaModuloInput }
-      >(INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION, { variables: { data: { unidadDidacticaId, moduloId, orden } } });
+      await attachUnidadToModulo(moduloId, unidadDidacticaId, orden, toNumberOrNull(data?.competenciaId) ?? undefined);
       await syncUnidadDidacticaToExistingGrupoModulos(moduloId, unidadDidacticaId, orden);
       await dataConnect.executeGraphql<
         { unidadDidactica_update: unknown },
@@ -1369,10 +1386,13 @@ export const detachEstructuraAcademicaItem = https.onCall(async (data, context) 
     if (entity === "unidadDidactica") {
       const relacionId = toNumber(data?.relacionId, -1);
       if (relacionId <= 0) throw new https.HttpsError("invalid-argument", "relacionId is required.");
+      const previous = await dataConnect.executeGraphql<{ competenciaUnidadDidactica: { competencia: { moduloId: number } } | null }, { id: number }>(
+        `query DetachedUnidadModule($id:Int!) { competenciaUnidadDidactica(id:$id) { competencia { moduloId } } }`, { variables: { id: relacionId } });
       await dataConnect.executeGraphql<
-        { unidadDidacticaModulo_delete: unknown },
+        { competenciaUnidadDidactica_delete: unknown },
         { id: number }
-      >(DELETE_UNIDAD_DIDACTICA_MODULO_RELATION_MUTATION, { variables: { id: relacionId } });
+      >(DELETE_COMPETENCIA_UNIDAD_RELATION_MUTATION, { variables: { id: relacionId } });
+      if (previous.data.competenciaUnidadDidactica) await reconcileModuloUnits(previous.data.competenciaUnidadDidactica.competencia.moduloId);
       return { id: relacionId };
     }
 
@@ -1404,28 +1424,12 @@ export const detachEstructuraAcademicaItem = https.onCall(async (data, context) 
   }
 });
 
-function parseModuloIds(input: unknown): number[] {
-  const rawItems = Array.isArray(input)
-    ? input
-    : typeof input === "string"
-      ? input.split(",")
-      : input == null
-        ? []
-        : [input];
-
-  return [...new Set(
-    rawItems
-      .map((item) => Number(String(item).trim()))
-      .filter((item) => Number.isInteger(item) && item > 0),
-  )];
-}
-
 function attachUnidadDidacticaModuloIds(
   unidadesDidacticas: DataConnectUnidadDidactica[],
-  unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[],
+  competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[],
 ) {
   const moduloIdsByUnidadId = new Map<number, number[]>();
-  for (const item of unidadDidacticaModulos) {
+  for (const item of competenciaUnidadesDidacticas) {
     const current = moduloIdsByUnidadId.get(item.unidadDidacticaId) ?? [];
     current.push(item.moduloId);
     moduloIdsByUnidadId.set(item.unidadDidacticaId, current);
@@ -1433,32 +1437,11 @@ function attachUnidadDidacticaModuloIds(
 
   return unidadesDidacticas.map((unidadDidactica) => ({
     ...unidadDidactica,
+    competenciaIds: competenciaUnidadesDidacticas.filter(r => r.unidadDidacticaId === unidadDidactica.id).map(r => r.competenciaId),
     moduloIds: (moduloIdsByUnidadId.get(unidadDidactica.id) ?? [])
       .slice()
       .sort((a, b) => a - b),
   }));
-}
-
-async function syncUnidadDidacticaModulos(unidadDidacticaId: number, moduloIds: number[]) {
-  await dataConnect.executeGraphql<
-    { unidadDidacticaModulo_deleteMany: number },
-    { unidadDidacticaId: number }
-  >(DELETE_UNIDAD_DIDACTICA_MODULOS_BY_UNIDAD_MUTATION, { variables: { unidadDidacticaId } });
-
-  await Promise.all(
-    moduloIds.map((moduloId, index) => {
-      const data: DataConnectUnidadDidacticaModuloInput = {
-        unidadDidacticaId,
-        moduloId,
-        orden: index + 1,
-      };
-
-      return dataConnect.executeGraphql<
-        { unidadDidacticaModulo_insert: unknown },
-        { data: DataConnectUnidadDidacticaModuloInput }
-      >(INSERT_UNIDAD_DIDACTICA_MODULO_MUTATION, { variables: { data } });
-    }),
-  );
 }
 
 export const listUnidadesDidacticas = https.onCall(async (_data, context) => {
@@ -1468,13 +1451,13 @@ export const listUnidadesDidacticas = https.onCall(async (_data, context) => {
     const response = await dataConnect.executeGraphql<
       {
         unidadesDidacticas: DataConnectUnidadDidactica[];
-        unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
+        competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
       },
       Record<string, never>
     >(LIST_UNIDADES_DIDACTICAS_QUERY);
     const unidadesDidacticas = attachUnidadDidacticaModuloIds(
       response.data.unidadesDidacticas ?? [],
-      response.data.unidadDidacticaModulos ?? [],
+      projectUnidadRelations(response.data.competenciaUnidadesDidacticas ?? []),
     )
       .slice()
       .sort((a, b) => String(a.nombre ?? "").localeCompare(String(b.nombre ?? ""), "es"));
@@ -1498,7 +1481,7 @@ export const getUnidadDidactica = https.onCall(async (data, context) => {
     const response = await dataConnect.executeGraphql<
       {
         unidadDidactica: DataConnectUnidadDidactica | null;
-        unidadDidacticaModulos: DataConnectUnidadDidacticaModulo[];
+        competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
       },
       { id: number }
     >(GET_UNIDAD_DIDACTICA_QUERY, { variables: { id: unidadDidacticaId } });
@@ -1506,7 +1489,7 @@ export const getUnidadDidactica = https.onCall(async (data, context) => {
     const unidadDidactica = response.data.unidadDidactica
       ? attachUnidadDidacticaModuloIds(
         [response.data.unidadDidactica],
-        response.data.unidadDidacticaModulos ?? [],
+        projectUnidadRelations(response.data.competenciaUnidadesDidacticas ?? []),
       )[0]
       : null;
 
@@ -1519,16 +1502,15 @@ export const getUnidadDidactica = https.onCall(async (data, context) => {
 
 export const createOrUpdateUnidadDidactica = https.onCall(async (data, context) => {
   const payload = buildUnidadDidacticaDataFromInput(data as Record<string, unknown>);
-  const moduloIds = parseModuloIds((data as Record<string, unknown>).moduloIds ?? data?.moduloId);
+  const competenciaIds = parseAcademicIds(data?.competenciaIds ?? []);
   if (!payload.nombre) {
     throw new https.HttpsError("invalid-argument", "nombre is required.");
   }
-  if (moduloIds.length === 0) {
-    throw new https.HttpsError("invalid-argument", "At least one moduloId is required.");
-  }
+  if (competenciaIds.length === 0) throw new https.HttpsError("invalid-argument", "Seleccione al menos una competencia.");
 
   const unidadDidacticaId = toNumberOrNull(data?.id);
   await requirePermission(context, "unidades-didacticas", unidadDidacticaId ? "edit" : "create");
+  await validateUnidadCompetencias(unidadDidacticaId ?? Number.MAX_SAFE_INTEGER, competenciaIds);
 
   try {
     let savedUnidadDidacticaId = unidadDidacticaId;
@@ -1552,7 +1534,7 @@ export const createOrUpdateUnidadDidactica = https.onCall(async (data, context) 
       throw new Error("No se pudo obtener el id de la unidad didactica guardada.");
     }
 
-    await syncUnidadDidacticaModulos(savedUnidadDidacticaId, moduloIds);
+    await syncUnidadCompetencias(savedUnidadDidacticaId, competenciaIds);
 
     return { id: savedUnidadDidacticaId };
   } catch (error) {
@@ -1571,9 +1553,9 @@ export const deleteUnidadDidactica = https.onCall(async (data, context) => {
 
   try {
     await dataConnect.executeGraphql<
-      { unidadDidacticaModulo_deleteMany: number },
+      { competenciaUnidadDidactica_deleteMany: number },
       { unidadDidacticaId: number }
-    >(DELETE_UNIDAD_DIDACTICA_MODULOS_BY_UNIDAD_MUTATION, { variables: { unidadDidacticaId } });
+    >(DELETE_COMPETENCIA_UNIDADES_BY_UNIDAD_MUTATION, { variables: { unidadDidacticaId } });
 
     const deleted = await dataConnect.executeGraphql<{ unidadDidactica_delete: unknown }, { id: number }>(
       DELETE_UNIDAD_DIDACTICA_MUTATION,
@@ -1620,7 +1602,8 @@ export const getCapacidadTerminal = https.onCall(async (data, context) => {
       { id: number }
     >(GET_CAPACIDAD_TERMINAL_QUERY, { variables: { id: capacidadTerminalId } });
 
-    return { capacidadTerminal: response.data.capacidadTerminal ?? null };
+    const capacidad = response.data.capacidadTerminal;
+    return { capacidadTerminal: capacidad ?? null };
   } catch (error) {
     console.error("Error in getCapacidadTerminal:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while getting terminal capacity.");
@@ -1638,6 +1621,8 @@ export const createOrUpdateCapacidadTerminal = https.onCall(async (data, context
 
   const capacidadTerminalId = toNumberOrNull(data?.id);
   await requirePermission(context, "capacidades-terminales", capacidadTerminalId ? "edit" : "create");
+
+  if (data?.competenciaIds !== undefined) throw new https.HttpsError("invalid-argument", "La competencia se asigna a la unidad didactica, no a la capacidad.");
 
   try {
     if (capacidadTerminalId) {

@@ -135,6 +135,24 @@ extend type Mutation {
     data: CertificadoTituloDocumento_Data!
   ): CertificadoTituloDocumento_KeyOutput! @fdc_generated(from: "CertificadoTituloDocumento", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Competencia` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  competencia_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Competencia_Data!
+  ): Competencia_KeyOutput! @fdc_generated(from: "Competencia", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `CompetenciaUnidadDidactica` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  competenciaUnidadDidactica_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: CompetenciaUnidadDidactica_Data!
+  ): CompetenciaUnidadDidactica_KeyOutput! @fdc_generated(from: "CompetenciaUnidadDidactica", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `DatoGeneral` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   datoGeneral_insert(
@@ -621,15 +639,6 @@ extend type Mutation {
     data: UnidadDidacticaEstudiante_Data!
   ): UnidadDidacticaEstudiante_KeyOutput! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: INSERT_SINGLE)
   """
-  ✨ Insert a single `UnidadDidacticaModulo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  unidadDidacticaModulo_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: UnidadDidacticaModulo_Data!
-  ): UnidadDidacticaModulo_KeyOutput! @fdc_generated(from: "UnidadDidacticaModulo", purpose: INSERT_SINGLE)
-  """
   ✨ Insert a single `User` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   user_insert(
@@ -791,6 +800,24 @@ extend type Mutation {
     """
     data: [CertificadoTituloDocumento_Data!]!
   ): [CertificadoTituloDocumento_KeyOutput!]! @fdc_generated(from: "CertificadoTituloDocumento", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Competencia` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  competencia_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Competencia_Data!]!
+  ): [Competencia_KeyOutput!]! @fdc_generated(from: "Competencia", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `CompetenciaUnidadDidactica` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  competenciaUnidadDidactica_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [CompetenciaUnidadDidactica_Data!]!
+  ): [CompetenciaUnidadDidactica_KeyOutput!]! @fdc_generated(from: "CompetenciaUnidadDidactica", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `DatoGeneral` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1278,15 +1305,6 @@ extend type Mutation {
     data: [UnidadDidacticaEstudiante_Data!]!
   ): [UnidadDidacticaEstudiante_KeyOutput!]! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: INSERT_MULTIPLE)
   """
-  ✨ Insert `UnidadDidacticaModulo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  unidadDidacticaModulo_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [UnidadDidacticaModulo_Data!]!
-  ): [UnidadDidacticaModulo_KeyOutput!]! @fdc_generated(from: "UnidadDidacticaModulo", purpose: INSERT_MULTIPLE)
-  """
   ✨ Insert `User` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   user_insertMany(
@@ -1448,6 +1466,24 @@ extend type Mutation {
     """
     data: CertificadoTituloDocumento_Data!
   ): CertificadoTituloDocumento_KeyOutput! @fdc_generated(from: "CertificadoTituloDocumento", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Competencia` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Competencia`.
+  """
+  competencia_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Competencia_Data!
+  ): Competencia_KeyOutput! @fdc_generated(from: "Competencia", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `CompetenciaUnidadDidactica` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CompetenciaUnidadDidactica`.
+  """
+  competenciaUnidadDidactica_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: CompetenciaUnidadDidactica_Data!
+  ): CompetenciaUnidadDidactica_KeyOutput! @fdc_generated(from: "CompetenciaUnidadDidactica", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `DatoGeneral` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `DatoGeneral`.
   """
@@ -1935,15 +1971,6 @@ extend type Mutation {
     data: UnidadDidacticaEstudiante_Data!
   ): UnidadDidacticaEstudiante_KeyOutput! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPSERT_SINGLE)
   """
-  ✨ Insert or update a single `UnidadDidacticaModulo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UnidadDidacticaModulo`.
-  """
-  unidadDidacticaModulo_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: UnidadDidacticaModulo_Data!
-  ): UnidadDidacticaModulo_KeyOutput! @fdc_generated(from: "UnidadDidacticaModulo", purpose: UPSERT_SINGLE)
-  """
   ✨ Insert or update a single `User` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
   """
   user_upsert(
@@ -2105,6 +2132,24 @@ extend type Mutation {
     """
     data: [CertificadoTituloDocumento_Data!]!
   ): [CertificadoTituloDocumento_KeyOutput!]! @fdc_generated(from: "CertificadoTituloDocumento", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Competencia` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Competencia`.
+  """
+  competencia_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Competencia_Data!]!
+  ): [Competencia_KeyOutput!]! @fdc_generated(from: "Competencia", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `CompetenciaUnidadDidactica` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CompetenciaUnidadDidactica`.
+  """
+  competenciaUnidadDidactica_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [CompetenciaUnidadDidactica_Data!]!
+  ): [CompetenciaUnidadDidactica_KeyOutput!]! @fdc_generated(from: "CompetenciaUnidadDidactica", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `DatoGeneral` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `DatoGeneral`.
   """
@@ -2592,15 +2637,6 @@ extend type Mutation {
     data: [UnidadDidacticaEstudiante_Data!]!
   ): [UnidadDidacticaEstudiante_KeyOutput!]! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPSERT_MULTIPLE)
   """
-  ✨ Insert or update `UnidadDidacticaModulo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UnidadDidacticaModulo`.
-  """
-  unidadDidacticaModulo_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [UnidadDidacticaModulo_Data!]!
-  ): [UnidadDidacticaModulo_KeyOutput!]! @fdc_generated(from: "UnidadDidacticaModulo", purpose: UPSERT_MULTIPLE)
-  """
   ✨ Insert or update `User` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
   """
   user_upsertMany(
@@ -3062,6 +3098,64 @@ extend type Mutation {
     """
     data: CertificadoTituloDocumento_Data!
   ): CertificadoTituloDocumento_KeyOutput @fdc_generated(from: "CertificadoTituloDocumento", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Competencia` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Competencia` or `null` if not found.
+  """
+  competencia_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Competencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Competencia_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Competencia_Data!
+  ): Competencia_KeyOutput @fdc_generated(from: "Competencia", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `CompetenciaUnidadDidactica` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `CompetenciaUnidadDidactica` or `null` if not found.
+  """
+  competenciaUnidadDidactica_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CompetenciaUnidadDidactica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CompetenciaUnidadDidactica_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: CompetenciaUnidadDidactica_Data!
+  ): CompetenciaUnidadDidactica_KeyOutput @fdc_generated(from: "CompetenciaUnidadDidactica", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `DatoGeneral` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `DatoGeneral` or `null` if not found.
   """
@@ -4579,35 +4673,6 @@ extend type Mutation {
     data: UnidadDidacticaEstudiante_Data!
   ): UnidadDidacticaEstudiante_KeyOutput @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPDATE_SINGLE)
   """
-  ✨ Update a single `UnidadDidacticaModulo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `UnidadDidacticaModulo` or `null` if not found.
-  """
-  unidadDidacticaModulo_update(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: UnidadDidacticaModulo_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: UnidadDidacticaModulo_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: UnidadDidacticaModulo_Data!
-  ): UnidadDidacticaModulo_KeyOutput @fdc_generated(from: "UnidadDidacticaModulo", purpose: UPDATE_SINGLE)
-  """
   ✨ Update a single `User` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `User` or `null` if not found.
   """
   user_update(
@@ -4979,6 +5044,44 @@ extend type Mutation {
     """
     data: CertificadoTituloDocumento_Data!
   ): Int! @fdc_generated(from: "CertificadoTituloDocumento", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Competencia` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  competencia_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Competencia_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Competencia_Data!
+  ): Int! @fdc_generated(from: "Competencia", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `CompetenciaUnidadDidactica` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  competenciaUnidadDidactica_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: CompetenciaUnidadDidactica_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: CompetenciaUnidadDidactica_Data!
+  ): Int! @fdc_generated(from: "CompetenciaUnidadDidactica", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `DatoGeneral` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -6006,25 +6109,6 @@ extend type Mutation {
     data: UnidadDidacticaEstudiante_Data!
   ): Int! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Update `UnidadDidacticaModulo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  unidadDidacticaModulo_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: UnidadDidacticaModulo_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: UnidadDidacticaModulo_Data!
-  ): Int! @fdc_generated(from: "UnidadDidacticaModulo", purpose: UPDATE_MULTIPLE)
-  """
   ✨ Update `User` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   user_updateMany(
@@ -6441,6 +6525,54 @@ extend type Mutation {
     """
     first: CertificadoTituloDocumento_FirstRow
   ): CertificadoTituloDocumento_KeyOutput @fdc_generated(from: "CertificadoTituloDocumento", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Competencia` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  competencia_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Competencia_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Competencia_FirstRow
+  ): Competencia_KeyOutput @fdc_generated(from: "Competencia", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `CompetenciaUnidadDidactica` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  competenciaUnidadDidactica_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CompetenciaUnidadDidactica_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CompetenciaUnidadDidactica_FirstRow
+  ): CompetenciaUnidadDidactica_KeyOutput @fdc_generated(from: "CompetenciaUnidadDidactica", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `DatoGeneral` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -7688,30 +7820,6 @@ extend type Mutation {
     first: UnidadDidacticaEstudiante_FirstRow
   ): UnidadDidacticaEstudiante_KeyOutput @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: DELETE_SINGLE)
   """
-  ✨ Delete a single `UnidadDidacticaModulo` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  unidadDidacticaModulo_delete(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: UnidadDidacticaModulo_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: UnidadDidacticaModulo_FirstRow
-  ): UnidadDidacticaModulo_KeyOutput @fdc_generated(from: "UnidadDidacticaModulo", purpose: DELETE_SINGLE)
-  """
   ✨ Delete a single `User` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   user_delete(
@@ -7993,6 +8101,34 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "CertificadoTituloDocumento", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Competencia` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  competencia_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Competencia_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Competencia", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `CompetenciaUnidadDidactica` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  competenciaUnidadDidactica_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: CompetenciaUnidadDidactica_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "CompetenciaUnidadDidactica", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `DatoGeneral` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
@@ -8749,20 +8885,6 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "UnidadDidacticaEstudiante", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `UnidadDidacticaModulo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  unidadDidacticaModulo_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: UnidadDidacticaModulo_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "UnidadDidacticaModulo", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `User` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

@@ -8,7 +8,8 @@ const fields = [
   { name: 'creditos', label: 'Creditos', type: 'number' as const },
   { name: 'sigla', label: 'Sigla' },
   { name: 'comun', label: 'Unidad comun', type: 'boolean' as const },
-  { name: 'moduloIds', label: 'Modulo IDs', type: 'number-list' as const, required: true },
+  { name: 'competenciaIds', label: 'Competencias', type: 'multi-select' as const, required: true,
+    optionsCallableName: 'listCompetenciaOpciones', optionsRowsKey: 'competencias', optionLabelField: 'etiqueta' },
 ];
 
 const columns = [
@@ -17,7 +18,7 @@ const columns = [
   { field: 'comun', headerName: 'Comun', flex: 0.55, minWidth: 95 },
   { field: 'duracion', headerName: 'Duracion', flex: 0.7, minWidth: 110 },
   { field: 'creditos', headerName: 'Creditos', flex: 0.7, minWidth: 110 },
-  { field: 'moduloIds', headerName: 'Modulo IDs', flex: 0.85, minWidth: 130 },
+  { field: 'competenciaIds', headerName: 'Competencias', flex: 0.85, minWidth: 130 },
 ];
 
 export default function UnidadesDidacticasPage() {

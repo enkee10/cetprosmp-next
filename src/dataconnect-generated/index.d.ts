@@ -436,6 +436,11 @@ export interface Post_Key {
   __typename?: 'Post_Key';
 }
 
+export interface ProgramacionHoraria_Key {
+  id: number;
+  __typename?: 'ProgramacionHoraria_Key';
+}
+
 export interface PublicacionVideo_Key {
   id: number;
   __typename?: 'PublicacionVideo_Key';

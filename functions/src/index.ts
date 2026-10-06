@@ -114,6 +114,7 @@ export {
   crearMatriculaFormulario,
   crearMatriculaFormularioSuelto,
   deleteMatricula,
+  deleteEditorDocumentoAvatar,
   generarCodigosInscripcionMatriculas,
   getEditorDocumentoImageData,
   getEditorDocumentoMatricula,
@@ -183,3 +184,4 @@ export {
   listCertificadosTitulosOptions,
   listReporteDocumentosOptions,
 } from "./modules/index.js";
+export { getCalendarioAgenda, previewProgramacionHoraria, createProgramacionHoraria } from "./modules/calendarios/agenda.js";

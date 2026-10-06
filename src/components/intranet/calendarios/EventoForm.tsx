@@ -23,8 +23,11 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
+import { localInputInLima, limaInputToIso } from '@/lib/calendar';
 
 interface EventoFormProps {
+  initialDate?: string;
+  initialCalendarId?: number;
   eventoId?: string;
   asModal?: boolean;
   onSaved?: () => void;
@@ -58,6 +61,8 @@ interface EventoOcurrenciaData {
 }
 
 interface EventoData {
+  minutosHoraAcademica?: number | null;
+  computaHoras?: boolean | null;
   id: number;
   titulo: string | null;
   descripcion: string | null;
@@ -184,17 +189,11 @@ const DIAS_SEMANA = [
 ];
 
 const toDateTimeLocal = (value: string | null) => {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return localDate.toISOString().slice(0, 16);
+  return value && Number.isFinite(Date.parse(value)) ? localInputInLima(value) : '';
 };
 
 const dateTimeLocalToIso = (value: string) => {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  return value ? limaInputToIso(value) : null;
 };
 
 const getGrupoLabel = (grupo: GrupoOption) =>
@@ -211,17 +210,19 @@ const getTextLabel = (item: TextoAcademicoOption) =>
 
 const makeRelationKey = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-export function EventoForm({ eventoId, asModal = false, onSaved, onCancel }: EventoFormProps) {
+export function EventoForm({ eventoId, asModal = false, onSaved, onCancel, initialDate, initialCalendarId }: EventoFormProps) {
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [tipoEvento, setTipoEvento] = useState('');
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
+  const [fechaInicio, setFechaInicio] = useState(initialDate ? `${initialDate}T08:00` : '');
+  const [fechaFin, setFechaFin] = useState(initialDate ? `${initialDate}T09:00` : '');
+  const [minutosHoraAcademica, setMinutosHoraAcademica] = useState('60');
+  const [computaHoras, setComputaHoras] = useState(true);
   const [todoElDia, setTodoElDia] = useState(false);
   const [ubicacion, setUbicacion] = useState('');
   const [color, setColor] = useState('#2e7d32');
   const [estado, setEstado] = useState('programado');
-  const [calendarioId, setCalendarioId] = useState('');
+  const [calendarioId, setCalendarioId] = useState(initialCalendarId ? String(initialCalendarId) : '');
   const [semestreId, setSemestreId] = useState('');
   const [relaciones, setRelaciones] = useState<RelationRow[]>([]);
   const [recurrenciaActiva, setRecurrenciaActiva] = useState(false);
@@ -353,6 +354,8 @@ export function EventoForm({ eventoId, asModal = false, onSaved, onCancel }: Eve
           setFechaInicio(toDateTimeLocal(fetched.fechaInicio));
           setFechaFin(toDateTimeLocal(fetched.fechaFin));
           setTodoElDia(Boolean(fetched.todoElDia));
+          setMinutosHoraAcademica(String(fetched.minutosHoraAcademica ?? 60));
+          setComputaHoras(fetched.computaHoras !== false);
           setUbicacion(fetched.ubicacion || '');
           setColor(fetched.color || '#2e7d32');
           setEstado(fetched.estado || 'programado');
@@ -498,6 +501,8 @@ export function EventoForm({ eventoId, asModal = false, onSaved, onCancel }: Eve
         {
           id?: number;
           titulo: string;
+          minutosHoraAcademica: number;
+          computaHoras: boolean;
           descripcion: string;
           tipoEvento?: string | null;
           fechaInicio?: string | null;
@@ -530,6 +535,8 @@ export function EventoForm({ eventoId, asModal = false, onSaved, onCancel }: Eve
       await createOrUpdateEvento({
         id: eventoId ? Number(eventoId) : undefined,
         titulo,
+        minutosHoraAcademica: Number(minutosHoraAcademica),
+        computaHoras: computaHoras && !todoElDia && tipoEvento !== 'feriado',
         descripcion,
         tipoEvento: tipoEvento || null,
         fechaInicio: dateTimeLocalToIso(fechaInicio),
@@ -728,6 +735,15 @@ export function EventoForm({ eventoId, asModal = false, onSaved, onCancel }: Eve
             fullWidth
             sx={{ gridColumn: { xs: 'auto', md: 'span 9' } }}
           />
+
+          <TextField label="Minutos por hora académica" type="number" value={minutosHoraAcademica}
+            onChange={(event) => setMinutosHoraAcademica(event.target.value)} required
+            slotProps={{ htmlInput: { min: 1, max: 120, step: 1 } }}
+            helperText="60 para horas reloj; configurable para horas académicas."
+            sx={{ gridColumn: { xs: 'auto', md: 'span 6' } }} />
+          <FormControlLabel control={<Checkbox checked={computaHoras} disabled={todoElDia || tipoEvento === 'feriado'}
+            onChange={(event) => setComputaHoras(event.target.checked)} />} label="Incluir en la suma de horas"
+            sx={{ gridColumn: { xs: 'auto', md: 'span 6' } }} />
 
           <TextField
             label="Descripcion"

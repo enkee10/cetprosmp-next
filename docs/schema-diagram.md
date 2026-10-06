@@ -42,6 +42,7 @@ erDiagram
         Int id PK
         String documentId FK
         String username
+        String nickName
         String email
         String provider
         Boolean confirmed
@@ -53,9 +54,12 @@ erDiagram
         String apellidoPaterno
         String apellidoMaterno
         String sexo
+        String nacionalidad
         String estadoCivil
         String instruccion
+        String nombreColegio
         Timestamp fechaNacimiento
+        Timestamp fechaVencimiento
         String direccion
         String distrito
         String telefono
@@ -65,6 +69,11 @@ erDiagram
         Timestamp fechaModificacion
         String emailCreador
         String avatar
+        String recorteFotografia
+        String dniImagenFrenteUrl
+        String dniImagenReversoUrl
+        String dniImagenFrenteProcesadaUrl
+        String dniImagenReversoProcesadaUrl
         Int rolId FK
     }
 
@@ -72,6 +81,27 @@ erDiagram
         Int id PK
         String titulo
         Int scala
+    }
+
+    ROLE_PERMISSION {
+        Int id PK
+        String entity
+        Boolean canView
+        Boolean canCreate
+        Boolean canEdit
+        Boolean canDelete
+        Int roleId FK
+    }
+
+    APP_SETTING {
+        Int id PK
+        String settingKey
+        String section
+        String label
+        Boolean boolValue
+        Int intValue
+        String stringValue
+        Timestamp updatedAt
     }
 
     SECTOR {
@@ -93,11 +123,11 @@ erDiagram
         Int id PK
         String titulo
         String tituloComercial
+        Int orden
         String descripcion
         String descripcion2
         String slug
         String imagenPortadaUrl
-        Int actEconomicaId FK
     }
 
     ACT_ECONOMICA {
@@ -106,7 +136,6 @@ erDiagram
         String descripcion
         String imagenPortadaUrl
         Int familiaId FK
-        Int especialidadId FK
     }
 
     TIPO_CARRERA {
@@ -117,13 +146,22 @@ erDiagram
     CARRERA {
         Int id PK
         String nombre
+        String titulo
         String codigo
         String descripcion
+        String duracion
+        Int creditos
         String nivel
+        String ciclo
+        Int codigoLag
+        String tituloComercial
+        String slug
+        String descripcion2
         String imagenPortadaUrl
         Timestamp creadoEn
         Timestamp actualizadoEn
         Int actEconomicaId FK
+        Int especialidadId FK
         Int tipoCarreraId FK
     }
 
@@ -143,6 +181,7 @@ erDiagram
         String genera
         Int carreraId FK
         Int periodoVigenciaId FK
+        Int versionId FK
     }
 
     MODULO {
@@ -151,12 +190,31 @@ erDiagram
         String tituloComercial
         Int orden
         String descripcion
+        String descripcion2
         Int horas
         Int creditos
+        Int duracionEfsrt
+        Int creditosEfsrt
         Int metas
         Boolean activo
         String slug
+        Boolean comun
         Int planId FK
+        Int carreraId FK
+    }
+
+    PLAN_MODULO {
+        Int id PK
+        Int orden
+        Int planId FK
+        Int moduloId FK
+    }
+
+    COMPETENCIA {
+        Int id PK
+        String nombre
+        TipoCompetencia tipo
+        Int moduloId FK
     }
 
     UNIDAD_DIDACTICA {
@@ -165,13 +223,21 @@ erDiagram
         Int duracion
         Int creditos
         String sigla
-        Int moduloId FK
+        Boolean comun
+    }
+
+    COMPETENCIA_UNIDAD_DIDACTICA {
+        Int id PK
+        Int orden
+        Int competenciaId FK
+        Int unidadDidacticaId FK
     }
 
     CAPACIDAD_TERMINAL {
         Int id PK
         String descripcion
         String sigla
+        Int orden
         Int unidadDidacticaId FK
     }
 
@@ -179,6 +245,7 @@ erDiagram
         Int id PK
         String descripcion
         String sigla
+        Int orden
         Int capacidadTerminalId FK
     }
 
@@ -284,9 +351,49 @@ erDiagram
     MODULO_ESTUDIANTE {
         Int id PK
         Float promedio
+        Float puntaje
         Int matriculaId FK
         Int moduloId FK
         Int grupoId FK
+        Int grupoModuloId FK
+    }
+
+    MATRICULA_CAMBIO_MODULO {
+        Int id PK
+        Timestamp fechaCambio
+        Int matriculaId FK
+        Int userId FK
+        Int semestreId FK
+        Int grupoModuloAnteriorId FK
+        Int grupoModuloNuevoId FK
+        Int grupoAnteriorId FK
+        Int grupoNuevoId FK
+        Int moduloAnteriorId FK
+        Int moduloNuevoId FK
+        Int registradoPorId FK
+    }
+
+    EFSRT_PPP_ESTUDIANTE {
+        Int id PK
+        Float promedioFinal
+        String modoCalculo
+        String observacion
+        Timestamp fechaRegistro
+        Timestamp fechaActualizacion
+        Int grupoModuloId FK
+        Int moduloEstudianteId FK
+        Int registradoPorId FK
+    }
+
+    EFSRT_PPP_NOTA {
+        Int id PK
+        Float nota
+        String observacion
+        Timestamp fechaEvaluacion
+        Timestamp fechaRegistro
+        Int practicaId FK
+        Int efsrtPppEstudianteId FK
+        Int registradoPorId FK
     }
 
     UNIDAD_DIDACTICA_ESTUDIANTE {
@@ -329,6 +436,7 @@ erDiagram
         String displayName
         String memo
         Int userId FK
+        Int monitoreadoPorId FK
     }
 
     PERSONAL_ESPECIALIDAD {
@@ -350,6 +458,9 @@ erDiagram
         String descripcion
         Timestamp inicio
         Timestamp fin
+        Date fechaActa
+        Date fechaCertificado
+        Date fechaNomina
         Boolean archivado
         Int anioId FK
         Int directorId FK
@@ -363,9 +474,13 @@ erDiagram
         String descripcion
         Timestamp inicio
         Timestamp fin
+        Timestamp fechaIni
+        Timestamp fechaFin
+        String tipo
         Int duracion
         String color
         Boolean activo
+        Boolean archivado
         Timestamp fechaCreacion
         Timestamp fechaActualizacion
         Int anioId FK
@@ -407,18 +522,93 @@ erDiagram
         Int semestreId FK
         Int personalId FK
         Int paqueteId FK
+        Int moduloId FK
+        Int calendarioId FK
         Int turnoId FK
         Int horarioId FK
         Int grupoOrd
+        String workspaceName
+        String workspaceCorreo
     }
 
     GRUPO_MODULO {
         Int id PK
+        String nombre
         Int orden
         Boolean obligatorio
+        Timestamp inicio
+        Timestamp fin
+        Int instancia
+        String sufijo
         Int grupoId FK
         Int moduloId FK
         Int calendarioId FK
+    }
+
+    REGISTRO_ACADEMICO_DOCUMENTO {
+        Int id PK
+        String tipoDocumento
+        String pdfPath
+        String pdfUrl
+        String excelPath
+        String excelUrl
+        Timestamp generadoEn
+        Int grupoModuloId FK
+    }
+
+    CERTIFICADO_TITULO_DOCUMENTO {
+        Int id PK
+        String tipoDocumento
+        String semestreCodigo
+        String pdfPath
+        String pdfUrl
+        String excelPath
+        String excelUrl
+        Timestamp generadoEn
+        Int grupoModuloId FK
+        Int moduloEstudianteId FK
+    }
+
+    CERTIFICADO {
+        Int id PK
+        String codigoInstitucional
+        Int correlativo
+        Int codigoLag
+        Int periodoNumero
+        Int anio
+        Timestamp generadoEn
+        Timestamp creadoEn
+        Timestamp actualizadoEn
+        Int semestreId FK
+        Int estudianteId FK
+        Int matriculaId FK
+        Int grupoModuloId FK
+        Int moduloEstudianteId FK
+        Int docenteId FK
+        Int carreraId FK
+    }
+
+    GRUPO_MODULO_UNIDAD_DIDACTICA {
+        Int id PK
+        Int orden
+        Timestamp inicio
+        Timestamp fin
+        Int grupoModuloId FK
+        Int unidadDidacticaId FK
+    }
+
+    EFSRT_PPP_PRACTICA {
+        Int id PK
+        Int numero
+        String titulo
+        String descripcion
+        Timestamp fecha
+        Float puntajeMaximo
+        Float peso
+        Boolean activo
+        Timestamp fechaCreacion
+        Timestamp fechaActualizacion
+        Int grupoModuloId FK
     }
 
     EVENTO {
@@ -432,10 +622,32 @@ erDiagram
         String ubicacion
         String color
         String estado
+        Int minutosHoraAcademica
+        Boolean computaHoras
+        Int programacionHorariaId FK
         Timestamp fechaCreacion
         Timestamp fechaActualizacion
         Int calendarioId FK
         Int semestreId FK
+    }
+
+    PROGRAMACION_HORARIA {
+        Int id PK
+        String clave
+        String titulo
+        Float horasObjetivo
+        Int minutosHoraAcademica
+        Int minutosSesion
+        Date fechaInicio
+        Date fechaFin
+        Int diasSemana
+        String horaInicio
+        String horaFin
+        Boolean excluirFeriados
+        Boolean evitarCruces
+        Timestamp fechaCreacion
+        Int calendarioId FK
+        Int grupoModuloId FK
     }
 
     EVENTO_RECURRENCIA {
@@ -501,10 +713,19 @@ erDiagram
         Boolean archivado
     }
 
+    PAQUETE_GRUPO {
+        Int id PK
+        Int grupoOrd
+        Int paqueteId FK
+        Int grupoId FK
+    }
+
     PAQUETE_MODULO {
         Int id PK
         Int orden
         Boolean obligatorio
+        Int multiplicador
+        String sufijos
         Int paqueteId FK
         Int moduloId FK
     }
@@ -512,10 +733,33 @@ erDiagram
     MATRICULA {
         Int id PK
         String recibo
+        String codigoInscripcion
         Timestamp fecha
+        Timestamp fechaActualizacion
         Boolean archivado
         Int paqueteId FK
+        Int semestreId FK
         Int userId FK
+        Int responsableId FK
+        Int responsableUserId FK
+    }
+
+    MATRICULA_USER {
+        Int id PK
+        Int matriculaId FK
+        Int userId FK
+    }
+
+    MATRICULA_GRUPO {
+        Int id PK
+        Int matriculaId FK
+        Int grupoId FK
+    }
+
+    MATRICULA_PAQUETE {
+        Int id PK
+        Int matriculaId FK
+        Int paqueteId FK
     }
 
     ASISTENCIA {
@@ -587,6 +831,13 @@ erDiagram
     DATO_GENERAL {
         Int id PK
         String nombreInstitucion
+        String logoUrl
+        String codigoModular
+        String tipoGestion
+        String departamento
+        String provincia
+        String distrito
+        String dre
         String direccion
         String telefono1
         String telefono2
@@ -602,15 +853,20 @@ erDiagram
     }
 
     ROL ||--o{ USER : rol
+    ROL ||--o{ ROLE_PERMISSION : role
     SECTOR ||--o{ FAMILIA : sector
-    ACT_ECONOMICA ||--o{ ESPECIALIDAD : actEconomica
     FAMILIA ||--o{ ACT_ECONOMICA : familia
     ACT_ECONOMICA ||--o{ CARRERA : actEconomica
+    ESPECIALIDAD ||--o{ CARRERA : especialidad
     TIPO_CARRERA ||--o{ CARRERA : tipoCarrera
     CARRERA ||--o{ PLAN : carrera
     SEMESTRE ||--o{ PLAN : periodoVigencia
     PLAN ||--o{ MODULO : plan
-    MODULO ||--o{ UNIDAD_DIDACTICA : modulo
+    PLAN ||--o{ PLAN_MODULO : plan
+    MODULO ||--o{ PLAN_MODULO : modulo
+    MODULO ||--o{ COMPETENCIA : modulo
+    COMPETENCIA ||--o{ COMPETENCIA_UNIDAD_DIDACTICA : competencia
+    UNIDAD_DIDACTICA ||--o{ COMPETENCIA_UNIDAD_DIDACTICA : unidadDidactica
     UNIDAD_DIDACTICA ||--o{ CAPACIDAD_TERMINAL : unidadDidactica
     CAPACIDAD_TERMINAL ||--o{ INDICADOR_CAPACIDAD : capacidadTerminal
     INDICADOR_CAPACIDAD ||--o{ APRENDIZAJE : indicadorCapacidad
@@ -633,6 +889,19 @@ erDiagram
     MATRICULA ||--o{ MODULO_ESTUDIANTE : matricula
     MODULO ||--o{ MODULO_ESTUDIANTE : modulo
     GRUPO ||--o{ MODULO_ESTUDIANTE : grupo
+    GRUPO_MODULO ||--o{ MODULO_ESTUDIANTE : grupoModulo
+    MATRICULA ||--o{ MATRICULA_CAMBIO_MODULO : matricula
+    USER ||--o{ MATRICULA_CAMBIO_MODULO : user
+    SEMESTRE ||--o{ MATRICULA_CAMBIO_MODULO : semestre
+    GRUPO_MODULO ||--o{ MATRICULA_CAMBIO_MODULO : grupoModuloAnterior
+    GRUPO ||--o{ MATRICULA_CAMBIO_MODULO : grupoAnterior
+    MODULO ||--o{ MATRICULA_CAMBIO_MODULO : moduloAnterior
+    GRUPO_MODULO ||--o{ EFSRT_PPP_ESTUDIANTE : grupoModulo
+    MODULO_ESTUDIANTE ||--o{ EFSRT_PPP_ESTUDIANTE : moduloEstudiante
+    USER ||--o{ EFSRT_PPP_ESTUDIANTE : registradoPor
+    EFSRT_PPP_PRACTICA ||--o{ EFSRT_PPP_NOTA : practica
+    EFSRT_PPP_ESTUDIANTE ||--o{ EFSRT_PPP_NOTA : efsrtPppEstudiante
+    USER ||--o{ EFSRT_PPP_NOTA : registradoPor
     MATRICULA ||--o{ UNIDAD_DIDACTICA_ESTUDIANTE : matricula
     UNIDAD_DIDACTICA ||--o{ UNIDAD_DIDACTICA_ESTUDIANTE : unidadDidactica
     MATRICULA ||--o{ CAPACIDAD_TERMINAL_ESTUDIANTE : matricula
@@ -644,6 +913,7 @@ erDiagram
     EVALUACION_ESTUDIANTE ||--o{ ASPECTO_EVALUACION_ESTUDIANTE : evaluacionEstudiante
     ASPECTO_EVALUACION ||--o{ ASPECTO_EVALUACION_ESTUDIANTE : aspectoEvaluacion
     USER ||--o{ PERSONAL : user
+    PERSONAL ||--o{ PERSONAL : monitoreadoPor
     PERSONAL ||--o{ PERSONAL_ESPECIALIDAD : personal
     ESPECIALIDAD ||--o{ PERSONAL_ESPECIALIDAD : especialidad
     ANIO ||--o{ SEMESTRE : anio
@@ -659,8 +929,24 @@ erDiagram
     GRUPO ||--o{ GRUPO_MODULO : grupo
     MODULO ||--o{ GRUPO_MODULO : modulo
     CALENDARIO ||--o{ GRUPO_MODULO : calendario
+    GRUPO_MODULO ||--o{ REGISTRO_ACADEMICO_DOCUMENTO : grupoModulo
+    GRUPO_MODULO ||--o{ CERTIFICADO_TITULO_DOCUMENTO : grupoModulo
+    MODULO_ESTUDIANTE ||--o{ CERTIFICADO_TITULO_DOCUMENTO : moduloEstudiante
+    SEMESTRE ||--o{ CERTIFICADO : semestre
+    USER ||--o{ CERTIFICADO : estudiante
+    MATRICULA ||--o{ CERTIFICADO : matricula
+    GRUPO_MODULO ||--o{ CERTIFICADO : grupoModulo
+    MODULO_ESTUDIANTE ||--o{ CERTIFICADO : moduloEstudiante
+    PERSONAL ||--o{ CERTIFICADO : docente
+    CARRERA ||--o{ CERTIFICADO : carrera
+    GRUPO_MODULO ||--o{ GRUPO_MODULO_UNIDAD_DIDACTICA : grupoModulo
+    UNIDAD_DIDACTICA ||--o{ GRUPO_MODULO_UNIDAD_DIDACTICA : unidadDidactica
+    GRUPO_MODULO ||--o{ EFSRT_PPP_PRACTICA : grupoModulo
+    PROGRAMACION_HORARIA ||--o{ EVENTO : programacionHoraria
     CALENDARIO ||--o{ EVENTO : calendario
     SEMESTRE ||--o{ EVENTO : semestre
+    CALENDARIO ||--o{ PROGRAMACION_HORARIA : calendario
+    GRUPO_MODULO ||--o{ PROGRAMACION_HORARIA : grupoModulo
     EVENTO ||--o{ EVENTO_RECURRENCIA : evento
     HORARIO ||--o{ EVENTO_RECURRENCIA : horario
     TURNO ||--o{ EVENTO_RECURRENCIA : turno
@@ -670,10 +956,20 @@ erDiagram
     EVENTO ||--o{ EVENTO_RELACION : evento
     EVENTO ||--o{ RECORDATORIO : evento
     EVENTO_OCURRENCIA ||--o{ RECORDATORIO : eventoOcurrencia
+    PAQUETE ||--o{ PAQUETE_GRUPO : paquete
+    GRUPO ||--o{ PAQUETE_GRUPO : grupo
     PAQUETE ||--o{ PAQUETE_MODULO : paquete
     MODULO ||--o{ PAQUETE_MODULO : modulo
     PAQUETE ||--o{ MATRICULA : paquete
+    SEMESTRE ||--o{ MATRICULA : semestre
     USER ||--o{ MATRICULA : user
+    PERSONAL ||--o{ MATRICULA : responsable
+    MATRICULA ||--o{ MATRICULA_USER : matricula
+    USER ||--o{ MATRICULA_USER : user
+    MATRICULA ||--o{ MATRICULA_GRUPO : matricula
+    GRUPO ||--o{ MATRICULA_GRUPO : grupo
+    MATRICULA ||--o{ MATRICULA_PAQUETE : matricula
+    PAQUETE ||--o{ MATRICULA_PAQUETE : paquete
     EVENTO_OCURRENCIA ||--o{ ASISTENCIA : eventoOcurrencia
     MATRICULA ||--o{ ASISTENCIA : matricula
     USER ||--o{ ASISTENCIA : registradoPor

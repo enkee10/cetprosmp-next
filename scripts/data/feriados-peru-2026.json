@@ -1,0 +1,27 @@
+{
+  "anio": 2026,
+  "titulo": "Calendario general — Feriados Perú 2026",
+  "fuentes": [
+    "https://www.gob.pe/feriados",
+    "https://elperuano.pe/noticia/291141-semana-santa-2026-en-peru-cuando-sera-el-proximo-fin-de-semana-largo",
+    "https://elperuano.pe/noticia/286039-fin-de-semana-largo-el-2-de-enero-del-2026-sera-dia-no-laborable"
+  ],
+  "feriados": [
+    { "fecha": "2026-01-01", "nombre": "Año Nuevo" },
+    { "fecha": "2026-04-02", "nombre": "Jueves Santo" },
+    { "fecha": "2026-04-03", "nombre": "Viernes Santo" },
+    { "fecha": "2026-05-01", "nombre": "Día del Trabajo" },
+    { "fecha": "2026-06-07", "nombre": "Batalla de Arica y Día de la Bandera" },
+    { "fecha": "2026-06-29", "nombre": "San Pedro y San Pablo" },
+    { "fecha": "2026-07-23", "nombre": "Día de la Fuerza Aérea del Perú" },
+    { "fecha": "2026-07-28", "nombre": "Fiestas Patrias — Independencia del Perú" },
+    { "fecha": "2026-07-29", "nombre": "Fiestas Patrias" },
+    { "fecha": "2026-08-06", "nombre": "Batalla de Junín" },
+    { "fecha": "2026-08-30", "nombre": "Santa Rosa de Lima" },
+    { "fecha": "2026-10-08", "nombre": "Combate de Angamos" },
+    { "fecha": "2026-11-01", "nombre": "Día de Todos los Santos" },
+    { "fecha": "2026-12-08", "nombre": "Inmaculada Concepción" },
+    { "fecha": "2026-12-09", "nombre": "Batalla de Ayacucho" },
+    { "fecha": "2026-12-25", "nombre": "Navidad" }
+  ]
+}

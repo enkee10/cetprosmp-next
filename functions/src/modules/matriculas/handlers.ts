@@ -915,6 +915,7 @@ const EDITOR_DOCUMENTOS_MATRICULA_FIELDS = `
     email
     correoInstitucional
     avatar
+    recorteFotografia
     dniImagenFrenteUrl
     dniImagenReversoUrl
     dniImagenFrenteProcesadaUrl
@@ -3878,7 +3879,7 @@ async function processMatriculaAvatarExtractionJob(
     const avatarBuffer = shouldRefreshAvatar
       ? (generatedAvatar?.buffer ?? await buildDirectCropAvatarImage({ sourceBuffer: buffer, cropBox }))
       : null;
-    const avatar = avatarBuffer
+    let avatar = avatarBuffer
       ? await uploadAvatarImages({
         avatarBuffer,
         contentType: generatedAvatar?.contentType,
@@ -3901,6 +3902,12 @@ async function processMatriculaAvatarExtractionJob(
         jobId,
       })
       : null;
+    if (avatar && (await ref.get()).data()?.avatarDeletedAt) {
+      await Promise.all(Object.values(avatar).map((asset) =>
+        getStorage().bucket(asset.bucket).file(asset.path).delete({ ignoreNotFound: true }),
+      ));
+      avatar = null;
+    }
     const userUpdateData: DataConnectUserInput = {};
     if (avatar?.grande.url) userUpdateData.avatar = avatar.grande.url;
     if (recorteFotografia?.url) userUpdateData.recorteFotografia = recorteFotografia.url;
@@ -3930,6 +3937,7 @@ async function processMatriculaAvatarExtractionJob(
       },
       updatedUserId: userId,
     });
+    avatarThumbnailCache.delete(userId);
     console.info("matricula_avatar_extraction_completed", {
       jobId,
       userId,
@@ -4780,7 +4788,10 @@ function timestampToMillis(value: unknown): number {
   return Number.isFinite(seconds) ? seconds * 1000 : 0;
 }
 
-async function getLatestUserAvatarThumbnails(userIds: Set<number>): Promise<Map<number, MatriculaAvatarThumbnails>> {
+async function getLatestUserAvatarThumbnails(
+  userIds: Set<number>,
+  currentAvatarUrls?: Map<number, string>,
+): Promise<Map<number, MatriculaAvatarThumbnails>> {
   if (userIds.size === 0) return new Map();
 
   const now = Date.now();
@@ -4788,7 +4799,7 @@ async function getLatestUserAvatarThumbnails(userIds: Set<number>): Promise<Map<
   const missingUserIds = new Set<number>();
   userIds.forEach((userId) => {
     const cached = avatarThumbnailCache.get(userId);
-    if (cached && cached.expiresAt > now) {
+    if (!currentAvatarUrls && cached && cached.expiresAt > now) {
       if (cached.thumbnails) result.set(userId, cached.thumbnails);
       return;
     }
@@ -4815,6 +4826,12 @@ async function getLatestUserAvatarThumbnails(userIds: Set<number>): Promise<Map<
       const data = doc.data() as Record<string, unknown>;
       const userId = toNumber(data.userId, 0);
       if (!userIds.has(userId) || data.status !== "completed") return;
+      if (currentAvatarUrls) {
+        const avatar = data.avatar as { url?: unknown } | null;
+        const sizes = data.avatarTamanos as { grande?: { url?: unknown } | null } | null;
+        const avatarUrl = asCleanString(avatar?.url ?? sizes?.grande?.url);
+        if (!avatarUrl || avatarUrl !== currentAvatarUrls.get(userId)) return;
+      }
 
       const updatedAt = timestampToMillis(data.updatedAt);
       const previous = latestByUserId.get(userId);
@@ -4866,22 +4883,32 @@ async function getLatestUserAvatarThumbnails(userIds: Set<number>): Promise<Map<
   return result;
 }
 
-async function hydrateMatriculaListAvatarTiny(matriculas: MatriculaRow[]): Promise<MatriculaRow[]> {
+async function hydrateMatriculaListAvatarTiny(matriculas: MatriculaRow[], includeAllSizes = false): Promise<MatriculaRow[]> {
+  const currentAvatarUrls = includeAllSizes ? new Map<number, string>() : undefined;
+  if (currentAvatarUrls) {
+    matriculas.forEach((matricula) => {
+      const userId = toNumber(matricula.user?.id ?? matricula.userId, 0);
+      const avatarUrl = asCleanString(matricula.user?.avatar);
+      if (userId > 0 && avatarUrl) currentAvatarUrls.set(userId, avatarUrl);
+    });
+  }
   const userIds = new Set(
     matriculas
       .map((matricula) => toNumber(matricula.user?.id ?? matricula.userId, 0))
-      .filter((id) => id > 0),
+      .filter((id) => id > 0 && (!currentAvatarUrls || currentAvatarUrls.has(id))),
   );
   if (userIds.size === 0) return matriculas;
 
-  const avatarByUserId = await getLatestUserAvatarThumbnails(userIds);
+  const avatarByUserId = await getLatestUserAvatarThumbnails(userIds, currentAvatarUrls);
   if (avatarByUserId.size === 0) return matriculas;
 
   return matriculas.map((matricula) => {
     if (!matricula.user) return matricula;
     const userId = toNumber(matricula.user.id ?? matricula.userId, 0);
     const avatar = avatarByUserId.get(userId);
-    return avatar?.avatarTiny ? { ...matricula, user: { ...matricula.user, avatarTiny: avatar.avatarTiny } } : matricula;
+    return avatar?.avatarTiny
+      ? { ...matricula, user: { ...matricula.user, ...(includeAllSizes ? avatar : { avatarTiny: avatar.avatarTiny }) } }
+      : matricula;
   });
 }
 
@@ -5041,7 +5068,7 @@ export const listEditorDocumentosMatriculas = https.onCall(async (data, context)
       .sort((a, b) => b.id - a.id)
       .slice(0, 60);
     const matriculasWithModuloLinks = await hydrateMatriculaListModuloLinks(matriculas);
-    return { matriculas: await hydrateMatriculaListAvatarTiny(matriculasWithModuloLinks), semestreId };
+    return { matriculas: await hydrateMatriculaListAvatarTiny(matriculasWithModuloLinks, true), semestreId };
   } catch (error) {
     console.error("Error in listEditorDocumentosMatriculas:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar los documentos.");
@@ -5107,8 +5134,9 @@ export const regenerateEditorDocumentoAvatar = runWith({ timeoutSeconds: 120, me
 
   try {
     const { user, userId } = await getEditorDocumentoTargetFromInput(data);
+    const forceRegenerate = data?.forceRegenerate === true;
     const existingAvatarUrl = asCleanString(user.avatar);
-    if (existingAvatarUrl) {
+    if (existingAvatarUrl && !forceRegenerate) {
       return {
         ok: true,
         skipped: true,
@@ -5136,7 +5164,7 @@ export const regenerateEditorDocumentoAvatar = runWith({ timeoutSeconds: 120, me
       },
       existingAvatarUrl: user.avatar,
       existingRecorteFotografiaUrl: user.recorteFotografia,
-      forceRegenerate: false,
+      forceRegenerate,
     });
     if (!jobId) {
       throw new https.HttpsError("internal", "No se pudo crear el job para regenerar avatar.");
@@ -5147,6 +5175,58 @@ export const regenerateEditorDocumentoAvatar = runWith({ timeoutSeconds: 120, me
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in regenerateEditorDocumentoAvatar:", error);
     throw new https.HttpsError("internal", "No se pudo regenerar el avatar.");
+  }
+});
+
+function getEditorAvatarStoragePaths(user: MatriculaUserRow, jobs: FirebaseFirestore.DocumentData[]): string[] {
+  const number = normalizeDocumentNumber(user.dni) || String(user.id);
+  const prefix = documentFilePrefix(user.tipoDocumento);
+  const paths = new Set<string>();
+  for (const mode of ["generado", "recorte"]) {
+    for (const suffix of ["", "-mediano", "-pequeno", "-tiny"]) {
+      for (const extension of ["jpg", "png"]) {
+        paths.add(`usuarios/avatars/${number}/avatar-${mode}-${prefix}-${number}${suffix}.${extension}`);
+      }
+    }
+  }
+  const assets = [parseStoragePathFromUrl(user.avatar), ...jobs.flatMap((job) => [
+    job.avatar?.path,
+    ...Object.values(job.avatarTamanos ?? {}).map((asset) => (asset as { path?: unknown } | null)?.path),
+  ])];
+  for (const path of assets) {
+    if (typeof path === "string" && /^usuarios\/avatars\/[^/]+\/avatar-[^/]+\.(?:jpg|png)$/.test(path)
+      && !path.split("/").some((part) => part === "." || part === "..")) paths.add(path);
+  }
+  return Array.from(paths);
+}
+
+export const deleteEditorDocumentoAvatar = runWith({ timeoutSeconds: 120, memory: "512MB" }).https.onCall(async (data, context) => {
+  await requirePermission(context, "editor-documentos", "edit");
+  try {
+    const { user, userId } = await getEditorDocumentoTargetFromInput(data);
+    const firestore = getFirestore();
+    const snapshot = await firestore.collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION).where("userId", "==", userId).get();
+    const deletedPaths = getEditorAvatarStoragePaths(user, snapshot.docs.map((doc) => doc.data()));
+    await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
+      UPDATE_USER_MUTATION,
+      { variables: { id: userId, data: { avatar: null } } },
+    );
+    // Keep the photo crop and job history, but remove obsolete thumbnail links.
+    for (const docs of chunkArray(snapshot.docs, 450)) {
+      const batch = firestore.batch();
+      docs.forEach((doc) => batch.update(doc.ref, {
+        avatar: null, avatarTamanos: null, avatarDeletedAt: new Date().toISOString(),
+      }));
+      await batch.commit();
+    }
+    avatarThumbnailCache.delete(userId);
+    const bucket = getStorage().bucket();
+    await Promise.all(deletedPaths.map((path) => bucket.file(path).delete({ ignoreNotFound: true })));
+    return { ok: true, userId, deletedPaths };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("Error in deleteEditorDocumentoAvatar:", error);
+    throw new https.HttpsError("internal", "No se pudo eliminar el avatar.");
   }
 });
 

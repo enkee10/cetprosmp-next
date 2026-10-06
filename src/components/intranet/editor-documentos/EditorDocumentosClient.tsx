@@ -325,6 +325,7 @@ export function EditorDocumentosPage() {
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuRow, setMenuRow] = useState<EditorMatricula | null>(null);
   const [generatingAvatarId, setGeneratingAvatarId] = useState<number | null>(null);
+  const [deletingAvatarId, setDeletingAvatarId] = useState<number | null>(null);
   const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
     avatar: true,
     estudiante: true,
@@ -416,13 +417,13 @@ export function EditorDocumentosPage() {
     setGeneratingAvatarId(row.id);
     setMessage(null);
     try {
-      const callable = httpsCallable<{ matriculaId: number }, { ok?: boolean; jobId?: string }>(
+      const callable = httpsCallable<{ matriculaId: number; forceRegenerate: boolean }, { ok?: boolean; jobId?: string }>(
         functions,
         'regenerateEditorDocumentoAvatar',
         { timeout: 120000 },
       );
-      await callable({ matriculaId: row.id });
-      setMessage('Se envio la regeneracion del avatar. En unos momentos se reemplazara el avatar anterior.');
+      await callable({ matriculaId: row.id, forceRegenerate: true });
+      setMessage('Se inició la regeneración del recorte y del avatar usando el DNI procesado actual. En unos momentos estarán disponibles.');
     } catch (error) {
       console.error('Error regenerating avatar:', error);
       setMessage('No se pudo iniciar la generacion del avatar.');
@@ -431,19 +432,43 @@ export function EditorDocumentosPage() {
     }
   }, []);
 
+  const handleDeleteAvatar = useCallback(async (row: EditorMatricula) => {
+    setMenuAnchorEl(null);
+    setMenuRow(null);
+    setDeletingAvatarId(row.id);
+    setMessage(null);
+    try {
+      const callable = httpsCallable<{ matriculaId: number }, { ok: boolean; userId: number }>(
+        functions, 'deleteEditorDocumentoAvatar', { timeout: 120000 },
+      );
+      const result = await callable({ matriculaId: row.id });
+      setMatriculas((current) => current.map((item) =>
+        item.user && Number(item.user.id ?? item.userId) === result.data.userId
+          ? { ...item, user: { ...item.user, avatar: null, avatarTiny: null, avatarPequeno: null, avatarMediano: null } }
+          : item,
+      ));
+      setMessage('Avatar eliminado. Se conservaron el recorte de la fotografía y las imágenes del DNI.');
+    } catch (error) {
+      console.error('Error deleting avatar:', error);
+      setMessage('No se pudo eliminar el avatar.');
+    } finally {
+      setDeletingAvatarId(null);
+    }
+  }, []);
+
   const columns = useMemo<GridColDef<EditorMatricula>[]>(
     () => [
       {
         field: 'avatar',
         headerName: 'Avatar',
-        width: 82,
+        width: 96,
         sortable: false,
         filterable: false,
         renderCell: ({ row }) => {
           const user = row.user;
-          const url = user?.avatarTiny || user?.avatarPequeno || user?.avatarMediano || user?.avatar || '';
+          const url = user?.avatarPequeno || user?.avatarMediano || user?.avatar || user?.avatarTiny || '';
           return url ? (
-            <Box component="img" src={url} alt="" sx={{ width: 42, height: 42, objectFit: 'cover', objectPosition: '50% 10%' }} />
+            <Box component="img" src={url} alt="" sx={{ width: 76, height: 76, objectFit: 'cover', objectPosition: '50% 10%' }} />
           ) : null;
         },
       },
@@ -525,13 +550,13 @@ export function EditorDocumentosPage() {
           <IconButton
             size="small"
             aria-label="Opciones"
-            disabled={generatingAvatarId === row.id}
+            disabled={generatingAvatarId !== null || deletingAvatarId !== null}
             onClick={(event) => {
               setMenuAnchorEl(event.currentTarget);
               setMenuRow(row);
             }}
           >
-            {generatingAvatarId === row.id ? <CircularProgress size={18} /> : <MoreHorizIcon />}
+            {generatingAvatarId === row.id || deletingAvatarId === row.id ? <CircularProgress size={18} /> : <MoreHorizIcon />}
           </IconButton>
         ),
       },
@@ -543,7 +568,7 @@ export function EditorDocumentosPage() {
         valueGetter: (_value, row) => responsableFormularioName(row.responsableUser),
       },
     ],
-    [generatingAvatarId, openEditor],
+    [generatingAvatarId, deletingAvatarId, openEditor],
   );
 
   const columnToggleItems = useMemo(
@@ -592,8 +617,11 @@ export function EditorDocumentosPage() {
           setMenuRow(null);
         }}
       >
-        <MenuItem disabled={!menuRow?.user?.dniImagenFrenteProcesadaUrl} onClick={() => menuRow && handleGenerateAvatar(menuRow)}>
+        <MenuItem disabled={!can('editor-documentos', 'edit') || !menuRow?.user?.dniImagenFrenteProcesadaUrl} onClick={() => menuRow && handleGenerateAvatar(menuRow)}>
           Generar Avatar
+        </MenuItem>
+        <MenuItem disabled={!can('editor-documentos', 'edit') || !menuRow?.user?.avatar} onClick={() => menuRow && handleDeleteAvatar(menuRow)}>
+          Eliminar avatar
         </MenuItem>
         <MenuItem onClick={() => openProcessedImage(menuRow?.user?.dniImagenFrenteProcesadaUrl)}>
           Ver Frente

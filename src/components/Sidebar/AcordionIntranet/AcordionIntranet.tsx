@@ -117,6 +117,7 @@ export const menuSections: IntranetMenuSection[] = [
     title: 'Miscel\u00e1nea',
     icon: <CategoryIcon />,
     items: [
+      { id: 'calendario', title: 'Calendario', path: '/intranet/calendario', icon: <CalendarMonthIcon /> },
       { id: 'anios', title: 'A\u00f1os', path: '/intranet/anios', icon: <CalendarMonthIcon /> },
       { id: 'semestres', title: 'Semestres', path: '/intranet/semestres', icon: <ScheduleIcon /> },
       { id: 'tipos-carrera', title: 'Tipos de Carrera', path: '/intranet/tipos-carrera', icon: <CategoryIcon /> },

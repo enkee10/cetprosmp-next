@@ -790,6 +790,10 @@ type Evento @table(name: "eventos") {
   ubicacion: String
   color: String
   estado: String
+  minutosHoraAcademica: Int @col(name: "minutos_hora_academica") @default(value: 60)
+  computaHoras: Boolean @col(name: "computa_horas") @default(value: true)
+  programacionHoraria: ProgramacionHoraria @ref(fields: "programacionHorariaId", references: "id")
+  programacionHorariaId: Int @col(name: "programacion_horaria_id")
   fechaCreacion: Timestamp @col(name: "fecha_creacion")
   fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
 
@@ -798,6 +802,27 @@ type Evento @table(name: "eventos") {
 
   semestre: Semestre @ref(fields: "semestreId", references: "id")
   semestreId: Int @col(name: "semestre_id")
+}
+
+type ProgramacionHoraria @table(name: "programaciones_horarias", singular: "programacionHoraria", plural: "programacionesHorarias") {
+  id: Int! @col(dataType: "serial")
+  clave: String! @unique
+  titulo: String!
+  horasObjetivo: Float! @col(name: "horas_objetivo")
+  minutosHoraAcademica: Int! @col(name: "minutos_hora_academica")
+  minutosSesion: Int! @col(name: "minutos_sesion")
+  fechaInicio: Date! @col(name: "fecha_inicio")
+  fechaFin: Date! @col(name: "fecha_fin")
+  diasSemana: [Int!]! @col(name: "dias_semana")
+  horaInicio: String! @col(name: "hora_inicio")
+  horaFin: String! @col(name: "hora_fin")
+  excluirFeriados: Boolean! @col(name: "excluir_feriados")
+  evitarCruces: Boolean! @col(name: "evitar_cruces")
+  fechaCreacion: Timestamp! @col(name: "fecha_creacion")
+  calendario: Calendario! @ref(fields: "calendarioId", references: "id")
+  calendarioId: Int! @col(name: "calendario_id")
+  grupoModulo: GrupoModulo @ref(fields: "grupoModuloId", references: "id")
+  grupoModuloId: Int @col(name: "grupo_modulo_id")
 }
 
 type EventoRecurrencia @table(name: "evento_recurrencias", singular: "eventoRecurrencia", plural: "eventoRecurrencias") {

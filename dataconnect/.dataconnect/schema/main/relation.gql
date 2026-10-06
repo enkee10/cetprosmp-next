@@ -1545,6 +1545,40 @@ extend type Calendario {
     having: GrupoModulo_Having
   ): [GrupoModulo!]! @fdc_generated(from: "GrupoModulo.calendario", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `ProgramacionHoraria` objects in a one-to-many relationship (where `ProgramacionHoraria`.`calendario` is this object).
+  """
+  programacionesHorarias_on_calendario(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProgramacionHoraria_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProgramacionHoraria_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ProgramacionHoraria_Having
+  ): [ProgramacionHoraria!]! @fdc_generated(from: "ProgramacionHoraria.calendario", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
   _metadata: _Metadata @fdc_generated(from: "Calendario", purpose: METADATA_FIELD)
@@ -5642,6 +5676,15 @@ extend type Evento {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Evento.color", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Evento` table where the `computaHoras` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  computaHoras_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Evento.computaHoras", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Evento` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   descripcion_count(
@@ -5704,6 +5747,24 @@ extend type Evento {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Evento.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Evento` table where the `minutosHoraAcademica` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  minutosHoraAcademica_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Evento.minutosHoraAcademica", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Evento` table where the `programacionHorariaId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  programacionHorariaId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Evento.programacionHorariaId", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Evento` table where the `semestreId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -5768,6 +5829,24 @@ extend type Evento {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Evento.id", purpose: QUERY_SUM)
   """
+  ✨ Sum the `minutosHoraAcademica` field in the `Evento` table.
+  """
+  minutosHoraAcademica_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Evento.minutosHoraAcademica", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `programacionHorariaId` field in the `Evento` table.
+  """
+  programacionHorariaId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Evento.programacionHorariaId", purpose: QUERY_SUM)
+  """
   ✨ Sum the `semestreId` field in the `Evento` table.
   """
   semestreId_sum(
@@ -5794,6 +5873,24 @@ extend type Evento {
     """
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Evento.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `minutosHoraAcademica` field in the `Evento` table.
+  """
+  minutosHoraAcademica_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Evento.minutosHoraAcademica", purpose: QUERY_AVG)
+  """
+  ✨ Average the `programacionHorariaId` field in the `Evento` table.
+  """
+  programacionHorariaId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Evento.programacionHorariaId", purpose: QUERY_AVG)
   """
   ✨ Average the `semestreId` field in the `Evento` table.
   """
@@ -5828,6 +5925,14 @@ extend type Evento {
   """
   id_min: Int @fdc_generated(from: "Evento.id", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `minutosHoraAcademica` field in the `Evento` table.
+  """
+  minutosHoraAcademica_min: Int @fdc_generated(from: "Evento.minutosHoraAcademica", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `programacionHorariaId` field in the `Evento` table.
+  """
+  programacionHorariaId_min: Int @fdc_generated(from: "Evento.programacionHorariaId", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `semestreId` field in the `Evento` table.
   """
   semestreId_min: Int @fdc_generated(from: "Evento.semestreId", purpose: QUERY_MIN)
@@ -5855,6 +5960,14 @@ extend type Evento {
   ✨ Maximum of the `id` field in the `Evento` table.
   """
   id_max: Int @fdc_generated(from: "Evento.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `minutosHoraAcademica` field in the `Evento` table.
+  """
+  minutosHoraAcademica_max: Int @fdc_generated(from: "Evento.minutosHoraAcademica", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `programacionHorariaId` field in the `Evento` table.
+  """
+  programacionHorariaId_max: Int @fdc_generated(from: "Evento.programacionHorariaId", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `semestreId` field in the `Evento` table.
   """
@@ -8600,6 +8713,40 @@ extend type GrupoModulo {
     """
     having: ModuloEstudiante_Having
   ): [ModuloEstudiante!]! @fdc_generated(from: "ModuloEstudiante.grupoModulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `ProgramacionHoraria` objects in a one-to-many relationship (where `ProgramacionHoraria`.`grupoModulo` is this object).
+  """
+  programacionesHorarias_on_grupoModulo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProgramacionHoraria_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProgramacionHoraria_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ProgramacionHoraria_Having
+  ): [ProgramacionHoraria!]! @fdc_generated(from: "ProgramacionHoraria.grupoModulo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `RegistroAcademicoDocumento` objects in a one-to-many relationship (where `RegistroAcademicoDocumento`.`grupoModulo` is this object).
   """
@@ -14601,6 +14748,369 @@ extend type Post {
   A generated field that is used for caching results in SDKs.
   """
   _id: ID! @fdc_generated(from: "Post.id", purpose: ENTITY_ID)
+}
+extend type ProgramacionHoraria {
+  """
+  ✨ List `Evento` objects in a one-to-many relationship (where `Evento`.`programacionHoraria` is this object).
+  """
+  eventos_on_programacionHoraria(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Evento_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Evento_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Evento_Having
+  ): [Evento!]! @fdc_generated(from: "Evento.programacionHoraria", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "ProgramacionHoraria", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table.
+  """
+  _count: Int! @fdc_generated(from: "ProgramacionHoraria.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `calendarioId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  calendarioId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.calendarioId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `clave` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  clave_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.clave", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `evitarCruces` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  evitarCruces_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.evitarCruces", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `excluirFeriados` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  excluirFeriados_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.excluirFeriados", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `fechaCreacion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaCreacion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.fechaCreacion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `fechaFin` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaFin_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.fechaFin", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `fechaInicio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fechaInicio_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.fechaInicio", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `grupoModuloId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  grupoModuloId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.grupoModuloId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `horaFin` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  horaFin_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.horaFin", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `horaInicio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  horaInicio_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.horaInicio", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `horasObjetivo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  horasObjetivo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.horasObjetivo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `minutosHoraAcademica` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  minutosHoraAcademica_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.minutosHoraAcademica", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `minutosSesion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  minutosSesion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.minutosSesion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `ProgramacionHoraria` table where the `titulo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  titulo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria.titulo", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `calendarioId` field in the `ProgramacionHoraria` table.
+  """
+  calendarioId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ProgramacionHoraria.calendarioId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `grupoModuloId` field in the `ProgramacionHoraria` table.
+  """
+  grupoModuloId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ProgramacionHoraria.grupoModuloId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `horasObjetivo` field in the `ProgramacionHoraria` table.
+  """
+  horasObjetivo_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ProgramacionHoraria.horasObjetivo", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `id` field in the `ProgramacionHoraria` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ProgramacionHoraria.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `minutosHoraAcademica` field in the `ProgramacionHoraria` table.
+  """
+  minutosHoraAcademica_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ProgramacionHoraria.minutosHoraAcademica", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `minutosSesion` field in the `ProgramacionHoraria` table.
+  """
+  minutosSesion_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "ProgramacionHoraria.minutosSesion", purpose: QUERY_SUM)
+  """
+  ✨ Average the `calendarioId` field in the `ProgramacionHoraria` table.
+  """
+  calendarioId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ProgramacionHoraria.calendarioId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `grupoModuloId` field in the `ProgramacionHoraria` table.
+  """
+  grupoModuloId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ProgramacionHoraria.grupoModuloId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `horasObjetivo` field in the `ProgramacionHoraria` table.
+  """
+  horasObjetivo_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ProgramacionHoraria.horasObjetivo", purpose: QUERY_AVG)
+  """
+  ✨ Average the `id` field in the `ProgramacionHoraria` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ProgramacionHoraria.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `minutosHoraAcademica` field in the `ProgramacionHoraria` table.
+  """
+  minutosHoraAcademica_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ProgramacionHoraria.minutosHoraAcademica", purpose: QUERY_AVG)
+  """
+  ✨ Average the `minutosSesion` field in the `ProgramacionHoraria` table.
+  """
+  minutosSesion_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "ProgramacionHoraria.minutosSesion", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `calendarioId` field in the `ProgramacionHoraria` table.
+  """
+  calendarioId_min: Int @fdc_generated(from: "ProgramacionHoraria.calendarioId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaCreacion` field in the `ProgramacionHoraria` table.
+  """
+  fechaCreacion_min: Timestamp @fdc_generated(from: "ProgramacionHoraria.fechaCreacion", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaFin` field in the `ProgramacionHoraria` table.
+  """
+  fechaFin_min: Date @fdc_generated(from: "ProgramacionHoraria.fechaFin", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `fechaInicio` field in the `ProgramacionHoraria` table.
+  """
+  fechaInicio_min: Date @fdc_generated(from: "ProgramacionHoraria.fechaInicio", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `grupoModuloId` field in the `ProgramacionHoraria` table.
+  """
+  grupoModuloId_min: Int @fdc_generated(from: "ProgramacionHoraria.grupoModuloId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `horasObjetivo` field in the `ProgramacionHoraria` table.
+  """
+  horasObjetivo_min: Float @fdc_generated(from: "ProgramacionHoraria.horasObjetivo", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `ProgramacionHoraria` table.
+  """
+  id_min: Int @fdc_generated(from: "ProgramacionHoraria.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `minutosHoraAcademica` field in the `ProgramacionHoraria` table.
+  """
+  minutosHoraAcademica_min: Int @fdc_generated(from: "ProgramacionHoraria.minutosHoraAcademica", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `minutosSesion` field in the `ProgramacionHoraria` table.
+  """
+  minutosSesion_min: Int @fdc_generated(from: "ProgramacionHoraria.minutosSesion", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `calendarioId` field in the `ProgramacionHoraria` table.
+  """
+  calendarioId_max: Int @fdc_generated(from: "ProgramacionHoraria.calendarioId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaCreacion` field in the `ProgramacionHoraria` table.
+  """
+  fechaCreacion_max: Timestamp @fdc_generated(from: "ProgramacionHoraria.fechaCreacion", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaFin` field in the `ProgramacionHoraria` table.
+  """
+  fechaFin_max: Date @fdc_generated(from: "ProgramacionHoraria.fechaFin", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `fechaInicio` field in the `ProgramacionHoraria` table.
+  """
+  fechaInicio_max: Date @fdc_generated(from: "ProgramacionHoraria.fechaInicio", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `grupoModuloId` field in the `ProgramacionHoraria` table.
+  """
+  grupoModuloId_max: Int @fdc_generated(from: "ProgramacionHoraria.grupoModuloId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `horasObjetivo` field in the `ProgramacionHoraria` table.
+  """
+  horasObjetivo_max: Float @fdc_generated(from: "ProgramacionHoraria.horasObjetivo", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `ProgramacionHoraria` table.
+  """
+  id_max: Int @fdc_generated(from: "ProgramacionHoraria.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `minutosHoraAcademica` field in the `ProgramacionHoraria` table.
+  """
+  minutosHoraAcademica_max: Int @fdc_generated(from: "ProgramacionHoraria.minutosHoraAcademica", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `minutosSesion` field in the `ProgramacionHoraria` table.
+  """
+  minutosSesion_max: Int @fdc_generated(from: "ProgramacionHoraria.minutosSesion", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "ProgramacionHoraria.id", purpose: ENTITY_ID)
 }
 extend type Publicacion {
   """

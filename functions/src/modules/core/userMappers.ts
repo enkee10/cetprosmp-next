@@ -455,6 +455,8 @@ export function buildPersonalDataFromInput(input: Record<string, unknown>): Data
 
 export function buildEventoDataFromInput(input: Record<string, unknown>): DataConnectEventoInput {
   return compactUndefined({
+    minutosHoraAcademica: input.minutosHoraAcademica === undefined ? undefined : toNumberOrNull(input.minutosHoraAcademica),
+    computaHoras: input.computaHoras === undefined ? undefined : toBoolean(input.computaHoras),
     titulo: asNullableString(input.titulo),
     descripcion: asNullableString(input.descripcion),
     tipoEvento: asNullableString(input.tipoEvento),

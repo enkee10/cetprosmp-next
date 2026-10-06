@@ -101,6 +101,9 @@ const LIST_EVENTOS_QUERY = `
       titulo
       descripcion
       tipoEvento
+      minutosHoraAcademica
+      computaHoras
+      programacionHorariaId
       fechaInicio
       fechaFin
       todoElDia
@@ -228,6 +231,9 @@ const GET_EVENTO_QUERY = `
       titulo
       descripcion
       tipoEvento
+      minutosHoraAcademica
+      computaHoras
+      programacionHorariaId
       fechaInicio
       fechaFin
       todoElDia
@@ -510,7 +516,7 @@ const shouldIncludeAlternatingFriday = (date: Date, fridayIndex: number, viernes
   return fridayIndex % 2 === 0;
 };
 
-function generateEventoOcurrencias(
+export function generateEventoOcurrencias(
   evento: DataConnectEventoInput,
   recurrencia: DataConnectEventoRecurrenciaInput,
   recurrenciaId: number,
@@ -519,10 +525,13 @@ function generateEventoOcurrencias(
   turno?: DataConnectTurno | null,
   semestreTitulo?: string | null,
 ): DataConnectEventoOcurrenciaInput[] {
-  const start = new Date(recurrencia.fechaInicio ?? evento.fechaInicio ?? "");
+  // UTC methods operate on Lima's wall clock; restore the offset when saving.
+  const limaOffset = 5 * 3600000;
+  const realStart = new Date(recurrencia.fechaInicio ?? evento.fechaInicio ?? "");
+  const start = new Date(realStart.getTime() - limaOffset);
   if (Number.isNaN(start.getTime())) return [];
 
-  const eventStart = evento.fechaInicio ? new Date(evento.fechaInicio) : start;
+  const eventStart = evento.fechaInicio ? new Date(evento.fechaInicio) : realStart;
   const eventEnd = evento.fechaFin ? new Date(evento.fechaFin) : eventStart;
   const duration = !Number.isNaN(eventEnd.getTime()) && eventEnd.getTime() > eventStart.getTime()
     ? eventEnd.getTime() - eventStart.getTime()
@@ -539,10 +548,12 @@ function generateEventoOcurrencias(
   const results: DataConnectEventoOcurrenciaInput[] = [];
 
   const pushOccurrence = (date: Date) => {
-    if (until && date.getTime() > until.getTime()) return false;
-    const occurrenceStart = turno?.horaInicio ? applyTurnoTime(date, turno.horaInicio) : date;
+    if (until && date.getTime() + limaOffset > until.getTime()) return false;
+    const localTurnoStart = turno?.horaInicio ? new Date(Date.parse(turno.horaInicio) - limaOffset).toISOString() : null;
+    const localTurnoEnd = turno?.horaFin ? new Date(Date.parse(turno.horaFin) - limaOffset).toISOString() : null;
+    const occurrenceStart = localTurnoStart ? applyTurnoTime(date, localTurnoStart) : date;
     let occurrenceEnd = turno?.horaFin
-      ? applyTurnoTime(date, turno.horaFin)
+      ? applyTurnoTime(date, localTurnoEnd)
       : duration > 0
         ? new Date(occurrenceStart.getTime() + duration)
         : new Date(occurrenceStart.getTime());
@@ -550,8 +561,8 @@ function generateEventoOcurrencias(
       occurrenceEnd = addDays(occurrenceEnd, 1);
     }
     results.push({
-      fechaInicio: occurrenceStart.toISOString(),
-      fechaFin: occurrenceEnd.toISOString(),
+      fechaInicio: new Date(occurrenceStart.getTime() + limaOffset).toISOString(),
+      fechaFin: new Date(occurrenceEnd.getTime() + limaOffset).toISOString(),
       numeroOcurrencia: results.length + 1,
       tipoOcurrencia: "generada",
       estado: evento.estado || "programado",
@@ -922,6 +933,12 @@ export const getEvento = https.onCall(async (data, context) => {
 
 export const createOrUpdateEvento = https.onCall(async (data, context) => {
   const payload = buildEventoDataFromInput(data as Record<string, unknown>);
+  if (!payload.fechaInicio || !payload.fechaFin || payload.fechaFin <= payload.fechaInicio) {
+    throw new https.HttpsError("invalid-argument", "El fin del evento debe ser posterior al inicio.");
+  }
+  if (payload.minutosHoraAcademica != null && (!Number.isInteger(payload.minutosHoraAcademica) || payload.minutosHoraAcademica < 1 || payload.minutosHoraAcademica > 120)) {
+    throw new https.HttpsError("invalid-argument", "La hora académica debe durar entre 1 y 120 minutos.");
+  }
   if (!payload.titulo) {
     throw new https.HttpsError("invalid-argument", "titulo is required.");
   }

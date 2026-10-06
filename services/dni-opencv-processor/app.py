@@ -5178,7 +5178,7 @@ def normalize_editor_points(points: Any, width: int, height: int) -> np.ndarray 
     return order_points(np.asarray(parsed, dtype="float32"))
 
 
-def apply_manual_perspective(image: np.ndarray, points: Any, output_side: Any = None) -> np.ndarray:
+def apply_manual_perspective(image: np.ndarray, points: Any) -> np.ndarray:
     height, width = image.shape[:2]
     rect = normalize_editor_points(points, width, height)
     if rect is None:
@@ -5193,15 +5193,12 @@ def apply_manual_perspective(image: np.ndarray, points: Any, output_side: Any = 
     if source_width < 20 or source_height < 20:
         return image
 
-    source_long = max(source_width, source_height)
-    source_short = max(1.0, min(source_width, source_height))
+    # The editor supplies an already oriented DNI. Its four corners are the
+    # complete crop; always rectify them to the document ratio without further
+    # orientation detection or automatic margin trimming.
     output_width = int(os.getenv("OUTPUT_WIDTH", str(DEFAULT_OUTPUT_WIDTH)))
-    output_width = max(800, min(max(output_width, int(source_long)), 2400))
-    normalized_ratio = source_long / source_short
-    if 1.35 <= normalized_ratio <= 1.90:
-        output_height = int(round(output_width / DOCUMENT_RATIO))
-    else:
-        output_height = max(1, int(round(output_width * (source_short / source_long))))
+    output_width = max(800, min(output_width, 2400))
+    output_height = int(round(output_width / DOCUMENT_RATIO))
 
     destination = np.array(
         [
@@ -5212,10 +5209,7 @@ def apply_manual_perspective(image: np.ndarray, points: Any, output_side: Any = 
         ],
         dtype="float32",
     )
-    warped = cv2.warpPerspective(image, cv2.getPerspectiveTransform(rect, destination), (output_width, output_height))
-    if warped.shape[0] > warped.shape[1]:
-        warped = cv2.rotate(warped, cv2.ROTATE_90_CLOCKWISE)
-    return trim_warped_document_margins(warped, output_side)
+    return cv2.warpPerspective(image, cv2.getPerspectiveTransform(rect, destination), (output_width, output_height))
 
 
 def normalize_manual_output_size(image: np.ndarray) -> np.ndarray:
@@ -5254,7 +5248,7 @@ def manual_edit():
 
     try:
         image, _content = parse_data_url_image(payload.get("imageDataUrl"))
-        image = apply_manual_perspective(image, payload.get("perspectivePoints"), payload.get("side"))
+        image = apply_manual_perspective(image, payload.get("perspectivePoints"))
         image = normalize_manual_output_size(image)
         image = enhance_image(image)
         output = upload_manual_output(

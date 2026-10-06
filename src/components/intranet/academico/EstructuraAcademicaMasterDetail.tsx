@@ -1333,7 +1333,7 @@ export default function EstructuraAcademicaMasterDetail({
               <Stack spacing={1}>
                 <FormControl fullWidth size="small">
                   <InputLabel id="competencia-unidad-filter-label">Competencia</InputLabel>
-                  <Select labelId="competencia-unidad-filter-label" label="Competencia" value={selectedCompetenciaId ?? ''}
+                  <Select<number | ''> labelId="competencia-unidad-filter-label" label="Competencia" value={selectedCompetenciaId ?? ''}
                     onChange={event => { setSelectedCompetenciaId(event.target.value === '' ? null : Number(event.target.value)); setSelectedUnidadId(null); }}
                     MenuProps={{ PaperProps: { sx: { maxWidth: 'calc(100vw - 32px)' } } }}>
                     <MenuItem value="">Todas</MenuItem>

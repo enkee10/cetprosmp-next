@@ -513,6 +513,15 @@ extend type Mutation {
     data: Post_Data!
   ): Post_KeyOutput! @fdc_generated(from: "Post", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `ProgramacionHoraria` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  programacionHoraria_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ProgramacionHoraria_Data!
+  ): ProgramacionHoraria_KeyOutput! @fdc_generated(from: "ProgramacionHoraria", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Publicacion` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   publicacion_insert(
@@ -1178,6 +1187,15 @@ extend type Mutation {
     """
     data: [Post_Data!]!
   ): [Post_KeyOutput!]! @fdc_generated(from: "Post", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ProgramacionHoraria` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  programacionHoraria_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ProgramacionHoraria_Data!]!
+  ): [ProgramacionHoraria_KeyOutput!]! @fdc_generated(from: "ProgramacionHoraria", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Publicacion` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1845,6 +1863,15 @@ extend type Mutation {
     data: Post_Data!
   ): Post_KeyOutput! @fdc_generated(from: "Post", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `ProgramacionHoraria` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ProgramacionHoraria`.
+  """
+  programacionHoraria_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ProgramacionHoraria_Data!
+  ): ProgramacionHoraria_KeyOutput! @fdc_generated(from: "ProgramacionHoraria", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Publicacion` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Publicacion`.
   """
   publicacion_upsert(
@@ -2510,6 +2537,15 @@ extend type Mutation {
     """
     data: [Post_Data!]!
   ): [Post_KeyOutput!]! @fdc_generated(from: "Post", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ProgramacionHoraria` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ProgramacionHoraria`.
+  """
+  programacionHoraria_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ProgramacionHoraria_Data!]!
+  ): [ProgramacionHoraria_KeyOutput!]! @fdc_generated(from: "ProgramacionHoraria", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Publicacion` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Publicacion`.
   """
@@ -4267,6 +4303,35 @@ extend type Mutation {
     data: Post_Data!
   ): Post_KeyOutput @fdc_generated(from: "Post", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `ProgramacionHoraria` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ProgramacionHoraria` or `null` if not found.
+  """
+  programacionHoraria_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ProgramacionHoraria_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProgramacionHoraria_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ProgramacionHoraria_Data!
+  ): ProgramacionHoraria_KeyOutput @fdc_generated(from: "ProgramacionHoraria", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Publicacion` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Publicacion` or `null` if not found.
   """
   publicacion_update(
@@ -5842,6 +5907,25 @@ extend type Mutation {
     """
     data: Post_Data!
   ): Int! @fdc_generated(from: "Post", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ProgramacionHoraria` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  programacionHoraria_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ProgramacionHoraria_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ProgramacionHoraria_Data!
+  ): Int! @fdc_generated(from: "ProgramacionHoraria", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Publicacion` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -7484,6 +7568,30 @@ extend type Mutation {
     first: Post_FirstRow
   ): Post_KeyOutput @fdc_generated(from: "Post", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `ProgramacionHoraria` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  programacionHoraria_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ProgramacionHoraria_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProgramacionHoraria_FirstRow
+  ): ProgramacionHoraria_KeyOutput @fdc_generated(from: "ProgramacionHoraria", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Publicacion` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   publicacion_delete(
@@ -8689,6 +8797,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Post", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ProgramacionHoraria` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  programacionHoraria_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ProgramacionHoraria_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ProgramacionHoraria", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Publicacion` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

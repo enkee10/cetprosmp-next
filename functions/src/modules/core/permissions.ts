@@ -14,6 +14,7 @@ export interface PermissionEntity {
 export const SUPERUSER_LEVEL = 600;
 
 export const PERMISSION_ENTITIES: PermissionEntity[] = [
+  { id: "calendario", title: "Calendario", section: "Miscelanea" },
   { id: "sectores", title: "Sectores", section: "Entidades" },
   { id: "datos-generales", title: "Datos Generales", section: "Entidades" },
   { id: "familias", title: "Familias", section: "Entidades" },

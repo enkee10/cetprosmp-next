@@ -149,6 +149,7 @@ export {
   crearMatriculaFormulario,
   crearMatriculaFormularioSuelto,
   deleteMatricula,
+  deleteEditorDocumentoAvatar,
   generarCodigosInscripcionMatriculas,
   getEditorDocumentoImageData,
   getEditorDocumentoMatricula,
@@ -231,3 +232,4 @@ export {
 
 
 export { listCompetencias, getCompetencia, createOrUpdateCompetencia, deleteCompetencia, listCompetenciaOpciones, listCompetenciaFormularioOpciones } from "./competencias/handlers.js";
+export { getCalendarioAgenda, previewProgramacionHoraria, createProgramacionHoraria } from "./calendarios/agenda.js";

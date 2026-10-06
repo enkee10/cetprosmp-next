@@ -551,6 +551,9 @@ export interface DataConnectDatoGeneralInput {
 
 export interface DataConnectEvento {
   id: number;
+  minutosHoraAcademica?: number | null;
+  computaHoras?: boolean | null;
+  programacionHorariaId?: number | null;
   titulo?: string | null;
   descripcion?: string | null;
   tipoEvento?: string | null;
@@ -570,6 +573,8 @@ export interface DataConnectEvento {
 }
 
 export interface DataConnectEventoInput {
+  minutosHoraAcademica?: number | null;
+  computaHoras?: boolean;
   titulo?: string | null;
   descripcion?: string | null;
   tipoEvento?: string | null;

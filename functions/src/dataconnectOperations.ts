@@ -359,13 +359,13 @@ export const DELETE_PERSONAL_ESPECIALIDADES_BY_PERSONAL_MUTATION = `
 `;
 
 export const INSERT_EVENTO_MUTATION = `
-  mutation InsertEvento($data: Evento_Data! @allow(fields: "titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado fechaCreacion fechaActualizacion calendarioId semestreId")) {
+  mutation InsertEvento($data: Evento_Data! @allow(fields: "titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado fechaCreacion fechaActualizacion calendarioId semestreId minutosHoraAcademica computaHoras")) {
     evento_insert(data: $data)
   }
 `;
 
 export const UPDATE_EVENTO_MUTATION = `
-  mutation UpdateEvento($id: Int!, $data: Evento_Data! @allow(fields: "titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado fechaCreacion fechaActualizacion calendarioId semestreId")) {
+  mutation UpdateEvento($id: Int!, $data: Evento_Data! @allow(fields: "titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado fechaCreacion fechaActualizacion calendarioId semestreId minutosHoraAcademica computaHoras")) {
     evento_update(id: $id, data: $data)
   }
 `;

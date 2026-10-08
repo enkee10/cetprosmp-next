@@ -21,6 +21,16 @@ export interface ActEconomica_Key {
   __typename?: 'ActEconomica_Key';
 }
 
+export interface ActividadContenido_Key {
+  id: number;
+  __typename?: 'ActividadContenido_Key';
+}
+
+export interface ActividadMaterial_Key {
+  id: number;
+  __typename?: 'ActividadMaterial_Key';
+}
+
 export interface Actividad_Key {
   id: number;
   __typename?: 'Actividad_Key';
@@ -251,6 +261,11 @@ export interface GetUserByDocumentIdData {
 
 export interface GetUserByDocumentIdVariables {
   documentId: string;
+}
+
+export interface GrupoModuloActividad_Key {
+  id: number;
+  __typename?: 'GrupoModuloActividad_Key';
 }
 
 export interface GrupoModuloUnidadDidactica_Key {

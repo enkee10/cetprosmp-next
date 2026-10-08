@@ -27,6 +27,24 @@ extend type Mutation {
     data: Actividad_Data!
   ): Actividad_KeyOutput! @fdc_generated(from: "Actividad", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `ActividadContenido` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  actividadContenido_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ActividadContenido_Data!
+  ): ActividadContenido_KeyOutput! @fdc_generated(from: "ActividadContenido", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ActividadMaterial` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  actividadMaterial_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ActividadMaterial_Data!
+  ): ActividadMaterial_KeyOutput! @fdc_generated(from: "ActividadMaterial", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Anio` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   anio_insert(
@@ -323,6 +341,15 @@ extend type Mutation {
     """
     data: GrupoModulo_Data!
   ): GrupoModulo_KeyOutput! @fdc_generated(from: "GrupoModulo", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `GrupoModuloActividad` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  grupoModuloActividad_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: GrupoModuloActividad_Data!
+  ): GrupoModuloActividad_KeyOutput! @fdc_generated(from: "GrupoModuloActividad", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `GrupoModuloUnidadDidactica` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -702,6 +729,24 @@ extend type Mutation {
     data: [Actividad_Data!]!
   ): [Actividad_KeyOutput!]! @fdc_generated(from: "Actividad", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `ActividadContenido` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  actividadContenido_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ActividadContenido_Data!]!
+  ): [ActividadContenido_KeyOutput!]! @fdc_generated(from: "ActividadContenido", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ActividadMaterial` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  actividadMaterial_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ActividadMaterial_Data!]!
+  ): [ActividadMaterial_KeyOutput!]! @fdc_generated(from: "ActividadMaterial", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Anio` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   anio_insertMany(
@@ -998,6 +1043,15 @@ extend type Mutation {
     """
     data: [GrupoModulo_Data!]!
   ): [GrupoModulo_KeyOutput!]! @fdc_generated(from: "GrupoModulo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `GrupoModuloActividad` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  grupoModuloActividad_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [GrupoModuloActividad_Data!]!
+  ): [GrupoModuloActividad_KeyOutput!]! @fdc_generated(from: "GrupoModuloActividad", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `GrupoModuloUnidadDidactica` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1377,6 +1431,24 @@ extend type Mutation {
     data: Actividad_Data!
   ): Actividad_KeyOutput! @fdc_generated(from: "Actividad", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `ActividadContenido` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActividadContenido`.
+  """
+  actividadContenido_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ActividadContenido_Data!
+  ): ActividadContenido_KeyOutput! @fdc_generated(from: "ActividadContenido", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ActividadMaterial` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActividadMaterial`.
+  """
+  actividadMaterial_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ActividadMaterial_Data!
+  ): ActividadMaterial_KeyOutput! @fdc_generated(from: "ActividadMaterial", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Anio` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Anio`.
   """
   anio_upsert(
@@ -1673,6 +1745,15 @@ extend type Mutation {
     """
     data: GrupoModulo_Data!
   ): GrupoModulo_KeyOutput! @fdc_generated(from: "GrupoModulo", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `GrupoModuloActividad` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModuloActividad`.
+  """
+  grupoModuloActividad_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: GrupoModuloActividad_Data!
+  ): GrupoModuloActividad_KeyOutput! @fdc_generated(from: "GrupoModuloActividad", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `GrupoModuloUnidadDidactica` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModuloUnidadDidactica`.
   """
@@ -2052,6 +2133,24 @@ extend type Mutation {
     data: [Actividad_Data!]!
   ): [Actividad_KeyOutput!]! @fdc_generated(from: "Actividad", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `ActividadContenido` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActividadContenido`.
+  """
+  actividadContenido_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ActividadContenido_Data!]!
+  ): [ActividadContenido_KeyOutput!]! @fdc_generated(from: "ActividadContenido", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ActividadMaterial` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActividadMaterial`.
+  """
+  actividadMaterial_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ActividadMaterial_Data!]!
+  ): [ActividadMaterial_KeyOutput!]! @fdc_generated(from: "ActividadMaterial", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Anio` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Anio`.
   """
   anio_upsertMany(
@@ -2348,6 +2447,15 @@ extend type Mutation {
     """
     data: [GrupoModulo_Data!]!
   ): [GrupoModulo_KeyOutput!]! @fdc_generated(from: "GrupoModulo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `GrupoModuloActividad` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModuloActividad`.
+  """
+  grupoModuloActividad_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [GrupoModuloActividad_Data!]!
+  ): [GrupoModuloActividad_KeyOutput!]! @fdc_generated(from: "GrupoModuloActividad", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `GrupoModuloUnidadDidactica` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModuloUnidadDidactica`.
   """
@@ -2786,6 +2894,64 @@ extend type Mutation {
     """
     data: Actividad_Data!
   ): Actividad_KeyOutput @fdc_generated(from: "Actividad", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ActividadContenido` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ActividadContenido` or `null` if not found.
+  """
+  actividadContenido_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ActividadContenido_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ActividadContenido_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ActividadContenido_Data!
+  ): ActividadContenido_KeyOutput @fdc_generated(from: "ActividadContenido", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ActividadMaterial` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ActividadMaterial` or `null` if not found.
+  """
+  actividadMaterial_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ActividadMaterial_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ActividadMaterial_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ActividadMaterial_Data!
+  ): ActividadMaterial_KeyOutput @fdc_generated(from: "ActividadMaterial", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Anio` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Anio` or `null` if not found.
   """
@@ -3743,6 +3909,35 @@ extend type Mutation {
     """
     data: GrupoModulo_Data!
   ): GrupoModulo_KeyOutput @fdc_generated(from: "GrupoModulo", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `GrupoModuloActividad` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `GrupoModuloActividad` or `null` if not found.
+  """
+  grupoModuloActividad_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModuloActividad_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModuloActividad_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: GrupoModuloActividad_Data!
+  ): GrupoModuloActividad_KeyOutput @fdc_generated(from: "GrupoModuloActividad", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `GrupoModuloUnidadDidactica` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `GrupoModuloUnidadDidactica` or `null` if not found.
   """
@@ -4882,6 +5077,44 @@ extend type Mutation {
     data: Actividad_Data!
   ): Int! @fdc_generated(from: "Actividad", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `ActividadContenido` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  actividadContenido_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ActividadContenido_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ActividadContenido_Data!
+  ): Int! @fdc_generated(from: "ActividadContenido", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ActividadMaterial` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  actividadMaterial_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ActividadMaterial_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ActividadMaterial_Data!
+  ): Int! @fdc_generated(from: "ActividadMaterial", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Anio` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   anio_updateMany(
@@ -5508,6 +5741,25 @@ extend type Mutation {
     """
     data: GrupoModulo_Data!
   ): Int! @fdc_generated(from: "GrupoModulo", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `GrupoModuloActividad` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  grupoModuloActividad_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: GrupoModuloActividad_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: GrupoModuloActividad_Data!
+  ): Int! @fdc_generated(from: "GrupoModuloActividad", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `GrupoModuloUnidadDidactica` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -6322,6 +6574,54 @@ extend type Mutation {
     first: Actividad_FirstRow
   ): Actividad_KeyOutput @fdc_generated(from: "Actividad", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `ActividadContenido` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  actividadContenido_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ActividadContenido_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ActividadContenido_FirstRow
+  ): ActividadContenido_KeyOutput @fdc_generated(from: "ActividadContenido", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ActividadMaterial` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  actividadMaterial_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ActividadMaterial_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ActividadMaterial_FirstRow
+  ): ActividadMaterial_KeyOutput @fdc_generated(from: "ActividadMaterial", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Anio` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   anio_delete(
@@ -7113,6 +7413,30 @@ extend type Mutation {
     """
     first: GrupoModulo_FirstRow
   ): GrupoModulo_KeyOutput @fdc_generated(from: "GrupoModulo", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `GrupoModuloActividad` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  grupoModuloActividad_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModuloActividad_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModuloActividad_FirstRow
+  ): GrupoModuloActividad_KeyOutput @fdc_generated(from: "GrupoModuloActividad", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `GrupoModuloUnidadDidactica` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -8042,6 +8366,34 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "Actividad", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `ActividadContenido` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  actividadContenido_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ActividadContenido_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ActividadContenido", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ActividadMaterial` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  actividadMaterial_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ActividadMaterial_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ActividadMaterial", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Anio` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   anio_deleteMany(
@@ -8503,6 +8855,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "GrupoModulo", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `GrupoModuloActividad` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  grupoModuloActividad_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: GrupoModuloActividad_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "GrupoModuloActividad", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `GrupoModuloUnidadDidactica` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

@@ -72,6 +72,54 @@ extend type Query {
     first: Actividad_FirstRow
   ): Actividad @fdc_generated(from: "Actividad", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `ActividadContenido` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  actividadContenido(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ActividadContenido_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ActividadContenido_FirstRow
+  ): ActividadContenido @fdc_generated(from: "ActividadContenido", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ActividadMaterial` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  actividadMaterial(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ActividadMaterial_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ActividadMaterial_FirstRow
+  ): ActividadMaterial @fdc_generated(from: "ActividadMaterial", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Anio` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   anio(
@@ -863,6 +911,30 @@ extend type Query {
     """
     first: GrupoModulo_FirstRow
   ): GrupoModulo @fdc_generated(from: "GrupoModulo", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `GrupoModuloActividad` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  grupoModuloActividad(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModuloActividad_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModuloActividad_FirstRow
+  ): GrupoModuloActividad @fdc_generated(from: "GrupoModuloActividad", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `GrupoModuloUnidadDidactica` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -1851,6 +1923,74 @@ extend type Query {
     """
     having: Actividad_Having
   ): [Actividad!]! @fdc_generated(from: "Actividad", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ActividadContenido` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  actividadContenidos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ActividadContenido_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ActividadContenido_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ActividadContenido_Having
+  ): [ActividadContenido!]! @fdc_generated(from: "ActividadContenido", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ActividadMaterial` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  actividadMateriales(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ActividadMaterial_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ActividadMaterial_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ActividadMaterial_Having
+  ): [ActividadMaterial!]! @fdc_generated(from: "ActividadMaterial", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Anio` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -2973,6 +3113,40 @@ extend type Query {
     """
     having: GrupoModulo_Having
   ): [GrupoModulo!]! @fdc_generated(from: "GrupoModulo", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `GrupoModuloActividad` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  grupoModuloActividades(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: GrupoModuloActividad_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [GrupoModuloActividad_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: GrupoModuloActividad_Having
+  ): [GrupoModuloActividad!]! @fdc_generated(from: "GrupoModuloActividad", purpose: QUERY_MULTIPLE)
   """
   ✨ List `GrupoModuloUnidadDidactica` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

@@ -910,6 +910,11 @@ export interface DataConnectAprendizajeInput {
 
 export interface DataConnectActividad {
   id: number;
+  moduloId?: number | null;
+  numeroSesion?: number | null;
+  orden?: number | null;
+  contenidos?: Array<{ id: number; orden: number; texto: string }>;
+  materiales?: Array<{ id: number; orden: number; texto: string }>;
   nombre?: string | null;
   descripcion?: string | null;
   proposito?: string | null;
@@ -923,6 +928,9 @@ export interface DataConnectActividad {
 }
 
 export interface DataConnectActividadInput {
+  moduloId?: number | null;
+  numeroSesion?: number | null;
+  orden?: number | null;
   nombre?: string | null;
   descripcion?: string | null;
   proposito?: string | null;

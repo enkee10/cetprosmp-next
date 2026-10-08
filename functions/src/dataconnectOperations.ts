@@ -569,19 +569,25 @@ export const DELETE_APRENDIZAJE_MUTATION = `
 `;
 
 export const INSERT_ACTIVIDAD_MUTATION = `
-  mutation InsertActividad($data: Actividad_Data! @allow(fields: "nombre descripcion proposito ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId")) {
+  mutation InsertActividad($data: Actividad_Data! @allow(fields: "nombre descripcion proposito ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId moduloId numeroSesion orden")) {
     actividad_insert(data: $data)
   }
 `;
 
 export const UPDATE_ACTIVIDAD_MUTATION = `
-  mutation UpdateActividad($id: Int!, $data: Actividad_Data! @allow(fields: "nombre descripcion proposito ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId")) {
+  mutation UpdateActividad($id: Int!, $data: Actividad_Data! @allow(fields: "nombre descripcion proposito ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId moduloId numeroSesion orden")) {
     actividad_update(id: $id, data: $data)
   }
 `;
 
 export const DELETE_ACTIVIDAD_MUTATION = `
-  mutation DeleteActividad($id: Int!) {
+  mutation DeleteActividad($id: Int!) @transaction {
+    evento_deleteMany(where: {
+      _and: [
+        { grupoModuloActividades_on_evento: { exist: { actividadId: { eq: $id } } } }
+        { _not: { grupoModuloActividades_on_evento: { exist: { actividadId: { ne: $id } } } } }
+      ]
+    })
     actividad_delete(id: $id)
   }
 `;

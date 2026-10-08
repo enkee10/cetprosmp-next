@@ -279,6 +279,11 @@ type ValorInstitucional @table(name: "valores_institucionales", singular: "valor
 type Actividad @table(name: "actividades") {
   id: Int! @col(dataType: "serial")
   nombre: String
+  numeroSesion: Int @col(name: "numero_sesion")
+  orden: Int
+  claveImportacion: String @col(name: "clave_importacion") @unique
+  modulo: Modulo @ref(fields: "moduloId", references: "id")
+  moduloId: Int @col(name: "modulo_id")
   descripcion: String
   proposito: String
   ambiente: String
@@ -294,6 +299,22 @@ type Actividad @table(name: "actividades") {
 
   valorInstitucional: ValorInstitucional @ref(fields: "valorInstitucionalId", references: "id")
   valorInstitucionalId: Int @col(name: "valor_institucional_id")
+}
+
+type ActividadContenido @table(name: "actividad_contenidos", singular: "actividadContenido", plural: "actividadContenidos") @unique(fields: ["actividad", "orden"]) {
+  id: Int! @col(dataType: "serial")
+  orden: Int!
+  texto: String! @col(dataType: "text")
+  actividad: Actividad! @ref(fields: "actividadId", references: "id")
+  actividadId: Int! @col(name: "actividad_id")
+}
+
+type ActividadMaterial @table(name: "actividad_materiales", singular: "actividadMaterial", plural: "actividadMateriales") @unique(fields: ["actividad", "orden"]) {
+  id: Int! @col(dataType: "serial")
+  orden: Int!
+  texto: String! @col(dataType: "text")
+  actividad: Actividad! @ref(fields: "actividadId", references: "id")
+  actividadId: Int! @col(name: "actividad_id")
 }
 
 type Fase @table(name: "fases") {
@@ -761,6 +782,19 @@ type GrupoModuloUnidadDidactica @table(name: "grupo_modulo_unidades_didacticas",
 
   unidadDidactica: UnidadDidactica! @ref(fields: "unidadDidacticaId", references: "id")
   unidadDidacticaId: Int! @col(name: "unidad_didactica_id")
+}
+
+type GrupoModuloActividad @table(name: "grupo_modulo_actividades", singular: "grupoModuloActividad", plural: "grupoModuloActividades") @unique(fields: ["grupoModulo", "actividad", "segmento"]) @index(fields: ["grupoModuloId"]) @index(fields: ["actividadId"]) {
+  id: Int! @col(dataType: "serial")
+  segmento: Int! @default(value: 1)
+  inicio: Timestamp!
+  fin: Timestamp!
+  grupoModulo: GrupoModulo! @ref(fields: "grupoModuloId", references: "id")
+  grupoModuloId: Int! @col(name: "grupo_modulo_id")
+  actividad: Actividad! @ref(fields: "actividadId", references: "id")
+  actividadId: Int! @col(name: "actividad_id")
+  evento: Evento @ref(fields: "eventoId", references: "id")
+  eventoId: Int @col(name: "evento_id")
 }
 
 type EfsrtPppPractica @table(name: "efsrt_ppp_practicas", singular: "efsrtPppPractica", plural: "efsrtPppPracticas") @unique(fields: ["grupoModulo", "numero"]) @index(fields: ["grupoModuloId"]) {

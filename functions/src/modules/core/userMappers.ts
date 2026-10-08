@@ -574,6 +574,9 @@ export function buildAprendizajeDataFromInput(input: Record<string, unknown>): D
 
 export function buildActividadDataFromInput(input: Record<string, unknown>): DataConnectActividadInput {
   return compactUndefined({
+    moduloId: toNumberOrNull(input.moduloId),
+    numeroSesion: toNumberOrNull(input.numeroSesion),
+    orden: toNumberOrNull(input.orden),
     nombre: asNullableString(input.nombre),
     descripcion: asNullableString(input.descripcion),
     proposito: asNullableString(input.proposito),

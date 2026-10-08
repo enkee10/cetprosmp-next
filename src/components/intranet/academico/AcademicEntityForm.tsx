@@ -10,14 +10,22 @@ import {
   FormControl,
   FormControlLabel,
   InputLabel,
+  IconButton,
   MenuItem,
   Select,
   TextField,
+  Stack,
+  Tooltip,
+  Typography,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 
-export type AcademicFieldType = 'text' | 'number' | 'number-list' | 'textarea' | 'timestamp' | 'date' | 'select' | 'multi-select' | 'boolean';
+export type AcademicFieldType = 'text' | 'number' | 'number-list' | 'string-list' | 'textarea' | 'timestamp' | 'date' | 'select' | 'multi-select' | 'boolean';
 
 export interface AcademicSelectOption {
   value: string | number;
@@ -56,6 +64,7 @@ type EntityData = Record<string, unknown>;
 function formatInitialValue(value: unknown, type?: AcademicFieldType) {
   if (value === null || value === undefined) return '';
   if (type === 'boolean') return value === true ? 'true' : 'false';
+  if (type === 'string-list' && Array.isArray(value)) return JSON.stringify(value.map(item => typeof item === 'string' ? item : String(item?.texto ?? '')));
   if ((type === 'number-list' || type === 'multi-select') && Array.isArray(value)) return value.join(',');
   if (type === 'date' && typeof value === 'string') return value.slice(0, 10);
   if (type === 'timestamp' && typeof value === 'string') return value.slice(0, 16);
@@ -63,9 +72,11 @@ function formatInitialValue(value: unknown, type?: AcademicFieldType) {
 }
 
 function buildPayload(fields: AcademicFieldConfig[], values: Record<string, string>) {
-  return fields.reduce<Record<string, string | number | number[] | boolean | null>>((payload, field) => {
+  return fields.reduce<Record<string, string | number | number[] | string[] | boolean | null>>((payload, field) => {
     const raw = values[field.name]?.trim() ?? '';
-    if (field.type === 'number') {
+    if (field.type === 'string-list') {
+      payload[field.name] = (JSON.parse(raw || '[]') as string[]).map(item => item.trim()).filter(Boolean);
+    } else if (field.type === 'number') {
       payload[field.name] = raw ? Number(raw) : null;
     } else if (field.type === 'number-list' || field.type === 'multi-select') {
       payload[field.name] = raw
@@ -252,6 +263,36 @@ export function AcademicEntityForm({
 
       <form onSubmit={handleSubmit}>
         {fields.map((field) => {
+          if (field.type === 'string-list') {
+            const items = JSON.parse(values[field.name] || '[]') as string[];
+            const updateItems = (next: string[]) => setValues(prev => ({ ...prev, [field.name]: JSON.stringify(next) }));
+            const move = (index: number, offset: number) => {
+              const next = items.slice();
+              [next[index], next[index + offset]] = [next[index + offset], next[index]];
+              updateItems(next);
+            };
+            return (
+              <Box key={field.name} sx={{ mt: 2, mb: 1 }}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Typography component="h3" variant="subtitle2">{field.label}</Typography>
+                  <Tooltip title="Agregar elemento"><IconButton aria-label={`Agregar ${field.label}`} disabled={loading} onClick={() => updateItems([...items, ''])}><AddIcon /></IconButton></Tooltip>
+                </Stack>
+                <Stack spacing={1}>
+                  {items.map((item, index) => (
+                    <Stack key={index} direction="row" alignItems="center" spacing={0.5}>
+                      <TextField fullWidth multiline size="small" label={`${field.label} ${index + 1}`} value={item} disabled={loading}
+                        onChange={event => updateItems(items.map((text, i) => i === index ? event.target.value : text))} />
+                      <Stack>
+                        <Tooltip title="Subir"><span><IconButton size="small" aria-label="Subir elemento" disabled={loading || index === 0} onClick={() => move(index, -1)}><ArrowUpwardIcon fontSize="small" /></IconButton></span></Tooltip>
+                        <Tooltip title="Bajar"><span><IconButton size="small" aria-label="Bajar elemento" disabled={loading || index === items.length - 1} onClick={() => move(index, 1)}><ArrowDownwardIcon fontSize="small" /></IconButton></span></Tooltip>
+                      </Stack>
+                      <Tooltip title="Eliminar"><IconButton size="small" aria-label="Eliminar elemento" disabled={loading} onClick={() => updateItems(items.filter((_, i) => i !== index))}><DeleteOutlineIcon fontSize="small" /></IconButton></Tooltip>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Box>
+            );
+          }
           if (field.type === 'select' || field.type === 'multi-select') {
             const multiple = field.type === 'multi-select';
             const options = (selectOptions[field.name] ?? []).filter(option =>

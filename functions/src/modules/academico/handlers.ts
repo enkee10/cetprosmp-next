@@ -1,4 +1,5 @@
 import { https } from "firebase-functions/v1";
+import { parseActividadList, saveActividadLists } from "./actividadLists.js";
 import {
   buildActividadDataFromInput,
   buildAprendizajeDataFromInput,
@@ -186,9 +187,12 @@ const GET_APRENDIZAJE_QUERY = `
 
 const LIST_ACTIVIDADES_QUERY = `
   query ListActividadesManual {
-    actividads(limit: 500) {
+    actividads(limit: 5000) {
       id
       nombre
+      moduloId
+      numeroSesion
+      orden
       descripcion
       proposito
       ambiente
@@ -207,6 +211,11 @@ const GET_ACTIVIDAD_QUERY = `
     actividad(id: $id) {
       id
       nombre
+      moduloId
+      numeroSesion
+      orden
+      contenidos: actividadContenidos_on_actividad(orderBy:{orden:ASC},limit:200) { id orden texto }
+      materiales: actividadMateriales_on_actividad(orderBy:{orden:ASC},limit:200) { id orden texto }
       descripcion
       proposito
       ambiente
@@ -1908,8 +1917,13 @@ export const createOrUpdateActividad = https.onCall(async (data, context) => {
 
   const actividadId = toNumberOrNull(data?.id);
   await requirePermission(context, "actividades", actividadId ? "edit" : "create");
+  const contenidos = parseActividadList(data?.contenidos, "contenidos");
+  const materiales = parseActividadList(data?.materiales, "materiales");
 
   try {
+    if (contenidos !== undefined || materiales !== undefined) {
+      return { id: await saveActividadLists(payload, actividadId ?? null, contenidos, materiales) };
+    }
     if (actividadId) {
       const updated = await dataConnect.executeGraphql<
         { actividad_update: unknown },

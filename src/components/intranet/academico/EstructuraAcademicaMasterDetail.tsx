@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { DragEvent, ReactNode } from 'react';
+import SesionItemList, { type SesionListItem } from './SesionItemList';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   Chip,
@@ -12,10 +13,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   FormControl,
   IconButton,
-  InputAdornment,
   InputLabel,
   List,
   ListItemButton,
@@ -31,11 +30,32 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import LinkIcon from '@mui/icons-material/Link';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import SearchIcon from '@mui/icons-material/Search';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
+import { isSuperUserEmail, isSuperUserRole, isSuperUserTitle } from '@/lib/intranetPermissions';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
+import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
+import {
+  curricularCareerOptions,
+  curricularPlanCatalog,
+  curricularPlanOptions,
+  curricularTitle,
+  filterCurricularModules,
+  type CurricularPlan,
+} from '@/lib/curricularFilters';
+
+interface SesionDetalle {
+  id: number;
+  nombre: string | null;
+  numeroSesion: number | null;
+  duracion?: number | null;
+  fecha?: string | null;
+  orden: number | null;
+  contenidos: Array<{ id: number; orden: number; texto: string }>;
+  materiales: Array<{ id: number; orden: number; texto: string }>;
+}
 
 interface IndicadorDetalle {
   id: number;
@@ -43,6 +63,7 @@ interface IndicadorDetalle {
   sigla: string | null;
   orden: number | null;
   capacidadTerminalId: number | null;
+  aprendizajes?: Array<{ id: number; descripcion: string | null; actividades: SesionDetalle[] }>;
 }
 
 interface CapacidadDetalle {
@@ -75,7 +96,7 @@ interface ModuloDetalle {
   tituloComercial: string | null;
   orden: number | null;
   descripcion: string | null;
-  competencias: Array<{ id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD' }>;
+  competencias: Array<{ id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; orden?: number | null }>;
   horas: number | null;
   creditos: number | null;
   metas: number | null;
@@ -85,29 +106,15 @@ interface ModuloDetalle {
   planModuloId?: number | null;
   planId: number | null;
   planIds?: number[];
-  plan: {
-    id?: number | null;
-    planEstudio?: string | null;
-    tituloComercial?: string | null;
-    carrera?: {
-      id?: number | null;
-      nombre?: string | null;
-      tituloComercial?: string | null;
-      especialidad?: {
-        id?: number | null;
-        titulo?: string | null;
-        tituloComercial?: string | null;
-        orden?: number | null;
-      } | null;
-    } | null;
-  } | null;
+  plan: CurricularPlan | null;
+  planModulos?: Array<{ id: number; planId: number; orden?: number | null; plan?: CurricularPlan | null }>;
   unidadesDidacticas: UnidadDidacticaDetalle[];
 }
 
-type EditableAcademicEntity = 'modulo' | 'unidadDidactica' | 'competenciaUnidadDidactica' | 'capacidadTerminal' | 'indicadorCapacidad';
+type EditableAcademicEntity = 'modulo' | 'competencia' | 'actividad' | 'aprendizaje' | 'actividadContenido' | 'actividadMaterial' | 'unidadDidactica' | 'competenciaUnidadDidactica' | 'capacidadTerminal' | 'indicadorCapacidad';
 type EditableValueType = 'text' | 'number' | 'boolean';
 type EditableCellValue = string | number | boolean | null;
-type ReorderAcademicEntity = 'competenciaUnidadDidactica' | 'capacidadTerminal' | 'indicadorCapacidad';
+type ReorderAcademicEntity = 'modulo' | 'competencia' | 'actividad' | 'competenciaUnidadDidactica' | 'capacidadTerminal' | 'indicadorCapacidad';
 
 interface EstructuraOpciones {
   modulosComunes: Array<{
@@ -133,12 +140,7 @@ interface EditableCellTarget {
   valueType: EditableValueType;
 }
 
-interface DetailRow {
-  label: string;
-  value: string | number | boolean | null | undefined;
-  lines?: number;
-  target?: EditableCellTarget;
-}
+
 
 type DragState = {
   entity: ReorderAcademicEntity;
@@ -150,15 +152,6 @@ type DropPosition = 'before' | 'after';
 type DropIndicatorState = DragState & {
   position: DropPosition;
 };
-
-function normalizeText(value: unknown) {
-  return String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 function displayText(value: string | number | boolean | null | undefined) {
   if (value === null || value === undefined || value === '') return '-';
@@ -203,20 +196,9 @@ function carreraName(modulo: ModuloDetalle | null | undefined) {
   return modulo?.plan?.carrera?.tituloComercial || modulo?.plan?.carrera?.nombre || '';
 }
 
-function countCapacidades(unidades: UnidadDidacticaDetalle[]) {
-  return unidades.reduce((total, unidad) => total + unidad.capacidadesTerminales.length, 0);
-}
 
-function countIndicadores(unidades: UnidadDidacticaDetalle[]) {
-  return unidades.reduce(
-    (total, unidad) =>
-      total + unidad.capacidadesTerminales.reduce(
-        (subtotal, capacidad) => subtotal + capacidad.indicadoresCapacidad.length,
-        0,
-      ),
-    0,
-  );
-}
+
+
 
 function moveItem<T>(items: T[], fromIndex: number, toIndex: number, position: DropPosition) {
   if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return items;
@@ -229,7 +211,7 @@ function moveItem<T>(items: T[], fromIndex: number, toIndex: number, position: D
   return next;
 }
 
-function withSequentialOrder<T extends { orden: number | null }>(items: T[]) {
+function withSequentialOrder<T extends { orden?: number | null }>(items: T[]) {
   return items.map((item, index) => ({ ...item, orden: index + 1 }));
 }
 
@@ -247,7 +229,7 @@ function reorderById<T>(
 
 function getDropPosition(event: DragEvent<HTMLElement>): DropPosition {
   const rect = event.currentTarget.getBoundingClientRect();
-  return event.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
+  return event.clientX < rect.left + rect.width / 2 ? 'before' : 'after';
 }
 
 function DragHandle({
@@ -283,6 +265,26 @@ function applyEditableCellUpdate(
   target: EditableCellTarget,
   value: EditableCellValue,
 ): ModuloDetalle[] {
+  if (['competencia', 'actividad', 'aprendizaje', 'actividadContenido'].includes(target.entity)) {
+    return items.map(modulo => ({ ...modulo,
+      competencias: modulo.competencias.map(item => target.entity === 'competencia' && item.id === target.id ? { ...item, [target.field]: value } as typeof item : item),
+      unidadesDidacticas: modulo.unidadesDidacticas.map(unidad => ({ ...unidad,
+        competencia: target.entity === 'competencia' && unidad.competencia.id === target.id ? { ...unidad.competencia, [target.field]: value } as typeof unidad.competencia : unidad.competencia,
+        capacidadesTerminales: unidad.capacidadesTerminales.map(capacidad => ({ ...capacidad,
+          indicadoresCapacidad: capacidad.indicadoresCapacidad.map(indicador => ({ ...indicador,
+            aprendizajes: indicador.aprendizajes?.map(aprendizaje => ({ ...aprendizaje,
+              descripcion: target.entity === 'aprendizaje' && aprendizaje.id === target.id ? value as string : aprendizaje.descripcion,
+              actividades: aprendizaje.actividades.map(actividad => ({ ...actividad,
+                ...(target.entity === 'actividad' && actividad.id === target.id ? { [target.field]: value } : {}),
+                contenidos: actividad.contenidos.map(item => target.entity === 'actividadContenido' && item.id === target.id ? { ...item, texto: value as string } : item),
+                materiales: actividad.materiales.map(item => target.entity === 'actividadMaterial' && item.id === target.id ? { ...item, texto: value as string } : item),
+              })),
+            })),
+          })),
+        })),
+      })),
+    }));
+  }
   return items.map((modulo) => {
     if (target.entity === 'modulo' && modulo.id === target.id) {
       return { ...modulo, [target.field]: value } as ModuloDetalle;
@@ -338,6 +340,14 @@ function isCommonUnidadTarget(items: ModuloDetalle[], target: EditableCellTarget
         ) {
           return true;
         }
+        for (const indicador of capacidad.indicadoresCapacidad) for (const aprendizaje of indicador.aprendizajes ?? []) {
+          if (target.entity === 'aprendizaje' && aprendizaje.id === target.id) return true;
+          for (const actividad of aprendizaje.actividades) {
+            if (target.entity === 'actividad' && actividad.id === target.id) return true;
+            if (target.entity === 'actividadContenido' && actividad.contenidos.some(item => item.id === target.id)) return true;
+            if (target.entity === 'actividadMaterial' && actividad.materiales.some(item => item.id === target.id)) return true;
+          }
+        }
       }
     }
   }
@@ -377,6 +387,8 @@ function EditableValue({
         await onSave(target, nextValue);
       }
       setEditing(false);
+    } catch {
+      // The parent displays the save error; keep the draft available for correction.
     } finally {
       committingRef.current = false;
     }
@@ -447,42 +459,28 @@ function EditableValue({
   );
 }
 
-function DetailFields({
-  rows,
-  onSave,
-  readOnly = false,
-}: {
-  rows: DetailRow[];
+function EditableCompetenciaTipo({ id, tipo, readOnly, onSave }: {
+  id: number;
+  tipo: 'TECNICA' | 'EMPLEABILIDAD';
+  readOnly: boolean;
   onSave: (target: EditableCellTarget, value: EditableCellValue) => Promise<void>;
-  readOnly?: boolean;
 }) {
-  return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(82px, 0.42fr) minmax(0, 1fr)',
-        gap: 0.75,
-        px: 1.25,
-        py: 1,
-      }}
-    >
-      {rows.map((row) => (
-        <Box key={row.label} sx={{ display: 'contents' }}>
-          <Typography variant="caption" color="text.secondary">
-            {row.label}
-          </Typography>
-          <EditableValue
-            value={row.value ?? null}
-            target={row.target}
-            lines={row.lines}
-            onSave={onSave}
-            readOnly={readOnly}
-          />
-        </Box>
-      ))}
-    </Box>
-  );
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  if (editing && !readOnly) return <Select size="small" value={tipo} disabled={saving} onClick={event => event.stopPropagation()} onClose={() => { if (!saving) setEditing(false); }} onChange={async event => {
+    setSaving(true);
+    try {
+      await onSave({ entity: 'competencia', id, field: 'tipo', valueType: 'text' }, event.target.value);
+      setEditing(false);
+    } catch { /* The parent displays the validation error. */ }
+    finally { setSaving(false); }
+  }}>
+    <MenuItem value="TECNICA">Técnica</MenuItem><MenuItem value="EMPLEABILIDAD">Para la empleabilidad</MenuItem>
+  </Select>;
+  return <Chip size="small" sx={{ mt: 1 }} title={readOnly ? undefined : 'Doble clic para editar'} label={tipo === 'TECNICA' ? 'Técnica' : 'Para la empleabilidad'} onDoubleClick={event => { if (!readOnly) { event.stopPropagation(); setEditing(true); } }} />;
 }
+
+
 
 function EditableMetricChip({
   value,
@@ -590,55 +588,76 @@ function Panel({
   title,
   count,
   children,
-  details,
   actions,
+  cardWidth = { xs: 240, sm: 300 },
 }: {
   title: string;
   count: number;
   children: ReactNode;
-  details?: ReactNode;
   actions?: ReactNode;
+  cardWidth?: { xs: number; sm: number };
 }) {
   return (
     <Box
+      component="section"
+      aria-label={title}
       sx={{
         minWidth: 0,
         border: '1px solid',
         borderColor: 'divider',
         bgcolor: 'background.paper',
         display: 'flex',
-        flexDirection: 'column',
-        minHeight: { xs: 360, lg: 'calc(100vh - 220px)' },
+        flexDirection: 'row',
+        borderRadius: 1,
+        overflow: 'hidden',
       }}
     >
       <Box
         sx={{
-          px: 1.25,
+          px: 0.5,
           py: 1,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 1,
-          borderBottom: '1px solid',
+          justifyContent: 'center',
+          gap: 0.5,
+          flex: '0 0 80px',
+          borderRight: '1px solid',
           borderColor: 'divider',
-          minHeight: 48,
+          minHeight: 144,
+          bgcolor: 'action.hover',
         }}
       >
-        <Typography variant="subtitle2" sx={{ minWidth: 0 }}>
+        <Typography component="h2" variant="subtitle2" sx={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', whiteSpace: 'nowrap' }}>
           {title}
         </Typography>
-        <Stack direction="row" spacing={0.5} alignItems="center">
+        <Stack spacing={0.5} alignItems="center" sx={{ '& .MuiIconButton-root': { flexShrink: 0 } }}>
           {actions}
           <Chip size="small" label={count} />
         </Stack>
       </Box>
-      <Box sx={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>{children}</Box>
-      {details ? (
-        <>
-          <Divider />
-          {details}
-        </>
-      ) : null}
+      <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
+        <Box
+          role="group"
+          aria-label={`${title}: elementos`}
+          tabIndex={0}
+          sx={{
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'var(--mui-palette-divider, #bdbdbd) transparent',
+            '&::-webkit-scrollbar': { height: 6 },
+            '&::-webkit-scrollbar-thumb': { bgcolor: 'divider', borderRadius: 3 },
+            '&::-webkit-scrollbar-track': { bgcolor: 'transparent' },
+            '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: -2 },
+            '& > .MuiList-root': { display: 'flex', flexWrap: 'nowrap', alignItems: 'stretch', gap: 1, p: 1, width: 'max-content', minWidth: '100%', boxSizing: 'border-box' },
+            '& > .MuiList-root > .MuiListItemButton-root, & > .MuiList-root > .MuiListItem-root': { flex: '0 0 auto', width: cardWidth, minWidth: 0, border: '1px solid', borderColor: 'divider', borderRadius: 1 },
+            '& > .MuiList-root > [data-empleabilidad="true"]': { borderWidth: 2, borderColor: 'text.secondary' },
+            '& .MuiListItemText-root': { minWidth: 0 },
+          }}
+        >
+          {children}
+        </Box>
+      </Box>
     </Box>
   );
 }
@@ -647,13 +666,12 @@ type EstructuraAcademicaCallableName = 'listEstructuraAcademica' | 'listEstructu
 
 export default function EstructuraAcademicaMasterDetail({
   callableName = 'listEstructuraAcademica',
-  title = 'Estructura Academica',
+  title = 'Programación Curricular',
   readOnly = false,
   canCreate = !readOnly,
   canEdit = !readOnly,
   canDelete = !readOnly,
-  showSearch = true,
-  errorMessage = 'No se pudo cargar la estructura academica. Verifica que tu usuario tenga permiso administrativo.',
+  errorMessage = 'No se pudo cargar la programación curricular. Verifica que tu usuario tenga permiso administrativo.',
 }: {
   callableName?: EstructuraAcademicaCallableName;
   title?: string;
@@ -661,24 +679,33 @@ export default function EstructuraAcademicaMasterDetail({
   canCreate?: boolean;
   canEdit?: boolean;
   canDelete?: boolean;
-  showSearch?: boolean;
   errorMessage?: string;
 }) {
+  const { user } = useAuth();
+  const showToolbar = Boolean(user && user.profileResolved !== false && (
+    Number(user.level) > 200
+    || isSuperUserRole(user.role)
+    || isSuperUserTitle(user.roleTitle)
+    || isSuperUserEmail(user.email)
+  ));
   const [modulos, setModulos] = useState<ModuloDetalle[]>([]);
+  const [catalogMaterials, setCatalogMaterials] = useState<Array<{ id: number; nombre: string }>>([]);
+  const [planes, setPlanes] = useState<CurricularPlan[]>([]);
   const [opciones, setOpciones] = useState<EstructuraOpciones>({ modulosComunes: [], unidadesComunes: [] });
-  const [resolvedTitle, setResolvedTitle] = useState(title);
+  const [resolvedTitle, setResolvedTitle] = useState(curricularTitle(title));
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [selectedPlanId, setSelectedPlanId] = useState('all');
+  const [selectedPlanKeys, setSelectedPlanKeys] = useState<string[]>(['all']);
+  const [selectedCareerKey, setSelectedCareerKey] = useState('all');
   const [selectedModuloId, setSelectedModuloId] = useState<number | null>(null);
   const [selectedCompetenciaId, setSelectedCompetenciaId] = useState<number | null>(null);
   const [selectedUnidadId, setSelectedUnidadId] = useState<number | null>(null);
   const [selectedCapacidadId, setSelectedCapacidadId] = useState<number | null>(null);
   const [selectedIndicadorId, setSelectedIndicadorId] = useState<number | null>(null);
+  const [selectedSesionId, setSelectedSesionId] = useState<number | null>(null);
   const [reuseDialog, setReuseDialog] = useState<{ kind: ReuseDialogKind; value: string } | null>(null);
-  const [dragState, setDragState] = useState<DragState | null>(null);
+  const [, setDragState] = useState<DragState | null>(null);
   const [dropIndicator, setDropIndicator] = useState<DropIndicatorState | null>(null);
   const dragStateRef = useRef<DragState | null>(null);
   const dropIndicatorRef = useRef<DropIndicatorState | null>(null);
@@ -697,6 +724,8 @@ export default function EstructuraAcademicaMasterDetail({
       }
       const listEstructuraAcademica = httpsCallable<undefined, {
         modulos?: ModuloDetalle[];
+        planes?: CurricularPlan[];
+        materiales?: Array<{ id: number; nombre: string }>;
         opciones?: EstructuraOpciones;
         title?: string | null;
       }>(
@@ -705,8 +734,10 @@ export default function EstructuraAcademicaMasterDetail({
       );
       const result = await listEstructuraAcademica();
       setModulos(result.data.modulos || []);
+      setPlanes(result.data.planes || []);
+      setCatalogMaterials(result.data.materiales || []);
       setOpciones(result.data.opciones || { modulosComunes: [], unidadesComunes: [] });
-      setResolvedTitle(result.data.title || title);
+      setResolvedTitle(curricularTitle(result.data.title || title));
       setError(null);
     } catch (err) {
       console.error('Error fetching academic structure: ', err);
@@ -732,12 +763,12 @@ export default function EstructuraAcademicaMasterDetail({
         { id: number }
       >(functions, 'updateEstructuraAcademicaCell');
       await updateEstructuraAcademicaCell({ ...target, value });
-      if (target.entity === 'modulo' && target.field === 'horas') await fetchEstructura();
+      if ((target.entity === 'modulo' && target.field === 'horas') || (target.entity === 'competencia' && target.field === 'tipo')) await fetchEstructura();
       else setModulos((current) => applyEditableCellUpdate(current, target, value));
       setError(null);
     } catch (err) {
       console.error('Error saving academic structure cell: ', err);
-      setError('No se pudo guardar la celda. Verifica tus permisos y el valor ingresado.');
+      setError(err instanceof Error ? err.message : 'No se pudo guardar la celda.');
       throw err;
     }
   }, [allowEdit, auth, fetchEstructura, functions, modulos]);
@@ -745,43 +776,29 @@ export default function EstructuraAcademicaMasterDetail({
 
 
   useEffect(() => {
-    setResolvedTitle(title);
+    setResolvedTitle(curricularTitle(title));
   }, [title]);
 
   useEffect(() => {
     void fetchEstructura();
   }, [fetchEstructura]);
 
-  const planOptions = useMemo(() => {
-    const byId = new Map<number, string>();
-    modulos.forEach((modulo) => {
-      const id = modulo.planId ?? modulo.plan?.id ?? null;
-      if (!id || byId.has(id)) return;
-      byId.set(id, planName(modulo) || `Plan ${id}`);
-    });
-    return Array.from(byId.entries())
-      .map(([id, label]) => ({ id, label }))
-      .sort((a, b) => a.label.localeCompare(b.label, 'es', { numeric: true }) || a.id - b.id);
-  }, [modulos]);
+  const planCatalog = useMemo(() => curricularPlanCatalog(planes, modulos), [planes, modulos]);
+  const planOptions = useMemo(() => curricularPlanOptions(planCatalog), [planCatalog]);
+  const careerOptions = useMemo(() => curricularCareerOptions(planCatalog, selectedPlanKeys), [planCatalog, selectedPlanKeys]);
+  const selectedCareer = careerOptions.find(option => option.key === selectedCareerKey) ?? null;
+  const filteredModulos = useMemo(() => filterCurricularModules(modulos, planCatalog, selectedPlanKeys, selectedCareer),
+    [modulos, planCatalog, selectedPlanKeys, selectedCareer]);
 
-  const filteredModulos = useMemo(() => {
-    const term = normalizeText(search);
-    const byPlan = selectedPlanId === 'all'
-      ? modulos
-      : modulos.filter((modulo) => String(modulo.planId ?? modulo.plan?.id ?? '') === selectedPlanId);
-    if (!term) return byPlan;
+  useEffect(() => {
+    if (loading || selectedPlanKeys.includes('all')) return;
+    const available = selectedPlanKeys.filter(key => planOptions.some(option => option.key === key));
+    if (available.length !== selectedPlanKeys.length) setSelectedPlanKeys(available.length ? available : ['all']);
+  }, [loading, planOptions, selectedPlanKeys]);
 
-    return byPlan.filter((modulo) => {
-      const haystack = normalizeText([
-        moduloName(modulo),
-        modulo.slug,
-        planName(modulo),
-        carreraName(modulo),
-        modulo.unidadesDidacticas.map((unidad) => unidad.nombre).join(' '),
-      ].join(' '));
-      return haystack.includes(term);
-    });
-  }, [modulos, search, selectedPlanId]);
+  useEffect(() => {
+    if (selectedCareerKey !== 'all' && !selectedCareer) setSelectedCareerKey('all');
+  }, [selectedCareer, selectedCareerKey]);
 
   const selectedModulo = useMemo(
     () => filteredModulos.find((modulo) => modulo.id === selectedModuloId) ?? filteredModulos[0] ?? null,
@@ -789,24 +806,46 @@ export default function EstructuraAcademicaMasterDetail({
   );
 
   const todasUnidades = useMemo(() => selectedModulo?.unidadesDidacticas ?? [], [selectedModulo]);
-  const unidades = useMemo(() => selectedCompetenciaId == null ? todasUnidades
-    : todasUnidades.filter(unidad => unidad.competenciaId === selectedCompetenciaId), [todasUnidades, selectedCompetenciaId]);
+  const competencias = useMemo(() => (selectedModulo?.competencias ?? []).slice().sort((a, b) =>
+    Number(a.tipo === 'EMPLEABILIDAD') - Number(b.tipo === 'EMPLEABILIDAD') || (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id,
+  ), [selectedModulo]);
+  const selectedCompetencia = competencias.find(competencia => competencia.id === selectedCompetenciaId) ?? competencias[0] ?? null;
+  const unidades = useMemo(() => todasUnidades.filter(unidad => unidad.competenciaId === selectedCompetencia?.id),
+    [todasUnidades, selectedCompetencia?.id]);
   useEffect(() => { setSelectedCompetenciaId(null); }, [selectedModulo?.id]);
   const selectedUnidad = useMemo(
     () => unidades.find((unidad) => unidad.id === selectedUnidadId) ?? unidades[0] ?? null,
     [selectedUnidadId, unidades],
   );
   const selectedUnidadIsComun = Boolean(selectedUnidad?.comun);
-  const capacidades = selectedUnidad?.capacidadesTerminales ?? [];
+  const capacidades = useMemo(() => selectedUnidad?.capacidadesTerminales ?? [], [selectedUnidad]);
   const selectedCapacidad = useMemo(
     () => capacidades.find((capacidad) => capacidad.id === selectedCapacidadId) ?? capacidades[0] ?? null,
     [capacidades, selectedCapacidadId],
   );
-  const indicadores = selectedCapacidad?.indicadoresCapacidad ?? [];
+  const indicadores = useMemo(() => selectedCapacidad?.indicadoresCapacidad ?? [], [selectedCapacidad]);
   const selectedIndicador = useMemo(
     () => indicadores.find((indicador) => indicador.id === selectedIndicadorId) ?? indicadores[0] ?? null,
     [indicadores, selectedIndicadorId],
   );
+  const sesiones = useMemo(() => (selectedIndicador?.aprendizajes ?? []).flatMap(aprendizaje =>
+    (aprendizaje.actividades ?? []).map(actividad => ({ ...actividad, aprendizajeId: aprendizaje.id, aprendizaje: aprendizaje.descripcion })),
+  ).sort((a, b) => (a.orden ?? a.numeroSesion ?? a.id) - (b.orden ?? b.numeroSesion ?? b.id) || a.id - b.id), [selectedIndicador]);
+
+  const selectedSesion = sesiones.find(item => item.id === selectedSesionId) ?? sesiones[0] ?? null;
+  const materialOptions = useMemo(() => catalogMaterials.map(item => ({ id: item.id, orden: 0, texto: item.nombre })), [catalogMaterials]);
+  const saveSesionItem = useCallback(async (actividadId: number, kind: 'contenido' | 'material', action: 'add' | 'remove' | 'reorder', data: { texto?: string; materialId?: number; itemId?: number; items?: Array<{ id: number; orden: number }> }) => {
+    if (!allowEdit) throw new Error('No tienes permiso para editar.');
+    const callable = httpsCallable<Record<string, unknown>, { items: SesionListItem[] }>(functions, 'saveEstructuraAcademicaSesionItem');
+    const result = await callable({ actividadId, kind, action, ...data });
+    if (kind === 'material') setCatalogMaterials(current => {
+      const byId = new Map(current.map(item => [item.id, item]));
+      for (const item of result.data.items) if (item.materialId) byId.set(item.materialId, { id: item.materialId, nombre: item.texto });
+      return [...byId.values()].sort((a,b) => a.nombre.localeCompare(b.nombre, 'es'));
+    });
+    const field = kind === 'contenido' ? 'contenidos' : 'materiales';
+    setModulos(current => current.map(modulo => ({ ...modulo, unidadesDidacticas: modulo.unidadesDidacticas.map(unidad => ({ ...unidad, capacidadesTerminales: unidad.capacidadesTerminales.map(capacidad => ({ ...capacidad, indicadoresCapacidad: capacidad.indicadoresCapacidad.map(indicador => ({ ...indicador, aprendizajes: indicador.aprendizajes?.map(aprendizaje => ({ ...aprendizaje, actividades: aprendizaje.actividades.map(actividad => actividad.id === actividadId ? { ...actividad, [field]: result.data.items } : actividad) })) })) })) })) })));
+  }, [allowEdit, functions]);
 
   const reusableModulos = useMemo(
     () => opciones.modulosComunes.filter((modulo) => !selectedModulo?.planId || !(modulo.planIds ?? []).includes(selectedModulo.planId)),
@@ -827,12 +866,16 @@ export default function EstructuraAcademicaMasterDetail({
         await auth.currentUser.getIdToken(true);
       }
       const callable = httpsCallable<Record<string, unknown>, { id?: number }>(functions, callableName);
-      await callable(payload);
+      const result = await callable(payload);
       await fetchEstructura();
+      if (callableName === 'createEstructuraAcademicaItem' && result.data.id) {
+        if (payload.entity === 'competencia') setSelectedCompetenciaId(result.data.id);
+        if (payload.entity === 'actividad') setSelectedSesionId(result.data.id);
+      }
       setError(null);
     } catch (err) {
       console.error(`Error running ${callableName}: `, err);
-      setError('No se pudo completar la accion. Verifica permisos o dependencias del registro.');
+      setError(err instanceof Error ? err.message : 'No se pudo completar la acción.');
     } finally {
       setActionLoading(false);
     }
@@ -889,10 +932,10 @@ export default function EstructuraAcademicaMasterDetail({
         ? {
             content: '""',
             position: 'absolute' as const,
-            left: 8,
-            right: 8,
-            top: 0,
-            height: 4,
+            left: 0,
+            top: 8,
+            bottom: 8,
+            width: 4,
             bgcolor: 'common.black',
             borderRadius: 999,
             zIndex: 2,
@@ -902,10 +945,10 @@ export default function EstructuraAcademicaMasterDetail({
         ? {
             content: '""',
             position: 'absolute' as const,
-            left: 8,
-            right: 8,
-            bottom: 0,
-            height: 4,
+            right: 0,
+            top: 8,
+            bottom: 8,
+            width: 4,
             bgcolor: 'common.black',
             borderRadius: 999,
             zIndex: 2,
@@ -917,6 +960,7 @@ export default function EstructuraAcademicaMasterDetail({
   const persistReorder = useCallback(async (
     entity: ReorderAcademicEntity,
     items: Array<{ id: number; orden: number | null }>,
+    scope?: { planId: number | null },
   ) => {
     if (!allowEdit) return;
     setActionLoading(true);
@@ -925,14 +969,16 @@ export default function EstructuraAcademicaMasterDetail({
         await auth.currentUser.getIdToken(true);
       }
       const reorderEstructuraAcademicaItems = httpsCallable<
-        { entity: ReorderAcademicEntity; items: Array<{ id: number; orden: number }> },
+        { entity: ReorderAcademicEntity; items: Array<{ id: number; orden: number }>; planId?: number | null; moduloId?: number; indicadorCapacidadId?: number },
         { updated: number }
       >(functions, 'reorderEstructuraAcademicaItems');
       await reorderEstructuraAcademicaItems({
         entity,
+        planId: selectedModulo?.planId, moduloId: selectedModulo?.id, indicadorCapacidadId: selectedIndicador?.id,
+        ...scope,
         items: items.map((item, index) => ({ id: item.id, orden: item.orden ?? index + 1 })),
       });
-      if (entity === 'competenciaUnidadDidactica') await fetchEstructura();
+      if (['modulo', 'competencia', 'actividad', 'competenciaUnidadDidactica'].includes(entity)) await fetchEstructura();
       setError(null);
     } catch (err) {
       console.error('Error reordering academic structure: ', err);
@@ -941,7 +987,42 @@ export default function EstructuraAcademicaMasterDetail({
     } finally {
       setActionLoading(false);
     }
-  }, [allowEdit, auth, fetchEstructura, functions]);
+  }, [allowEdit, auth, fetchEstructura, functions, selectedModulo?.id, selectedModulo?.planId, selectedIndicador?.id]);
+
+  const handleExtraDrop = (entity: 'modulo' | 'competencia' | 'actividad', targetId: number, position: DropPosition) => {
+    const drag = dragStateRef.current;
+    if (!allowEdit || actionLoading || drag?.entity !== entity || drag.id === targetId) return;
+    const list: Array<{ id: number; orden?: number | null }> = entity === 'modulo' ? filteredModulos.filter(item => item.planId === filteredModulos.find(row => row.id === targetId)?.planId) : entity === 'competencia' ? competencias : sesiones;
+    const source = list.find(item => item.id === drag.id);
+    const target = list.find(item => item.id === targetId);
+    if (!source || !target) return;
+    if (entity === 'competencia' && competencias.find(item => item.id === drag.id)?.tipo !== competencias.find(item => item.id === targetId)?.tipo) return;
+    if (entity === 'actividad' && selectedUnidadIsComun) return;
+    const ordered = withSequentialOrder(reorderById(list, drag.id, targetId, position, item => item.id));
+    void persistReorder(entity, ordered.map(item => ({ id: item.id, orden: item.orden })), entity === 'modulo' ? { planId: filteredModulos.find(item => item.id === targetId)?.planId ?? null } : undefined);
+  };
+  const extraDragProps = (entity: 'modulo' | 'competencia' | 'actividad', id: number, enabled: boolean) => ({
+    onDragOver: (event: DragEvent<HTMLElement>) => {
+      const source = dragStateRef.current;
+      const sameScope = entity === 'modulo' ? filteredModulos.find(item => item.id === source?.id)?.planId === filteredModulos.find(item => item.id === id)?.planId : entity === 'competencia' ? competencias.find(item => item.id === source?.id)?.tipo === competencias.find(item => item.id === id)?.tipo : true;
+      updateDropIndicator(event, entity, id, enabled && sameScope);
+    },
+    onDragLeave: () => clearDropIndicator(entity, id),
+    onDrop: (event: DragEvent<HTMLElement>) => { event.preventDefault(); if (enabled) handleExtraDrop(entity, id, dropIndicatorRef.current?.position ?? getDropPosition(event)); endDrag(); },
+    onDragEnd: endDrag,
+  });
+  const handleCreateCompetencia = () => {
+    if (selectedModulo) void runStructureAction('createEstructuraAcademicaItem', { entity: 'competencia', moduloId: selectedModulo.id, tipo: selectedCompetencia?.tipo ?? 'TECNICA' });
+  };
+  const handleDeleteCompetencia = () => {
+    if (selectedCompetencia && window.confirm('¿Eliminar esta competencia?')) void runStructureAction('detachEstructuraAcademicaItem', { entity: 'competencia', competenciaId: selectedCompetencia.id });
+  };
+  const handleCreateSesion = () => {
+    if (selectedModulo && selectedIndicador && !selectedUnidadIsComun) void runStructureAction('createEstructuraAcademicaItem', { entity: 'actividad', moduloId: selectedModulo.id, indicadorCapacidadId: selectedIndicador.id });
+  };
+  const handleDeleteSesion = () => {
+    if (selectedSesion && !selectedUnidadIsComun && window.confirm('¿Eliminar esta sesión con sus contenidos y materiales?')) void runStructureAction('detachEstructuraAcademicaItem', { entity: 'actividad', actividadId: selectedSesion.id });
+  };
 
   const handleUnidadDrop = useCallback((targetRelacionId: number, position: DropPosition) => {
     const currentDrag = dragStateRef.current;
@@ -950,18 +1031,22 @@ export default function EstructuraAcademicaMasterDetail({
     const source = unidades.find((unidad) => unidad.relacionId === currentDrag.id);
     const target = unidades.find((unidad) => unidad.relacionId === targetRelacionId);
     if (!source || !target || source.comun || target.comun) return;
-    const ordered = withSequentialOrder(reorderById(
+    const reordered = reorderById(
       unidades,
       currentDrag.id,
       targetRelacionId,
       position,
       (unidad) => unidad.relacionId,
+    );
+    let nextIndex = 0;
+    const ordered = withSequentialOrder(todasUnidades.map(unidad =>
+      unidad.competenciaId === selectedCompetencia?.id ? reordered[nextIndex++] : unidad,
     ));
     setModulos((current) => current.map((modulo) => (
       modulo.id === selectedModulo.id ? { ...modulo, unidadesDidacticas: ordered } : modulo
     )));
     void persistReorder('competenciaUnidadDidactica', ordered.map((unidad) => ({ id: unidad.relacionId, orden: unidad.orden })));
-  }, [persistReorder, selectedModulo?.id, unidades]);
+  }, [persistReorder, selectedModulo?.id, selectedCompetencia?.id, todasUnidades, unidades]);
 
   const handleCapacidadDrop = useCallback((targetCapacidadId: number, position: DropPosition) => {
     const currentDrag = dragStateRef.current;
@@ -1034,14 +1119,15 @@ export default function EstructuraAcademicaMasterDetail({
   }, [runStructureAction, selectedCapacidad?.id, selectedUnidadIsComun]);
 
   const handleDetachModulo = useCallback(() => {
-    if (!selectedModulo?.id || !selectedModulo.planModuloId) return;
+    if (!selectedModulo?.id || !selectedModulo.planId) return;
     if (!window.confirm('Se quitara este modulo del plan actual. Deseas continuar?')) return;
     void runStructureAction('detachEstructuraAcademicaItem', {
       entity: 'modulo',
       moduloId: selectedModulo.id,
+      planId: selectedModulo.planId,
       relacionId: selectedModulo.planModuloId,
     });
-  }, [runStructureAction, selectedModulo?.id, selectedModulo?.planModuloId]);
+  }, [runStructureAction, selectedModulo?.id, selectedModulo?.planId, selectedModulo?.planModuloId]);
 
   const handleDetachUnidad = useCallback(() => {
     if (!selectedUnidad?.relacionId) return;
@@ -1116,68 +1202,54 @@ export default function EstructuraAcademicaMasterDetail({
     if (selectedIndicadorId !== nextId) setSelectedIndicadorId(nextId);
   }, [selectedIndicador?.id, selectedIndicadorId]);
 
-  const totals = useMemo(() => ({
-    modulos: modulos.length,
-    unidades: modulos.reduce((total, modulo) => total + modulo.unidadesDidacticas.length, 0),
-    capacidades: modulos.reduce((total, modulo) => total + countCapacidades(modulo.unidadesDidacticas), 0),
-    indicadores: modulos.reduce((total, modulo) => total + countIndicadores(modulo.unidadesDidacticas), 0),
-  }), [modulos]);
-
   return (
     <IntranetListLayout
       message={error}
       messageSeverity="error"
       title={resolvedTitle}
-      commands={
+      showToolbar={showToolbar}
+      commands={showToolbar ? (
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25} alignItems={{ sm: 'center' }}>
-          {showSearch ? (
-            <TextField
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              size="small"
-              placeholder="Buscar"
-              sx={{ minWidth: { xs: '100%', sm: 320 } }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          ) : null}
-          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 220 } }}>
-            <InputLabel>Plan de Estudios</InputLabel>
-            <Select
-              label="Plan de Estudios"
-              value={selectedPlanId}
-              onChange={(event) => setSelectedPlanId(String(event.target.value))}
-              disabled={loading}
-            >
-              <MenuItem value="all">Todos</MenuItem>
-              {planOptions.map((option) => (
-                <MenuItem key={option.id} value={String(option.id)}>
-                  {option.label}
-                </MenuItem>
-              ))}
+          <MultiSelectWithActions
+            label="Plan de Estudios"
+            displayEmpty
+            value={selectedPlanKeys.includes('all') ? [] : selectedPlanKeys}
+            sx={{ minWidth: { xs: '100%', sm: 220 }, maxWidth: { sm: 400 } }}
+            fullWidth={false}
+            options={planOptions.map(option => ({ value: option.key, label: option.label }))}
+            allOption={{ value: 'all', label: 'Todos', isSelected: keys => keys.length === 0, getValue: () => [] }}
+            renderValue={keys => keys.length === 0 ? 'Todos' : keys.map(key => planOptions.find(option => option.key === key)?.label).filter(Boolean).join(', ')}
+            onChange={keys => {
+              const selected = keys.length ? keys : ['all'];
+              if (selected.length === selectedPlanKeys.length && selected.every(key => selectedPlanKeys.includes(key))) return;
+              setSelectedPlanKeys(selected);
+              setSelectedCareerKey('all');
+              setSelectedModuloId(null);
+              setSelectedCompetenciaId(null);
+              setSelectedUnidadId(null);
+              setSelectedCapacidadId(null);
+              setSelectedIndicadorId(null);
+            }}
+            disabled={loading}
+          />
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 300 } }}>
+            <InputLabel id="curricular-career-label">Carrera</InputLabel>
+            <Select labelId="curricular-career-label" label="Carrera" value={selectedCareer?.key ?? 'all'} disabled={loading}
+              onChange={event => {
+                setSelectedCareerKey(event.target.value);
+                setSelectedModuloId(null);
+                setSelectedCompetenciaId(null);
+                setSelectedUnidadId(null);
+                setSelectedCapacidadId(null);
+                setSelectedIndicadorId(null);
+              }}>
+              <MenuItem value="all">Todas</MenuItem>
+              {careerOptions.map(option => <MenuItem key={option.key} value={option.key}>{option.semester} {option.label}</MenuItem>)}
             </Select>
           </FormControl>
-          <Button
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-            onClick={() => void fetchEstructura()}
-            disabled={loading}
-          >
-            Actualizar
-          </Button>
-          <Stack direction="row" spacing={0.75} sx={{ flexWrap: 'wrap', rowGap: 0.75 }}>
-            <Chip size="small" label={`Modulos ${totals.modulos}`} />
-            <Chip size="small" label={`Unidades ${totals.unidades}`} />
-            <Chip size="small" label={`Capacidades ${totals.capacidades}`} />
-            <Chip size="small" label={`Indicadores ${totals.indicadores}`} />
-          </Stack>
+          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => void fetchEstructura()} disabled={loading}>Actualizar</Button>
         </Stack>
-      }
+      ) : undefined}
     >
       {loading ? (
         <Box sx={{ minHeight: 360, display: 'grid', placeItems: 'center' }}>
@@ -1185,19 +1257,16 @@ export default function EstructuraAcademicaMasterDetail({
         </Box>
       ) : filteredModulos.length === 0 ? (
         <Box sx={{ px: 1, pb: 2 }}>
-          <Alert severity="info">No hay registros para mostrar.</Alert>
+          <AutoDismissAlert severity="info">No hay registros para mostrar.</AutoDismissAlert>
         </Box>
       ) : (
         <Box
           sx={{
             px: 1,
             pb: 2,
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: 'minmax(0, 1fr)',
-              md: 'minmax(220px, 0.85fr) minmax(260px, 1fr)',
-              xl: 'minmax(240px, 0.9fr) minmax(260px, 1fr) minmax(280px, 1.05fr) minmax(280px, 1.05fr)',
-            },
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: 0,
             gap: 1.25,
             alignItems: 'stretch',
           }}
@@ -1213,47 +1282,13 @@ export default function EstructuraAcademicaMasterDetail({
                   </IconButton>
                 ) : null}
                 {allowDelete ? (
-                  <IconButton size="small" title="Quitar modulo del plan" color="error" disabled={actionLoading || !selectedModulo?.planModuloId} onClick={handleDetachModulo}>
+                  <IconButton size="small" title="Quitar modulo del plan" color="error" disabled={actionLoading || !selectedModulo?.planId} onClick={handleDetachModulo}>
                     <DeleteOutlineIcon fontSize="small" />
                   </IconButton>
                 ) : null}
               </>
             ) : undefined}
-            details={
-              selectedModulo ? (
-                <DetailFields
-                  onSave={saveEditableCell}
-                  readOnly={!allowEdit}
-                  rows={[
-                    {
-                      label: 'Titulo',
-                      value: selectedModulo.titulo,
-                      target: { entity: 'modulo', id: selectedModulo.id, field: 'titulo', valueType: 'text' },
-                    },
-                    ...selectedModulo.competencias.map(competencia => ({
-                      label: competencia.tipo === 'TECNICA' ? 'Competencia técnica' : 'Competencia para la empleabilidad',
-                      value: competencia.nombre,
-                      lines: 4,
-                    })),
-                    {
-                      label: 'Horas',
-                      value: selectedModulo.horas,
-                      target: { entity: 'modulo', id: selectedModulo.id, field: 'horas', valueType: 'number' },
-                    },
-                    {
-                      label: 'Creditos',
-                      value: selectedModulo.creditos,
-                      target: { entity: 'modulo', id: selectedModulo.id, field: 'creditos', valueType: 'number' },
-                    },
-                    {
-                      label: 'Metas',
-                      value: selectedModulo.metas,
-                      target: { entity: 'modulo', id: selectedModulo.id, field: 'metas', valueType: 'number' },
-                    },
-                  ]}
-                />
-              ) : undefined
-            }
+
           >
             <List dense disablePadding>
               {filteredModulos.map((modulo) => {
@@ -1261,6 +1296,7 @@ export default function EstructuraAcademicaMasterDetail({
                 return (
                   <ListItemButton
                     key={modulo.id}
+                    {...extraDragProps('modulo', modulo.id, allowEdit && !actionLoading)}
                     selected={selectedModulo?.id === modulo.id}
                     onClick={() => {
                       setSelectedModuloId(modulo.id);
@@ -1268,8 +1304,9 @@ export default function EstructuraAcademicaMasterDetail({
                       setSelectedCapacidadId(null);
                       setSelectedIndicadorId(null);
                     }}
-                    sx={{ alignItems: 'flex-start', py: 0.9, minHeight: 72 }}
+                    sx={{ alignItems: 'flex-start', py: 0.9, minHeight: 72, ...dropIndicatorSx('modulo', modulo.id) }}
                   >
+                    <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'modulo', id: modulo.id })} />
                     <ListItemText
                       primaryTypographyProps={{ component: 'div' }}
                       secondaryTypographyProps={{ component: 'div' }}
@@ -1289,9 +1326,9 @@ export default function EstructuraAcademicaMasterDetail({
                             {[planName(modulo), carreraName(modulo)].filter(Boolean).join(' / ') || `Plan ${modulo.planId ?? '-'}`}
                           </Typography>
                           <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
+                            <EditableMetricChip value={modulo.horas} target={{ entity: 'modulo', id: modulo.id, field: 'horas', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit} />
+                            <EditableMetricChip value={modulo.creditos} target={{ entity: 'modulo', id: modulo.id, field: 'creditos', valueType: 'number' }} prefix="Cr " onSave={saveEditableCell} readOnly={!allowEdit} />
                             <Chip size="small" label={`UD ${unidadCount}`} />
-                            <Chip size="small" label={`CAP ${countCapacidades(modulo.unidadesDidacticas)}`} />
-                            <Chip size="small" label={`IND ${countIndicadores(modulo.unidadesDidacticas)}`} />
                           </Stack>
                         </Stack>
                       }
@@ -1302,13 +1339,46 @@ export default function EstructuraAcademicaMasterDetail({
             </List>
           </Panel>
 
+          <Panel title="Competencia" count={competencias.length} actions={<>
+            {allowCreate && <IconButton size="small" title="Crear competencia" disabled={actionLoading || !selectedModulo} onClick={handleCreateCompetencia}><AddIcon fontSize="small" /></IconButton>}
+            {allowDelete && <IconButton size="small" title="Eliminar competencia" color="error" disabled={actionLoading || !selectedCompetencia} onClick={handleDeleteCompetencia}><DeleteOutlineIcon fontSize="small" /></IconButton>}
+          </>}>
+            {competencias.length === 0 ? <EmptyState label="Sin competencias." /> : (
+              <List dense disablePadding>
+                {competencias.map(competencia => (
+                  <ListItemButton
+                    key={competencia.id}
+                    {...extraDragProps('competencia', competencia.id, allowEdit && !actionLoading)}
+                    data-empleabilidad={competencia.tipo === 'EMPLEABILIDAD' ? 'true' : undefined}
+                    selected={selectedCompetencia?.id === competencia.id}
+                    onClick={() => {
+                      setSelectedCompetenciaId(competencia.id);
+                      setSelectedUnidadId(null);
+                      setSelectedCapacidadId(null);
+                      setSelectedIndicadorId(null);
+                    }}
+                    sx={{ alignItems: 'flex-start', py: 1, ...dropIndicatorSx('competencia', competencia.id) }}
+                  >
+                    <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'competencia', id: competencia.id })} />
+                    <ListItemText
+                      primaryTypographyProps={{ component: 'div' }}
+                      secondaryTypographyProps={{ component: 'div' }}
+                      primary={<EditableValue value={competencia.nombre || 'Sin nombre'} target={{ entity: 'competencia', id: competencia.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit} />}
+                      secondary={<EditableCompetenciaTipo id={competencia.id} tipo={competencia.tipo} readOnly={!allowEdit} onSave={saveEditableCell} />}
+                    />
+                  </ListItemButton>
+                ))}
+              </List>
+            )}
+          </Panel>
+
           <Panel
-            title="Unidad Didactica"
+            title="Unidad"
             count={unidades.length}
             actions={allowCreate || allowEdit || allowDelete ? (
               <>
                 {allowCreate ? (
-                  <IconButton size="small" title="Crear unidad didactica" disabled={actionLoading || !selectedModulo?.id} onClick={handleCreateUnidad}>
+                  <IconButton size="small" title="Crear unidad" disabled={actionLoading || !selectedModulo?.id} onClick={handleCreateUnidad}>
                     <AddIcon fontSize="small" />
                   </IconButton>
                 ) : null}
@@ -1329,49 +1399,7 @@ export default function EstructuraAcademicaMasterDetail({
                 ) : null}
               </>
             ) : undefined}
-            details={
-              <Stack spacing={1}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="competencia-unidad-filter-label">Competencia</InputLabel>
-                  <Select<number | ''> labelId="competencia-unidad-filter-label" label="Competencia" value={selectedCompetenciaId ?? ''}
-                    onChange={event => { setSelectedCompetenciaId(event.target.value === '' ? null : Number(event.target.value)); setSelectedUnidadId(null); }}
-                    MenuProps={{ PaperProps: { sx: { maxWidth: 'calc(100vw - 32px)' } } }}>
-                    <MenuItem value="">Todas</MenuItem>
-                    {(selectedModulo?.competencias ?? []).map(competencia => <MenuItem key={competencia.id} value={competencia.id} sx={{ whiteSpace: 'normal' }}>
-                      {competencia.tipo === 'TECNICA' ? 'Técnica' : 'Para la empleabilidad'}: {competencia.nombre || 'Sin nombre'}
-                    </MenuItem>)}
-                  </Select>
-                </FormControl>
-              {selectedUnidad ? (
-                <DetailFields
-                  onSave={saveEditableCell}
-                  readOnly={!allowEdit || selectedUnidadIsComun}
-                  rows={[
-                    {
-                      label: 'Competencia',
-                      value: selectedUnidad.competencia?.nombre || 'Sin nombre',
-                      lines: 3,
-                    },
-                    {
-                      label: 'Nombre',
-                      value: selectedUnidad.nombre,
-                      target: { entity: 'unidadDidactica', id: selectedUnidad.id, field: 'nombre', valueType: 'text' },
-                    },
-                    {
-                      label: 'Duracion',
-                      value: selectedUnidad.duracion,
-                      target: { entity: 'unidadDidactica', id: selectedUnidad.id, field: 'duracion', valueType: 'number' },
-                    },
-                    {
-                      label: 'Creditos',
-                      value: selectedUnidad.creditos,
-                      target: { entity: 'unidadDidactica', id: selectedUnidad.id, field: 'creditos', valueType: 'number' },
-                    },
-                  ]}
-                />
-              ) : null}
-              </Stack>
-            }
+
           >
             {unidades.length === 0 ? (
               <EmptyState label="Sin unidades." />
@@ -1380,7 +1408,7 @@ export default function EstructuraAcademicaMasterDetail({
                 {unidades.map((unidad) => {
                   const unidadComun = Boolean(unidad.comun);
                   const unidadReadOnly = !allowEdit || unidadComun;
-                  const canDragUnidad = allowEdit && !unidadComun && !actionLoading && selectedCompetenciaId == null;
+                  const canDragUnidad = allowEdit && !unidadComun && !actionLoading;
 
                   return (
                     <ListItemButton
@@ -1462,7 +1490,6 @@ export default function EstructuraAcademicaMasterDetail({
                               readOnly={unidadReadOnly}
                             />
                             <Chip size="small" label={`CAP ${unidad.capacidadesTerminales.length}`} />
-                            <Chip size="small" label={`IND ${unidad.capacidadesTerminales.reduce((total, capacidad) => total + capacidad.indicadoresCapacidad.length, 0)}`} />
                           </Stack>
                         }
                       />
@@ -1490,18 +1517,7 @@ export default function EstructuraAcademicaMasterDetail({
                 ) : null}
               </>
             ) : undefined}
-            details={
-              selectedCapacidad ? (
-                <DetailFields
-                  onSave={saveEditableCell}
-                  readOnly={!allowEdit || selectedUnidadIsComun}
-                  rows={[
-                    { label: 'Unidad', value: selectedUnidad?.nombre || (selectedUnidad ? `Unidad ${selectedUnidad.id}` : '-') },
-                    { label: 'Indicadores', value: selectedCapacidad.indicadoresCapacidad.length },
-                  ]}
-                />
-              ) : undefined
-            }
+
           >
             {capacidades.length === 0 ? (
               <EmptyState label="Sin capacidades." />
@@ -1569,7 +1585,6 @@ export default function EstructuraAcademicaMasterDetail({
                         <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
                           {selectedUnidad?.competencia && <Chip size="small"
                             label={selectedUnidad.competencia.tipo === 'TECNICA' ? 'Técnica' : 'Para la empleabilidad'} title={selectedUnidad.competencia.nombre} />}
-                          <Chip size="small" label={`Id ${capacidad.id}`} />
                           <Chip size="small" label={`IND ${capacidad.indicadoresCapacidad.length}`} />
                         </Stack>
                       }
@@ -1582,7 +1597,7 @@ export default function EstructuraAcademicaMasterDetail({
           </Panel>
 
           <Panel
-            title="Criterio / Indicador"
+            title="Indicador"
             count={indicadores.length}
             actions={allowCreate || allowDelete ? (
               <>
@@ -1598,17 +1613,7 @@ export default function EstructuraAcademicaMasterDetail({
                 ) : null}
               </>
             ) : undefined}
-            details={
-              selectedCapacidad ? (
-                <DetailFields
-                  onSave={saveEditableCell}
-                  readOnly={!allowEdit}
-                  rows={[
-                    { label: 'Capacidad', value: selectedCapacidad.descripcion || `Capacidad ${selectedCapacidad.id}`, lines: 3 },
-                  ]}
-                />
-              ) : undefined
-            }
+
           >
             {indicadores.length === 0 ? (
               <EmptyState label="Sin indicadores." />
@@ -1669,36 +1674,6 @@ export default function EstructuraAcademicaMasterDetail({
                           />
                         </Stack>
                       }
-                      secondary={
-                        <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
-                          <Chip size="small" label={`Id ${indicador.id}`} />
-                          <Box
-                            sx={{
-                              px: 0.75,
-                              minHeight: 24,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              border: '1px solid',
-                              borderColor: 'divider',
-                              borderRadius: 12,
-                              bgcolor: 'action.hover',
-                            }}
-                          >
-                            <EditableValue
-                              value={indicador.sigla}
-                              target={{
-                                entity: 'indicadorCapacidad',
-                                id: indicador.id,
-                                field: 'sigla',
-                                valueType: 'text',
-                              }}
-                              lines={1}
-                              onSave={saveEditableCell}
-                              readOnly={!allowEdit || selectedUnidadIsComun}
-                            />
-                          </Box>
-                        </Stack>
-                      }
                     />
                   </ListItemButton>
                 );
@@ -1706,11 +1681,40 @@ export default function EstructuraAcademicaMasterDetail({
               </List>
             )}
           </Panel>
+
+          <Panel title="Sesión" count={sesiones.length} cardWidth={{ xs: 280, sm: 360 }} actions={<>
+            {allowCreate && <IconButton size="small" title="Crear sesión" disabled={actionLoading || !selectedIndicador || selectedUnidadIsComun} onClick={handleCreateSesion}><AddIcon fontSize="small" /></IconButton>}
+            {allowDelete && <IconButton size="small" title="Eliminar sesión" color="error" disabled={actionLoading || !selectedSesion || selectedUnidadIsComun} onClick={handleDeleteSesion}><DeleteOutlineIcon fontSize="small" /></IconButton>}
+          </>}>
+            {sesiones.length === 0 ? <EmptyState label="Sin sesiones para este indicador." /> : (
+              <List dense disablePadding>
+                {sesiones.map(sesion => (
+                  <ListItemButton key={sesion.id} component="div" selected={selectedSesion?.id === sesion.id} onClick={() => setSelectedSesionId(sesion.id)} {...extraDragProps('actividad', sesion.id, allowEdit && !actionLoading && !selectedUnidadIsComun)} sx={{ display: 'block', py: 1.25, ...dropIndicatorSx('actividad', sesion.id) }}>
+                    <Stack spacing={1.25}>
+                      <Stack direction="row" alignItems="flex-start" spacing={0.5}>
+                        <DragHandle enabled={allowEdit && !actionLoading && !selectedUnidadIsComun} onDragStart={event => beginDrag(event, { entity: 'actividad', id: sesion.id })} />
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography variant="caption" color="text.secondary">Aprendizaje</Typography>
+                          <EditableValue value={sesion.aprendizaje || 'Sin descripción.'} target={{ entity: 'aprendizaje', id: sesion.aprendizajeId, field: 'descripcion', valueType: 'text' }} lines={6} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || selectedUnidadIsComun} />
+                        </Box>
+                      </Stack>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">Nombre de sesión</Typography>
+                        <EditableValue value={sesion.nombre || 'Sin nombre.'} target={{ entity: 'actividad', id: sesion.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || selectedUnidadIsComun} />
+                        <EditableMetricChip value={sesion.duracion ?? null} target={{ entity: 'actividad', id: sesion.id, field: 'duracion', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit || selectedUnidadIsComun} />
+                      </Box>
+                      {(['contenido', 'material'] as const).map(kind => <SesionItemList key={kind} kind={kind} items={kind === 'contenido' ? sesion.contenidos : sesion.materiales} options={kind === 'material' ? materialOptions : []} canEdit={allowEdit && !selectedUnidadIsComun} disabled={actionLoading} renderText={item => kind === 'material' ? <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{item.texto}</Typography> : <EditableValue value={item.texto} target={{ entity: 'actividadContenido', id: item.id, field: 'texto', valueType: 'text' }} lines={6} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || selectedUnidadIsComun} />} onAdd={data => saveSesionItem(sesion.id, kind, 'add', data)} onRemove={itemId => saveSesionItem(sesion.id, kind, 'remove', { itemId })} onReorder={items => saveSesionItem(sesion.id, kind, 'reorder', { items })} />)}
+                    </Stack>
+                  </ListItemButton>
+                ))}
+              </List>
+            )}
+          </Panel>
         </Box>
       )}
       <Dialog open={Boolean(reuseDialog)} onClose={() => setReuseDialog(null)} fullWidth maxWidth="sm">
         <DialogTitle>
-          {reuseDialog?.kind === 'modulo' ? 'Reutilizar modulo comun' : 'Reutilizar unidad didactica comun'}
+          {reuseDialog?.kind === 'modulo' ? 'Reutilizar modulo comun' : 'Reutilizar unidad comun'}
         </DialogTitle>
         <DialogContent>
           <FormControl fullWidth size="small" sx={{ mt: 1 }}>

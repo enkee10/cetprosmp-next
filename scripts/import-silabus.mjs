@@ -33,7 +33,7 @@ export const stateQuery = `query SilabusState {
   aprendizajes(limit:50000) {id descripcion sigla indicadorCapacidadId}
   actividads(limit:50000) {id nombre descripcion duracion fecha aprendizajeId}
   semestres(limit:100) {id titulo inicio fin}
-  grupoModulos(limit:10000) {id nombre sufijo instancia moduloId orden inicio fin calendarioId grupo {id semestreId turnoId horarioId}}
+  grupoModulos(limit:10000) {id nombre instancia moduloId orden inicio fin calendarioId grupo {id semestreId turnoId horarioId}}
   grupoModuloUnidadesDidacticas(limit:50000) {id grupoModuloId unidadDidacticaId orden inicio fin}
   horarios(limit:100) {id nombre diasSemana regla viernesAlternoInicio}
   turnos(limit:100) {id nombre horaInicio horaFin}

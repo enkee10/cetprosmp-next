@@ -1,6 +1,7 @@
 'use client';
 
-import { Alert, Box, CircularProgress } from '@mui/material';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import { Box, CircularProgress } from '@mui/material';
 import EstructuraAcademicaMasterDetail from '@/components/intranet/academico/EstructuraAcademicaMasterDetail';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
@@ -18,7 +19,7 @@ export default function EstructuraAcademicaDocentePage() {
   if (!can('estructura-academica', 'view')) {
     return (
       <Box sx={{ p: 2 }}>
-        <Alert severity="info">No tienes permiso para ver este apartado.</Alert>
+        <AutoDismissAlert severity="info">No tienes permiso para ver este apartado.</AutoDismissAlert>
       </Box>
     );
   }
@@ -26,12 +27,11 @@ export default function EstructuraAcademicaDocentePage() {
   return (
     <EstructuraAcademicaMasterDetail
       callableName="listEstructuraAcademicaDocente"
-      title="Estructura Academica"
+      title="Programación Curricular"
       canCreate={can('estructura-academica', 'create')}
       canEdit={can('estructura-academica', 'edit')}
       canDelete={can('estructura-academica', 'delete')}
-      showSearch={false}
-      errorMessage="No se pudo cargar la estructura academica del docente."
+      errorMessage="No se pudo cargar la programación curricular del docente."
     />
   );
 }

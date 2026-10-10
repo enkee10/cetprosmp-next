@@ -233,6 +233,12 @@ It has the same format as `GrupoModuloActividad_Key`, but is only used as mutati
 """
 scalar GrupoModuloActividad_KeyOutput
 """
+✨ `GrupoModuloJornada_KeyOutput` returns the primary key fields of table type `GrupoModuloJornada`.
+
+It has the same format as `GrupoModuloJornada_Key`, but is only used as mutation return value.
+"""
+scalar GrupoModuloJornada_KeyOutput
+"""
 ✨ `GrupoModuloUnidadDidactica_KeyOutput` returns the primary key fields of table type `GrupoModuloUnidadDidactica`.
 
 It has the same format as `GrupoModuloUnidadDidactica_Key`, but is only used as mutation return value.
@@ -256,6 +262,12 @@ scalar IndicadorCapacidad_KeyOutput
 It has the same format as `IndicadorCapacidadEstudiante_Key`, but is only used as mutation return value.
 """
 scalar IndicadorCapacidadEstudiante_KeyOutput
+"""
+✨ `Material_KeyOutput` returns the primary key fields of table type `Material`.
+
+It has the same format as `Material_Key`, but is only used as mutation return value.
+"""
+scalar Material_KeyOutput
 """
 ✨ `Matricula_KeyOutput` returns the primary key fields of table type `Matricula`.
 
@@ -328,6 +340,18 @@ scalar PaqueteGrupo_KeyOutput
 It has the same format as `PaqueteModulo_Key`, but is only used as mutation return value.
 """
 scalar PaqueteModulo_KeyOutput
+"""
+✨ `ParteDiarioInforme_KeyOutput` returns the primary key fields of table type `ParteDiarioInforme`.
+
+It has the same format as `ParteDiarioInforme_Key`, but is only used as mutation return value.
+"""
+scalar ParteDiarioInforme_KeyOutput
+"""
+✨ `ParteDiarioRegistro_KeyOutput` returns the primary key fields of table type `ParteDiarioRegistro`.
+
+It has the same format as `ParteDiarioRegistro_Key`, but is only used as mutation return value.
+"""
+scalar ParteDiarioRegistro_KeyOutput
 """
 ✨ `Personal_KeyOutput` returns the primary key fields of table type `Personal`.
 
@@ -1166,6 +1190,14 @@ input Actividad_Data {
   ✨ Generated from Field `Actividad`.`grupoModuloActividades_on_actividad` of type `[GrupoModuloActividad!]!`
   """
   grupoModuloActividades_on_actividad: [GrupoModuloActividad_Data!]
+  """
+  ✨ Generated from Field `Actividad`.`parteDiarioRegistros_on_actividad` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_actividad: [ParteDiarioRegistro_Data!]
+  """
+  ✨ Generated from Field `Actividad`.`parteDiarioRegistros_on_actividadProgramada` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_actividadProgramada: [ParteDiarioRegistro_Data!]
 }
 """
 ✨ Generated filter input type for table 'Actividad'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -1279,6 +1311,14 @@ input Actividad_Filter {
   ✨ Generated from Field `Actividad`.`grupoModuloActividades_on_actividad` of type `[GrupoModuloActividad!]!`
   """
   grupoModuloActividades_on_actividad: GrupoModuloActividad_ListFilter
+  """
+  ✨ Generated from Field `Actividad`.`parteDiarioRegistros_on_actividad` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_actividad: ParteDiarioRegistro_ListFilter
+  """
+  ✨ Generated from Field `Actividad`.`parteDiarioRegistros_on_actividadProgramada` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_actividadProgramada: ParteDiarioRegistro_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'Actividad'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -2161,9 +2201,25 @@ input ActividadMaterial_Data {
   """
   actividadId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `ActividadMaterial`.`materialId` of type `Int`
+  """
+  materialId: Int
+  """
+  ✨ `_expr` server value variant of `materialId` (✨ Generated from Field `ActividadMaterial`.`materialId` of type `Int`)
+  """
+  materialId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `materialId` (✨ Generated from Field `ActividadMaterial`.`materialId` of type `Int`)
+  """
+  materialId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `ActividadMaterial`.`actividad` of type `Actividad!`
   """
   actividad: Actividad_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ActividadMaterial`.`material` of type `Material`
+  """
+  material: Material_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `ActividadMaterial`.`orden` of type `Int!`
   """
@@ -2210,9 +2266,17 @@ input ActividadMaterial_Filter {
   """
   actividadId: Int_Filter
   """
+  ✨ Generated from Field `ActividadMaterial`.`materialId` of type `Int`
+  """
+  materialId: Int_Filter
+  """
   ✨ Generated from Field `ActividadMaterial`.`actividad` of type `Actividad!`
   """
   actividad: Actividad_Filter
+  """
+  ✨ Generated from Field `ActividadMaterial`.`material` of type `Material`
+  """
+  material: Material_Filter
   """
   ✨ Generated from Field `ActividadMaterial`.`orden` of type `Int!`
   """
@@ -2268,6 +2332,10 @@ input ActividadMaterial_Having {
   """
   id_count: Int_Filter
   """
+  ✨ Generated from Field `ActividadMaterial`.`materialId_count` of type `Int!`
+  """
+  materialId_count: Int_Filter
+  """
   ✨ Generated from Field `ActividadMaterial`.`orden_count` of type `Int!`
   """
   orden_count: Int_Filter
@@ -2284,6 +2352,10 @@ input ActividadMaterial_Having {
   """
   id_sum: Int_Filter
   """
+  ✨ Generated from Field `ActividadMaterial`.`materialId_sum` of type `Int`
+  """
+  materialId_sum: Int_Filter
+  """
   ✨ Generated from Field `ActividadMaterial`.`orden_sum` of type `Int`
   """
   orden_sum: Int_Filter
@@ -2295,6 +2367,10 @@ input ActividadMaterial_Having {
   ✨ Generated from Field `ActividadMaterial`.`id_avg` of type `Float`
   """
   id_avg: Float_Filter
+  """
+  ✨ Generated from Field `ActividadMaterial`.`materialId_avg` of type `Float`
+  """
+  materialId_avg: Float_Filter
   """
   ✨ Generated from Field `ActividadMaterial`.`orden_avg` of type `Float`
   """
@@ -2308,6 +2384,10 @@ input ActividadMaterial_Having {
   """
   id_min: Int_Filter
   """
+  ✨ Generated from Field `ActividadMaterial`.`materialId_min` of type `Int`
+  """
+  materialId_min: Int_Filter
+  """
   ✨ Generated from Field `ActividadMaterial`.`orden_min` of type `Int`
   """
   orden_min: Int_Filter
@@ -2319,6 +2399,10 @@ input ActividadMaterial_Having {
   ✨ Generated from Field `ActividadMaterial`.`id_max` of type `Int`
   """
   id_max: Int_Filter
+  """
+  ✨ Generated from Field `ActividadMaterial`.`materialId_max` of type `Int`
+  """
+  materialId_max: Int_Filter
   """
   ✨ Generated from Field `ActividadMaterial`.`orden_max` of type `Int`
   """
@@ -2363,9 +2447,17 @@ input ActividadMaterial_Order {
   """
   actividadId: OrderDirection
   """
+  ✨ Generated from Field `ActividadMaterial`.`materialId` of type `Int`
+  """
+  materialId: OrderDirection
+  """
   ✨ Generated from Field `ActividadMaterial`.`actividad` of type `Actividad!`
   """
   actividad: Actividad_Order
+  """
+  ✨ Generated from Field `ActividadMaterial`.`material` of type `Material`
+  """
+  material: Material_Order
   """
   ✨ Generated from Field `ActividadMaterial`.`orden` of type `Int!`
   """
@@ -2387,6 +2479,10 @@ input ActividadMaterial_Order {
   """
   id_count: OrderDirection
   """
+  ✨ Generated from Field `ActividadMaterial`.`materialId_count` of type `Int!`
+  """
+  materialId_count: OrderDirection
+  """
   ✨ Generated from Field `ActividadMaterial`.`orden_count` of type `Int!`
   """
   orden_count: OrderDirection
@@ -2403,6 +2499,10 @@ input ActividadMaterial_Order {
   """
   id_sum: OrderDirection
   """
+  ✨ Generated from Field `ActividadMaterial`.`materialId_sum` of type `Int`
+  """
+  materialId_sum: OrderDirection
+  """
   ✨ Generated from Field `ActividadMaterial`.`orden_sum` of type `Int`
   """
   orden_sum: OrderDirection
@@ -2414,6 +2514,10 @@ input ActividadMaterial_Order {
   ✨ Generated from Field `ActividadMaterial`.`id_avg` of type `Float`
   """
   id_avg: OrderDirection
+  """
+  ✨ Generated from Field `ActividadMaterial`.`materialId_avg` of type `Float`
+  """
+  materialId_avg: OrderDirection
   """
   ✨ Generated from Field `ActividadMaterial`.`orden_avg` of type `Float`
   """
@@ -2427,6 +2531,10 @@ input ActividadMaterial_Order {
   """
   id_min: OrderDirection
   """
+  ✨ Generated from Field `ActividadMaterial`.`materialId_min` of type `Int`
+  """
+  materialId_min: OrderDirection
+  """
   ✨ Generated from Field `ActividadMaterial`.`orden_min` of type `Int`
   """
   orden_min: OrderDirection
@@ -2438,6 +2546,10 @@ input ActividadMaterial_Order {
   ✨ Generated from Field `ActividadMaterial`.`id_max` of type `Int`
   """
   id_max: OrderDirection
+  """
+  ✨ Generated from Field `ActividadMaterial`.`materialId_max` of type `Int`
+  """
+  materialId_max: OrderDirection
   """
   ✨ Generated from Field `ActividadMaterial`.`orden_max` of type `Int`
   """
@@ -8572,6 +8684,18 @@ input Competencia_Data {
   """
   nombre_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Competencia`.`orden` of type `Int`
+  """
+  orden: Int
+  """
+  ✨ `_expr` server value variant of `orden` (✨ Generated from Field `Competencia`.`orden` of type `Int`)
+  """
+  orden_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `orden` (✨ Generated from Field `Competencia`.`orden` of type `Int`)
+  """
+  orden_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Competencia`.`tipo` of type `TipoCompetencia!`
   """
   tipo: TipoCompetencia
@@ -8616,6 +8740,10 @@ input Competencia_Filter {
   ✨ Generated from Field `Competencia`.`nombre` of type `String!`
   """
   nombre: String_Filter
+  """
+  ✨ Generated from Field `Competencia`.`orden` of type `Int`
+  """
+  orden: Int_Filter
   """
   ✨ Generated from Field `Competencia`.`tipo` of type `TipoCompetencia!`
   """
@@ -8675,6 +8803,10 @@ input Competencia_Having {
   """
   nombre_count: Int_Filter
   """
+  ✨ Generated from Field `Competencia`.`orden_count` of type `Int!`
+  """
+  orden_count: Int_Filter
+  """
   ✨ Generated from Field `Competencia`.`tipo_count` of type `Int!`
   """
   tipo_count: Int_Filter
@@ -8687,6 +8819,10 @@ input Competencia_Having {
   """
   moduloId_sum: Int_Filter
   """
+  ✨ Generated from Field `Competencia`.`orden_sum` of type `Int`
+  """
+  orden_sum: Int_Filter
+  """
   ✨ Generated from Field `Competencia`.`id_avg` of type `Float`
   """
   id_avg: Float_Filter
@@ -8694,6 +8830,10 @@ input Competencia_Having {
   ✨ Generated from Field `Competencia`.`moduloId_avg` of type `Float`
   """
   moduloId_avg: Float_Filter
+  """
+  ✨ Generated from Field `Competencia`.`orden_avg` of type `Float`
+  """
+  orden_avg: Float_Filter
   """
   ✨ Generated from Field `Competencia`.`id_min` of type `Int`
   """
@@ -8703,6 +8843,10 @@ input Competencia_Having {
   """
   moduloId_min: Int_Filter
   """
+  ✨ Generated from Field `Competencia`.`orden_min` of type `Int`
+  """
+  orden_min: Int_Filter
+  """
   ✨ Generated from Field `Competencia`.`id_max` of type `Int`
   """
   id_max: Int_Filter
@@ -8710,6 +8854,10 @@ input Competencia_Having {
   ✨ Generated from Field `Competencia`.`moduloId_max` of type `Int`
   """
   moduloId_max: Int_Filter
+  """
+  ✨ Generated from Field `Competencia`.`orden_max` of type `Int`
+  """
+  orden_max: Int_Filter
 }
 """
 ✨ Generated key input type for table 'Competencia'. It represents the primary key fields used to uniquely identify a row in the table.
@@ -8758,6 +8906,10 @@ input Competencia_Order {
   """
   nombre: OrderDirection
   """
+  ✨ Generated from Field `Competencia`.`orden` of type `Int`
+  """
+  orden: OrderDirection
+  """
   ✨ Generated from Field `Competencia`.`tipo` of type `TipoCompetencia!`
   """
   tipo: OrderDirection
@@ -8778,6 +8930,10 @@ input Competencia_Order {
   """
   nombre_count: OrderDirection
   """
+  ✨ Generated from Field `Competencia`.`orden_count` of type `Int!`
+  """
+  orden_count: OrderDirection
+  """
   ✨ Generated from Field `Competencia`.`tipo_count` of type `Int!`
   """
   tipo_count: OrderDirection
@@ -8790,6 +8946,10 @@ input Competencia_Order {
   """
   moduloId_sum: OrderDirection
   """
+  ✨ Generated from Field `Competencia`.`orden_sum` of type `Int`
+  """
+  orden_sum: OrderDirection
+  """
   ✨ Generated from Field `Competencia`.`id_avg` of type `Float`
   """
   id_avg: OrderDirection
@@ -8797,6 +8957,10 @@ input Competencia_Order {
   ✨ Generated from Field `Competencia`.`moduloId_avg` of type `Float`
   """
   moduloId_avg: OrderDirection
+  """
+  ✨ Generated from Field `Competencia`.`orden_avg` of type `Float`
+  """
+  orden_avg: OrderDirection
   """
   ✨ Generated from Field `Competencia`.`id_min` of type `Int`
   """
@@ -8806,6 +8970,10 @@ input Competencia_Order {
   """
   moduloId_min: OrderDirection
   """
+  ✨ Generated from Field `Competencia`.`orden_min` of type `Int`
+  """
+  orden_min: OrderDirection
+  """
   ✨ Generated from Field `Competencia`.`id_max` of type `Int`
   """
   id_max: OrderDirection
@@ -8813,6 +8981,10 @@ input Competencia_Order {
   ✨ Generated from Field `Competencia`.`moduloId_max` of type `Int`
   """
   moduloId_max: OrderDirection
+  """
+  ✨ Generated from Field `Competencia`.`orden_max` of type `Int`
+  """
+  orden_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'CompetenciaUnidadDidactica'. It includes all necessary fields for creating or upserting rows into table.
@@ -13234,6 +13406,10 @@ input Evento_Data {
   """
   grupoModuloActividades_on_evento: [GrupoModuloActividad_Data!]
   """
+  ✨ Generated from Field `Evento`.`grupoModuloJornadas_on_evento` of type `[GrupoModuloJornada!]!`
+  """
+  grupoModuloJornadas_on_evento: [GrupoModuloJornada_Data!]
+  """
   ✨ Generated from Field `Evento`.`recordatorios_on_evento` of type `[Recordatorio!]!`
   """
   recordatorios_on_evento: [Recordatorio_Data!]
@@ -13350,6 +13526,10 @@ input Evento_Filter {
   ✨ Generated from Field `Evento`.`grupoModuloActividades_on_evento` of type `[GrupoModuloActividad!]!`
   """
   grupoModuloActividades_on_evento: GrupoModuloActividad_ListFilter
+  """
+  ✨ Generated from Field `Evento`.`grupoModuloJornadas_on_evento` of type `[GrupoModuloJornada!]!`
+  """
+  grupoModuloJornadas_on_evento: GrupoModuloJornada_ListFilter
   """
   ✨ Generated from Field `Evento`.`recordatorios_on_evento` of type `[Recordatorio!]!`
   """
@@ -15953,6 +16133,10 @@ input Familia_Data {
   ✨ Generated from Field `Familia`.`actEconomicas_on_familia` of type `[ActEconomica!]!`
   """
   actEconomicas_on_familia: [ActEconomica_Data!]
+  """
+  ✨ Generated from Field `Familia`.`parteDiarioInformes_on_familia` of type `[ParteDiarioInforme!]!`
+  """
+  parteDiarioInformes_on_familia: [ParteDiarioInforme_Data!]
 }
 """
 ✨ Generated filter input type for table 'Familia'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -15998,6 +16182,10 @@ input Familia_Filter {
   ✨ Generated from Field `Familia`.`actEconomicas_on_familia` of type `[ActEconomica!]!`
   """
   actEconomicas_on_familia: ActEconomica_ListFilter
+  """
+  ✨ Generated from Field `Familia`.`parteDiarioInformes_on_familia` of type `[ParteDiarioInforme!]!`
+  """
+  parteDiarioInformes_on_familia: ParteDiarioInforme_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'Familia'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -18712,14 +18900,6 @@ input GrupoModulo_Data {
   """
   orden_update: [Int_Update!] @fdc_forbiddenInVariables
   """
-  ✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`
-  """
-  sufijo: String
-  """
-  ✨ `_expr` server value variant of `sufijo` (✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`)
-  """
-  sufijo_expr: String_Expr @fdc_forbiddenInVariables
-  """
   ✨ Generated from Field `GrupoModulo`.`certificados_on_grupoModulo` of type `[Certificado!]!`
   """
   certificados_on_grupoModulo: [Certificado_Data!]
@@ -18740,6 +18920,10 @@ input GrupoModulo_Data {
   """
   grupoModuloActividades_on_grupoModulo: [GrupoModuloActividad_Data!]
   """
+  ✨ Generated from Field `GrupoModulo`.`grupoModuloJornadas_on_grupoModulo` of type `[GrupoModuloJornada!]!`
+  """
+  grupoModuloJornadas_on_grupoModulo: [GrupoModuloJornada_Data!]
+  """
   ✨ Generated from Field `GrupoModulo`.`grupoModuloUnidadesDidacticas_on_grupoModulo` of type `[GrupoModuloUnidadDidactica!]!`
   """
   grupoModuloUnidadesDidacticas_on_grupoModulo: [GrupoModuloUnidadDidactica_Data!]
@@ -18755,6 +18939,10 @@ input GrupoModulo_Data {
   ✨ Generated from Field `GrupoModulo`.`modulosEstudiantes_on_grupoModulo` of type `[ModuloEstudiante!]!`
   """
   modulosEstudiantes_on_grupoModulo: [ModuloEstudiante_Data!]
+  """
+  ✨ Generated from Field `GrupoModulo`.`parteDiarioRegistros_on_grupoModulo` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_grupoModulo: [ParteDiarioRegistro_Data!]
   """
   ✨ Generated from Field `GrupoModulo`.`programacionesHorarias_on_grupoModulo` of type `[ProgramacionHoraria!]!`
   """
@@ -18833,10 +19021,6 @@ input GrupoModulo_Filter {
   """
   orden: Int_Filter
   """
-  ✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`
-  """
-  sufijo: String_Filter
-  """
   ✨ Generated from Field `GrupoModulo`.`certificados_on_grupoModulo` of type `[Certificado!]!`
   """
   certificados_on_grupoModulo: Certificado_ListFilter
@@ -18857,6 +19041,10 @@ input GrupoModulo_Filter {
   """
   grupoModuloActividades_on_grupoModulo: GrupoModuloActividad_ListFilter
   """
+  ✨ Generated from Field `GrupoModulo`.`grupoModuloJornadas_on_grupoModulo` of type `[GrupoModuloJornada!]!`
+  """
+  grupoModuloJornadas_on_grupoModulo: GrupoModuloJornada_ListFilter
+  """
   ✨ Generated from Field `GrupoModulo`.`grupoModuloUnidadesDidacticas_on_grupoModulo` of type `[GrupoModuloUnidadDidactica!]!`
   """
   grupoModuloUnidadesDidacticas_on_grupoModulo: GrupoModuloUnidadDidactica_ListFilter
@@ -18872,6 +19060,10 @@ input GrupoModulo_Filter {
   ✨ Generated from Field `GrupoModulo`.`modulosEstudiantes_on_grupoModulo` of type `[ModuloEstudiante!]!`
   """
   modulosEstudiantes_on_grupoModulo: ModuloEstudiante_ListFilter
+  """
+  ✨ Generated from Field `GrupoModulo`.`parteDiarioRegistros_on_grupoModulo` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_grupoModulo: ParteDiarioRegistro_ListFilter
   """
   ✨ Generated from Field `GrupoModulo`.`programacionesHorarias_on_grupoModulo` of type `[ProgramacionHoraria!]!`
   """
@@ -18958,10 +19150,6 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`orden_count` of type `Int!`
   """
   orden_count: Int_Filter
-  """
-  ✨ Generated from Field `GrupoModulo`.`sufijo_count` of type `Int!`
-  """
-  sufijo_count: Int_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`calendarioId_sum` of type `Int`
   """
@@ -19158,10 +19346,6 @@ input GrupoModulo_Order {
   """
   orden: OrderDirection
   """
-  ✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`
-  """
-  sufijo: OrderDirection
-  """
   ✨ Generated from Field `GrupoModulo`.`_count` of type `Int!`
   """
   _count: OrderDirection
@@ -19205,10 +19389,6 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`orden_count` of type `Int!`
   """
   orden_count: OrderDirection
-  """
-  ✨ Generated from Field `GrupoModulo`.`sufijo_count` of type `Int!`
-  """
-  sufijo_count: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`calendarioId_sum` of type `Int`
   """
@@ -19848,6 +20028,625 @@ input GrupoModuloActividad_Order {
   ✨ Generated from Field `GrupoModuloActividad`.`segmento_max` of type `Int`
   """
   segmento_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'GrupoModuloJornada'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input GrupoModuloJornada_Data {
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `GrupoModuloJornada`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `GrupoModuloJornada`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId` of type `Int`
+  """
+  eventoId: Int
+  """
+  ✨ `_expr` server value variant of `eventoId` (✨ Generated from Field `GrupoModuloJornada`.`eventoId` of type `Int`)
+  """
+  eventoId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `eventoId` (✨ Generated from Field `GrupoModuloJornada`.`eventoId` of type `Int`)
+  """
+  eventoId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int
+  """
+  ✨ `_expr` server value variant of `grupoModuloId` (✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoModuloId` (✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`evento` of type `Evento`
+  """
+  evento: Evento_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fecha` of type `Date!`
+  """
+  fecha: Date
+  """
+  ✨ `_date` server value variant of `fecha` (✨ Generated from Field `GrupoModuloJornada`.`fecha` of type `Date!`)
+  """
+  fecha_date: Date_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_expr` server value variant of `fecha` (✨ Generated from Field `GrupoModuloJornada`.`fecha` of type `Date!`)
+  """
+  fecha_expr: Date_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fecha` (✨ Generated from Field `GrupoModuloJornada`.`fecha` of type `Date!`)
+  """
+  fecha_update: [Date_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fin` of type `Timestamp!`
+  """
+  fin: Timestamp
+  """
+  ✨ `_expr` server value variant of `fin` (✨ Generated from Field `GrupoModuloJornada`.`fin` of type `Timestamp!`)
+  """
+  fin_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fin` (✨ Generated from Field `GrupoModuloJornada`.`fin` of type `Timestamp!`)
+  """
+  fin_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fin` (✨ Generated from Field `GrupoModuloJornada`.`fin` of type `Timestamp!`)
+  """
+  fin_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas` of type `Float!`
+  """
+  horas: Float
+  """
+  ✨ `_expr` server value variant of `horas` (✨ Generated from Field `GrupoModuloJornada`.`horas` of type `Float!`)
+  """
+  horas_expr: Float_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `horas` (✨ Generated from Field `GrupoModuloJornada`.`horas` of type `Float!`)
+  """
+  horas_update: [Float_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares` of type `Float!`
+  """
+  horasCurriculares: Float
+  """
+  ✨ `_expr` server value variant of `horasCurriculares` (✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares` of type `Float!`)
+  """
+  horasCurriculares_expr: Float_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `horasCurriculares` (✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares` of type `Float!`)
+  """
+  horasCurriculares_update: [Float_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`inicio` of type `Timestamp!`
+  """
+  inicio: Timestamp
+  """
+  ✨ `_expr` server value variant of `inicio` (✨ Generated from Field `GrupoModuloJornada`.`inicio` of type `Timestamp!`)
+  """
+  inicio_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `inicio` (✨ Generated from Field `GrupoModuloJornada`.`inicio` of type `Timestamp!`)
+  """
+  inicio_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `inicio` (✨ Generated from Field `GrupoModuloJornada`.`inicio` of type `Timestamp!`)
+  """
+  inicio_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`pendiente` of type `Boolean!`
+  """
+  pendiente: Boolean
+  """
+  ✨ `_expr` server value variant of `pendiente` (✨ Generated from Field `GrupoModuloJornada`.`pendiente` of type `Boolean!`)
+  """
+  pendiente_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`tipo` of type `String!`
+  """
+  tipo: String
+  """
+  ✨ `_expr` server value variant of `tipo` (✨ Generated from Field `GrupoModuloJornada`.`tipo` of type `String!`)
+  """
+  tipo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`parteDiarioRegistros_on_jornada` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_jornada: [ParteDiarioRegistro_Data!]
+}
+"""
+✨ Generated filter input type for table 'GrupoModuloJornada'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input GrupoModuloJornada_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [GrupoModuloJornada_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: GrupoModuloJornada_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [GrupoModuloJornada_Filter!]
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId` of type `Int`
+  """
+  eventoId: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`evento` of type `Evento`
+  """
+  evento: Evento_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fecha` of type `Date!`
+  """
+  fecha: Date_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fin` of type `Timestamp!`
+  """
+  fin: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas` of type `Float!`
+  """
+  horas: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares` of type `Float!`
+  """
+  horasCurriculares: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`inicio` of type `Timestamp!`
+  """
+  inicio: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`pendiente` of type `Boolean!`
+  """
+  pendiente: Boolean_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`tipo` of type `String!`
+  """
+  tipo: String_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`parteDiarioRegistros_on_jornada` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_jornada: ParteDiarioRegistro_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'GrupoModuloJornada'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input GrupoModuloJornada_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [GrupoModuloJornada_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: GrupoModuloJornada_Filter
+}
+"""
+✨ Generated having input type for table 'GrupoModuloJornada'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input GrupoModuloJornada_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [GrupoModuloJornada_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: GrupoModuloJornada_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [GrupoModuloJornada_Having!]
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId_count` of type `Int!`
+  """
+  eventoId_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fecha_count` of type `Int!`
+  """
+  fecha_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fin_count` of type `Int!`
+  """
+  fin_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares_count` of type `Int!`
+  """
+  horasCurriculares_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas_count` of type `Int!`
+  """
+  horas_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`inicio_count` of type `Int!`
+  """
+  inicio_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`pendiente_count` of type `Int!`
+  """
+  pendiente_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`tipo_count` of type `Int!`
+  """
+  tipo_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId_sum` of type `Int`
+  """
+  eventoId_sum: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares_sum` of type `Float`
+  """
+  horasCurriculares_sum: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas_sum` of type `Float`
+  """
+  horas_sum: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId_avg` of type `Float`
+  """
+  eventoId_avg: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares_avg` of type `Float`
+  """
+  horasCurriculares_avg: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas_avg` of type `Float`
+  """
+  horas_avg: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId_min` of type `Int`
+  """
+  eventoId_min: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fecha_min` of type `Date`
+  """
+  fecha_min: Date_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fin_min` of type `Timestamp`
+  """
+  fin_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares_min` of type `Float`
+  """
+  horasCurriculares_min: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas_min` of type `Float`
+  """
+  horas_min: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`inicio_min` of type `Timestamp`
+  """
+  inicio_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId_max` of type `Int`
+  """
+  eventoId_max: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fecha_max` of type `Date`
+  """
+  fecha_max: Date_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fin_max` of type `Timestamp`
+  """
+  fin_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares_max` of type `Float`
+  """
+  horasCurriculares_max: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas_max` of type `Float`
+  """
+  horas_max: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`inicio_max` of type `Timestamp`
+  """
+  inicio_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'GrupoModuloJornada'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input GrupoModuloJornada_Key {
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `GrupoModuloJornada`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'GrupoModuloJornada'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input GrupoModuloJornada_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: GrupoModuloJornada_Filter
+}
+"""
+✨ Generated order input type for table 'GrupoModuloJornada'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input GrupoModuloJornada_Order {
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId` of type `Int`
+  """
+  eventoId: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`evento` of type `Evento`
+  """
+  evento: Evento_Order
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Order
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fecha` of type `Date!`
+  """
+  fecha: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fin` of type `Timestamp!`
+  """
+  fin: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas` of type `Float!`
+  """
+  horas: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares` of type `Float!`
+  """
+  horasCurriculares: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`inicio` of type `Timestamp!`
+  """
+  inicio: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`pendiente` of type `Boolean!`
+  """
+  pendiente: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`tipo` of type `String!`
+  """
+  tipo: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId_count` of type `Int!`
+  """
+  eventoId_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fecha_count` of type `Int!`
+  """
+  fecha_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fin_count` of type `Int!`
+  """
+  fin_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares_count` of type `Int!`
+  """
+  horasCurriculares_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas_count` of type `Int!`
+  """
+  horas_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`inicio_count` of type `Int!`
+  """
+  inicio_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`pendiente_count` of type `Int!`
+  """
+  pendiente_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`tipo_count` of type `Int!`
+  """
+  tipo_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId_sum` of type `Int`
+  """
+  eventoId_sum: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares_sum` of type `Float`
+  """
+  horasCurriculares_sum: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas_sum` of type `Float`
+  """
+  horas_sum: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId_avg` of type `Float`
+  """
+  eventoId_avg: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares_avg` of type `Float`
+  """
+  horasCurriculares_avg: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas_avg` of type `Float`
+  """
+  horas_avg: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId_min` of type `Int`
+  """
+  eventoId_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fecha_min` of type `Date`
+  """
+  fecha_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fin_min` of type `Timestamp`
+  """
+  fin_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares_min` of type `Float`
+  """
+  horasCurriculares_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas_min` of type `Float`
+  """
+  horas_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`inicio_min` of type `Timestamp`
+  """
+  inicio_min: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`eventoId_max` of type `Int`
+  """
+  eventoId_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fecha_max` of type `Date`
+  """
+  fecha_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`fin_max` of type `Timestamp`
+  """
+  fin_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horasCurriculares_max` of type `Float`
+  """
+  horasCurriculares_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`horas_max` of type `Float`
+  """
+  horas_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModuloJornada`.`inicio_max` of type `Timestamp`
+  """
+  inicio_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'GrupoModuloUnidadDidactica'. It includes all necessary fields for creating or upserting rows into table.
@@ -21440,6 +22239,217 @@ input IndicadorCapacidadEstudiante_Order {
   ✨ Generated from Field `IndicadorCapacidadEstudiante`.`promedio_max` of type `Float`
   """
   promedio_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Material'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Material_Data {
+  """
+  ✨ Generated from Field `Material`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Material`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `Material`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Material`.`clave` of type `String!`
+  """
+  clave: String
+  """
+  ✨ `_expr` server value variant of `clave` (✨ Generated from Field `Material`.`clave` of type `String!`)
+  """
+  clave_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Material`.`nombre` of type `String!`
+  """
+  nombre: String
+  """
+  ✨ `_expr` server value variant of `nombre` (✨ Generated from Field `Material`.`nombre` of type `String!`)
+  """
+  nombre_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Material`.`actividadMateriales_on_material` of type `[ActividadMaterial!]!`
+  """
+  actividadMateriales_on_material: [ActividadMaterial_Data!]
+}
+"""
+✨ Generated filter input type for table 'Material'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Material_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Material_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Material_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Material_Filter!]
+  """
+  ✨ Generated from Field `Material`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `Material`.`clave` of type `String!`
+  """
+  clave: String_Filter
+  """
+  ✨ Generated from Field `Material`.`nombre` of type `String!`
+  """
+  nombre: String_Filter
+  """
+  ✨ Generated from Field `Material`.`actividadMateriales_on_material` of type `[ActividadMaterial!]!`
+  """
+  actividadMateriales_on_material: ActividadMaterial_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Material'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Material_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Material_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Material_Filter
+}
+"""
+✨ Generated having input type for table 'Material'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Material_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Material_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Material_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Material_Having!]
+  """
+  ✨ Generated from Field `Material`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Material`.`clave_count` of type `Int!`
+  """
+  clave_count: Int_Filter
+  """
+  ✨ Generated from Field `Material`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Material`.`nombre_count` of type `Int!`
+  """
+  nombre_count: Int_Filter
+  """
+  ✨ Generated from Field `Material`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `Material`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `Material`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `Material`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'Material'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Material_Key {
+  """
+  ✨ Generated from Field `Material`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Material`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'Material'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Material_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Material_Filter
+}
+"""
+✨ Generated order input type for table 'Material'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Material_Order {
+  """
+  ✨ Generated from Field `Material`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Material`.`clave` of type `String!`
+  """
+  clave: OrderDirection
+  """
+  ✨ Generated from Field `Material`.`nombre` of type `String!`
+  """
+  nombre: OrderDirection
+  """
+  ✨ Generated from Field `Material`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Material`.`clave_count` of type `Int!`
+  """
+  clave_count: OrderDirection
+  """
+  ✨ Generated from Field `Material`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Material`.`nombre_count` of type `Int!`
+  """
+  nombre_count: OrderDirection
+  """
+  ✨ Generated from Field `Material`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `Material`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `Material`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `Material`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'Matricula'. It includes all necessary fields for creating or upserting rows into table.
@@ -26866,14 +27876,6 @@ input PaqueteModulo_Data {
   ✨ `_update` server value variant of `orden` (✨ Generated from Field `PaqueteModulo`.`orden` of type `Int`)
   """
   orden_update: [Int_Update!] @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PaqueteModulo`.`sufijos` of type `String`
-  """
-  sufijos: String
-  """
-  ✨ `_expr` server value variant of `sufijos` (✨ Generated from Field `PaqueteModulo`.`sufijos` of type `String`)
-  """
-  sufijos_expr: String_Expr @fdc_forbiddenInVariables
 }
 """
 ✨ Generated filter input type for table 'PaqueteModulo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -26923,10 +27925,6 @@ input PaqueteModulo_Filter {
   ✨ Generated from Field `PaqueteModulo`.`orden` of type `Int`
   """
   orden: Int_Filter
-  """
-  ✨ Generated from Field `PaqueteModulo`.`sufijos` of type `String`
-  """
-  sufijos: String_Filter
 }
 """
 ✨ Generated first-row input type for table 'PaqueteModulo'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -26989,10 +27987,6 @@ input PaqueteModulo_Having {
   ✨ Generated from Field `PaqueteModulo`.`paqueteId_count` of type `Int!`
   """
   paqueteId_count: Int_Filter
-  """
-  ✨ Generated from Field `PaqueteModulo`.`sufijos_count` of type `Int!`
-  """
-  sufijos_count: Int_Filter
   """
   ✨ Generated from Field `PaqueteModulo`.`id_sum` of type `Int`
   """
@@ -27137,10 +28131,6 @@ input PaqueteModulo_Order {
   """
   orden: OrderDirection
   """
-  ✨ Generated from Field `PaqueteModulo`.`sufijos` of type `String`
-  """
-  sufijos: OrderDirection
-  """
   ✨ Generated from Field `PaqueteModulo`.`_count` of type `Int!`
   """
   _count: OrderDirection
@@ -27168,10 +28158,6 @@ input PaqueteModulo_Order {
   ✨ Generated from Field `PaqueteModulo`.`paqueteId_count` of type `Int!`
   """
   paqueteId_count: OrderDirection
-  """
-  ✨ Generated from Field `PaqueteModulo`.`sufijos_count` of type `Int!`
-  """
-  sufijos_count: OrderDirection
   """
   ✨ Generated from Field `PaqueteModulo`.`id_sum` of type `Int`
   """
@@ -27254,6 +28240,2092 @@ input PaqueteModulo_Order {
   paqueteId_max: OrderDirection
 }
 """
+✨ Generated data input type for table 'ParteDiarioInforme'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input ParteDiarioInforme_Data {
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ParteDiarioInforme`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `ParteDiarioInforme`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId` of type `Int`
+  """
+  docenteId: Int
+  """
+  ✨ `_expr` server value variant of `docenteId` (✨ Generated from Field `ParteDiarioInforme`.`docenteId` of type `Int`)
+  """
+  docenteId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `docenteId` (✨ Generated from Field `ParteDiarioInforme`.`docenteId` of type `Int`)
+  """
+  docenteId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId` of type `Int`
+  """
+  familiaId: Int
+  """
+  ✨ `_expr` server value variant of `familiaId` (✨ Generated from Field `ParteDiarioInforme`.`familiaId` of type `Int`)
+  """
+  familiaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `familiaId` (✨ Generated from Field `ParteDiarioInforme`.`familiaId` of type `Int`)
+  """
+  familiaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId` of type `Int`
+  """
+  semestreId: Int
+  """
+  ✨ `_expr` server value variant of `semestreId` (✨ Generated from Field `ParteDiarioInforme`.`semestreId` of type `Int`)
+  """
+  semestreId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `semestreId` (✨ Generated from Field `ParteDiarioInforme`.`semestreId` of type `Int`)
+  """
+  semestreId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docente` of type `Personal`
+  """
+  docente: Personal_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familia` of type `Familia`
+  """
+  familia: Familia_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestre` of type `Semestre`
+  """
+  semestre: Semestre_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`actualizadoPor` of type `String!`
+  """
+  actualizadoPor: String
+  """
+  ✨ `_expr` server value variant of `actualizadoPor` (✨ Generated from Field `ParteDiarioInforme`.`actualizadoPor` of type `String!`)
+  """
+  actualizadoPor_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`analisis` of type `String!`
+  """
+  analisis: String
+  """
+  ✨ `_expr` server value variant of `analisis` (✨ Generated from Field `ParteDiarioInforme`.`analisis` of type `String!`)
+  """
+  analisis_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`creadoPor` of type `String!`
+  """
+  creadoPor: String
+  """
+  ✨ `_expr` server value variant of `creadoPor` (✨ Generated from Field `ParteDiarioInforme`.`creadoPor` of type `String!`)
+  """
+  creadoPor_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion` of type `Timestamp!`
+  """
+  fechaActualizacion: Timestamp
+  """
+  ✨ `_expr` server value variant of `fechaActualizacion` (✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion` of type `Timestamp!`)
+  """
+  fechaActualizacion_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fechaActualizacion` (✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion` of type `Timestamp!`)
+  """
+  fechaActualizacion_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaActualizacion` (✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion` of type `Timestamp!`)
+  """
+  fechaActualizacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion` of type `Timestamp!`
+  """
+  fechaCreacion: Timestamp
+  """
+  ✨ `_expr` server value variant of `fechaCreacion` (✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion` of type `Timestamp!`)
+  """
+  fechaCreacion_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fechaCreacion` (✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion` of type `Timestamp!`)
+  """
+  fechaCreacion_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaCreacion` (✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion` of type `Timestamp!`)
+  """
+  fechaCreacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaFin` of type `Date!`
+  """
+  fechaFin: Date
+  """
+  ✨ `_date` server value variant of `fechaFin` (✨ Generated from Field `ParteDiarioInforme`.`fechaFin` of type `Date!`)
+  """
+  fechaFin_date: Date_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_expr` server value variant of `fechaFin` (✨ Generated from Field `ParteDiarioInforme`.`fechaFin` of type `Date!`)
+  """
+  fechaFin_expr: Date_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaFin` (✨ Generated from Field `ParteDiarioInforme`.`fechaFin` of type `Date!`)
+  """
+  fechaFin_update: [Date_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaInicio` of type `Date!`
+  """
+  fechaInicio: Date
+  """
+  ✨ `_date` server value variant of `fechaInicio` (✨ Generated from Field `ParteDiarioInforme`.`fechaInicio` of type `Date!`)
+  """
+  fechaInicio_date: Date_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_expr` server value variant of `fechaInicio` (✨ Generated from Field `ParteDiarioInforme`.`fechaInicio` of type `Date!`)
+  """
+  fechaInicio_expr: Date_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaInicio` (✨ Generated from Field `ParteDiarioInforme`.`fechaInicio` of type `Date!`)
+  """
+  fechaInicio_update: [Date_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`recomendaciones` of type `String!`
+  """
+  recomendaciones: String
+  """
+  ✨ `_expr` server value variant of `recomendaciones` (✨ Generated from Field `ParteDiarioInforme`.`recomendaciones` of type `String!`)
+  """
+  recomendaciones_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`titulo` of type `String!`
+  """
+  titulo: String
+  """
+  ✨ `_expr` server value variant of `titulo` (✨ Generated from Field `ParteDiarioInforme`.`titulo` of type `String!`)
+  """
+  titulo_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'ParteDiarioInforme'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input ParteDiarioInforme_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [ParteDiarioInforme_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: ParteDiarioInforme_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [ParteDiarioInforme_Filter!]
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId` of type `Int`
+  """
+  docenteId: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId` of type `Int`
+  """
+  familiaId: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId` of type `Int`
+  """
+  semestreId: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docente` of type `Personal`
+  """
+  docente: Personal_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familia` of type `Familia`
+  """
+  familia: Familia_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestre` of type `Semestre`
+  """
+  semestre: Semestre_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`actualizadoPor` of type `String!`
+  """
+  actualizadoPor: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`analisis` of type `String!`
+  """
+  analisis: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`creadoPor` of type `String!`
+  """
+  creadoPor: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion` of type `Timestamp!`
+  """
+  fechaActualizacion: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion` of type `Timestamp!`
+  """
+  fechaCreacion: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaFin` of type `Date!`
+  """
+  fechaFin: Date_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaInicio` of type `Date!`
+  """
+  fechaInicio: Date_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`recomendaciones` of type `String!`
+  """
+  recomendaciones: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`titulo` of type `String!`
+  """
+  titulo: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'ParteDiarioInforme'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input ParteDiarioInforme_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [ParteDiarioInforme_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: ParteDiarioInforme_Filter
+}
+"""
+✨ Generated having input type for table 'ParteDiarioInforme'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input ParteDiarioInforme_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [ParteDiarioInforme_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: ParteDiarioInforme_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [ParteDiarioInforme_Having!]
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`actualizadoPor_count` of type `Int!`
+  """
+  actualizadoPor_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`analisis_count` of type `Int!`
+  """
+  analisis_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`creadoPor_count` of type `Int!`
+  """
+  creadoPor_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId_count` of type `Int!`
+  """
+  docenteId_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId_count` of type `Int!`
+  """
+  familiaId_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion_count` of type `Int!`
+  """
+  fechaActualizacion_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion_count` of type `Int!`
+  """
+  fechaCreacion_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaFin_count` of type `Int!`
+  """
+  fechaFin_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaInicio_count` of type `Int!`
+  """
+  fechaInicio_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`recomendaciones_count` of type `Int!`
+  """
+  recomendaciones_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId_count` of type `Int!`
+  """
+  semestreId_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`titulo_count` of type `Int!`
+  """
+  titulo_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId_sum` of type `Int`
+  """
+  docenteId_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId_sum` of type `Int`
+  """
+  familiaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId_sum` of type `Int`
+  """
+  semestreId_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId_avg` of type `Float`
+  """
+  docenteId_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId_avg` of type `Float`
+  """
+  familiaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId_avg` of type `Float`
+  """
+  semestreId_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId_min` of type `Int`
+  """
+  docenteId_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId_min` of type `Int`
+  """
+  familiaId_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion_min` of type `Timestamp`
+  """
+  fechaActualizacion_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion_min` of type `Timestamp`
+  """
+  fechaCreacion_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaFin_min` of type `Date`
+  """
+  fechaFin_min: Date_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaInicio_min` of type `Date`
+  """
+  fechaInicio_min: Date_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId_min` of type `Int`
+  """
+  semestreId_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId_max` of type `Int`
+  """
+  docenteId_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId_max` of type `Int`
+  """
+  familiaId_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion_max` of type `Timestamp`
+  """
+  fechaActualizacion_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion_max` of type `Timestamp`
+  """
+  fechaCreacion_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaFin_max` of type `Date`
+  """
+  fechaFin_max: Date_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaInicio_max` of type `Date`
+  """
+  fechaInicio_max: Date_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId_max` of type `Int`
+  """
+  semestreId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'ParteDiarioInforme'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input ParteDiarioInforme_Key {
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ParteDiarioInforme`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'ParteDiarioInforme'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input ParteDiarioInforme_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: ParteDiarioInforme_Filter
+}
+"""
+✨ Generated order input type for table 'ParteDiarioInforme'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input ParteDiarioInforme_Order {
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId` of type `Int`
+  """
+  docenteId: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId` of type `Int`
+  """
+  familiaId: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId` of type `Int`
+  """
+  semestreId: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docente` of type `Personal`
+  """
+  docente: Personal_Order
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familia` of type `Familia`
+  """
+  familia: Familia_Order
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestre` of type `Semestre`
+  """
+  semestre: Semestre_Order
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`actualizadoPor` of type `String!`
+  """
+  actualizadoPor: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`analisis` of type `String!`
+  """
+  analisis: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`creadoPor` of type `String!`
+  """
+  creadoPor: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion` of type `Timestamp!`
+  """
+  fechaActualizacion: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion` of type `Timestamp!`
+  """
+  fechaCreacion: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaFin` of type `Date!`
+  """
+  fechaFin: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaInicio` of type `Date!`
+  """
+  fechaInicio: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`recomendaciones` of type `String!`
+  """
+  recomendaciones: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`titulo` of type `String!`
+  """
+  titulo: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`actualizadoPor_count` of type `Int!`
+  """
+  actualizadoPor_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`analisis_count` of type `Int!`
+  """
+  analisis_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`creadoPor_count` of type `Int!`
+  """
+  creadoPor_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId_count` of type `Int!`
+  """
+  docenteId_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId_count` of type `Int!`
+  """
+  familiaId_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion_count` of type `Int!`
+  """
+  fechaActualizacion_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion_count` of type `Int!`
+  """
+  fechaCreacion_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaFin_count` of type `Int!`
+  """
+  fechaFin_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaInicio_count` of type `Int!`
+  """
+  fechaInicio_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`recomendaciones_count` of type `Int!`
+  """
+  recomendaciones_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId_count` of type `Int!`
+  """
+  semestreId_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`titulo_count` of type `Int!`
+  """
+  titulo_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId_sum` of type `Int`
+  """
+  docenteId_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId_sum` of type `Int`
+  """
+  familiaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId_sum` of type `Int`
+  """
+  semestreId_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId_avg` of type `Float`
+  """
+  docenteId_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId_avg` of type `Float`
+  """
+  familiaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId_avg` of type `Float`
+  """
+  semestreId_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId_min` of type `Int`
+  """
+  docenteId_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId_min` of type `Int`
+  """
+  familiaId_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion_min` of type `Timestamp`
+  """
+  fechaActualizacion_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion_min` of type `Timestamp`
+  """
+  fechaCreacion_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaFin_min` of type `Date`
+  """
+  fechaFin_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaInicio_min` of type `Date`
+  """
+  fechaInicio_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId_min` of type `Int`
+  """
+  semestreId_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`docenteId_max` of type `Int`
+  """
+  docenteId_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`familiaId_max` of type `Int`
+  """
+  familiaId_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaActualizacion_max` of type `Timestamp`
+  """
+  fechaActualizacion_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaCreacion_max` of type `Timestamp`
+  """
+  fechaCreacion_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaFin_max` of type `Date`
+  """
+  fechaFin_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`fechaInicio_max` of type `Date`
+  """
+  fechaInicio_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioInforme`.`semestreId_max` of type `Int`
+  """
+  semestreId_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'ParteDiarioRegistro'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input ParteDiarioRegistro_Data {
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ParteDiarioRegistro`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `ParteDiarioRegistro`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId` of type `Int`
+  """
+  actividadId: Int
+  """
+  ✨ `_expr` server value variant of `actividadId` (✨ Generated from Field `ParteDiarioRegistro`.`actividadId` of type `Int`)
+  """
+  actividadId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `actividadId` (✨ Generated from Field `ParteDiarioRegistro`.`actividadId` of type `Int`)
+  """
+  actividadId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId` of type `Int`
+  """
+  actividadProgramadaId: Int
+  """
+  ✨ `_expr` server value variant of `actividadProgramadaId` (✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId` of type `Int`)
+  """
+  actividadProgramadaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `actividadProgramadaId` (✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId` of type `Int`)
+  """
+  actividadProgramadaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId` of type `Int!`
+  """
+  docenteId: Int
+  """
+  ✨ `_expr` server value variant of `docenteId` (✨ Generated from Field `ParteDiarioRegistro`.`docenteId` of type `Int!`)
+  """
+  docenteId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `docenteId` (✨ Generated from Field `ParteDiarioRegistro`.`docenteId` of type `Int!`)
+  """
+  docenteId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int
+  """
+  ✨ `_expr` server value variant of `grupoModuloId` (✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `grupoModuloId` (✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId` of type `Int!`)
+  """
+  grupoModuloId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId` of type `Int`
+  """
+  jornadaId: Int
+  """
+  ✨ `_expr` server value variant of `jornadaId` (✨ Generated from Field `ParteDiarioRegistro`.`jornadaId` of type `Int`)
+  """
+  jornadaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `jornadaId` (✨ Generated from Field `ParteDiarioRegistro`.`jornadaId` of type `Int`)
+  """
+  jornadaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId` of type `Int`
+  """
+  unidadDidacticaId: Int
+  """
+  ✨ `_expr` server value variant of `unidadDidacticaId` (✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId` of type `Int`)
+  """
+  unidadDidacticaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `unidadDidacticaId` (✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId` of type `Int`)
+  """
+  unidadDidacticaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividad` of type `Actividad`
+  """
+  actividad: Actividad_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramada` of type `Actividad`
+  """
+  actividadProgramada: Actividad_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docente` of type `Personal!`
+  """
+  docente: Personal_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornada` of type `GrupoModuloJornada`
+  """
+  jornada: GrupoModuloJornada_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidactica` of type `UnidadDidactica`
+  """
+  unidadDidactica: UnidadDidactica_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadManual` of type `String`
+  """
+  actividadManual: String
+  """
+  ✨ `_expr` server value variant of `actividadManual` (✨ Generated from Field `ParteDiarioRegistro`.`actividadManual` of type `String`)
+  """
+  actividadManual_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actualizadoPor` of type `String!`
+  """
+  actualizadoPor: String
+  """
+  ✨ `_expr` server value variant of `actualizadoPor` (✨ Generated from Field `ParteDiarioRegistro`.`actualizadoPor` of type `String!`)
+  """
+  actualizadoPor_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes` of type `Int`
+  """
+  asistentes: Int
+  """
+  ✨ `_expr` server value variant of `asistentes` (✨ Generated from Field `ParteDiarioRegistro`.`asistentes` of type `Int`)
+  """
+  asistentes_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `asistentes` (✨ Generated from Field `ParteDiarioRegistro`.`asistentes` of type `Int`)
+  """
+  asistentes_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`creadoPor` of type `String!`
+  """
+  creadoPor: String
+  """
+  ✨ `_expr` server value variant of `creadoPor` (✨ Generated from Field `ParteDiarioRegistro`.`creadoPor` of type `String!`)
+  """
+  creadoPor_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fecha` of type `Date!`
+  """
+  fecha: Date
+  """
+  ✨ `_date` server value variant of `fecha` (✨ Generated from Field `ParteDiarioRegistro`.`fecha` of type `Date!`)
+  """
+  fecha_date: Date_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_expr` server value variant of `fecha` (✨ Generated from Field `ParteDiarioRegistro`.`fecha` of type `Date!`)
+  """
+  fecha_expr: Date_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fecha` (✨ Generated from Field `ParteDiarioRegistro`.`fecha` of type `Date!`)
+  """
+  fecha_update: [Date_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion` of type `Timestamp!`
+  """
+  fechaActualizacion: Timestamp
+  """
+  ✨ `_expr` server value variant of `fechaActualizacion` (✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion` of type `Timestamp!`)
+  """
+  fechaActualizacion_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fechaActualizacion` (✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion` of type `Timestamp!`)
+  """
+  fechaActualizacion_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaActualizacion` (✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion` of type `Timestamp!`)
+  """
+  fechaActualizacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion` of type `Timestamp!`
+  """
+  fechaCreacion: Timestamp
+  """
+  ✨ `_expr` server value variant of `fechaCreacion` (✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion` of type `Timestamp!`)
+  """
+  fechaCreacion_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `fechaCreacion` (✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion` of type `Timestamp!`)
+  """
+  fechaCreacion_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fechaCreacion` (✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion` of type `Timestamp!`)
+  """
+  fechaCreacion_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividad` of type `String!`
+  """
+  fichaActividad: String
+  """
+  ✨ `_expr` server value variant of `fichaActividad` (✨ Generated from Field `ParteDiarioRegistro`.`fichaActividad` of type `String!`)
+  """
+  fichaActividad_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor` of type `Int`
+  """
+  fichaActividadValor: Int
+  """
+  ✨ `_expr` server value variant of `fichaActividadValor` (✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor` of type `Int`)
+  """
+  fichaActividadValor_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `fichaActividadValor` (✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor` of type `Int`)
+  """
+  fichaActividadValor_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`firma` of type `String`
+  """
+  firma: String
+  """
+  ✨ `_expr` server value variant of `firma` (✨ Generated from Field `ParteDiarioRegistro`.`firma` of type `String`)
+  """
+  firma_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacion` of type `String!`
+  """
+  instrumentoEvaluacion: String
+  """
+  ✨ `_expr` server value variant of `instrumentoEvaluacion` (✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacion` of type `String!`)
+  """
+  instrumentoEvaluacion_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor` of type `Int`
+  """
+  instrumentoEvaluacionValor: Int
+  """
+  ✨ `_expr` server value variant of `instrumentoEvaluacionValor` (✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor` of type `Int`)
+  """
+  instrumentoEvaluacionValor_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `instrumentoEvaluacionValor` (✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor` of type `Int`)
+  """
+  instrumentoEvaluacionValor_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`material` of type `String!`
+  """
+  material: String
+  """
+  ✨ `_expr` server value variant of `material` (✨ Generated from Field `ParteDiarioRegistro`.`material` of type `String!`)
+  """
+  material_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor` of type `Int`
+  """
+  materialValor: Int
+  """
+  ✨ `_expr` server value variant of `materialValor` (✨ Generated from Field `ParteDiarioRegistro`.`materialValor` of type `Int`)
+  """
+  materialValor_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `materialValor` (✨ Generated from Field `ParteDiarioRegistro`.`materialValor` of type `Int`)
+  """
+  materialValor_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados` of type `Int!`
+  """
+  matriculados: Int
+  """
+  ✨ `_expr` server value variant of `matriculados` (✨ Generated from Field `ParteDiarioRegistro`.`matriculados` of type `Int!`)
+  """
+  matriculados_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `matriculados` (✨ Generated from Field `ParteDiarioRegistro`.`matriculados` of type `Int!`)
+  """
+  matriculados_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`observaciones` of type `[String!]!`
+  """
+  observaciones: [String!]
+  """
+  ✨ `_update` server value variant of `observaciones` (✨ Generated from Field `ParteDiarioRegistro`.`observaciones` of type `[String!]!`)
+  """
+  observaciones_update: [String_ListUpdate!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silabo` of type `String!`
+  """
+  silabo: String
+  """
+  ✨ `_expr` server value variant of `silabo` (✨ Generated from Field `ParteDiarioRegistro`.`silabo` of type `String!`)
+  """
+  silabo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor` of type `Int`
+  """
+  silaboValor: Int
+  """
+  ✨ `_expr` server value variant of `silaboValor` (✨ Generated from Field `ParteDiarioRegistro`.`silaboValor` of type `Int`)
+  """
+  silaboValor_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `silaboValor` (✨ Generated from Field `ParteDiarioRegistro`.`silaboValor` of type `Int`)
+  """
+  silaboValor_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareas` of type `String!`
+  """
+  tareas: String
+  """
+  ✨ `_expr` server value variant of `tareas` (✨ Generated from Field `ParteDiarioRegistro`.`tareas` of type `String!`)
+  """
+  tareas_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor` of type `Int`
+  """
+  tareasValor: Int
+  """
+  ✨ `_expr` server value variant of `tareasValor` (✨ Generated from Field `ParteDiarioRegistro`.`tareasValor` of type `Int`)
+  """
+  tareasValor_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `tareasValor` (✨ Generated from Field `ParteDiarioRegistro`.`tareasValor` of type `Int`)
+  """
+  tareasValor_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tipoUnidad` of type `String!`
+  """
+  tipoUnidad: String
+  """
+  ✨ `_expr` server value variant of `tipoUnidad` (✨ Generated from Field `ParteDiarioRegistro`.`tipoUnidad` of type `String!`)
+  """
+  tipoUnidad_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'ParteDiarioRegistro'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input ParteDiarioRegistro_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [ParteDiarioRegistro_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: ParteDiarioRegistro_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [ParteDiarioRegistro_Filter!]
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId` of type `Int`
+  """
+  actividadId: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId` of type `Int`
+  """
+  actividadProgramadaId: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId` of type `Int!`
+  """
+  docenteId: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId` of type `Int`
+  """
+  jornadaId: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId` of type `Int`
+  """
+  unidadDidacticaId: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividad` of type `Actividad`
+  """
+  actividad: Actividad_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramada` of type `Actividad`
+  """
+  actividadProgramada: Actividad_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docente` of type `Personal!`
+  """
+  docente: Personal_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornada` of type `GrupoModuloJornada`
+  """
+  jornada: GrupoModuloJornada_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidactica` of type `UnidadDidactica`
+  """
+  unidadDidactica: UnidadDidactica_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadManual` of type `String`
+  """
+  actividadManual: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actualizadoPor` of type `String!`
+  """
+  actualizadoPor: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes` of type `Int`
+  """
+  asistentes: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`creadoPor` of type `String!`
+  """
+  creadoPor: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fecha` of type `Date!`
+  """
+  fecha: Date_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion` of type `Timestamp!`
+  """
+  fechaActualizacion: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion` of type `Timestamp!`
+  """
+  fechaCreacion: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividad` of type `String!`
+  """
+  fichaActividad: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor` of type `Int`
+  """
+  fichaActividadValor: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`firma` of type `String`
+  """
+  firma: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacion` of type `String!`
+  """
+  instrumentoEvaluacion: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor` of type `Int`
+  """
+  instrumentoEvaluacionValor: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`material` of type `String!`
+  """
+  material: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor` of type `Int`
+  """
+  materialValor: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados` of type `Int!`
+  """
+  matriculados: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`observaciones` of type `[String!]!`
+  """
+  observaciones: String_ListFilter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silabo` of type `String!`
+  """
+  silabo: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor` of type `Int`
+  """
+  silaboValor: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareas` of type `String!`
+  """
+  tareas: String_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor` of type `Int`
+  """
+  tareasValor: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tipoUnidad` of type `String!`
+  """
+  tipoUnidad: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'ParteDiarioRegistro'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input ParteDiarioRegistro_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [ParteDiarioRegistro_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: ParteDiarioRegistro_Filter
+}
+"""
+✨ Generated having input type for table 'ParteDiarioRegistro'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input ParteDiarioRegistro_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [ParteDiarioRegistro_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: ParteDiarioRegistro_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [ParteDiarioRegistro_Having!]
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId_count` of type `Int!`
+  """
+  actividadId_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadManual_count` of type `Int!`
+  """
+  actividadManual_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId_count` of type `Int!`
+  """
+  actividadProgramadaId_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actualizadoPor_count` of type `Int!`
+  """
+  actualizadoPor_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_count` of type `Int!`
+  """
+  asistentes_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`creadoPor_count` of type `Int!`
+  """
+  creadoPor_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_count` of type `Int!`
+  """
+  docenteId_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion_count` of type `Int!`
+  """
+  fechaActualizacion_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion_count` of type `Int!`
+  """
+  fechaCreacion_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fecha_count` of type `Int!`
+  """
+  fecha_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor_count` of type `Int!`
+  """
+  fichaActividadValor_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividad_count` of type `Int!`
+  """
+  fichaActividad_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`firma_count` of type `Int!`
+  """
+  firma_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor_count` of type `Int!`
+  """
+  instrumentoEvaluacionValor_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacion_count` of type `Int!`
+  """
+  instrumentoEvaluacion_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId_count` of type `Int!`
+  """
+  jornadaId_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor_count` of type `Int!`
+  """
+  materialValor_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`material_count` of type `Int!`
+  """
+  material_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados_count` of type `Int!`
+  """
+  matriculados_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor_count` of type `Int!`
+  """
+  silaboValor_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silabo_count` of type `Int!`
+  """
+  silabo_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor_count` of type `Int!`
+  """
+  tareasValor_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareas_count` of type `Int!`
+  """
+  tareas_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tipoUnidad_count` of type `Int!`
+  """
+  tipoUnidad_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId_count` of type `Int!`
+  """
+  unidadDidacticaId_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId_sum` of type `Int`
+  """
+  actividadId_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId_sum` of type `Int`
+  """
+  actividadProgramadaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_sum` of type `Int`
+  """
+  asistentes_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_sum` of type `Int`
+  """
+  docenteId_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor_sum` of type `Int`
+  """
+  fichaActividadValor_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor_sum` of type `Int`
+  """
+  instrumentoEvaluacionValor_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId_sum` of type `Int`
+  """
+  jornadaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor_sum` of type `Int`
+  """
+  materialValor_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados_sum` of type `Int`
+  """
+  matriculados_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor_sum` of type `Int`
+  """
+  silaboValor_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor_sum` of type `Int`
+  """
+  tareasValor_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId_sum` of type `Int`
+  """
+  unidadDidacticaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId_avg` of type `Float`
+  """
+  actividadId_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId_avg` of type `Float`
+  """
+  actividadProgramadaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_avg` of type `Float`
+  """
+  asistentes_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_avg` of type `Float`
+  """
+  docenteId_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor_avg` of type `Float`
+  """
+  fichaActividadValor_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor_avg` of type `Float`
+  """
+  instrumentoEvaluacionValor_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId_avg` of type `Float`
+  """
+  jornadaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor_avg` of type `Float`
+  """
+  materialValor_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados_avg` of type `Float`
+  """
+  matriculados_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor_avg` of type `Float`
+  """
+  silaboValor_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor_avg` of type `Float`
+  """
+  tareasValor_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId_avg` of type `Float`
+  """
+  unidadDidacticaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId_min` of type `Int`
+  """
+  actividadId_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId_min` of type `Int`
+  """
+  actividadProgramadaId_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_min` of type `Int`
+  """
+  asistentes_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_min` of type `Int`
+  """
+  docenteId_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion_min` of type `Timestamp`
+  """
+  fechaActualizacion_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion_min` of type `Timestamp`
+  """
+  fechaCreacion_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fecha_min` of type `Date`
+  """
+  fecha_min: Date_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor_min` of type `Int`
+  """
+  fichaActividadValor_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor_min` of type `Int`
+  """
+  instrumentoEvaluacionValor_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId_min` of type `Int`
+  """
+  jornadaId_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor_min` of type `Int`
+  """
+  materialValor_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados_min` of type `Int`
+  """
+  matriculados_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor_min` of type `Int`
+  """
+  silaboValor_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor_min` of type `Int`
+  """
+  tareasValor_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId_min` of type `Int`
+  """
+  unidadDidacticaId_min: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId_max` of type `Int`
+  """
+  actividadId_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId_max` of type `Int`
+  """
+  actividadProgramadaId_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_max` of type `Int`
+  """
+  asistentes_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_max` of type `Int`
+  """
+  docenteId_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion_max` of type `Timestamp`
+  """
+  fechaActualizacion_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion_max` of type `Timestamp`
+  """
+  fechaCreacion_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fecha_max` of type `Date`
+  """
+  fecha_max: Date_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor_max` of type `Int`
+  """
+  fichaActividadValor_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor_max` of type `Int`
+  """
+  instrumentoEvaluacionValor_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId_max` of type `Int`
+  """
+  jornadaId_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor_max` of type `Int`
+  """
+  materialValor_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados_max` of type `Int`
+  """
+  matriculados_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor_max` of type `Int`
+  """
+  silaboValor_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor_max` of type `Int`
+  """
+  tareasValor_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId_max` of type `Int`
+  """
+  unidadDidacticaId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'ParteDiarioRegistro'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input ParteDiarioRegistro_Key {
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ParteDiarioRegistro`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'ParteDiarioRegistro'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input ParteDiarioRegistro_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: ParteDiarioRegistro_Filter
+}
+"""
+✨ Generated order input type for table 'ParteDiarioRegistro'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input ParteDiarioRegistro_Order {
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId` of type `Int`
+  """
+  actividadId: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId` of type `Int`
+  """
+  actividadProgramadaId: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId` of type `Int!`
+  """
+  docenteId: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId` of type `Int!`
+  """
+  grupoModuloId: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId` of type `Int`
+  """
+  jornadaId: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId` of type `Int`
+  """
+  unidadDidacticaId: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividad` of type `Actividad`
+  """
+  actividad: Actividad_Order
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramada` of type `Actividad`
+  """
+  actividadProgramada: Actividad_Order
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docente` of type `Personal!`
+  """
+  docente: Personal_Order
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModulo` of type `GrupoModulo!`
+  """
+  grupoModulo: GrupoModulo_Order
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornada` of type `GrupoModuloJornada`
+  """
+  jornada: GrupoModuloJornada_Order
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidactica` of type `UnidadDidactica`
+  """
+  unidadDidactica: UnidadDidactica_Order
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadManual` of type `String`
+  """
+  actividadManual: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actualizadoPor` of type `String!`
+  """
+  actualizadoPor: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes` of type `Int`
+  """
+  asistentes: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`creadoPor` of type `String!`
+  """
+  creadoPor: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fecha` of type `Date!`
+  """
+  fecha: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion` of type `Timestamp!`
+  """
+  fechaActualizacion: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion` of type `Timestamp!`
+  """
+  fechaCreacion: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividad` of type `String!`
+  """
+  fichaActividad: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor` of type `Int`
+  """
+  fichaActividadValor: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`firma` of type `String`
+  """
+  firma: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacion` of type `String!`
+  """
+  instrumentoEvaluacion: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor` of type `Int`
+  """
+  instrumentoEvaluacionValor: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`material` of type `String!`
+  """
+  material: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor` of type `Int`
+  """
+  materialValor: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados` of type `Int!`
+  """
+  matriculados: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silabo` of type `String!`
+  """
+  silabo: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor` of type `Int`
+  """
+  silaboValor: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareas` of type `String!`
+  """
+  tareas: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor` of type `Int`
+  """
+  tareasValor: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tipoUnidad` of type `String!`
+  """
+  tipoUnidad: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId_count` of type `Int!`
+  """
+  actividadId_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadManual_count` of type `Int!`
+  """
+  actividadManual_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId_count` of type `Int!`
+  """
+  actividadProgramadaId_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actualizadoPor_count` of type `Int!`
+  """
+  actualizadoPor_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_count` of type `Int!`
+  """
+  asistentes_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`creadoPor_count` of type `Int!`
+  """
+  creadoPor_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_count` of type `Int!`
+  """
+  docenteId_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion_count` of type `Int!`
+  """
+  fechaActualizacion_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion_count` of type `Int!`
+  """
+  fechaCreacion_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fecha_count` of type `Int!`
+  """
+  fecha_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor_count` of type `Int!`
+  """
+  fichaActividadValor_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividad_count` of type `Int!`
+  """
+  fichaActividad_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`firma_count` of type `Int!`
+  """
+  firma_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId_count` of type `Int!`
+  """
+  grupoModuloId_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor_count` of type `Int!`
+  """
+  instrumentoEvaluacionValor_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacion_count` of type `Int!`
+  """
+  instrumentoEvaluacion_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId_count` of type `Int!`
+  """
+  jornadaId_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor_count` of type `Int!`
+  """
+  materialValor_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`material_count` of type `Int!`
+  """
+  material_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados_count` of type `Int!`
+  """
+  matriculados_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor_count` of type `Int!`
+  """
+  silaboValor_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silabo_count` of type `Int!`
+  """
+  silabo_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor_count` of type `Int!`
+  """
+  tareasValor_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareas_count` of type `Int!`
+  """
+  tareas_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tipoUnidad_count` of type `Int!`
+  """
+  tipoUnidad_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId_count` of type `Int!`
+  """
+  unidadDidacticaId_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId_sum` of type `Int`
+  """
+  actividadId_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId_sum` of type `Int`
+  """
+  actividadProgramadaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_sum` of type `Int`
+  """
+  asistentes_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_sum` of type `Int`
+  """
+  docenteId_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor_sum` of type `Int`
+  """
+  fichaActividadValor_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId_sum` of type `Int`
+  """
+  grupoModuloId_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor_sum` of type `Int`
+  """
+  instrumentoEvaluacionValor_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId_sum` of type `Int`
+  """
+  jornadaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor_sum` of type `Int`
+  """
+  materialValor_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados_sum` of type `Int`
+  """
+  matriculados_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor_sum` of type `Int`
+  """
+  silaboValor_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor_sum` of type `Int`
+  """
+  tareasValor_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId_sum` of type `Int`
+  """
+  unidadDidacticaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId_avg` of type `Float`
+  """
+  actividadId_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId_avg` of type `Float`
+  """
+  actividadProgramadaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_avg` of type `Float`
+  """
+  asistentes_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_avg` of type `Float`
+  """
+  docenteId_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor_avg` of type `Float`
+  """
+  fichaActividadValor_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId_avg` of type `Float`
+  """
+  grupoModuloId_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor_avg` of type `Float`
+  """
+  instrumentoEvaluacionValor_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId_avg` of type `Float`
+  """
+  jornadaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor_avg` of type `Float`
+  """
+  materialValor_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados_avg` of type `Float`
+  """
+  matriculados_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor_avg` of type `Float`
+  """
+  silaboValor_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor_avg` of type `Float`
+  """
+  tareasValor_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId_avg` of type `Float`
+  """
+  unidadDidacticaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId_min` of type `Int`
+  """
+  actividadId_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId_min` of type `Int`
+  """
+  actividadProgramadaId_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_min` of type `Int`
+  """
+  asistentes_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_min` of type `Int`
+  """
+  docenteId_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion_min` of type `Timestamp`
+  """
+  fechaActualizacion_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion_min` of type `Timestamp`
+  """
+  fechaCreacion_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fecha_min` of type `Date`
+  """
+  fecha_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor_min` of type `Int`
+  """
+  fichaActividadValor_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId_min` of type `Int`
+  """
+  grupoModuloId_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor_min` of type `Int`
+  """
+  instrumentoEvaluacionValor_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId_min` of type `Int`
+  """
+  jornadaId_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor_min` of type `Int`
+  """
+  materialValor_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados_min` of type `Int`
+  """
+  matriculados_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor_min` of type `Int`
+  """
+  silaboValor_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor_min` of type `Int`
+  """
+  tareasValor_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId_min` of type `Int`
+  """
+  unidadDidacticaId_min: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadId_max` of type `Int`
+  """
+  actividadId_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`actividadProgramadaId_max` of type `Int`
+  """
+  actividadProgramadaId_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_max` of type `Int`
+  """
+  asistentes_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_max` of type `Int`
+  """
+  docenteId_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaActualizacion_max` of type `Timestamp`
+  """
+  fechaActualizacion_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fechaCreacion_max` of type `Timestamp`
+  """
+  fechaCreacion_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fecha_max` of type `Date`
+  """
+  fecha_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`fichaActividadValor_max` of type `Int`
+  """
+  fichaActividadValor_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`grupoModuloId_max` of type `Int`
+  """
+  grupoModuloId_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`instrumentoEvaluacionValor_max` of type `Int`
+  """
+  instrumentoEvaluacionValor_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`jornadaId_max` of type `Int`
+  """
+  jornadaId_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`materialValor_max` of type `Int`
+  """
+  materialValor_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`matriculados_max` of type `Int`
+  """
+  matriculados_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`silaboValor_max` of type `Int`
+  """
+  silaboValor_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`tareasValor_max` of type `Int`
+  """
+  tareasValor_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`unidadDidacticaId_max` of type `Int`
+  """
+  unidadDidacticaId_max: OrderDirection
+}
+"""
 ✨ Generated data input type for table 'Personal'. It includes all necessary fields for creating or upserting rows into table.
 """
 input Personal_Data {
@@ -27329,6 +30401,14 @@ input Personal_Data {
   ✨ Generated from Field `Personal`.`matriculas_on_responsable` of type `[Matricula!]!`
   """
   matriculas_on_responsable: [Matricula_Data!]
+  """
+  ✨ Generated from Field `Personal`.`parteDiarioInformes_on_docente` of type `[ParteDiarioInforme!]!`
+  """
+  parteDiarioInformes_on_docente: [ParteDiarioInforme_Data!]
+  """
+  ✨ Generated from Field `Personal`.`parteDiarioRegistros_on_docente` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_docente: [ParteDiarioRegistro_Data!]
   """
   ✨ Generated from Field `Personal`.`personals_on_monitoreadoPor` of type `[Personal!]!`
   """
@@ -27406,6 +30486,14 @@ input Personal_Filter {
   ✨ Generated from Field `Personal`.`matriculas_on_responsable` of type `[Matricula!]!`
   """
   matriculas_on_responsable: Matricula_ListFilter
+  """
+  ✨ Generated from Field `Personal`.`parteDiarioInformes_on_docente` of type `[ParteDiarioInforme!]!`
+  """
+  parteDiarioInformes_on_docente: ParteDiarioInforme_ListFilter
+  """
+  ✨ Generated from Field `Personal`.`parteDiarioRegistros_on_docente` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_docente: ParteDiarioRegistro_ListFilter
   """
   ✨ Generated from Field `Personal`.`personals_on_monitoreadoPor` of type `[Personal!]!`
   """
@@ -33600,6 +36688,10 @@ input Semestre_Data {
   """
   matriculaCambiosModulo_on_semestre: [MatriculaCambioModulo_Data!]
   """
+  ✨ Generated from Field `Semestre`.`parteDiarioInformes_on_semestre` of type `[ParteDiarioInforme!]!`
+  """
+  parteDiarioInformes_on_semestre: [ParteDiarioInforme_Data!]
+  """
   ✨ Generated from Field `Semestre`.`planes_on_periodoVigencia` of type `[Plan!]!`
   """
   planes_on_periodoVigencia: [Plan_Data!]
@@ -33716,6 +36808,10 @@ input Semestre_Filter {
   ✨ Generated from Field `Semestre`.`matriculaCambiosModulo_on_semestre` of type `[MatriculaCambioModulo!]!`
   """
   matriculaCambiosModulo_on_semestre: MatriculaCambioModulo_ListFilter
+  """
+  ✨ Generated from Field `Semestre`.`parteDiarioInformes_on_semestre` of type `[ParteDiarioInforme!]!`
+  """
+  parteDiarioInformes_on_semestre: ParteDiarioInforme_ListFilter
   """
   ✨ Generated from Field `Semestre`.`planes_on_periodoVigencia` of type `[Plan!]!`
   """
@@ -35206,6 +38302,10 @@ input UnidadDidactica_Data {
   """
   grupoModuloUnidadesDidacticas_on_unidadDidactica: [GrupoModuloUnidadDidactica_Data!]
   """
+  ✨ Generated from Field `UnidadDidactica`.`parteDiarioRegistros_on_unidadDidactica` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_unidadDidactica: [ParteDiarioRegistro_Data!]
+  """
   ✨ Generated from Field `UnidadDidactica`.`unidadesDidacticasEstudiantes_on_unidadDidactica` of type `[UnidadDidacticaEstudiante!]!`
   """
   unidadesDidacticasEstudiantes_on_unidadDidactica: [UnidadDidacticaEstudiante_Data!]
@@ -35262,6 +38362,10 @@ input UnidadDidactica_Filter {
   ✨ Generated from Field `UnidadDidactica`.`grupoModuloUnidadesDidacticas_on_unidadDidactica` of type `[GrupoModuloUnidadDidactica!]!`
   """
   grupoModuloUnidadesDidacticas_on_unidadDidactica: GrupoModuloUnidadDidactica_ListFilter
+  """
+  ✨ Generated from Field `UnidadDidactica`.`parteDiarioRegistros_on_unidadDidactica` of type `[ParteDiarioRegistro!]!`
+  """
+  parteDiarioRegistros_on_unidadDidactica: ParteDiarioRegistro_ListFilter
   """
   ✨ Generated from Field `UnidadDidactica`.`unidadesDidacticasEstudiantes_on_unidadDidactica` of type `[UnidadDidacticaEstudiante!]!`
   """

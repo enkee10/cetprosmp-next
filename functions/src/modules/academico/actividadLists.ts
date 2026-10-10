@@ -2,6 +2,7 @@ import { https } from "firebase-functions/v1";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { DataConnectActividadInput } from "../core/types.js";
 import { getIdFromKeyOutput } from "../core/userMappers.js";
+import { getOrCreateMaterial } from "../materiales/handlers.js";
 
 export function parseActividadList(value: unknown, field: string): string[] | undefined {
   if (value === undefined) return undefined;
@@ -19,6 +20,7 @@ export function parseActividadList(value: unknown, field: string): string[] | un
 export async function saveActividadLists(
   data: DataConnectActividadInput, id: number | null, contenidos?: string[], materiales?: string[],
 ): Promise<number> {
+  const materialRows = materiales ? await Promise.all(materiales.map(getOrCreateMaterial)) : [];
   const variables: Record<string, unknown> = { data };
   const definitions = ['$data:Actividad_Data! @allow(fields:"nombre descripcion proposito ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId moduloId numeroSesion orden")'];
   if (id) { definitions.push('$id:Int!'); variables.id = id; }
@@ -35,7 +37,8 @@ export async function saveActividadLists(
       const variable = `${name}${index}`;
       definitions.push(`$${variable}:String!`);
       variables[variable] = texto;
-      fields.push(`${variable}:${singular}_insert(data:{actividadId_expr:"response.saved.id",orden:${index + 1},texto:$${variable}})`);
+      const material = name === "materiales" ? `,materialId:${materialRows[index].id}` : "";
+      fields.push(`${variable}:${singular}_insert(data:{actividadId_expr:"response.saved.id",orden:${index + 1},texto:$${variable}${material}})`);
     });
   }
   const response = await dataConnect.executeGraphql<{ saved: unknown }, Record<string, unknown>>(

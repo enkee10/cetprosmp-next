@@ -1,6 +1,5 @@
 import { https } from "firebase-functions/v1";
 import {
-  asNullableString,
   asNullableTimestamp,
   buildGrupoDataFromInput,
   buildGrupoModuloDataFromInput,
@@ -108,7 +107,6 @@ const LIST_GRUPOS_QUERY = `
       inicio
       fin
       instancia
-      sufijo
       grupoId
       moduloId
       modulo {
@@ -217,7 +215,6 @@ const GET_GRUPO_QUERY = `
       inicio
       fin
       instancia
-      sufijo
       grupoId
       moduloId
       modulo {
@@ -281,7 +278,6 @@ const GET_PAQUETE_MODULOS_FOR_GRUPO_QUERY = `
       orden
       obligatorio
       multiplicador
-      sufijos
       paqueteId
       moduloId
       modulo {
@@ -342,7 +338,6 @@ const GET_GRUPO_MODULOS_CALENDARIOS_QUERY = `
       nombre
       moduloId
       instancia
-      sufijo
       calendarioId
       inicio
       fin
@@ -539,7 +534,6 @@ const sortGruposWithModulos = (items: Array<DataConnectGrupo & { grupoModulos?: 
 interface GrupoModuloDetalleInput {
   moduloId: number;
   instancia: number;
-  sufijo?: string | null;
   orden?: number | null;
   obligatorio?: boolean;
   inicio?: string | null;
@@ -595,7 +589,6 @@ const normalizeGrupoModuloDetalles = (value: unknown) => {
     detalles.set(expandedGrupoModuloKey(moduloId, instancia), {
       moduloId,
       instancia,
-      sufijo: asNullableString(raw.sufijo),
       orden: toNumberOrNull(raw.orden),
       obligatorio: toBoolean(raw.obligatorio),
       inicio: asNullableTimestamp(raw.inicio),
@@ -615,32 +608,8 @@ type ExpandedPaqueteModulo = {
   paqueteModulo: DataConnectPaqueteModulo;
   moduloId: number;
   instancia: number;
-  sufijo: string;
   orden: number;
   obligatorio: boolean;
-};
-
-const parsePaqueteModuloSufijos = (value: unknown): string[] => {
-  const text = String(value ?? "").trim();
-  if (!text) return [];
-  try {
-    const parsed = JSON.parse(text);
-    if (Array.isArray(parsed)) return parsed.map((item) => String(item ?? "").trim());
-  } catch {
-    // Legacy text values can still be split below.
-  }
-  return text.split(/\r?\n|,/).map((item) => item.trim());
-};
-
-const appendGrupoModuloSufijo = (name: string, suffix: string) => {
-  const cleanSuffix = String(suffix ?? "").trim();
-  if (!cleanSuffix) return name;
-  const cleanName = name.replace(/\s+/g, " ").trim();
-  const markerIndex = cleanName.search(/\s\[/);
-  if (markerIndex > 0) {
-    return `${cleanName.slice(0, markerIndex)} (${cleanSuffix})${cleanName.slice(markerIndex)}`.trim();
-  }
-  return `${cleanName} (${cleanSuffix})`.trim();
 };
 
 const expandedGrupoModuloKey = (moduloId: number, instancia: number) => `${moduloId}:${instancia}`;
@@ -649,13 +618,11 @@ const expandPaqueteModulos = (items: DataConnectPaqueteModulo[]): ExpandedPaquet
   const expanded: ExpandedPaqueteModulo[] = [];
   for (const paqueteModulo of items) {
     const multiplicador = Math.max(1, Math.min(6, paqueteModulo.multiplicador ?? 1));
-    const sufijos = parsePaqueteModuloSufijos(paqueteModulo.sufijos);
     for (let index = 0; index < multiplicador; index += 1) {
       expanded.push({
         paqueteModulo,
         moduloId: paqueteModulo.moduloId,
         instancia: index + 1,
-        sufijo: sufijos[index] ?? "",
         orden: (paqueteModulo.orden ?? 0) * 10 + index + 1,
         obligatorio: paqueteModulo.obligatorio ?? true,
       });
@@ -750,13 +717,11 @@ async function syncGrupoModulos(
       const detalle = detalleInput.get(grupoModuloKey);
       const previous = previousGrupoModuloByKey.get(grupoModuloKey);
       const baseName = buildGrupoModuloNombreRelacional(existingResponse.data.grupo, expandedModulo.paqueteModulo.modulo);
-      const sufijo = detalle?.sufijo ?? expandedModulo.sufijo;
       const grupoModulo = buildGrupoModuloDataFromInput({
-        nombre: appendGrupoModuloSufijo(baseName, sufijo ?? ""),
+        nombre: previous?.nombre?.trim() ? previous.nombre : baseName,
         grupoId,
         moduloId: expandedModulo.moduloId,
         instancia: expandedModulo.instancia,
-        sufijo: sufijo || null,
         orden: detalle?.orden ?? expandedModulo.orden ?? index + 1,
         obligatorio: detalle?.obligatorio ?? expandedModulo.obligatorio,
         inicio: detalle?.hasInicio ? detalle.inicio ?? null : previous?.inicio ?? null,

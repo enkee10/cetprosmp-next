@@ -213,6 +213,7 @@ type Competencia @table(name: "competencias", singular: "competencia", plural: "
   id: Int! @col(dataType: "serial")
   nombre: String! @col(dataType: "text")
   tipo: TipoCompetencia!
+  orden: Int
   modulo: Modulo! @ref(fields: "moduloId", references: "id")
   moduloId: Int! @col(name: "modulo_id")
 }
@@ -309,12 +310,20 @@ type ActividadContenido @table(name: "actividad_contenidos", singular: "activida
   actividadId: Int! @col(name: "actividad_id")
 }
 
+type Material @table(name: "materiales", singular: "material", plural: "materiales") {
+  id: Int! @col(dataType: "serial")
+  nombre: String! @col(dataType: "text")
+  clave: String! @col(dataType: "text") @unique
+}
+
 type ActividadMaterial @table(name: "actividad_materiales", singular: "actividadMaterial", plural: "actividadMateriales") @unique(fields: ["actividad", "orden"]) {
   id: Int! @col(dataType: "serial")
   orden: Int!
   texto: String! @col(dataType: "text")
   actividad: Actividad! @ref(fields: "actividadId", references: "id")
   actividadId: Int! @col(name: "actividad_id")
+  material: Material @ref(fields: "materialId", references: "id")
+  materialId: Int @col(name: "material_id")
 }
 
 type Fase @table(name: "fases") {
@@ -696,7 +705,6 @@ type GrupoModulo @table(name: "grupo_modulos", singular: "grupoModulo", plural: 
   inicio: Timestamp
   fin: Timestamp
   instancia: Int
-  sufijo: String
 
   grupo: Grupo! @ref(fields: "grupoId", references: "id")
   grupoId: Int! @col(name: "grupo_id")
@@ -811,6 +819,77 @@ type EfsrtPppPractica @table(name: "efsrt_ppp_practicas", singular: "efsrtPppPra
 
   grupoModulo: GrupoModulo! @ref(fields: "grupoModuloId", references: "id")
   grupoModuloId: Int! @col(name: "grupo_modulo_id")
+}
+
+type GrupoModuloJornada @table(name: "grupo_modulo_jornadas", singular: "grupoModuloJornada", plural: "grupoModuloJornadas") @unique(fields: ["grupoModulo", "fecha"]) @index(fields: ["fecha"]) {
+  id: Int! @col(dataType: "serial")
+  fecha: Date!
+  tipo: String!
+  inicio: Timestamp!
+  fin: Timestamp!
+  horas: Float!
+  horasCurriculares: Float! @col(name: "horas_curriculares") @default(expr: "0")
+  pendiente: Boolean! @default(expr: "false")
+  evento: Evento @ref(fields: "eventoId")
+  eventoId: Int @col(name: "evento_id")
+  grupoModulo: GrupoModulo! @ref(fields: "grupoModuloId", references: "id")
+  grupoModuloId: Int! @col(name: "grupo_modulo_id")
+}
+
+type ParteDiarioRegistro @table(name: "parte_diario_registros", singular: "parteDiarioRegistro", plural: "parteDiarioRegistros") @unique(fields: ["fecha", "grupoModulo", "actividadProgramada"]) @unique(fields: ["fecha", "grupoModulo", "jornada"]) @index(fields: ["fecha"]) {
+  id: Int! @col(dataType: "serial")
+  fecha: Date!
+  grupoModulo: GrupoModulo! @ref(fields: "grupoModuloId", references: "id")
+  grupoModuloId: Int! @col(name: "grupo_modulo_id")
+  docente: Personal! @ref(fields: "docenteId", references: "id")
+  docenteId: Int! @col(name: "docente_id")
+  actividadProgramada: Actividad @ref(fields: "actividadProgramadaId", references: "id")
+  actividadProgramadaId: Int @col(name: "actividad_programada_id")
+  jornada: GrupoModuloJornada @ref(fields: "jornadaId", references: "id")
+  jornadaId: Int @col(name: "jornada_id")
+  tipoUnidad: String! @col(name: "tipo_unidad") @default(value: "curricular")
+  actividadManual: String @col(name: "actividad_manual", dataType: "text")
+  unidadDidactica: UnidadDidactica @ref(fields: "unidadDidacticaId", references: "id")
+  unidadDidacticaId: Int @col(name: "unidad_didactica_id")
+  actividad: Actividad @ref(fields: "actividadId", references: "id")
+  actividadId: Int @col(name: "actividad_id")
+  matriculados: Int!
+  asistentes: Int
+  silabo: String! @default(value: "Firmado y publicado")
+  fichaActividad: String! @col(name: "ficha_actividad") @default(value: "Está muy bien estructurada")
+  instrumentoEvaluacion: String! @col(name: "instrumento_evaluacion") @default(value: "Sí tiene, está muy bien estructurado y lo aplica")
+  material: String! @default(value: "Completo y publicado")
+  tareas: String! @default(value: "Publicado y respondido")
+  silaboValor: Int @col(name: "silabo_valor")
+  fichaActividadValor: Int @col(name: "ficha_actividad_valor")
+  instrumentoEvaluacionValor: Int @col(name: "instrumento_evaluacion_valor")
+  materialValor: Int @col(name: "material_valor")
+  tareasValor: Int @col(name: "tareas_valor")
+  firma: String @col(dataType: "text")
+  observaciones: [String!]!
+  creadoPor: String! @col(name: "creado_por")
+  actualizadoPor: String! @col(name: "actualizado_por")
+  fechaCreacion: Timestamp! @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp! @col(name: "fecha_actualizacion")
+}
+
+type ParteDiarioInforme @table(name: "parte_diario_informes", singular: "parteDiarioInforme", plural: "parteDiarioInformes") {
+  id: Int! @col(dataType: "serial")
+  fechaInicio: Date! @col(name: "fecha_inicio")
+  fechaFin: Date! @col(name: "fecha_fin")
+  semestreId: Int @col(name: "semestre_id")
+  semestre: Semestre @ref(fields: "semestreId", references: "id")
+  familiaId: Int @col(name: "familia_id")
+  familia: Familia @ref(fields: "familiaId", references: "id")
+  docenteId: Int @col(name: "docente_id")
+  docente: Personal @ref(fields: "docenteId", references: "id")
+  titulo: String!
+  analisis: String! @col(dataType: "text")
+  recomendaciones: String! @col(dataType: "text")
+  creadoPor: String! @col(name: "creado_por")
+  actualizadoPor: String! @col(name: "actualizado_por")
+  fechaCreacion: Timestamp! @col(name: "fecha_creacion")
+  fechaActualizacion: Timestamp! @col(name: "fecha_actualizacion")
 }
 
 type Evento @table(name: "eventos") {
@@ -956,7 +1035,6 @@ type PaqueteModulo @table(name: "paquete_modulos", singular: "paqueteModulo", pl
   orden: Int
   obligatorio: Boolean
   multiplicador: Int
-  sufijos: String @col(dataType: "text")
 
   paquete: Paquete! @ref(fields: "paqueteId", references: "id")
   paqueteId: Int! @col(name: "paquete_id")

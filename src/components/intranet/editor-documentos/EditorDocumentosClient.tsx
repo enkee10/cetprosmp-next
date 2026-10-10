@@ -1,8 +1,8 @@
 'use client';
 
 import React, { ChangeEvent, PointerEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   ButtonGroup,
@@ -1035,7 +1035,7 @@ function EditorImagenesContent({
         </Stack>
       </Box>
 
-      {message ? <Alert severity={message.includes('correctamente') ? 'success' : 'warning'} sx={{ m: 2 }}>{message}</Alert> : null}
+      {message ? <AutoDismissAlert severity={message.includes('correctamente') ? 'success' : 'warning'} sx={{ m: 2 }}>{message}</AutoDismissAlert> : null}
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: isSimpleVariant ? '190px minmax(0, 1fr)' : '250px minmax(0, 1fr)' }, gap: 0 }}>
         <Stack spacing={1.5} sx={{ p: 2, borderRight: { md: 1 }, borderColor: 'divider' }}>

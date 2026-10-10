@@ -1,0 +1,15 @@
+// Local-only setup. Preserves unrelated permissions and all report/document data.
+const fs=require('node:fs');
+process.env.GCLOUD_PROJECT='cetprosmp-2026';process.env.GOOGLE_CLOUD_PROJECT='cetprosmp-2026';process.env.DATA_CONNECT_EMULATOR_HOST='127.0.0.1:9399';
+const {dataConnect}=require('../functions/lib/modules/core/dataConnectCore.js');
+const {PARTE_VALUATIONS,VALUATION_FIELDS,valuationScore,scoreColumn}=require('../functions/lib/modules/parte-diario/valuations.js');
+const graph=async(q,v={})=>(await dataConnect.executeGraphql(q,{variables:v})).data;
+(async()=>{const state=await graph(`query ParteRatingSetup{rols{ id titulo scala } rolePermissions(limit:10000){id roleId entity canView canCreate canEdit canDelete} parteDiarioRegistros(limit:20000){id silabo fichaActividad instrumentoEvaluacion material tareas silaboValor fichaActividadValor instrumentoEvaluacionValor materialValor tareasValor}}`);if(state.parteDiarioRegistros.length===20000)throw Error('Se requiere paginar los registros antes de migrar.');
+ const changes=state.rols.flatMap(role=>['parte-diario','reportes-parte-diario'].map(entity=>{const allowed=role.scala>=600||(/coordinador/i.test(role.titulo))||(entity==='reportes-parte-diario'&&/director/i.test(role.titulo));return {roleId:role.id,entity,canView:allowed,canCreate:false,canEdit:allowed,canDelete:entity==='parte-diario'&&allowed};}));
+ if(!process.argv.includes('--apply')){console.log(JSON.stringify({localOnly:true,permissions:changes,legacyRecords:state.parteDiarioRegistros.length}));return;}
+ const dir='tmp/parte-reportes';fs.mkdirSync(dir,{recursive:true});const backup=dir+'/permissions-ratings-before-'+Date.now()+'.json';fs.writeFileSync(backup,JSON.stringify(state));
+ const ops=[],vars={},decl=[];changes.forEach((c,i)=>{const old=state.rolePermissions.find(p=>p.roleId===c.roleId&&p.entity===c.entity);if(old&&['canView','canCreate','canEdit','canDelete'].every(f=>old[f]===c[f]))return;vars['p'+i]=c;decl.push(`$p${i}:RolePermission_Data! @allow(fields:"roleId entity canView canCreate canEdit canDelete")`);ops.push(old?`p${i}:rolePermission_update(key:{id:${old.id}},data:$p${i})`:`p${i}:rolePermission_insert(data:$p${i})`);});
+ if(ops.length)await graph(`mutation PartePermissionsSetup(${decl.join(',')}) @transaction{${ops.join('\n')}}`,vars);
+ let migrated=0;for(const row of state.parteDiarioRegistros){const payload={};for(const f of VALUATION_FIELDS){const score=valuationScore(f,row[f]);if(score!=null){payload[f]=PARTE_VALUATIONS[f][score];payload[scoreColumn(f)]=score;}}if(Object.keys(payload).some(f=>row[f]!==payload[f])){await graph(`mutation MigrateParteRatings($data:ParteDiarioRegistro_Data! @allow(fields:"${Object.keys(payload).join(' ')}")){parteDiarioRegistro_update(key:{id:${row.id}},data:$data)}`,{data:payload});migrated++;}}
+ console.log(JSON.stringify({localOnly:true,backup,permissionChanges:ops.length,migrated,unknownLegacyRatingsRemainNull:true}));
+})().catch(e=>{console.error(e.message);process.exitCode=1});

@@ -1,8 +1,8 @@
 'use client';
 
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   CircularProgress,
@@ -209,8 +209,8 @@ export function DatoGeneralForm({
         </Typography>
       )}
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+      {error && <AutoDismissAlert severity="error" sx={{ mb: 2 }}>{error}</AutoDismissAlert>}
+      {success && <AutoDismissAlert severity="success" sx={{ mb: 2 }}>{success}</AutoDismissAlert>}
 
       <form onSubmit={handleSubmit}>
         <Box
@@ -298,9 +298,9 @@ export function DatoGeneralForm({
             </Box>
 
             {logoError ? (
-              <Alert severity="error" sx={{ py: 0 }}>
+              <AutoDismissAlert severity="error" sx={{ py: 0 }}>
                 {logoError}
-              </Alert>
+              </AutoDismissAlert>
             ) : null}
           </Box>
 

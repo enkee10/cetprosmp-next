@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Avatar,
   Box,
   Button,
@@ -16,7 +16,7 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
+import { GRID_CHECKBOX_SELECTION_COL_DEF, GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -248,7 +248,7 @@ function PersonalForm({
 
   return (
     <Box sx={{ pt: 1 }}>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <AutoDismissAlert severity="error" sx={{ mb: 2 }}>{error}</AutoDismissAlert>}
 
       <form onSubmit={handleSubmit}>
         <FormControl fullWidth required margin="normal">
@@ -461,6 +461,13 @@ export default function PersonalPage() {
         renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
       {
+        ...GRID_CHECKBOX_SELECTION_COL_DEF,
+        width: 44,
+        minWidth: 44,
+        maxWidth: 44,
+        hideable: false,
+      },
+      {
         field: 'avatar',
         headerName: 'Avatar',
         width: 68,
@@ -598,6 +605,7 @@ export default function PersonalPage() {
       columnToggleLabel="Campos"
     >
       <IntranetDataGrid
+        checkboxSelection
         rows={personal}
         columns={columns}
         columnVisibilityModel={columnVisibilityModel}

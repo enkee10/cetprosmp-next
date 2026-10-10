@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   Checkbox,
@@ -168,7 +168,7 @@ export function HorarioForm({ horarioId, asModal = false, onSaved, onCancel }: H
         </Typography>
       )}
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <AutoDismissAlert severity="error" sx={{ mb: 2 }}>{error}</AutoDismissAlert>}
 
       <form onSubmit={handleSubmit}>
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(12, minmax(0, 1fr))' } }}>

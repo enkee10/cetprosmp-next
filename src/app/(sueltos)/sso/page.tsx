@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Box, Button, CircularProgress, Paper, Stack } from '@mui/material';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import { Box, Button, CircularProgress, Paper, Stack } from '@mui/material';
 import { getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signInWithRedirect } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
@@ -158,7 +159,7 @@ export default function WorkspaceSsoPage() {
           }}
         >
           <Stack spacing={2.25} alignItems="center" textAlign="center">
-            {error ? <Alert severity="warning" sx={{ width: '100%', textAlign: 'left' }}>{error}</Alert> : null}
+            {error ? <AutoDismissAlert severity="warning" sx={{ width: '100%', textAlign: 'left' }}>{error}</AutoDismissAlert> : null}
             {retryReady ? (
               <Button
                 variant="contained"

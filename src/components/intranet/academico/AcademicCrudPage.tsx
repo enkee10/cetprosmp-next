@@ -8,6 +8,8 @@ import {
   GridPaginationModel,
 } from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
@@ -57,6 +59,8 @@ interface AcademicCrudPageProps {
   modalMaxWidth?: number | string;
   semestreFilter?: boolean;
   defaultPageSize?: number;
+  directActions?: boolean;
+  deleteWarning?: string;
 }
 
 interface SemestreFilterOption {
@@ -154,6 +158,8 @@ export function AcademicCrudPage({
   modalMaxWidth = 720,
   semestreFilter = false,
   defaultPageSize = 30,
+  directActions = false,
+  deleteWarning = '',
 }: AcademicCrudPageProps) {
   const [rows, setRows] = useState<AcademicRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -235,7 +241,7 @@ export function AcademicCrudPage({
     const row = rows.find((item) => String(item.id) === id);
     const rowTitle = row?.[labelField] ? ` "${row[labelField]}"` : '';
 
-    if (!window.confirm(`Estas seguro de eliminar ${entityLabel.toLowerCase()}${rowTitle}? Esta accion es irreversible.`)) {
+    if (!window.confirm(`Estas seguro de eliminar ${entityLabel.toLowerCase()}${rowTitle}? Esta accion es irreversible.${deleteWarning ? ` ${deleteWarning}` : ''}`)) {
       return;
     }
 
@@ -263,7 +269,7 @@ export function AcademicCrudPage({
         setError(`No se pudo eliminar ${entityLabel.toLowerCase()} en Data Connect.`);
       }
     }
-  }, [deleteCallableName, entityKey, entityLabel, entityPluralLabel, fetchRows, functions, labelField, rows]);
+  }, [deleteCallableName, deleteWarning, entityKey, entityLabel, entityPluralLabel, fetchRows, functions, labelField, rows]);
 
   const fieldTypeByName = useMemo(
     () => new Map(fields.map((field) => [field.name, field.type])),
@@ -300,12 +306,17 @@ export function AcademicCrudPage({
         headerName: '...',
         align: 'center',
         headerAlign: 'center',
-        width: 56,
-        minWidth: 56,
+        width: directActions ? 100 : 56,
+        minWidth: directActions ? 100 : 56,
         sortable: false,
         filterable: false,
         disableColumnMenu: true,
-        renderCell: (params) => (
+        renderCell: (params) => directActions ? (
+          <Stack direction="row" spacing={0.5}>
+            <IconButton size="small" title={`Editar ${entityLabel.toLowerCase()}`} aria-label={`Editar ${entityLabel.toLowerCase()}`} onClick={() => handleEdit(String(params.row.id))}><EditOutlinedIcon fontSize="small" /></IconButton>
+            <IconButton size="small" color="error" title={`Eliminar ${entityLabel.toLowerCase()}`} aria-label={`Eliminar ${entityLabel.toLowerCase()}`} onClick={() => void handleDelete(String(params.row.id))}><DeleteOutlineIcon fontSize="small" /></IconButton>
+          </Stack>
+        ) : (
           <IconButton
             size="small"
             aria-label="Opciones"
@@ -319,7 +330,7 @@ export function AcademicCrudPage({
         ),
       },
     ],
-    [columnConfigs, fieldTypeByName],
+    [columnConfigs, directActions, entityLabel, fieldTypeByName, handleDelete, handleEdit],
   );
 
   const columnToggleItems = useMemo(

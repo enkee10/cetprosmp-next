@@ -20,6 +20,7 @@ export default function AutoDismissAlert({
   autoHideDuration = 5000,
   autoHideSuccess = true,
   containerSx,
+  onClose,
   ...alertProps
 }: AutoDismissAlertProps) {
   const content = message ?? children;
@@ -36,7 +37,15 @@ export default function AutoDismissAlert({
   if (!content || !visible) return null;
 
   const alert = (
-    <Alert severity={severity} {...alertProps}>
+    <Alert
+      severity={severity}
+      closeText="Cerrar"
+      {...alertProps}
+      onClose={(event) => {
+        setVisible(false);
+        onClose?.(event);
+      }}
+    >
       {content}
     </Alert>
   );

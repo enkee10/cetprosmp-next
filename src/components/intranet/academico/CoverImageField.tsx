@@ -2,7 +2,8 @@
 
 import { useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { Alert, Box, Button, CircularProgress, TextField } from '@mui/material';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import { Box, Button, CircularProgress, TextField } from '@mui/material';
 import { getAuth } from 'firebase/auth';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { app, storage } from '@/lib/firebase';
@@ -116,9 +117,9 @@ export default function CoverImageField({
         ) : null}
       </Box>
       {uploadError ? (
-        <Alert severity="error" sx={{ mt: 1.5 }}>
+        <AutoDismissAlert severity="error" sx={{ mt: 1.5 }}>
           {uploadError}
-        </Alert>
+        </AutoDismissAlert>
       ) : null}
     </Box>
   );

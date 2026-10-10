@@ -5,8 +5,9 @@ import { requirePermission } from "../core/permissions.js";
 import { DataConnectEvento, DataConnectEventoInput } from "../core/types.js";
 import { generateEventoOcurrencias } from "./handlers.js";
 import { BusyInterval, distributeHours, limaDay, ScheduleRules, validateRules } from "./scheduling.js";
+import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
 
-const eventFields = `id titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado calendarioId
+const eventFields = `id titulo descripcion tipoEvento fechaInicio fechaFin todoElDia ubicacion color estado calendarioId semestreId
   minutosHoraAcademica computaHoras programacionHorariaId
   relaciones:eventoRelaciones_on_evento(limit:100) { entidadTipo entidadId }
   ocurrencias:eventoOcurrencias_on_evento(limit:1500) { id fechaInicio fechaFin estado numeroOcurrencia recurrenciaId grupoId }
@@ -16,20 +17,23 @@ const eventFields = `id titulo descripcion tipoEvento fechaInicio fechaFin todoE
 
 export interface AgendaEvent {
   id: string; eventoId: number; ocurrenciaId: number | null; titulo: string; descripcion: string | null;
-  calendarioId: number; fechaInicio: string; fechaFin: string; tipoEvento: string | null;
+  calendarioId: number; semestreId: number | null; fechaInicio: string; fechaFin: string; tipoEvento: string | null;
   todoElDia: boolean; color: string | null; estado: string | null; ubicacion: string | null;
   minutosHoraAcademica: number; computaHoras: boolean; programacionHorariaId: number | null;
   grupoIds: number[]; grupoModuloIds: number[]; relaciones: { entidadTipo?: string | null; entidadId?: number | null }[];
 }
-interface CalendarRow { id: number; titulo: string | null; color: string | null; activo: boolean | null; inicio: string | null; fin: string | null }
-interface GroupModuleRow { id: number; nombre: string | null; grupoId: number; calendarioId: number | null; modulo: { titulo: string | null; horas: number | null }; grupo: { nombreDisplay: string | null } }
+interface CalendarRow { id: number; titulo: string | null; color: string | null; activo: boolean | null; inicio: string | null; fin: string | null; semestreId: number | null }
+interface GroupModuleRow { id: number; nombre: string | null; grupoId: number; calendarioId: number | null; modulo: { titulo: string | null; horas: number | null }; grupo: { nombreDisplay: string | null; semestreId: number | null } }
+interface AgendaSemestre { id: number; titulo: string | null; inicio: string | null; fin: string | null }
+const AGENDA_OPTIONS_QUERY = `query AgendaOptions {
+  calendarios(limit:10000) { id titulo color activo inicio fin semestreId }
+  grupoModulos(limit:10000) { id nombre grupoId calendarioId modulo { titulo horas } grupo { nombreDisplay semestreId } }
+}`;
+const AGENDA_SEMESTRES_QUERY = `query AgendaSemestres { semestres(limit:1000) { id titulo inicio fin } }`;
 type EventRow = DataConnectEvento & { semestre?: { titulo?: string | null }; minutosHoraAcademica?: number | null; computaHoras?: boolean | null; programacionHorariaId?: number | null };
 
 export async function loadAgenda(inicio: string, fin: string) {
-  const options = await dataConnect.executeGraphql<{ calendarios: CalendarRow[]; grupoModulos: GroupModuleRow[] }, Record<string, never>>(`query AgendaOptions {
-    calendarios(limit:10000) { id titulo color activo inicio fin }
-    grupoModulos(limit:10000) { id nombre grupoId calendarioId modulo { titulo horas } grupo { nombreDisplay } }
-  }`);
+  const options = await dataConnect.executeGraphql<{ calendarios: CalendarRow[]; grupoModulos: GroupModuleRow[] }, Record<string, never>>(AGENDA_OPTIONS_QUERY);
   if (options.data.calendarios.length === 10000 || options.data.grupoModulos.length === 10000) throw new https.HttpsError("resource-exhausted", "Demasiadas opciones para el calendario.");
   const sources: EventRow[] = [];
   for (let offset = 0; ; offset += 500) {
@@ -64,7 +68,7 @@ export async function loadAgenda(inicio: string, fin: string) {
       const savedId = "id" in instance ? Number(instance.id) : null;
       eventos.push({ id: occurrence ? `${event.id}:${savedId ?? `r${instance.recurrenciaId}-${instance.numeroOcurrencia}`}` : String(event.id),
         eventoId: event.id, ocurrenciaId: occurrence ? savedId : null,
-        titulo: event.titulo || "Sin título", descripcion: event.descripcion ?? null, calendarioId: event.calendarioId,
+        titulo: event.titulo || "Sin título", descripcion: event.descripcion ?? null, calendarioId: event.calendarioId, semestreId: event.semestreId ?? null,
         fechaInicio: start, fechaFin: end, tipoEvento: event.tipoEvento ?? null, todoElDia: !!event.todoElDia,
         color: event.color ?? null, estado: event.estado === "cancelado" ? "cancelado" : instance.estado ?? event.estado ?? null,
         ubicacion: event.ubicacion ?? null, minutosHoraAcademica: event.minutosHoraAcademica ?? 60,
@@ -86,7 +90,31 @@ export const getCalendarioAgenda = runWith({ timeoutSeconds: 180 }).https.onCall
   await requirePermission(context, "calendario", "view");
   let dates;
   try { dates = range(data); } catch { throw new https.HttpsError("invalid-argument", "Intervalo de fechas inválido."); }
-  return loadAgenda(dates.inicio, dates.fin);
+  const rawSemestreId = data?.semestreId;
+  const semestreId = rawSemestreId == null || rawSemestreId === "" ? null : Number(rawSemestreId);
+  if (semestreId !== null && (!Number.isInteger(semestreId) || semestreId <= 0)) {
+    throw new https.HttpsError("invalid-argument", "Semestre inválido.");
+  }
+  const [agenda, semestreResponse, configuredIds] = await Promise.all([
+    loadAgenda(dates.inicio, dates.fin),
+    dataConnect.executeGraphql<{ semestres: AgendaSemestre[] }, Record<string, never>>(AGENDA_SEMESTRES_QUERY),
+    getConfiguredSemestreConsultaIds(),
+  ]);
+  const configured = configuredIds.length ? new Set(configuredIds) : null;
+  const semestres = semestreResponse.data.semestres.filter(row => !configured || configured.has(row.id))
+    .sort((a, b) => String(b.titulo ?? "").localeCompare(String(a.titulo ?? ""), "es", { numeric: true }) || b.id - a.id);
+  if (semestreId !== null && !semestres.some(row => row.id === semestreId)) {
+    throw new https.HttpsError("invalid-argument", "El semestre no está habilitado para consulta de datos.");
+  }
+  const visibleSemestres = new Set(semestreId === null ? semestres.map(row => row.id) : [semestreId]);
+  const calendarios = agenda.calendarios.filter(row => row.semestreId == null || visibleSemestres.has(row.semestreId));
+  const calendarIds = new Set(calendarios.map(row => row.id));
+  return {
+    calendarios,
+    grupoModulos: agenda.grupoModulos.filter(row => row.grupo.semestreId != null && visibleSemestres.has(row.grupo.semestreId)),
+    eventos: agenda.eventos.filter(row => calendarIds.has(row.calendarioId) && (row.semestreId == null || visibleSemestres.has(row.semestreId))),
+    semestres,
+  };
 });
 
 async function preview(rules: ScheduleRules) {

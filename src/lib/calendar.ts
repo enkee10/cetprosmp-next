@@ -1,14 +1,22 @@
 export type CalendarView = 'anio' | 'mes' | 'semana' | 'dia';
-export interface CalendarOption { id: number; titulo: string | null; color: string | null; activo: boolean | null }
-export interface GroupModuleOption { id: number; nombre: string | null; grupoId: number; calendarioId: number | null; modulo: { titulo: string | null; horas: number | null }; grupo: { nombreDisplay: string | null } }
+export const CALENDAR_EVENT_TYPES = ['clase', 'evaluacion', 'feriado', 'reunion', 'actividad', 'empleabilidad', 'ppp', 'efsrt', 'gestion', 'vacaciones_gestion', 'inicio_clases', 'fin_clases', 'dia_logro', 'otro'];
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  clase: 'Clase', evaluacion: 'Evaluación', feriado: 'Feriado', reunion: 'Reunión', actividad: 'Actividad', otro: 'Otro',
+  empleabilidad: 'Empleabilidad', ppp: 'PPP', efsrt: 'EFSRT', gestion: 'Días de gestión', vacaciones_gestion: 'Vacaciones / gestión',
+  inicio_clases: 'Inicio de clases', fin_clases: 'Término de clases', dia_logro: 'Día del logro',
+};
+export const calendarEventTypeLabel = (type: string | null | undefined) => type ? EVENT_TYPE_LABELS[type] ?? type : '';
+export interface CalendarOption { id: number; titulo: string | null; color: string | null; activo: boolean | null; semestreId?: number | null }
+export interface GroupModuleOption { id: number; nombre: string | null; grupoId: number; calendarioId: number | null; modulo: { titulo: string | null; horas: number | null }; grupo: { nombreDisplay: string | null; semestreId?: number | null } }
+export interface CalendarSemestre { id: number; titulo: string | null; inicio: string | null; fin: string | null }
 export interface CalendarEvent {
-  id: string; eventoId: number; ocurrenciaId: number | null; calendarioId: number;
+  id: string; eventoId: number; ocurrenciaId: number | null; calendarioId: number; semestreId?: number | null;
   titulo: string; descripcion: string | null; fechaInicio: string; fechaFin: string;
   todoElDia: boolean; tipoEvento: string | null; estado: string | null; color: string | null;
   ubicacion: string | null; minutosHoraAcademica: number; computaHoras: boolean; programacionHorariaId: number | null;
   grupoModuloIds: number[]; grupoIds: number[]; relaciones: { entidadTipo?: string | null; entidadId?: number | null }[];
 }
-export interface AgendaData { eventos: CalendarEvent[]; calendarios: CalendarOption[]; grupoModulos: GroupModuleOption[] }
+export interface AgendaData { eventos: CalendarEvent[]; calendarios: CalendarOption[]; grupoModulos: GroupModuleOption[]; semestres?: CalendarSemestre[] }
 export const dayInLima = (value: string | Date) => new Intl.DateTimeFormat('en-CA', {
   timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit',
 }).format(new Date(value));

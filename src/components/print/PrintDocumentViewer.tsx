@@ -1,8 +1,8 @@
 'use client';
 
 import React, { CSSProperties, ReactNode, RefObject, useRef, useState } from 'react';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   CircularProgress,
@@ -262,7 +262,7 @@ export default function PrintDocumentViewer({
         </Box>
       ) : error ? (
         <Box sx={{ maxWidth: 720, mx: 'auto', px: 2 }}>
-          <Alert severity="error">{error}</Alert>
+          <AutoDismissAlert severity="error">{error}</AutoDismissAlert>
         </Box>
       ) : (
         <>

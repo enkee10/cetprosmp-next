@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   CircularProgress,
@@ -1493,7 +1492,7 @@ export default function RegistroAuxiliarPage() {
         </Stack>
       </Stack>
 
-      {error && <Alert severity="error" sx={{ mb: 1.5 }}>{error}</Alert>}
+      {error && <AutoDismissAlert severity="error" sx={{ mb: 1.5 }}>{error}</AutoDismissAlert>}
       <AutoDismissAlert message={message} severity="success" sx={{ mb: 1.5 }} />
 
       <Paper sx={{ overflow: 'hidden', borderRadius: 1, border: '1px solid #2d2d2d' }}>

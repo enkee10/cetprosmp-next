@@ -460,7 +460,6 @@ export interface DataConnectGrupoModulo {
   inicio?: string | null;
   fin?: string | null;
   instancia?: number | null;
-  sufijo?: string | null;
   grupoId: number;
   moduloId: number;
   calendarioId?: number | null;
@@ -476,7 +475,6 @@ export interface DataConnectGrupoModuloInput {
   inicio?: string | null;
   fin?: string | null;
   instancia?: number | null;
-  sufijo?: string | null;
   grupoId: number;
   moduloId: number;
   calendarioId?: number | null;
@@ -681,7 +679,7 @@ export interface DataConnectModulo {
   tituloComercial?: string | null;
   orden?: number | null;
   descripcion?: string | null;
-  competencias?: Array<{ id: number; nombre: string; tipo: "TECNICA" | "EMPLEABILIDAD"; moduloId: number }>;
+  competencias?: Array<{ id: number; nombre: string; tipo: "TECNICA" | "EMPLEABILIDAD"; moduloId: number; orden?: number | null }>;
   horas?: number | null;
   creditos?: number | null;
   duracionEfsrt?: number | null;
@@ -777,7 +775,6 @@ export interface DataConnectPaqueteModulo {
   orden?: number | null;
   obligatorio?: boolean | null;
   multiplicador?: number | null;
-  sufijos?: string | null;
   paqueteId: number;
   moduloId: number;
   modulo?: Pick<DataConnectModulo, "titulo" | "tituloComercial" | "orden" | "plan"> | null;
@@ -788,7 +785,6 @@ export interface DataConnectPaqueteModuloInput {
   orden?: number | null;
   obligatorio?: boolean;
   multiplicador?: number | null;
-  sufijos?: string | null;
   paqueteId: number;
   moduloId: number;
 }
@@ -886,6 +882,7 @@ export interface DataConnectIndicadorCapacidad {
   sigla?: string | null;
   orden?: number | null;
   capacidadTerminalId?: number | null;
+  aprendizajes?: DataConnectAprendizaje[];
 }
 
 export interface DataConnectIndicadorCapacidadInput {
@@ -900,6 +897,7 @@ export interface DataConnectAprendizaje {
   descripcion?: string | null;
   sigla?: string | null;
   indicadorCapacidadId?: number | null;
+  actividades?: DataConnectActividad[];
 }
 
 export interface DataConnectAprendizajeInput {
@@ -914,7 +912,7 @@ export interface DataConnectActividad {
   numeroSesion?: number | null;
   orden?: number | null;
   contenidos?: Array<{ id: number; orden: number; texto: string }>;
-  materiales?: Array<{ id: number; orden: number; texto: string }>;
+  materiales?: Array<{ id: number; orden: number; texto: string; materialId?: number | null; material?: { nombre: string } | null }>;
   nombre?: string | null;
   descripcion?: string | null;
   proposito?: string | null;

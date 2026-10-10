@@ -265,6 +265,11 @@ export interface GrupoModuloActividad_Key {
   __typename?: 'GrupoModuloActividad_Key';
 }
 
+export interface GrupoModuloJornada_Key {
+  id: number;
+  __typename?: 'GrupoModuloJornada_Key';
+}
+
 export interface GrupoModuloUnidadDidactica_Key {
   id: number;
   __typename?: 'GrupoModuloUnidadDidactica_Key';
@@ -358,6 +363,11 @@ export interface ListUsersData {
   } & User_Key)[];
 }
 
+export interface Material_Key {
+  id: number;
+  __typename?: 'Material_Key';
+}
+
 export interface MatriculaCambioModulo_Key {
   id: number;
   __typename?: 'MatriculaCambioModulo_Key';
@@ -420,6 +430,16 @@ export interface PaqueteModulo_Key {
 export interface Paquete_Key {
   id: number;
   __typename?: 'Paquete_Key';
+}
+
+export interface ParteDiarioInforme_Key {
+  id: number;
+  __typename?: 'ParteDiarioInforme_Key';
+}
+
+export interface ParteDiarioRegistro_Key {
+  id: number;
+  __typename?: 'ParteDiarioRegistro_Key';
 }
 
 export interface PersonalEspecialidad_Key {

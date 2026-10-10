@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   Checkbox,
@@ -492,7 +492,7 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
         </Typography>
       )}
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <AutoDismissAlert severity="error" sx={{ mb: 2 }}>{error}</AutoDismissAlert>}
 
       <form onSubmit={handleSubmit}>
         <Box

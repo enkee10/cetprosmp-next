@@ -21,6 +21,7 @@ import {
   DataConnectUserInput,
 } from "../core/types.js";
 import { deleteMatriculaTree } from "../core/matriculaDeletion.js";
+import { ensureNoMatriculaScheduleConflicts } from "../core/matriculaScheduleValidation.js";
 import { getNextCodigoInscripcionForCurrentYear } from "../core/matriculaCodigoInscripcion.js";
 import { getDatosGeneralesGlobales as fetchDatosGeneralesGlobales } from "../datos-generales/service.js";
 import { getRequesterRoleId, isSuperUserContext, PermissionAction, requirePermission } from "../core/permissions.js";
@@ -1662,6 +1663,8 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
     if (duplicate) {
       throw new https.HttpsError("already-exists", "El estudiante ya esta matriculado en este grupo-modulo.");
     }
+
+    await ensureNoMatriculaScheduleConflicts({ userId, selections: [{ grupoModuloId, grupoId, moduloId }] });
 
     const matriculaPayload = buildMatriculaDataFromInput({
       recibo: null,

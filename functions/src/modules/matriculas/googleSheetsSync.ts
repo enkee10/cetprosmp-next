@@ -203,7 +203,6 @@ type DocenteGrupoModuloSheetRow = {
   nombre?: string | null;
   orden?: number | null;
   instancia?: number | null;
-  sufijo?: string | null;
   grupoId?: number | null;
   moduloId?: number | null;
   grupo?: {
@@ -444,7 +443,6 @@ const GET_DOCENTE_GRUPO_MODULO_FOR_SHEETS_QUERY = `
       nombre
       orden
       instancia
-      sufijo
       grupoId
       moduloId
       grupo {

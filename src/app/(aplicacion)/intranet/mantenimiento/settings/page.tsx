@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   CircularProgress,
@@ -272,7 +272,7 @@ export default function SettingsPage() {
     return (
       <IntranetListLayout title="Settings">
         <Box sx={{ px: 2, pb: 2 }}>
-          <Alert severity="error">No tienes permiso para ver settings.</Alert>
+          <AutoDismissAlert severity="error">No tienes permiso para ver settings.</AutoDismissAlert>
         </Box>
       </IntranetListLayout>
     );

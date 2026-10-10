@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Box, Button, CircularProgress, Paper, Stack, Typography } from '@mui/material';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import { Box, Button, CircularProgress, Paper, Stack, Typography } from '@mui/material';
 import { getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signInWithRedirect, signOut, User as FirebaseUser } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { MatriculaForm } from '@/components/intranet/matriculas/MatriculasClient';
@@ -397,27 +398,27 @@ export function MatriculaStandalonePage({ mode = 'actual' }: { mode?: MatriculaS
             <CircularProgress />
           </Box>
         ) : !firebaseUser ? (
-          <Alert severity={loginError ? 'warning' : 'info'}>
+          <AutoDismissAlert severity={loginError ? 'warning' : 'info'}>
             {loginError || 'Abriendo el acceso con Google institucional...'}
-          </Alert>
+          </AutoDismissAlert>
         ) : error ? (
           <Stack spacing={1.5}>
-            <Alert severity="error">{error}</Alert>
+            <AutoDismissAlert severity="error">{error}</AutoDismissAlert>
             <Button variant="outlined" onClick={handleSwitchAccount} sx={{ alignSelf: 'flex-start' }}>
               Usar otra cuenta
             </Button>
           </Stack>
         ) : !acceptsResponses ? (
           <Stack spacing={1.5}>
-            <Alert severity="info">El formulario no acepta respuestas en este momento.</Alert>
+            <AutoDismissAlert severity="info">El formulario no acepta respuestas en este momento.</AutoDismissAlert>
             <Button variant="outlined" onClick={handleSwitchAccount} sx={{ alignSelf: 'flex-start' }}>
               Usar otra cuenta
             </Button>
           </Stack>
         ) : !selectedSemestre ? (
-          <Alert severity="error">No se ha definido el semestre de matricula.</Alert>
+          <AutoDismissAlert severity="error">No se ha definido el semestre de matricula.</AutoDismissAlert>
         ) : !responsibleAllowed ? (
-          <Alert severity="error">Solo personal o superusuario puede llenar este formulario.</Alert>
+          <AutoDismissAlert severity="error">Solo personal o superusuario puede llenar este formulario.</AutoDismissAlert>
         ) : submitted ? (
           <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, bgcolor: '#fffdf9', borderRadius: 2 }}>
             <Stack spacing={2.5} alignItems="flex-start">

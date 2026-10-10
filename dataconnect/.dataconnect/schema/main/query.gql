@@ -936,6 +936,30 @@ extend type Query {
     first: GrupoModuloActividad_FirstRow
   ): GrupoModuloActividad @fdc_generated(from: "GrupoModuloActividad", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `GrupoModuloJornada` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  grupoModuloJornada(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModuloJornada_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModuloJornada_FirstRow
+  ): GrupoModuloJornada @fdc_generated(from: "GrupoModuloJornada", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `GrupoModuloUnidadDidactica` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   grupoModuloUnidadDidactica(
@@ -1031,6 +1055,30 @@ extend type Query {
     """
     first: IndicadorCapacidadEstudiante_FirstRow
   ): IndicadorCapacidadEstudiante @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Material` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  material(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Material_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Material_FirstRow
+  ): Material @fdc_generated(from: "Material", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `Matricula` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -1279,6 +1327,54 @@ extend type Query {
     """
     first: PaqueteModulo_FirstRow
   ): PaqueteModulo @fdc_generated(from: "PaqueteModulo", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ParteDiarioInforme` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  parteDiarioInforme(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ParteDiarioInforme_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ParteDiarioInforme_FirstRow
+  ): ParteDiarioInforme @fdc_generated(from: "ParteDiarioInforme", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ParteDiarioRegistro` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  parteDiarioRegistro(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ParteDiarioRegistro_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ParteDiarioRegistro_FirstRow
+  ): ParteDiarioRegistro @fdc_generated(from: "ParteDiarioRegistro", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `Personal` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -3148,6 +3244,40 @@ extend type Query {
     having: GrupoModuloActividad_Having
   ): [GrupoModuloActividad!]! @fdc_generated(from: "GrupoModuloActividad", purpose: QUERY_MULTIPLE)
   """
+  ✨ List `GrupoModuloJornada` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  grupoModuloJornadas(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: GrupoModuloJornada_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [GrupoModuloJornada_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: GrupoModuloJornada_Having
+  ): [GrupoModuloJornada!]! @fdc_generated(from: "GrupoModuloJornada", purpose: QUERY_MULTIPLE)
+  """
   ✨ List `GrupoModuloUnidadDidactica` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   grupoModuloUnidadesDidacticas(
@@ -3283,6 +3413,40 @@ extend type Query {
     """
     having: IndicadorCapacidadEstudiante_Having
   ): [IndicadorCapacidadEstudiante!]! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Material` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  materiales(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Material_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Material_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Material_Having
+  ): [Material!]! @fdc_generated(from: "Material", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Matricula` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -3691,6 +3855,74 @@ extend type Query {
     """
     having: PaqueteModulo_Having
   ): [PaqueteModulo!]! @fdc_generated(from: "PaqueteModulo", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ParteDiarioInforme` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  parteDiarioInformes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ParteDiarioInforme_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ParteDiarioInforme_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ParteDiarioInforme_Having
+  ): [ParteDiarioInforme!]! @fdc_generated(from: "ParteDiarioInforme", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ParteDiarioRegistro` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  parteDiarioRegistros(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ParteDiarioRegistro_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ParteDiarioRegistro_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ParteDiarioRegistro_Having
+  ): [ParteDiarioRegistro!]! @fdc_generated(from: "ParteDiarioRegistro", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Personal` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

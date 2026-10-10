@@ -260,6 +260,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
             return;
         }
         if (pathname?.startsWith('/sso')) return;
+        if (pathname === '/parte-diario') return;
         if (pathname?.startsWith('/matricula')) return;
 
         const redirectedForUid = window.sessionStorage.getItem(INTRANET_REDIRECT_KEY);
@@ -281,7 +282,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                 throw createIntranetAccessDeniedError();
             }
             setUser(userData);
-            router.replace('/intranet'); // redirige al usuario autenticado hacia la intranet
+            if (pathname !== '/parte-diario') router.replace('/intranet'); // conserva la página suelta al iniciar sesión allí
         } catch (error) {
             if (!isExpectedAuthError(error)) { // + evita registrar en consola los errores esperados de autenticacion controlados por la interfaz
                 console.error('Error during Google sign-in:', error); // + registra solo errores inesperados del login con Google para diagnostico real

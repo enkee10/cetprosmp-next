@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { Alert, Box, Button, Checkbox, Chip, FormControlLabel, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import { Box, Button, Checkbox, Chip, FormControlLabel, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { functions } from '@/lib/firebase';
 import { addCalendarDays, CalendarOption, GroupModuleOption } from '@/lib/calendar';
 import { formatDateTimeInAppTimeZone } from '@/lib/dateOnly';
@@ -38,7 +39,7 @@ export default function ProgramacionHorariaForm({ calendarios, grupoModulos, ini
   };
   return <Stack spacing={2} component="form" onSubmit={event => { event.preventDefault(); void preview(); }}>
     <Typography variant="body2">Programa una cantidad de horas nuevas, con una sesión por día seleccionado. La última sesión se ajusta para completar exactamente el objetivo.</Typography>
-    {error && <Alert severity="error">{error}</Alert>}
+    {error && <AutoDismissAlert severity="error">{error}</AutoDismissAlert>}
     <Box component="fieldset" disabled={busy} sx={{ border: 0, p: 0, m: 0, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
       <TextField label="Título de los eventos" value={rules.titulo} required onChange={event => update({ titulo: event.target.value })} />
       <TextField select label="Calendario" value={rules.calendarioId} required onChange={event => update({ calendarioId: event.target.value })}>
@@ -67,7 +68,7 @@ export default function ProgramacionHorariaForm({ calendarios, grupoModulos, ini
       <FormControlLabel control={<Checkbox checked={rules.evitarCruces} onChange={event => update({ evitarCruces: event.target.checked })} />} label="Evitar cruces del calendario y del grupo" />
     </Box>
     {proposed && <>
-      <Alert severity={proposed.completa ? 'success' : 'warning'}>{proposed.sesiones.length} sesiones · {proposed.horasProgramadas.toFixed(2)} horas académicas · {proposed.horasPendientes.toFixed(2)} horas pendientes. {proposed.completa ? 'Puedes guardar la programación.' : 'Amplía el periodo o ajusta los días disponibles.'}</Alert>
+      <AutoDismissAlert severity={proposed.completa ? 'success' : 'warning'}>{proposed.sesiones.length} sesiones · {proposed.horasProgramadas.toFixed(2)} horas académicas · {proposed.horasPendientes.toFixed(2)} horas pendientes. {proposed.completa ? 'Puedes guardar la programación.' : 'Amplía el periodo o ajusta los días disponibles.'}</AutoDismissAlert>
       <Box sx={{ maxHeight: 240, overflow: 'auto' }}>
         {proposed.sesiones.map(session => <Typography variant="body2" key={session.fechaInicio} sx={{ py: 0.5 }}>
           {formatDateTimeInAppTimeZone(session.fechaInicio)} → {formatDateTimeInAppTimeZone(session.fechaFin)} · {(session.minutos / Number(rules.minutosHoraAcademica)).toFixed(2)} h

@@ -106,6 +106,11 @@ export {
   listEstructuraAcademicaDocente,
   getEstructuraAcademicaDocenteMenu,
   createEstructuraAcademicaItem,
+  saveEstructuraAcademicaSesionItem,
+  listMateriales,
+  getMaterial,
+  createOrUpdateMaterial,
+  deleteMaterial,
   reuseEstructuraAcademicaItem,
   detachEstructuraAcademicaItem,
   updateEstructuraAcademicaCell,
@@ -185,3 +190,5 @@ export {
   listReporteDocumentosOptions,
 } from "./modules/index.js";
 export { getCalendarioAgenda, previewProgramacionHoraria, createProgramacionHoraria } from "./modules/calendarios/agenda.js";
+export { getParteDiario, getParteDiarioOpciones, saveParteDiario, transcribeParteDiario } from "./modules/parte-diario/handlers.js";
+export {getParteReporte,getParteReporteRegistro,getParteReporteOpciones,saveParteReporteRegistro,deleteParteDiarioRegistro,saveParteInforme} from './modules/parte-diario/reports.js';

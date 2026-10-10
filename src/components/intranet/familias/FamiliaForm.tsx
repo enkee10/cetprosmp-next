@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   CircularProgress,
@@ -164,7 +164,7 @@ export function FamiliaForm({ familia, familiaId, asModal = false, onSaved, onCa
         </Typography>
       )}
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <AutoDismissAlert severity="error" sx={{ mb: 2 }}>{error}</AutoDismissAlert>}
 
       <form onSubmit={handleSubmit}>
         <TextField

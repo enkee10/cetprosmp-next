@@ -1,0 +1,7323 @@
+{
+  "year": 2026,
+  "timezone": "America/Lima",
+  "minutesPerAcademicHour": 45,
+  "blocks": [
+    {
+      "hours": 300,
+      "pattern": "lv",
+      "cycle": 1,
+      "source": "Calendarizacion 26-2 -  300 horas lunes a viernes.pdf",
+      "sha256": "a4f28d99287fe8a9003e21bc0df455a48ac0aba9a8c91bef147f2b54042ca405",
+      "dates": [
+        {
+          "date": "2026-03-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-02",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-03",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-04",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-05",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-06",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-09",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-10",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-11",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-12",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-13",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-16",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-03-17",
+          "category": null
+        },
+        {
+          "date": "2026-03-18",
+          "category": null
+        },
+        {
+          "date": "2026-03-19",
+          "category": null
+        },
+        {
+          "date": "2026-03-20",
+          "category": null
+        },
+        {
+          "date": "2026-03-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-23",
+          "category": null
+        },
+        {
+          "date": "2026-03-24",
+          "category": null
+        },
+        {
+          "date": "2026-03-25",
+          "category": null
+        },
+        {
+          "date": "2026-03-26",
+          "category": null
+        },
+        {
+          "date": "2026-03-27",
+          "category": null
+        },
+        {
+          "date": "2026-03-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-30",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-03-31",
+          "category": null
+        },
+        {
+          "date": "2026-04-01",
+          "category": null
+        },
+        {
+          "date": "2026-04-02",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-04-03",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-04-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-06",
+          "category": null
+        },
+        {
+          "date": "2026-04-07",
+          "category": null
+        },
+        {
+          "date": "2026-04-08",
+          "category": null
+        },
+        {
+          "date": "2026-04-09",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-10",
+          "category": null
+        },
+        {
+          "date": "2026-04-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-13",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-14",
+          "category": null
+        },
+        {
+          "date": "2026-04-15",
+          "category": null
+        },
+        {
+          "date": "2026-04-16",
+          "category": null
+        },
+        {
+          "date": "2026-04-17",
+          "category": null
+        },
+        {
+          "date": "2026-04-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-20",
+          "category": null
+        },
+        {
+          "date": "2026-04-21",
+          "category": null
+        },
+        {
+          "date": "2026-04-22",
+          "category": null
+        },
+        {
+          "date": "2026-04-23",
+          "category": null
+        },
+        {
+          "date": "2026-04-24",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-27",
+          "category": null
+        },
+        {
+          "date": "2026-04-28",
+          "category": null
+        },
+        {
+          "date": "2026-04-29",
+          "category": null
+        },
+        {
+          "date": "2026-04-30",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-05-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-04",
+          "category": null
+        },
+        {
+          "date": "2026-05-05",
+          "category": null
+        },
+        {
+          "date": "2026-05-06",
+          "category": null
+        },
+        {
+          "date": "2026-05-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-08",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-12",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-13",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-18",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-19",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-20",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-21",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-22",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-25",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-26",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-27",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-05-30",
+          "category": "fin_semana"
+        }
+      ]
+    },
+    {
+      "hours": 300,
+      "pattern": "lv",
+      "cycle": 2,
+      "source": "Calendarizacion 26-2 -  300 horas lunes a viernes.pdf",
+      "sha256": "a4f28d99287fe8a9003e21bc0df455a48ac0aba9a8c91bef147f2b54042ca405",
+      "dates": [
+        {
+          "date": "2026-05-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-12",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-05-13",
+          "category": null
+        },
+        {
+          "date": "2026-05-14",
+          "category": null
+        },
+        {
+          "date": "2026-05-15",
+          "category": null
+        },
+        {
+          "date": "2026-05-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-18",
+          "category": null
+        },
+        {
+          "date": "2026-05-19",
+          "category": null
+        },
+        {
+          "date": "2026-05-20",
+          "category": null
+        },
+        {
+          "date": "2026-05-21",
+          "category": null
+        },
+        {
+          "date": "2026-05-22",
+          "category": null
+        },
+        {
+          "date": "2026-05-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-25",
+          "category": null
+        },
+        {
+          "date": "2026-05-26",
+          "category": null
+        },
+        {
+          "date": "2026-05-27",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-28",
+          "category": null
+        },
+        {
+          "date": "2026-05-29",
+          "category": null
+        },
+        {
+          "date": "2026-05-30",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-01",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-02",
+          "category": null
+        },
+        {
+          "date": "2026-06-03",
+          "category": null
+        },
+        {
+          "date": "2026-06-04",
+          "category": null
+        },
+        {
+          "date": "2026-06-05",
+          "category": null
+        },
+        {
+          "date": "2026-06-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-07",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-06-08",
+          "category": null
+        },
+        {
+          "date": "2026-06-09",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-10",
+          "category": null
+        },
+        {
+          "date": "2026-06-11",
+          "category": null
+        },
+        {
+          "date": "2026-06-12",
+          "category": null
+        },
+        {
+          "date": "2026-06-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-15",
+          "category": null
+        },
+        {
+          "date": "2026-06-16",
+          "category": null
+        },
+        {
+          "date": "2026-06-17",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-18",
+          "category": null
+        },
+        {
+          "date": "2026-06-19",
+          "category": null
+        },
+        {
+          "date": "2026-06-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-22",
+          "category": null
+        },
+        {
+          "date": "2026-06-23",
+          "category": null
+        },
+        {
+          "date": "2026-06-24",
+          "category": null
+        },
+        {
+          "date": "2026-06-25",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-26",
+          "category": null
+        },
+        {
+          "date": "2026-06-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-29",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-06-30",
+          "category": null
+        },
+        {
+          "date": "2026-07-01",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-03",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-07-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-06",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-08",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-13",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-17",
+          "category": "dia_logro"
+        },
+        {
+          "date": "2026-07-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-20",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-21",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-22",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-23",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-24",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-07-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-27",
+          "category": null
+        },
+        {
+          "date": "2026-07-28",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-29",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-30",
+          "category": null
+        },
+        {
+          "date": "2026-07-31",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 300,
+      "pattern": "lv",
+      "cycle": 3,
+      "source": "Calendarizacion 26-2 -  300 horas lunes a viernes.pdf",
+      "sha256": "a4f28d99287fe8a9003e21bc0df455a48ac0aba9a8c91bef147f2b54042ca405",
+      "dates": [
+        {
+          "date": "2026-08-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-03",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-04",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-05",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-06",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-08-07",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-10",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-08-11",
+          "category": null
+        },
+        {
+          "date": "2026-08-12",
+          "category": null
+        },
+        {
+          "date": "2026-08-13",
+          "category": null
+        },
+        {
+          "date": "2026-08-14",
+          "category": null
+        },
+        {
+          "date": "2026-08-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-17",
+          "category": null
+        },
+        {
+          "date": "2026-08-18",
+          "category": null
+        },
+        {
+          "date": "2026-08-19",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-20",
+          "category": null
+        },
+        {
+          "date": "2026-08-21",
+          "category": null
+        },
+        {
+          "date": "2026-08-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-24",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-25",
+          "category": null
+        },
+        {
+          "date": "2026-08-26",
+          "category": null
+        },
+        {
+          "date": "2026-08-27",
+          "category": null
+        },
+        {
+          "date": "2026-08-28",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-08-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-30",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-08-31",
+          "category": null
+        },
+        {
+          "date": "2026-09-01",
+          "category": null
+        },
+        {
+          "date": "2026-09-02",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-03",
+          "category": null
+        },
+        {
+          "date": "2026-09-04",
+          "category": null
+        },
+        {
+          "date": "2026-09-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-07",
+          "category": null
+        },
+        {
+          "date": "2026-09-08",
+          "category": null
+        },
+        {
+          "date": "2026-09-09",
+          "category": null
+        },
+        {
+          "date": "2026-09-10",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-11",
+          "category": null
+        },
+        {
+          "date": "2026-09-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-14",
+          "category": null
+        },
+        {
+          "date": "2026-09-15",
+          "category": null
+        },
+        {
+          "date": "2026-09-16",
+          "category": null
+        },
+        {
+          "date": "2026-09-17",
+          "category": null
+        },
+        {
+          "date": "2026-09-18",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-21",
+          "category": null
+        },
+        {
+          "date": "2026-09-22",
+          "category": null
+        },
+        {
+          "date": "2026-09-23",
+          "category": null
+        },
+        {
+          "date": "2026-09-24",
+          "category": null
+        },
+        {
+          "date": "2026-09-25",
+          "category": null
+        },
+        {
+          "date": "2026-09-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-28",
+          "category": null
+        },
+        {
+          "date": "2026-09-29",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-09-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-01",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-02",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-10-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-05",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-06",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-08",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-10-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-12",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-13",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-19",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-20",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-21",
+          "category": "inicio_termino"
+        }
+      ]
+    },
+    {
+      "hours": 300,
+      "pattern": "lv",
+      "cycle": 4,
+      "source": "Calendarizacion 26-2 -  300 horas lunes a viernes.pdf",
+      "sha256": "a4f28d99287fe8a9003e21bc0df455a48ac0aba9a8c91bef147f2b54042ca405",
+      "dates": [
+        {
+          "date": "2026-10-06",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-10-07",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-08",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-10-09",
+          "category": null
+        },
+        {
+          "date": "2026-10-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-12",
+          "category": null
+        },
+        {
+          "date": "2026-10-13",
+          "category": null
+        },
+        {
+          "date": "2026-10-14",
+          "category": null
+        },
+        {
+          "date": "2026-10-15",
+          "category": null
+        },
+        {
+          "date": "2026-10-16",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-19",
+          "category": null
+        },
+        {
+          "date": "2026-10-20",
+          "category": null
+        },
+        {
+          "date": "2026-10-21",
+          "category": null
+        },
+        {
+          "date": "2026-10-22",
+          "category": null
+        },
+        {
+          "date": "2026-10-23",
+          "category": null
+        },
+        {
+          "date": "2026-10-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-26",
+          "category": null
+        },
+        {
+          "date": "2026-10-27",
+          "category": null
+        },
+        {
+          "date": "2026-10-28",
+          "category": null
+        },
+        {
+          "date": "2026-10-29",
+          "category": null
+        },
+        {
+          "date": "2026-10-30",
+          "category": null
+        },
+        {
+          "date": "2026-10-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-11-02",
+          "category": null
+        },
+        {
+          "date": "2026-11-03",
+          "category": null
+        },
+        {
+          "date": "2026-11-04",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-11-05",
+          "category": null
+        },
+        {
+          "date": "2026-11-06",
+          "category": null
+        },
+        {
+          "date": "2026-11-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-09",
+          "category": null
+        },
+        {
+          "date": "2026-11-10",
+          "category": null
+        },
+        {
+          "date": "2026-11-11",
+          "category": null
+        },
+        {
+          "date": "2026-11-12",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-11-13",
+          "category": null
+        },
+        {
+          "date": "2026-11-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-16",
+          "category": null
+        },
+        {
+          "date": "2026-11-17",
+          "category": null
+        },
+        {
+          "date": "2026-11-18",
+          "category": null
+        },
+        {
+          "date": "2026-11-19",
+          "category": null
+        },
+        {
+          "date": "2026-11-20",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-11-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-23",
+          "category": null
+        },
+        {
+          "date": "2026-11-24",
+          "category": null
+        },
+        {
+          "date": "2026-11-25",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-26",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-27",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-01",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-03",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-04",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-08",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-09",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-17",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-12-18",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-12-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-21",
+          "category": null
+        },
+        {
+          "date": "2026-12-22",
+          "category": null
+        },
+        {
+          "date": "2026-12-23",
+          "category": null
+        },
+        {
+          "date": "2026-12-24",
+          "category": null
+        },
+        {
+          "date": "2026-12-25",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-28",
+          "category": null
+        },
+        {
+          "date": "2026-12-29",
+          "category": null
+        },
+        {
+          "date": "2026-12-30",
+          "category": null
+        },
+        {
+          "date": "2026-12-31",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 150,
+      "pattern": "lmv",
+      "cycle": 1,
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "dates": [
+        {
+          "date": "2026-03-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-02",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-04",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-06",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-09",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-11",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-13",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-16",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-03-18",
+          "category": null
+        },
+        {
+          "date": "2026-03-20",
+          "category": null
+        },
+        {
+          "date": "2026-03-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-23",
+          "category": null
+        },
+        {
+          "date": "2026-03-25",
+          "category": null
+        },
+        {
+          "date": "2026-03-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-30",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-01",
+          "category": null
+        },
+        {
+          "date": "2026-04-03",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-04-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-06",
+          "category": null
+        },
+        {
+          "date": "2026-04-08",
+          "category": null
+        },
+        {
+          "date": "2026-04-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-13",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-15",
+          "category": null
+        },
+        {
+          "date": "2026-04-17",
+          "category": null
+        },
+        {
+          "date": "2026-04-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-20",
+          "category": null
+        },
+        {
+          "date": "2026-04-22",
+          "category": null
+        },
+        {
+          "date": "2026-04-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-27",
+          "category": null
+        },
+        {
+          "date": "2026-04-29",
+          "category": null
+        },
+        {
+          "date": "2026-05-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-05-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-04",
+          "category": null
+        },
+        {
+          "date": "2026-05-06",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-08",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-13",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-18",
+          "category": "inicio_termino"
+        }
+      ]
+    },
+    {
+      "hours": 150,
+      "pattern": "mjv",
+      "cycle": 1,
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "dates": [
+        {
+          "date": "2026-03-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-03",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-05",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-06",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-10",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-12",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-13",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-17",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-03-19",
+          "category": null
+        },
+        {
+          "date": "2026-03-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-24",
+          "category": null
+        },
+        {
+          "date": "2026-03-26",
+          "category": null
+        },
+        {
+          "date": "2026-03-27",
+          "category": null
+        },
+        {
+          "date": "2026-03-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-31",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-02",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-04-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-07",
+          "category": null
+        },
+        {
+          "date": "2026-04-09",
+          "category": null
+        },
+        {
+          "date": "2026-04-10",
+          "category": null
+        },
+        {
+          "date": "2026-04-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-14",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-16",
+          "category": null
+        },
+        {
+          "date": "2026-04-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-21",
+          "category": null
+        },
+        {
+          "date": "2026-04-23",
+          "category": null
+        },
+        {
+          "date": "2026-04-24",
+          "category": null
+        },
+        {
+          "date": "2026-04-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-28",
+          "category": null
+        },
+        {
+          "date": "2026-04-30",
+          "category": null
+        },
+        {
+          "date": "2026-05-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-05",
+          "category": null
+        },
+        {
+          "date": "2026-05-07",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-08",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-12",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-05-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-19",
+          "category": "inicio_termino"
+        }
+      ]
+    },
+    {
+      "hours": 150,
+      "pattern": "lmv",
+      "cycle": 2,
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "dates": [
+        {
+          "date": "2026-05-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-20",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-05-22",
+          "category": null
+        },
+        {
+          "date": "2026-05-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-25",
+          "category": null
+        },
+        {
+          "date": "2026-05-27",
+          "category": null
+        },
+        {
+          "date": "2026-05-30",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-01",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-03",
+          "category": null
+        },
+        {
+          "date": "2026-06-05",
+          "category": null
+        },
+        {
+          "date": "2026-06-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-07",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-06-08",
+          "category": null
+        },
+        {
+          "date": "2026-06-10",
+          "category": null
+        },
+        {
+          "date": "2026-06-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-15",
+          "category": null
+        },
+        {
+          "date": "2026-06-17",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-19",
+          "category": null
+        },
+        {
+          "date": "2026-06-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-22",
+          "category": null
+        },
+        {
+          "date": "2026-06-24",
+          "category": null
+        },
+        {
+          "date": "2026-06-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-29",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-01",
+          "category": null
+        },
+        {
+          "date": "2026-07-03",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-07-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-06",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-08",
+          "category": null
+        },
+        {
+          "date": "2026-07-10",
+          "category": null
+        },
+        {
+          "date": "2026-07-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-13",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-07-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-17",
+          "category": "dia_logro"
+        },
+        {
+          "date": "2026-07-18",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-20",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-22",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-24",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-07-25",
+          "category": null
+        },
+        {
+          "date": "2026-07-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-27",
+          "category": null
+        },
+        {
+          "date": "2026-07-29",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-31",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 150,
+      "pattern": "mjv",
+      "cycle": 2,
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "dates": [
+        {
+          "date": "2026-05-21",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-05-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-26",
+          "category": null
+        },
+        {
+          "date": "2026-05-28",
+          "category": null
+        },
+        {
+          "date": "2026-05-29",
+          "category": null
+        },
+        {
+          "date": "2026-05-30",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-02",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-04",
+          "category": null
+        },
+        {
+          "date": "2026-06-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-07",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-06-09",
+          "category": null
+        },
+        {
+          "date": "2026-06-11",
+          "category": null
+        },
+        {
+          "date": "2026-06-12",
+          "category": null
+        },
+        {
+          "date": "2026-06-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-16",
+          "category": null
+        },
+        {
+          "date": "2026-06-18",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-23",
+          "category": null
+        },
+        {
+          "date": "2026-06-25",
+          "category": null
+        },
+        {
+          "date": "2026-06-26",
+          "category": null
+        },
+        {
+          "date": "2026-06-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-30",
+          "category": null
+        },
+        {
+          "date": "2026-07-02",
+          "category": null
+        },
+        {
+          "date": "2026-07-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-07",
+          "category": null
+        },
+        {
+          "date": "2026-07-09",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-07-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-17",
+          "category": "dia_logro"
+        },
+        {
+          "date": "2026-07-18",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-21",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-07-23",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-24",
+          "category": null
+        },
+        {
+          "date": "2026-07-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-28",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-30",
+          "category": null
+        },
+        {
+          "date": "2026-07-31",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 150,
+      "pattern": "lmv",
+      "cycle": 3,
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "dates": [
+        {
+          "date": "2026-08-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-03",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-05",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-07",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-10",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-08-12",
+          "category": null
+        },
+        {
+          "date": "2026-08-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-17",
+          "category": null
+        },
+        {
+          "date": "2026-08-19",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-21",
+          "category": null
+        },
+        {
+          "date": "2026-08-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-24",
+          "category": null
+        },
+        {
+          "date": "2026-08-26",
+          "category": null
+        },
+        {
+          "date": "2026-08-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-30",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-08-31",
+          "category": null
+        },
+        {
+          "date": "2026-09-02",
+          "category": null
+        },
+        {
+          "date": "2026-09-04",
+          "category": null
+        },
+        {
+          "date": "2026-09-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-07",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-09",
+          "category": null
+        },
+        {
+          "date": "2026-09-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-14",
+          "category": null
+        },
+        {
+          "date": "2026-09-16",
+          "category": null
+        },
+        {
+          "date": "2026-09-18",
+          "category": null
+        },
+        {
+          "date": "2026-09-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-21",
+          "category": null
+        },
+        {
+          "date": "2026-09-23",
+          "category": null
+        },
+        {
+          "date": "2026-09-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-28",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-03",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-05",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-12",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-10-14",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-10-16",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-10-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-19",
+          "category": "inicio_termino"
+        }
+      ]
+    },
+    {
+      "hours": 150,
+      "pattern": "mjv",
+      "cycle": 3,
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "dates": [
+        {
+          "date": "2026-08-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-04",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-06",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-08-07",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-11",
+          "category": null
+        },
+        {
+          "date": "2026-08-13",
+          "category": null
+        },
+        {
+          "date": "2026-08-14",
+          "category": null
+        },
+        {
+          "date": "2026-08-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-18",
+          "category": null
+        },
+        {
+          "date": "2026-08-20",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-25",
+          "category": null
+        },
+        {
+          "date": "2026-08-27",
+          "category": null
+        },
+        {
+          "date": "2026-08-28",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-08-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-30",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-09-01",
+          "category": null
+        },
+        {
+          "date": "2026-09-03",
+          "category": null
+        },
+        {
+          "date": "2026-09-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-08",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-10",
+          "category": null
+        },
+        {
+          "date": "2026-09-11",
+          "category": null
+        },
+        {
+          "date": "2026-09-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-15",
+          "category": null
+        },
+        {
+          "date": "2026-09-17",
+          "category": null
+        },
+        {
+          "date": "2026-09-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-22",
+          "category": null
+        },
+        {
+          "date": "2026-09-24",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-25",
+          "category": null
+        },
+        {
+          "date": "2026-09-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-29",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-09-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-01",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-06",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-08",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-10-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-13",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-16",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-10-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-18",
+          "category": "fin_semana"
+        }
+      ]
+    },
+    {
+      "hours": 150,
+      "pattern": "lmv",
+      "cycle": 4,
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "dates": [
+        {
+          "date": "2026-10-21",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-10-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-26",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-28",
+          "category": null
+        },
+        {
+          "date": "2026-10-30",
+          "category": null
+        },
+        {
+          "date": "2026-10-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-11-02",
+          "category": null
+        },
+        {
+          "date": "2026-11-04",
+          "category": null
+        },
+        {
+          "date": "2026-11-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-09",
+          "category": null
+        },
+        {
+          "date": "2026-11-11",
+          "category": null
+        },
+        {
+          "date": "2026-11-13",
+          "category": null
+        },
+        {
+          "date": "2026-11-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-16",
+          "category": null
+        },
+        {
+          "date": "2026-11-18",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-11-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-23",
+          "category": null
+        },
+        {
+          "date": "2026-11-25",
+          "category": null
+        },
+        {
+          "date": "2026-11-27",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-11-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-30",
+          "category": null
+        },
+        {
+          "date": "2026-12-02",
+          "category": null
+        },
+        {
+          "date": "2026-12-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-07",
+          "category": null
+        },
+        {
+          "date": "2026-12-09",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-11",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-12-12",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-13",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-18",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-12-19",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-21",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-23",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-12-25",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-28",
+          "category": null
+        },
+        {
+          "date": "2026-12-30",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 150,
+      "pattern": "mjv",
+      "cycle": 4,
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "dates": [
+        {
+          "date": "2026-10-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-20",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-10-22",
+          "category": null
+        },
+        {
+          "date": "2026-10-23",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-10-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-27",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-29",
+          "category": null
+        },
+        {
+          "date": "2026-10-30",
+          "category": null
+        },
+        {
+          "date": "2026-10-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-11-03",
+          "category": null
+        },
+        {
+          "date": "2026-11-05",
+          "category": null
+        },
+        {
+          "date": "2026-11-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-10",
+          "category": null
+        },
+        {
+          "date": "2026-11-12",
+          "category": null
+        },
+        {
+          "date": "2026-11-13",
+          "category": null
+        },
+        {
+          "date": "2026-11-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-17",
+          "category": null
+        },
+        {
+          "date": "2026-11-19",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-11-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-24",
+          "category": null
+        },
+        {
+          "date": "2026-11-26",
+          "category": null
+        },
+        {
+          "date": "2026-11-27",
+          "category": null
+        },
+        {
+          "date": "2026-11-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-01",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-12-03",
+          "category": null
+        },
+        {
+          "date": "2026-12-04",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-08",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-17",
+          "category": "dia_logro"
+        },
+        {
+          "date": "2026-12-18",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-12-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-23",
+          "category": null
+        },
+        {
+          "date": "2026-12-24",
+          "category": null
+        },
+        {
+          "date": "2026-12-25",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-30",
+          "category": null
+        },
+        {
+          "date": "2026-12-31",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 300,
+      "pattern": "lmv",
+      "cycle": 1,
+      "source": "Calendarizacion 26-2 - 300 horas.pdf",
+      "sha256": "fbc515da65ee127c46bcd1ecca6f731e721562982fdb71db9cf04bdcef5bbcdd",
+      "dates": [
+        {
+          "date": "2026-03-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-02",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-04",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-06",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-09",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-11",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-13",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-16",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-03-18",
+          "category": null
+        },
+        {
+          "date": "2026-03-20",
+          "category": null
+        },
+        {
+          "date": "2026-03-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-23",
+          "category": null
+        },
+        {
+          "date": "2026-03-25",
+          "category": null
+        },
+        {
+          "date": "2026-03-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-30",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-01",
+          "category": null
+        },
+        {
+          "date": "2026-04-03",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-04-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-06",
+          "category": null
+        },
+        {
+          "date": "2026-04-08",
+          "category": null
+        },
+        {
+          "date": "2026-04-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-13",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-15",
+          "category": null
+        },
+        {
+          "date": "2026-04-17",
+          "category": null
+        },
+        {
+          "date": "2026-04-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-20",
+          "category": null
+        },
+        {
+          "date": "2026-04-22",
+          "category": null
+        },
+        {
+          "date": "2026-04-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-27",
+          "category": null
+        },
+        {
+          "date": "2026-04-29",
+          "category": null
+        },
+        {
+          "date": "2026-05-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-05-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-04",
+          "category": null
+        },
+        {
+          "date": "2026-05-06",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-11",
+          "category": null
+        },
+        {
+          "date": "2026-05-13",
+          "category": null
+        },
+        {
+          "date": "2026-05-15",
+          "category": null
+        },
+        {
+          "date": "2026-05-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-18",
+          "category": null
+        },
+        {
+          "date": "2026-05-20",
+          "category": null
+        },
+        {
+          "date": "2026-05-22",
+          "category": null
+        },
+        {
+          "date": "2026-05-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-25",
+          "category": null
+        },
+        {
+          "date": "2026-05-27",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-29",
+          "category": null
+        },
+        {
+          "date": "2026-05-30",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-01",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-03",
+          "category": null
+        },
+        {
+          "date": "2026-06-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-07",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-06-08",
+          "category": null
+        },
+        {
+          "date": "2026-06-10",
+          "category": null
+        },
+        {
+          "date": "2026-06-12",
+          "category": null
+        },
+        {
+          "date": "2026-06-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-15",
+          "category": null
+        },
+        {
+          "date": "2026-06-17",
+          "category": null
+        },
+        {
+          "date": "2026-06-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-22",
+          "category": null
+        },
+        {
+          "date": "2026-06-24",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-26",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-27",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-29",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-01",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-03",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-07-04",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-06",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-08",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-13",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-17",
+          "category": "dia_logro"
+        },
+        {
+          "date": "2026-07-18",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-20",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-22",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-24",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-07-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-27",
+          "category": null
+        },
+        {
+          "date": "2026-07-29",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-31",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 300,
+      "pattern": "mjv",
+      "cycle": 1,
+      "source": "Calendarizacion 26-2 - 300 horas.pdf",
+      "sha256": "fbc515da65ee127c46bcd1ecca6f731e721562982fdb71db9cf04bdcef5bbcdd",
+      "dates": [
+        {
+          "date": "2026-03-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-03",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-05",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-06",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-10",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-12",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-13",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-17",
+          "category": null
+        },
+        {
+          "date": "2026-03-19",
+          "category": null
+        },
+        {
+          "date": "2026-03-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-24",
+          "category": null
+        },
+        {
+          "date": "2026-03-26",
+          "category": null
+        },
+        {
+          "date": "2026-03-27",
+          "category": null
+        },
+        {
+          "date": "2026-03-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-31",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-02",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-04-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-07",
+          "category": null
+        },
+        {
+          "date": "2026-04-09",
+          "category": null
+        },
+        {
+          "date": "2026-04-10",
+          "category": null
+        },
+        {
+          "date": "2026-04-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-14",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-16",
+          "category": null
+        },
+        {
+          "date": "2026-04-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-21",
+          "category": null
+        },
+        {
+          "date": "2026-04-23",
+          "category": null
+        },
+        {
+          "date": "2026-04-24",
+          "category": null
+        },
+        {
+          "date": "2026-04-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-28",
+          "category": null
+        },
+        {
+          "date": "2026-04-30",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-05",
+          "category": null
+        },
+        {
+          "date": "2026-05-07",
+          "category": null
+        },
+        {
+          "date": "2026-05-08",
+          "category": null
+        },
+        {
+          "date": "2026-05-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-12",
+          "category": null
+        },
+        {
+          "date": "2026-05-14",
+          "category": null
+        },
+        {
+          "date": "2026-05-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-19",
+          "category": null
+        },
+        {
+          "date": "2026-05-21",
+          "category": null
+        },
+        {
+          "date": "2026-05-22",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-26",
+          "category": null
+        },
+        {
+          "date": "2026-05-28",
+          "category": null
+        },
+        {
+          "date": "2026-05-29",
+          "category": null
+        },
+        {
+          "date": "2026-05-30",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-02",
+          "category": null
+        },
+        {
+          "date": "2026-06-04",
+          "category": null
+        },
+        {
+          "date": "2026-06-05",
+          "category": null
+        },
+        {
+          "date": "2026-06-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-07",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-06-09",
+          "category": null
+        },
+        {
+          "date": "2026-06-11",
+          "category": null
+        },
+        {
+          "date": "2026-06-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-16",
+          "category": null
+        },
+        {
+          "date": "2026-06-18",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-19",
+          "category": null
+        },
+        {
+          "date": "2026-06-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-23",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-25",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-27",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-03",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-07-04",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-17",
+          "category": "dia_logro"
+        },
+        {
+          "date": "2026-07-18",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-21",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-07-23",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-24",
+          "category": null
+        },
+        {
+          "date": "2026-07-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-28",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-30",
+          "category": null
+        },
+        {
+          "date": "2026-07-31",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 300,
+      "pattern": "lmv",
+      "cycle": 2,
+      "source": "Calendarizacion 26-2 - 300 horas.pdf",
+      "sha256": "fbc515da65ee127c46bcd1ecca6f731e721562982fdb71db9cf04bdcef5bbcdd",
+      "dates": [
+        {
+          "date": "2026-08-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-03",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-05",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-07",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-10",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-08-12",
+          "category": null
+        },
+        {
+          "date": "2026-08-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-17",
+          "category": null
+        },
+        {
+          "date": "2026-08-19",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-21",
+          "category": null
+        },
+        {
+          "date": "2026-08-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-24",
+          "category": null
+        },
+        {
+          "date": "2026-08-26",
+          "category": null
+        },
+        {
+          "date": "2026-08-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-30",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-08-31",
+          "category": null
+        },
+        {
+          "date": "2026-09-02",
+          "category": null
+        },
+        {
+          "date": "2026-09-04",
+          "category": null
+        },
+        {
+          "date": "2026-09-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-07",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-09",
+          "category": null
+        },
+        {
+          "date": "2026-09-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-14",
+          "category": null
+        },
+        {
+          "date": "2026-09-16",
+          "category": null
+        },
+        {
+          "date": "2026-09-18",
+          "category": null
+        },
+        {
+          "date": "2026-09-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-21",
+          "category": null
+        },
+        {
+          "date": "2026-09-23",
+          "category": null
+        },
+        {
+          "date": "2026-09-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-28",
+          "category": null
+        },
+        {
+          "date": "2026-09-30",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-02",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-10-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-05",
+          "category": null
+        },
+        {
+          "date": "2026-10-07",
+          "category": null
+        },
+        {
+          "date": "2026-10-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-12",
+          "category": null
+        },
+        {
+          "date": "2026-10-14",
+          "category": null
+        },
+        {
+          "date": "2026-10-16",
+          "category": null
+        },
+        {
+          "date": "2026-10-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-19",
+          "category": null
+        },
+        {
+          "date": "2026-10-21",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-23",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-10-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-26",
+          "category": null
+        },
+        {
+          "date": "2026-10-28",
+          "category": null
+        },
+        {
+          "date": "2026-10-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-11-02",
+          "category": null
+        },
+        {
+          "date": "2026-11-04",
+          "category": null
+        },
+        {
+          "date": "2026-11-06",
+          "category": null
+        },
+        {
+          "date": "2026-11-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-09",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-11-11",
+          "category": null
+        },
+        {
+          "date": "2026-11-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-16",
+          "category": null
+        },
+        {
+          "date": "2026-11-18",
+          "category": null
+        },
+        {
+          "date": "2026-11-20",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-23",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-24",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-25",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-26",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-27",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-01",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-03",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-04",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-09",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-16",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-12-18",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-12-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-21",
+          "category": null
+        },
+        {
+          "date": "2026-12-23",
+          "category": null
+        },
+        {
+          "date": "2026-12-25",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-28",
+          "category": null
+        },
+        {
+          "date": "2026-12-30",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 300,
+      "pattern": "mjv",
+      "cycle": 2,
+      "source": "Calendarizacion 26-2 - 300 horas.pdf",
+      "sha256": "fbc515da65ee127c46bcd1ecca6f731e721562982fdb71db9cf04bdcef5bbcdd",
+      "dates": [
+        {
+          "date": "2026-08-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-04",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-06",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-08-07",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-11",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-08-13",
+          "category": null
+        },
+        {
+          "date": "2026-08-14",
+          "category": null
+        },
+        {
+          "date": "2026-08-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-18",
+          "category": null
+        },
+        {
+          "date": "2026-08-20",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-25",
+          "category": null
+        },
+        {
+          "date": "2026-08-27",
+          "category": null
+        },
+        {
+          "date": "2026-08-28",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-08-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-30",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-09-01",
+          "category": null
+        },
+        {
+          "date": "2026-09-03",
+          "category": null
+        },
+        {
+          "date": "2026-09-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-08",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-10",
+          "category": null
+        },
+        {
+          "date": "2026-09-11",
+          "category": null
+        },
+        {
+          "date": "2026-09-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-15",
+          "category": null
+        },
+        {
+          "date": "2026-09-17",
+          "category": null
+        },
+        {
+          "date": "2026-09-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-22",
+          "category": null
+        },
+        {
+          "date": "2026-09-24",
+          "category": null
+        },
+        {
+          "date": "2026-09-25",
+          "category": null
+        },
+        {
+          "date": "2026-09-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-29",
+          "category": null
+        },
+        {
+          "date": "2026-10-01",
+          "category": null
+        },
+        {
+          "date": "2026-10-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-06",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-08",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-10-09",
+          "category": null
+        },
+        {
+          "date": "2026-10-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-13",
+          "category": null
+        },
+        {
+          "date": "2026-10-15",
+          "category": null
+        },
+        {
+          "date": "2026-10-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-20",
+          "category": null
+        },
+        {
+          "date": "2026-10-22",
+          "category": null
+        },
+        {
+          "date": "2026-10-23",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-10-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-27",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-29",
+          "category": null
+        },
+        {
+          "date": "2026-10-30",
+          "category": null
+        },
+        {
+          "date": "2026-10-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-11-03",
+          "category": null
+        },
+        {
+          "date": "2026-11-05",
+          "category": null
+        },
+        {
+          "date": "2026-11-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-10",
+          "category": null
+        },
+        {
+          "date": "2026-11-12",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-11-13",
+          "category": null
+        },
+        {
+          "date": "2026-11-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-17",
+          "category": null
+        },
+        {
+          "date": "2026-11-19",
+          "category": null
+        },
+        {
+          "date": "2026-11-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-23",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-24",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-25",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-26",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-27",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-01",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-03",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-04",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-08",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-17",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-12-18",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-12-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-22",
+          "category": null
+        },
+        {
+          "date": "2026-12-24",
+          "category": null
+        },
+        {
+          "date": "2026-12-25",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-29",
+          "category": null
+        },
+        {
+          "date": "2026-12-31",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 512,
+      "pattern": "lv",
+      "cycle": 1,
+      "source": "Calendarizacion 26-2 - 512 horas.pdf",
+      "sha256": "ed53ef83fc1b9b5bcb23b74f3eeb372b8bd91aa2c2990a8f9157c827f8e600fb",
+      "dates": [
+        {
+          "date": "2026-03-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-02",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-03",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-04",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-05",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-06",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-09",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-10",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-11",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-12",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-13",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-16",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-03-17",
+          "category": null
+        },
+        {
+          "date": "2026-03-18",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-03-19",
+          "category": null
+        },
+        {
+          "date": "2026-03-20",
+          "category": null
+        },
+        {
+          "date": "2026-03-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-23",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-03-24",
+          "category": null
+        },
+        {
+          "date": "2026-03-25",
+          "category": null
+        },
+        {
+          "date": "2026-03-26",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-03-27",
+          "category": null
+        },
+        {
+          "date": "2026-03-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-30",
+          "category": null
+        },
+        {
+          "date": "2026-03-31",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-01",
+          "category": null
+        },
+        {
+          "date": "2026-04-02",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-04-03",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-04-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-06",
+          "category": null
+        },
+        {
+          "date": "2026-04-07",
+          "category": null
+        },
+        {
+          "date": "2026-04-08",
+          "category": null
+        },
+        {
+          "date": "2026-04-09",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-10",
+          "category": null
+        },
+        {
+          "date": "2026-04-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-13",
+          "category": null
+        },
+        {
+          "date": "2026-04-14",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-15",
+          "category": null
+        },
+        {
+          "date": "2026-04-16",
+          "category": null
+        },
+        {
+          "date": "2026-04-17",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-20",
+          "category": null
+        },
+        {
+          "date": "2026-04-21",
+          "category": null
+        },
+        {
+          "date": "2026-04-22",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-23",
+          "category": null
+        },
+        {
+          "date": "2026-04-24",
+          "category": null
+        },
+        {
+          "date": "2026-04-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-27",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-28",
+          "category": null
+        },
+        {
+          "date": "2026-04-29",
+          "category": null
+        },
+        {
+          "date": "2026-04-30",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-05-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-04",
+          "category": null
+        },
+        {
+          "date": "2026-05-05",
+          "category": null
+        },
+        {
+          "date": "2026-05-06",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-07",
+          "category": null
+        },
+        {
+          "date": "2026-05-08",
+          "category": null
+        },
+        {
+          "date": "2026-05-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-11",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-12",
+          "category": null
+        },
+        {
+          "date": "2026-05-13",
+          "category": null
+        },
+        {
+          "date": "2026-05-14",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-15",
+          "category": null
+        },
+        {
+          "date": "2026-05-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-18",
+          "category": null
+        },
+        {
+          "date": "2026-05-19",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-20",
+          "category": null
+        },
+        {
+          "date": "2026-05-21",
+          "category": null
+        },
+        {
+          "date": "2026-05-22",
+          "category": null
+        },
+        {
+          "date": "2026-05-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-25",
+          "category": null
+        },
+        {
+          "date": "2026-05-26",
+          "category": null
+        },
+        {
+          "date": "2026-05-27",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-28",
+          "category": null
+        },
+        {
+          "date": "2026-05-29",
+          "category": null
+        },
+        {
+          "date": "2026-05-30",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-01",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-02",
+          "category": null
+        },
+        {
+          "date": "2026-06-03",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-04",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-05",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-07",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-06-08",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-12",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-17",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-18",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-19",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-22",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-23",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-24",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-25",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-26",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-29",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-06-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-01",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-03",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-07-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-06",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-08",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-13",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-17",
+          "category": "dia_logro"
+        },
+        {
+          "date": "2026-07-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-20",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-21",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-07-22",
+          "category": null
+        },
+        {
+          "date": "2026-07-23",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-24",
+          "category": null
+        },
+        {
+          "date": "2026-07-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-27",
+          "category": null
+        },
+        {
+          "date": "2026-07-28",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-29",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-30",
+          "category": null
+        },
+        {
+          "date": "2026-07-31",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 512,
+      "pattern": "lv",
+      "cycle": 2,
+      "source": "Calendarizacion 26-2 - 512 horas.pdf",
+      "sha256": "ed53ef83fc1b9b5bcb23b74f3eeb372b8bd91aa2c2990a8f9157c827f8e600fb",
+      "dates": [
+        {
+          "date": "2026-08-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-03",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-04",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-05",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-06",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-08-07",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-10",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-08-11",
+          "category": null
+        },
+        {
+          "date": "2026-08-12",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-13",
+          "category": null
+        },
+        {
+          "date": "2026-08-14",
+          "category": null
+        },
+        {
+          "date": "2026-08-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-17",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-18",
+          "category": null
+        },
+        {
+          "date": "2026-08-19",
+          "category": null
+        },
+        {
+          "date": "2026-08-20",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-21",
+          "category": null
+        },
+        {
+          "date": "2026-08-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-24",
+          "category": null
+        },
+        {
+          "date": "2026-08-25",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-26",
+          "category": null
+        },
+        {
+          "date": "2026-08-27",
+          "category": null
+        },
+        {
+          "date": "2026-08-28",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-08-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-30",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-08-31",
+          "category": null
+        },
+        {
+          "date": "2026-09-01",
+          "category": null
+        },
+        {
+          "date": "2026-09-02",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-03",
+          "category": null
+        },
+        {
+          "date": "2026-09-04",
+          "category": null
+        },
+        {
+          "date": "2026-09-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-07",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-08",
+          "category": null
+        },
+        {
+          "date": "2026-09-09",
+          "category": null
+        },
+        {
+          "date": "2026-09-10",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-11",
+          "category": null
+        },
+        {
+          "date": "2026-09-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-14",
+          "category": null
+        },
+        {
+          "date": "2026-09-15",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-16",
+          "category": null
+        },
+        {
+          "date": "2026-09-17",
+          "category": null
+        },
+        {
+          "date": "2026-09-18",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-21",
+          "category": null
+        },
+        {
+          "date": "2026-09-22",
+          "category": null
+        },
+        {
+          "date": "2026-09-23",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-24",
+          "category": null
+        },
+        {
+          "date": "2026-09-25",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-28",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-29",
+          "category": null
+        },
+        {
+          "date": "2026-09-30",
+          "category": null
+        },
+        {
+          "date": "2026-10-01",
+          "category": null
+        },
+        {
+          "date": "2026-10-02",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-10-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-05",
+          "category": null
+        },
+        {
+          "date": "2026-10-06",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-07",
+          "category": null
+        },
+        {
+          "date": "2026-10-08",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-10-09",
+          "category": null
+        },
+        {
+          "date": "2026-10-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-12",
+          "category": null
+        },
+        {
+          "date": "2026-10-13",
+          "category": null
+        },
+        {
+          "date": "2026-10-14",
+          "category": null
+        },
+        {
+          "date": "2026-10-15",
+          "category": null
+        },
+        {
+          "date": "2026-10-16",
+          "category": null
+        },
+        {
+          "date": "2026-10-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-19",
+          "category": null
+        },
+        {
+          "date": "2026-10-20",
+          "category": null
+        },
+        {
+          "date": "2026-10-21",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-22",
+          "category": null
+        },
+        {
+          "date": "2026-10-23",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-10-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-26",
+          "category": null
+        },
+        {
+          "date": "2026-10-27",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-28",
+          "category": null
+        },
+        {
+          "date": "2026-10-29",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-10-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-11-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-03",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-04",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-05",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-06",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-12",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-13",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-17",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-18",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-19",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-20",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-23",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-24",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-25",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-26",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-27",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-01",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-03",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-04",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-08",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-09",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-15",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-12-16",
+          "category": null
+        },
+        {
+          "date": "2026-12-17",
+          "category": null
+        },
+        {
+          "date": "2026-12-18",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-12-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-21",
+          "category": null
+        },
+        {
+          "date": "2026-12-22",
+          "category": null
+        },
+        {
+          "date": "2026-12-23",
+          "category": null
+        },
+        {
+          "date": "2026-12-24",
+          "category": null
+        },
+        {
+          "date": "2026-12-25",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-28",
+          "category": null
+        },
+        {
+          "date": "2026-12-29",
+          "category": null
+        },
+        {
+          "date": "2026-12-30",
+          "category": null
+        },
+        {
+          "date": "2026-12-31",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 528,
+      "pattern": "lv",
+      "cycle": 1,
+      "source": "Calendarizacion 26-2 - 528 horas.pdf",
+      "sha256": "d2968fbf86c6ecb5e10eed1848021ee6e02b11fcc0bcdc81d584f061c74b06b0",
+      "dates": [
+        {
+          "date": "2026-03-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-02",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-03",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-04",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-05",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-06",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-09",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-10",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-11",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-12",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-13",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-03-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-16",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-03-17",
+          "category": null
+        },
+        {
+          "date": "2026-03-18",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-03-19",
+          "category": null
+        },
+        {
+          "date": "2026-03-20",
+          "category": null
+        },
+        {
+          "date": "2026-03-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-23",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-03-24",
+          "category": null
+        },
+        {
+          "date": "2026-03-25",
+          "category": null
+        },
+        {
+          "date": "2026-03-26",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-03-27",
+          "category": null
+        },
+        {
+          "date": "2026-03-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-03-30",
+          "category": null
+        },
+        {
+          "date": "2026-03-31",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-01",
+          "category": null
+        },
+        {
+          "date": "2026-04-02",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-04-03",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-04-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-06",
+          "category": null
+        },
+        {
+          "date": "2026-04-07",
+          "category": null
+        },
+        {
+          "date": "2026-04-08",
+          "category": null
+        },
+        {
+          "date": "2026-04-09",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-10",
+          "category": null
+        },
+        {
+          "date": "2026-04-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-13",
+          "category": null
+        },
+        {
+          "date": "2026-04-14",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-15",
+          "category": null
+        },
+        {
+          "date": "2026-04-16",
+          "category": null
+        },
+        {
+          "date": "2026-04-17",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-20",
+          "category": null
+        },
+        {
+          "date": "2026-04-21",
+          "category": null
+        },
+        {
+          "date": "2026-04-22",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-23",
+          "category": null
+        },
+        {
+          "date": "2026-04-24",
+          "category": null
+        },
+        {
+          "date": "2026-04-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-04-27",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-04-28",
+          "category": null
+        },
+        {
+          "date": "2026-04-29",
+          "category": null
+        },
+        {
+          "date": "2026-04-30",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-05-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-04",
+          "category": null
+        },
+        {
+          "date": "2026-05-05",
+          "category": null
+        },
+        {
+          "date": "2026-05-06",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-07",
+          "category": null
+        },
+        {
+          "date": "2026-05-08",
+          "category": null
+        },
+        {
+          "date": "2026-05-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-11",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-12",
+          "category": null
+        },
+        {
+          "date": "2026-05-13",
+          "category": null
+        },
+        {
+          "date": "2026-05-14",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-15",
+          "category": null
+        },
+        {
+          "date": "2026-05-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-18",
+          "category": null
+        },
+        {
+          "date": "2026-05-19",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-20",
+          "category": null
+        },
+        {
+          "date": "2026-05-21",
+          "category": null
+        },
+        {
+          "date": "2026-05-22",
+          "category": null
+        },
+        {
+          "date": "2026-05-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-25",
+          "category": null
+        },
+        {
+          "date": "2026-05-26",
+          "category": null
+        },
+        {
+          "date": "2026-05-27",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-05-28",
+          "category": null
+        },
+        {
+          "date": "2026-05-29",
+          "category": null
+        },
+        {
+          "date": "2026-05-30",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-05-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-01",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-06-02",
+          "category": null
+        },
+        {
+          "date": "2026-06-03",
+          "category": null
+        },
+        {
+          "date": "2026-06-04",
+          "category": null
+        },
+        {
+          "date": "2026-06-05",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-07",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-06-08",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-12",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-17",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-18",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-19",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-22",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-23",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-24",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-25",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-26",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-06-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-06-29",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-06-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-01",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-03",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-07-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-06",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-08",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-13",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-17",
+          "category": "dia_logro"
+        },
+        {
+          "date": "2026-07-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-20",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-21",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-22",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-07-23",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-24",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-07-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-07-27",
+          "category": null
+        },
+        {
+          "date": "2026-07-28",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-29",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-07-30",
+          "category": null
+        },
+        {
+          "date": "2026-07-31",
+          "category": null
+        }
+      ]
+    },
+    {
+      "hours": 528,
+      "pattern": "lv",
+      "cycle": 2,
+      "source": "Calendarizacion 26-2 - 528 horas.pdf",
+      "sha256": "d2968fbf86c6ecb5e10eed1848021ee6e02b11fcc0bcdc81d584f061c74b06b0",
+      "dates": [
+        {
+          "date": "2026-08-01",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-02",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-03",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-04",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-05",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-06",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-08-07",
+          "category": "vacaciones_gestion"
+        },
+        {
+          "date": "2026-08-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-09",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-10",
+          "category": "inicio_termino"
+        },
+        {
+          "date": "2026-08-11",
+          "category": null
+        },
+        {
+          "date": "2026-08-12",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-13",
+          "category": null
+        },
+        {
+          "date": "2026-08-14",
+          "category": null
+        },
+        {
+          "date": "2026-08-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-16",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-17",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-18",
+          "category": null
+        },
+        {
+          "date": "2026-08-19",
+          "category": null
+        },
+        {
+          "date": "2026-08-20",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-21",
+          "category": null
+        },
+        {
+          "date": "2026-08-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-23",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-24",
+          "category": null
+        },
+        {
+          "date": "2026-08-25",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-08-26",
+          "category": null
+        },
+        {
+          "date": "2026-08-27",
+          "category": null
+        },
+        {
+          "date": "2026-08-28",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-08-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-08-30",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-08-31",
+          "category": null
+        },
+        {
+          "date": "2026-09-01",
+          "category": null
+        },
+        {
+          "date": "2026-09-02",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-03",
+          "category": null
+        },
+        {
+          "date": "2026-09-04",
+          "category": null
+        },
+        {
+          "date": "2026-09-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-07",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-08",
+          "category": null
+        },
+        {
+          "date": "2026-09-09",
+          "category": null
+        },
+        {
+          "date": "2026-09-10",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-11",
+          "category": null
+        },
+        {
+          "date": "2026-09-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-14",
+          "category": null
+        },
+        {
+          "date": "2026-09-15",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-16",
+          "category": null
+        },
+        {
+          "date": "2026-09-17",
+          "category": null
+        },
+        {
+          "date": "2026-09-18",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-21",
+          "category": null
+        },
+        {
+          "date": "2026-09-22",
+          "category": null
+        },
+        {
+          "date": "2026-09-23",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-24",
+          "category": null
+        },
+        {
+          "date": "2026-09-25",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-09-28",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-09-29",
+          "category": null
+        },
+        {
+          "date": "2026-09-30",
+          "category": null
+        },
+        {
+          "date": "2026-10-01",
+          "category": null
+        },
+        {
+          "date": "2026-10-02",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-10-03",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-04",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-05",
+          "category": null
+        },
+        {
+          "date": "2026-10-06",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-07",
+          "category": null
+        },
+        {
+          "date": "2026-10-08",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-10-09",
+          "category": null
+        },
+        {
+          "date": "2026-10-10",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-11",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-12",
+          "category": null
+        },
+        {
+          "date": "2026-10-13",
+          "category": null
+        },
+        {
+          "date": "2026-10-14",
+          "category": null
+        },
+        {
+          "date": "2026-10-15",
+          "category": null
+        },
+        {
+          "date": "2026-10-16",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-17",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-18",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-19",
+          "category": null
+        },
+        {
+          "date": "2026-10-20",
+          "category": null
+        },
+        {
+          "date": "2026-10-21",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-22",
+          "category": null
+        },
+        {
+          "date": "2026-10-23",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-10-24",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-25",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-10-26",
+          "category": null
+        },
+        {
+          "date": "2026-10-27",
+          "category": "empleabilidad"
+        },
+        {
+          "date": "2026-10-28",
+          "category": null
+        },
+        {
+          "date": "2026-10-29",
+          "category": null
+        },
+        {
+          "date": "2026-10-30",
+          "category": null
+        },
+        {
+          "date": "2026-10-31",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-01",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-11-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-03",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-04",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-05",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-06",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-07",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-08",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-09",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-12",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-13",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-14",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-15",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-17",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-18",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-19",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-20",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-21",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-22",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-23",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-24",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-25",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-26",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-27",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-11-28",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-29",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-11-30",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-01",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-02",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-03",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-04",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-05",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-06",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-07",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-08",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-09",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-10",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-11",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-12",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-13",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-14",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-15",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-16",
+          "category": "efsrt_ppp"
+        },
+        {
+          "date": "2026-12-17",
+          "category": "dia_logro"
+        },
+        {
+          "date": "2026-12-18",
+          "category": "gestion"
+        },
+        {
+          "date": "2026-12-19",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-20",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-21",
+          "category": null
+        },
+        {
+          "date": "2026-12-22",
+          "category": null
+        },
+        {
+          "date": "2026-12-23",
+          "category": null
+        },
+        {
+          "date": "2026-12-24",
+          "category": null
+        },
+        {
+          "date": "2026-12-25",
+          "category": "feriado"
+        },
+        {
+          "date": "2026-12-26",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-27",
+          "category": "fin_semana"
+        },
+        {
+          "date": "2026-12-28",
+          "category": null
+        },
+        {
+          "date": "2026-12-29",
+          "category": null
+        },
+        {
+          "date": "2026-12-30",
+          "category": null
+        },
+        {
+          "date": "2026-12-31",
+          "category": null
+        }
+      ]
+    }
+  ]
+}

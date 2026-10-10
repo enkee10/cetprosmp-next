@@ -269,13 +269,13 @@ export const DELETE_GRUPO_MUTATION = `
 `;
 
 export const INSERT_GRUPO_MODULO_MUTATION = `
-  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia sufijo")) {
+  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia")) {
     grupoModulo_insert(data: $data)
   }
 `;
 
 export const UPDATE_GRUPO_MODULO_MUTATION = `
-  mutation UpdateGrupoModulo($id: Int!, $data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia sufijo")) {
+  mutation UpdateGrupoModulo($id: Int!, $data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia")) {
     grupoModulo_update(id: $id, data: $data)
   }
 `;
@@ -611,7 +611,7 @@ export const DELETE_PAQUETE_MUTATION = `
 `;
 
 export const INSERT_PAQUETE_MODULO_MUTATION = `
-  mutation InsertPaqueteModulo($data: PaqueteModulo_Data! @allow(fields: "paqueteId moduloId orden obligatorio multiplicador sufijos")) {
+  mutation InsertPaqueteModulo($data: PaqueteModulo_Data! @allow(fields: "paqueteId moduloId orden obligatorio multiplicador")) {
     paqueteModulo_insert(data: $data)
   }
 `;

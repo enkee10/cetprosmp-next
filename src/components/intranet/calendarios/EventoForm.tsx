@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   Checkbox,
@@ -23,7 +23,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
-import { localInputInLima, limaInputToIso } from '@/lib/calendar';
+import { CALENDAR_EVENT_TYPES, calendarEventTypeLabel, localInputInLima, limaInputToIso } from '@/lib/calendar';
 
 interface EventoFormProps {
   initialDate?: string;
@@ -161,7 +161,7 @@ interface RelationRow {
   entidadId: string;
 }
 
-const EVENTO_TIPOS = ['clase', 'evaluacion', 'feriado', 'reunion', 'actividad', 'otro'];
+const EVENTO_TIPOS = CALENDAR_EVENT_TYPES;
 const EVENTO_ESTADOS = ['programado', 'confirmado', 'cancelado', 'realizado'];
 const RECURRENCIA_FRECUENCIAS = ['diaria', 'semanal', 'mensual'];
 
@@ -608,7 +608,7 @@ export function EventoForm({ eventoId, asModal = false, onSaved, onCancel, initi
         </Typography>
       )}
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <AutoDismissAlert severity="error" sx={{ mb: 2 }}>{error}</AutoDismissAlert>}
 
       <form onSubmit={handleSubmit}>
         <Box
@@ -676,7 +676,7 @@ export function EventoForm({ eventoId, asModal = false, onSaved, onCancel, initi
               <MenuItem value="">Sin tipo</MenuItem>
               {EVENTO_TIPOS.map((option) => (
                 <MenuItem key={option} value={option}>
-                  {option}
+                  {calendarEventTypeLabel(option)}
                 </MenuItem>
               ))}
             </Select>

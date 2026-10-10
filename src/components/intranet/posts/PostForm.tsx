@@ -23,6 +23,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { app, storage } from '@/lib/firebase';
 import { buildPostStorageFilePath } from '@/lib/postStoragePath';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import PostTinyMceEditor from './PostTinyMceEditor';
 
 export type PostTipo = 'noticia' | 'evento' | 'comunicado' | 'curso';
@@ -449,9 +450,7 @@ export default function PostForm({
                   Completa el slug para subir archivos.
                 </Typography>
               ) : uploadError ? (
-                <Typography variant="caption" color="error">
-                  {uploadError}
-                </Typography>
+                <AutoDismissAlert message={uploadError} severity="error" onClose={() => setUploadError(null)} />
               ) : null}
             </Box>
           </Box>

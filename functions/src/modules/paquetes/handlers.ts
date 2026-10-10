@@ -37,7 +37,6 @@ const LIST_PAQUETES_QUERY = `
       orden
       obligatorio
       multiplicador
-      sufijos
       paqueteId
       moduloId
       modulo {
@@ -84,7 +83,6 @@ const GET_PAQUETE_QUERY = `
       orden
       obligatorio
       multiplicador
-      sufijos
       paqueteId
       moduloId
       modulo {
@@ -130,37 +128,9 @@ const normalizeModuloIds = (value: unknown): number[] => {
 type PaqueteModuloItemInput = {
   moduloId: number;
   multiplicador: number;
-  sufijos: string[];
 };
 
 const MAX_PAQUETE_MODULO_INSTANCES = 6;
-
-const normalizeSufijos = (value: unknown, multiplicador: number): string[] => {
-  const source = Array.isArray(value)
-    ? value
-    : typeof value === "string"
-      ? value.split(/\r?\n|,/)
-      : [];
-  const normalized = source
-    .slice(0, multiplicador)
-    .map((item) => String(item ?? "").trim());
-  while (normalized.length < multiplicador) normalized.push("");
-  return normalized;
-};
-
-const serializeSufijos = (value: string[]) => JSON.stringify(value.map((item) => item.trim()));
-
-const parseSufijos = (value: unknown): string[] => {
-  const text = String(value ?? "").trim();
-  if (!text) return [];
-  try {
-    const parsed = JSON.parse(text);
-    if (Array.isArray(parsed)) return parsed.map((item) => String(item ?? "").trim());
-  } catch {
-    // Legacy text values can still be split below.
-  }
-  return text.split(/\r?\n|,/).map((item) => item.trim());
-};
 
 const normalizeModuloItems = (data: unknown): PaqueteModuloItemInput[] => {
   const input = data as Record<string, unknown> | null;
@@ -175,7 +145,6 @@ const normalizeModuloItems = (data: unknown): PaqueteModuloItemInput[] => {
       byModuloId.set(moduloId, {
         moduloId,
         multiplicador,
-        sufijos: normalizeSufijos(record.sufijos, multiplicador),
       });
     }
     return Array.from(byModuloId.values());
@@ -184,7 +153,6 @@ const normalizeModuloItems = (data: unknown): PaqueteModuloItemInput[] => {
   return normalizeModuloIds(input?.moduloIds).map((moduloId) => ({
     moduloId,
     multiplicador: 1,
-    sufijos: [""],
   }));
 };
 
@@ -246,7 +214,6 @@ export const listPaquetes = https.onCall(async (_data, context) => {
           moduloItems: paqueteModulos.map((item) => ({
             moduloId: item.moduloId,
             multiplicador: item.multiplicador ?? 1,
-            sufijos: parseSufijos(item.sufijos),
           })),
         };
       });
@@ -288,7 +255,6 @@ export const getPaquete = https.onCall(async (data, context) => {
         moduloItems: paqueteModulos.map((item) => ({
           moduloId: item.moduloId,
           multiplicador: item.multiplicador ?? 1,
-          sufijos: parseSufijos(item.sufijos),
         })),
       },
     };
@@ -346,7 +312,6 @@ export const createOrUpdatePaquete = https.onCall(async (data, context) => {
           orden: index + 1,
           obligatorio: true,
           multiplicador: item.multiplicador,
-          sufijos: serializeSufijos(item.sufijos),
         });
         return dataConnect.executeGraphql<
           { paqueteModulo_insert: unknown },

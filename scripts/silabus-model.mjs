@@ -99,8 +99,8 @@ export const turnoTime = timestamp => timestamp ? new Date(timestamp).toISOStrin
 export const atLima = (day, time) => new Date(`${day}T${time}:00-05:00`).toISOString();
 
 export function groupPeriod(group, semesterStart, semesterEnd) {
-  const suffix = normalize(group.sufijo || group.nombre);
-  const period = suffix.match(/\b(ago|oct) (oct|dic)\b/);
+  const periodText = normalize(group.nombre);
+  const period = periodText.match(/\b(ago|oct) (oct|dic)\b/);
   const months = { ago: 8, oct: 10, dic: 12 };
   const start = group.inicio?.slice(0, 10) || (period ? validDate(2026, months[period[1]], 1) : semesterStart);
   const end = group.fin?.slice(0, 10) || (period ? new Date(Date.UTC(2026, months[period[2]], 0)).toISOString().slice(0, 10) : semesterEnd);

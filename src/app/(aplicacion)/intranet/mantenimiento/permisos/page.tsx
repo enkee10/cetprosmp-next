@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   Checkbox,
@@ -231,7 +231,7 @@ export default function PermisosPage() {
     return (
       <IntranetListLayout title="Permisos">
         <Box sx={{ px: 2, pb: 2 }}>
-          <Alert severity="error">Solo el superusuario puede administrar permisos.</Alert>
+          <AutoDismissAlert severity="error">Solo el superusuario puede administrar permisos.</AutoDismissAlert>
         </Box>
       </IntranetListLayout>
     );
@@ -274,7 +274,7 @@ export default function PermisosPage() {
     >
       {roles.length === 0 && !loading ? (
         <Box sx={{ px: 2, pb: 2 }}>
-          <Alert severity="info">No hay roles editables para configurar.</Alert>
+          <AutoDismissAlert severity="info">No hay roles editables para configurar.</AutoDismissAlert>
         </Box>
       ) : null}
 

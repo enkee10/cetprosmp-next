@@ -20,6 +20,7 @@ import {
   upsertDataConnectUserByDocumentId,
 } from "../core/dataConnectCore.js";
 import { deleteMatriculaTree } from "../core/matriculaDeletion.js";
+import { ensureNoMatriculaScheduleConflicts } from "../core/matriculaScheduleValidation.js";
 import {
   getNextCodigoInscripcionForCurrentYear,
   regenerateCodigosInscripcionForCurrentYear,
@@ -269,7 +270,6 @@ interface MatriculaDocenteGrupoModulo {
   nombre?: string | null;
   orden?: number | null;
   instancia?: number | null;
-  sufijo?: string | null;
   grupoId: number;
   moduloId: number;
   grupo?: {
@@ -725,7 +725,6 @@ const GET_PAQUETE_MODULOS_FOR_MATRICULA_QUERY = `
       orden
       obligatorio
       multiplicador
-      sufijos
       paqueteId
       moduloId
     }
@@ -1062,7 +1061,6 @@ const LIST_MATRICULA_GRUPO_MODULOS_BY_GRUPO_IDS_QUERY = `
       nombre
       orden
       instancia
-      sufijo
       grupoId
       moduloId
       modulo {
@@ -1080,7 +1078,6 @@ const LIST_MATRICULA_GRUPO_MODULOS_BY_IDS_QUERY = `
       nombre
       orden
       instancia
-      sufijo
       grupoId
       moduloId
       grupo {
@@ -1512,7 +1509,6 @@ const GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY = `
       grupoId
       moduloId
       instancia
-      sufijo
       modulo {
         titulo
         tituloComercial
@@ -4567,6 +4563,11 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
     }
     const fallbackGrupoId = toNumberOrNull(data.grupoId) ?? null;
 
+    await ensureNoMatriculaScheduleConflicts({
+      userId,
+      selections: moduloGrupos.map((item) => ({ ...item, grupoId: item.grupoId ?? fallbackGrupoId })),
+    });
+
     const now = new Date().toISOString();
     const matriculaPayload = buildMatriculaDataFromInput({
       ...data,
@@ -5849,11 +5850,11 @@ async function ensureNoMatriculaDuplicates(
     : (reciboResponse?.data.matriculas ?? []).some((item) => item.id !== currentMatriculaId);
   const hasDuplicateMatricula = (duplicateResponse.data.matriculas ?? []).some((item) => item.id !== currentMatriculaId);
 
-  if (hasSameRecibo) {
-    throw new https.HttpsError("already-exists", "El numero de recibo ya fue registrado.");
-  }
   if (hasDuplicateMatricula) {
-    throw new https.HttpsError("already-exists", "El usuario ya esta matriculado en este modulo durante el periodo seleccionado.");
+    throw new https.HttpsError("already-exists", "El estudiante ya se matriculo en este grupo.");
+  }
+  if (hasSameRecibo) {
+    throw new https.HttpsError("already-exists", "El recibo ya fue registrado en otra matricula.");
   }
 }
 
@@ -6395,6 +6396,7 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
       );
     }
     const moduloSelectionChanged = hasGrupoModuloSelectionChanged(previousModuloItems, moduloGrupos);
+    await ensureNoMatriculaScheduleConflicts({ userId, selections: moduloGrupos, currentMatriculaId: matriculaId });
     if (moduloSelectionChanged && isDocenteMatriculaRequester(context)) {
       if (previousModuloItems.some((item) => isGrupoModuloChangeExpired(item))) {
         throw new https.HttpsError("failed-precondition", "Fecha de cambios vencida.");

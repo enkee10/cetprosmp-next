@@ -1,0 +1,5527 @@
+{
+  "year": 2026,
+  "timezone": "America/Lima",
+  "sourceZip": "Calendarizacion 26-2.zip",
+  "profiles": [
+    {
+      "key": "2026-1:300:lv",
+      "semester": "2026-1",
+      "hours": 300,
+      "pattern": "lv",
+      "horarioId": 5,
+      "label": "Lun - Vie",
+      "source": "Calendarizacion 26-2 -  300 horas lunes a viernes.pdf",
+      "sha256": "a4f28d99287fe8a9003e21bc0df455a48ac0aba9a8c91bef147f2b54042ca405",
+      "events": [
+        {
+          "key": "calendarizacion:2026-1:300:lv:vacaciones_gestion:2026-03-02",
+          "date": "2026-03-02",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:vacaciones_gestion:2026-03-03",
+          "date": "2026-03-03",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:vacaciones_gestion:2026-03-04",
+          "date": "2026-03-04",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:vacaciones_gestion:2026-03-05",
+          "date": "2026-03-05",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:vacaciones_gestion:2026-03-06",
+          "date": "2026-03-06",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:vacaciones_gestion:2026-03-09",
+          "date": "2026-03-09",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:vacaciones_gestion:2026-03-10",
+          "date": "2026-03-10",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:vacaciones_gestion:2026-03-11",
+          "date": "2026-03-11",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:vacaciones_gestion:2026-03-12",
+          "date": "2026-03-12",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:vacaciones_gestion:2026-03-13",
+          "date": "2026-03-13",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:inicio_clases:2026-03-16",
+          "date": "2026-03-16",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:empleabilidad:2026-03-30",
+          "date": "2026-03-30",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:feriado:2026-04-02",
+          "date": "2026-04-02",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:feriado:2026-04-03",
+          "date": "2026-04-03",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:empleabilidad:2026-04-09",
+          "date": "2026-04-09",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:empleabilidad:2026-04-13",
+          "date": "2026-04-13",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:empleabilidad:2026-04-24",
+          "date": "2026-04-24",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:empleabilidad:2026-04-30",
+          "date": "2026-04-30",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:feriado:2026-05-01",
+          "date": "2026-05-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-07",
+          "date": "2026-05-07",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-08",
+          "date": "2026-05-08",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-11",
+          "date": "2026-05-11",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-12",
+          "date": "2026-05-12",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-13",
+          "date": "2026-05-13",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-14",
+          "date": "2026-05-14",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-15",
+          "date": "2026-05-15",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-18",
+          "date": "2026-05-18",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-19",
+          "date": "2026-05-19",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-20",
+          "date": "2026-05-20",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-21",
+          "date": "2026-05-21",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-22",
+          "date": "2026-05-22",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-25",
+          "date": "2026-05-25",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-05-26",
+          "date": "2026-05-26",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:fin_clases:2026-05-27",
+          "date": "2026-05-27",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:inicio_clases:2026-05-12",
+          "date": "2026-05-12",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:empleabilidad:2026-05-27",
+          "date": "2026-05-27",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:empleabilidad:2026-06-01",
+          "date": "2026-06-01",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:feriado:2026-06-07",
+          "date": "2026-06-07",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:empleabilidad:2026-06-09",
+          "date": "2026-06-09",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:empleabilidad:2026-06-17",
+          "date": "2026-06-17",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:empleabilidad:2026-06-25",
+          "date": "2026-06-25",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:feriado:2026-06-29",
+          "date": "2026-06-29",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-01",
+          "date": "2026-07-01",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-02",
+          "date": "2026-07-02",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:gestion:2026-07-03",
+          "date": "2026-07-03",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:feriado:2026-07-06",
+          "date": "2026-07-06",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-07",
+          "date": "2026-07-07",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-08",
+          "date": "2026-07-08",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-09",
+          "date": "2026-07-09",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-10",
+          "date": "2026-07-10",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-13",
+          "date": "2026-07-13",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-14",
+          "date": "2026-07-14",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-15",
+          "date": "2026-07-15",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-16",
+          "date": "2026-07-16",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:dia_logro:2026-07-17",
+          "date": "2026-07-17",
+          "type": "dia_logro",
+          "title": "Día del logro",
+          "color": "#99ff33",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-20",
+          "date": "2026-07-20",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-21",
+          "date": "2026-07-21",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:ppp:2026-07-22",
+          "date": "2026-07-22",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:feriado:2026-07-23",
+          "date": "2026-07-23",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:fin_clases:2026-07-24",
+          "date": "2026-07-24",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:feriado:2026-07-28",
+          "date": "2026-07-28",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lv:feriado:2026-07-29",
+          "date": "2026-07-29",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        }
+      ],
+      "cycles": [
+        {
+          "number": 1,
+          "dates": 89,
+          "edges": [
+            "2026-03-16",
+            "2026-05-27"
+          ]
+        },
+        {
+          "number": 2,
+          "dates": 82,
+          "edges": [
+            "2026-05-12",
+            "2026-07-24"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-2:300:lv",
+      "semester": "2026-2",
+      "hours": 300,
+      "pattern": "lv",
+      "horarioId": 5,
+      "label": "Lun - Vie",
+      "source": "Calendarizacion 26-2 -  300 horas lunes a viernes.pdf",
+      "sha256": "a4f28d99287fe8a9003e21bc0df455a48ac0aba9a8c91bef147f2b54042ca405",
+      "events": [
+        {
+          "key": "calendarizacion:2026-2:300:lv:vacaciones_gestion:2026-08-03",
+          "date": "2026-08-03",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:vacaciones_gestion:2026-08-04",
+          "date": "2026-08-04",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:vacaciones_gestion:2026-08-05",
+          "date": "2026-08-05",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:feriado:2026-08-06",
+          "date": "2026-08-06",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:vacaciones_gestion:2026-08-07",
+          "date": "2026-08-07",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:inicio_clases:2026-08-10",
+          "date": "2026-08-10",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:empleabilidad:2026-08-19",
+          "date": "2026-08-19",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:empleabilidad:2026-08-24",
+          "date": "2026-08-24",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:gestion:2026-08-28",
+          "date": "2026-08-28",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:feriado:2026-08-30",
+          "date": "2026-08-30",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:empleabilidad:2026-09-02",
+          "date": "2026-09-02",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:empleabilidad:2026-09-10",
+          "date": "2026-09-10",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:empleabilidad:2026-09-18",
+          "date": "2026-09-18",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-09-29",
+          "date": "2026-09-29",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-09-30",
+          "date": "2026-09-30",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-01",
+          "date": "2026-10-01",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:gestion:2026-10-02",
+          "date": "2026-10-02",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-05",
+          "date": "2026-10-05",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-06",
+          "date": "2026-10-06",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-07",
+          "date": "2026-10-07",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:feriado:2026-10-08",
+          "date": "2026-10-08",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-09",
+          "date": "2026-10-09",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-12",
+          "date": "2026-10-12",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-13",
+          "date": "2026-10-13",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-14",
+          "date": "2026-10-14",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-15",
+          "date": "2026-10-15",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-16",
+          "date": "2026-10-16",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-19",
+          "date": "2026-10-19",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-10-20",
+          "date": "2026-10-20",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:fin_clases:2026-10-21",
+          "date": "2026-10-21",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:inicio_clases:2026-10-06",
+          "date": "2026-10-06",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:empleabilidad:2026-10-07",
+          "date": "2026-10-07",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:empleabilidad:2026-10-16",
+          "date": "2026-10-16",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:feriado:2026-11-01",
+          "date": "2026-11-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:empleabilidad:2026-11-04",
+          "date": "2026-11-04",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:empleabilidad:2026-11-12",
+          "date": "2026-11-12",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:empleabilidad:2026-11-20",
+          "date": "2026-11-20",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-11-25",
+          "date": "2026-11-25",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-11-26",
+          "date": "2026-11-26",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-11-27",
+          "date": "2026-11-27",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-11-30",
+          "date": "2026-11-30",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-12-01",
+          "date": "2026-12-01",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-12-02",
+          "date": "2026-12-02",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-12-03",
+          "date": "2026-12-03",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-12-04",
+          "date": "2026-12-04",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-12-07",
+          "date": "2026-12-07",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:feriado:2026-12-08",
+          "date": "2026-12-08",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:feriado:2026-12-09",
+          "date": "2026-12-09",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-12-10",
+          "date": "2026-12-10",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-12-11",
+          "date": "2026-12-11",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-12-14",
+          "date": "2026-12-14",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-12-15",
+          "date": "2026-12-15",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:ppp:2026-12-16",
+          "date": "2026-12-16",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:fin_clases:2026-12-17",
+          "date": "2026-12-17",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:gestion:2026-12-18",
+          "date": "2026-12-18",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lv:feriado:2026-12-25",
+          "date": "2026-12-25",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 4
+        }
+      ],
+      "cycles": [
+        {
+          "number": 3,
+          "dates": 82,
+          "edges": [
+            "2026-08-10",
+            "2026-10-21"
+          ]
+        },
+        {
+          "number": 4,
+          "dates": 87,
+          "edges": [
+            "2026-10-06",
+            "2026-12-17"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-1:150:lmv",
+      "semester": "2026-1",
+      "hours": 150,
+      "pattern": "lmv",
+      "horarioId": 1,
+      "label": "Lun, Mie, @Vie",
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "events": [
+        {
+          "key": "calendarizacion:2026-1:150:lmv:vacaciones_gestion:2026-03-02",
+          "date": "2026-03-02",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:vacaciones_gestion:2026-03-04",
+          "date": "2026-03-04",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:vacaciones_gestion:2026-03-06",
+          "date": "2026-03-06",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:vacaciones_gestion:2026-03-09",
+          "date": "2026-03-09",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:vacaciones_gestion:2026-03-11",
+          "date": "2026-03-11",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:vacaciones_gestion:2026-03-13",
+          "date": "2026-03-13",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:inicio_clases:2026-03-16",
+          "date": "2026-03-16",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:empleabilidad:2026-03-30",
+          "date": "2026-03-30",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:feriado:2026-04-03",
+          "date": "2026-04-03",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:empleabilidad:2026-04-13",
+          "date": "2026-04-13",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:feriado:2026-05-01",
+          "date": "2026-05-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:empleabilidad:2026-05-06",
+          "date": "2026-05-06",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:ppp:2026-05-08",
+          "date": "2026-05-08",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:ppp:2026-05-09",
+          "date": "2026-05-09",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:ppp:2026-05-11",
+          "date": "2026-05-11",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:ppp:2026-05-13",
+          "date": "2026-05-13",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:ppp:2026-05-15",
+          "date": "2026-05-15",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:ppp:2026-05-16",
+          "date": "2026-05-16",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:fin_clases:2026-05-18",
+          "date": "2026-05-18",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:inicio_clases:2026-05-20",
+          "date": "2026-05-20",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:empleabilidad:2026-06-01",
+          "date": "2026-06-01",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:feriado:2026-06-07",
+          "date": "2026-06-07",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:empleabilidad:2026-06-17",
+          "date": "2026-06-17",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:feriado:2026-06-29",
+          "date": "2026-06-29",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:gestion:2026-07-03",
+          "date": "2026-07-03",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:feriado:2026-07-06",
+          "date": "2026-07-06",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:ppp:2026-07-11",
+          "date": "2026-07-11",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:empleabilidad:2026-07-13",
+          "date": "2026-07-13",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:ppp:2026-07-15",
+          "date": "2026-07-15",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:dia_logro:2026-07-17",
+          "date": "2026-07-17",
+          "type": "dia_logro",
+          "title": "Día del logro",
+          "color": "#99ff33",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:ppp:2026-07-18",
+          "date": "2026-07-18",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:ppp:2026-07-20",
+          "date": "2026-07-20",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:ppp:2026-07-22",
+          "date": "2026-07-22",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:fin_clases:2026-07-24",
+          "date": "2026-07-24",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:lmv:feriado:2026-07-29",
+          "date": "2026-07-29",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        }
+      ],
+      "cycles": [
+        {
+          "number": 1,
+          "dates": 54,
+          "edges": [
+            "2026-03-16",
+            "2026-05-18"
+          ]
+        },
+        {
+          "number": 2,
+          "dates": 50,
+          "edges": [
+            "2026-05-20",
+            "2026-07-24"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-1:150:mjv",
+      "semester": "2026-1",
+      "hours": 150,
+      "pattern": "mjv",
+      "horarioId": 3,
+      "label": "Mar, Jue, @Vie",
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "events": [
+        {
+          "key": "calendarizacion:2026-1:150:mjv:vacaciones_gestion:2026-03-03",
+          "date": "2026-03-03",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:vacaciones_gestion:2026-03-05",
+          "date": "2026-03-05",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:vacaciones_gestion:2026-03-06",
+          "date": "2026-03-06",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:vacaciones_gestion:2026-03-10",
+          "date": "2026-03-10",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:vacaciones_gestion:2026-03-12",
+          "date": "2026-03-12",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:vacaciones_gestion:2026-03-13",
+          "date": "2026-03-13",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:inicio_clases:2026-03-17",
+          "date": "2026-03-17",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:empleabilidad:2026-03-31",
+          "date": "2026-03-31",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:feriado:2026-04-02",
+          "date": "2026-04-02",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:empleabilidad:2026-04-14",
+          "date": "2026-04-14",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:empleabilidad:2026-05-07",
+          "date": "2026-05-07",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:ppp:2026-05-08",
+          "date": "2026-05-08",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:ppp:2026-05-09",
+          "date": "2026-05-09",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:ppp:2026-05-12",
+          "date": "2026-05-12",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:ppp:2026-05-14",
+          "date": "2026-05-14",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:ppp:2026-05-15",
+          "date": "2026-05-15",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:ppp:2026-05-16",
+          "date": "2026-05-16",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:fin_clases:2026-05-19",
+          "date": "2026-05-19",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:inicio_clases:2026-05-21",
+          "date": "2026-05-21",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:empleabilidad:2026-06-02",
+          "date": "2026-06-02",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:feriado:2026-06-07",
+          "date": "2026-06-07",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:empleabilidad:2026-06-18",
+          "date": "2026-06-18",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:empleabilidad:2026-07-09",
+          "date": "2026-07-09",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:ppp:2026-07-10",
+          "date": "2026-07-10",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:ppp:2026-07-11",
+          "date": "2026-07-11",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:ppp:2026-07-14",
+          "date": "2026-07-14",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:ppp:2026-07-16",
+          "date": "2026-07-16",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:dia_logro:2026-07-17",
+          "date": "2026-07-17",
+          "type": "dia_logro",
+          "title": "Día del logro",
+          "color": "#99ff33",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:ppp:2026-07-18",
+          "date": "2026-07-18",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:fin_clases:2026-07-21",
+          "date": "2026-07-21",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:feriado:2026-07-23",
+          "date": "2026-07-23",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-1:150:mjv:feriado:2026-07-28",
+          "date": "2026-07-28",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        }
+      ],
+      "cycles": [
+        {
+          "number": 1,
+          "dates": 53,
+          "edges": [
+            "2026-03-17",
+            "2026-05-19"
+          ]
+        },
+        {
+          "number": 2,
+          "dates": 48,
+          "edges": [
+            "2026-05-21",
+            "2026-07-21"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-2:150:lmv",
+      "semester": "2026-2",
+      "hours": 150,
+      "pattern": "lmv",
+      "horarioId": 1,
+      "label": "Lun, Mie, @Vie",
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "events": [
+        {
+          "key": "calendarizacion:2026-2:150:lmv:vacaciones_gestion:2026-08-03",
+          "date": "2026-08-03",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:vacaciones_gestion:2026-08-05",
+          "date": "2026-08-05",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:vacaciones_gestion:2026-08-07",
+          "date": "2026-08-07",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:inicio_clases:2026-08-10",
+          "date": "2026-08-10",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:empleabilidad:2026-08-19",
+          "date": "2026-08-19",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:feriado:2026-08-30",
+          "date": "2026-08-30",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:empleabilidad:2026-09-07",
+          "date": "2026-09-07",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:empleabilidad:2026-09-28",
+          "date": "2026-09-28",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-09-30",
+          "date": "2026-09-30",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-10-02",
+          "date": "2026-10-02",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-10-03",
+          "date": "2026-10-03",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-10-05",
+          "date": "2026-10-05",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-10-07",
+          "date": "2026-10-07",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-10-09",
+          "date": "2026-10-09",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:vacaciones_gestion:2026-10-12",
+          "date": "2026-10-12",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:vacaciones_gestion:2026-10-14",
+          "date": "2026-10-14",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:vacaciones_gestion:2026-10-16",
+          "date": "2026-10-16",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:fin_clases:2026-10-19",
+          "date": "2026-10-19",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:inicio_clases:2026-10-21",
+          "date": "2026-10-21",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:empleabilidad:2026-10-26",
+          "date": "2026-10-26",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:feriado:2026-11-01",
+          "date": "2026-11-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:empleabilidad:2026-11-18",
+          "date": "2026-11-18",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:gestion:2026-11-27",
+          "date": "2026-11-27",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:feriado:2026-12-09",
+          "date": "2026-12-09",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:empleabilidad:2026-12-11",
+          "date": "2026-12-11",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-12-12",
+          "date": "2026-12-12",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-12-13",
+          "date": "2026-12-13",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-12-14",
+          "date": "2026-12-14",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-12-16",
+          "date": "2026-12-16",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:gestion:2026-12-18",
+          "date": "2026-12-18",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-12-19",
+          "date": "2026-12-19",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:ppp:2026-12-21",
+          "date": "2026-12-21",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:fin_clases:2026-12-23",
+          "date": "2026-12-23",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:lmv:feriado:2026-12-25",
+          "date": "2026-12-25",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 4
+        }
+      ],
+      "cycles": [
+        {
+          "number": 3,
+          "dates": 54,
+          "edges": [
+            "2026-08-10",
+            "2026-10-19"
+          ]
+        },
+        {
+          "number": 4,
+          "dates": 47,
+          "edges": [
+            "2026-10-21",
+            "2026-12-23"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-2:150:mjv",
+      "semester": "2026-2",
+      "hours": 150,
+      "pattern": "mjv",
+      "horarioId": 3,
+      "label": "Mar, Jue, @Vie",
+      "source": "Calendarizacion 26-2 - 150 horas.pdf",
+      "sha256": "666eeeda16cefd301674dc7e4f1adb9aee067cd9ea285fff09f7297a4e34174c",
+      "events": [
+        {
+          "key": "calendarizacion:2026-2:150:mjv:vacaciones_gestion:2026-08-04",
+          "date": "2026-08-04",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:feriado:2026-08-06",
+          "date": "2026-08-06",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:vacaciones_gestion:2026-08-07",
+          "date": "2026-08-07",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:empleabilidad:2026-08-20",
+          "date": "2026-08-20",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:gestion:2026-08-28",
+          "date": "2026-08-28",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:feriado:2026-08-30",
+          "date": "2026-08-30",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:empleabilidad:2026-09-08",
+          "date": "2026-09-08",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:empleabilidad:2026-09-24",
+          "date": "2026-09-24",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-09-29",
+          "date": "2026-09-29",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-09-30",
+          "date": "2026-09-30",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-10-01",
+          "date": "2026-10-01",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-10-06",
+          "date": "2026-10-06",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:feriado:2026-10-08",
+          "date": "2026-10-08",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-10-09",
+          "date": "2026-10-09",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-10-13",
+          "date": "2026-10-13",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-10-15",
+          "date": "2026-10-15",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:fin_clases:2026-10-16",
+          "date": "2026-10-16",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 3
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:inicio_clases:2026-10-20",
+          "date": "2026-10-20",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:gestion:2026-10-23",
+          "date": "2026-10-23",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:empleabilidad:2026-10-27",
+          "date": "2026-10-27",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:feriado:2026-11-01",
+          "date": "2026-11-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:empleabilidad:2026-11-19",
+          "date": "2026-11-19",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:empleabilidad:2026-12-01",
+          "date": "2026-12-01",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-12-04",
+          "date": "2026-12-04",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-12-07",
+          "date": "2026-12-07",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:feriado:2026-12-08",
+          "date": "2026-12-08",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-12-10",
+          "date": "2026-12-10",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-12-11",
+          "date": "2026-12-11",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-12-14",
+          "date": "2026-12-14",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-12-15",
+          "date": "2026-12-15",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:ppp:2026-12-16",
+          "date": "2026-12-16",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:dia_logro:2026-12-17",
+          "date": "2026-12-17",
+          "type": "dia_logro",
+          "title": "Día del logro",
+          "color": "#99ff33",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:gestion:2026-12-18",
+          "date": "2026-12-18",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 4
+        },
+        {
+          "key": "calendarizacion:2026-2:150:mjv:feriado:2026-12-25",
+          "date": "2026-12-25",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 4
+        }
+      ],
+      "cycles": [
+        {
+          "number": 3,
+          "dates": 54,
+          "edges": [
+            "2026-10-16"
+          ]
+        },
+        {
+          "number": 4,
+          "dates": 54,
+          "edges": [
+            "2026-10-20"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-1:300:lmv",
+      "semester": "2026-1",
+      "hours": 300,
+      "pattern": "lmv",
+      "horarioId": 1,
+      "label": "Lun, Mie, @Vie",
+      "source": "Calendarizacion 26-2 - 300 horas.pdf",
+      "sha256": "fbc515da65ee127c46bcd1ecca6f731e721562982fdb71db9cf04bdcef5bbcdd",
+      "events": [
+        {
+          "key": "calendarizacion:2026-1:300:lmv:vacaciones_gestion:2026-03-02",
+          "date": "2026-03-02",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:vacaciones_gestion:2026-03-04",
+          "date": "2026-03-04",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:vacaciones_gestion:2026-03-06",
+          "date": "2026-03-06",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:vacaciones_gestion:2026-03-09",
+          "date": "2026-03-09",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:vacaciones_gestion:2026-03-11",
+          "date": "2026-03-11",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:vacaciones_gestion:2026-03-13",
+          "date": "2026-03-13",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:inicio_clases:2026-03-16",
+          "date": "2026-03-16",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:empleabilidad:2026-03-30",
+          "date": "2026-03-30",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:feriado:2026-04-03",
+          "date": "2026-04-03",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:empleabilidad:2026-04-13",
+          "date": "2026-04-13",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:feriado:2026-05-01",
+          "date": "2026-05-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:empleabilidad:2026-05-06",
+          "date": "2026-05-06",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:empleabilidad:2026-05-27",
+          "date": "2026-05-27",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:empleabilidad:2026-06-01",
+          "date": "2026-06-01",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:feriado:2026-06-07",
+          "date": "2026-06-07",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-06-24",
+          "date": "2026-06-24",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-06-26",
+          "date": "2026-06-26",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-06-27",
+          "date": "2026-06-27",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:feriado:2026-06-29",
+          "date": "2026-06-29",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-07-01",
+          "date": "2026-07-01",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:gestion:2026-07-03",
+          "date": "2026-07-03",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-07-04",
+          "date": "2026-07-04",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:feriado:2026-07-06",
+          "date": "2026-07-06",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-07-08",
+          "date": "2026-07-08",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-07-10",
+          "date": "2026-07-10",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-07-11",
+          "date": "2026-07-11",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-07-13",
+          "date": "2026-07-13",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-07-15",
+          "date": "2026-07-15",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:dia_logro:2026-07-17",
+          "date": "2026-07-17",
+          "type": "dia_logro",
+          "title": "Día del logro",
+          "color": "#99ff33",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-07-18",
+          "date": "2026-07-18",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-07-20",
+          "date": "2026-07-20",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:ppp:2026-07-22",
+          "date": "2026-07-22",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:fin_clases:2026-07-24",
+          "date": "2026-07-24",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:lmv:feriado:2026-07-29",
+          "date": "2026-07-29",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        }
+      ],
+      "cycles": [
+        {
+          "number": 1,
+          "dates": 103,
+          "edges": [
+            "2026-03-16",
+            "2026-07-24"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-1:300:mjv",
+      "semester": "2026-1",
+      "hours": 300,
+      "pattern": "mjv",
+      "horarioId": 3,
+      "label": "Mar, Jue, @Vie",
+      "source": "Calendarizacion 26-2 - 300 horas.pdf",
+      "sha256": "fbc515da65ee127c46bcd1ecca6f731e721562982fdb71db9cf04bdcef5bbcdd",
+      "events": [
+        {
+          "key": "calendarizacion:2026-1:300:mjv:vacaciones_gestion:2026-03-03",
+          "date": "2026-03-03",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:vacaciones_gestion:2026-03-05",
+          "date": "2026-03-05",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:vacaciones_gestion:2026-03-06",
+          "date": "2026-03-06",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:vacaciones_gestion:2026-03-10",
+          "date": "2026-03-10",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:vacaciones_gestion:2026-03-12",
+          "date": "2026-03-12",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:vacaciones_gestion:2026-03-13",
+          "date": "2026-03-13",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:empleabilidad:2026-03-31",
+          "date": "2026-03-31",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:feriado:2026-04-02",
+          "date": "2026-04-02",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:empleabilidad:2026-04-14",
+          "date": "2026-04-14",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:empleabilidad:2026-04-30",
+          "date": "2026-04-30",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:empleabilidad:2026-05-22",
+          "date": "2026-05-22",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:feriado:2026-06-07",
+          "date": "2026-06-07",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:empleabilidad:2026-06-18",
+          "date": "2026-06-18",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-06-23",
+          "date": "2026-06-23",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-06-25",
+          "date": "2026-06-25",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-06-27",
+          "date": "2026-06-27",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-06-30",
+          "date": "2026-06-30",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-07-02",
+          "date": "2026-07-02",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:gestion:2026-07-03",
+          "date": "2026-07-03",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-07-04",
+          "date": "2026-07-04",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-07-07",
+          "date": "2026-07-07",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-07-09",
+          "date": "2026-07-09",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-07-10",
+          "date": "2026-07-10",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-07-11",
+          "date": "2026-07-11",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-07-14",
+          "date": "2026-07-14",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-07-16",
+          "date": "2026-07-16",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:dia_logro:2026-07-17",
+          "date": "2026-07-17",
+          "type": "dia_logro",
+          "title": "Día del logro",
+          "color": "#99ff33",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:ppp:2026-07-18",
+          "date": "2026-07-18",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:fin_clases:2026-07-21",
+          "date": "2026-07-21",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:feriado:2026-07-23",
+          "date": "2026-07-23",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:300:mjv:feriado:2026-07-28",
+          "date": "2026-07-28",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        }
+      ],
+      "cycles": [
+        {
+          "number": 1,
+          "dates": 102,
+          "edges": [
+            "2026-07-21"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-2:300:lmv",
+      "semester": "2026-2",
+      "hours": 300,
+      "pattern": "lmv",
+      "horarioId": 1,
+      "label": "Lun, Mie, @Vie",
+      "source": "Calendarizacion 26-2 - 300 horas.pdf",
+      "sha256": "fbc515da65ee127c46bcd1ecca6f731e721562982fdb71db9cf04bdcef5bbcdd",
+      "events": [
+        {
+          "key": "calendarizacion:2026-2:300:lmv:vacaciones_gestion:2026-08-03",
+          "date": "2026-08-03",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:vacaciones_gestion:2026-08-05",
+          "date": "2026-08-05",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:vacaciones_gestion:2026-08-07",
+          "date": "2026-08-07",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:inicio_clases:2026-08-10",
+          "date": "2026-08-10",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:empleabilidad:2026-08-19",
+          "date": "2026-08-19",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:feriado:2026-08-30",
+          "date": "2026-08-30",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:empleabilidad:2026-09-07",
+          "date": "2026-09-07",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:empleabilidad:2026-09-30",
+          "date": "2026-09-30",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:gestion:2026-10-02",
+          "date": "2026-10-02",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:empleabilidad:2026-10-21",
+          "date": "2026-10-21",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:gestion:2026-10-23",
+          "date": "2026-10-23",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:feriado:2026-11-01",
+          "date": "2026-11-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:empleabilidad:2026-11-09",
+          "date": "2026-11-09",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-11-20",
+          "date": "2026-11-20",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-11-23",
+          "date": "2026-11-23",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-11-24",
+          "date": "2026-11-24",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-11-25",
+          "date": "2026-11-25",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-11-26",
+          "date": "2026-11-26",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-11-27",
+          "date": "2026-11-27",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-11-30",
+          "date": "2026-11-30",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-12-01",
+          "date": "2026-12-01",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-12-02",
+          "date": "2026-12-02",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-12-03",
+          "date": "2026-12-03",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-12-04",
+          "date": "2026-12-04",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-12-07",
+          "date": "2026-12-07",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:feriado:2026-12-09",
+          "date": "2026-12-09",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-12-11",
+          "date": "2026-12-11",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:ppp:2026-12-14",
+          "date": "2026-12-14",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:fin_clases:2026-12-16",
+          "date": "2026-12-16",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:gestion:2026-12-18",
+          "date": "2026-12-18",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:lmv:feriado:2026-12-25",
+          "date": "2026-12-25",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        }
+      ],
+      "cycles": [
+        {
+          "number": 2,
+          "dates": 106,
+          "edges": [
+            "2026-08-10",
+            "2026-12-16"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-2:300:mjv",
+      "semester": "2026-2",
+      "hours": 300,
+      "pattern": "mjv",
+      "horarioId": 3,
+      "label": "Mar, Jue, @Vie",
+      "source": "Calendarizacion 26-2 - 300 horas.pdf",
+      "sha256": "fbc515da65ee127c46bcd1ecca6f731e721562982fdb71db9cf04bdcef5bbcdd",
+      "events": [
+        {
+          "key": "calendarizacion:2026-2:300:mjv:vacaciones_gestion:2026-08-04",
+          "date": "2026-08-04",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:feriado:2026-08-06",
+          "date": "2026-08-06",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:vacaciones_gestion:2026-08-07",
+          "date": "2026-08-07",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:inicio_clases:2026-08-11",
+          "date": "2026-08-11",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:empleabilidad:2026-08-20",
+          "date": "2026-08-20",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:gestion:2026-08-28",
+          "date": "2026-08-28",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:feriado:2026-08-30",
+          "date": "2026-08-30",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:empleabilidad:2026-09-08",
+          "date": "2026-09-08",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:empleabilidad:2026-10-06",
+          "date": "2026-10-06",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:feriado:2026-10-08",
+          "date": "2026-10-08",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:gestion:2026-10-23",
+          "date": "2026-10-23",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:empleabilidad:2026-10-27",
+          "date": "2026-10-27",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:feriado:2026-11-01",
+          "date": "2026-11-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:empleabilidad:2026-11-12",
+          "date": "2026-11-12",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-11-23",
+          "date": "2026-11-23",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-11-24",
+          "date": "2026-11-24",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-11-25",
+          "date": "2026-11-25",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-11-26",
+          "date": "2026-11-26",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-11-27",
+          "date": "2026-11-27",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-11-30",
+          "date": "2026-11-30",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-12-01",
+          "date": "2026-12-01",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-12-02",
+          "date": "2026-12-02",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-12-03",
+          "date": "2026-12-03",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-12-04",
+          "date": "2026-12-04",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-12-07",
+          "date": "2026-12-07",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:feriado:2026-12-08",
+          "date": "2026-12-08",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-12-10",
+          "date": "2026-12-10",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-12-11",
+          "date": "2026-12-11",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:ppp:2026-12-15",
+          "date": "2026-12-15",
+          "type": "ppp",
+          "title": "PPP",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:fin_clases:2026-12-17",
+          "date": "2026-12-17",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:gestion:2026-12-18",
+          "date": "2026-12-18",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:300:mjv:feriado:2026-12-25",
+          "date": "2026-12-25",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        }
+      ],
+      "cycles": [
+        {
+          "number": 2,
+          "dates": 107,
+          "edges": [
+            "2026-08-11",
+            "2026-12-17"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-1:512:lv",
+      "semester": "2026-1",
+      "hours": 512,
+      "pattern": "lv",
+      "horarioId": 5,
+      "label": "Lun - Vie",
+      "source": "Calendarizacion 26-2 - 512 horas.pdf",
+      "sha256": "ed53ef83fc1b9b5bcb23b74f3eeb372b8bd91aa2c2990a8f9157c827f8e600fb",
+      "events": [
+        {
+          "key": "calendarizacion:2026-1:512:lv:vacaciones_gestion:2026-03-02",
+          "date": "2026-03-02",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:vacaciones_gestion:2026-03-03",
+          "date": "2026-03-03",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:vacaciones_gestion:2026-03-04",
+          "date": "2026-03-04",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:vacaciones_gestion:2026-03-05",
+          "date": "2026-03-05",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:vacaciones_gestion:2026-03-06",
+          "date": "2026-03-06",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:vacaciones_gestion:2026-03-09",
+          "date": "2026-03-09",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:vacaciones_gestion:2026-03-10",
+          "date": "2026-03-10",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:vacaciones_gestion:2026-03-11",
+          "date": "2026-03-11",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:vacaciones_gestion:2026-03-12",
+          "date": "2026-03-12",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:vacaciones_gestion:2026-03-13",
+          "date": "2026-03-13",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:inicio_clases:2026-03-16",
+          "date": "2026-03-16",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-03-18",
+          "date": "2026-03-18",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-03-23",
+          "date": "2026-03-23",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-03-26",
+          "date": "2026-03-26",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-03-31",
+          "date": "2026-03-31",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:feriado:2026-04-02",
+          "date": "2026-04-02",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:feriado:2026-04-03",
+          "date": "2026-04-03",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-04-09",
+          "date": "2026-04-09",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-04-14",
+          "date": "2026-04-14",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-04-17",
+          "date": "2026-04-17",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-04-22",
+          "date": "2026-04-22",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-04-27",
+          "date": "2026-04-27",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-04-30",
+          "date": "2026-04-30",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:feriado:2026-05-01",
+          "date": "2026-05-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-05-06",
+          "date": "2026-05-06",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-05-11",
+          "date": "2026-05-11",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-05-14",
+          "date": "2026-05-14",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-05-19",
+          "date": "2026-05-19",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-05-27",
+          "date": "2026-05-27",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:empleabilidad:2026-06-01",
+          "date": "2026-06-01",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-03",
+          "date": "2026-06-03",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-04",
+          "date": "2026-06-04",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-05",
+          "date": "2026-06-05",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:feriado:2026-06-07",
+          "date": "2026-06-07",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-08",
+          "date": "2026-06-08",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-09",
+          "date": "2026-06-09",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-10",
+          "date": "2026-06-10",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-11",
+          "date": "2026-06-11",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-12",
+          "date": "2026-06-12",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-15",
+          "date": "2026-06-15",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-16",
+          "date": "2026-06-16",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-17",
+          "date": "2026-06-17",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-18",
+          "date": "2026-06-18",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-19",
+          "date": "2026-06-19",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-22",
+          "date": "2026-06-22",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-23",
+          "date": "2026-06-23",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-24",
+          "date": "2026-06-24",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-25",
+          "date": "2026-06-25",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-26",
+          "date": "2026-06-26",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:feriado:2026-06-29",
+          "date": "2026-06-29",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-06-30",
+          "date": "2026-06-30",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-07-01",
+          "date": "2026-07-01",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-07-02",
+          "date": "2026-07-02",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:gestion:2026-07-03",
+          "date": "2026-07-03",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:feriado:2026-07-06",
+          "date": "2026-07-06",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-07-07",
+          "date": "2026-07-07",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-07-08",
+          "date": "2026-07-08",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-07-09",
+          "date": "2026-07-09",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-07-10",
+          "date": "2026-07-10",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-07-13",
+          "date": "2026-07-13",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-07-14",
+          "date": "2026-07-14",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-07-15",
+          "date": "2026-07-15",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-07-16",
+          "date": "2026-07-16",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:dia_logro:2026-07-17",
+          "date": "2026-07-17",
+          "type": "dia_logro",
+          "title": "Día del logro",
+          "color": "#99ff33",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:efsrt:2026-07-20",
+          "date": "2026-07-20",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:fin_clases:2026-07-21",
+          "date": "2026-07-21",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:feriado:2026-07-23",
+          "date": "2026-07-23",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:feriado:2026-07-28",
+          "date": "2026-07-28",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:512:lv:feriado:2026-07-29",
+          "date": "2026-07-29",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        }
+      ],
+      "cycles": [
+        {
+          "number": 1,
+          "dates": 153,
+          "edges": [
+            "2026-03-16",
+            "2026-07-21"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-2:512:lv",
+      "semester": "2026-2",
+      "hours": 512,
+      "pattern": "lv",
+      "horarioId": 5,
+      "label": "Lun - Vie",
+      "source": "Calendarizacion 26-2 - 512 horas.pdf",
+      "sha256": "ed53ef83fc1b9b5bcb23b74f3eeb372b8bd91aa2c2990a8f9157c827f8e600fb",
+      "events": [
+        {
+          "key": "calendarizacion:2026-2:512:lv:vacaciones_gestion:2026-08-03",
+          "date": "2026-08-03",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:vacaciones_gestion:2026-08-04",
+          "date": "2026-08-04",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:vacaciones_gestion:2026-08-05",
+          "date": "2026-08-05",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:feriado:2026-08-06",
+          "date": "2026-08-06",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:vacaciones_gestion:2026-08-07",
+          "date": "2026-08-07",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:inicio_clases:2026-08-10",
+          "date": "2026-08-10",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-08-12",
+          "date": "2026-08-12",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-08-17",
+          "date": "2026-08-17",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-08-20",
+          "date": "2026-08-20",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-08-25",
+          "date": "2026-08-25",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:gestion:2026-08-28",
+          "date": "2026-08-28",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:feriado:2026-08-30",
+          "date": "2026-08-30",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-09-02",
+          "date": "2026-09-02",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-09-07",
+          "date": "2026-09-07",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-09-10",
+          "date": "2026-09-10",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-09-15",
+          "date": "2026-09-15",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-09-18",
+          "date": "2026-09-18",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-09-23",
+          "date": "2026-09-23",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-09-25",
+          "date": "2026-09-25",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-09-28",
+          "date": "2026-09-28",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:gestion:2026-10-02",
+          "date": "2026-10-02",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-10-06",
+          "date": "2026-10-06",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:feriado:2026-10-08",
+          "date": "2026-10-08",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-10-21",
+          "date": "2026-10-21",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:gestion:2026-10-23",
+          "date": "2026-10-23",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:empleabilidad:2026-10-27",
+          "date": "2026-10-27",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-10-29",
+          "date": "2026-10-29",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-10-30",
+          "date": "2026-10-30",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:feriado:2026-11-01",
+          "date": "2026-11-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-02",
+          "date": "2026-11-02",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-03",
+          "date": "2026-11-03",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-04",
+          "date": "2026-11-04",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-05",
+          "date": "2026-11-05",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-06",
+          "date": "2026-11-06",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-09",
+          "date": "2026-11-09",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-10",
+          "date": "2026-11-10",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-11",
+          "date": "2026-11-11",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-12",
+          "date": "2026-11-12",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-13",
+          "date": "2026-11-13",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-16",
+          "date": "2026-11-16",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-17",
+          "date": "2026-11-17",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-18",
+          "date": "2026-11-18",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-19",
+          "date": "2026-11-19",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-20",
+          "date": "2026-11-20",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-23",
+          "date": "2026-11-23",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-24",
+          "date": "2026-11-24",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-25",
+          "date": "2026-11-25",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-26",
+          "date": "2026-11-26",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-27",
+          "date": "2026-11-27",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-11-30",
+          "date": "2026-11-30",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-12-01",
+          "date": "2026-12-01",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-12-02",
+          "date": "2026-12-02",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-12-03",
+          "date": "2026-12-03",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-12-04",
+          "date": "2026-12-04",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-12-07",
+          "date": "2026-12-07",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:feriado:2026-12-08",
+          "date": "2026-12-08",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:feriado:2026-12-09",
+          "date": "2026-12-09",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-12-10",
+          "date": "2026-12-10",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-12-11",
+          "date": "2026-12-11",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:efsrt:2026-12-14",
+          "date": "2026-12-14",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:fin_clases:2026-12-15",
+          "date": "2026-12-15",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:gestion:2026-12-18",
+          "date": "2026-12-18",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:512:lv:feriado:2026-12-25",
+          "date": "2026-12-25",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        }
+      ],
+      "cycles": [
+        {
+          "number": 2,
+          "dates": 153,
+          "edges": [
+            "2026-08-10",
+            "2026-12-15"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-1:528:lv",
+      "semester": "2026-1",
+      "hours": 528,
+      "pattern": "lv",
+      "horarioId": 5,
+      "label": "Lun - Vie",
+      "source": "Calendarizacion 26-2 - 528 horas.pdf",
+      "sha256": "d2968fbf86c6ecb5e10eed1848021ee6e02b11fcc0bcdc81d584f061c74b06b0",
+      "events": [
+        {
+          "key": "calendarizacion:2026-1:528:lv:vacaciones_gestion:2026-03-02",
+          "date": "2026-03-02",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:vacaciones_gestion:2026-03-03",
+          "date": "2026-03-03",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:vacaciones_gestion:2026-03-04",
+          "date": "2026-03-04",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:vacaciones_gestion:2026-03-05",
+          "date": "2026-03-05",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:vacaciones_gestion:2026-03-06",
+          "date": "2026-03-06",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:vacaciones_gestion:2026-03-09",
+          "date": "2026-03-09",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:vacaciones_gestion:2026-03-10",
+          "date": "2026-03-10",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:vacaciones_gestion:2026-03-11",
+          "date": "2026-03-11",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:vacaciones_gestion:2026-03-12",
+          "date": "2026-03-12",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:vacaciones_gestion:2026-03-13",
+          "date": "2026-03-13",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:inicio_clases:2026-03-16",
+          "date": "2026-03-16",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-03-18",
+          "date": "2026-03-18",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-03-23",
+          "date": "2026-03-23",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-03-26",
+          "date": "2026-03-26",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-03-31",
+          "date": "2026-03-31",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:feriado:2026-04-02",
+          "date": "2026-04-02",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:feriado:2026-04-03",
+          "date": "2026-04-03",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-04-09",
+          "date": "2026-04-09",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-04-14",
+          "date": "2026-04-14",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-04-17",
+          "date": "2026-04-17",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-04-22",
+          "date": "2026-04-22",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-04-27",
+          "date": "2026-04-27",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-04-30",
+          "date": "2026-04-30",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:feriado:2026-05-01",
+          "date": "2026-05-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-05-06",
+          "date": "2026-05-06",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-05-11",
+          "date": "2026-05-11",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-05-14",
+          "date": "2026-05-14",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-05-19",
+          "date": "2026-05-19",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-05-27",
+          "date": "2026-05-27",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:empleabilidad:2026-06-01",
+          "date": "2026-06-01",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-05",
+          "date": "2026-06-05",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:feriado:2026-06-07",
+          "date": "2026-06-07",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-08",
+          "date": "2026-06-08",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-09",
+          "date": "2026-06-09",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-10",
+          "date": "2026-06-10",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-11",
+          "date": "2026-06-11",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-12",
+          "date": "2026-06-12",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-15",
+          "date": "2026-06-15",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-16",
+          "date": "2026-06-16",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-17",
+          "date": "2026-06-17",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-18",
+          "date": "2026-06-18",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-19",
+          "date": "2026-06-19",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-22",
+          "date": "2026-06-22",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-23",
+          "date": "2026-06-23",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-24",
+          "date": "2026-06-24",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-25",
+          "date": "2026-06-25",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-26",
+          "date": "2026-06-26",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:feriado:2026-06-29",
+          "date": "2026-06-29",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-06-30",
+          "date": "2026-06-30",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-01",
+          "date": "2026-07-01",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-02",
+          "date": "2026-07-02",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:gestion:2026-07-03",
+          "date": "2026-07-03",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:feriado:2026-07-06",
+          "date": "2026-07-06",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-07",
+          "date": "2026-07-07",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-08",
+          "date": "2026-07-08",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-09",
+          "date": "2026-07-09",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-10",
+          "date": "2026-07-10",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-13",
+          "date": "2026-07-13",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-14",
+          "date": "2026-07-14",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-15",
+          "date": "2026-07-15",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-16",
+          "date": "2026-07-16",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:dia_logro:2026-07-17",
+          "date": "2026-07-17",
+          "type": "dia_logro",
+          "title": "Día del logro",
+          "color": "#99ff33",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-20",
+          "date": "2026-07-20",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-21",
+          "date": "2026-07-21",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:efsrt:2026-07-22",
+          "date": "2026-07-22",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:feriado:2026-07-23",
+          "date": "2026-07-23",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:fin_clases:2026-07-24",
+          "date": "2026-07-24",
+          "type": "fin_clases",
+          "title": "Término de clases",
+          "color": "#92d050",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:feriado:2026-07-28",
+          "date": "2026-07-28",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        },
+        {
+          "key": "calendarizacion:2026-1:528:lv:feriado:2026-07-29",
+          "date": "2026-07-29",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 1
+        }
+      ],
+      "cycles": [
+        {
+          "number": 1,
+          "dates": 153,
+          "edges": [
+            "2026-03-16",
+            "2026-07-24"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "2026-2:528:lv",
+      "semester": "2026-2",
+      "hours": 528,
+      "pattern": "lv",
+      "horarioId": 5,
+      "label": "Lun - Vie",
+      "source": "Calendarizacion 26-2 - 528 horas.pdf",
+      "sha256": "d2968fbf86c6ecb5e10eed1848021ee6e02b11fcc0bcdc81d584f061c74b06b0",
+      "events": [
+        {
+          "key": "calendarizacion:2026-2:528:lv:vacaciones_gestion:2026-08-03",
+          "date": "2026-08-03",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:vacaciones_gestion:2026-08-04",
+          "date": "2026-08-04",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:vacaciones_gestion:2026-08-05",
+          "date": "2026-08-05",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:feriado:2026-08-06",
+          "date": "2026-08-06",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:vacaciones_gestion:2026-08-07",
+          "date": "2026-08-07",
+          "type": "vacaciones_gestion",
+          "title": "Vacaciones / gestión",
+          "color": "#63f7bb",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:inicio_clases:2026-08-10",
+          "date": "2026-08-10",
+          "type": "inicio_clases",
+          "title": "Inicio de clases",
+          "color": "#92d050",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-08-12",
+          "date": "2026-08-12",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-08-17",
+          "date": "2026-08-17",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-08-20",
+          "date": "2026-08-20",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-08-25",
+          "date": "2026-08-25",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:gestion:2026-08-28",
+          "date": "2026-08-28",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:feriado:2026-08-30",
+          "date": "2026-08-30",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-09-02",
+          "date": "2026-09-02",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-09-07",
+          "date": "2026-09-07",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-09-10",
+          "date": "2026-09-10",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-09-15",
+          "date": "2026-09-15",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-09-18",
+          "date": "2026-09-18",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-09-23",
+          "date": "2026-09-23",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-09-25",
+          "date": "2026-09-25",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-09-28",
+          "date": "2026-09-28",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:gestion:2026-10-02",
+          "date": "2026-10-02",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-10-06",
+          "date": "2026-10-06",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:feriado:2026-10-08",
+          "date": "2026-10-08",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-10-16",
+          "date": "2026-10-16",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-10-21",
+          "date": "2026-10-21",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:gestion:2026-10-23",
+          "date": "2026-10-23",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:empleabilidad:2026-10-27",
+          "date": "2026-10-27",
+          "type": "empleabilidad",
+          "title": "Empleabilidad",
+          "color": "#53d2ff",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:feriado:2026-11-01",
+          "date": "2026-11-01",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-02",
+          "date": "2026-11-02",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-03",
+          "date": "2026-11-03",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-04",
+          "date": "2026-11-04",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-05",
+          "date": "2026-11-05",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-06",
+          "date": "2026-11-06",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-09",
+          "date": "2026-11-09",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-10",
+          "date": "2026-11-10",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-11",
+          "date": "2026-11-11",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-12",
+          "date": "2026-11-12",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-13",
+          "date": "2026-11-13",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-16",
+          "date": "2026-11-16",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-17",
+          "date": "2026-11-17",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-18",
+          "date": "2026-11-18",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-19",
+          "date": "2026-11-19",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-20",
+          "date": "2026-11-20",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-23",
+          "date": "2026-11-23",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-24",
+          "date": "2026-11-24",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-25",
+          "date": "2026-11-25",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-26",
+          "date": "2026-11-26",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-27",
+          "date": "2026-11-27",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-11-30",
+          "date": "2026-11-30",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-12-01",
+          "date": "2026-12-01",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-12-02",
+          "date": "2026-12-02",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-12-03",
+          "date": "2026-12-03",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-12-04",
+          "date": "2026-12-04",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-12-07",
+          "date": "2026-12-07",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:feriado:2026-12-08",
+          "date": "2026-12-08",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:feriado:2026-12-09",
+          "date": "2026-12-09",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-12-10",
+          "date": "2026-12-10",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-12-11",
+          "date": "2026-12-11",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-12-14",
+          "date": "2026-12-14",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-12-15",
+          "date": "2026-12-15",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:efsrt:2026-12-16",
+          "date": "2026-12-16",
+          "type": "efsrt",
+          "title": "EFSRT",
+          "color": "#ffc000",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:dia_logro:2026-12-17",
+          "date": "2026-12-17",
+          "type": "dia_logro",
+          "title": "Día del logro",
+          "color": "#99ff33",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:gestion:2026-12-18",
+          "date": "2026-12-18",
+          "type": "gestion",
+          "title": "Días de gestión",
+          "color": "#ffff00",
+          "cycle": 2
+        },
+        {
+          "key": "calendarizacion:2026-2:528:lv:feriado:2026-12-25",
+          "date": "2026-12-25",
+          "type": "feriado",
+          "title": "Feriado (según calendarización)",
+          "color": "#ff0000",
+          "cycle": 2
+        }
+      ],
+      "cycles": [
+        {
+          "number": 2,
+          "dates": 153,
+          "edges": [
+            "2026-08-10"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -16,6 +16,7 @@ interface IntranetListLayoutProps {
   messageSeverity?: AlertColor;
   title: React.ReactNode;
   commands?: React.ReactNode;
+  showToolbar?: boolean;
   columnToggleItems?: ColumnToggleItem[];
   onToggleColumn?: (field: string, checked: boolean) => void;
   columnToggleLabel?: string;
@@ -27,6 +28,7 @@ const IntranetListLayout: React.FC<IntranetListLayoutProps> = ({
   messageSeverity = 'error',
   title,
   commands,
+  showToolbar = true,
   columnToggleItems,
   onToggleColumn,
   columnToggleLabel = 'Campos',
@@ -56,7 +58,7 @@ const IntranetListLayout: React.FC<IntranetListLayoutProps> = ({
         )}
       </Box>
 
-      <Box sx={{ px: 2, py: 1 }}>
+      {showToolbar && <Box sx={{ px: 2, py: 1 }}>
         <Box
           sx={{
             display: 'flex',
@@ -78,7 +80,7 @@ const IntranetListLayout: React.FC<IntranetListLayoutProps> = ({
             </Box>
           ) : null}
         </Box>
-      </Box>
+      </Box>}
 
       <Box sx={{ width: '100%', minWidth: 0, overflowX: 'auto' }}>
         {children}

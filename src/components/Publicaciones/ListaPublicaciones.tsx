@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
   Box,
   Typography,
@@ -13,7 +14,6 @@ import {
   FormControlLabel,
   Stack,
   CircularProgress,
-  Alert,
 } from '@mui/material';
 //import Grid from '@mui/material/Grid2'; // 👈 Grid v2 (para usar prop `size`)
 import PublicacionesCard from './PublicacionesCard';
@@ -157,10 +157,10 @@ export default function ListaPublicaciones({
       )}
 
       {!loading && error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <AutoDismissAlert severity="error" sx={{ mb: 2 }}>
           {`No se pudieron cargar las publicaciones. ${error}.
 Asegúrate de que exista /public/data/publicaciones.json.`}
-        </Alert>
+        </AutoDismissAlert>
       )}
 
       {!loading && !error && filtradas.length === 0 && (

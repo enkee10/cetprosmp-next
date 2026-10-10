@@ -235,7 +235,7 @@ const LIST_GRUPO_MODULOS_FOR_MODULO_RENAME_QUERY = `
   query ListGrupoModulosForModuloRename($moduloId: Int!) {
     grupoModulos(where: { moduloId: { eq: $moduloId } }, limit: 5000) {
       id
-      sufijo
+      nombre
       modulo {
         id
         titulo
@@ -467,22 +467,11 @@ async function syncGruposNombreForPaquetes(paqueteIds: number[]) {
   );
 }
 
-function appendGrupoModuloSufijo(name: string, suffix: string | null | undefined) {
-  const cleanSuffix = normalizeSpaces(suffix);
-  const cleanName = normalizeSpaces(name);
-  if (!cleanSuffix) return cleanName;
-  const markerIndex = cleanName.search(/\s\[/);
-  if (markerIndex > 0) {
-    return `${cleanName.slice(0, markerIndex)} (${cleanSuffix})${cleanName.slice(markerIndex)}`.trim();
-  }
-  return `${cleanName} (${cleanSuffix})`.trim();
-}
-
 async function syncGrupoModulosNombreForModulo(moduloId: number) {
   const response = await dataConnect.executeGraphql<{
     grupoModulos: Array<{
       id: number;
-      sufijo?: string | null;
+      nombre?: string | null;
       modulo?: GrupoModuloNombreModulo;
       grupo?: GrupoModuloNombreContext;
     }>;
@@ -493,8 +482,8 @@ async function syncGrupoModulosNombreForModulo(moduloId: number) {
 
   await Promise.all(
     (response.data.grupoModulos ?? []).map((grupoModulo) => {
-      const baseName = buildGrupoModuloNombreRelacional(grupoModulo.grupo ?? null, grupoModulo.modulo);
-      const nombre = appendGrupoModuloSufijo(baseName, grupoModulo.sufijo);
+      if (grupoModulo.nombre?.trim()) return Promise.resolve();
+      const nombre = buildGrupoModuloNombreRelacional(grupoModulo.grupo ?? null, grupoModulo.modulo);
       if (!nombre) return Promise.resolve();
 
       const payload = { nombre } as DataConnectGrupoModuloInput;

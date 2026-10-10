@@ -3,7 +3,7 @@ import { dataConnect } from "../core/dataConnectCore.js";
 import { getIdFromKeyOutput } from "../core/userMappers.js";
 import { expectedCompetenciaType, isProgramaEstudio, orderedUnidadRelations, TipoCompetencia, employabilityCodeForUnidad } from "./model.js";
 
-export interface CompetenciaRow { id: number; nombre: string; tipo: TipoCompetencia; moduloId: number }
+export interface CompetenciaRow { id: number; nombre: string; tipo: TipoCompetencia; moduloId: number; orden?: number | null }
 export interface CompetenciaUnidadRow {
   id: number; orden?: number | null; competenciaId: number; unidadDidacticaId: number;
   competencia: CompetenciaRow;
@@ -26,7 +26,7 @@ export async function getModuloCompetenciaContext(moduloId: number) {
   }, { id: number }>(`query ModuloCompetenciaContext($id:Int!) {
     modulo(id:$id) { id titulo horas plan { carrera { tipoCarrera { nombre } } } }
     planModulos(where:{moduloId:{eq:$id}},limit:10000) { plan { carrera { tipoCarrera { nombre } } } }
-    competencias(where:{moduloId:{eq:$id}},limit:10000) { id nombre tipo moduloId }
+    competencias(where:{moduloId:{eq:$id}},limit:10000) { id nombre tipo moduloId orden }
     competenciaUnidadesDidacticas(where:{competencia:{moduloId:{eq:$id}}},limit:10000) {
       id orden competenciaId unidadDidacticaId competencia { id nombre tipo moduloId } unidadDidactica { id nombre }
     }

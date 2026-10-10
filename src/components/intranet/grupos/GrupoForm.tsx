@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   Checkbox,
@@ -78,7 +78,6 @@ interface PaqueteModuloOption {
   orden: number | null;
   obligatorio: boolean | null;
   multiplicador?: number | null;
-  sufijos?: string | null;
   paqueteId: number;
   moduloId: number;
   modulo?: ModuloResumen | null;
@@ -128,7 +127,6 @@ interface GrupoModuloDetalle {
   orden: number | null;
   obligatorio: boolean | null;
   instancia?: number | null;
-  sufijo?: string | null;
   inicio?: string | null;
   fin?: string | null;
   grupoId?: number;
@@ -184,26 +182,12 @@ const getOrdenText = (value: number | string | null | undefined) =>
 const getGrupoModuloKey = (moduloId: number, instancia: number | null | undefined) =>
   `${moduloId}:${instancia ?? 1}`;
 
-const parsePaqueteModuloSufijos = (value: string | null | undefined): string[] => {
-  const text = String(value ?? '').trim();
-  if (!text) return [];
-  try {
-    const parsed = JSON.parse(text);
-    if (Array.isArray(parsed)) return parsed.map((item) => String(item ?? '').trim());
-  } catch {
-    // Legacy text values can still be split below.
-  }
-  return text.split(/\r?\n|,/).map((item) => item.trim());
-};
-
 const expandPaqueteModuloOptions = (items: PaqueteModuloOption[]) =>
   items.flatMap((paqueteModulo) => {
     const multiplicador = Math.max(1, Math.min(6, Number(paqueteModulo.multiplicador ?? 1)));
-    const sufijos = parsePaqueteModuloSufijos(paqueteModulo.sufijos);
     return Array.from({ length: multiplicador }, (_unused, index) => ({
       ...paqueteModulo,
       instancia: index + 1,
-      sufijo: sufijos[index] ?? '',
       orden: (paqueteModulo.orden ?? 0) * 10 + index + 1,
     }));
   });
@@ -257,7 +241,6 @@ const buildGrupoModulosFromPaquete = (
         orden: index + 1,
         obligatorio: true,
         instancia: 1,
-        sufijo: '',
         paqueteId: paquete.id,
         moduloId,
         modulo: null,
@@ -297,7 +280,6 @@ const buildGrupoModulosFromPaquete = (
         grupoId: existing?.grupoId,
         moduloId: paqueteModulo.moduloId,
         instancia: paqueteModulo.instancia,
-        sufijo: paqueteModulo.sufijo,
         modulo: existing?.modulo || paqueteModulo.modulo || null,
         orden: existing?.orden ?? paqueteModulo.orden ?? index + 1,
         obligatorio: existing?.obligatorio ?? paqueteModulo.obligatorio ?? true,
@@ -316,7 +298,7 @@ const toDateInputValue = (value: string | null | undefined) => {
 const getModuloLabel = (modulo: GrupoModuloDetalle) =>
   [
     modulo.modulo?.tituloComercial || modulo.modulo?.titulo || `Modulo ${modulo.moduloId}`,
-    modulo.sufijo ? `(${modulo.sufijo})` : '',
+    `Instancia ${modulo.instancia ?? 1}`,
   ].filter(Boolean).join(' ');
 
 const getUnidadLabel = (unidad: GrupoModuloUnidadDidacticaDetalle) =>
@@ -387,7 +369,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   const [turnoNombre, setTurnoNombre] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
   const [workspaceCorreo, setWorkspaceCorreo] = useState('');
-  const [workspaceManualEdit, setWorkspaceManualEdit] = useState(false);
+  const [workspaceManualEdit, setWorkspaceManualEdit] = useState(Boolean(grupoId));
   const [estado, setEstado] = useState('activo');
   const [archivado, setArchivado] = useState(false);
   const [paqueteId, setPaqueteId] = useState('');
@@ -488,6 +470,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
           setTurnoNombre(fetched.turnoNombre || '');
           setWorkspaceName(fetched.workspaceName || '');
           setWorkspaceCorreo(fetched.workspaceCorreo || '');
+          setWorkspaceManualEdit(true);
           setEstado(fetched.estado || 'activo');
           setArchivado(Boolean(fetched.archivado));
           setPaqueteId(fetched.paqueteId != null ? String(fetched.paqueteId) : '');
@@ -643,8 +626,8 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       return;
     }
 
-    const finalWorkspaceName = (workspaceName || buildWorkspaceName(selectedSemestre, selectedPaquete, selectedPersonalName)).trim();
-    const finalWorkspaceCorreo = (workspaceCorreo || buildWorkspaceCorreo(selectedSemestre, selectedPaquete, selectedPersonalName)).trim();
+    const finalWorkspaceName = (workspaceName || (!grupoId ? buildWorkspaceName(selectedSemestre, selectedPaquete, selectedPersonalName) : '')).trim();
+    const finalWorkspaceCorreo = (workspaceCorreo || (!grupoId ? buildWorkspaceCorreo(selectedSemestre, selectedPaquete, selectedPersonalName) : '')).trim();
 
     if (finalWorkspaceName.length > WORKSPACE_NAME_MAX_LENGTH) {
       setError('Nombre Workspace no puede superar 73 caracteres.');
@@ -678,7 +661,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
           grupoModulos?: Array<{
             moduloId: number;
             instancia?: number | null;
-            sufijo?: string | null;
             orden?: number | null;
             obligatorio?: boolean | null;
             inicio?: string | null;
@@ -712,7 +694,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         grupoModulos: grupoModulos.map((item) => ({
           moduloId: item.moduloId,
           instancia: item.instancia ?? 1,
-          sufijo: item.sufijo ?? null,
           orden: item.orden,
           obligatorio: item.obligatorio ?? true,
           inicio: item.inicio || null,
@@ -767,7 +748,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         </Typography>
       )}
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <AutoDismissAlert severity="error" sx={{ mb: 2 }}>{error}</AutoDismissAlert>}
 
       <form onSubmit={handleSubmit}>
         <Box

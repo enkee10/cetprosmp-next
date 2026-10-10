@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   FormControl,
@@ -407,7 +406,7 @@ export default function CertificadosTitulosPage() {
   if (!permissionsLoading && !canView) {
     return (
       <Box sx={{ maxWidth: 1100, mx: 'auto' }}>
-        <Alert severity="info">No tienes permiso para ver este apartado.</Alert>
+        <AutoDismissAlert severity="info">No tienes permiso para ver este apartado.</AutoDismissAlert>
       </Box>
     );
   }
@@ -423,7 +422,7 @@ export default function CertificadosTitulosPage() {
 
       <AutoDismissAlert message={message} severity={messageSeverity} />
       {selectedHasMissingDocuments && selectedRows.length > 0 ? (
-        <Alert severity="info">La descarga multiple se habilita solo cuando todos los seleccionados ya tienen documento generado.</Alert>
+        <AutoDismissAlert severity="info">La descarga multiple se habilita solo cuando todos los seleccionados ya tienen documento generado.</AutoDismissAlert>
       ) : null}
 
       <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2, bgcolor: 'background.paper' }}>

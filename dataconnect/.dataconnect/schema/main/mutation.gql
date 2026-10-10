@@ -351,6 +351,15 @@ extend type Mutation {
     data: GrupoModuloActividad_Data!
   ): GrupoModuloActividad_KeyOutput! @fdc_generated(from: "GrupoModuloActividad", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `GrupoModuloJornada` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  grupoModuloJornada_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: GrupoModuloJornada_Data!
+  ): GrupoModuloJornada_KeyOutput! @fdc_generated(from: "GrupoModuloJornada", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `GrupoModuloUnidadDidactica` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   grupoModuloUnidadDidactica_insert(
@@ -386,6 +395,15 @@ extend type Mutation {
     """
     data: IndicadorCapacidadEstudiante_Data!
   ): IndicadorCapacidadEstudiante_KeyOutput! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Material` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  material_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Material_Data!
+  ): Material_KeyOutput! @fdc_generated(from: "Material", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `Matricula` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -494,6 +512,24 @@ extend type Mutation {
     """
     data: PaqueteModulo_Data!
   ): PaqueteModulo_KeyOutput! @fdc_generated(from: "PaqueteModulo", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ParteDiarioInforme` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  parteDiarioInforme_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ParteDiarioInforme_Data!
+  ): ParteDiarioInforme_KeyOutput! @fdc_generated(from: "ParteDiarioInforme", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ParteDiarioRegistro` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  parteDiarioRegistro_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ParteDiarioRegistro_Data!
+  ): ParteDiarioRegistro_KeyOutput! @fdc_generated(from: "ParteDiarioRegistro", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `Personal` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1053,6 +1089,15 @@ extend type Mutation {
     data: [GrupoModuloActividad_Data!]!
   ): [GrupoModuloActividad_KeyOutput!]! @fdc_generated(from: "GrupoModuloActividad", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `GrupoModuloJornada` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  grupoModuloJornada_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [GrupoModuloJornada_Data!]!
+  ): [GrupoModuloJornada_KeyOutput!]! @fdc_generated(from: "GrupoModuloJornada", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `GrupoModuloUnidadDidactica` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   grupoModuloUnidadDidactica_insertMany(
@@ -1088,6 +1133,15 @@ extend type Mutation {
     """
     data: [IndicadorCapacidadEstudiante_Data!]!
   ): [IndicadorCapacidadEstudiante_KeyOutput!]! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Material` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  material_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Material_Data!]!
+  ): [Material_KeyOutput!]! @fdc_generated(from: "Material", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Matricula` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1196,6 +1250,24 @@ extend type Mutation {
     """
     data: [PaqueteModulo_Data!]!
   ): [PaqueteModulo_KeyOutput!]! @fdc_generated(from: "PaqueteModulo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ParteDiarioInforme` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  parteDiarioInforme_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ParteDiarioInforme_Data!]!
+  ): [ParteDiarioInforme_KeyOutput!]! @fdc_generated(from: "ParteDiarioInforme", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ParteDiarioRegistro` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  parteDiarioRegistro_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ParteDiarioRegistro_Data!]!
+  ): [ParteDiarioRegistro_KeyOutput!]! @fdc_generated(from: "ParteDiarioRegistro", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Personal` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1755,6 +1827,15 @@ extend type Mutation {
     data: GrupoModuloActividad_Data!
   ): GrupoModuloActividad_KeyOutput! @fdc_generated(from: "GrupoModuloActividad", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `GrupoModuloJornada` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModuloJornada`.
+  """
+  grupoModuloJornada_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: GrupoModuloJornada_Data!
+  ): GrupoModuloJornada_KeyOutput! @fdc_generated(from: "GrupoModuloJornada", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `GrupoModuloUnidadDidactica` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModuloUnidadDidactica`.
   """
   grupoModuloUnidadDidactica_upsert(
@@ -1790,6 +1871,15 @@ extend type Mutation {
     """
     data: IndicadorCapacidadEstudiante_Data!
   ): IndicadorCapacidadEstudiante_KeyOutput! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Material` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Material`.
+  """
+  material_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Material_Data!
+  ): Material_KeyOutput! @fdc_generated(from: "Material", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `Matricula` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Matricula`.
   """
@@ -1898,6 +1988,24 @@ extend type Mutation {
     """
     data: PaqueteModulo_Data!
   ): PaqueteModulo_KeyOutput! @fdc_generated(from: "PaqueteModulo", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ParteDiarioInforme` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ParteDiarioInforme`.
+  """
+  parteDiarioInforme_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ParteDiarioInforme_Data!
+  ): ParteDiarioInforme_KeyOutput! @fdc_generated(from: "ParteDiarioInforme", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ParteDiarioRegistro` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ParteDiarioRegistro`.
+  """
+  parteDiarioRegistro_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ParteDiarioRegistro_Data!
+  ): ParteDiarioRegistro_KeyOutput! @fdc_generated(from: "ParteDiarioRegistro", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `Personal` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Personal`.
   """
@@ -2457,6 +2565,15 @@ extend type Mutation {
     data: [GrupoModuloActividad_Data!]!
   ): [GrupoModuloActividad_KeyOutput!]! @fdc_generated(from: "GrupoModuloActividad", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `GrupoModuloJornada` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModuloJornada`.
+  """
+  grupoModuloJornada_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [GrupoModuloJornada_Data!]!
+  ): [GrupoModuloJornada_KeyOutput!]! @fdc_generated(from: "GrupoModuloJornada", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `GrupoModuloUnidadDidactica` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `GrupoModuloUnidadDidactica`.
   """
   grupoModuloUnidadDidactica_upsertMany(
@@ -2492,6 +2609,15 @@ extend type Mutation {
     """
     data: [IndicadorCapacidadEstudiante_Data!]!
   ): [IndicadorCapacidadEstudiante_KeyOutput!]! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Material` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Material`.
+  """
+  material_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Material_Data!]!
+  ): [Material_KeyOutput!]! @fdc_generated(from: "Material", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Matricula` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Matricula`.
   """
@@ -2600,6 +2726,24 @@ extend type Mutation {
     """
     data: [PaqueteModulo_Data!]!
   ): [PaqueteModulo_KeyOutput!]! @fdc_generated(from: "PaqueteModulo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ParteDiarioInforme` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ParteDiarioInforme`.
+  """
+  parteDiarioInforme_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ParteDiarioInforme_Data!]!
+  ): [ParteDiarioInforme_KeyOutput!]! @fdc_generated(from: "ParteDiarioInforme", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ParteDiarioRegistro` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ParteDiarioRegistro`.
+  """
+  parteDiarioRegistro_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ParteDiarioRegistro_Data!]!
+  ): [ParteDiarioRegistro_KeyOutput!]! @fdc_generated(from: "ParteDiarioRegistro", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Personal` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Personal`.
   """
@@ -3939,6 +4083,35 @@ extend type Mutation {
     data: GrupoModuloActividad_Data!
   ): GrupoModuloActividad_KeyOutput @fdc_generated(from: "GrupoModuloActividad", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `GrupoModuloJornada` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `GrupoModuloJornada` or `null` if not found.
+  """
+  grupoModuloJornada_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModuloJornada_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModuloJornada_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: GrupoModuloJornada_Data!
+  ): GrupoModuloJornada_KeyOutput @fdc_generated(from: "GrupoModuloJornada", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `GrupoModuloUnidadDidactica` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `GrupoModuloUnidadDidactica` or `null` if not found.
   """
   grupoModuloUnidadDidactica_update(
@@ -4054,6 +4227,35 @@ extend type Mutation {
     """
     data: IndicadorCapacidadEstudiante_Data!
   ): IndicadorCapacidadEstudiante_KeyOutput @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Material` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Material` or `null` if not found.
+  """
+  material_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Material_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Material_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Material_Data!
+  ): Material_KeyOutput @fdc_generated(from: "Material", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Matricula` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Matricula` or `null` if not found.
   """
@@ -4362,6 +4564,64 @@ extend type Mutation {
     """
     data: PaqueteModulo_Data!
   ): PaqueteModulo_KeyOutput @fdc_generated(from: "PaqueteModulo", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ParteDiarioInforme` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ParteDiarioInforme` or `null` if not found.
+  """
+  parteDiarioInforme_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ParteDiarioInforme_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ParteDiarioInforme_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ParteDiarioInforme_Data!
+  ): ParteDiarioInforme_KeyOutput @fdc_generated(from: "ParteDiarioInforme", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ParteDiarioRegistro` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ParteDiarioRegistro` or `null` if not found.
+  """
+  parteDiarioRegistro_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ParteDiarioRegistro_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ParteDiarioRegistro_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ParteDiarioRegistro_Data!
+  ): ParteDiarioRegistro_KeyOutput @fdc_generated(from: "ParteDiarioRegistro", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Personal` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Personal` or `null` if not found.
   """
@@ -5761,6 +6021,25 @@ extend type Mutation {
     data: GrupoModuloActividad_Data!
   ): Int! @fdc_generated(from: "GrupoModuloActividad", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `GrupoModuloJornada` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  grupoModuloJornada_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: GrupoModuloJornada_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: GrupoModuloJornada_Data!
+  ): Int! @fdc_generated(from: "GrupoModuloJornada", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `GrupoModuloUnidadDidactica` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   grupoModuloUnidadDidactica_updateMany(
@@ -5836,6 +6115,25 @@ extend type Mutation {
     """
     data: IndicadorCapacidadEstudiante_Data!
   ): Int! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Material` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  material_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Material_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Material_Data!
+  ): Int! @fdc_generated(from: "Material", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Matricula` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -6064,6 +6362,44 @@ extend type Mutation {
     """
     data: PaqueteModulo_Data!
   ): Int! @fdc_generated(from: "PaqueteModulo", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ParteDiarioInforme` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  parteDiarioInforme_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ParteDiarioInforme_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ParteDiarioInforme_Data!
+  ): Int! @fdc_generated(from: "ParteDiarioInforme", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ParteDiarioRegistro` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  parteDiarioRegistro_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ParteDiarioRegistro_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ParteDiarioRegistro_Data!
+  ): Int! @fdc_generated(from: "ParteDiarioRegistro", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Personal` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -7438,6 +7774,30 @@ extend type Mutation {
     first: GrupoModuloActividad_FirstRow
   ): GrupoModuloActividad_KeyOutput @fdc_generated(from: "GrupoModuloActividad", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `GrupoModuloJornada` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  grupoModuloJornada_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: GrupoModuloJornada_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: GrupoModuloJornada_FirstRow
+  ): GrupoModuloJornada_KeyOutput @fdc_generated(from: "GrupoModuloJornada", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `GrupoModuloUnidadDidactica` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   grupoModuloUnidadDidactica_delete(
@@ -7533,6 +7893,30 @@ extend type Mutation {
     """
     first: IndicadorCapacidadEstudiante_FirstRow
   ): IndicadorCapacidadEstudiante_KeyOutput @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Material` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  material_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Material_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Material_FirstRow
+  ): Material_KeyOutput @fdc_generated(from: "Material", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `Matricula` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -7781,6 +8165,54 @@ extend type Mutation {
     """
     first: PaqueteModulo_FirstRow
   ): PaqueteModulo_KeyOutput @fdc_generated(from: "PaqueteModulo", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ParteDiarioInforme` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  parteDiarioInforme_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ParteDiarioInforme_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ParteDiarioInforme_FirstRow
+  ): ParteDiarioInforme_KeyOutput @fdc_generated(from: "ParteDiarioInforme", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ParteDiarioRegistro` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  parteDiarioRegistro_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: ParteDiarioRegistro_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ParteDiarioRegistro_FirstRow
+  ): ParteDiarioRegistro_KeyOutput @fdc_generated(from: "ParteDiarioRegistro", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `Personal` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -8870,6 +9302,20 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "GrupoModuloActividad", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `GrupoModuloJornada` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  grupoModuloJornada_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: GrupoModuloJornada_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "GrupoModuloJornada", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `GrupoModuloUnidadDidactica` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   grupoModuloUnidadDidactica_deleteMany(
@@ -8925,6 +9371,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Material` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  material_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Material_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Material", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Matricula` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
@@ -9093,6 +9553,34 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "PaqueteModulo", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ParteDiarioInforme` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  parteDiarioInforme_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ParteDiarioInforme_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ParteDiarioInforme", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ParteDiarioRegistro` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  parteDiarioRegistro_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ParteDiarioRegistro_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ParteDiarioRegistro", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Personal` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

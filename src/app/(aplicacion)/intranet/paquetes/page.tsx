@@ -26,7 +26,6 @@ interface Paquete {
   moduloItems?: Array<{
     moduloId: number;
     multiplicador?: number | null;
-    sufijos?: string[] | null;
   }>;
 }
 
@@ -111,7 +110,7 @@ export default function PaquetesPage() {
   const getPaqueteModuloItems = useCallback((paquete: Paquete) => (
     paquete.moduloItems && paquete.moduloItems.length > 0
       ? paquete.moduloItems
-      : (paquete.moduloIds || []).map((moduloId) => ({ moduloId, multiplicador: 1, sufijos: [] }))
+      : (paquete.moduloIds || []).map((moduloId) => ({ moduloId, multiplicador: 1 }))
   ), []);
 
   const handleDismissPaqueteModal = useCallback(() => {

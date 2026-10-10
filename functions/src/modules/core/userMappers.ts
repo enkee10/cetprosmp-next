@@ -402,7 +402,6 @@ export function buildGrupoModuloDataFromInput(input: Record<string, unknown>) {
     inicio: asNullableTimestamp(input.inicio),
     fin: asNullableTimestamp(input.fin),
     instancia: toNumberOrNull(input.instancia),
-    sufijo: asNullableString(input.sufijo),
     calendarioId: toNumberOrNull(input.calendarioId),
   });
 }
@@ -506,7 +505,6 @@ export function buildPaqueteModuloDataFromInput(input: Record<string, unknown>):
     orden: toNumberOrNull(input.orden),
     obligatorio: toBoolean(input.obligatorio) ?? true,
     multiplicador: toNumberOrNull(input.multiplicador),
-    sufijos: asNullableString(input.sufijos),
   }) as DataConnectPaqueteModuloInput;
 }
 

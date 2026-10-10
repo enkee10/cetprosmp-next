@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   FormControl,
@@ -409,7 +408,7 @@ export default function RegistroAcademicosPage() {
   if (!permissionsLoading && !canViewReportes) {
     return (
       <Box sx={{ maxWidth: 1100, mx: 'auto' }}>
-        <Alert severity="info">No tienes permiso para ver este apartado.</Alert>
+        <AutoDismissAlert severity="info">No tienes permiso para ver este apartado.</AutoDismissAlert>
       </Box>
     );
   }
@@ -425,7 +424,7 @@ export default function RegistroAcademicosPage() {
 
       <AutoDismissAlert message={message} severity={messageSeverity} />
       {selectedHasMissingDocuments && selectedRows.length > 0 ? (
-        <Alert severity="info">La descarga multiple se habilita solo cuando todos los seleccionados ya tienen documento generado.</Alert>
+        <AutoDismissAlert severity="info">La descarga multiple se habilita solo cuando todos los seleccionados ya tienen documento generado.</AutoDismissAlert>
       ) : null}
 
       <Paper

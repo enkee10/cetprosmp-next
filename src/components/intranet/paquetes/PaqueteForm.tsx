@@ -1,17 +1,20 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   Checkbox,
   CircularProgress,
   Container,
   FormControlLabel,
+  IconButton,
+  InputAdornment,
   TextField,
   Typography,
 } from '@mui/material';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { useRouter } from 'next/navigation';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
@@ -36,7 +39,6 @@ interface PaqueteData {
 interface PaqueteModuloItemData {
   moduloId: number;
   multiplicador?: number | null;
-  sufijos?: string[] | null;
 }
 
 interface ModuloOption {
@@ -54,6 +56,8 @@ const getModuloLabel = (modulo: ModuloOption) =>
   modulo.titulo || `Modulo ${modulo.id}`;
 
 export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: PaqueteFormProps) {
+  const [titulo, setTitulo] = useState('');
+  const [tituloManualEdit, setTituloManualEdit] = useState(false);
   const [descripcion, setDescripcion] = useState('');
   const [archivado, setArchivado] = useState(false);
   const [moduloItems, setModuloItems] = useState<PaqueteModuloItemData[]>([]);
@@ -99,6 +103,8 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
         const fetched = result.data.paquete;
 
         if (fetched) {
+          setTitulo(fetched.titulo || '');
+          setTituloManualEdit(Boolean(fetched.titulo?.trim()));
           setDescripcion(fetched.descripcion || '');
           setArchivado(Boolean(fetched.archivado));
           setModuloItems(
@@ -106,12 +112,10 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
               ? fetched.moduloItems.map((item) => ({
                   moduloId: item.moduloId,
                   multiplicador: Math.max(1, Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(item.multiplicador ?? 1))),
-                  sufijos: Array.isArray(item.sufijos) ? item.sufijos.map((suffix) => String(suffix ?? '')) : [],
                 }))
               : (fetched.moduloIds || []).map((moduloId) => ({
                   moduloId,
                   multiplicador: 1,
-                  sufijos: [''],
                 })),
           );
         }
@@ -151,6 +155,7 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
     .join(' / ');
 
   const generatedTitulo = selectedModuloNames;
+  const tituloActual = tituloManualEdit ? titulo : generatedTitulo;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -169,12 +174,15 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
       return;
     }
 
+    if (!tituloActual.trim()) {
+      setError('El titulo es obligatorio.');
+      setLoading(false);
+      return;
+    }
+
     const normalizedModuloItems = moduloItems.map((item) => {
       const multiplicador = Math.max(1, Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(item.multiplicador ?? 1)));
-      const sufijos = Array.from({ length: multiplicador }, (_unused, index) =>
-        String(item.sufijos?.[index] ?? '').trim(),
-      );
-      return { moduloId: item.moduloId, multiplicador, sufijos };
+      return { moduloId: item.moduloId, multiplicador };
     });
 
     try {
@@ -193,7 +201,7 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
 
       await createOrUpdatePaquete({
         id: paqueteId ? Number(paqueteId) : undefined,
-        titulo: generatedTitulo,
+        titulo: tituloActual.trim(),
         descripcion,
         archivado,
         moduloIds: normalizedModuloItems.map((item) => item.moduloId),
@@ -240,17 +248,40 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
         </Typography>
       )}
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <AutoDismissAlert severity="error" sx={{ mb: 2 }}>{error}</AutoDismissAlert>}
 
       <form onSubmit={handleSubmit}>
         <TextField
           label="Titulo"
-          value={generatedTitulo}
+          value={tituloActual}
+          onChange={(event) => {
+            setTituloManualEdit(true);
+            setTitulo(event.target.value);
+          }}
           fullWidth
           margin="normal"
           required
-          disabled
-          helperText="Se genera automaticamente con los modulos seleccionados."
+          disabled={loading}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  edge="end"
+                  size="small"
+                  aria-label="Volver a generar titulo"
+                  title="Volver a generar titulo"
+                  disabled={loading || loadingModulos}
+                  onClick={() => {
+                    setTituloManualEdit(false);
+                    setTitulo(generatedTitulo);
+                  }}
+                >
+                  <AutoFixHighIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          helperText="Puedes editar el titulo o volver a generarlo con los modulos seleccionados."
         />
 
         <MultiSelectWithActions
@@ -266,7 +297,7 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
                 const previous = previousById.get(id);
                 const multiplicador = Math.max(1, Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(previous?.multiplicador ?? 1)));
                 if (nextTotal + multiplicador > MAX_INSTANCIAS_PER_PAQUETE) continue;
-                nextItems.push(previous ?? { moduloId: Number(id), multiplicador: 1, sufijos: [''] });
+                nextItems.push(previous ?? { moduloId: Number(id), multiplicador: 1 });
                 nextTotal += multiplicador;
               }
               return nextItems;
@@ -292,7 +323,6 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
             {moduloItems.map((item) => {
               const id = String(item.moduloId);
               const multiplicador = Math.max(1, Math.min(MAX_INSTANCIAS_PER_PAQUETE, Number(item.multiplicador ?? 1)));
-              const suffixes = Array.from({ length: multiplicador }, (_unused, index) => item.sufijos?.[index] ?? '');
               return (
                 <Box
                   key={item.moduloId}
@@ -324,10 +354,7 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
                         setModuloItems((prev) =>
                           prev.map((current) => {
                             if (current.moduloId !== item.moduloId) return current;
-                            const nextSuffixes = Array.from({ length: nextMultiplier }, (_unused, index) =>
-                              String(current.sufijos?.[index] ?? ''),
-                            );
-                            return { ...current, multiplicador: nextMultiplier, sufijos: nextSuffixes };
+                            return { ...current, multiplicador: nextMultiplier };
                           }),
                         );
                       }}
@@ -336,32 +363,6 @@ export function PaqueteForm({ paqueteId, asModal = false, onSaved, onCancel }: P
                       inputProps={{ min: 1, max: MAX_INSTANCIAS_PER_PAQUETE }}
                     />
                   </Box>
-                  {multiplicador >= 1 && (
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }, gap: 1 }}>
-                      {suffixes.map((suffix, index) => (
-                        <TextField
-                          key={`${item.moduloId}-${index}`}
-                          label={`Sufijo ${index + 1}`}
-                          value={suffix}
-                          onChange={(event) => {
-                            const value = event.target.value;
-                            setModuloItems((prev) =>
-                              prev.map((current) => {
-                                if (current.moduloId !== item.moduloId) return current;
-                                const nextSuffixes = Array.from({ length: multiplicador }, (_unused, suffixIndex) =>
-                                  String(current.sufijos?.[suffixIndex] ?? ''),
-                                );
-                                nextSuffixes[index] = value;
-                                return { ...current, sufijos: nextSuffixes };
-                              }),
-                            );
-                          }}
-                          size="small"
-                          placeholder={index === 0 ? 'mar-may' : 'may-jul'}
-                        />
-                      ))}
-                    </Box>
-                  )}
                 </Box>
               );
             })}

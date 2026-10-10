@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
-  Alert,
   Box,
   Button,
   Dialog,
@@ -158,7 +158,7 @@ export default function CameraCaptureDialog({
       </DialogTitle>
       <DialogContent>
         <Stack spacing={1.5}>
-          {cameraError ? <Alert severity="error">{cameraError}</Alert> : null}
+          {cameraError ? <AutoDismissAlert severity="error">{cameraError}</AutoDismissAlert> : null}
           {cameraStarting ? <LinearProgress /> : null}
           {cameraPreview ? (
             <Box

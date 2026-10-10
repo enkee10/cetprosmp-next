@@ -1,7 +1,8 @@
 'use client' // + marca el componente de login para ejecutarse en el cliente
 
 import React, { useEffect, useRef, useState } from "react"; // + importa React, refs y efectos para forzar el foco inicial del campo correo
-import { Alert, Box, Button, Dialog, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, TextField, Typography } from "@mui/material"; // + importa controles y tipografia para construir la nueva composicion visual del login
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import { Box, Button, Dialog, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, TextField, Typography } from "@mui/material"; // + importa controles y tipografia para construir la nueva composicion visual del login
 import VisibilityIcon from "@mui/icons-material/Visibility"; // + importa el icono para mostrar la contrasena del campo password
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff"; // + importa el icono para ocultar la contrasena del campo password
 import Image from "next/image"; // + importa el componente Image para usar la imagen local de Google del directorio public
@@ -52,8 +53,8 @@ export default function Login({ open, email, password, error, info, isSubmitting
           <Box sx={{ display: "flex", justifyContent: "center", mt: -0.75 }}> {/* + centra el enlace de recuperacion debajo del campo password como en la referencia */} 
             <Button variant="text" onClick={() => void onForgotPassword()} disabled={isSubmitting} sx={{ textTransform: "none", borderRadius: "999px", fontSize: "0.98rem", fontWeight: 600, color: "#2a74db" }}>Olvidaste tu contrasena?</Button> {/* + envia el correo de restablecimiento usando el email escrito en el formulario */} 
           </Box>
-          {error ? <Alert severity="error" variant="outlined" sx={{ borderRadius: 2.5 }}>{error}</Alert> : null} {/* + muestra el mensaje de error del login dentro de una alerta mas integrada al diseno */} 
-          {info ? <Alert severity="info" variant="outlined" sx={{ borderRadius: 2.5 }}>{info}</Alert> : null} {/* + muestra los avisos del login dentro de una alerta informativa mas integrada al diseno */} 
+          {error ? <AutoDismissAlert severity="error" variant="outlined" sx={{ borderRadius: 2.5 }}>{error}</AutoDismissAlert> : null} {/* + muestra el mensaje de error del login dentro de una alerta mas integrada al diseno */} 
+          {info ? <AutoDismissAlert severity="info" variant="outlined" sx={{ borderRadius: 2.5 }}>{info}</AutoDismissAlert> : null} {/* + muestra los avisos del login dentro de una alerta informativa mas integrada al diseno */} 
           <Button variant="contained" type="submit" disabled={isSubmitting} sx={{ mt: 0.5, minHeight: 54, borderRadius: 3, textTransform: "none", fontSize: "1.05rem", fontWeight: 700, bgcolor: "#1565d8", "&:hover": { bgcolor: "#0f56ba" } }}>Iniciar sesion</Button> {/* + muestra un boton principal ancho y dominante para el acceso con correo */} 
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 0.75, mt: -0.25 }}> {/* + coloca la invitacion al registro en una sola linea centrada */} 
             <Typography sx={{ color: "#4a4a4a", fontSize: "0.98rem" }}>No tienes una cuenta?</Typography> {/* + presenta el texto introductorio antes del acceso a registro */} 

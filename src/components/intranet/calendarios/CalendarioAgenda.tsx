@@ -2,20 +2,21 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { Alert, Box, Button, Checkbox, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, MenuItem, Paper, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import { Box, Button, Checkbox, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, MenuItem, Paper, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
-import { addCalendarDays, AgendaData, CalendarEvent, CalendarView, countedMinutes, dayEventLayout, dayInLima, dayStart, monthDays, visibleDays } from '@/lib/calendar';
+import { addCalendarDays, AgendaData, CALENDAR_EVENT_TYPES, calendarEventTypeLabel, CalendarEvent, CalendarView, countedMinutes, dayEventLayout, dayInLima, dayStart, monthDays, visibleDays } from '@/lib/calendar';
 import { formatDateTimeInAppTimeZone } from '@/lib/dateOnly';
 import { EventoForm } from './EventoForm';
 import ProgramacionHorariaForm from './ProgramacionHorariaForm';
 
 const weekLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-const types = ['clase', 'evaluacion', 'feriado', 'reunion', 'actividad', 'otro'];
+const types = CALENDAR_EVENT_TYPES;
 const number = (value: number) => new Intl.NumberFormat('es-PE', { maximumFractionDigits: 2 }).format(value);
 const dateLabel = (day: string, options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('es-PE', { ...options, timeZone: 'America/Lima' }).format(new Date(`${day}T12:00:00-05:00`));
 
@@ -24,6 +25,7 @@ export default function CalendarioAgenda() {
   const [day, setDay] = useState(() => dayInLima(new Date()));
   const [view, setView] = useState<CalendarView>('mes');
   const [data, setData] = useState<AgendaData>({ eventos: [], calendarios: [], grupoModulos: [] });
+  const [semestre, setSemestre] = useState('all');
   const [selectedCalendars, setSelectedCalendars] = useState<number[] | null>(null);
   const [type, setType] = useState('');
   const [groupModule, setGroupModule] = useState('');
@@ -47,26 +49,32 @@ export default function CalendarioAgenda() {
     const current = ++requestId.current;
     setLoading(true); setError('');
     try {
-      const result = await httpsCallable<typeof range, AgendaData>(functions, 'getCalendarioAgenda')(range);
+      const result = await httpsCallable<typeof range & { semestreId?: number }, AgendaData>(functions, 'getCalendarioAgenda')({
+        ...range, ...(semestre === 'all' ? {} : { semestreId: Number(semestre) }),
+      });
       if (current !== requestId.current) return;
       setData(result.data);
       setSelectedCalendars(previous => previous ?? result.data.calendarios.filter(row => row.activo !== false).map(row => row.id));
     } catch (err) { if (current === requestId.current) setError((err as Error).message); }
     finally { if (current === requestId.current) setLoading(false); }
-  }, [can, permissionsLoading, range]);
+  }, [can, permissionsLoading, range, semestre]);
   useEffect(() => { void load(); return () => { requestId.current += 1; }; }, [load]);
   useEffect(() => { if (timeline.current) timeline.current.scrollTop = 7 * 48; }, [view]);
   const calendarMap = useMemo(() => new Map(data.calendarios.map(row => [row.id, row])), [data.calendarios]);
+  const visibleCalendars = useMemo(() => data.calendarios.filter(row => semestre === 'all' || row.semestreId == null || row.semestreId === Number(semestre)), [data.calendarios, semestre]);
+  const visibleCalendarIds = useMemo(() => new Set(visibleCalendars.map(row => row.id)), [visibleCalendars]);
+  const visibleGroupModules = useMemo(() => data.grupoModulos.filter(row => semestre === 'all' || row.grupo.semestreId === Number(semestre)), [data.grupoModulos, semestre]);
   const events = useMemo(() => data.eventos.filter(event => {
     const duration = (Date.parse(event.fechaFin) - Date.parse(event.fechaInicio)) / (60000 * event.minutosHoraAcademica);
-    return selectedCalendars?.includes(event.calendarioId) && (!type || event.tipoEvento === type)
+    return visibleCalendarIds.has(event.calendarioId) && (semestre === 'all' || event.semestreId == null || event.semestreId === Number(semestre))
+      && selectedCalendars?.includes(event.calendarioId) && (!type || event.tipoEvento === type)
       && (!groupModule || event.grupoModuloIds.includes(Number(groupModule)))
       && (!query || `${event.titulo} ${event.descripcion || ''} ${event.ubicacion || ''}`.toLocaleLowerCase('es').includes(query.toLocaleLowerCase('es')))
       && (!minHours || (!event.todoElDia && duration >= Number(minHours)))
       && (!maxHours || (!event.todoElDia && duration <= Number(maxHours)));
   }).sort((a, b) => Number(b.tipoEvento === 'feriado') - Number(a.tipoEvento === 'feriado')
     || (Date.parse(a.fechaFin) - Date.parse(a.fechaInicio)) - (Date.parse(b.fechaFin) - Date.parse(b.fechaInicio))
-    || Date.parse(a.fechaInicio) - Date.parse(b.fechaInicio)), [data.eventos, selectedCalendars, type, groupModule, query, minHours, maxHours]);
+    || Date.parse(a.fechaInicio) - Date.parse(b.fechaInicio)), [data.eventos, selectedCalendars, visibleCalendarIds, semestre, type, groupModule, query, minHours, maxHours]);
   const eventsByDay = useMemo(() => {
     const index = new Map<string, CalendarEvent[]>();
     const start = Date.parse(range.inicio); const end = Date.parse(range.fin);
@@ -134,30 +142,49 @@ export default function CalendarioAgenda() {
     catch (err) { setError((err as Error).message); } finally { setDeleting(false); }
   };
   if (permissionsLoading) return <CircularProgress aria-label="Cargando permisos" />;
-  if (!can('calendario', 'view')) return <Alert severity="warning">No tienes permiso para ver Calendario.</Alert>;
+  if (!can('calendario', 'view')) return <AutoDismissAlert severity="warning">No tienes permiso para ver Calendario.</AutoDismissAlert>;
   return <Paper sx={{ p: { xs: 1.5, md: 2.5 }, borderRadius: 2 }}>
     <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap" mb={2}>
-      <Typography variant="h5" fontWeight={700} sx={{ mr: 'auto' }}>Calendario</Typography>
+      <Stack direction="row" alignItems="center" gap={1.5} flexWrap="wrap" sx={{ mr: 'auto' }}>
+        <Typography variant="h5" fontWeight={700}>Calendario</Typography>
+        <TextField id="calendar-semester" size="small" select label="Semestre" value={semestre} disabled={loading} sx={{ minWidth: 160 }}
+          slotProps={{ select: { SelectDisplayProps: { 'aria-label': 'Semestre' } } }}
+          onChange={event => {
+            const value = event.target.value;
+            const selected = data.semestres?.find(row => row.id === Number(value));
+            setSemestre(value);
+            setSelectedCalendars(null);
+            setGroupModule('');
+            setDetails(null);
+            if (selected?.inicio) {
+              const inicio = selected.inicio.slice(0, 10), fin = selected.fin?.slice(0, 10);
+              if (day < inicio || (fin && day > fin)) setDay(inicio);
+            }
+          }}>
+          <MenuItem value="all">Todos</MenuItem>
+          {(data.semestres ?? []).map(row => <MenuItem key={row.id} value={String(row.id)}>{row.titulo || `Semestre ${row.id}`}</MenuItem>)}
+        </TextField>
+      </Stack>
       {can('eventos', 'create') && <Button startIcon={<AddIcon />} variant="contained" onClick={() => setEdit({ date: day })}>Crear evento</Button>}
       {can('calendario', 'create') && can('eventos', 'create') && <Button variant="outlined" onClick={() => setPlanning(true)}>Programar por horas</Button>}
       <IconButton onClick={() => void load()} aria-label="Actualizar calendario" disabled={loading}><RefreshIcon /></IconButton>
     </Stack>
-    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-    {notice && <Alert severity="success" onClose={() => setNotice('')} sx={{ mb: 2 }}>{notice}</Alert>}
+    {error && <AutoDismissAlert severity="error" sx={{ mb: 2 }}>{error}</AutoDismissAlert>}
+    {notice && <AutoDismissAlert severity="success" onClose={() => setNotice('')} sx={{ mb: 2 }}>{notice}</AutoDismissAlert>}
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '220px minmax(0,1fr)' }, gap: 2 }}>
       <Stack spacing={2} sx={{ minWidth: 0 }}>
         <Box sx={{ display: { xs: 'none', lg: 'block' } }}>{miniMonth(day.slice(0, 7))}</Box>
         <Box><Typography fontWeight={700} variant="subtitle2">Mis calendarios</Typography>
-          {!data.calendarios.length && !loading && <Typography variant="body2">No hay calendarios registrados.</Typography>}
-          {data.calendarios.map(calendar => <FormControlLabel key={calendar.id} sx={{ display: 'flex', m: 0 }}
+          {!visibleCalendars.length && !loading && <Typography variant="body2">No hay calendarios registrados.</Typography>}
+          {visibleCalendars.map(calendar => <FormControlLabel key={calendar.id} sx={{ display: 'flex', m: 0 }}
             control={<Checkbox size="small" checked={!!selectedCalendars?.includes(calendar.id)} sx={{ color: calendar.color || 'primary.main', '&.Mui-checked': { color: calendar.color || 'primary.main' } }}
               onChange={(_, checked) => setSelectedCalendars(previous => checked ? [...(previous || []), calendar.id] : (previous || []).filter(id => id !== calendar.id))} />}
             label={<Typography variant="body2">{calendar.titulo || `Calendario ${calendar.id}`}{calendar.activo === false ? ' (inactivo)' : ''}</Typography>} />)}
         </Box>
         <TextField size="small" label="Buscar eventos" value={query} onChange={event => setQuery(event.target.value)} />
-        <TextField size="small" select label="Tipo de evento" value={type} onChange={event => setType(event.target.value)}><MenuItem value="">Todos</MenuItem>{types.map(value => <MenuItem key={value} value={value}>{value}</MenuItem>)}</TextField>
+        <TextField size="small" select label="Tipo de evento" value={type} onChange={event => setType(event.target.value)}><MenuItem value="">Todos</MenuItem>{types.map(value => <MenuItem key={value} value={value}>{calendarEventTypeLabel(value)}</MenuItem>)}</TextField>
         <TextField size="small" select label="Grupo-módulo" value={groupModule} onChange={event => setGroupModule(event.target.value)}>
-          <MenuItem value="">Todos</MenuItem>{data.grupoModulos.map(row => <MenuItem key={row.id} value={row.id}>{row.nombre || `${row.grupo.nombreDisplay || `Grupo ${row.grupoId}`} / ${row.modulo.titulo || row.id}`}</MenuItem>)}
+          <MenuItem value="">Todos</MenuItem>{visibleGroupModules.map(row => <MenuItem key={row.id} value={row.id}>{row.nombre || `${row.grupo.nombreDisplay || `Grupo ${row.grupoId}`} / ${row.modulo.titulo || row.id}`}</MenuItem>)}
         </TextField>
         <Stack direction="row" gap={1}>
           <TextField size="small" type="number" label="Mín. (h)" value={minHours} slotProps={{ htmlInput: { min: 0, step: 'any' } }} onChange={event => setMinHours(event.target.value)} />
@@ -227,12 +254,12 @@ export default function CalendarioAgenda() {
       <DialogTitle>{details?.titulo}</DialogTitle>
       <DialogContent><Stack spacing={1.5}>
         <Typography>{details && (details.todoElDia ? `${dateLabel(dayInLima(details.fechaInicio), { day: 'numeric', month: 'long', year: 'numeric' })} · Todo el día` : `${formatDateTimeInAppTimeZone(details.fechaInicio)} → ${formatDateTimeInAppTimeZone(details.fechaFin)}`)}</Typography>
-        <Typography variant="body2">{details && calendarMap.get(details.calendarioId)?.titulo} · {details?.tipoEvento} · {details?.estado}</Typography>
+        <Typography variant="body2">{details && calendarMap.get(details.calendarioId)?.titulo} · {calendarEventTypeLabel(details?.tipoEvento)} · {details?.estado}</Typography>
         {details?.ubicacion && <Typography>{details.ubicacion}</Typography>}
         {details?.descripcion && <Typography sx={{ whiteSpace: 'pre-wrap' }}>{details.descripcion}</Typography>}
         {details && <Typography variant="body2">{number(countedMinutes(details, 0, Infinity) / 60)} horas reloj · {number(countedMinutes(details, 0, Infinity) / details.minutosHoraAcademica)} horas académicas ({details.minutosHoraAcademica} minutos/hora)</Typography>}
         {details?.grupoModuloIds.map(id => <Chip key={id} label={data.grupoModulos.find(row => row.id === id)?.nombre || `Grupo-módulo ${id}`} />)}
-        {details?.ocurrenciaId && <Alert severity="info">La edición y eliminación se aplican al evento completo y sus recurrencias.</Alert>}
+        {details?.ocurrenciaId && <AutoDismissAlert severity="info">La edición y eliminación se aplican al evento completo y sus recurrencias.</AutoDismissAlert>}
       </Stack></DialogContent>
       <DialogActions>
         {can('eventos', 'delete') && <Button color="error" disabled={deleting} onClick={() => void deleteEvent()}>Eliminar evento</Button>}
@@ -241,10 +268,10 @@ export default function CalendarioAgenda() {
       </DialogActions>
     </Dialog>
     <Dialog open={!!edit} onClose={() => setEdit(null)} fullWidth maxWidth="md"><DialogTitle>{edit?.id ? 'Editar evento' : 'Crear evento'}</DialogTitle><DialogContent>
-      {edit && <EventoForm key={`${edit.id || 'new'}:${edit.date}`} asModal eventoId={edit.id} initialDate={edit.date} initialCalendarId={selectedCalendars?.[0]} onSaved={saved} onCancel={() => setEdit(null)} />}
+      {edit && <EventoForm key={`${edit.id || 'new'}:${edit.date}`} asModal eventoId={edit.id} initialDate={edit.date} initialCalendarId={visibleCalendars.find(row => selectedCalendars?.includes(row.id))?.id} onSaved={saved} onCancel={() => setEdit(null)} />}
     </DialogContent></Dialog>
     <Dialog open={planning} onClose={() => setPlanning(false)} fullWidth maxWidth="md"><DialogTitle>Programar por horas</DialogTitle><DialogContent>
-      {planning && <ProgramacionHorariaForm calendarios={data.calendarios} grupoModulos={data.grupoModulos} initialCalendarId={selectedCalendars?.[0]} date={day} onSaved={saved} onCancel={() => setPlanning(false)} />}
+      {planning && <ProgramacionHorariaForm calendarios={visibleCalendars} grupoModulos={visibleGroupModules} initialCalendarId={visibleCalendars.find(row => selectedCalendars?.includes(row.id))?.id} date={day} onSaved={saved} onCancel={() => setPlanning(false)} />}
     </DialogContent></Dialog>
   </Paper>;
 }

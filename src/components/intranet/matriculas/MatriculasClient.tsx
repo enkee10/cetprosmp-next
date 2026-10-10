@@ -2,7 +2,6 @@
 
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Alert,
   Autocomplete,
   Avatar,
   Box,
@@ -2950,7 +2949,7 @@ export function MatriculaForm({
           </FormControl>
           {renderReciboField(courseLocked || courseOnlyEditMode)}
           {paquetes.length === 0 && values.semestreId && !loadingOptions && (
-            <Alert severity="warning">No hay modulos disponibles para este periodo.</Alert>
+            <AutoDismissAlert severity="warning">No hay modulos disponibles para este periodo.</AutoDismissAlert>
           )}
           {moduloChangeTimeline.length > 0 ? (
             <Box sx={questionCardSx}>

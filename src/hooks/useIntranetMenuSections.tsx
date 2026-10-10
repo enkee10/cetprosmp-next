@@ -13,6 +13,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
+import { curricularTitle } from '@/lib/curricularFilters';
 
 type RegistroAuxiliarDocenteModulo = {
   id: number;
@@ -181,7 +182,7 @@ const buildDocenteEstructuraItem = (
   semestreTitulo?: string | null,
 ): DocenteMenuItem => ({
   id: 'estructura-academica-docente',
-  title: (String(title || '').trim() || 'Estructura Académica').replace('Estructura Academica', 'Estructura Académica'),
+  title: curricularTitle(title),
   path: '/intranet/estructura-academica-docente',
   icon: <AccountTreeIcon />,
   docenteMenuKind: 'estructura',

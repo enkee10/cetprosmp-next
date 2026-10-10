@@ -10,6 +10,7 @@ import { app, functions, storage } from '@/lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
+import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import { formatDateTimeInAppTimeZone, toDateOnlyInputValue } from '@/lib/dateOnly';
 import { generateUserNames } from './userForm_utilities';
 
@@ -772,7 +773,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 ) : null}
               </Box>
               {errors.avatar && <Typography color="error" variant="caption" sx={{ gridColumn: { xs: '1 / -1', sm: 'span 6' } }}>{errors.avatar.message as string}</Typography>}
-              {uploadError && <Typography color="error" variant="caption" sx={{ gridColumn: { xs: '1 / -1', sm: 'span 6' } }}>{uploadError}</Typography>}
+              <AutoDismissAlert message={uploadError} severity="error" onClose={() => setUploadError(null)} sx={{ gridColumn: { xs: '1 / -1', sm: 'span 6' } }} />
             </Box>
 
             <Controller name="apellido_paterno" control={control} render={({ field }) => <TextField {...field} inputProps={textInputProps('apellido_paterno', 1)} inputRef={(el) => { field.ref(el); apellidoPaternoRef.current = el; }} label="Apellido Paterno" error={!!errors.apellido_paterno} helperText={errors.apellido_paterno?.message} fullWidth disabled={isLockedField('apellido_paterno')} />} />

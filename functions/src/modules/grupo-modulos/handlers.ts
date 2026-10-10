@@ -69,7 +69,6 @@ const LIST_GRUPO_MODULOS_QUERY = `
       inicio
       fin
       instancia
-      sufijo
       grupoId
       grupo {
         id
@@ -127,7 +126,6 @@ const GET_GRUPO_MODULO_QUERY = `
       inicio
       fin
       instancia
-      sufijo
       grupoId
       moduloId
       calendarioId
@@ -203,17 +201,6 @@ function grupoLabel(grupo?: Pick<DataConnectGrupo, "id" | "nombreDisplay"> | nul
 
 function calendarioLabel(calendario?: Pick<DataConnectCalendario, "id" | "titulo"> | null) {
   return String(calendario?.titulo || (calendario?.id ? `Calendario ${calendario.id}` : "")).trim();
-}
-
-function appendSufijoToNombre(name: string, suffix: string | null | undefined) {
-  const cleanSuffix = String(suffix ?? "").trim();
-  const cleanName = String(name ?? "").replace(/\s+/g, " ").trim();
-  if (!cleanSuffix) return cleanName;
-  const markerIndex = cleanName.search(/\s\[/);
-  if (markerIndex > 0) {
-    return `${cleanName.slice(0, markerIndex)} (${cleanSuffix})${cleanName.slice(markerIndex)}`.trim();
-  }
-  return `${cleanName} (${cleanSuffix})`.trim();
 }
 
 function decorateGrupoModulo(row: GrupoModuloRow) {
@@ -366,10 +353,7 @@ export const createOrUpdateGrupoModulo = https.onCall(async (data, context) => {
 
     const createPayload: DataConnectGrupoModuloInput = {
       ...payload,
-      nombre: appendSufijoToNombre(
-        await buildNombreForCreate(payload.grupoId, payload.moduloId),
-        payload.sufijo,
-      ),
+      nombre: await buildNombreForCreate(payload.grupoId, payload.moduloId),
     };
 
     const created = await dataConnect.executeGraphql<

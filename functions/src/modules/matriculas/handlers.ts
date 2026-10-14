@@ -1331,10 +1331,10 @@ const GET_MATRICULA_QUERY = `
 
 const LIST_MATRICULA_GRUPOS_BY_SEMESTRE_QUERY = `
   query ListMatriculaGruposBySemestre($semestreId: Int!) {
-    grupos(where: { semestreId: { eq: $semestreId }, archivado: { ne: true } }, limit: 500) {
+    grupos(where: { _and: [{ semestreId: { eq: $semestreId }, archivado: { ne: true } }, { _or: [{ estado: { isNull: true } }, { estado: { ne: "inactivo" } }] }] }, limit: 500) {
       id nombreDisplay descripcion grupoOrd
     }
-    grupoModulos(where: { grupo: { semestreId: { eq: $semestreId }, archivado: { ne: true } } }, limit: 3000) {
+    grupoModulos(where: { grupo: { _and: [{ semestreId: { eq: $semestreId }, archivado: { ne: true } }, { _or: [{ estado: { isNull: true } }, { estado: { ne: "inactivo" } }] }] } }, limit: 3000) {
       id grupoId nombre orden modulo { titulo orden plan { carrera { especialidad { orden } } } }
     }
   }
@@ -5486,7 +5486,7 @@ async function getGrupoModuloMapping(semestreId: number, grupoId: number): Promi
     dataConnect.executeGraphql<{grupoModulos: Array<{id:number;moduloId:number;grupoId:number}>}, {grupoId:number}>(GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY, {variables:{grupoId}}),
   ]);
   const group = groupResponse.data.grupo;
-  if (!group || group.archivado) throw new https.HttpsError("failed-precondition", "El grupo seleccionado no esta disponible.");
+  if (!group) throw new https.HttpsError("failed-precondition", "El grupo seleccionado no existe.");
   if (group.semestreId !== semestreId) throw new https.HttpsError("failed-precondition", "El grupo seleccionado no corresponde al periodo seleccionado.");
   const moduloGrupos = modulesResponse.data.grupoModulos.map(item => ({grupoModuloId:item.id,moduloId:item.moduloId,grupoId:item.grupoId}));
   if (moduloGrupos.length < 1 || moduloGrupos.length > 6) throw new https.HttpsError("failed-precondition", "El grupo debe tener entre 1 y 6 instancias de modulos antes de matricular.");

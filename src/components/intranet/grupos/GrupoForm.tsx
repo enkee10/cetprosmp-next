@@ -874,13 +874,14 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
             </Select>
           </FormControl>
 
-          <TextField
-            label="Estado"
-            value={estado}
-            onChange={(event) => setEstado(event.target.value)}
-            fullWidth
-            sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}
-          />
+          <FormControl fullWidth sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}>
+            <InputLabel id="grupo-estado-label">Estado</InputLabel>
+            <Select labelId="grupo-estado-label" label="Estado" value={estado} onChange={event => setEstado(String(event.target.value))}>
+              {estado && !['activo', 'inactivo'].includes(estado) && <MenuItem value={estado}>{estado}</MenuItem>}
+              <MenuItem value="activo">Activo</MenuItem>
+              <MenuItem value="inactivo">Inactivo (oculto en formularios de matrícula)</MenuItem>
+            </Select>
+          </FormControl>
 
           <FormControl fullWidth sx={{ gridColumn: { xs: 'auto', md: 'span 8' } }}>
             <InputLabel>Personal</InputLabel>

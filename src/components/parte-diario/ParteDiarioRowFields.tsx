@@ -1,19 +1,47 @@
 'use client';
-import { Box, TableCell } from '@mui/material';
-import { activityLabel, unitLabel, ParteDiarioRow } from '@/lib/parteDiario';
-
-export default function ParteDiarioRowFields({ row }: { row: ParteDiarioRow }) {
-  const scheduled = !row.recordId && row.tipoUnidad === 'curricular' ? row.actividadesDelDia : undefined;
-  const units = scheduled?.length ? [...new Set(scheduled.map(a => a.unidad))].join(' / ') : row.unidad;
-  const activities = scheduled?.length ? scheduled.map(a => a.nombre).join('\n') : row.actividad;
-  const textCell = (text: string) => <TableCell><Box sx={{ px: '6px', py: '6px', whiteSpace: 'pre-wrap' }}>{text}</Box></TableCell>;
+import { useState } from 'react';
+import { Box, ButtonBase, MenuItem, TableCell, TextField, Typography } from '@mui/material';
+import { activityLabel, changeParteUnit, FICHA_OPTIONS, INSTRUMENTO_OPTIONS, REG_ASISTENCIA_OPTIONS, REG_AUX_EVALUACION_OPTIONS, isParteSaved, isProgrammedParteUnit, MATERIAL_OPTIONS, MEDIOS_OPTIONS, numberedUnitLabel, selectedParteUnitLabel, parteUnitValue, ParteDiarioRow, ParteUnidad, SILABO_OPTIONS, TAREAS_OPTIONS } from '@/lib/parteDiario';
+import ParteActivitySelect from './ParteActivitySelect';
+import ParteObservations from './ParteObservations';
+import { parteSavedColor, parteThreeLines } from './parteFieldStyles';
+type Field = 'usoMedios' | 'silabo' | 'fichaActividad' | 'instrumentoEvaluacion' | 'registroAsistencia' | 'registroAuxiliarEvaluacion' | 'material' | 'tareas';
+export default function ParteDiarioRowFields({ row, fecha, units, onLoadUnits, onChange, onSign, onObservationPending, observationsOpen, onOpenObservations, editable, disabled }: {
+  row: ParteDiarioRow; fecha: string; units: ParteUnidad[]; onLoadUnits: () => void; onChange: (row: ParteDiarioRow) => void; onSign: () => void;
+  onObservationPending: (pending: boolean) => void; observationsOpen: boolean; onOpenObservations: () => void; editable: boolean; disabled: boolean;
+}) {
+  const saved = isParteSaved(row), update = (patch: Partial<ParteDiarioRow>) => onChange({ ...row, ...patch });
+  const [observationsVisited, setObservationsVisited] = useState(false);
+  const openObservations = () => { setObservationsVisited(true); onOpenObservations(); };
+  const text = (value: string | number | null) => <Typography variant="body2" title={String(value ?? '')} sx={{ ...parteThreeLines, px: '6px', color: saved ? parteSavedColor : 'inherit' }}>{value ?? ''}</Typography>;
+  const select = (field: Field, label: string, options: string[]) => <TableCell>{saved || !editable ? text(row[field]) : <TextField select value={row[field]} fullWidth size="small" disabled={disabled}
+    sx={{ '& .MuiSelect-select': { minHeight: 56, display: 'flex', alignItems: 'center', whiteSpace: 'normal' } }}
+    slotProps={{ select: { displayEmpty: true, renderValue: value => text(String(value || 'Seleccionar')), inputProps: { 'aria-label': `${label} de ${row.docenteNombre}` } } }}
+    onChange={event => update({ [field]: event.target.value })}>
+    <MenuItem value="" disabled>Seleccionar</MenuItem>{!options.includes(row[field]) && !!row[field] && <MenuItem value={row[field]} disabled>{text(row[field])}</MenuItem>}
+    {options.map(value => <MenuItem key={value} value={value}>{text(value)}</MenuItem>)}
+  </TextField>}</TableCell>;
+  const activities = units.find(unit => unit.id === row.unidadDidacticaId)?.actividades ?? [];
   return <>
-    {textCell(unitLabel(units))}
-    {textCell(activityLabel(activities))}
-    <TableCell align="center">{row.matriculados}</TableCell>
-    <TableCell align="center">{row.asistentes ?? ''}</TableCell>
-    {textCell(row.silabo)}{textCell(row.fichaActividad)}{textCell(row.instrumentoEvaluacion)}{textCell(row.material)}{textCell(row.tareas)}
-    <TableCell sx={{ position: 'relative', overflow: 'hidden', p: 0 }}>{row.firma && <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden' }}><Box component="img" src={row.firma} alt={'Firma de '+row.docenteNombreCompleto} sx={{ display: 'block', position: 'absolute', top: '50%', transform: 'translateY(-50%)', width: '100%', height: 'auto' }} /></Box>}</TableCell>
-    <TableCell>{row.observaciones.length ? <Box component="ul" sx={{ pl: '20px', pr: '6px', '& li': { mb: '5px', whiteSpace: 'pre-wrap' } }}>{row.observaciones.map((text, i) => <li key={i}>{text}</li>)}</Box> : <Box sx={{ minHeight: 50 }} />}</TableCell>
+    <TableCell>{saved || !editable ? text(selectedParteUnitLabel(row, units)) : <TextField select value={parteUnitValue(row)} size="small" fullWidth disabled={disabled}
+      sx={{ '& .MuiSelect-select': { minHeight: 56, display: 'flex', alignItems: 'center', whiteSpace: 'normal' } }}
+      slotProps={{ select: { displayEmpty: true, renderValue: () => text(selectedParteUnitLabel(row, units) || 'Seleccionar unidad'), inputProps: { 'aria-label': `Unidad de ${row.docenteNombre}` }, onOpen: onLoadUnits } }}
+      onChange={event => onChange(changeParteUnit(row, event.target.value, units))}>
+      <MenuItem value="" disabled>Seleccionar unidad</MenuItem>{row.tipoUnidad === 'curricular' && row.unidadDidacticaId != null && !units.some(unit => unit.id === row.unidadDidacticaId) && <MenuItem value={'u:' + row.unidadDidacticaId}><Typography variant="body2" sx={{...parteThreeLines,fontWeight:isProgrammedParteUnit(row,`u:${row.unidadDidacticaId}`,units)?700:400}}>{selectedParteUnitLabel(row, units)}</Typography></MenuItem>}
+      {units.map((unit, index) => <MenuItem key={unit.id} value={'u:' + unit.id}><Typography variant="body2" sx={{...parteThreeLines,fontWeight:isProgrammedParteUnit(row,`u:${unit.id}`,units)?700:400}}>{numberedUnitLabel(unit, index)}</Typography></MenuItem>)}<MenuItem value={row.practicaTipo} sx={{fontWeight:isProgrammedParteUnit(row,row.practicaTipo,units)?700:400}}>{row.practicaTipo.toUpperCase()}</MenuItem>
+    </TextField>}</TableCell>
+    <TableCell>{saved || !editable ? text(activityLabel(row.actividad)) : row.tipoUnidad === 'curricular' ? <Box onClick={onLoadUnits}>
+      <ParteActivitySelect row={row} fecha={fecha} actividades={activities} label={`Actividad de ${row.docenteNombre}`} disabled={disabled} onChange={activity => update({ actividadId: activity.id, actividad: activity.nombre || '' })} />
+    </Box> : <TextField multiline fullWidth size="small" value={row.actividadManual} disabled={disabled} slotProps={{ htmlInput: { 'aria-label': `Actividad de ${row.docenteNombre}`, maxLength: 500 } }} onChange={event => update({ actividadManual: event.target.value, actividad: event.target.value })} />}</TableCell>
+    <TableCell align="center">{text(row.matriculados)}</TableCell><TableCell>{saved || !editable ? text(row.asistentes) : <TextField type="number" fullWidth size="small" value={row.asistentes ?? ''} disabled={disabled} slotProps={{ htmlInput: { 'aria-label': `Asistentes de ${row.docenteNombre}`, min: 0, max: row.matriculados, step: 1 } }} onChange={event => update({ asistentes: event.target.value === '' ? null : Number(event.target.value) })} />}</TableCell>
+    {select('usoMedios', 'Uso de medios en clase', MEDIOS_OPTIONS)}{select('silabo', 'Sílabo', SILABO_OPTIONS)}{select('fichaActividad', 'Ficha de Actividad', FICHA_OPTIONS)}{select('instrumentoEvaluacion', 'Instrumento de Evaluación', INSTRUMENTO_OPTIONS)}{select('registroAsistencia', 'Registro de Asistencia', REG_ASISTENCIA_OPTIONS)}{select('registroAuxiliarEvaluacion', 'Registro Auxiliar de Evaluación', REG_AUX_EVALUACION_OPTIONS)}{select('material', 'Materiales', MATERIAL_OPTIONS)}{select('tareas', 'Tareas', TAREAS_OPTIONS)}
+    <TableCell sx={{ position: 'relative', overflow: 'hidden', p: 0 }}>{saved || !editable ? row.firma && <Box component="img" src={row.firma} alt={'Firma de ' + row.docenteNombreCompleto} sx={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', width: '100%', height: 'auto' }} /> :
+      <ButtonBase disabled={disabled} aria-label={`Firmar parte de ${row.docenteNombre}`} onClick={onSign} sx={{ position: 'absolute', inset: 0, width: '100%', overflow: 'hidden' }}>Firmar</ButtonBase>}
+    </TableCell>
+    <TableCell sx={{ p: '6px !important', color: saved ? parteSavedColor : 'inherit' }}>
+      {!saved && editable && observationsVisited && <Box sx={{ display: observationsOpen ? 'block' : 'none' }}><ParteObservations values={row.observaciones} onChange={observaciones => update({ observaciones })} onPendingChange={onObservationPending} disabled={disabled} /></Box>}
+      {!observationsOpen && <Box onDoubleClick={() => { if (!saved && editable && !disabled) openObservations(); }}>{row.observaciones.length ? <Box component="ul" sx={{ pl: 2, m: 0, '& li': { mb: '5px', whiteSpace: 'pre-wrap' } }}>{row.observaciones.map((value, index) => <li key={index}>{value}</li>)}</Box> :
+        editable && !saved && <ButtonBase disabled={disabled} onClick={openObservations} sx={{ minHeight: 50, width: '100%', fontSize: 12 }}>Agregar observación</ButtonBase>}</Box>}
+    </TableCell>
   </>;
 }

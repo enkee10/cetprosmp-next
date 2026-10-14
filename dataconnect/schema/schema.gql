@@ -223,6 +223,10 @@ type UnidadDidactica @table(name: "unidades_didacticas", singular: "unidadDidact
   nombre: String
   duracion: Int
   creditos: Int
+  horasTeoricas: Int @col(name: "horas_teoricas")
+  horasPracticas: Int @col(name: "horas_practicas")
+  creditosTeoricos: Int @col(name: "creditos_teoricos")
+  creditosPracticos: Int @col(name: "creditos_practicos")
   sigla: String
   comun: Boolean @default(value: false)
 }
@@ -679,9 +683,6 @@ type Grupo @table(name: "grupos") @index(fields: ["calendarioId"]) @index(fields
   personal: Personal @ref(fields: "personalId", references: "id")
   personalId: Int @col(name: "personal_id")
 
-  paquete: Paquete @ref(fields: "paqueteId", references: "id")
-  paqueteId: Int @col(name: "paquete_id")
-
   moduloId: Int @col(name: "modulo_id")
 
   calendarioId: Int @col(name: "calendario_id")
@@ -700,6 +701,7 @@ type Grupo @table(name: "grupos") @index(fields: ["calendarioId"]) @index(fields
 type GrupoModulo @table(name: "grupo_modulos", singular: "grupoModulo", plural: "grupoModulos") @unique(fields: ["grupo", "modulo", "instancia"]) {
   id: Int! @col(dataType: "serial")
   nombre: String
+  sufijo: String
   orden: Int
   obligatorio: Boolean
   inicio: Timestamp
@@ -855,14 +857,20 @@ type ParteDiarioRegistro @table(name: "parte_diario_registros", singular: "parte
   actividadId: Int @col(name: "actividad_id")
   matriculados: Int!
   asistentes: Int
+  usoMedios: String @col(name: "uso_medios")
+  usoMediosValor: Int @col(name: "uso_medios_valor")
   silabo: String! @default(value: "Firmado y publicado")
   fichaActividad: String! @col(name: "ficha_actividad") @default(value: "Está muy bien estructurada")
   instrumentoEvaluacion: String! @col(name: "instrumento_evaluacion") @default(value: "Sí tiene, está muy bien estructurado y lo aplica")
+  registroAsistencia: String @col(name: "registro_asistencia")
+  registroAuxiliarEvaluacion: String @col(name: "registro_auxiliar_evaluacion")
   material: String! @default(value: "Completo y publicado")
   tareas: String! @default(value: "Publicado y respondido")
   silaboValor: Int @col(name: "silabo_valor")
   fichaActividadValor: Int @col(name: "ficha_actividad_valor")
   instrumentoEvaluacionValor: Int @col(name: "instrumento_evaluacion_valor")
+  registroAsistenciaValor: Int @col(name: "registro_asistencia_valor")
+  registroAuxiliarEvaluacionValor: Int @col(name: "registro_auxiliar_evaluacion_valor")
   materialValor: Int @col(name: "material_valor")
   tareasValor: Int @col(name: "tareas_valor")
   firma: String @col(dataType: "text")
@@ -1012,37 +1020,6 @@ type Recordatorio @table(name: "recordatorios") {
   eventoOcurrenciaId: Int @col(name: "evento_ocurrencia_id")
 }
 
-type Paquete @table(name: "paquetes") {
-  id: Int! @col(dataType: "serial")
-  titulo: String
-  descripcion: String
-  archivado: Boolean
-}
-
-type PaqueteGrupo @table(name: "paquete_grupos", key: ["paquete", "grupo"], singular: "paqueteGrupo", plural: "paqueteGrupos") {
-  id: Int! @col(dataType: "serial")
-  grupoOrd: Int @col(name: "grupo_ord")
-
-  paquete: Paquete! @ref(fields: "paqueteId", references: "id")
-  paqueteId: Int! @col(name: "paquete_id")
-
-  grupo: Grupo! @ref(fields: "grupoId", references: "id")
-  grupoId: Int! @col(name: "grupo_id")
-}
-
-type PaqueteModulo @table(name: "paquete_modulos", singular: "paqueteModulo", plural: "paqueteModulos") @unique(fields: ["paquete", "modulo"]) {
-  id: Int! @col(dataType: "serial")
-  orden: Int
-  obligatorio: Boolean
-  multiplicador: Int
-
-  paquete: Paquete! @ref(fields: "paqueteId", references: "id")
-  paqueteId: Int! @col(name: "paquete_id")
-
-  modulo: Modulo! @ref(fields: "moduloId", references: "id")
-  moduloId: Int! @col(name: "modulo_id")
-}
-
 type Matricula @table(name: "matriculas") {
   id: Int! @col(dataType: "serial")
   recibo: String
@@ -1051,8 +1028,8 @@ type Matricula @table(name: "matriculas") {
   fechaActualizacion: Timestamp @col(name: "fecha_actualizacion")
   archivado: Boolean
 
-  paquete: Paquete @ref(fields: "paqueteId", references: "id")
-  paqueteId: Int @col(name: "paquete_id")
+  grupo: Grupo @ref(fields: "grupoId", references: "id")
+  grupoId: Int @col(name: "grupo_id")
 
   semestre: Semestre @ref(fields: "semestreId", references: "id")
   semestreId: Int @col(name: "semestre_id")
@@ -1085,16 +1062,6 @@ type MatriculaGrupo @table(name: "matricula_grupos", key: ["matricula", "grupo"]
 
   grupo: Grupo! @ref(fields: "grupoId", references: "id")
   grupoId: Int! @col(name: "grupo_id")
-}
-
-type MatriculaPaquete @table(name: "matricula_paquetes", key: ["matricula", "paquete"], singular: "matriculaPaquete", plural: "matriculaPaquetes") {
-  id: Int! @col(dataType: "serial")
-
-  matricula: Matricula! @ref(fields: "matriculaId", references: "id")
-  matriculaId: Int! @col(name: "matricula_id")
-
-  paquete: Paquete! @ref(fields: "paqueteId", references: "id")
-  paqueteId: Int! @col(name: "paquete_id")
 }
 
 type Asistencia @table(name: "asistencias") @unique(fields: ["eventoOcurrencia", "matricula"]) {

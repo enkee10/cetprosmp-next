@@ -36,8 +36,6 @@ interface Grupo {
     displayName?: string | null;
     user?: { username?: string | null; apellidoPaterno?: string | null } | null;
   } | null;
-  paqueteId: number | null;
-  paquete?: { titulo: string | null } | null;
   turnoId: number | null;
   turno?: { nombre: string | null; horaInicio: string | null; horaFin: string | null } | null;
   horarioId: number | null;
@@ -59,19 +57,7 @@ const getGrupoPersonalUsername = (grupo: Grupo) =>
     grupo.personal?.user?.apellidoPaterno,
   );
 
-const getGrupoNombre = (grupo: Grupo) => {
-  const paqueteTitulo = grupo.paquete?.titulo || (grupo.paqueteId ? `Paquete ${grupo.paqueteId}` : '');
-  const turnoTitulo = grupo.turno?.nombre || grupo.turnoNombre || '';
-  const horarioTitulo = grupo.horario?.nombre || '';
-  const personalUsername = getGrupoPersonalUsername(grupo);
-
-  return [
-    paqueteTitulo,
-    turnoTitulo ? `[${turnoTitulo}]` : '',
-    horarioTitulo,
-    personalUsername ? `(${personalUsername})` : '',
-  ].filter(Boolean).join(' ') || grupo.nombreDisplay || '';
-};
+const getGrupoNombre = (grupo: Grupo) => grupo.nombreDisplay || (grupo.grupoModulos ?? []).map(item => item.modulo?.tituloComercial || item.modulo?.titulo).filter(Boolean).join(' / ');
 
 const selectMenuProps = {
   disableScrollLock: true,
@@ -125,7 +111,6 @@ export default function GruposPage() {
     useState<GridColumnVisibilityModel>({
       numero: true,
       nombreDisplay: true,
-      paquete: false,
       modulos: false,
       semestre: false,
       turno: false,
@@ -243,13 +228,6 @@ export default function GruposPage() {
         flex: 1.4,
         minWidth: 220,
         valueGetter: (_value, row: Grupo) => getGrupoNombre(row),
-      },
-      {
-        field: 'paquete',
-        headerName: 'Paquete',
-        flex: 1.2,
-        minWidth: 190,
-        valueGetter: (_value, row: Grupo) => row.paquete?.titulo || (row.paqueteId ? `Paquete ${row.paqueteId}` : ''),
       },
       {
         field: 'modulos',

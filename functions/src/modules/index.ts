@@ -107,6 +107,7 @@ export {
 } from "./calendarios/handlers.js";
 export {
   listGrupos,
+  listGrupoConfiguracionOpciones,
   getGrupo,
   createOrUpdateGrupo,
   deleteGrupo,
@@ -139,13 +140,7 @@ export {
   deleteModulo,
 } from "./modulos/handlers.js";
 export {
-  listPaquetes,
-  getPaquete,
-  createOrUpdatePaquete,
-  deletePaquete,
-} from "./paquetes/handlers.js";
-export {
-  createMatriculaDesdePaquete,
+  createMatriculaDesdeGrupo,
   crearMatriculaFormulario,
   crearMatriculaFormularioSuelto,
   deleteMatricula,
@@ -159,12 +154,12 @@ export {
   getMatriculaDocumentoEstado,
   getMatriculaResponsableActual,
   listEditorDocumentosMatriculas,
-  listFormularioMatriculaPaquetesBySemestre,
+  listFormularioMatriculaGruposBySemestre,
   listFormularioMatriculaSemestres,
   listMatriculaDocenteGrupos,
   listMatriculas,
   listMatriculaSemestres,
-  listMatriculaPaquetesBySemestre,
+  listMatriculaGruposBySemestre,
   onMatriculaAvatarExtractionJobCreated,
   onMatriculaDocumentoProcessingJobCreated,
   regenerateEditorDocumentoAvatar,
@@ -181,6 +176,7 @@ export {
   sortMatriculasGoogleSheetsDaily,
   syncMatriculasGoogleSheetsCurrentSemester,
 } from "./matriculas/googleSheetsSync.js";
+export { exportMatriculasAvanza } from "./matriculas/handlers.js";
 export {
   listEstructuraAcademica,
   listEstructuraAcademicaDocente,

@@ -1,9 +1,8 @@
+import { saveGrupoWithModulos, DetalleInstancia } from "./saveGrupo.js";
 import { https } from "firebase-functions/v1";
 import {
   asNullableTimestamp,
   buildGrupoDataFromInput,
-  buildGrupoModuloDataFromInput,
-  buildGrupoModuloUnidadDidacticaDataFromInput,
   getIdFromKeyOutput,
   toBoolean,
   toNumber,
@@ -16,28 +15,13 @@ import {
   DataConnectGrupo,
   DataConnectGrupoInput,
   DataConnectGrupoModulo,
-  DataConnectGrupoModuloInput,
   DataConnectGrupoModuloUnidadDidactica,
-  DataConnectGrupoModuloUnidadDidacticaInput,
-  DataConnectPaqueteModulo,
   DataConnectPersonal,
   DataConnectCompetenciaUnidadDidactica,
 } from "../core/types.js";
 import {
-  buildGrupoModuloNombreRelacional,
-  GrupoModuloNombreContext,
-} from "../core/grupoModuloNombre.js";
-import {
   DELETE_GRUPO_MUTATION,
-  DELETE_GRUPO_MODULO_MUTATION,
   DELETE_GRUPO_MODULOS_BY_GRUPO_MUTATION,
-  DELETE_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION,
-  INSERT_GRUPO_MODULO_MUTATION,
-  INSERT_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION,
-  INSERT_GRUPO_MUTATION,
-  UPDATE_GRUPO_MODULO_MUTATION,
-  UPDATE_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION,
-  UPDATE_GRUPO_MUTATION,
 } from "../../dataconnectOperations.js";
 import {
   deleteWorkspaceGroup,
@@ -78,10 +62,6 @@ const LIST_GRUPOS_QUERY = `
           correoInstitucional
         }
       }
-      paqueteId
-      paquete {
-        titulo
-      }
       turnoId
       turno {
         nombre
@@ -102,6 +82,7 @@ const LIST_GRUPOS_QUERY = `
     grupoModulos(limit: 3000) {
       id
       nombre
+      sufijo
       orden
       obligatorio
       inicio
@@ -186,10 +167,6 @@ const GET_GRUPO_QUERY = `
           correoInstitucional
         }
       }
-      paqueteId
-      paquete {
-        titulo
-      }
       turnoId
       turno {
         nombre
@@ -210,6 +187,7 @@ const GET_GRUPO_QUERY = `
     grupoModulos(where: { grupoId: { eq: $id } }, limit: 50) {
       id
       nombre
+      sufijo
       orden
       obligatorio
       inicio
@@ -255,105 +233,6 @@ const GET_GRUPO_QUERY = `
         id
         grupoId
         moduloId
-      }
-      unidadDidactica {
-        id
-        nombre
-        duracion
-        creditos
-        sigla
-      }
-    }
-  }
-`;
-
-const GET_PAQUETE_MODULOS_FOR_GRUPO_QUERY = `
-  query GetPaqueteModulosForGrupo($paqueteId: Int!) {
-    paquete(id: $paqueteId) {
-      id
-      titulo
-    }
-    paqueteModulos(where: { paqueteId: { eq: $paqueteId } }, limit: 50) {
-      id
-      orden
-      obligatorio
-      multiplicador
-      paqueteId
-      moduloId
-      modulo {
-        titulo
-        tituloComercial
-        orden
-        plan {
-          carrera {
-            especialidad {
-              orden
-            }
-          }
-        }
-      }
-    }
-    competenciaUnidadesDidacticas(limit: 3000) {
-      id
-      orden
-      unidadDidacticaId
-      unidadDidactica {
-        id
-        nombre
-        duracion
-        creditos
-        sigla
-      }
-
-      competenciaId
-      competencia { id nombre tipo moduloId }
-}
-  }
-`;
-
-const GET_GRUPO_MODULOS_CALENDARIOS_QUERY = `
-  query GetGrupoModulosCalendarios($grupoId: Int!) {
-    grupo(id: $grupoId) {
-      id
-      turnoNombre
-      semestre {
-        titulo
-      }
-      turno {
-        nombre
-      }
-      horario {
-        nombre
-      }
-      personal {
-        displayName
-        user {
-          username
-          apellidoPaterno
-        }
-      }
-    }
-    grupoModulos(where: { grupoId: { eq: $grupoId } }, limit: 50) {
-      id
-      nombre
-      moduloId
-      instancia
-      calendarioId
-      inicio
-      fin
-    }
-    grupoModuloUnidadesDidacticas(limit: 5000) {
-      id
-      orden
-      inicio
-      fin
-      grupoModuloId
-      unidadDidacticaId
-      grupoModulo {
-        id
-        grupoId
-        moduloId
-        instancia
       }
       unidadDidactica {
         id
@@ -492,11 +371,6 @@ async function getGrupoWorkspaceContext(payload: DataConnectGrupoInput): Promise
   return context;
 }
 
-const sortPaqueteModulos = (items: DataConnectPaqueteModulo[]) =>
-  items
-    .slice()
-    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId);
-
 const sortGrupoModulos = (items: DataConnectGrupoModulo[]) =>
   items
     .slice()
@@ -531,19 +405,7 @@ const sortGruposWithModulos = (items: Array<DataConnectGrupo & { grupoModulos?: 
       a.id - b.id,
     );
 
-interface GrupoModuloDetalleInput {
-  moduloId: number;
-  instancia: number;
-  orden?: number | null;
-  obligatorio?: boolean;
-  inicio?: string | null;
-  fin?: string | null;
-  calendarioId?: number | null;
-  unidadDidacticas: GrupoModuloUnidadDidacticaDetalleInput[];
-  hasInicio: boolean;
-  hasFin: boolean;
-  hasCalendarioId: boolean;
-}
+type GrupoModuloDetalleInput = DetalleInstancia;
 
 interface GrupoModuloUnidadDidacticaDetalleInput {
   unidadDidacticaId: number;
@@ -578,17 +440,20 @@ const normalizeGrupoModuloUnidadDidacticas = (value: unknown): GrupoModuloUnidad
 
 const normalizeGrupoModuloDetalles = (value: unknown) => {
   const detalles = new Map<string, GrupoModuloDetalleInput>();
-  if (!Array.isArray(value)) return detalles;
+  if (!Array.isArray(value)) throw new https.HttpsError("invalid-argument", "Selecciona los módulos del grupo.");
 
   for (const item of value) {
     if (!item || typeof item !== "object") continue;
     const raw = item as Record<string, unknown>;
     const moduloId = toNumber(raw.moduloId, -1);
     if (moduloId <= 0) continue;
-    const instancia = Math.max(1, toNumber(raw.instancia, 1));
+    const instancia = toNumber(raw.instancia, 1);
+    if (detalles.has(expandedGrupoModuloKey(moduloId, instancia))) throw new https.HttpsError("invalid-argument", "Hay una instancia de módulo repetida.");
     detalles.set(expandedGrupoModuloKey(moduloId, instancia), {
       moduloId,
       instancia,
+      sufijo: raw.sufijo == null ? null : String(raw.sufijo).trim(),
+      hasSufijo: Object.prototype.hasOwnProperty.call(raw, "sufijo"),
       orden: toNumberOrNull(raw.orden),
       obligatorio: toBoolean(raw.obligatorio),
       inicio: asNullableTimestamp(raw.inicio),
@@ -604,205 +469,7 @@ const normalizeGrupoModuloDetalles = (value: unknown) => {
   return detalles;
 };
 
-type ExpandedPaqueteModulo = {
-  paqueteModulo: DataConnectPaqueteModulo;
-  moduloId: number;
-  instancia: number;
-  orden: number;
-  obligatorio: boolean;
-};
-
 const expandedGrupoModuloKey = (moduloId: number, instancia: number) => `${moduloId}:${instancia}`;
-
-const expandPaqueteModulos = (items: DataConnectPaqueteModulo[]): ExpandedPaqueteModulo[] => {
-  const expanded: ExpandedPaqueteModulo[] = [];
-  for (const paqueteModulo of items) {
-    const multiplicador = Math.max(1, Math.min(6, paqueteModulo.multiplicador ?? 1));
-    for (let index = 0; index < multiplicador; index += 1) {
-      expanded.push({
-        paqueteModulo,
-        moduloId: paqueteModulo.moduloId,
-        instancia: index + 1,
-        orden: (paqueteModulo.orden ?? 0) * 10 + index + 1,
-        obligatorio: paqueteModulo.obligatorio ?? true,
-      });
-    }
-  }
-  return expanded;
-};
-
-async function getPaqueteModulosOrThrow(paqueteId: number) {
-  const paqueteResponse = await dataConnect.executeGraphql<{
-    paquete: { id: number; titulo?: string | null } | null;
-    paqueteModulos: DataConnectPaqueteModulo[];
-    competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
-  }, { paqueteId: number }>(GET_PAQUETE_MODULOS_FOR_GRUPO_QUERY, { variables: { paqueteId } });
-
-  const paqueteModulos = sortPaqueteModulos(paqueteResponse.data.paqueteModulos ?? []);
-  const expandedPaqueteModulos = expandPaqueteModulos(paqueteModulos);
-  if (expandedPaqueteModulos.length < 1 || expandedPaqueteModulos.length > 6) {
-    throw new https.HttpsError(
-      "failed-precondition",
-      "El paquete debe tener entre 1 y 6 instancias de modulos para crear grupos.",
-    );
-  }
-
-  return {
-    paquete: paqueteResponse.data.paquete,
-    paqueteModulos: expandedPaqueteModulos,
-    competenciaUnidadesDidacticas: projectUnidadRelations(paqueteResponse.data.competenciaUnidadesDidacticas ?? []),
-  };
-}
-
-async function syncGrupoModulos(
-  grupoId: number,
-  paqueteId: number,
-  detalleInput: Map<string, GrupoModuloDetalleInput> = new Map(),
-) {
-  const { paqueteModulos, competenciaUnidadesDidacticas } = await getPaqueteModulosOrThrow(paqueteId);
-  const existingResponse = await dataConnect.executeGraphql<{
-    grupo: GrupoModuloNombreContext;
-    grupoModulos: Array<Pick<DataConnectGrupoModulo, "id" | "nombre" | "moduloId" | "instancia" | "calendarioId" | "inicio" | "fin">>;
-    grupoModuloUnidadesDidacticas: DataConnectGrupoModuloUnidadDidactica[];
-  }, { grupoId: number }>(
-    GET_GRUPO_MODULOS_CALENDARIOS_QUERY,
-    { variables: { grupoId } },
-  );
-  const previousGrupoModuloByKey = new Map<
-    string,
-    Pick<DataConnectGrupoModulo, "id" | "nombre" | "moduloId" | "instancia" | "calendarioId" | "inicio" | "fin">
-  >();
-  for (const item of existingResponse.data.grupoModulos ?? []) {
-    previousGrupoModuloByKey.set(expandedGrupoModuloKey(item.moduloId, item.instancia ?? 1), item);
-  }
-
-  const previousUnidadByModuloUnidad = new Map<string, DataConnectGrupoModuloUnidadDidactica>();
-  for (const item of existingResponse.data.grupoModuloUnidadesDidacticas ?? []) {
-    const itemGrupoModulo = item.grupoModulo as {
-      grupoId?: number | null;
-      moduloId?: number | null;
-      instancia?: number | null;
-    } | null | undefined;
-    const moduloId = itemGrupoModulo?.grupoId === grupoId ? itemGrupoModulo?.moduloId : null;
-    if (!moduloId) continue;
-    previousUnidadByModuloUnidad.set(`${expandedGrupoModuloKey(moduloId, itemGrupoModulo?.instancia ?? 1)}:${item.unidadDidacticaId}`, item);
-  }
-
-  const competenciaUnidadesDidacticasByModuloId = new Map<number, DataConnectCompetenciaUnidadDidactica[]>();
-  const paqueteModuloIds = new Set(paqueteModulos.map((item) => item.moduloId));
-  for (const item of competenciaUnidadesDidacticas) {
-    if (!paqueteModuloIds.has(item.moduloId)) continue;
-    const current = competenciaUnidadesDidacticasByModuloId.get(item.moduloId) ?? [];
-    current.push(item);
-    competenciaUnidadesDidacticasByModuloId.set(item.moduloId, current);
-  }
-
-  const nextGrupoModuloKeys = new Set(
-    paqueteModulos.map((item) => expandedGrupoModuloKey(item.moduloId, item.instancia)),
-  );
-  await Promise.all(
-    Array.from(previousGrupoModuloByKey.entries())
-      .filter(([key]) => !nextGrupoModuloKeys.has(key))
-      .map(([, item]) =>
-        dataConnect.executeGraphql<{ grupoModulo_delete: unknown }, { id: number }>(
-          DELETE_GRUPO_MODULO_MUTATION,
-          { variables: { id: item.id } },
-        ),
-      ),
-  );
-
-  await Promise.all(
-    paqueteModulos.map(async (expandedModulo, index) => {
-      const grupoModuloKey = expandedGrupoModuloKey(expandedModulo.moduloId, expandedModulo.instancia);
-      const detalle = detalleInput.get(grupoModuloKey);
-      const previous = previousGrupoModuloByKey.get(grupoModuloKey);
-      const baseName = buildGrupoModuloNombreRelacional(existingResponse.data.grupo, expandedModulo.paqueteModulo.modulo);
-      const grupoModulo = buildGrupoModuloDataFromInput({
-        nombre: previous?.nombre?.trim() ? previous.nombre : baseName,
-        grupoId,
-        moduloId: expandedModulo.moduloId,
-        instancia: expandedModulo.instancia,
-        orden: detalle?.orden ?? expandedModulo.orden ?? index + 1,
-        obligatorio: detalle?.obligatorio ?? expandedModulo.obligatorio,
-        inicio: detalle?.hasInicio ? detalle.inicio ?? null : previous?.inicio ?? null,
-        fin: detalle?.hasFin ? detalle.fin ?? null : previous?.fin ?? null,
-        calendarioId: detalle?.hasCalendarioId
-          ? detalle.calendarioId ?? null
-          : previous?.calendarioId ?? null,
-      }) as DataConnectGrupoModuloInput;
-
-      let grupoModuloId = previous?.id ?? null;
-      if (previous?.id) {
-        const updated = await dataConnect.executeGraphql<
-          { grupoModulo_update: unknown },
-          { id: number; data: DataConnectGrupoModuloInput }
-        >(UPDATE_GRUPO_MODULO_MUTATION, { variables: { id: previous.id, data: grupoModulo } });
-        grupoModuloId = getIdFromKeyOutput(updated.data.grupoModulo_update) ?? previous.id;
-      } else {
-        const inserted = await dataConnect.executeGraphql<
-          { grupoModulo_insert: unknown },
-          { data: DataConnectGrupoModuloInput }
-        >(INSERT_GRUPO_MODULO_MUTATION, { variables: { data: grupoModulo } });
-        grupoModuloId = getIdFromKeyOutput(inserted.data.grupoModulo_insert);
-      }
-      if (!grupoModuloId) {
-        throw new Error("No se pudo obtener el id del modulo del grupo guardado.");
-      }
-
-      const detalleUnidadById = new Map(
-        (detalle?.unidadDidacticas ?? []).map((item) => [item.unidadDidacticaId, item]),
-      );
-      const baseUnidades = (competenciaUnidadesDidacticasByModuloId.get(expandedModulo.moduloId) ?? [])
-        .slice()
-        .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.unidadDidacticaId - b.unidadDidacticaId);
-      const baseUnidadIds = new Set(baseUnidades.map((item) => item.unidadDidacticaId));
-
-      await Promise.all(
-        Array.from(previousUnidadByModuloUnidad.entries())
-          .filter(([key, item]) =>
-            key.startsWith(`${grupoModuloKey}:`) &&
-            !baseUnidadIds.has(item.unidadDidacticaId),
-          )
-          .map(([, item]) =>
-            dataConnect.executeGraphql<{ grupoModuloUnidadDidactica_delete: unknown }, { id: number }>(
-              DELETE_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION,
-              { variables: { id: item.id } },
-            ),
-          ),
-      );
-
-      await Promise.all(
-        baseUnidades.map(async (unidadModulo, unidadIndex) => {
-          const detalleUnidad = detalleUnidadById.get(unidadModulo.unidadDidacticaId);
-          const previousUnidad = previousUnidadByModuloUnidad.get(
-            `${grupoModuloKey}:${unidadModulo.unidadDidacticaId}`,
-          );
-          const grupoModuloUnidad = buildGrupoModuloUnidadDidacticaDataFromInput({
-            grupoModuloId,
-            unidadDidacticaId: unidadModulo.unidadDidacticaId,
-            orden: detalleUnidad?.orden ?? unidadModulo.orden ?? unidadIndex + 1,
-            inicio: detalleUnidad?.hasInicio ? detalleUnidad.inicio ?? null : previousUnidad?.inicio ?? null,
-            fin: detalleUnidad?.hasFin ? detalleUnidad.fin ?? null : previousUnidad?.fin ?? null,
-          });
-
-          if (previousUnidad?.id) {
-            return dataConnect.executeGraphql<
-              { grupoModuloUnidadDidactica_update: unknown },
-              { id: number; data: DataConnectGrupoModuloUnidadDidacticaInput }
-            >(UPDATE_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION, {
-              variables: { id: previousUnidad.id, data: grupoModuloUnidad },
-            });
-          }
-
-          return dataConnect.executeGraphql<
-            { grupoModuloUnidadDidactica_insert: unknown },
-            { data: DataConnectGrupoModuloUnidadDidacticaInput }
-          >(INSERT_GRUPO_MODULO_UNIDAD_DIDACTICA_MUTATION, { variables: { data: grupoModuloUnidad } });
-        }),
-      );
-    }),
-  );
-}
 
 function attachGrupoModulos(
   grupos: DataConnectGrupo[],
@@ -873,6 +540,25 @@ export const listGrupos = https.onCall(async (_data, context) => {
   }
 });
 
+export const listGrupoConfiguracionOpciones = https.onCall(async (_data, context) => {
+  await requirePermission(context, "grupos", "view");
+  const { data } = await dataConnect.executeGraphql<{
+    modulos: Array<{id:number; titulo?:string|null; tituloComercial?:string|null; orden?:number|null}>;
+    competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
+  }, Record<string, never>>(`query GrupoModuloOpciones {
+    modulos(limit:1000){id titulo tituloComercial orden plan{carrera{especialidad{orden}}}}
+    competenciaUnidadesDidacticas(limit:5000){id orden competenciaId unidadDidacticaId competencia{id nombre tipo moduloId} unidadDidactica{id nombre duracion creditos sigla}}
+  }`);
+  const relations = projectUnidadRelations(data.competenciaUnidadesDidacticas);
+  const unitsByModulo = new Map<number, Map<number, {orden:number; unidad:unknown}>>();
+  for (const relation of relations) {
+    const units = unitsByModulo.get(relation.moduloId) ?? new Map();
+    if (!units.has(relation.unidadDidacticaId)) units.set(relation.unidadDidacticaId,{orden:relation.orden??0,unidad:relation.unidadDidactica});
+    unitsByModulo.set(relation.moduloId,units);
+  }
+  return {modulos:data.modulos.map(modulo=>({...modulo,unidadDidacticas:Array.from(unitsByModulo.get(modulo.id)?.values()??[]).sort((a,b)=>a.orden-b.orden).map(item=>item.unidad)}))};
+});
+
 export const getGrupo = https.onCall(async (data, context) => {
   await requirePermission(context, "grupos", "view");
 
@@ -913,101 +599,34 @@ export const getGrupo = https.onCall(async (data, context) => {
 });
 
 export const createOrUpdateGrupo = https.onCall(async (data, context) => {
+  const grupoId = toNumberOrNull(data?.id) ?? null;
+  await requirePermission(context, "grupos", grupoId ? "edit" : "create");
   const now = new Date().toISOString();
   const payload = buildGrupoDataFromInput({
     ...(data as Record<string, unknown>),
-    estado: (data as Record<string, unknown> | null)?.estado || "activo",
-    archivado: (data as Record<string, unknown> | null)?.archivado ?? false,
     fechaActualizacion: now,
+    ...(!grupoId ? {fechaCreacion:now,estado:data?.estado??"activo",archivado:data?.archivado??false} : {}),
   }) as DataConnectGrupoInput;
-
-  const grupoId = toNumberOrNull(data?.id);
-  await requirePermission(context, "grupos", grupoId ? "edit" : "create");
-  const paqueteId = toNumberOrNull(data?.paqueteId);
-  const grupoModuloDetalles = normalizeGrupoModuloDetalles(data?.grupoModulos);
-
   validateWorkspaceFields(payload);
-
-  if (!paqueteId) {
-    throw new https.HttpsError("invalid-argument", "Selecciona un paquete.");
-  }
-
+  if (!payload.nombreDisplay?.trim()) throw new https.HttpsError("invalid-argument", "El nombre del grupo es obligatorio.");
+  const detalles = Array.from(normalizeGrupoModuloDetalles(data?.grupoModulos).values());
   try {
-    const previousWorkspaceCorreo = await getPreviousGrupoWorkspaceCorreo(grupoId ?? null);
-    const workspaceContext = await getGrupoWorkspaceContext(payload);
-
-    if (grupoId) {
-      const updated = await dataConnect.executeGraphql<
-        { grupo_update: unknown },
-        { id: number; data: DataConnectGrupoInput }
-      >(UPDATE_GRUPO_MUTATION, { variables: { id: grupoId, data: payload } });
-
-      await syncGrupoModulos(grupoId, paqueteId, grupoModuloDetalles);
-      const workspaceResult = await syncGrupoToWorkspace({
-        email: payload.workspaceCorreo ?? "",
-        previousEmail: previousWorkspaceCorreo,
-        name: payload.workspaceName ?? "",
-        description: `Grupo: ${payload.nombreDisplay ?? ""}`,
-        ownerEmail: getInstitutionalEmail(workspaceContext?.personal),
-        managerEmails: [
-          getInstitutionalEmail(workspaceContext?.semestre?.coordinador1),
-          getInstitutionalEmail(workspaceContext?.semestre?.coordinador2),
-        ],
-      });
-
-      return {
-        id: getIdFromKeyOutput(updated.data.grupo_update) ?? grupoId,
-        ids: [grupoId],
-        workspace: workspaceResult,
-      };
-    }
-
-    const created = await dataConnect.executeGraphql<
-      { grupo_insert: unknown },
-      { data: DataConnectGrupoInput }
-    >(INSERT_GRUPO_MUTATION, {
-      variables: {
-        data: {
-          ...payload,
-          paqueteId,
-          fechaCreacion: now,
-          fechaActualizacion: now,
-        },
-      },
+    const [previousEmail, workspaceContext] = await Promise.all([getPreviousGrupoWorkspaceCorreo(grupoId), getGrupoWorkspaceContext(payload)]);
+    const savedId = await saveGrupoWithModulos(grupoId,payload,detalles);
+    const workspace = await syncGrupoToWorkspace({
+      email:payload.workspaceCorreo??"",previousEmail,name:payload.workspaceName??"",
+      description:`Grupo: ${payload.nombreDisplay??""}`,
+      ownerEmail:getInstitutionalEmail(workspaceContext?.personal),
+      managerEmails:[getInstitutionalEmail(workspaceContext?.semestre?.coordinador1),getInstitutionalEmail(workspaceContext?.semestre?.coordinador2)],
     });
-
-    const createdId = getIdFromKeyOutput(created.data.grupo_insert);
-    if (createdId) {
-      try {
-        await syncGrupoModulos(createdId, paqueteId, grupoModuloDetalles);
-        const workspaceResult = await syncGrupoToWorkspace({
-          email: payload.workspaceCorreo ?? "",
-          previousEmail: null,
-          name: payload.workspaceName ?? "",
-          description: `Grupo: ${payload.nombreDisplay ?? ""}`,
-          ownerEmail: getInstitutionalEmail(workspaceContext?.personal),
-          managerEmails: [
-            getInstitutionalEmail(workspaceContext?.semestre?.coordinador1),
-            getInstitutionalEmail(workspaceContext?.semestre?.coordinador2),
-          ],
-        });
-        return { id: createdId, ids: [createdId], workspace: workspaceResult };
-      } catch (error) {
-        await dataConnect.executeGraphql<{ grupo_delete: unknown }, { id: number }>(
-          DELETE_GRUPO_MUTATION,
-          { variables: { id: createdId } },
-        );
-        throw error;
-      }
-    }
-    return { id: createdId, ids: createdId ? [createdId] : [] };
+    return {id:savedId,ids:[savedId],workspace};
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
-    if (error instanceof WorkspaceSyncError) {
-      throw new https.HttpsError("failed-precondition", error.message);
-    }
-    console.error("Error in createOrUpdateGrupo:", error);
-    throw new https.HttpsError("internal", "An unexpected error occurred while saving group.");
+    if (error instanceof WorkspaceSyncError) throw new https.HttpsError("failed-precondition",error.message);
+    const message = (error as Error).message;
+    if (message.includes("No se puede retirar una instancia")) throw new https.HttpsError("failed-precondition", "No se puede retirar una instancia que tiene matrículas, programación o registros asociados.");
+    console.error("Error in createOrUpdateGrupo:",error);
+    throw new https.HttpsError("internal","No se pudo guardar el grupo.");
   }
 });
 

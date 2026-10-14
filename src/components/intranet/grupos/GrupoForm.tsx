@@ -46,7 +46,6 @@ interface GrupoData {
   archivado: boolean | null;
   semestreId: number | null;
   personalId: number | null;
-  paqueteId: number | null;
   turnoId: number | null;
   horarioId: number | null;
   grupoModulos?: GrupoModuloDetalle[];
@@ -73,22 +72,9 @@ interface UnidadDidacticaResumen {
   sigla?: string | null;
 }
 
-interface PaqueteModuloOption {
+interface ModuloOption extends ModuloResumen {
   id: number;
-  orden: number | null;
-  obligatorio: boolean | null;
-  multiplicador?: number | null;
-  paqueteId: number;
-  moduloId: number;
-  modulo?: ModuloResumen | null;
   unidadDidacticas?: UnidadDidacticaResumen[];
-}
-
-interface PaqueteOption {
-  id: number;
-  titulo: string | null;
-  paqueteModulos?: PaqueteModuloOption[];
-  moduloIds?: number[];
 }
 
 interface SemestreOption {
@@ -127,6 +113,7 @@ interface GrupoModuloDetalle {
   orden: number | null;
   obligatorio: boolean | null;
   instancia?: number | null;
+  sufijo?: string | null;
   inicio?: string | null;
   fin?: string | null;
   grupoId?: number;
@@ -152,10 +139,10 @@ const WORKSPACE_NAME_MAX_LENGTH = 73;
 const WORKSPACE_CORREO_MAX_LENGTH = 80;
 const WORKSPACE_EMAIL_DOMAIN = '@cetprosmp.edu.pe';
 
-const trimPackageFromRight = (packageName: string, prefix: string, suffix: string, maxLength: number) => {
+const trimTitleFromRight = (title: string, prefix: string, suffix: string, maxLength: number) => {
   const available = maxLength - prefix.length - suffix.length;
-  const trimmedPackageName = packageName.slice(0, Math.max(0, available));
-  const value = `${prefix}${trimmedPackageName}${suffix}`;
+  const trimmedTitle = title.slice(0, Math.max(0, available));
+  const value = `${prefix}${trimmedTitle}${suffix}`;
   return value.length > maxLength ? value.slice(0, maxLength) : value;
 };
 
@@ -171,124 +158,56 @@ const normalizeEmailSegment = (value: string | null | undefined) =>
     .replace(/-+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-const getPrimaryPaqueteModulo = (paquete: PaqueteOption | undefined) =>
-  (paquete?.paqueteModulos ?? [])
-    .slice()
-    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId)[0] ?? null;
-
 const getOrdenText = (value: number | string | null | undefined) =>
   value == null || value === '' ? '' : String(value);
 
 const getGrupoModuloKey = (moduloId: number, instancia: number | null | undefined) =>
   `${moduloId}:${instancia ?? 1}`;
 
-const expandPaqueteModuloOptions = (items: PaqueteModuloOption[]) =>
-  items.flatMap((paqueteModulo) => {
-    const multiplicador = Math.max(1, Math.min(6, Number(paqueteModulo.multiplicador ?? 1)));
-    return Array.from({ length: multiplicador }, (_unused, index) => ({
-      ...paqueteModulo,
-      instancia: index + 1,
-      orden: (paqueteModulo.orden ?? 0) * 10 + index + 1,
-    }));
-  });
-
 const buildWorkspaceName = (
   semestre: SemestreOption | null,
-  paquete: PaqueteOption | undefined,
+  modulos: GrupoModuloDetalle[],
   personalName: string,
 ) => {
-  const paqueteModulo = getPrimaryPaqueteModulo(paquete);
+  const first = modulos.slice().sort((a,b) => (a.orden??0)-(b.orden??0))[0];
+  const titulo = tituloModulos(modulos);
   const semestreCodigo = getSemestreCodigo(semestre?.titulo);
-  const ordenEspecialidad = getOrdenText(paqueteModulo?.modulo?.plan?.carrera?.especialidad?.orden);
-  const ordenModulo = getOrdenText(paqueteModulo?.modulo?.orden ?? paqueteModulo?.orden);
-  if (!semestreCodigo || !paquete?.titulo || !personalName) {
+  const ordenEspecialidad = getOrdenText(first?.modulo?.plan?.carrera?.especialidad?.orden);
+  const ordenModulo = getOrdenText(first?.modulo?.orden ?? first?.orden);
+  if (!semestreCodigo || !titulo || !personalName) {
     return '';
   }
 
   const prefix = `:${semestreCodigo}_${ordenEspecialidad}.${ordenModulo} `;
   const suffix = personalName ? ` - ${personalName}` : '';
-  return trimPackageFromRight(paquete?.titulo?.trim() || '', prefix, suffix, WORKSPACE_NAME_MAX_LENGTH);
+  return trimTitleFromRight(titulo, prefix, suffix, WORKSPACE_NAME_MAX_LENGTH);
 };
 
 const buildWorkspaceCorreo = (
   semestre: SemestreOption | null,
-  paquete: PaqueteOption | undefined,
+  modulos: GrupoModuloDetalle[],
   personalName: string,
 ) => {
   const semestreCodigo = getSemestreCodigo(semestre?.titulo);
-  if (!semestreCodigo || !paquete?.titulo || !personalName) {
+  const titulo = tituloModulos(modulos);
+  if (!semestreCodigo || !titulo || !personalName) {
     return '';
   }
 
-  const packageSegment = normalizeEmailSegment(paquete?.titulo);
+  const titleSegment = normalizeEmailSegment(titulo);
   const personalSegment = normalizeEmailSegment(personalName);
   const prefix = semestreCodigo ? `${semestreCodigo}-` : '';
   const suffix = `${personalSegment ? `-${personalSegment}` : ''}${WORKSPACE_EMAIL_DOMAIN}`;
-  return trimPackageFromRight(packageSegment, prefix, suffix, WORKSPACE_CORREO_MAX_LENGTH);
+  return trimTitleFromRight(titleSegment, prefix, suffix, WORKSPACE_CORREO_MAX_LENGTH);
 };
 
-const buildGrupoModulosFromPaquete = (
-  paquete: PaqueteOption | undefined,
-  current: GrupoModuloDetalle[],
-): GrupoModuloDetalle[] => {
-  if (!paquete) return current;
-
-  const currentByKey = new Map(current.map((item) => [getGrupoModuloKey(item.moduloId, item.instancia), item]));
-  const paqueteModulos = paquete.paqueteModulos && paquete.paqueteModulos.length > 0
-    ? expandPaqueteModuloOptions(paquete.paqueteModulos)
-    : (paquete.moduloIds || []).map((moduloId, index) => ({
-        id: index + 1,
-        orden: index + 1,
-        obligatorio: true,
-        instancia: 1,
-        paqueteId: paquete.id,
-        moduloId,
-        modulo: null,
-        unidadDidacticas: [],
-      }));
-
-  return paqueteModulos
-    .slice()
-    .sort((a, b) =>
-      (a.orden ?? 0) - (b.orden ?? 0) ||
-      a.moduloId - b.moduloId ||
-      (a.instancia ?? 1) - (b.instancia ?? 1),
-    )
-    .map((paqueteModulo, index) => {
-      const existing = currentByKey.get(getGrupoModuloKey(paqueteModulo.moduloId, paqueteModulo.instancia));
-      const existingUnidadById = new Map(
-        (existing?.unidadDidacticas ?? []).map((item) => [item.unidadDidacticaId, item]),
-      );
-      const paqueteUnidades = paqueteModulo.unidadDidacticas ?? [];
-      const unidadDidacticas = paqueteUnidades.length > 0
-        ? paqueteUnidades.map((unidadDidactica, unidadIndex) => {
-            const existingUnidad = existingUnidadById.get(unidadDidactica.id);
-            return {
-              id: existingUnidad?.id,
-              grupoModuloId: existingUnidad?.grupoModuloId,
-              unidadDidacticaId: unidadDidactica.id,
-              unidadDidactica: existingUnidad?.unidadDidactica || unidadDidactica,
-              orden: existingUnidad?.orden ?? unidadIndex + 1,
-              inicio: existingUnidad?.inicio ?? null,
-              fin: existingUnidad?.fin ?? null,
-            };
-          })
-        : existing?.unidadDidacticas ?? [];
-
-      return {
-        id: existing?.id,
-        grupoId: existing?.grupoId,
-        moduloId: paqueteModulo.moduloId,
-        instancia: paqueteModulo.instancia,
-        modulo: existing?.modulo || paqueteModulo.modulo || null,
-        orden: existing?.orden ?? paqueteModulo.orden ?? index + 1,
-        obligatorio: existing?.obligatorio ?? paqueteModulo.obligatorio ?? true,
-        inicio: existing?.inicio ?? null,
-        fin: existing?.fin ?? null,
-        calendarioId: existing?.calendarioId ?? null,
-        unidadDidacticas,
-      };
-    });
+const tituloModulos = (items: GrupoModuloDetalle[]) => {
+  const grouped = new Map<number, GrupoModuloDetalle[]>();
+  for (const item of items) { const group=grouped.get(item.moduloId)??[]; group.push(item); grouped.set(item.moduloId,group); }
+  return Array.from(grouped.values()).map(group => {
+    const first=group[0]; const title=first.modulo?.tituloComercial || first.modulo?.titulo || `Módulo ${first.moduloId}`;
+    return group.length>1 ? `${title} x${group.length}` : title;
+  }).join(' / ');
 };
 
 const toDateInputValue = (value: string | null | undefined) => {
@@ -372,12 +291,12 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   const [workspaceManualEdit, setWorkspaceManualEdit] = useState(Boolean(grupoId));
   const [estado, setEstado] = useState('activo');
   const [archivado, setArchivado] = useState(false);
-  const [paqueteId, setPaqueteId] = useState('');
+  const [moduloParaAgregar, setModuloParaAgregar] = useState('');
   const [semestreId, setSemestreId] = useState('');
   const [personalId, setPersonalId] = useState('');
   const [turnoId, setTurnoId] = useState('');
   const [horarioId, setHorarioId] = useState('');
-  const [paquetes, setPaquetes] = useState<PaqueteOption[]>([]);
+  const [modulosOpciones, setModulosOpciones] = useState<ModuloOption[]>([]);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [personal, setPersonal] = useState<PersonalOption[]>([]);
   const [turnos, setTurnos] = useState<TurnoOption[]>([]);
@@ -396,27 +315,27 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       setLoadingOptions(true);
       try {
         const functions = getFunctions(app);
-        const listPaquetes = httpsCallable<undefined, { paquetes?: PaqueteOption[] }>(functions, 'listPaquetes');
+        const listModulos = httpsCallable<undefined, { modulos?: ModuloOption[] }>(functions, 'listGrupoConfiguracionOpciones');
         const listSemestres = httpsCallable<undefined, { semestres?: SemestreOption[] }>(functions, 'listSemestres');
         const listPersonal = httpsCallable<undefined, { personal?: PersonalOption[] }>(functions, 'listPersonal');
         const listTurnos = httpsCallable<undefined, { turnos?: TurnoOption[] }>(functions, 'listTurnos');
         const listHorarios = httpsCallable<undefined, { horarios?: HorarioOption[] }>(functions, 'listHorarios');
         const [
-          paquetesResult,
+          modulosResult,
           semestresResult,
           personalResult,
           turnosResult,
           horariosResult,
         ] = await Promise.all([
-          listPaquetes(),
+          listModulos(),
           listSemestres(),
           listPersonal(),
           listTurnos(),
           listHorarios(),
         ]);
 
-        setPaquetes(
-          (paquetesResult.data.paquetes || [])
+        setModulosOpciones(
+          (modulosResult.data.modulos || [])
             .slice()
             .sort((a, b) => String(a.titulo ?? '').localeCompare(String(b.titulo ?? ''), 'es', { numeric: true })),
         );
@@ -465,7 +384,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
 
         if (fetched) {
           setNombreDisplay(fetched.nombreDisplay || '');
-          setNombreManualEdit(Boolean(fetched.nombreDisplay));
+          setNombreManualEdit(true);
           setDescripcion(fetched.descripcion || '');
           setTurnoNombre(fetched.turnoNombre || '');
           setWorkspaceName(fetched.workspaceName || '');
@@ -473,7 +392,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
           setWorkspaceManualEdit(true);
           setEstado(fetched.estado || 'activo');
           setArchivado(Boolean(fetched.archivado));
-          setPaqueteId(fetched.paqueteId != null ? String(fetched.paqueteId) : '');
           setSemestreId(fetched.semestreId != null ? String(fetched.semestreId) : '');
           setPersonalId(fetched.personalId != null ? String(fetched.personalId) : '');
           setTurnoId(fetched.turnoId != null ? String(fetched.turnoId) : '');
@@ -508,18 +426,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
     setAutoPeriodoAplicado(true);
   }, [autoPeriodoAplicado, grupoId, semestreVigente]);
 
-  useEffect(() => {
-    if (!paqueteId) {
-      setGrupoModulos([]);
-      return;
-    }
-
-    const paquete = paquetes.find((item) => String(item.id) === paqueteId);
-    if (!paquete) return;
-    setGrupoModulos((prev) => buildGrupoModulosFromPaquete(paquete, prev));
-  }, [paqueteId, paquetes]);
-
-  const selectedPaquete = paquetes.find((paquete) => String(paquete.id) === paqueteId);
   const selectedSemestre = semestres.find((semestre) => String(semestre.id) === semestreId) || null;
   const selectedPersonal = personal.find((item) => String(item.id) === personalId) || null;
   const selectedTurno = turnos.find((turno) => String(turno.id) === turnoId);
@@ -528,12 +434,12 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   const nombreCalculado = useMemo(
     () =>
       [
-        selectedPaquete?.titulo?.trim() || '',
+        tituloModulos(grupoModulos),
         selectedTurno?.nombre ? `[${selectedTurno.nombre}]` : '',
         selectedHorario?.nombre?.trim() || '',
         selectedPersonalName ? `(${selectedPersonalName})` : '',
       ].filter(Boolean).join(' '),
-    [selectedHorario, selectedPaquete, selectedPersonalName, selectedTurno],
+    [selectedHorario, grupoModulos, selectedPersonalName, selectedTurno],
   );
   const nombreGrupo = nombreManualEdit ? nombreDisplay : nombreCalculado;
 
@@ -545,9 +451,9 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   useEffect(() => {
     if (workspaceManualEdit) return;
 
-    setWorkspaceName(buildWorkspaceName(selectedSemestre, selectedPaquete, selectedPersonalName));
-    setWorkspaceCorreo(buildWorkspaceCorreo(selectedSemestre, selectedPaquete, selectedPersonalName));
-  }, [selectedPaquete, selectedPersonalName, selectedSemestre, workspaceManualEdit]);
+    setWorkspaceName(buildWorkspaceName(selectedSemestre, grupoModulos, selectedPersonalName));
+    setWorkspaceCorreo(buildWorkspaceCorreo(selectedSemestre, grupoModulos, selectedPersonalName));
+  }, [grupoModulos, selectedPersonalName, selectedSemestre, workspaceManualEdit]);
 
   const handleEnableWorkspaceEdit = () => {
     setWorkspaceManualEdit(true);
@@ -555,8 +461,8 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
 
   const handleRestoreWorkspaceAuto = () => {
     setWorkspaceManualEdit(false);
-    setWorkspaceName(buildWorkspaceName(selectedSemestre, selectedPaquete, selectedPersonalName));
-    setWorkspaceCorreo(buildWorkspaceCorreo(selectedSemestre, selectedPaquete, selectedPersonalName));
+    setWorkspaceName(buildWorkspaceName(selectedSemestre, grupoModulos, selectedPersonalName));
+    setWorkspaceCorreo(buildWorkspaceCorreo(selectedSemestre, grupoModulos, selectedPersonalName));
   };
 
   const handleRestoreNombreAuto = () => {
@@ -603,6 +509,27 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
     );
   };
 
+  const agregarModulo = () => {
+    const option=modulosOpciones.find(item=>String(item.id)===moduloParaAgregar);
+    if (!option || grupoModulos.length>=6 || grupoModulos.some(item=>item.moduloId===option.id)) return;
+    setGrupoModulos(prev=>[...prev,{moduloId:option.id,modulo:option,instancia:1,sufijo:null,orden:Math.max(0,...prev.map(item=>item.orden??0))+1,obligatorio:true,unidadDidacticas:(option.unidadDidacticas??[]).map((ud,index)=>({unidadDidacticaId:ud.id,unidadDidactica:ud,orden:index+1,inicio:null,fin:null}))}]);
+    setModuloParaAgregar('');
+  };
+  const cambiarInstancias = (moduloId:number,count:number) => {
+    setGrupoModulos(prev=>{
+      const current=prev.filter(item=>item.moduloId===moduloId).sort((a,b)=>(a.instancia??1)-(b.instancia??1));
+      const option=modulosOpciones.find(item=>item.id===moduloId);
+      const units=(option?.unidadDidacticas??[]).map((ud,index)=>({unidadDidacticaId:ud.id,unidadDidactica:ud,orden:index+1,inicio:null,fin:null}));
+      const expanded=Array.from({length:count},(_,index)=>current[index]??{moduloId,modulo:option??current[0]?.modulo,instancia:index+1,sufijo:null,orden:Math.max(0,...prev.map(item=>item.orden??0))+index+1,obligatorio:true,unidadDidacticas:units});
+      if (count===1) expanded[0]={...expanded[0],sufijo:null};
+      const first=prev.findIndex(item=>item.moduloId===moduloId);
+      const others=prev.filter(item=>item.moduloId!==moduloId);
+      others.splice(first,0,...expanded);
+      return others;
+    });
+  };
+  const actualizarInstancia = (moduloId:number,instancia:number,values:Partial<GrupoModuloDetalle>) => setGrupoModulos(prev=>prev.map(item=>item.moduloId===moduloId&&(item.instancia??1)===instancia?{...item,...values}:item));
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
@@ -620,14 +547,14 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       return;
     }
 
-    if (!paqueteId) {
-      setError('Selecciona un paquete.');
+    if (!grupoModulos.length) {
+      setError('Selecciona al menos un módulo.');
       setLoading(false);
       return;
     }
 
-    const finalWorkspaceName = (workspaceName || (!grupoId ? buildWorkspaceName(selectedSemestre, selectedPaquete, selectedPersonalName) : '')).trim();
-    const finalWorkspaceCorreo = (workspaceCorreo || (!grupoId ? buildWorkspaceCorreo(selectedSemestre, selectedPaquete, selectedPersonalName) : '')).trim();
+    const finalWorkspaceName = (workspaceName || (!grupoId ? buildWorkspaceName(selectedSemestre, grupoModulos, selectedPersonalName) : '')).trim();
+    const finalWorkspaceCorreo = (workspaceCorreo || (!grupoId ? buildWorkspaceCorreo(selectedSemestre, grupoModulos, selectedPersonalName) : '')).trim();
 
     if (finalWorkspaceName.length > WORKSPACE_NAME_MAX_LENGTH) {
       setError('Nombre Workspace no puede superar 73 caracteres.');
@@ -653,7 +580,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
           turnoNombre: string;
           estado: string;
           archivado: boolean;
-          paqueteId?: number | null;
           semestreId?: number | null;
           personalId?: number | null;
           turnoId?: number | null;
@@ -686,7 +612,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         turnoNombre: selectedTurno?.nombre || turnoNombre,
         estado,
         archivado,
-        paqueteId: paqueteId ? Number(paqueteId) : null,
         semestreId: semestreId ? Number(semestreId) : null,
         personalId: personalId ? Number(personalId) : null,
         turnoId: turnoId ? Number(turnoId) : null,
@@ -694,6 +619,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         grupoModulos: grupoModulos.map((item) => ({
           moduloId: item.moduloId,
           instancia: item.instancia ?? 1,
+          sufijo: item.sufijo?.trim() || null,
           orden: item.orden,
           obligatorio: item.obligatorio ?? true,
           inicio: item.inicio || null,
@@ -839,22 +765,28 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
             sx={{ gridColumn: '1 / -1' }}
           />
 
-          <FormControl fullWidth required sx={{ gridColumn: '1 / -1' }}>
-            <InputLabel>Paquete</InputLabel>
-            <Select
-              label="Paquete"
-              value={paqueteId}
-              onChange={(event) => setPaqueteId(String(event.target.value))}
-              disabled={loadingOptions}
-            >
-              <MenuItem value="">Selecciona un paquete</MenuItem>
-              {paquetes.map((paquete) => (
-                <MenuItem key={paquete.id} value={String(paquete.id)}>
-                  {paquete.titulo || `Paquete ${paquete.id}`}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Box sx={{gridColumn:'1 / -1',display:'flex',gap:1,alignItems:'center'}}>
+            <FormControl fullWidth>
+              <InputLabel id="grupo-modulo-agregar-label">Módulo para agregar</InputLabel>
+              <Select labelId="grupo-modulo-agregar-label" label="Módulo para agregar" value={moduloParaAgregar} onChange={event=>setModuloParaAgregar(String(event.target.value))} disabled={loadingOptions||grupoModulos.length>=6}>
+                {modulosOpciones.filter(item=>!grupoModulos.some(gm=>gm.moduloId===item.id)).map(item=><MenuItem key={item.id} value={String(item.id)}>{item.tituloComercial||item.titulo||`Módulo ${item.id}`}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <Button variant="outlined" disabled={!moduloParaAgregar||grupoModulos.length>=6} onClick={agregarModulo}>Agregar</Button>
+          </Box>
+          {Array.from(new Set(grupoModulos.map(item=>item.moduloId))).map(moduloId=>{
+            const items=grupoModulos.filter(item=>item.moduloId===moduloId);
+            return <Box key={moduloId} sx={{gridColumn:'1 / -1',display:'flex',gap:1,alignItems:'center'}}>
+              <Typography sx={{flex:1}}>{items[0].modulo?.tituloComercial||items[0].modulo?.titulo||`Módulo ${moduloId}`}</Typography>
+              <FormControl size="small" sx={{minWidth:110}}>
+                <InputLabel id={`grupo-instancias-${moduloId}-label`}>Instancias</InputLabel>
+                <Select labelId={`grupo-instancias-${moduloId}-label`} label="Instancias" value={items.length} onChange={event=>cambiarInstancias(moduloId,Number(event.target.value))}>
+                  {Array.from({length:6-grupoModulos.length+items.length},(_,index)=><MenuItem key={index+1} value={index+1}>{index+1}</MenuItem>)}
+                </Select>
+              </FormControl>
+              <Button color="error" size="small" onClick={()=>setGrupoModulos(prev=>prev.filter(item=>item.moduloId!==moduloId))}>Quitar</Button>
+            </Box>;
+          })}
 
           <FormControl fullWidth sx={{ gridColumn: { xs: 'auto', md: 'span 3' } }}>
             <InputLabel>Semestre</InputLabel>
@@ -999,6 +931,12 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
                         InputLabelProps={{ shrink: true }}
                         fullWidth
                       />
+                    </Box>
+
+                    <Box sx={{display:'flex',gap:1,alignItems:'center',flexWrap:'wrap'}}>
+                      {grupoModulos.filter(item=>item.moduloId===modulo.moduloId).length>1 && <TextField label={`Sufijo de instancia ${modulo.instancia??1}`} value={modulo.sufijo??''} onChange={event=>actualizarInstancia(modulo.moduloId,modulo.instancia??1,{sufijo:event.target.value})} inputProps={{maxLength:80}} size="small" sx={{flex:1,minWidth:180}} />}
+                      <TextField label="Orden" type="number" value={modulo.orden??''} onChange={event=>actualizarInstancia(modulo.moduloId,modulo.instancia??1,{orden:event.target.value?Number(event.target.value):null})} size="small" inputProps={{min:1}} sx={{width:100}} />
+                      <FormControlLabel label="Obligatorio" control={<Checkbox checked={modulo.obligatorio??true} onChange={event=>actualizarInstancia(modulo.moduloId,modulo.instancia??1,{obligatorio:event.target.checked})} />} />
                     </Box>
 
                     {(modulo.unidadDidacticas ?? []).length > 0 && (

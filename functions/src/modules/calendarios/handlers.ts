@@ -312,7 +312,6 @@ const LIST_GRUPOS_QUERY = `
       archivado
       semestreId
       personalId
-      paqueteId
       turnoId
       horarioId
       grupoOrd

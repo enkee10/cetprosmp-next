@@ -76,6 +76,7 @@ export {
   createOrUpdateEvento,
   deleteEvento,
   listGrupos,
+  listGrupoConfiguracionOpciones,
   getGrupo,
   createOrUpdateGrupo,
   deleteGrupo,
@@ -98,10 +99,6 @@ export {
   createOrUpdateModulo,
   updateModuloOrden,
   deleteModulo,
-  listPaquetes,
-  getPaquete,
-  createOrUpdatePaquete,
-  deletePaquete,
   listEstructuraAcademica,
   listEstructuraAcademicaDocente,
   getEstructuraAcademicaDocenteMenu,
@@ -115,7 +112,7 @@ export {
   detachEstructuraAcademicaItem,
   updateEstructuraAcademicaCell,
   reorderEstructuraAcademicaItems,
-  createMatriculaDesdePaquete,
+  createMatriculaDesdeGrupo,
   crearMatriculaFormulario,
   crearMatriculaFormularioSuelto,
   deleteMatricula,
@@ -131,12 +128,12 @@ export {
   exportListaMatriculasGeneralGoogleSheet,
   exportMatriculadosDocenteGrupoGoogleSheet,
   listEditorDocumentosMatriculas,
-  listFormularioMatriculaPaquetesBySemestre,
+  listFormularioMatriculaGruposBySemestre,
   listFormularioMatriculaSemestres,
   listMatriculaDocenteGrupos,
   listMatriculas,
   listMatriculaSemestres,
-  listMatriculaPaquetesBySemestre,
+  listMatriculaGruposBySemestre,
   onMatriculaAvatarExtractionJobCreated,
   onMatriculaDocumentoProcessingJobCreated,
   regenerateEditorDocumentoAvatar,
@@ -190,5 +187,6 @@ export {
   listReporteDocumentosOptions,
 } from "./modules/index.js";
 export { getCalendarioAgenda, previewProgramacionHoraria, createProgramacionHoraria } from "./modules/calendarios/agenda.js";
-export { getParteDiario, getParteDiarioOpciones, saveParteDiario, transcribeParteDiario } from "./modules/parte-diario/handlers.js";
+export { getParteDiario, getParteDiarioOpciones, getParteDiarioCuentas, renameParteActividad, saveParteDiario, transcribeParteDiario } from "./modules/parte-diario/handlers.js";
+export { exportMatriculasAvanza } from "./modules/matriculas/handlers.js";
 export {getParteReporte,getParteReporteRegistro,getParteReporteOpciones,saveParteReporteRegistro,deleteParteDiarioRegistro,saveParteInforme} from './modules/parte-diario/reports.js';

@@ -8,7 +8,28 @@
     ],
     "frameworksBackend": {
       "region": "us-central1"
-    }
+    },
+    "headers": [
+      {
+        "source": "/parte-diario",
+        "headers": [{ "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" }]
+      },
+      {
+        "source": "/parte-diario/version.json",
+        "headers": [{ "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" }]
+      },
+      {
+        "source": "/parte-diario/manifest.webmanifest",
+        "headers": [
+          { "key": "Content-Type", "value": "application/manifest+json" },
+          { "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }
+        ]
+      },
+      {
+        "source": "/parte-diario/icons/**",
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
+      }
+    ]
   },
   "firestore": {
     "database": "(default)",

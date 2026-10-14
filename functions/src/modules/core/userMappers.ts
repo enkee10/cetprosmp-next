@@ -14,8 +14,6 @@ import {
   DataConnectMatriculaInput,
   DataConnectModuloInput,
   DataConnectModuloEstudianteInput,
-  DataConnectPaqueteInput,
-  DataConnectPaqueteModuloInput,
   DataConnectPersonalInput,
   DataConnectPlanInput,
   DataConnectRoleInput,
@@ -383,7 +381,6 @@ export function buildGrupoDataFromInput(input: Record<string, unknown>) {
     fechaActualizacion: asNullableTimestamp(input.fechaActualizacion),
     semestreId: toNumberOrNull(input.semestreId),
     personalId: toNumberOrNull(input.personalId),
-    paqueteId: toNumberOrNull(input.paqueteId),
     turnoId: toNumberOrNull(input.turnoId),
     horarioId: toNumberOrNull(input.horarioId),
     grupoOrd: toNumberOrNull(input.grupoOrd),
@@ -395,6 +392,7 @@ export function buildGrupoDataFromInput(input: Record<string, unknown>) {
 export function buildGrupoModuloDataFromInput(input: Record<string, unknown>) {
   return compactUndefined({
     nombre: asNullableString(input.nombre),
+    sufijo: asNullableString(input.sufijo),
     grupoId: toNumber(input.grupoId, 0),
     moduloId: toNumber(input.moduloId, 0),
     orden: toNumberOrNull(input.orden),
@@ -490,32 +488,14 @@ export function buildModuloDataFromInput(input: Record<string, unknown>): DataCo
   });
 }
 
-export function buildPaqueteDataFromInput(input: Record<string, unknown>): DataConnectPaqueteInput {
-  return compactUndefined({
-    titulo: asNullableString(input.titulo),
-    descripcion: asNullableString(input.descripcion),
-    archivado: toBoolean(input.archivado),
-  });
-}
-
-export function buildPaqueteModuloDataFromInput(input: Record<string, unknown>): DataConnectPaqueteModuloInput {
-  return compactUndefined({
-    paqueteId: toNumber(input.paqueteId, 0),
-    moduloId: toNumber(input.moduloId, 0),
-    orden: toNumberOrNull(input.orden),
-    obligatorio: toBoolean(input.obligatorio) ?? true,
-    multiplicador: toNumberOrNull(input.multiplicador),
-  }) as DataConnectPaqueteModuloInput;
-}
-
 export function buildMatriculaDataFromInput(input: Record<string, unknown>): DataConnectMatriculaInput {
   return compactUndefined({
+    grupoId: toNumberOrNull(input.grupoId),
     recibo: asNullableString(input.recibo),
     fecha: asNullableTimestamp(input.fecha),
     fechaActualizacion: asNullableTimestamp(input.fechaActualizacion),
     codigoInscripcion: asNullableString(input.codigoInscripcion),
     archivado: toBoolean(input.archivado),
-    paqueteId: toNumberOrNull(input.paqueteId),
     semestreId: toNumberOrNull(input.semestreId),
     userId: toNumberOrNull(input.userId),
     responsableId: toNumberOrNull(input.responsableId),

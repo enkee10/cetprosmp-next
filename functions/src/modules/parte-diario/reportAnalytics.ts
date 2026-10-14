@@ -1,10 +1,11 @@
-import { VALUATION_FIELDS, ValuationField, valuationScore } from './valuations.js';
-export type MetricsRecord = {id:number;fecha:string;grupoModuloId:number;docenteId:number;familiaId:number|null;docente:string;familia:string;actividadId:number|null;actividadProgramadaId:number|null;jornadaId:number|null;tipoUnidad:string;matriculados:number;asistentes:number|null;fechaActualizacion:string} & Record<ValuationField,string> & Partial<Record<`${ValuationField}Valor`,number|null>>;
-const recordScore=(r:MetricsRecord,field:ValuationField)=>{const score=r[`${field}Valor`];return typeof score==='number'&&Number.isInteger(score)&&score>=0&&score<=4?score:valuationScore(field,r[field]);};
+import { VALUATION_FIELDS, ValuationField, valuationScore, isValuationScore } from './valuations.js';
+export type MetricsRecord = {id:number;fecha:string;grupoModuloId:number;docenteId:number;familiaId:number|null;docente:string;familia:string;actividadId:number|null;actividadProgramadaId:number|null;jornadaId:number|null;tipoUnidad:string;matriculados:number;asistentes:number|null;fechaActualizacion:string;firma?:string|null} & Record<ValuationField,string|null> & Partial<Record<`${ValuationField}Valor`,number|null>>;
+const recordScore=(r:MetricsRecord,field:ValuationField)=>{const score=r[`${field}Valor`];return isValuationScore(field,score)?score:valuationScore(field,r[field]);};
 export type PlannedReportItem={key:string;fecha:string;grupoModuloId:number;docenteId:number;familiaId:number|null;docente:string;familia:string;actividadId:number|null;horas:number};
 export type ParteMetrics={registros:number;programadas:number;cobertura:number|null;jornadasConAsistencia:number;jornadasSinAsistencia:number;matriculadosAcumulados:number;asistentesAcumulados:number;inasistenciasAcumuladas:number;asistencia:number|null;actividadesRegistradas:number;actividadesProgramadas:number;avance:number|null;valoraciones:Record<ValuationField,{promedio:number|null;cantidad:number;distribucion:number[]}>;indice:number|null;asistenciasDiscordantes:number};
 export const recordKey=(r:MetricsRecord)=>`${r.fecha}:${r.grupoModuloId}:${r.actividadProgramadaId!=null?'a:'+r.actividadProgramadaId:'j:'+r.jornadaId}`;
 export function aggregateParte(records:MetricsRecord[],planned:PlannedReportItem[]):ParteMetrics{
+ records=records.filter(r=>!!r.firma);
  const expected=new Set(planned.map(p=>`${p.fecha}:${p.grupoModuloId}`)),registered=new Set(records.map(r=>`${r.fecha}:${r.grupoModuloId}`));
  const expectedActivities=new Set(planned.filter(p=>p.actividadId!=null).map(p=>`${p.grupoModuloId}:${p.actividadId}`));
  const actualActivities=new Set(records.filter(r=>r.tipoUnidad==='curricular'&&r.actividadId!=null).map(r=>`${r.grupoModuloId}:${r.actividadId}`).filter(key=>expectedActivities.has(key)));

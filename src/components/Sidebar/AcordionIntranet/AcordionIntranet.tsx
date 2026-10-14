@@ -25,7 +25,6 @@ import EditNoteIcon from '@mui/icons-material/EditNote';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import FactoryIcon from '@mui/icons-material/Factory';
 import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
-import Inventory2Icon from '@mui/icons-material/Inventory2';
 import LockPersonIcon from '@mui/icons-material/LockPerson';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PeopleIcon from '@mui/icons-material/People';
@@ -97,7 +96,6 @@ export const menuSections: IntranetMenuSection[] = [
       { id: 'carreras', title: 'Carreras', path: '/intranet/carreras', icon: <SchoolIcon /> },
       { id: 'planes', title: 'Planes', path: '/intranet/planes', icon: <AssignmentIcon /> },
       { id: 'modulos', title: 'M\u00f3dulos', path: '/intranet/modulos', icon: <ViewModuleIcon /> },
-      { id: 'paquetes', title: 'Paquetes', path: '/intranet/paquetes', icon: <Inventory2Icon /> },
       { id: 'grupos', title: 'Grupos', path: '/intranet/grupos', icon: <PeopleIcon /> },
       { id: 'grupo-modulos', title: 'Grupos-Modulo', path: '/intranet/grupo-modulos', icon: <AccountTreeIcon /> },
       { id: 'calendarios', title: 'Calendarios', path: '/intranet/calendarios', icon: <EventNoteIcon /> },

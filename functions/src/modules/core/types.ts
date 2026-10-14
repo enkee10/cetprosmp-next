@@ -420,7 +420,6 @@ export interface DataConnectGrupo {
   archivado?: boolean | null;
   semestreId?: number | null;
   personalId?: number | null;
-  paqueteId?: number | null;
   turnoId?: number | null;
   horarioId?: number | null;
   grupoOrd?: number | null;
@@ -428,7 +427,6 @@ export interface DataConnectGrupo {
   workspaceCorreo?: string | null;
   semestre?: { titulo?: string | null } | null;
   personal?: DataConnectPersonal | null;
-  paquete?: { titulo?: string | null } | null;
   turno?: DataConnectTurno | null;
   horario?: DataConnectHorario | null;
   grupoModulos?: DataConnectGrupoModulo[];
@@ -444,7 +442,6 @@ export interface DataConnectGrupoInput {
   fechaActualizacion?: string | null;
   semestreId?: number | null;
   personalId?: number | null;
-  paqueteId?: number | null;
   turnoId?: number | null;
   horarioId?: number | null;
   grupoOrd?: number | null;
@@ -455,6 +452,7 @@ export interface DataConnectGrupoInput {
 export interface DataConnectGrupoModulo {
   id: number;
   nombre?: string | null;
+  sufijo?: string | null;
   orden?: number | null;
   obligatorio?: boolean | null;
   inicio?: string | null;
@@ -470,6 +468,7 @@ export interface DataConnectGrupoModulo {
 
 export interface DataConnectGrupoModuloInput {
   nombre?: string | null;
+  sufijo?: string | null;
   orden?: number | null;
   obligatorio?: boolean;
   inicio?: string | null;
@@ -757,46 +756,14 @@ export interface DataConnectPlanModuloInput {
   moduloId: number;
 }
 
-export interface DataConnectPaquete {
-  id: number;
-  titulo?: string | null;
-  descripcion?: string | null;
-  archivado?: boolean | null;
-}
-
-export interface DataConnectPaqueteInput {
-  titulo?: string | null;
-  descripcion?: string | null;
-  archivado?: boolean;
-}
-
-export interface DataConnectPaqueteModulo {
-  id: number;
-  orden?: number | null;
-  obligatorio?: boolean | null;
-  multiplicador?: number | null;
-  paqueteId: number;
-  moduloId: number;
-  modulo?: Pick<DataConnectModulo, "titulo" | "tituloComercial" | "orden" | "plan"> | null;
-  unidadDidacticas?: DataConnectUnidadDidactica[];
-}
-
-export interface DataConnectPaqueteModuloInput {
-  orden?: number | null;
-  obligatorio?: boolean;
-  multiplicador?: number | null;
-  paqueteId: number;
-  moduloId: number;
-}
-
 export interface DataConnectMatricula {
+  grupoId?: number | null;
   id: number;
   recibo?: string | null;
   fecha?: string | null;
   fechaActualizacion?: string | null;
   codigoInscripcion?: string | null;
   archivado?: boolean | null;
-  paqueteId?: number | null;
   semestreId?: number | null;
   userId?: number | null;
   responsableId?: number | null;
@@ -804,12 +771,12 @@ export interface DataConnectMatricula {
 }
 
 export interface DataConnectMatriculaInput {
+  grupoId?: number | null;
   recibo?: string | null;
   fecha?: string | null;
   fechaActualizacion?: string | null;
   codigoInscripcion?: string | null;
   archivado?: boolean;
-  paqueteId?: number | null;
   semestreId?: number | null;
   userId?: number | null;
   responsableId?: number | null;

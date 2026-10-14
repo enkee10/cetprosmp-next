@@ -251,13 +251,13 @@ export const DELETE_HORARIO_MUTATION = `
 `;
 
 export const INSERT_GRUPO_MUTATION = `
-  mutation InsertGrupo($data: Grupo_Data! @allow(fields: "turnoNombre descripcion nombreDisplay estado archivado fechaCreacion fechaActualizacion semestreId personalId paqueteId turnoId horarioId grupoOrd workspaceName workspaceCorreo")) {
+  mutation InsertGrupo($data: Grupo_Data! @allow(fields: "turnoNombre descripcion nombreDisplay estado archivado fechaCreacion fechaActualizacion semestreId personalId turnoId horarioId grupoOrd workspaceName workspaceCorreo")) {
     grupo_insert(data: $data)
   }
 `;
 
 export const UPDATE_GRUPO_MUTATION = `
-  mutation UpdateGrupo($id: Int!, $data: Grupo_Data! @allow(fields: "turnoNombre descripcion nombreDisplay estado archivado fechaCreacion fechaActualizacion semestreId personalId paqueteId turnoId horarioId grupoOrd workspaceName workspaceCorreo")) {
+  mutation UpdateGrupo($id: Int!, $data: Grupo_Data! @allow(fields: "turnoNombre descripcion nombreDisplay estado archivado fechaCreacion fechaActualizacion semestreId personalId turnoId horarioId grupoOrd workspaceName workspaceCorreo")) {
     grupo_update(id: $id, data: $data)
   }
 `;
@@ -269,13 +269,13 @@ export const DELETE_GRUPO_MUTATION = `
 `;
 
 export const INSERT_GRUPO_MODULO_MUTATION = `
-  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia")) {
+  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "sufijo nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia")) {
     grupoModulo_insert(data: $data)
   }
 `;
 
 export const UPDATE_GRUPO_MODULO_MUTATION = `
-  mutation UpdateGrupoModulo($id: Int!, $data: GrupoModulo_Data! @allow(fields: "nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia")) {
+  mutation UpdateGrupoModulo($id: Int!, $data: GrupoModulo_Data! @allow(fields: "sufijo nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia")) {
     grupoModulo_update(id: $id, data: $data)
   }
 `;
@@ -592,44 +592,14 @@ export const DELETE_ACTIVIDAD_MUTATION = `
   }
 `;
 
-export const INSERT_PAQUETE_MUTATION = `
-  mutation InsertPaquete($data: Paquete_Data! @allow(fields: "titulo descripcion archivado")) {
-    paquete_insert(data: $data)
-  }
-`;
-
-export const UPDATE_PAQUETE_MUTATION = `
-  mutation UpdatePaquete($id: Int!, $data: Paquete_Data! @allow(fields: "titulo descripcion archivado")) {
-    paquete_update(id: $id, data: $data)
-  }
-`;
-
-export const DELETE_PAQUETE_MUTATION = `
-  mutation DeletePaquete($id: Int!) {
-    paquete_delete(id: $id)
-  }
-`;
-
-export const INSERT_PAQUETE_MODULO_MUTATION = `
-  mutation InsertPaqueteModulo($data: PaqueteModulo_Data! @allow(fields: "paqueteId moduloId orden obligatorio multiplicador")) {
-    paqueteModulo_insert(data: $data)
-  }
-`;
-
-export const DELETE_PAQUETE_MODULOS_BY_PAQUETE_MUTATION = `
-  mutation DeletePaqueteModulosByPaquete($paqueteId: Int!) {
-    paqueteModulo_deleteMany(where: { paqueteId: { eq: $paqueteId } })
-  }
-`;
-
 export const INSERT_MATRICULA_MUTATION = `
-  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "recibo fecha fechaActualizacion codigoInscripcion archivado paqueteId semestreId userId responsableId responsableUserId")) {
+  mutation InsertMatricula($data: Matricula_Data! @allow(fields: "grupoId recibo fecha fechaActualizacion codigoInscripcion archivado semestreId userId responsableId responsableUserId")) {
     matricula_insert(data: $data)
   }
 `;
 
 export const UPDATE_MATRICULA_MUTATION = `
-  mutation UpdateMatricula($id: Int!, $data: Matricula_Data! @allow(fields: "recibo fecha fechaActualizacion codigoInscripcion archivado paqueteId semestreId userId")) {
+  mutation UpdateMatricula($id: Int!, $data: Matricula_Data! @allow(fields: "grupoId recibo fecha fechaActualizacion codigoInscripcion archivado semestreId userId")) {
     matricula_update(id: $id, data: $data)
   }
 `;
@@ -671,21 +641,6 @@ export const DELETE_ASPECTOS_EVALUACION_ESTUDIANTES_BY_EVALUACION_ESTUDIANTE_MUT
   }
 `;
 
-export const DELETE_MATRICULA_DEPENDENCIES_MUTATION = `
-  mutation DeleteMatriculaDependencies($matriculaId: Int!) {
-    matriculaCambioModulo_deleteMany(where: { matriculaId: { eq: $matriculaId } })
-    asistencia_deleteMany(where: { matriculaId: { eq: $matriculaId } })
-    evaluacionEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
-    indicadorCapacidadEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
-    capacidadTerminalEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
-    unidadDidacticaEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
-    matriculaGrupo_deleteMany(where: { matriculaId: { eq: $matriculaId } })
-    matriculaPaquete_deleteMany(where: { matriculaId: { eq: $matriculaId } })
-    matriculaUser_deleteMany(where: { matriculaId: { eq: $matriculaId } })
-    moduloEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
-  }
-`;
-
 export const DELETE_MODULO_ESTUDIANTES_BY_MATRICULA_MUTATION = `
   mutation DeleteModuloEstudiantesByMatricula($matriculaId: Int!) {
     moduloEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
@@ -693,7 +648,7 @@ export const DELETE_MODULO_ESTUDIANTES_BY_MATRICULA_MUTATION = `
 `;
 
 export const INSERT_MATRICULA_CAMBIO_MODULO_MUTATION = `
-  mutation InsertMatriculaCambioModulo($data: MatriculaCambioModulo_Data! @allow(fields: "fechaCambio matriculaId userId semestreId grupoModuloAnteriorId grupoModuloNuevoId grupoAnteriorId grupoNuevoId moduloAnteriorId moduloNuevoId registradoPorId")) {
+  mutation InsertMatriculaCambioModulo($data: MatriculaCambioModulo_Data! @allow(fields: "grupoId fechaCambio matriculaId userId semestreId grupoModuloAnteriorId grupoModuloNuevoId grupoAnteriorId grupoNuevoId moduloAnteriorId moduloNuevoId registradoPorId")) {
     matriculaCambioModulo_insert(data: $data)
   }
 `;
@@ -713,5 +668,19 @@ export const UPDATE_USER_MUTATION = `
 export const DELETE_USER_BY_DOCUMENT_ID_MUTATION = `
   mutation DeleteUserByDocumentId($documentId: String!) {
     user_deleteMany(where: { documentId: { eq: $documentId } })
+  }
+`;
+
+export const DELETE_MATRICULA_DEPENDENCIES_MUTATION = `
+  mutation DeleteMatriculaDependencies($matriculaId: Int!) {
+    matriculaCambioModulo_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    asistencia_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    evaluacionEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    indicadorCapacidadEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    capacidadTerminalEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    unidadDidacticaEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    matriculaGrupo_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    matriculaUser_deleteMany(where: { matriculaId: { eq: $matriculaId } })
+    moduloEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
   }
 `;

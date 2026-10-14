@@ -25,7 +25,7 @@ interface AuthContextType { // define todos los metodos y estados expuestos por 
     user: UserData | null; // expone el usuario autenticado o null si no hay sesion
     loading: boolean; // expone si el contexto esta resolviendo una accion de autenticacion
     login: () => Promise<void>; // mantiene el metodo de login legado usando Google
-    loginWithGoogle: () => Promise<void>; // expone el inicio de sesion con Google para el modal login
+    loginWithGoogle: (emailHint?: string) => Promise<void>; // permite seleccionar la cuenta de Google sugerida
     loginWithEmail: (identifier: string, password: string) => Promise<void>; // expone el inicio de sesion con usuario/correo y contrasena
     registerWithEmail: (username: string, email: string, password: string) => Promise<void>; // expone el registro publico con login automatico
     resetPassword: (identifier: string) => Promise<void>; // + expone el envio del correo de restablecimiento de contrasena
@@ -260,7 +260,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
             return;
         }
         if (pathname?.startsWith('/sso')) return;
-        if (pathname === '/parte-diario') return;
+        if (pathname === '/parte-diario' || pathname?.startsWith('/parte-diario/')) return;
         if (pathname?.startsWith('/matricula')) return;
 
         const redirectedForUid = window.sessionStorage.getItem(INTRANET_REDIRECT_KEY);
@@ -270,9 +270,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
         router.replace('/intranet');
     }, [authReady, loading, pathname, router, user]);
 
-    const loginWithGoogle = async () => { // define el flujo explicito de autenticacion con Google
+    const loginWithGoogle = async (emailHint?: string) => { // define el flujo explicito de autenticacion con Google
+        const previousUser = user;
         setLoading(true); // activa el estado de carga mientras se abre el popup de Google
         const provider = new GoogleAuthProvider(); // prepara el proveedor de autenticacion de Google
+        provider.setCustomParameters({ prompt: 'select_account', ...(typeof emailHint === 'string' && emailHint ? { login_hint: emailHint } : {}) });
         try {
             const credential = await signInWithPopup(auth, provider); // inicia el popup de Google para autenticar al usuario
             const userData = await loadUserDataFromFirebaseUser(credential.user);
@@ -282,12 +284,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                 throw createIntranetAccessDeniedError();
             }
             setUser(userData);
-            if (pathname !== '/parte-diario') router.replace('/intranet'); // conserva la página suelta al iniciar sesión allí
+            if (pathname !== '/parte-diario' && !pathname?.startsWith('/parte-diario/')) router.replace('/intranet'); // conserva la página suelta y su vista previa al iniciar sesión allí
         } catch (error) {
             if (!isExpectedAuthError(error)) { // + evita registrar en consola los errores esperados de autenticacion controlados por la interfaz
                 console.error('Error during Google sign-in:', error); // + registra solo errores inesperados del login con Google para diagnostico real
             }
-            setUser(null); // limpia el usuario local si el acceso falla
+            setUser(auth.currentUser?.uid === previousUser?.uid ? previousUser : null); // conserva la cuenta anterior si se cancela el selector
             throw error; // reenvia el error para que la interfaz del modal pueda mostrarlo
         } finally {
             setLoading(false); // desactiva el estado de carga al terminar el intento de login con Google
@@ -368,14 +370,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
 
     if (!authReady && !bypassInitialAuthGate) { // + muestra una pantalla de carga solo durante la sincronizacion inicial de autenticacion
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}> {/* + centra el indicador de carga en toda la pantalla */} 
-                <CircularProgress /> {/* + muestra el spinner mientras la autenticacion esta cargando */} 
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}> {/* + centra el indicador de carga en toda la pantalla */}
+                <CircularProgress /> {/* + muestra el spinner mientras la autenticacion esta cargando */}
             </Box>
         );
     }
 
     return (
-        <AuthContext.Provider value={contextValue}> {/* + expone tambien el metodo de restablecer contrasena a toda la aplicacion */} 
+        <AuthContext.Provider value={contextValue}> {/* + expone tambien el metodo de restablecer contrasena a toda la aplicacion */}
             {children}
         </AuthContext.Provider>
     );

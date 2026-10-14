@@ -7,12 +7,15 @@ import {
   Box,
   Button,
   Checkbox,
+  CircularProgress,
   FormControl,
   FormControlLabel,
   FormLabel,
   IconButton,
   InputAdornment,
   InputLabel,
+  ListItemIcon,
+  ListItemText,
   Menu,
   MenuItem,
   Radio,
@@ -32,6 +35,8 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import HowToRegIcon from '@mui/icons-material/HowToReg';
+import GradingIcon from '@mui/icons-material/Grading';
 import {
   GridColDef,
   GridColumnVisibilityModel,
@@ -57,6 +62,8 @@ import { useAppSettings, type AppSettings } from '@/hooks/useAppSettings';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 import UserForm from '@/components/intranet/users/UserForm';
 import { imageFileToOptimizedDataUrl } from '@/lib/imageOptimization';
+import AvanzaDownloadDialog from '@/components/intranet/matriculas/AvanzaDownloadDialog';
+import { avanzaDownloadHistoryKey } from '@/lib/avanzaDownload';
 
 interface SemestreOption {
   id: number;
@@ -108,10 +115,9 @@ function truncateMiddleText(value: string, maxLength = 30) {
   return `${value.slice(0, maxLength)}...`;
 }
 
-interface PaqueteOption {
+interface GrupoOption {
   id: number;
   grupoId?: number | null;
-  paqueteId?: number | null;
   titulo?: string | null;
   descripcion?: string | null;
   grupoModuloTitulo?: string | null;
@@ -197,7 +203,6 @@ interface MatriculaListItem {
   fechaCreacion?: string | null;
   fechaActualizacion?: string | null;
   archivado?: boolean | null;
-  paqueteId?: number | null;
   grupoId?: number | null;
   semestreId?: number | null;
   userId?: number | null;
@@ -254,7 +259,6 @@ interface MatriculaListItem {
       correoInstitucional?: string | null;
     } | null;
   }>;
-  paquete?: PaqueteOption | null;
   semestre?: SemestreOption | null;
 }
 
@@ -319,7 +323,6 @@ interface MatriculaFormValues {
   telefono: string;
   email: string;
   recibo: string;
-  paqueteId: string;
   grupoId: string;
 }
 
@@ -443,7 +446,6 @@ const initialValues: MatriculaFormValues = {
   telefono: '',
   email: '',
   recibo: '',
-  paqueteId: '',
   grupoId: '',
 };
 
@@ -708,12 +710,11 @@ const isValidReciboValue = (value: unknown) => {
   );
 };
 
-const getPaqueteOptionLabel = (paquete: PaqueteOption) =>
-  paquete.grupoModuloTitulo || paquete.titulo || `Modulo ${paquete.id}`;
+const getGrupoOptionLabel = (grupoOpcion: GrupoOption) =>
+  grupoOpcion.grupoModuloTitulo || grupoOpcion.titulo || `Modulo ${grupoOpcion.id}`;
 
-const getPaqueteOptionGrupoId = (paquete: PaqueteOption) => paquete.grupoId ?? paquete.id;
+const getGrupoOptionGrupoId = (grupoOpcion: GrupoOption) => grupoOpcion.grupoId ?? grupoOpcion.id;
 
-const getPaqueteOptionPaqueteId = (paquete: PaqueteOption) => paquete.paqueteId ?? paquete.id;
 
 const parseDateOnly = (value: unknown) => {
   const normalized = normalizeDateInput(value);
@@ -1225,7 +1226,6 @@ function valuesFromMatricula(matricula: MatriculaListItem): MatriculaFormValues 
     telefono: user?.telefono || '',
     email: user?.email || '',
     recibo: matricula.recibo || '',
-    paqueteId: matricula.paqueteId ? String(matricula.paqueteId) : '',
     grupoId: matricula.grupoId ? String(matricula.grupoId) : '',
   };
 }
@@ -1276,7 +1276,7 @@ export function MatriculaForm({
   const birthDatePickerRef = useRef<HTMLInputElement | null>(null);
   const [values, setValues] = useState<MatriculaFormValues>(initialValues);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
-  const [paquetes, setPaquetes] = useState<PaqueteOption[]>([]);
+  const [gruposOpciones, setGruposOpciones] = useState<GrupoOption[]>([]);
   const [frontFile, setFrontFile] = useState<File | null>(null);
   const [backFile, setBackFile] = useState<File | null>(null);
   const [frontImage, setFrontImage] = useState<UploadedImage | null>(null);
@@ -1312,7 +1312,7 @@ export function MatriculaForm({
     setValues((prev) => ({
       ...prev,
       [key]: value,
-      ...(key === 'semestreId' ? { paqueteId: '', grupoId: '' } : {}),
+      ...(key === 'semestreId' ? { grupoId: '' } : {}),
       ...(key === 'instruccion' && value !== SECONDARY_INCOMPLETE_VALUE ? { nombreColegio: '' } : {}),
     }));
     setMessage(null);
@@ -1331,16 +1331,14 @@ export function MatriculaForm({
   }, [values.dni, values.tipoDocumento]);
 
   const updateGrupoSelection = useCallback((grupoIdValue: string) => {
-    const selectedOption = paquetes.find((paquete) => String(getPaqueteOptionGrupoId(paquete)) === grupoIdValue);
     setValues((prev) => ({
       ...prev,
       grupoId: grupoIdValue,
-      paqueteId: selectedOption ? String(getPaqueteOptionPaqueteId(selectedOption)) : '',
     }));
     setMessage(null);
     setSuccessMessage(null);
     setTouched((prev) => ({ ...prev, grupoId: false }));
-  }, [paquetes]);
+  }, []);
 
   const handleCancelFromVerification = useCallback(() => {
     if (isStandalone && onReset) {
@@ -1497,7 +1495,6 @@ export function MatriculaForm({
             setValues((prev) => ({
               ...prev,
               semestreId: nextSemestreId,
-              paqueteId: '',
               grupoId: '',
             }));
             setFrontImage(null);
@@ -1534,30 +1531,30 @@ export function MatriculaForm({
 
   useEffect(() => {
     let mounted = true;
-    const loadPaquetes = async () => {
-      setPaquetes([]);
+    const loadGrupos = async () => {
+      setGruposOpciones([]);
       if (!selectedSemestreId) return;
 
       setLoadingOptions(true);
       try {
-        const listPaquetes = httpsCallable<{ semestreId: number }, { paquetes?: PaqueteOption[] }>(
+        const listGrupos = httpsCallable<{ semestreId: number }, { grupos?: GrupoOption[] }>(
           functions,
-          isStandalone ? 'listFormularioMatriculaPaquetesBySemestre' : 'listMatriculaPaquetesBySemestre',
+          isStandalone ? 'listFormularioMatriculaGruposBySemestre' : 'listMatriculaGruposBySemestre',
           { timeout: 12000 },
         );
         const result = await withTimeout(
-          listPaquetes({ semestreId: selectedSemestreId }),
+          listGrupos({ semestreId: selectedSemestreId }),
           14000,
-          isStandalone ? 'listFormularioMatriculaPaquetesBySemestre' : 'listMatriculaPaquetesBySemestre',
+          isStandalone ? 'listFormularioMatriculaGruposBySemestre' : 'listMatriculaGruposBySemestre',
         );
-        if (mounted) setPaquetes(result.data.paquetes || []);
+        if (mounted) setGruposOpciones(result.data.grupos || []);
       } catch (error) {
         if (mounted) setMessage(getCallableErrorMessage(error, 'No se pudieron cargar los modulos del periodo.'));
       } finally {
         if (mounted) setLoadingOptions(false);
       }
     };
-    void loadPaquetes();
+    void loadGrupos();
     return () => {
       mounted = false;
     };
@@ -2118,7 +2115,7 @@ export function MatriculaForm({
       scrollToFormField(sectionTwoValidation.field);
       return;
     }
-    if (!values.grupoId || !values.paqueteId) {
+    if (!values.grupoId) {
       markTouched('grupoId');
       setMessage(isStandalone ? null : 'Selecciona un modulo.');
       scrollToFormField('grupoId');
@@ -2157,7 +2154,6 @@ export function MatriculaForm({
         nombreColegio: values.instruccion === SECONDARY_INCOMPLETE_VALUE ? values.nombreColegio : '',
         fechaNacimiento: normalizeDateInput(values.fechaNacimiento) || values.fechaNacimiento,
         semestreId: Number(values.semestreId),
-        paqueteId: Number(values.paqueteId),
         grupoId: Number(values.grupoId),
         ...(isStandalone ? { formularioMatriculaTipo: standaloneFormKind } : {}),
         dniImagenFrente: shouldProcessDocumentImages ? finalFrontImage : null,
@@ -2634,8 +2630,8 @@ export function MatriculaForm({
     || user.correoInstitucional
     || user.email
     || '';
-  const selectedPaqueteOption = paquetes.find((paquete) => String(getPaqueteOptionGrupoId(paquete)) === values.grupoId);
-  const currentGrupoModuloName = selectedPaqueteOption ? getPaqueteOptionLabel(selectedPaqueteOption) : '';
+  const selectedGrupoOption = gruposOpciones.find((grupoOpcion) => String(getGrupoOptionGrupoId(grupoOpcion)) === values.grupoId);
+  const currentGrupoModuloName = selectedGrupoOption ? getGrupoOptionLabel(selectedGrupoOption) : '';
   const formatModuloChangeDetails = (date?: string | null, userName?: string | null, dateLabel = 'Fecha de cambio') =>
     [
       date ? `${dateLabel}: ${formatDateTimeForDisplay(date)}` : '',
@@ -2906,12 +2902,12 @@ export function MatriculaForm({
                   onChange={(event) => updateGrupoSelection(String(event.target.value))}
                   onBlur={() => markTouched('grupoId')}
                 >
-                  {paquetes.map((paquete) => (
+                  {gruposOpciones.map((grupoOpcion) => (
                     <FormControlLabel
-                      key={getPaqueteOptionGrupoId(paquete)}
-                      value={String(getPaqueteOptionGrupoId(paquete))}
+                      key={getGrupoOptionGrupoId(grupoOpcion)}
+                      value={String(getGrupoOptionGrupoId(grupoOpcion))}
                       control={<Radio />}
-                      label={getPaqueteOptionLabel(paquete)}
+                      label={getGrupoOptionLabel(grupoOpcion)}
                     />
                   ))}
                 </RadioGroup>
@@ -2927,9 +2923,9 @@ export function MatriculaForm({
                   onBlur={() => markTouched('grupoId')}
                   disabled={courseSelectionLocked}
                 >
-                  {paquetes.map((paquete) => (
-                    <MenuItem key={getPaqueteOptionGrupoId(paquete)} value={String(getPaqueteOptionGrupoId(paquete))}>
-                      {getPaqueteOptionLabel(paquete)}
+                  {gruposOpciones.map((grupoOpcion) => (
+                    <MenuItem key={getGrupoOptionGrupoId(grupoOpcion)} value={String(getGrupoOptionGrupoId(grupoOpcion))}>
+                      {getGrupoOptionLabel(grupoOpcion)}
                     </MenuItem>
                   ))}
                 </Select>
@@ -2948,7 +2944,7 @@ export function MatriculaForm({
             )}
           </FormControl>
           {renderReciboField(courseLocked || courseOnlyEditMode)}
-          {paquetes.length === 0 && values.semestreId && !loadingOptions && (
+          {gruposOpciones.length === 0 && values.semestreId && !loadingOptions && (
             <AutoDismissAlert severity="warning">No hay modulos disponibles para este periodo.</AutoDismissAlert>
           )}
           {moduloChangeTimeline.length > 0 ? (
@@ -3024,7 +3020,7 @@ export function MatriculaForm({
             <Button
               variant="contained"
               onClick={handleSubmit}
-              disabled={courseSelectionLocked || paquetes.length === 0 || (!isEditing && !responsable && !responsableUser)}
+              disabled={courseSelectionLocked || gruposOpciones.length === 0 || (!isEditing && !responsable && !responsableUser)}
             >
               {isEditing ? 'Guardar Cambios' : 'Registrar Matricula'}
             </Button>
@@ -3088,10 +3084,15 @@ export function MatriculasPage() {
   const canCreateRecords = can('matriculas', 'create');
   const canEditRecords = can('matriculas', 'edit');
   const canDeleteRecords = !isDocente && can('matriculas', 'delete');
+  const canUseAvanza = can('avanza', 'view') && can('matriculas', 'view');
   const [matriculas, setMatriculas] = useState<MatriculaListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingFilters, setLoadingFilters] = useState(true);
   const [exportingDocenteSheet, setExportingDocenteSheet] = useState(false);
+  const [exportingAvanza, setExportingAvanza] = useState(false);
+  const [avanzaMenuAnchor, setAvanzaMenuAnchor] = useState<HTMLElement | null>(null);
+  const [openAvanzaDownload, setOpenAvanzaDownload] = useState(false);
+  const [avanzaNotice, setAvanzaNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [semestreFilterOptions, setSemestreFilterOptions] = useState<SemestreOption[]>([]);
   const [selectedSemestreFilterId, setSelectedSemestreFilterId] = useState('');
@@ -3545,6 +3546,40 @@ export function MatriculasPage() {
       setExportingDocenteSheet(false);
     }
   }, [matriculas]);
+
+  const handleExportAvanza = useCallback(async (desde: string | null) => {
+    if (!canUseAvanza) throw new Error('No tienes permiso para descargar AVANZA.');
+    setExportingAvanza(true);
+    setAvanzaNotice(null);
+    try {
+      const download = httpsCallable<
+        { semestreId: number; grupoModuloIds: number[]; desde: string | null },
+        { filename: string; contentBase64: string; pendingRows: number; missingRows: number; hasta: string }
+      >(functions, 'exportMatriculasAvanza', { timeout: 180000 });
+      const result = await download({ semestreId: Number(selectedSemestreFilterId), grupoModuloIds: selectedGrupoModuloFilterIds.map(Number), desde });
+      const bytes = Uint8Array.from(atob(result.data.contentBase64), character => character.charCodeAt(0));
+      const url = URL.createObjectURL(new Blob([bytes], { type: 'application/zip' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = result.data.filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30000);
+      setError(null);
+      if (result.data.pendingRows || result.data.missingRows) setAvanzaNotice([
+        result.data.pendingRows ? `${result.data.pendingRows} inscripciones quedaron pendientes porque su módulo no figura en la plantilla.` : '',
+        result.data.missingRows ? `${result.data.missingRows} inscripciones tienen datos incompletos en el sistema.` : '',
+        result.data.pendingRows || result.data.missingRows ? 'La fecha sugerida no se adelantó porque hay inscripciones pendientes o incompletas.' : '',
+        'Revisa los reportes de texto incluidos en el ZIP.',
+      ].filter(Boolean).join(' '));
+      return { hasta: result.data.hasta, pendingRows: result.data.pendingRows, missingRows: result.data.missingRows };
+    } catch (err) {
+      throw new Error(getCallableErrorMessage(err, 'No se pudieron descargar las listas de inscripción AVANZA.'));
+    } finally {
+      setExportingAvanza(false);
+    }
+  }, [canUseAvanza, selectedSemestreFilterId, selectedGrupoModuloFilterIds]);
 
   const getCurrentListGroupName = useCallback(() => {
     if (isDirectGrupoModuloView) {
@@ -4112,8 +4147,8 @@ export function MatriculasPage() {
 
   return (
     <IntranetListLayout
-      message={error}
-      messageSeverity="error"
+      message={error || avanzaNotice}
+      messageSeverity={error ? 'error' : 'warning'}
       title={pageTitle}
       commands={
         <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
@@ -4211,6 +4246,26 @@ export function MatriculasPage() {
               Descargar
             </Button>
           )}
+          {canUseAvanza ? <>
+            <Tooltip title="AVANZA">
+              <span>
+                <Button aria-label="Abrir menú AVANZA" aria-haspopup="menu" aria-expanded={Boolean(avanzaMenuAnchor)} aria-controls={avanzaMenuAnchor ? 'avanza-menu' : undefined} onClick={event => setAvanzaMenuAnchor(event.currentTarget)}
+                  disabled={exportingAvanza}
+                  sx={{ height: 36, minWidth: 76, px: 1, py: 0.5, bgcolor: 'transparent', '&:hover': { bgcolor: 'action.hover' }, '&.Mui-disabled': { bgcolor: 'transparent' } }}>
+                  {exportingAvanza ? <CircularProgress size={22} /> : <Box component="img" src="/icons/avanza.png" alt="AVANZA" sx={{ height: 24, width: 'auto', objectFit: 'contain', display: 'block' }} />}
+                </Button>
+              </span>
+            </Tooltip>
+            <Menu id="avanza-menu" anchorEl={avanzaMenuAnchor} open={Boolean(avanzaMenuAnchor)} onClose={() => setAvanzaMenuAnchor(null)} disableScrollLock>
+              <MenuItem disabled={exportingAvanza || loading || loadingFilters || loadingSettings || matriculas.length === 0 || Number(selectedSemestreFilterId) !== Number(settings.general.semestreActualId)} onClick={() => { setAvanzaMenuAnchor(null); setOpenAvanzaDownload(true); }}>
+                <ListItemIcon><HowToRegIcon fontSize="small" /></ListItemIcon><ListItemText>Registro</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={() => setAvanzaMenuAnchor(null)}>
+                <ListItemIcon><GradingIcon fontSize="small" /></ListItemIcon><ListItemText>Notas</ListItemText>
+              </MenuItem>
+            </Menu>
+            <AvanzaDownloadDialog open={openAvanzaDownload} onClose={() => setOpenAvanzaDownload(false)} historyKey={avanzaDownloadHistoryKey(String(user?.uid || user?.email || ''), selectedSemestreFilterId, selectedGrupoModuloFilterIds)} onDownload={handleExportAvanza} />
+          </> : null}
         </Stack>
       }
       columnToggleItems={columnToggleItems}

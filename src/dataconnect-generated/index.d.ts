@@ -382,12 +382,6 @@ export interface MatriculaGrupo_Key {
   __typename?: 'MatriculaGrupo_Key';
 }
 
-export interface MatriculaPaquete_Key {
-  matriculaId: number;
-  paqueteId: number;
-  __typename?: 'MatriculaPaquete_Key';
-}
-
 export interface MatriculaUser_Key {
   matriculaId: number;
   userId: number;
@@ -417,22 +411,6 @@ export interface ModuloVideo_Key {
 export interface Modulo_Key {
   id: number;
   __typename?: 'Modulo_Key';
-}
-
-export interface PaqueteGrupo_Key {
-  paqueteId: number;
-  grupoId: number;
-  __typename?: 'PaqueteGrupo_Key';
-}
-
-export interface PaqueteModulo_Key {
-  id: number;
-  __typename?: 'PaqueteModulo_Key';
-}
-
-export interface Paquete_Key {
-  id: number;
-  __typename?: 'Paquete_Key';
 }
 
 export interface ParteDiarioInforme_Key {

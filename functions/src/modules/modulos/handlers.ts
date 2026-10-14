@@ -1,9 +1,6 @@
 import { https } from "firebase-functions/v1";
 import {
-  buildGrupoDataFromInput,
   buildModuloDataFromInput,
-  buildPaqueteDataFromInput,
-  buildPaqueteModuloDataFromInput,
   getIdFromKeyOutput,
   toNumber,
   toNumberOrNull,
@@ -14,33 +11,23 @@ import { requirePermission } from "../core/permissions.js";
 import {
   DataConnectModulo,
   DataConnectModuloInput,
-  DataConnectPaqueteInput,
-  DataConnectPaqueteModulo,
-  DataConnectPaqueteModuloInput,
   DataConnectPlanModulo,
   DataConnectPlanModuloInput,
-  DataConnectGrupoInput,
   DataConnectGrupoModuloInput,
 } from "../core/types.js";
 import {
   buildGrupoModuloNombreRelacional,
-  getDocenteNombreForGrupoModulo,
   GrupoModuloNombreContext,
   GrupoModuloNombreModulo,
 } from "../core/grupoModuloNombre.js";
 import {
   DELETE_PLAN_MODULOS_BY_MODULO_MUTATION,
   DELETE_MODULO_MUTATION,
-  DELETE_PAQUETE_MUTATION,
   INSERT_PLAN_MODULO_MUTATION,
-  INSERT_PAQUETE_MODULO_MUTATION,
-  INSERT_PAQUETE_MUTATION,
   INSERT_MODULO_MUTATION,
-  UPDATE_GRUPO_MUTATION,
   UPDATE_GRUPO_MODULO_MUTATION,
   UPDATE_MODULO_MUTATION,
   UPDATE_MODULO_ORDEN_MUTATION,
-  UPDATE_PAQUETE_MUTATION,
 } from "../../dataconnectOperations.js";
 
 const LIST_MODULOS_QUERY = `
@@ -169,68 +156,6 @@ const GET_MODULO_QUERY = `
   }
 `;
 
-const GET_SINGLE_MODULE_PAQUETE_QUERY = `
-  query GetSingleModulePaqueteForModulo($moduloId: Int!) {
-    paqueteModulos(where: { moduloId: { eq: $moduloId } }, limit: 20) {
-      id
-      orden
-      obligatorio
-      paqueteId
-      moduloId
-    }
-  }
-`;
-
-const GET_PAQUETES_BY_MODULO_QUERY = `
-  query GetPaquetesByModulo($moduloId: Int!) {
-    paqueteModulos(where: { moduloId: { eq: $moduloId } }, limit: 50) {
-      paqueteId
-    }
-  }
-`;
-
-const GET_PAQUETE_MODULOS_WITH_MODULOS_QUERY = `
-  query GetPaqueteModulosWithModulos($paqueteId: Int!) {
-    paqueteModulos(where: { paqueteId: { eq: $paqueteId } }, limit: 10) {
-      id
-      orden
-      obligatorio
-      paqueteId
-      moduloId
-      modulo {
-        titulo
-        tituloComercial
-      }
-    }
-  }
-`;
-
-const LIST_GRUPOS_FOR_PAQUETES_RENAME_QUERY = `
-  query ListGruposForPaquetesRename {
-    grupos(limit: 5000) {
-      id
-      turnoNombre
-      paqueteId
-      paquete {
-        titulo
-      }
-      turno {
-        nombre
-      }
-      horario {
-        nombre
-      }
-      personal {
-        displayName
-        user {
-          username
-          apellidoPaterno
-        }
-      }
-    }
-  }
-`;
-
 const LIST_GRUPO_MODULOS_FOR_MODULO_RENAME_QUERY = `
   query ListGrupoModulosForModuloRename($moduloId: Int!) {
     grupoModulos(where: { moduloId: { eq: $moduloId } }, limit: 5000) {
@@ -266,9 +191,6 @@ interface ModulosQueryResponse {
   modulos: DataConnectModulo[];
   planModulos: DataConnectPlanModulo[];
 }
-
-const getModuloLabel = (moduloId: number, modulo?: { titulo?: string | null; tituloComercial?: string | null } | null) =>
-  modulo?.tituloComercial || modulo?.titulo || `Modulo ${moduloId}`;
 
 const getModuloEspecialidadLabel = (modulo: DataConnectModulo) =>
   modulo.plan?.carrera?.especialidad?.tituloComercial
@@ -370,103 +292,6 @@ async function syncPlanModulos(moduloId: number, planIds: number[], orden?: numb
   );
 }
 
-const buildPaqueteTituloFromModulos = (items: DataConnectPaqueteModulo[]) =>
-  items
-    .slice()
-    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId)
-    .map((item) => getModuloLabel(item.moduloId, item.modulo))
-    .join(" / ");
-
-async function syncPaquetesTituloForModulo(moduloId: number) {
-  const affected = await dataConnect.executeGraphql<
-    { paqueteModulos: Pick<DataConnectPaqueteModulo, "paqueteId">[] },
-    { moduloId: number }
-  >(GET_PAQUETES_BY_MODULO_QUERY, { variables: { moduloId } });
-
-  const paqueteIds = Array.from(new Set((affected.data.paqueteModulos ?? []).map((item) => item.paqueteId)));
-
-  await Promise.all(
-    paqueteIds.map(async (paqueteId) => {
-      const paqueteModulosResponse = await dataConnect.executeGraphql<
-        { paqueteModulos: DataConnectPaqueteModulo[] },
-        { paqueteId: number }
-      >(GET_PAQUETE_MODULOS_WITH_MODULOS_QUERY, { variables: { paqueteId } });
-
-      const paqueteModulos = paqueteModulosResponse.data.paqueteModulos ?? [];
-      if (paqueteModulos.length === 0) return;
-
-      const titulo = buildPaqueteTituloFromModulos(paqueteModulos);
-      const paquetePayload = buildPaqueteDataFromInput({ titulo });
-
-      await dataConnect.executeGraphql<
-        { paquete_update: unknown },
-        { id: number; data: DataConnectPaqueteInput }
-      >(UPDATE_PAQUETE_MUTATION, { variables: { id: paqueteId, data: paquetePayload } });
-    }),
-  );
-
-  return paqueteIds;
-}
-
-const normalizeSpaces = (value: unknown) =>
-  String(value ?? "").trim().replace(/\s+/g, " ");
-
-function buildGrupoNombreRelacional(grupo: {
-  turnoNombre?: string | null;
-  paquete?: { titulo?: string | null } | null;
-  turno?: { nombre?: string | null } | null;
-  horario?: { nombre?: string | null } | null;
-  personal?: NonNullable<GrupoModuloNombreContext>["personal"];
-} | null | undefined) {
-  const paqueteTitulo = normalizeSpaces(grupo?.paquete?.titulo);
-  const turnoNombre = normalizeSpaces(grupo?.turno?.nombre || grupo?.turnoNombre);
-  const horarioNombre = normalizeSpaces(grupo?.horario?.nombre);
-  const docenteNombre = getDocenteNombreForGrupoModulo(grupo?.personal ?? null);
-
-  return [
-    paqueteTitulo,
-    turnoNombre ? `[${turnoNombre}]` : "",
-    horarioNombre,
-    docenteNombre ? `(${docenteNombre})` : "",
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-async function syncGruposNombreForPaquetes(paqueteIds: number[]) {
-  const affectedPaqueteIds = new Set(paqueteIds.filter((id) => Number.isInteger(id) && id > 0));
-  if (affectedPaqueteIds.size === 0) return;
-
-  const response = await dataConnect.executeGraphql<{
-    grupos: Array<{
-      id: number;
-      turnoNombre?: string | null;
-      paqueteId?: number | null;
-      paquete?: { titulo?: string | null } | null;
-      turno?: { nombre?: string | null } | null;
-      horario?: { nombre?: string | null } | null;
-      personal?: NonNullable<GrupoModuloNombreContext>["personal"];
-    }>;
-  }, Record<string, never>>(LIST_GRUPOS_FOR_PAQUETES_RENAME_QUERY);
-
-  await Promise.all(
-    (response.data.grupos ?? [])
-      .filter((grupo) => affectedPaqueteIds.has(Number(grupo.paqueteId)))
-      .map((grupo) => {
-        const nombreDisplay = buildGrupoNombreRelacional(grupo);
-        if (!nombreDisplay) return Promise.resolve();
-
-        const payload = buildGrupoDataFromInput({ nombreDisplay }) as DataConnectGrupoInput;
-        return dataConnect.executeGraphql<
-          { grupo_update: unknown },
-          { id: number; data: DataConnectGrupoInput }
-        >(UPDATE_GRUPO_MUTATION, { variables: { id: grupo.id, data: payload } });
-      }),
-  );
-}
-
 async function syncGrupoModulosNombreForModulo(moduloId: number) {
   const response = await dataConnect.executeGraphql<{
     grupoModulos: Array<{
@@ -493,90 +318,6 @@ async function syncGrupoModulosNombreForModulo(moduloId: number) {
       >(UPDATE_GRUPO_MODULO_MUTATION, { variables: { id: grupoModulo.id, data: payload } });
     }),
   );
-}
-
-async function syncModuloNameDependents(moduloId: number) {
-  const paqueteIds = await syncPaquetesTituloForModulo(moduloId);
-  await Promise.all([
-    syncGruposNombreForPaquetes(paqueteIds),
-    syncGrupoModulosNombreForModulo(moduloId),
-  ]);
-}
-
-async function ensureSingleModulePaquete(moduloId: number, modulo: DataConnectModuloInput) {
-  const existing = await dataConnect.executeGraphql<
-    { paqueteModulos: DataConnectPaqueteModulo[] },
-    { moduloId: number }
-  >(GET_SINGLE_MODULE_PAQUETE_QUERY, { variables: { moduloId } });
-
-  const existingSingleModulePaquete = await Promise.all(
-    (existing.data.paqueteModulos ?? []).map(async (item) => {
-      const response = await dataConnect.executeGraphql<
-        { paqueteModulos: DataConnectPaqueteModulo[] },
-        { paqueteId: number }
-      >(
-        `
-          query CountPaqueteModulosForModuloPaquete($paqueteId: Int!) {
-            paqueteModulos(where: { paqueteId: { eq: $paqueteId } }, limit: 4) {
-              id
-              orden
-              obligatorio
-              paqueteId
-              moduloId
-            }
-          }
-        `,
-        { variables: { paqueteId: item.paqueteId } },
-      );
-      return response.data.paqueteModulos?.length === 1 ? item : null;
-    }),
-  );
-
-  const alreadyLinked = existingSingleModulePaquete.find(
-    (item): item is DataConnectPaqueteModulo => Boolean(item),
-  );
-  if (alreadyLinked) {
-    return alreadyLinked.paqueteId;
-  }
-
-  const titulo = modulo.tituloComercial || modulo.titulo || `Modulo ${moduloId}`;
-  const paquetePayload = buildPaqueteDataFromInput({
-    titulo,
-    descripcion: `Paquete individual generado para el modulo ${modulo.titulo || titulo}`,
-    archivado: false,
-  });
-
-  const createdPaquete = await dataConnect.executeGraphql<
-    { paquete_insert: unknown },
-    { data: DataConnectPaqueteInput }
-  >(INSERT_PAQUETE_MUTATION, { variables: { data: paquetePayload } });
-  const paqueteId = getIdFromKeyOutput(createdPaquete.data.paquete_insert);
-
-  if (!paqueteId) {
-    throw new Error("No se pudo obtener el id del paquete individual.");
-  }
-
-  const paqueteModuloPayload = buildPaqueteModuloDataFromInput({
-    paqueteId,
-    moduloId,
-    orden: 1,
-    obligatorio: true,
-  });
-
-  try {
-    await dataConnect.executeGraphql<
-      { paqueteModulo_insert: unknown },
-      { data: DataConnectPaqueteModuloInput }
-    >(INSERT_PAQUETE_MODULO_MUTATION, { variables: { data: paqueteModuloPayload } });
-  } catch (error) {
-    await dataConnect.executeGraphql<{ paquete_delete: unknown }, { id: number }>(
-      DELETE_PAQUETE_MUTATION,
-      { variables: { id: paqueteId } },
-    );
-    throw error;
-  }
-
-  return paqueteId;
 }
 
 export const listModulos = https.onCall(async (_data, context) => {
@@ -657,7 +398,7 @@ export const createOrUpdateModulo = https.onCall(async (data, context) => {
       if (planIds !== undefined) {
         await syncPlanModulos(moduloId, planIds, payload.orden);
       }
-      await syncModuloNameDependents(moduloId);
+      await syncGrupoModulosNombreForModulo(moduloId);
       if (input.horas !== undefined || planIds !== undefined) await reconcileModuloUnits(moduloId);
 
       return { id: getIdFromKeyOutput(updated.data.modulo_update) ?? moduloId };
@@ -676,13 +417,11 @@ export const createOrUpdateModulo = https.onCall(async (data, context) => {
       throw new Error("No se pudo obtener el id del modulo creado.");
     }
 
-    let paqueteId: number;
     try {
       if (planIds !== undefined) {
         await syncPlanModulos(createdModuloId, planIds, payload.orden);
       }
-      paqueteId = await ensureSingleModulePaquete(createdModuloId, payload);
-      await syncModuloNameDependents(createdModuloId);
+      await syncGrupoModulosNombreForModulo(createdModuloId);
     } catch (error) {
       if (planIds !== undefined) {
         await dataConnect.executeGraphql<{ planModulo_deleteMany: number }, { moduloId: number }>(
@@ -697,7 +436,7 @@ export const createOrUpdateModulo = https.onCall(async (data, context) => {
       throw error;
     }
 
-    return { id: createdModuloId, paqueteId };
+    return { id: createdModuloId };
   } catch (error) {
     console.error("Error in createOrUpdateModulo:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while saving module.");

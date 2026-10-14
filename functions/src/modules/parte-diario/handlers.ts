@@ -11,6 +11,11 @@ import { consolidateDailyRows } from './dailyRows.js';
 
 export const SILABO_VALUES = valuationLabels('silabo');
 export const todayInLima = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+export function parteFecha(value: unknown) {
+ const fecha = value == null || value === '' ? todayInLima() : String(value);
+ if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !Number.isFinite(Date.parse(fecha)) || new Date(fecha).toISOString().slice(0,10) !== fecha) throw new https.HttpsError('invalid-argument','Selecciona una fecha válida.');
+ return fecha;
+}
 const clean = (v: unknown) => String(v ?? "").trim();
 const positiveId = (v: unknown) => { const id = Number(v); if (!Number.isInteger(id) || id <= 0) throw new https.HttpsError("invalid-argument", "Registro inválido."); return id; };
 const nullableId = (v: unknown) => v == null || v === "" ? null : positiveId(v);
@@ -21,15 +26,16 @@ type Teacher = { id: number; displayName: string | null; user: { nombre: string 
 type GroupModule = { id: number; nombre: string | null; moduloId: number; modulo: { titulo: string | null; plan: { carrera: { tipoCarrera: { nombre: string | null } | null } | null } | null }; grupoId: number; grupo: { semestreId: number | null; archivado: boolean | null; personal: Teacher | null; turnoNombre: string | null; turno: { nombre: string | null } | null } };
 type Schedule = { id: number; inicio: string; fin: string; actividadId: number; grupoModuloId: number; evento: { estado: string | null } | null; actividad: { id: number; nombre: string | null; aprendizaje: { indicadorCapacidad: { capacidadTerminal: { unidadDidacticaId: number } } } | null }; grupoModulo: GroupModule };
 type Jornada = { id: number; tipo: TipoUnidad; pendiente: boolean; evento: { estado: string | null } | null; inicio: string; fin: string; grupoModuloId: number; grupoModulo: GroupModule };
-type Saved = { id: number; grupoModuloId: number; actividadProgramadaId: number | null; jornadaId: number | null; unidadDidacticaId: number | null; actividadId: number | null; tipoUnidad: TipoUnidad; actividadManual: string | null; asistentes: number | null; silabo: string; fichaActividad: string; instrumentoEvaluacion: string; material: string; tareas: string; firma: string | null; observaciones: string[]; fechaActualizacion: string; unidadDidactica: { nombre: string | null } | null; actividad: { nombre: string | null } | null };
-export const SAVED_FIELDS = `id grupoModuloId actividadProgramadaId jornadaId unidadDidacticaId actividadId tipoUnidad actividadManual asistentes silabo fichaActividad instrumentoEvaluacion material tareas silaboValor fichaActividadValor instrumentoEvaluacionValor materialValor tareasValor firma observaciones fechaActualizacion unidadDidactica{nombre} actividad{nombre}`;
+type Saved = { id: number; docente: Teacher; grupoModuloId: number; actividadProgramadaId: number | null; jornadaId: number | null; unidadDidacticaId: number | null; actividadId: number | null; tipoUnidad: TipoUnidad; actividadManual: string | null; asistentes: number | null; usoMedios: string | null; matriculados: number; grupoModulo: GroupModule; silabo: string; fichaActividad: string; instrumentoEvaluacion: string; registroAsistencia: string | null; registroAuxiliarEvaluacion: string | null; material: string; tareas: string; firma: string | null; observaciones: string[]; fechaActualizacion: string; unidadDidactica: { nombre: string | null } | null; actividad: { nombre: string | null } | null };
+export const SAVED_FIELDS = `id grupoModuloId actividadProgramadaId jornadaId unidadDidacticaId actividadId tipoUnidad actividadManual asistentes matriculados usoMedios usoMediosValor silabo fichaActividad instrumentoEvaluacion registroAsistencia registroAuxiliarEvaluacion material tareas silaboValor fichaActividadValor instrumentoEvaluacionValor registroAsistenciaValor registroAuxiliarEvaluacionValor materialValor tareasValor firma observaciones fechaActualizacion docente{id displayName user{nombre apellidoPaterno apellidoMaterno apellidos avatar}} unidadDidactica{nombre} actividad{nombre}`;
 const GROUP_FIELDS = `id nombre moduloId modulo{titulo plan{carrera{tipoCarrera{nombre}}}} grupoId grupo{semestreId archivado turnoNombre turno{nombre} personal{id displayName user{nombre apellidoPaterno apellidoMaterno apellidos avatar}}}`;
 export const DAY_SCHEDULE_QUERY = `query ParteDiarioSchedule($inicio:Timestamp!,$fin:Timestamp!){grupoModuloActividades(where:{inicio:{lt:$fin},fin:{gt:$inicio}},limit:1000,orderBy:{inicio:ASC}){id inicio fin actividadId grupoModuloId evento{estado} actividad{id nombre aprendizaje{indicadorCapacidad{capacidadTerminal{unidadDidacticaId}}}} grupoModulo{${GROUP_FIELDS}}}}`;
 export const JORNADAS_QUERY = `query ParteDiarioJornadas($fecha:Date!){grupoModuloJornadas(where:{fecha:{eq:$fecha}},limit:1000,orderBy:{inicio:ASC}){id tipo pendiente evento{estado} inicio fin grupoModuloId grupoModulo{${GROUP_FIELDS}}}}`;
-export const SAVED_DAY_QUERY = `query ParteDiarioSaved($fecha:Date!){parteDiarioRegistros(where:{fecha:{eq:$fecha}},limit:1000){${SAVED_FIELDS}}}`;
+export const SAVED_DAY_QUERY = `query ParteDiarioSaved($fecha:Date!){parteDiarioRegistros(where:{fecha:{eq:$fecha}},limit:1000){${SAVED_FIELDS} grupoModulo{${GROUP_FIELDS}}}}`;
 export const DAY_UNITS_QUERY = `query ParteDiarioUnits($ids:[Int!]!){unidadesDidacticas(where:{id:{in:$ids}},limit:1000){id nombre}}`;
 export const ENROLLMENTS_QUERY = `query ParteDiarioEnrolled($ids:[Int!]!,$grupoIds:[Int!]!){modulosEstudiantes(where:{_or:[{grupoModuloId:{in:$ids}},{grupoModuloId:{isNull:true},grupoId:{in:$grupoIds}}]},limit:10000){id grupoModuloId grupoId moduloId matriculaId matricula{archivado fecha userId users:matriculaUsers_on_matricula{userId}}}}`;
-export const OPTIONS_QUERY = `query ParteDiarioChoices($moduloId:Int!){competenciaUnidadesDidacticas(where:{competencia:{moduloId:{eq:$moduloId}}},limit:1000,orderBy:{orden:ASC}){orden unidadDidacticaId unidadDidactica{id nombre}} actividads(where:{_or:[{moduloId:{eq:$moduloId}},{moduloId:{isNull:true}}]},limit:10000,orderBy:[{orden:ASC},{id:ASC}]){id nombre aprendizaje{indicadorCapacidad{capacidadTerminal{unidadDidacticaId}}}}}`;
+export const OPTIONS_QUERY = `query ParteDiarioChoices($moduloId:Int!){competenciaUnidadesDidacticas(where:{competencia:{moduloId:{eq:$moduloId}}},limit:1000,orderBy:[{orden:ASC},{id:ASC}]){orden unidadDidacticaId unidadDidactica{id nombre}} actividads(where:{_or:[{moduloId:{eq:$moduloId}},{moduloId:{isNull:true}}]},limit:10000,orderBy:[{orden:ASC},{id:ASC}]){id nombre aprendizaje{indicadorCapacidad{capacidadTerminal{unidadDidacticaId}}}}}`;
+export const ORDERED_UNITS_QUERY = `query ParteOrderedUnits($ids:[Int!]!){competenciaUnidadesDidacticas(where:{competencia:{moduloId:{in:$ids}}},limit:10000,orderBy:[{orden:ASC},{id:ASC}]){competencia{moduloId} unidadDidactica{id nombre}}}`;
 export const ACTIVITY_DATES_QUERY = `query ParteActivityDates($id:Int!){grupoModuloActividades(where:{grupoModuloId:{eq:$id}},limit:10000,orderBy:{inicio:ASC}){actividadId inicio evento{estado}}}`;
 export function teacherNames(teacher: Teacher) {
  const u = teacher.user, surnames = [u?.apellidoPaterno, u?.apellidoMaterno].filter(Boolean).join(" ") || u?.apellidos || "";
@@ -56,11 +62,12 @@ export async function loadParteDiario(fecha = todayInLima()) {
   graph<{ parteDiarioRegistros: Saved[] }>(SAVED_DAY_QUERY, { fecha }), getConfiguredSemestreConsultaIds(),
  ]);
  if ([scheduled.grupoModuloActividades.length, days.grupoModuloJornadas.length, saved.parteDiarioRegistros.length].includes(1000)) throw new https.HttpsError("resource-exhausted", "Demasiadas sesiones para el parte diario.");
- const eligible = (gm: GroupModule) => !gm.grupo.archivado && !!gm.grupo.personal && (!configured.length || configured.includes(gm.grupo.semestreId ?? 0));
+ const eligible = (gm: GroupModule) => !gm.grupo.archivado && !!gm.grupo.personal && (fecha !== todayInLima() || !configured.length || configured.includes(gm.grupo.semestreId ?? 0));
  const unique = new Map<string, Schedule>();
  for (const s of scheduled.grupoModuloActividades) if (s.evento?.estado !== "cancelado" && eligible(s.grupoModulo) && s.actividad.aprendizaje) { const key = `${s.grupoModuloId}:a:${s.actividadId}`; if (!unique.has(key)) unique.set(key, s); }
  const jornadas = days.grupoModuloJornadas.filter(j => eligible(j.grupoModulo) && j.evento?.estado !== "cancelado" && (j.tipo !== "curricular" || j.pendiente && ![...unique.values()].some(s => s.grupoModuloId === j.grupoModuloId)));
- const modules = [...new Map([...unique.values(), ...jornadas].map(s => [s.grupoModuloId, s.grupoModulo])).values()];
+ const historicalSaved = fecha < todayInLima() ? saved.parteDiarioRegistros.filter(r=>!!r.firma) : [];
+ const modules = [...new Map([...unique.values(), ...jornadas, ...historicalSaved].map(s => [s.grupoModuloId, s.grupoModulo])).values()];
  const unitIds = [...new Set([...unique.values()].map(s => s.actividad.aprendizaje!.indicadorCapacidad.capacidadTerminal.unidadDidacticaId))];
  const units = new Map((unitIds.length ? (await graph<{ unidadesDidacticas: { id: number; nombre: string | null }[] }>(DAY_UNITS_QUERY, { ids: unitIds })).unidadesDidacticas : []).map(u => [u.id, u]));
  type Enrollment = { grupoModuloId: number | null; grupoId: number | null; moduloId: number; matriculaId: number; matricula: { archivado: boolean | null; fecha: string | null; userId: number | null; users: { userId: number }[] } };
@@ -75,19 +82,26 @@ export async function loadParteDiario(fecha = todayInLima()) {
  }
  const sources = [...unique.values()].map(s => ({ gm: s.grupoModulo, inicio: s.inicio, actividadProgramadaId: s.actividadId as number | null, jornadaId: null as number | null, tipoUnidad: "curricular" as TipoUnidad, unitId: s.actividad.aprendizaje!.indicadorCapacidad.capacidadTerminal.unidadDidacticaId as number | null, activity: s.actividad.nombre, pendiente: false }));
  sources.push(...jornadas.map(j => ({ gm: j.grupoModulo, inicio: j.inicio, actividadProgramadaId: null, jornadaId: j.id, tipoUnidad: j.tipo, unitId: null, activity: null, pendiente: j.tipo === "curricular" })));
+ for (const r of historicalSaved) if (!sources.some(s=>s.gm.id===r.grupoModuloId&&(r.actividadProgramadaId!=null?s.actividadProgramadaId===r.actividadProgramadaId:s.jornadaId===r.jornadaId))) sources.push({gm:r.grupoModulo,inicio:rangeFor(fecha).inicio,actividadProgramadaId:r.actividadProgramadaId,jornadaId:r.jornadaId,tipoUnidad:r.tipoUnidad,unitId:r.unidadDidacticaId,activity:r.actividad?.nombre??r.actividadManual,pendiente:r.actividadProgramadaId==null&&r.tipoUnidad==='curricular'});
  const candidates = sources.map(s => {
-  const gm = s.gm, docente = gm.grupo.personal!, names = teacherNames(docente), turno = shiftFor(gm.grupo.turno?.nombre || gm.grupo.turnoNombre, s.inicio);
+  const gm = s.gm;
   const r = saved.parteDiarioRegistros.find(r => r.grupoModuloId === gm.id && (s.actividadProgramadaId != null ? r.actividadProgramadaId === s.actividadProgramadaId : r.jornadaId === s.jornadaId));
+  const docente = r?.docente || gm.grupo.personal!, names = teacherNames(docente), turno = shiftFor(gm.grupo.turno?.nombre || gm.grupo.turnoNombre, s.inicio);
   const practicaTipo = /ocupacional/i.test(gm.modulo.plan?.carrera?.tipoCarrera?.nombre || "") ? "ppp" as const : "efsrt" as const;
   const tipoUnidad = r?.tipoUnidad ?? s.tipoUnidad, actividadManual = r?.actividadManual ?? "";
   return { inicio: s.inicio, programada: s.actividadProgramadaId == null ? null : { id: s.actividadProgramadaId, nombre: s.activity || "", unidad: units.get(s.unitId ?? 0)?.nombre || "Pendiente de sílabo", unidadId: s.unitId }, row: { recordId: r?.id ?? null, valoraciones: Object.fromEntries(VALUATION_FIELDS.map(field=>[field,r?valuationScore(field,r[field]):null])), key: `${gm.id}:${s.actividadProgramadaId != null ? `a:${s.actividadProgramadaId}` : `j:${s.jornadaId}`}`, grupoModuloId: gm.id, moduloId: gm.moduloId, docenteId: docente.id, actividadProgramadaId: s.actividadProgramadaId, jornadaId: s.jornadaId, pendiente: s.pendiente, practicaTipo,
    docenteNombre: names.lista, docenteNombreCompleto: names.completo, apellidoPaterno: names.paterno, avatar: docente.user?.avatar ?? null, turno: turno.nombre, turnoOrden: turno.orden, modulo: gm.nombre || gm.modulo.titulo || "Sin módulo",
-   tipoUnidad, actividadManual, unidadDidacticaId: r ? r.unidadDidacticaId : s.unitId, unidad: tipoUnidad !== "curricular" ? tipoUnidad.toUpperCase() : r?.unidadDidactica?.nombre ?? units.get(s.unitId ?? 0)?.nombre ?? "Pendiente de sílabo",
-   actividadId: r ? r.actividadId : s.actividadProgramadaId, actividad: tipoUnidad !== "curricular" ? actividadManual : r?.actividad?.nombre ?? s.activity ?? "Pendiente de sílabo", matriculados: counts.get(gm.id)?.size ?? 0,
-   asistentes: r?.asistentes ?? null, silabo: r?.silabo ?? PARTE_VALUATIONS.silabo[4], fichaActividad: r?.fichaActividad ?? PARTE_VALUATIONS.fichaActividad[4], instrumentoEvaluacion: r?.instrumentoEvaluacion ?? PARTE_VALUATIONS.instrumentoEvaluacion[4], material: r?.material ?? PARTE_VALUATIONS.material[4], tareas: r?.tareas ?? PARTE_VALUATIONS.tareas[4], firma: r?.firma ?? null, observaciones: r?.observaciones ?? [], version: r?.fechaActualizacion ?? null } };
+   tipoUnidad, tipoUnidadProgramada: s.tipoUnidad, actividadManual, unidadDidacticaId: r ? r.unidadDidacticaId : s.unitId, unidad: tipoUnidad !== "curricular" ? tipoUnidad.toUpperCase() : r?.unidadDidactica?.nombre ?? units.get(s.unitId ?? 0)?.nombre ?? "Pendiente de sílabo",
+   actividadId: r ? r.actividadId : s.actividadProgramadaId, actividad: tipoUnidad !== "curricular" ? actividadManual : r?.actividad?.nombre ?? s.activity ?? "Pendiente de sílabo", matriculados: r?.matriculados ?? counts.get(gm.id)?.size ?? 0,
+   asistentes: r?.asistentes ?? null, usoMedios: r?.usoMedios ?? '', silabo: r?.silabo ?? '', fichaActividad: r?.fichaActividad ?? '', instrumentoEvaluacion: r?.instrumentoEvaluacion ?? '', registroAsistencia: r?.registroAsistencia ?? '', registroAuxiliarEvaluacion: r?.registroAuxiliarEvaluacion ?? '', material: r?.material ?? '', tareas: r?.tareas ?? '', firma: r?.firma ?? null, observaciones: r?.observaciones ?? [], version: r?.fechaActualizacion ?? null } };
  });
  const filas = consolidateDailyRows(candidates).sort((a, b) => a.turnoOrden - b.turnoOrden || a.apellidoPaterno.localeCompare(b.apellidoPaterno, "es", { sensitivity: "base" }) || a.docenteNombre.localeCompare(b.docenteNombre, "es") || a.grupoModuloId - b.grupoModuloId || (a.actividadProgramadaId ?? 0) - (b.actividadProgramadaId ?? 0));
- return { fecha, laborable: true, mensaje: null, filas: filas.map((r, i) => ({ ...r, orden: i + 1 })) };
+ const moduleIds = [...new Set(filas.map(row => row.moduloId))];
+ const orderedUnits = moduleIds.length ? (await graph<{competenciaUnidadesDidacticas:{competencia:{moduloId:number};unidadDidactica:{id:number;nombre:string|null}}[]}>(ORDERED_UNITS_QUERY,{ids:moduleIds})).competenciaUnidadesDidacticas : [];
+ if (orderedUnits.length === 10000) throw new https.HttpsError('resource-exhausted','Demasiadas unidades para el parte diario.');
+ const byModule = new Map<number, Map<number, {id:number;nombre:string|null}>>();
+ for (const link of orderedUnits) { const list = byModule.get(link.competencia.moduloId) ?? new Map(); list.set(link.unidadDidactica.id,link.unidadDidactica); byModule.set(link.competencia.moduloId,list); }
+ return { fecha, laborable: true, mensaje: null, filas: filas.map((r, i) => ({ ...r, orden: i + 1, unidadesOrdenadas:[...(byModule.get(r.moduloId)?.values() || [])] })) };
 }
 export async function parteChoices(moduloId: number, grupoModuloId?: number) {
  const data = await graph<{ competenciaUnidadesDidacticas: { unidadDidacticaId: number; unidadDidactica: { id: number; nombre: string | null } }[]; actividads: { id: number; nombre: string | null; aprendizaje: { indicadorCapacidad: { capacidadTerminal: { unidadDidacticaId: number } } } | null }[] }>(OPTIONS_QUERY, { moduloId });
@@ -99,11 +113,58 @@ export async function parteChoices(moduloId: number, grupoModuloId?: number) {
 function originMatches(row: Awaited<ReturnType<typeof loadParteDiario>>["filas"][number], data: Record<string, unknown>) {
  return row.grupoModuloId === positiveId(data.grupoModuloId) && (row.actividadProgramadaId != null ? row.actividadProgramadaId === nullableId(data.actividadProgramadaId) && nullableId(data.jornadaId) === null : row.jornadaId === nullableId(data.jornadaId) && nullableId(data.actividadProgramadaId) === null);
 }
-export const getParteDiario = runWith({ timeoutSeconds: 120 }).https.onCall(async (_data, context) => { await requirePermission(context, "parte-diario", "view"); return loadParteDiario(); });
+export const getParteDiario = runWith({ timeoutSeconds: 120 }).https.onCall(async (data, context) => { await requirePermission(context, "parte-diario", "view"); return loadParteDiario(parteFecha(data?.fecha)); });
 export const getParteDiarioOpciones = https.onCall(async (data, context) => {
- await requirePermission(context, "parte-diario", "view"); const day = await loadParteDiario(), row = day.filas.find(r => originMatches(r, data || {}));
- if (!row) throw new https.HttpsError("not-found", "La sesión no está programada para hoy.");
+ await requirePermission(context, "parte-diario", "view"); const day = await loadParteDiario(parteFecha(data?.fecha)), row = day.filas.find(r => originMatches(r, data || {}));
+ if (!row) throw new https.HttpsError("not-found", "La sesión no está programada para la fecha seleccionada.");
  return { unidades: await parteChoices(row.moduloId,row.grupoModuloId), practicaTipo: row.practicaTipo };
+});
+
+export const getParteDiarioCuentas = https.onCall(async (_data, context) => {
+ await requirePermission(context,'parte-diario','view');
+ const configured=await getConfiguredSemestreConsultaIds();
+ type Profile=NonNullable<Teacher['user']>&{id:number;email:string|null;correoInstitucional:string|null;blocked:boolean|null;rolId:number|null};
+ type AccountPerson=Teacher&{user:Profile|null};
+ const fields='id nombre apellidoPaterno apellidoMaterno apellidos avatar email correoInstitucional blocked rolId';
+ const result=await graph<{semestres:{id:number;coordinador1:AccountPerson|null;coordinador2:AccountPerson|null}[];users:Profile[]}>(`query ParteAccounts{semestres(limit:1000,orderBy:{titulo:DESC}){id coordinador1{id displayName user{${fields}}} coordinador2{id displayName user{${fields}}}} users(where:{rolId:{in:[6,8]}},limit:1000){${fields}}}`);
+ const semester=result.semestres.find(s=>configured.includes(s.id))??result.semestres.find(s=>s.coordinador1||s.coordinador2);
+ const allowed=result.users.filter(u=>u.blocked!==true),normal=(v:string|null)=>clean(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim();
+ const surname=(u:Profile)=>normal(u.apellidos||[u.apellidoPaterno,u.apellidoMaterno].filter(Boolean).join(' '));
+ const cuentas=[semester?.coordinador1,semester?.coordinador2].filter((p):p is AccountPerson=>!!p?.user).flatMap(p=>{
+  const direct=allowed.find(u=>u.id===p.user!.id);
+  const matches=direct?[direct]:allowed.filter(u=>surname(u)===surname(p.user!)&&normal(u.nombre).split(' ')[0]===normal(p.user!.nombre).split(' ')[0]);
+  if(matches.length!==1)return [];
+  const u=matches[0],email=clean(u.correoInstitucional)||clean(u.email);if(!email)return [];
+  return [{id:p.id,userId:u.id,nombre:teacherNames({...p,user:u}).completo,email,aliases:[...new Set([u.email,u.correoInstitucional].filter(Boolean))],avatar:u.avatar||p.user!.avatar}];
+ });
+ return {cuentas:[...new Map(cuentas.map(a=>[a.userId,a])).values()]};
+});
+
+export const renameParteActividad = https.onCall(async (data, context) => {
+ if(!await hasPermission(context,'parte-diario','edit')&&!await hasPermission(context,'reportes-parte-diario','edit'))throw new https.HttpsError('permission-denied','No tienes permiso para editar las actividades del parte.');
+ const activityId=positiveId(data?.actividadId);
+ let moduloId:number;
+ if(data?.reportRecordId){
+  await requirePermission(context,'reportes-parte-diario','edit');
+  const record=await graph<{parteDiarioRegistro:{grupoModulo:{moduloId:number}}|null}>(`query ActivityPart($id:Int!){parteDiarioRegistro(id:$id){grupoModulo{moduloId}}}`,{id:positiveId(data.reportRecordId)});
+  if(!record.parteDiarioRegistro)throw new https.HttpsError('not-found','El registro ya no existe.');
+  moduloId=record.parteDiarioRegistro.grupoModulo.moduloId;
+ }else{
+  await requirePermission(context,'parte-diario','edit');
+  const day=await loadParteDiario(parteFecha(data?.fecha)),row=day.filas.find(r=>originMatches(r,data));
+  if(!row||day.fecha>todayInLima())throw new https.HttpsError('failed-precondition','La actividad no corresponde a un parte disponible.');
+  moduloId=row.moduloId;
+ }
+ const activity=(await parteChoices(moduloId)).flatMap(u=>u.actividades).find(a=>a.id===activityId);
+ if(!activity)throw new https.HttpsError('invalid-argument','La actividad debe pertenecer al módulo.');
+ const nombre=clean(data?.nombre);if(!nombre||nombre.length>2000)throw new https.HttpsError('invalid-argument','Escribe un nombre de actividad de hasta 2000 caracteres.');
+ if((data?.nombreAnterior??null)!==activity.nombre)throw new https.HttpsError('aborted','La actividad cambió. Vuelve a abrir la lista.');
+ if(nombre!==activity.nombre){
+  // Actividad has no modification timestamp. Its `fecha` is a session date and must not change.
+  const where=activity.nombre==null?'nombre:{isNull:true}':'nombre:{eq:$anterior}';
+  await graph(`mutation RenameParteActivity($id:Int!,$nombre:String!${activity.nombre==null?'':',$anterior:String!'}) @transaction {actividad_update(first:{where:{id:{eq:$id},${where}}},data:{nombre:$nombre}) @check(expr:"this != null",message:"La actividad cambió; vuelve a abrir la lista.")}`,{id:activityId,nombre,...(activity.nombre==null?{}:{anterior:activity.nombre})});
+ }
+ return {id:activityId,nombre};
 });
 
 export async function normalizeSignature(value: unknown) {
@@ -114,7 +175,7 @@ export async function normalizeSignature(value: unknown) {
   const image = sharp(Buffer.from(match[1], "base64"), { limitInputPixels: 2000000 }).toColourspace("srgb").ensureAlpha();
   const { data: pixels, info } = await image.clone().raw().toBuffer({ resolveWithObject: true });
   let left = info.width, right = -1, top = info.height, bottom = -1;
-  for (let y = 0; y < info.height; y++) for (let x = 0; x < info.width; x++) if (pixels[(y * info.width + x) * 4 + 3] > 0) {
+  for (let y = 0; y < info.height; y++) for (let x = 0; x < info.width; x++) if (pixels[(y * info.width + x) * 4 + 3] > 0 && [0,1,2].some(c=>pixels[(y * info.width + x) * 4+c]<245)) {
    left = Math.min(left, x); right = Math.max(right, x); top = Math.min(top, y); bottom = Math.max(bottom, y);
   }
   if (right < left) return null;
@@ -122,9 +183,11 @@ export async function normalizeSignature(value: unknown) {
   return `data:image/png;base64,${png.toString("base64")}`;
  } catch { throw new https.HttpsError("invalid-argument", "No se pudo procesar la firma."); }
 }
-export type ParteSourceRow = Pick<Awaited<ReturnType<typeof loadParteDiario>>['filas'][number], 'grupoModuloId'|'moduloId'|'docenteId'|'actividadProgramadaId'|'jornadaId'|'practicaTipo'|'pendiente'|'matriculados'|'version'|'silabo'|'fichaActividad'|'instrumentoEvaluacion'|'material'|'tareas'>;
+export type ParteSourceRow = Pick<Awaited<ReturnType<typeof loadParteDiario>>['filas'][number], 'grupoModuloId'|'moduloId'|'docenteId'|'actividadProgramadaId'|'jornadaId'|'practicaTipo'|'pendiente'|'matriculados'|'version'|'silabo'|'fichaActividad'|'instrumentoEvaluacion'|'registroAsistencia'|'registroAuxiliarEvaluacion'|'material'|'tareas'|'usoMedios'>;
 export async function validateParteInput(data: Record<string,unknown>, row: ParteSourceRow) {
  if ((data?.version ?? null) !== row.version) throw new https.HttpsError("aborted", "El registro cambió. Actualiza la lista antes de guardar.");
+ const firma = await normalizeSignature(data.firma);
+ if (!firma) throw new https.HttpsError("failed-precondition", "Firma el parte antes de guardarlo.");
  const tipoUnidad = (data.tipoUnidad ?? "curricular") as TipoUnidad;
  if (tipoUnidad !== "curricular" && tipoUnidad !== row.practicaTipo) throw new https.HttpsError("invalid-argument", "El tipo de práctica no corresponde a la carrera.");
  let unidadDidacticaId: number | null = null, actividadId: number | null = null, actividadManual: string | null = null;
@@ -135,19 +198,20 @@ export async function validateParteInput(data: Record<string,unknown>, row: Part
   if (actividadId != null && !unit?.actividades.some(a => a.id === actividadId)) throw new https.HttpsError("invalid-argument", "La actividad debe pertenecer a la unidad y al módulo seleccionados.");
   if ((!unidadDidacticaId || !actividadId) && !row.pendiente) throw new https.HttpsError("invalid-argument", "Selecciona una unidad y una actividad.");
  } else {
-  actividadManual = clean(data.actividadManual); if (actividadManual.length > 500) throw new https.HttpsError("invalid-argument", "La actividad manual admite hasta 500 caracteres.");
+  actividadManual = clean(data.actividadManual); if (!actividadManual) throw new https.HttpsError('invalid-argument','Escribe la actividad antes de guardar.'); if (actividadManual.length > 500) throw new https.HttpsError("invalid-argument", "La actividad manual admite hasta 500 caracteres.");
  }
  const asistentes = data.asistentes == null || data.asistentes === "" ? null : Number(data.asistentes);
+ if (asistentes === null) throw new https.HttpsError('invalid-argument','Completa Asistentes antes de guardar.');
  if (asistentes !== null && (!Number.isInteger(asistentes) || asistentes < 0 || asistentes > row.matriculados)) throw new https.HttpsError("invalid-argument", "Asistentes debe estar entre 0 y el número de matriculados.");
  const values: Record<string, string|number|null> = {};
- for (const field of VALUATION_FIELDS) { const value = clean(data[field]), score=valuationScore(field,value);if(score===null&&(!row.version||value!==row[field]))throw new https.HttpsError('invalid-argument','Selecciona una valoración válida.');values[field]=score===null?value:PARTE_VALUATIONS[field][score];values[scoreColumn(field)]=score; }
- if (!Array.isArray(data.observaciones) || data.observaciones.length > 50 || data.observaciones.some((v: unknown) => typeof v !== "string" || !v.trim() || v.length > 4000)) throw new https.HttpsError("invalid-argument", "Observaciones inválidas.");
- const firma = await normalizeSignature(data.firma);
- return {unidadDidacticaId,actividadId,tipoUnidad,actividadManual,asistentes,...values,firma,observaciones:(data.observaciones as string[]).map(v=>v.trim())};
+ for (const field of VALUATION_FIELDS) { const value = clean(data[field]), score=valuationScore(field,value);if(score===null)throw new https.HttpsError('invalid-argument','Selecciona una valoración válida.');values[field]=PARTE_VALUATIONS[field].find(label=>valuationScore(field,label)===score)!;values[scoreColumn(field)]=score; }
+ const observaciones = data.observaciones ?? [];
+ if (!Array.isArray(observaciones) || observaciones.length > 50 || observaciones.some((v: unknown) => typeof v !== "string" || !v.trim() || v.length > 4000)) throw new https.HttpsError("invalid-argument", "Observaciones inválidas.");
+ return {unidadDidacticaId,actividadId,tipoUnidad,actividadManual,asistentes,...values,firma,observaciones:(observaciones as string[]).map(v=>v.trim())};
 }
 export const saveParteDiario = runWith({ timeoutSeconds: 120 }).https.onCall(async (data, context) => {
- await requirePermission(context, "parte-diario", "edit"); const day = await loadParteDiario();
- if (!day.laborable || data?.fecha !== day.fecha) throw new https.HttpsError("failed-precondition", "El parte diario solo se registra para el día laborable actual.");
+ await requirePermission(context, "parte-diario", "edit"); const fecha = parteFecha(data?.fecha); const day = await loadParteDiario(fecha);
+ if (!day.laborable || fecha > todayInLima()) throw new https.HttpsError("failed-precondition", "El parte diario se registra en días laborables hasta la fecha actual.");
  const row = day.filas.find(r => originMatches(r, data || {})); if (!row) throw new https.HttpsError("not-found", "La sesión no está programada para hoy.");
  const validated=await validateParteInput(data,row),now=new Date().toISOString();
  const payload = { fecha: day.fecha, grupoModuloId: row.grupoModuloId, docenteId: row.docenteId, actividadProgramadaId: row.actividadProgramadaId, jornadaId: row.jornadaId, matriculados: row.matriculados,...validated, actualizadoPor: context.auth!.uid, fechaActualizacion: now };

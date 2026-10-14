@@ -432,15 +432,6 @@ extend type Mutation {
     data: MatriculaGrupo_Data!
   ): MatriculaGrupo_KeyOutput! @fdc_generated(from: "MatriculaGrupo", purpose: INSERT_SINGLE)
   """
-  ✨ Insert a single `MatriculaPaquete` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  matriculaPaquete_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: MatriculaPaquete_Data!
-  ): MatriculaPaquete_KeyOutput! @fdc_generated(from: "MatriculaPaquete", purpose: INSERT_SINGLE)
-  """
   ✨ Insert a single `MatriculaUser` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   matriculaUser_insert(
@@ -485,33 +476,6 @@ extend type Mutation {
     """
     data: ModuloVideo_Data!
   ): ModuloVideo_KeyOutput! @fdc_generated(from: "ModuloVideo", purpose: INSERT_SINGLE)
-  """
-  ✨ Insert a single `Paquete` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  paquete_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: Paquete_Data!
-  ): Paquete_KeyOutput! @fdc_generated(from: "Paquete", purpose: INSERT_SINGLE)
-  """
-  ✨ Insert a single `PaqueteGrupo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  paqueteGrupo_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: PaqueteGrupo_Data!
-  ): PaqueteGrupo_KeyOutput! @fdc_generated(from: "PaqueteGrupo", purpose: INSERT_SINGLE)
-  """
-  ✨ Insert a single `PaqueteModulo` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  paqueteModulo_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: PaqueteModulo_Data!
-  ): PaqueteModulo_KeyOutput! @fdc_generated(from: "PaqueteModulo", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `ParteDiarioInforme` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1170,15 +1134,6 @@ extend type Mutation {
     data: [MatriculaGrupo_Data!]!
   ): [MatriculaGrupo_KeyOutput!]! @fdc_generated(from: "MatriculaGrupo", purpose: INSERT_MULTIPLE)
   """
-  ✨ Insert `MatriculaPaquete` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  matriculaPaquete_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [MatriculaPaquete_Data!]!
-  ): [MatriculaPaquete_KeyOutput!]! @fdc_generated(from: "MatriculaPaquete", purpose: INSERT_MULTIPLE)
-  """
   ✨ Insert `MatriculaUser` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   matriculaUser_insertMany(
@@ -1223,33 +1178,6 @@ extend type Mutation {
     """
     data: [ModuloVideo_Data!]!
   ): [ModuloVideo_KeyOutput!]! @fdc_generated(from: "ModuloVideo", purpose: INSERT_MULTIPLE)
-  """
-  ✨ Insert `Paquete` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  paquete_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [Paquete_Data!]!
-  ): [Paquete_KeyOutput!]! @fdc_generated(from: "Paquete", purpose: INSERT_MULTIPLE)
-  """
-  ✨ Insert `PaqueteGrupo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  paqueteGrupo_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [PaqueteGrupo_Data!]!
-  ): [PaqueteGrupo_KeyOutput!]! @fdc_generated(from: "PaqueteGrupo", purpose: INSERT_MULTIPLE)
-  """
-  ✨ Insert `PaqueteModulo` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  paqueteModulo_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [PaqueteModulo_Data!]!
-  ): [PaqueteModulo_KeyOutput!]! @fdc_generated(from: "PaqueteModulo", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `ParteDiarioInforme` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1908,15 +1836,6 @@ extend type Mutation {
     data: MatriculaGrupo_Data!
   ): MatriculaGrupo_KeyOutput! @fdc_generated(from: "MatriculaGrupo", purpose: UPSERT_SINGLE)
   """
-  ✨ Insert or update a single `MatriculaPaquete` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaPaquete`.
-  """
-  matriculaPaquete_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: MatriculaPaquete_Data!
-  ): MatriculaPaquete_KeyOutput! @fdc_generated(from: "MatriculaPaquete", purpose: UPSERT_SINGLE)
-  """
   ✨ Insert or update a single `MatriculaUser` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaUser`.
   """
   matriculaUser_upsert(
@@ -1961,33 +1880,6 @@ extend type Mutation {
     """
     data: ModuloVideo_Data!
   ): ModuloVideo_KeyOutput! @fdc_generated(from: "ModuloVideo", purpose: UPSERT_SINGLE)
-  """
-  ✨ Insert or update a single `Paquete` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Paquete`.
-  """
-  paquete_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: Paquete_Data!
-  ): Paquete_KeyOutput! @fdc_generated(from: "Paquete", purpose: UPSERT_SINGLE)
-  """
-  ✨ Insert or update a single `PaqueteGrupo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PaqueteGrupo`.
-  """
-  paqueteGrupo_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: PaqueteGrupo_Data!
-  ): PaqueteGrupo_KeyOutput! @fdc_generated(from: "PaqueteGrupo", purpose: UPSERT_SINGLE)
-  """
-  ✨ Insert or update a single `PaqueteModulo` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PaqueteModulo`.
-  """
-  paqueteModulo_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: PaqueteModulo_Data!
-  ): PaqueteModulo_KeyOutput! @fdc_generated(from: "PaqueteModulo", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `ParteDiarioInforme` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ParteDiarioInforme`.
   """
@@ -2646,15 +2538,6 @@ extend type Mutation {
     data: [MatriculaGrupo_Data!]!
   ): [MatriculaGrupo_KeyOutput!]! @fdc_generated(from: "MatriculaGrupo", purpose: UPSERT_MULTIPLE)
   """
-  ✨ Insert or update `MatriculaPaquete` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaPaquete`.
-  """
-  matriculaPaquete_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [MatriculaPaquete_Data!]!
-  ): [MatriculaPaquete_KeyOutput!]! @fdc_generated(from: "MatriculaPaquete", purpose: UPSERT_MULTIPLE)
-  """
   ✨ Insert or update `MatriculaUser` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `MatriculaUser`.
   """
   matriculaUser_upsertMany(
@@ -2699,33 +2582,6 @@ extend type Mutation {
     """
     data: [ModuloVideo_Data!]!
   ): [ModuloVideo_KeyOutput!]! @fdc_generated(from: "ModuloVideo", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Insert or update `Paquete` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Paquete`.
-  """
-  paquete_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [Paquete_Data!]!
-  ): [Paquete_KeyOutput!]! @fdc_generated(from: "Paquete", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Insert or update `PaqueteGrupo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PaqueteGrupo`.
-  """
-  paqueteGrupo_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [PaqueteGrupo_Data!]!
-  ): [PaqueteGrupo_KeyOutput!]! @fdc_generated(from: "PaqueteGrupo", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Insert or update `PaqueteModulo` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PaqueteModulo`.
-  """
-  paqueteModulo_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [PaqueteModulo_Data!]!
-  ): [PaqueteModulo_KeyOutput!]! @fdc_generated(from: "PaqueteModulo", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `ParteDiarioInforme` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ParteDiarioInforme`.
   """
@@ -4334,25 +4190,6 @@ extend type Mutation {
     data: MatriculaGrupo_Data!
   ): MatriculaGrupo_KeyOutput @fdc_generated(from: "MatriculaGrupo", purpose: UPDATE_SINGLE)
   """
-  ✨ Update a single `MatriculaPaquete` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `MatriculaPaquete` or `null` if not found.
-  """
-  matriculaPaquete_update(
-    """
-    The key used to identify the object.
-    """
-    key: MatriculaPaquete_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: MatriculaPaquete_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: MatriculaPaquete_Data!
-  ): MatriculaPaquete_KeyOutput @fdc_generated(from: "MatriculaPaquete", purpose: UPDATE_SINGLE)
-  """
   ✨ Update a single `MatriculaUser` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `MatriculaUser` or `null` if not found.
   """
   matriculaUser_update(
@@ -4487,83 +4324,6 @@ extend type Mutation {
     """
     data: ModuloVideo_Data!
   ): ModuloVideo_KeyOutput @fdc_generated(from: "ModuloVideo", purpose: UPDATE_SINGLE)
-  """
-  ✨ Update a single `Paquete` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Paquete` or `null` if not found.
-  """
-  paquete_update(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: Paquete_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: Paquete_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: Paquete_Data!
-  ): Paquete_KeyOutput @fdc_generated(from: "Paquete", purpose: UPDATE_SINGLE)
-  """
-  ✨ Update a single `PaqueteGrupo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `PaqueteGrupo` or `null` if not found.
-  """
-  paqueteGrupo_update(
-    """
-    The key used to identify the object.
-    """
-    key: PaqueteGrupo_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: PaqueteGrupo_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: PaqueteGrupo_Data!
-  ): PaqueteGrupo_KeyOutput @fdc_generated(from: "PaqueteGrupo", purpose: UPDATE_SINGLE)
-  """
-  ✨ Update a single `PaqueteModulo` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `PaqueteModulo` or `null` if not found.
-  """
-  paqueteModulo_update(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: PaqueteModulo_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: PaqueteModulo_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: PaqueteModulo_Data!
-  ): PaqueteModulo_KeyOutput @fdc_generated(from: "PaqueteModulo", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `ParteDiarioInforme` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ParteDiarioInforme` or `null` if not found.
   """
@@ -6192,25 +5952,6 @@ extend type Mutation {
     data: MatriculaGrupo_Data!
   ): Int! @fdc_generated(from: "MatriculaGrupo", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Update `MatriculaPaquete` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  matriculaPaquete_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: MatriculaPaquete_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: MatriculaPaquete_Data!
-  ): Int! @fdc_generated(from: "MatriculaPaquete", purpose: UPDATE_MULTIPLE)
-  """
   ✨ Update `MatriculaUser` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   matriculaUser_updateMany(
@@ -6305,63 +6046,6 @@ extend type Mutation {
     """
     data: ModuloVideo_Data!
   ): Int! @fdc_generated(from: "ModuloVideo", purpose: UPDATE_MULTIPLE)
-  """
-  ✨ Update `Paquete` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  paquete_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: Paquete_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: Paquete_Data!
-  ): Int! @fdc_generated(from: "Paquete", purpose: UPDATE_MULTIPLE)
-  """
-  ✨ Update `PaqueteGrupo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  paqueteGrupo_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: PaqueteGrupo_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: PaqueteGrupo_Data!
-  ): Int! @fdc_generated(from: "PaqueteGrupo", purpose: UPDATE_MULTIPLE)
-  """
-  ✨ Update `PaqueteModulo` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  paqueteModulo_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: PaqueteModulo_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: PaqueteModulo_Data!
-  ): Int! @fdc_generated(from: "PaqueteModulo", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `ParteDiarioInforme` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -7980,20 +7664,6 @@ extend type Mutation {
     first: MatriculaGrupo_FirstRow
   ): MatriculaGrupo_KeyOutput @fdc_generated(from: "MatriculaGrupo", purpose: DELETE_SINGLE)
   """
-  ✨ Delete a single `MatriculaPaquete` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  matriculaPaquete_delete(
-    """
-    The key used to identify the object.
-    """
-    key: MatriculaPaquete_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: MatriculaPaquete_FirstRow
-  ): MatriculaPaquete_KeyOutput @fdc_generated(from: "MatriculaPaquete", purpose: DELETE_SINGLE)
-  """
   ✨ Delete a single `MatriculaUser` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   matriculaUser_delete(
@@ -8103,68 +7773,6 @@ extend type Mutation {
     """
     first: ModuloVideo_FirstRow
   ): ModuloVideo_KeyOutput @fdc_generated(from: "ModuloVideo", purpose: DELETE_SINGLE)
-  """
-  ✨ Delete a single `Paquete` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  paquete_delete(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: Paquete_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: Paquete_FirstRow
-  ): Paquete_KeyOutput @fdc_generated(from: "Paquete", purpose: DELETE_SINGLE)
-  """
-  ✨ Delete a single `PaqueteGrupo` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  paqueteGrupo_delete(
-    """
-    The key used to identify the object.
-    """
-    key: PaqueteGrupo_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: PaqueteGrupo_FirstRow
-  ): PaqueteGrupo_KeyOutput @fdc_generated(from: "PaqueteGrupo", purpose: DELETE_SINGLE)
-  """
-  ✨ Delete a single `PaqueteModulo` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  paqueteModulo_delete(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: PaqueteModulo_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: PaqueteModulo_FirstRow
-  ): PaqueteModulo_KeyOutput @fdc_generated(from: "PaqueteModulo", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `ParteDiarioInforme` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -9428,20 +9036,6 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "MatriculaGrupo", purpose: DELETE_MULTIPLE)
   """
-  ✨ Delete `MatriculaPaquete` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  matriculaPaquete_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: MatriculaPaquete_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "MatriculaPaquete", purpose: DELETE_MULTIPLE)
-  """
   ✨ Delete `MatriculaUser` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   matriculaUser_deleteMany(
@@ -9511,48 +9105,6 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "ModuloVideo", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `Paquete` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  paquete_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: Paquete_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "Paquete", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `PaqueteGrupo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  paqueteGrupo_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: PaqueteGrupo_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "PaqueteGrupo", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `PaqueteModulo` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  paqueteModulo_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: PaqueteModulo_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "PaqueteModulo", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `ParteDiarioInforme` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

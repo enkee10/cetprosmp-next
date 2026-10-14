@@ -1,4 +1,5 @@
 import { getStorage } from "firebase-admin/storage";
+import { createAvanzaExport, getAvanzaCurrentSemester, getAvanzaExportPeriod } from "./avanzaExport.js";
 import { projectUnidadRelations } from "../competencias/model.js";
 import { getFirestore } from "firebase-admin/firestore";
 import { firestore as functionsFirestore, https, runWith } from "firebase-functions/v1";
@@ -29,8 +30,6 @@ import { getRequesterRoleId, hasPermission, isSuperUserContext, requirePermissio
 import {
   DataConnectMatriculaInput,
   DataConnectModuloEstudianteInput,
-  DataConnectPaquete,
-  DataConnectPaqueteModulo,
   DataConnectUserInput,
 } from "../core/types.js";
 import {
@@ -181,7 +180,6 @@ interface MatriculaRow {
   fechaActualizacion?: string | null;
   codigoInscripcion?: string | null;
   archivado?: boolean | null;
-  paqueteId?: number | null;
   grupoId?: number | null;
   semestreId?: number | null;
   userId?: number | null;
@@ -193,12 +191,6 @@ interface MatriculaRow {
   modulosEstudiantes?: MatriculaModuloLinkRow[];
   cambiosModulo?: MatriculaCambioModuloRow[];
   fichaUnidadesDidacticas?: MatriculaFichaUnidadDidactica[];
-  paquete?: {
-    id?: number | null;
-    titulo?: string | null;
-    descripcion?: string | null;
-    archivado?: boolean | null;
-  } | null;
   semestre?: {
     id?: number | null;
     titulo?: string | null;
@@ -354,7 +346,6 @@ type MatriculaSaveUserResult = {
 type GrupoModuloMapping = {
   grupoId: number;
   semestreId: number;
-  paqueteId: number;
   workspaceCorreo?: string | null;
   moduloGrupos: Array<{ grupoModuloId: number; moduloId: number; grupoId: number }>;
 };
@@ -363,9 +354,6 @@ type MatriculaWorkspaceGroup = {
   grupoId: number;
   workspaceCorreo?: string | null;
 };
-
-const getPaqueteModuloMultiplicador = (paqueteModulo: DataConnectPaqueteModulo) =>
-  Math.max(1, Math.min(6, paqueteModulo.multiplicador ?? 1));
 
 const sleep = (milliseconds: number) =>
   new Promise((resolve) => {
@@ -714,23 +702,6 @@ const MATRICULA_LIST_USER_FIELDS = `
   rolId
 `;
 
-const GET_PAQUETE_MODULOS_FOR_MATRICULA_QUERY = `
-  query GetPaqueteModulosForMatricula($paqueteId: Int!) {
-    paquete(id: $paqueteId) {
-      id
-      archivado
-    }
-    paqueteModulos(where: { paqueteId: { eq: $paqueteId } }, limit: 50) {
-      id
-      orden
-      obligatorio
-      multiplicador
-      paqueteId
-      moduloId
-    }
-  }
-`;
-
 const FIND_STUDENT_USER_BY_DOCUMENT_QUERY = `
   query FindStudentUserByDocumentForMatricula($tipoDocumento: String!, $dni: String!, $rolId: Int!) {
     users(where: { tipoDocumento: { eq: $tipoDocumento }, dni: { eq: $dni }, rolId: { eq: $rolId } }, limit: 1) {
@@ -781,7 +752,7 @@ const MATRICULA_FIELDS = `
   fechaActualizacion
   codigoInscripcion
   archivado
-  paqueteId
+  grupoId
   semestreId
   userId
   responsableId
@@ -814,12 +785,6 @@ const MATRICULA_FIELDS = `
     email
     correoInstitucional
   }
-  paquete {
-    id
-    titulo
-    descripcion
-    archivado
-  }
   semestre {
     id
     titulo
@@ -847,7 +812,7 @@ const MATRICULA_LIST_FIELDS = `
   fechaActualizacion
   codigoInscripcion
   archivado
-  paqueteId
+  grupoId
   semestreId
   userId
   responsableId
@@ -864,11 +829,6 @@ const MATRICULA_LIST_FIELDS = `
     apellidoMaterno
     email
     correoInstitucional
-  }
-  paquete {
-    id
-    titulo
-    archivado
   }
   semestre {
     id
@@ -1369,19 +1329,13 @@ const GET_MATRICULA_QUERY = `
   }
 `;
 
-const LIST_MATRICULA_PAQUETES_BY_SEMESTRE_QUERY = `
-  query ListMatriculaPaquetesBySemestre($semestreId: Int!) {
+const LIST_MATRICULA_GRUPOS_BY_SEMESTRE_QUERY = `
+  query ListMatriculaGruposBySemestre($semestreId: Int!) {
     grupos(where: { semestreId: { eq: $semestreId }, archivado: { ne: true } }, limit: 500) {
-      id
-      nombreDisplay
-      grupoOrd
-      paqueteId
-      paquete {
-        id
-        titulo
-        descripcion
-        archivado
-      }
+      id nombreDisplay descripcion grupoOrd
+    }
+    grupoModulos(where: { grupo: { semestreId: { eq: $semestreId }, archivado: { ne: true } } }, limit: 3000) {
+      id grupoId nombre orden modulo { titulo orden plan { carrera { especialidad { orden } } } }
     }
   }
 `;
@@ -1466,33 +1420,13 @@ const GET_FORMULARIO_MATRICULA_SETTING_QUERY = `
   }
 `;
 
-const GET_GRUPOS_BY_SEMESTRE_PAQUETE_QUERY = `
-  query GetGruposBySemestrePaquete($semestreId: Int!, $paqueteId: Int!) {
-    grupos(where: { semestreId: { eq: $semestreId }, paqueteId: { eq: $paqueteId }, archivado: { ne: true } }, limit: 20) {
-      id
-      grupoOrd
-      workspaceCorreo
-      paqueteId
-      paquete {
-        id
-        archivado
-      }
-    }
-  }
-`;
-
 const GET_GRUPO_FOR_MATRICULA_QUERY = `
   query GetGrupoForMatricula($grupoId: Int!) {
     grupo(id: $grupoId) {
       id
       semestreId
-      paqueteId
       workspaceCorreo
       archivado
-      paquete {
-        id
-        archivado
-      }
     }
   }
 `;
@@ -1568,8 +1502,8 @@ const LIST_RECIBOS_MATRICULA_QUERY = `
 `;
 
 const CHECK_DUPLICATE_MATRICULA_QUERY = `
-  query CheckDuplicateMatricula($userId: Int!, $semestreId: Int!, $paqueteId: Int!) {
-    matriculas(where: { userId: { eq: $userId }, semestreId: { eq: $semestreId }, paqueteId: { eq: $paqueteId } }, limit: 1) {
+  query CheckDuplicateMatricula($userId: Int!, $semestreId: Int!, $grupoId: Int!) {
+    matriculas(where: { userId: { eq: $userId }, semestreId: { eq: $semestreId }, grupoId: { eq: $grupoId } }, limit: 2) {
       id
     }
   }
@@ -1618,11 +1552,6 @@ function getMatriculaReciboNumericKey(value: unknown): string | null {
   const numericCandidate = halfBecaMatch?.[1] ?? text;
   return normalizeMatriculaReciboNumber(numericCandidate.replace(/\s+/g, ""));
 }
-
-const sortPaqueteModulos = (items: DataConnectPaqueteModulo[]) =>
-  items
-    .slice()
-    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId);
 
 const normalizeText = (value: unknown): string =>
   String(value ?? "")
@@ -2835,7 +2764,7 @@ async function getMatriculaById(matriculaId: number): Promise<MatriculaRow | nul
 
   return hydrateMatriculaUserAvatarThumbnails({
     ...matricula,
-    grupoId: modulosEstudiantes.find((item) => item.grupoId)?.grupoId ?? null,
+    grupoId: matricula.grupoId ?? modulosEstudiantes.find((item) => item.grupoId)?.grupoId ?? null,
     modulosEstudiantes,
     cambiosModulo: response.data.matriculaCambiosModulo ?? [],
     fichaUnidadesDidacticas,
@@ -4475,54 +4404,9 @@ async function recordMatriculaModuloChanges(params: {
   });
 }
 
-function buildModuloGruposForMatricula(data: unknown, paqueteModulos: DataConnectPaqueteModulo[]) {
-  const record = data as Record<string, unknown> | null;
-  const input = record?.moduloGrupos;
-  if (Array.isArray(input)) {
-    const result: Array<{ grupoModuloId: number | null; moduloId: number; grupoId: number | null }> = [];
-    for (const item of input) {
-      if (typeof item !== "object" || item === null) continue;
-      const raw = item as Record<string, unknown>;
-      const moduloId = toNumber(raw.moduloId, -1);
-      if (moduloId <= 0) continue;
-      result.push({
-        grupoModuloId: toNumberOrNull(raw.grupoModuloId) ?? null,
-        moduloId,
-        grupoId: toNumberOrNull(raw.grupoId) ?? null,
-      });
-    }
-    if (result.length > 0) return result;
-  }
-
-  const { result: grupoIdByModuloId, fallbackGrupoId } = buildGrupoIdByModuloId(data);
-  return paqueteModulos.flatMap((paqueteModulo) =>
-    Array.from({ length: getPaqueteModuloMultiplicador(paqueteModulo) }, () => ({
-      grupoModuloId: null,
-      moduloId: paqueteModulo.moduloId,
-      grupoId: grupoIdByModuloId.get(paqueteModulo.moduloId) ?? fallbackGrupoId,
-    })),
-  );
-}
-
-function buildGrupoIdByModuloId(data: unknown) {
-  const fallbackGrupoId = toNumberOrNull((data as Record<string, unknown> | null)?.grupoId) ?? null;
-  const result = new Map<number, number | null>();
-  const moduloGrupos = (data as Record<string, unknown> | null)?.moduloGrupos;
-  if (!Array.isArray(moduloGrupos)) return { result, fallbackGrupoId };
-
-  for (const item of moduloGrupos) {
-    if (typeof item !== "object" || item === null) continue;
-    const moduloId = toNumberOrNull((item as Record<string, unknown>).moduloId);
-    if (!moduloId) continue;
-    result.set(moduloId, toNumberOrNull((item as Record<string, unknown>).grupoId) ?? null);
-  }
-
-  return { result, fallbackGrupoId };
-}
-
 async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown>) {
   const userId = toNumber(data.userId, -1);
-  const paqueteId = toNumber(data.paqueteId, -1);
+  const grupoId = toNumber(data.grupoId, -1);
   const responsableId = toNumberOrNull(data.responsableId) ?? null;
   const responsableUserId = toNumberOrNull(data.responsableUserId) ?? null;
   const precomputedModuloGrupos = Array.isArray(data.moduloGrupos)
@@ -4531,34 +4415,23 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
   if (userId <= 0) {
     throw new https.HttpsError("invalid-argument", "userId is required.");
   }
-  if (paqueteId <= 0) {
-    throw new https.HttpsError("invalid-argument", "paqueteId is required.");
+  if (grupoId <= 0) {
+    throw new https.HttpsError("invalid-argument", "Selecciona un grupo.");
   }
 
   let matriculaId: number | null = null;
 
   try {
-    let moduloGrupos = precomputedModuloGrupos;
-    if (!moduloGrupos) {
-      const paqueteResponse = await dataConnect.executeGraphql<{
-        paquete: DataConnectPaquete | null;
-        paqueteModulos: DataConnectPaqueteModulo[];
-      }, { paqueteId: number }>(GET_PAQUETE_MODULOS_FOR_MATRICULA_QUERY, { variables: { paqueteId } });
-
-      if (!paqueteResponse.data.paquete) {
-        throw new https.HttpsError("not-found", "El paquete seleccionado no existe.");
-      }
-      if (paqueteResponse.data.paquete.archivado) {
-        throw new https.HttpsError("failed-precondition", "El paquete seleccionado esta archivado.");
-      }
-
-      const paqueteModulos = sortPaqueteModulos(paqueteResponse.data.paqueteModulos ?? []);
-      moduloGrupos = buildModuloGruposForMatricula(data, paqueteModulos);
+    const mapping = await getGrupoModuloMapping(toNumber(data.semestreId, -1), grupoId);
+    const moduloGrupos = precomputedModuloGrupos ?? mapping.moduloGrupos;
+    const allowed = new Map(mapping.moduloGrupos.map(item => [item.grupoModuloId, item.moduloId]));
+    if (moduloGrupos.some(item => !item.grupoModuloId || allowed.get(item.grupoModuloId) !== item.moduloId || (item.grupoId && item.grupoId !== grupoId)) || new Set(moduloGrupos.map(item => item.grupoModuloId)).size !== moduloGrupos.length) {
+      throw new https.HttpsError("invalid-argument", "Los modulos seleccionados no corresponden al grupo.");
     }
     if (moduloGrupos.length < 1 || moduloGrupos.length > 6) {
       throw new https.HttpsError(
         "failed-precondition",
-        "El paquete debe tener entre 1 y 6 instancias de modulos antes de matricular.",
+        "El grupo debe tener entre 1 y 6 instancias de modulos antes de matricular.",
       );
     }
     const fallbackGrupoId = toNumberOrNull(data.grupoId) ?? null;
@@ -4572,7 +4445,7 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
     const matriculaPayload = buildMatriculaDataFromInput({
       ...data,
       userId,
-      paqueteId,
+      grupoId,
       fecha: data.fecha ?? now,
       fechaActualizacion: data.fechaActualizacion ?? data.fecha ?? now,
       codigoInscripcion: data.codigoInscripcion ?? await getNextCodigoInscripcionForCurrentYear(),
@@ -4597,7 +4470,7 @@ async function createMatriculaWithModuloEstudiantes(data: Record<string, unknown
 
     return {
       id: matriculaId,
-      paqueteId,
+      grupoId,
       userId,
       responsableId,
       responsableUserId,
@@ -5048,6 +4921,29 @@ export const listMatriculas = https.onCall(async (data, context) => {
   } catch (error) {
     console.error("Error in listMatriculas:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar las matriculas.");
+  }
+});
+
+export const exportMatriculasAvanza = runWith({ timeoutSeconds: 180, memory: "512MB" }).https.onCall(async (data, context) => {
+  const exportTime = new Date();
+  await requirePermission(context, "avanza", "view");
+  await requirePermission(context, "matriculas", "view");
+  const period = getAvanzaExportPeriod(data?.desde, exportTime);
+  const semester = await getAvanzaCurrentSemester();
+  if (Number(data?.semestreId) !== semester.id) throw new https.HttpsError("failed-precondition", "Selecciona el semestre actual para descargar AVANZA.");
+  if (!Array.isArray(data?.grupoModuloIds) || data.grupoModuloIds.length > 2000 || data.grupoModuloIds.some((id: unknown) => !Number.isInteger(id) || Number(id) <= 0)) throw new https.HttpsError("invalid-argument", "El filtro de grupos-módulos no es válido.");
+  const requested = new Set<number>(data.grupoModuloIds);
+  const candidates = requested.size
+    ? await loadMatriculaGrupoModulosByIdsForRequester(context, requested, semester.id)
+    : (await loadMatriculaDocenteGrupoModulos(context, semester.titulo)).grupoModulos;
+  const allowed = candidates.filter(item => getMatriculaGrupoModuloSemestreId(item) === semester.id).map(item => item.id);
+  if (requested.size && allowed.length !== requested.size) throw new https.HttpsError("permission-denied", "Uno de los grupos seleccionados no está disponible para tu cuenta.");
+  try {
+    return await createAvanzaExport(semester, allowed, period);
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    console.error("No se pudo generar la descarga AVANZA.");
+    throw new https.HttpsError("internal", "No se pudo completar la descarga AVANZA. Revisa las plantillas y vuelve a intentar.");
   }
 });
 
@@ -5553,271 +5449,54 @@ export const verificarMatriculaGemini = runWith({ timeoutSeconds: 120, memory: "
   }
 });
 
-async function listMatriculaPaquetesBySemestreData(semestreId: number) {
-  if (semestreId <= 0) {
-    throw new https.HttpsError("invalid-argument", "Selecciona un periodo.");
+async function listMatriculaGruposBySemestreData(semestreId: number) {
+  if (semestreId <= 0) throw new https.HttpsError("invalid-argument", "Selecciona un periodo.");
+  const { data } = await dataConnect.executeGraphql<{
+    grupos: Array<{ id: number; nombreDisplay?: string | null; descripcion?: string | null; grupoOrd?: number | null }>;
+    grupoModulos: Array<{ id: number; grupoId: number; nombre?: string | null; orden?: number | null; modulo?: { titulo?: string | null; orden?: number | null; plan?: { carrera?: { especialidad?: { orden?: number | null } | null } | null } | null } | null }>;
+  }, { semestreId: number }>(LIST_MATRICULA_GRUPOS_BY_SEMESTRE_QUERY, { variables: { semestreId } });
+  const byGrupo = new Map<number, typeof data.grupoModulos>();
+  for (const gm of data.grupoModulos) {
+    const items = byGrupo.get(gm.grupoId) ?? [];
+    items.push(gm); byGrupo.set(gm.grupoId, items);
   }
-
-  try {
-    const response = await dataConnect.executeGraphql<{
-      grupos: Array<{
-        id: number;
-        nombreDisplay?: string | null;
-        grupoOrd?: number | null;
-        paqueteId?: number | null;
-        paquete?: { id?: number | null; titulo?: string | null; descripcion?: string | null; archivado?: boolean | null } | null;
-      }>;
-    }, { semestreId: number }>(
-      LIST_MATRICULA_PAQUETES_BY_SEMESTRE_QUERY,
-      { variables: { semestreId } },
-    );
-
-    type GrupoModuloLabelRow = {
-      id: number;
-      nombre?: string | null;
-      orden?: number | null;
-      modulo?: {
-        titulo?: string | null;
-        tituloComercial?: string | null;
-        orden?: number | null;
-        plan?: {
-          carrera?: {
-            especialidad?: {
-              orden?: number | null;
-            } | null;
-          } | null;
-        } | null;
-      } | null;
-    };
-
-    const buildGrupoModuloTitulo = (
-      grupo: { nombreDisplay?: string | null; paquete?: { titulo?: string | null } | null },
-      grupoModulos: GrupoModuloLabelRow[],
-    ) => {
-      const grupoNombre = asCleanString(grupo.nombreDisplay);
-      if (grupoNombre) return grupoNombre;
-
-      const nombres = grupoModulos
-        .slice()
-        .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.id - b.id)
-        .map((item) =>
-          asCleanString(item.nombre)
-          ?? asCleanString(item.modulo?.titulo)
-          ?? asCleanString(item.modulo?.tituloComercial),
-        )
-        .filter((item): item is string => Boolean(item));
-      return nombres.join(" / ") || asCleanString(grupo.nombreDisplay) || asCleanString(grupo.paquete?.titulo);
-    };
-
-    const getGrupoModuloSort = (grupoModulos: GrupoModuloLabelRow[]) => {
-      const ordered = grupoModulos
-        .slice()
-        .sort((a, b) =>
-          (a.modulo?.plan?.carrera?.especialidad?.orden ?? Number.MAX_SAFE_INTEGER) - (b.modulo?.plan?.carrera?.especialidad?.orden ?? Number.MAX_SAFE_INTEGER) ||
-          (a.modulo?.orden ?? Number.MAX_SAFE_INTEGER) - (b.modulo?.orden ?? Number.MAX_SAFE_INTEGER) ||
-          (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER) ||
-          a.id - b.id,
-        );
-      const first = ordered[0];
-      return {
-        especialidadOrden: first?.modulo?.plan?.carrera?.especialidad?.orden ?? null,
-        moduloOrden: first?.modulo?.orden ?? null,
-        grupoModuloOrden: first?.orden ?? null,
-      };
-    };
-
-    const byGrupoId = new Map<number, {
-      id: number;
-      grupoId: number;
-      paqueteId: number;
-      titulo?: string | null;
-      descripcion?: string | null;
-      grupoModuloTitulo?: string | null;
-      especialidadOrden?: number | null;
-      moduloOrden?: number | null;
-      grupoModuloOrden?: number | null;
-      grupoIds: number[];
-    }>();
-    const labelGroups = new Array<{
-      paqueteId: number;
-      id: number;
-      nombreDisplay?: string | null;
-      paquete?: { titulo?: string | null } | null;
-    }>();
-    const sortedGrupos = (response.data.grupos ?? [])
-      .slice()
-      .sort((a, b) =>
-        (a.grupoOrd ?? 0) - (b.grupoOrd ?? 0)
-        || String(a.nombreDisplay ?? "").localeCompare(String(b.nombreDisplay ?? ""), "es", { numeric: true })
-        || a.id - b.id,
-      );
-    for (const grupo of sortedGrupos) {
-      const paqueteId = grupo.paqueteId ?? grupo.paquete?.id ?? null;
-      if (!paqueteId || grupo.paquete?.archivado) continue;
-      const current = {
-        id: grupo.id,
-        grupoId: grupo.id,
-        paqueteId,
-        titulo: grupo.paquete?.titulo ?? `Modulo ${paqueteId}`,
-        descripcion: grupo.paquete?.descripcion ?? null,
-        grupoModuloTitulo: null,
-        especialidadOrden: null,
-        moduloOrden: null,
-        grupoModuloOrden: null,
-        grupoIds: [grupo.id],
-      };
-      byGrupoId.set(grupo.id, current);
-      labelGroups.push({ ...grupo, paqueteId });
-    }
-
-    const labelEntries = await Promise.all(
-      labelGroups.map(async (grupo) => {
-        const grupoModulosResponse = await dataConnect.executeGraphql<{
-          grupoModulos: Array<GrupoModuloLabelRow & { moduloId: number; grupoId: number }>;
-        }, { grupoId: number }>(
-          GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY,
-          { variables: { grupoId: grupo.id } },
-        );
-        const grupoModulos = grupoModulosResponse.data.grupoModulos ?? [];
-        return [grupo.id, buildGrupoModuloTitulo(grupo, grupoModulos), getGrupoModuloSort(grupoModulos)] as const;
-      }),
-    );
-    for (const [grupoId, grupoModuloTitulo, sortInfo] of labelEntries) {
-      const current = byGrupoId.get(grupoId);
-      if (current) {
-        current.grupoModuloTitulo = grupoModuloTitulo;
-        current.especialidadOrden = sortInfo.especialidadOrden;
-        current.moduloOrden = sortInfo.moduloOrden;
-        current.grupoModuloOrden = sortInfo.grupoModuloOrden;
-      }
-    }
-
-    return {
-      paquetes: Array.from(byGrupoId.values()).sort((a, b) =>
-        (a.especialidadOrden ?? Number.MAX_SAFE_INTEGER) - (b.especialidadOrden ?? Number.MAX_SAFE_INTEGER) ||
-        (a.moduloOrden ?? Number.MAX_SAFE_INTEGER) - (b.moduloOrden ?? Number.MAX_SAFE_INTEGER) ||
-        (a.grupoModuloOrden ?? Number.MAX_SAFE_INTEGER) - (b.grupoModuloOrden ?? Number.MAX_SAFE_INTEGER) ||
-        String(a.grupoModuloTitulo ?? a.titulo ?? "").localeCompare(
-          String(b.grupoModuloTitulo ?? b.titulo ?? ""),
-          "es",
-          { numeric: true },
-        ),
-      ),
-    };
-  } catch (error) {
-    console.error("Error in listMatriculaPaquetesBySemestre:", error);
-    throw new https.HttpsError("internal", "No se pudieron cargar los modulos del periodo.");
-  }
+  const grupos = data.grupos.flatMap(grupo => {
+    const items = (byGrupo.get(grupo.id) ?? []).sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0) || a.id-b.id);
+    if (!items.length) return [];
+    const first = items.slice().sort((a,b) => (a.modulo?.plan?.carrera?.especialidad?.orden ?? 999999) - (b.modulo?.plan?.carrera?.especialidad?.orden ?? 999999) || (a.modulo?.orden ?? 999999) - (b.modulo?.orden ?? 999999))[0];
+    return [{ id: grupo.id, grupoId: grupo.id, titulo: grupo.nombreDisplay, descripcion: grupo.descripcion, grupoModuloTitulo: grupo.nombreDisplay?.trim() || items.map(item => item.nombre || item.modulo?.titulo).filter(Boolean).join(" / "), especialidadOrden: first?.modulo?.plan?.carrera?.especialidad?.orden, moduloOrden: first?.modulo?.orden, grupoModuloOrden: first?.orden, grupoIds: [grupo.id] }];
+  }).sort((a,b) => (a.especialidadOrden ?? 999999) - (b.especialidadOrden ?? 999999) || (a.moduloOrden ?? 999999) - (b.moduloOrden ?? 999999) || (a.grupoModuloOrden ?? 999999) - (b.grupoModuloOrden ?? 999999) || String(a.grupoModuloTitulo).localeCompare(String(b.grupoModuloTitulo), "es", {numeric: true}));
+  return { grupos };
 }
 
-export const listMatriculaPaquetesBySemestre = https.onCall(async (data, context) => {
+export const listMatriculaGruposBySemestre = https.onCall(async (data, context) => {
   await requirePermission(context, "matriculas", "view");
-  return listMatriculaPaquetesBySemestreData(toNumber(data?.semestreId, -1));
+  return listMatriculaGruposBySemestreData(toNumber(data?.semestreId, -1));
 });
 
-export const listFormularioMatriculaPaquetesBySemestre = https.onCall(async (data, context) => {
+export const listFormularioMatriculaGruposBySemestre = https.onCall(async (data, context) => {
   await requireFormularioMatriculaAccess(context);
-  return listMatriculaPaquetesBySemestreData(toNumber(data?.semestreId, -1));
+  return listMatriculaGruposBySemestreData(toNumber(data?.semestreId, -1));
 });
 
-async function getGrupoModuloMapping(
-  semestreId: number,
-  paqueteId: number,
-  grupoId?: number | null,
-  options?: { syncPaqueteFromGrupo?: boolean },
-): Promise<GrupoModuloMapping> {
-  if (grupoId && grupoId > 0) {
-    const grupoResponse = await dataConnect.executeGraphql<{
-      grupo: {
-        id: number;
-        semestreId?: number | null;
-        paqueteId?: number | null;
-        workspaceCorreo?: string | null;
-        archivado?: boolean | null;
-        paquete?: { id?: number | null; archivado?: boolean | null } | null;
-      } | null;
-    }, { grupoId: number }>(
-      GET_GRUPO_FOR_MATRICULA_QUERY,
-      { variables: { grupoId } },
-    );
-    const selectedGrupo = grupoResponse.data.grupo;
-    if (!selectedGrupo || selectedGrupo.archivado || selectedGrupo.paquete?.archivado) {
-      throw new https.HttpsError("failed-precondition", "El grupo seleccionado no esta disponible.");
-    }
-    if (selectedGrupo.semestreId !== semestreId) {
-      throw new https.HttpsError("failed-precondition", "El grupo seleccionado no corresponde al periodo y modulo seleccionados.");
-    }
-    const selectedPaqueteId = selectedGrupo.paqueteId ?? null;
-    if (!selectedPaqueteId || selectedPaqueteId <= 0) {
-      throw new https.HttpsError("failed-precondition", "El grupo seleccionado no tiene un modulo asociado.");
-    }
-    if (selectedPaqueteId !== paqueteId && !options?.syncPaqueteFromGrupo) {
-      throw new https.HttpsError("failed-precondition", "El grupo seleccionado no corresponde al periodo y modulo seleccionados.");
-    }
-
-    const modulosResponse = await dataConnect.executeGraphql<{
-      grupoModulos: Array<{ id: number; moduloId: number; grupoId: number }>;
-    }, { grupoId: number }>(
-      GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY,
-      { variables: { grupoId: selectedGrupo.id } },
-    );
-
-    return {
-      grupoId: selectedGrupo.id,
-      semestreId,
-      paqueteId: selectedPaqueteId,
-      workspaceCorreo: selectedGrupo.workspaceCorreo ?? null,
-      moduloGrupos: (modulosResponse.data.grupoModulos ?? []).map((item) => ({
-        grupoModuloId: item.id,
-        moduloId: item.moduloId,
-        grupoId: item.grupoId,
-      })),
-    };
-  }
-
-  const gruposResponse = await dataConnect.executeGraphql<{
-    grupos: Array<{
-      id: number;
-      grupoOrd?: number | null;
-      workspaceCorreo?: string | null;
-      paquete?: { id?: number | null; archivado?: boolean | null } | null;
-    }>;
-  }, { semestreId: number; paqueteId: number }>(
-    GET_GRUPOS_BY_SEMESTRE_PAQUETE_QUERY,
-    { variables: { semestreId, paqueteId } },
-  );
-  const grupo = (gruposResponse.data.grupos ?? [])
-    .filter((item) => !item.paquete?.archivado)
-    .sort((a, b) => (a.grupoOrd ?? 0) - (b.grupoOrd ?? 0) || a.id - b.id)[0];
-
-  if (!grupo) {
-    throw new https.HttpsError("failed-precondition", "No hay grupos disponibles para el modulo seleccionado en este periodo.");
-  }
-
-  const modulosResponse = await dataConnect.executeGraphql<{
-    grupoModulos: Array<{ id: number; moduloId: number; grupoId: number }>;
-  }, { grupoId: number }>(
-    GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY,
-    { variables: { grupoId: grupo.id } },
-  );
-
-  return {
-    grupoId: grupo.id,
-    semestreId,
-    paqueteId,
-    workspaceCorreo: grupo.workspaceCorreo ?? null,
-    moduloGrupos: (modulosResponse.data.grupoModulos ?? []).map((item) => ({
-      grupoModuloId: item.id,
-      moduloId: item.moduloId,
-      grupoId: item.grupoId,
-    })),
-  };
+async function getGrupoModuloMapping(semestreId: number, grupoId: number): Promise<GrupoModuloMapping> {
+  if (!Number.isInteger(grupoId) || grupoId <= 0) throw new https.HttpsError("invalid-argument", "Selecciona un grupo.");
+  const [groupResponse, modulesResponse] = await Promise.all([
+    dataConnect.executeGraphql<{grupo: {id:number; semestreId?:number|null; archivado?:boolean|null; workspaceCorreo?:string|null}|null}, {grupoId:number}>(GET_GRUPO_FOR_MATRICULA_QUERY, {variables:{grupoId}}),
+    dataConnect.executeGraphql<{grupoModulos: Array<{id:number;moduloId:number;grupoId:number}>}, {grupoId:number}>(GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY, {variables:{grupoId}}),
+  ]);
+  const group = groupResponse.data.grupo;
+  if (!group || group.archivado) throw new https.HttpsError("failed-precondition", "El grupo seleccionado no esta disponible.");
+  if (group.semestreId !== semestreId) throw new https.HttpsError("failed-precondition", "El grupo seleccionado no corresponde al periodo seleccionado.");
+  const moduloGrupos = modulesResponse.data.grupoModulos.map(item => ({grupoModuloId:item.id,moduloId:item.moduloId,grupoId:item.grupoId}));
+  if (moduloGrupos.length < 1 || moduloGrupos.length > 6) throw new https.HttpsError("failed-precondition", "El grupo debe tener entre 1 y 6 instancias de modulos antes de matricular.");
+  return {grupoId:group.id,semestreId,workspaceCorreo:group.workspaceCorreo,moduloGrupos};
 }
 
 async function ensureNoMatriculaDuplicates(
   userId: number,
   semestreId: number,
-  paqueteId: number,
+  grupoId: number,
   recibo: string,
   currentMatriculaId?: number | null,
 ) {
@@ -5825,10 +5504,10 @@ async function ensureNoMatriculaDuplicates(
   const [duplicateResponse, reciboResponse] = await Promise.all([
     dataConnect.executeGraphql<
       { matriculas: Array<{ id: number }> },
-      { userId: number; semestreId: number; paqueteId: number }
+      { userId: number; semestreId: number; grupoId: number }
     >(
       CHECK_DUPLICATE_MATRICULA_QUERY,
-      { variables: { userId, semestreId, paqueteId } },
+      { variables: { userId, semestreId, grupoId } },
     ),
     reciboNumericKey
       ? dataConnect.executeGraphql<{ matriculas: Array<{ id: number; recibo?: string | null }> }, Record<string, never>>(
@@ -6221,8 +5900,7 @@ async function crearMatriculaFormularioData(data: any, context: https.CallableCo
   const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
   const dni = normalizeDocumentNumber(data?.dni);
   const semestreId = toNumber(data?.semestreId, -1);
-  const paqueteId = toNumber(data?.paqueteId, -1);
-  const grupoId = toNumberOrNull(data?.grupoId);
+  const grupoId = toNumber(data?.grupoId, -1);
   const recibo = normalizeMatriculaRecibo(data?.recibo);
 
   if (!tipoDocumento || !dni) {
@@ -6231,7 +5909,7 @@ async function crearMatriculaFormularioData(data: any, context: https.CallableCo
   if (semestreId <= 0) {
     throw new https.HttpsError("invalid-argument", "Selecciona un periodo.");
   }
-  if (paqueteId <= 0) {
+  if (grupoId <= 0) {
     throw new https.HttpsError("invalid-argument", "Selecciona un modulo.");
   }
   if (!recibo) {
@@ -6250,13 +5928,12 @@ async function crearMatriculaFormularioData(data: any, context: https.CallableCo
     }, context);
     const userId = savedUser.userId;
     const [, grupoMapping] = await Promise.all([
-      ensureNoMatriculaDuplicates(userId, semestreId, paqueteId, recibo),
-      getGrupoModuloMapping(semestreId, paqueteId, grupoId),
+      ensureNoMatriculaDuplicates(userId, semestreId, grupoId, recibo),
+      getGrupoModuloMapping(semestreId, grupoId),
     ]);
     const matricula = await createMatriculaWithModuloEstudiantes({
       ...(data as Record<string, unknown>),
       userId,
-      paqueteId,
       semestreId,
       recibo,
       responsableId: responsable?.id ?? null,
@@ -6343,8 +6020,7 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
   const tipoDocumento = normalizeDocumentType(data?.tipoDocumento);
   const dni = normalizeDocumentNumber(data?.dni);
   const semestreId = toNumber(data?.semestreId, -1);
-  const paqueteId = toNumber(data?.paqueteId, -1);
-  const grupoId = toNumberOrNull(data?.grupoId);
+  const grupoId = toNumber(data?.grupoId, -1);
   const recibo = normalizeMatriculaRecibo(data?.recibo);
 
   if (matriculaId <= 0) {
@@ -6356,7 +6032,7 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
   if (semestreId <= 0) {
     throw new https.HttpsError("invalid-argument", "Selecciona un periodo.");
   }
-  if (paqueteId <= 0) {
+  if (grupoId <= 0) {
     throw new https.HttpsError("invalid-argument", "Selecciona un modulo.");
   }
   if (!recibo) {
@@ -6385,14 +6061,13 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
     }, context);
     const userId = savedUser.userId;
 
-    const grupoMapping = await getGrupoModuloMapping(semestreId, paqueteId, grupoId, { syncPaqueteFromGrupo: true });
-    const effectivePaqueteId = grupoMapping.paqueteId;
-    await ensureNoMatriculaDuplicates(userId, semestreId, effectivePaqueteId, recibo, matriculaId);
+    const grupoMapping = await getGrupoModuloMapping(semestreId, grupoId);
+    await ensureNoMatriculaDuplicates(userId, semestreId, grupoMapping.grupoId, recibo, matriculaId);
     const moduloGrupos = grupoMapping.moduloGrupos;
     if (moduloGrupos.length < 1 || moduloGrupos.length > 6) {
       throw new https.HttpsError(
         "failed-precondition",
-        "El paquete debe tener entre 1 y 6 instancias de modulos antes de matricular.",
+        "El grupo debe tener entre 1 y 6 instancias de modulos antes de matricular.",
       );
     }
     const moduloSelectionChanged = hasGrupoModuloSelectionChanged(previousModuloItems, moduloGrupos);
@@ -6410,7 +6085,7 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
     const matriculaPayload = buildMatriculaDataFromInput({
       ...data,
       userId,
-      paqueteId: effectivePaqueteId,
+      grupoId: grupoMapping.grupoId,
       semestreId,
       recibo,
       fecha: currentMatricula.fecha ?? data?.fecha ?? fechaCambio,
@@ -6492,7 +6167,7 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
     }
     await syncMatriculasCurrentSemesterSheetBestEffort("actualizar matricula");
 
-    return { id: savedMatriculaId, semestreId, paqueteId: effectivePaqueteId, userId, documentProcessingJobId, workspaceGroup, workspaceWarnings };
+    return { id: savedMatriculaId, semestreId, grupoId: grupoMapping.grupoId, userId, documentProcessingJobId, workspaceGroup, workspaceWarnings };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in updateMatriculaFormulario:", error);
@@ -6518,18 +6193,18 @@ export const deleteMatricula = https.onCall(async (data, context) => {
   }
 });
 
-export const createMatriculaDesdePaquete = https.onCall(async (data, context) => {
+export const createMatriculaDesdeGrupo = https.onCall(async (data, context) => {
   await requirePermission(context, "matriculas", "create");
 
   try {
     const matricula = await createMatriculaWithModuloEstudiantes(data as Record<string, unknown>);
-    await appendMatriculaCurrentSemesterSheetBestEffort(matricula.id, "crear matricula desde paquete");
+    await appendMatriculaCurrentSemesterSheetBestEffort(matricula.id, "crear matricula desde grupo");
     return matricula;
   } catch (error) {
     if (error instanceof https.HttpsError) {
       throw error;
     }
-    console.error("Error in createMatriculaDesdePaquete:", error);
+    console.error("Error in createMatriculaDesdeGrupo:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while creating matricula.");
   }
 });

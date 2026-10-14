@@ -255,7 +255,7 @@ const REGISTRO_AUXILIAR_CONTEXT_QUERY = `
         }
         turno { nombre }
         horario { nombre diasSemana }
-        paquete { titulo }
+
       }
       modulo {
         id
@@ -580,7 +580,7 @@ const REGISTRO_AUXILIAR_CREATE_MATRICULA_CONTEXT_QUERY = `
       moduloId
       grupo {
         id
-        paqueteId
+
         semestreId
       }
     }
@@ -1614,7 +1614,7 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
         moduloId?: number | null;
         grupo?: {
           id?: number | null;
-          paqueteId?: number | null;
+
           semestreId?: number | null;
         } | null;
       } | null;
@@ -1626,10 +1626,9 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
     const grupoModulo = contextResponse.data.grupoModulo;
     const grupoId = grupoModulo?.grupoId ?? grupoModulo?.grupo?.id ?? null;
     const moduloId = grupoModulo?.moduloId ?? null;
-    const paqueteId = grupoModulo?.grupo?.paqueteId ?? null;
     const semestreId = grupoModulo?.grupo?.semestreId ?? null;
-    if (!grupoId || !moduloId || !paqueteId || !semestreId) {
-      throw new https.HttpsError("failed-precondition", "El grupo-modulo no tiene grupo, modulo, paquete o semestre asociado.");
+    if (!grupoId || !moduloId || !semestreId) {
+      throw new https.HttpsError("failed-precondition", "El grupo-modulo no tiene grupo, modulo o semestre asociado.");
     }
 
     const existingUser = await findRegistroAuxiliarUserByDni(dni);
@@ -1671,7 +1670,7 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
       fecha: new Date().toISOString(),
       codigoInscripcion: await getNextCodigoInscripcionForCurrentYear(),
       archivado: false,
-      paqueteId,
+      grupoId,
       semestreId,
       userId,
     });

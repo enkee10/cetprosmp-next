@@ -33,6 +33,10 @@ El texto es visible en los desplegables. El número se guarda en el servidor y n
 
 Campos añadidos a `ParteDiarioRegistro`: `silaboValor`, `materialValor`, `tareasValor`, `fichaActividadValor`, `instrumentoEvaluacionValor`; `Int` nullable para mantener valores anteriores sin inferir calidad. Al guardar se calculan desde el texto permitido, aunque el cliente envíe otro número. Las valoraciones anteriores ambiguas quedan sin puntaje y se excluyen de promedios hasta evaluarlas.
 
+Uso medios en clase agrega `usoMedios` y `usoMediosValor`: 4 Usa pizarra y classroom; 3 Usa solo classroom; 2 Usa solo pizarra; 1 Usa otros medios; 0 No usa nada. Los registros anteriores quedan sin esa valoración hasta evaluarlos.
+
+Desde el 12 de octubre, solo los partes con firma alimentan estadísticas, cobertura y listados de registros llenados. Se conservan los registros antiguos sin firma en la base de datos. Guardar desde el reporte también exige una firma válida.
+
 ## Estadísticas e informes
 
 Filtros por fechas, semestre, familia y docente, para períodos históricos de hasta un año y con fecha final no posterior a hoy. La familia se obtiene de módulo → plan → carrera → actividad económica → familia. Los registros y sesiones históricas de grupos archivados siguen formando parte del reporte.

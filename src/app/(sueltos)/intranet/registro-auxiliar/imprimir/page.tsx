@@ -141,7 +141,7 @@ type RegistroAuxiliar = {
     } | null;
     turno?: { nombre?: string | null } | null;
     horario?: { nombre?: string | null; diasSemana?: string | null } | null;
-    paquete?: { titulo?: string | null } | null;
+
   } | null;
   grupoModulo: {
     id: number;

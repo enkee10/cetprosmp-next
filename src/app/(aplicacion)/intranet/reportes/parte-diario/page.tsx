@@ -14,7 +14,7 @@ import type {ParteReportData,ParteMetrics,InformeRow} from '../../../../../../fu
 import type {ValuationField} from '../../../../../../functions/src/modules/parte-diario/valuations';
 
 type Filters={desde:string;hasta:string;semestreId:number|'';familiaId:number|'';docenteId:number|''};
-const ratingTitles:Record<ValuationField,string>={silabo:'Sílabo',fichaActividad:'Ficha de Actividad',instrumentoEvaluacion:'Instrumento de Evaluación',material:'Materiales',tareas:'Tareas'};
+const ratingTitles:Record<ValuationField,string>={usoMedios:'Uso de medios en clase',silabo:'Sílabo',fichaActividad:'Ficha de Actividad',instrumentoEvaluacion:'Instrumento de Evaluación',registroAsistencia:'Registro de Asistencia',registroAuxiliarEvaluacion:'Registro Auxiliar de Evaluación',material:'Materiales',tareas:'Tareas'};
 const number=(value:number|null,suffix='')=>value==null?'Sin datos':new Intl.NumberFormat('es-PE',{maximumFractionDigits:1}).format(value)+suffix;
 const percent=(value:number|null)=>number(value,'%');
 function overview(m:ParteMetrics){return m.registros?`Se registraron ${m.registros} partes para ${m.programadas} sesiones o jornadas programadas. Cobertura de registros: ${percent(m.cobertura)}. Asistencia registrada: ${percent(m.asistencia)}, en ${m.jornadasConAsistencia} jornadas. Actividades registradas frente a las programadas en el período: ${m.actividadesRegistradas} de ${m.actividadesProgramadas} (${percent(m.avance)}). Valoración media declarada: ${number(m.indice)} de 4.`:'No hay partes registrados para este período y estos filtros. No se pueden valorar el rendimiento, la asistencia ni la calidad sin registros.';}

@@ -1,0 +1,27 @@
+{
+  "id": "/parte-diario",
+  "name": "Parte Diario - CETPRO SMP",
+  "short_name": "Parte Diario",
+  "description": "Registro institucional del Parte Diario del CETPRO San Martín de Porres.",
+  "lang": "es-PE",
+  "start_url": "/parte-diario",
+  "scope": "/parte-diario",
+  "display": "standalone",
+  "background_color": "#f7fbfd",
+  "theme_color": "#164863",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/parte-diario/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/parte-diario/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

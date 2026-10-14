@@ -130,7 +130,7 @@ function extract(path, names) {
   targets = [base];
   rows = [row(groupModule(2, '1', '09:59', '12:00'))];
   let mutations = 0;
-  const mapping = { grupoId: 1, paqueteId: 1, moduloGrupos: input.selections };
+  const mapping = { grupoId: 1, moduloGrupos: input.selections };
   const moduleObject = { exports: {} };
   const context = {
     module: moduleObject, exports: moduleObject.exports, console,
@@ -150,7 +150,7 @@ function extract(path, names) {
     REGISTRO_AUXILIAR_CREATE_MATRICULA_CONTEXT_QUERY: 'registry-context', FIND_MODULO_ESTUDIANTE_DUPLICATE_QUERY: 'registry-duplicates',
     mergeModuloEstudiantesForGrupoModulo: () => [],
     dataConnect: { executeGraphql: async query => {
-      if (query === 'registry-context') return { data: { grupoModulo: { id: 1, grupoId: 1, moduloId: 1, grupo: { id: 1, paqueteId: 1, semestreId: 1 } } } };
+      if (query === 'registry-context') return { data: { grupoModulo: { id: 1, grupoId: 1, moduloId: 1, grupo: { id: 1, semestreId: 1 } } } };
       if (query === 'registry-duplicates') return { data: { modulosEstudiantesByGrupoModulo: [], modulosEstudiantesLegacy: [] } };
       mutations += 1;
       throw new Error('Enrollment write reached despite a conflict');
@@ -158,15 +158,15 @@ function extract(path, names) {
   };
   const functions = extract('functions/src/modules/matriculas/handlers.ts', [
     'createMatriculaWithModuloEstudiantes', 'crearMatriculaFormularioData', 'crearMatriculaFormulario',
-    'crearMatriculaFormularioSuelto', 'updateMatriculaFormulario', 'createMatriculaDesdePaquete',
+    'crearMatriculaFormularioSuelto', 'updateMatriculaFormulario', 'createMatriculaDesdeGrupo',
   ]) + '\n' + extract('functions/src/modules/registro-auxiliar/handlers.ts', ['createRegistroAuxiliarMatricula']);
   vm.runInNewContext(ts.transpileModule(functions, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
   }).outputText, context);
   const data = { id: 50, grupoModuloId: 1, userId: 7, tipoDocumento: 'DNI', dni: '12345678',
-    semestreId: 1, paqueteId: 1, grupoId: 1, recibo: '123', moduloGrupos: input.selections };
+    semestreId: 1, grupoId: 1, recibo: '123', moduloGrupos: input.selections };
   for (const name of ['crearMatriculaFormulario', 'crearMatriculaFormularioSuelto', 'updateMatriculaFormulario',
-    'createRegistroAuxiliarMatricula', 'createMatriculaDesdePaquete']) {
+    'createRegistroAuxiliarMatricula', 'createMatriculaDesdeGrupo']) {
     await rejectsConflict(() => moduleObject.exports[name](data, {}));
   }
   assert.equal(mutations, 0, 'All enrollment entry points reject before inserting/updating enrollment');
@@ -181,7 +181,7 @@ function extract(path, names) {
     isRepeatableMatriculaRecibo: value => value === 'BECADO',
     dataConnect: { executeGraphql: async (query, { variables }) => {
       if (query === 'duplicate') {
-        assert.deepEqual(Object.keys(variables).sort(), ['paqueteId', 'semestreId', 'userId'], 'The second rule keeps its existing criteria');
+        assert.deepEqual(Object.keys(variables).sort(), ['grupoId', 'semestreId', 'userId'], 'Duplicate enrollment is scoped to the real group');
         return { data: { matriculas: duplicateMatriculas } };
       }
       return { data: { matriculas: receiptMatriculas } };

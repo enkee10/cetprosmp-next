@@ -29,7 +29,6 @@ export function validarInstancias(
     const ordered = list.slice().sort((a,b) => a.instancia - b.instancia);
     if (ordered.some((item,i) => item.instancia !== i + 1)) throw new Error('Las instancias deben numerarse consecutivamente desde 1.');
     if (list.length === 1) {
-      if (list[0].sufijo?.trim()) throw new Error('El sufijo solo corresponde a módulos con más de una instancia.');
       continue;
     }
     const old = anteriores.filter(item => item.moduloId === moduloId);

@@ -5,7 +5,7 @@ const { dataConnect } = await import('../functions/lib/modules/core/dataConnectC
 const academic = await import('../functions/lib/modules/academico/handlers.js');
 const context = { auth: { uid: 'competencias-verification', token: { level: 600, roleId: 600 } } };
 let count = 0;
-for (const module of ['academico', 'grupos', 'paquetes', 'matriculas', 'registro-auxiliar', 'reportes']) {
+for (const module of ['academico', 'grupos', 'matriculas', 'registro-auxiliar', 'reportes']) {
   const source = fs.readFileSync(new URL(`../functions/src/modules/${module}/handlers.ts`, import.meta.url), 'utf8');
   for (const match of source.matchAll(/const (\w+QUERY) = `([\s\S]*?)`;/g)) {
     const [, name, template] = match;

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 import {
   Box,
   Button,
@@ -34,6 +35,8 @@ interface GrupoFormProps {
   onSaved?: () => void;
   onCancel?: () => void;
 }
+
+const EMPTY_MODULE_SELECTION: number[] = [];
 
 interface GrupoData {
   id: number;
@@ -291,7 +294,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   const [workspaceManualEdit, setWorkspaceManualEdit] = useState(Boolean(grupoId));
   const [estado, setEstado] = useState('activo');
   const [archivado, setArchivado] = useState(false);
-  const [moduloParaAgregar, setModuloParaAgregar] = useState('');
   const [semestreId, setSemestreId] = useState('');
   const [personalId, setPersonalId] = useState('');
   const [turnoId, setTurnoId] = useState('');
@@ -509,11 +511,33 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
     );
   };
 
-  const agregarModulo = () => {
-    const option=modulosOpciones.find(item=>String(item.id)===moduloParaAgregar);
-    if (!option || grupoModulos.length>=6 || grupoModulos.some(item=>item.moduloId===option.id)) return;
-    setGrupoModulos(prev=>[...prev,{moduloId:option.id,modulo:option,instancia:1,sufijo:null,orden:Math.max(0,...prev.map(item=>item.orden??0))+1,obligatorio:true,unidadDidacticas:(option.unidadDidacticas??[]).map((ud,index)=>({unidadDidacticaId:ud.id,unidadDidactica:ud,orden:index+1,inicio:null,fin:null}))}]);
-    setModuloParaAgregar('');
+  const agregarModulos = (moduloIds: number[]) => {
+    const opciones = moduloIds
+      .map(id => modulosOpciones.find(item => item.id === id))
+      .filter((item): item is ModuloOption => Boolean(item) && !grupoModulos.some(gm => gm.moduloId === item?.id));
+    if (grupoModulos.length + opciones.length > 6) {
+      setError('El grupo admite como máximo seis instancias de módulos.');
+      return;
+    }
+    setGrupoModulos(prev => {
+      const nuevas = opciones.filter(item => !prev.some(gm => gm.moduloId === item.id));
+      const ordenInicial = Math.max(0, ...prev.map(item => item.orden ?? 0));
+      return [...prev, ...nuevas.map((option, index) => ({
+        moduloId: option.id,
+        modulo: option,
+        instancia: 1,
+        sufijo: null,
+        orden: ordenInicial + index + 1,
+        obligatorio: true,
+        unidadDidacticas: (option.unidadDidacticas ?? []).map((ud, unidadIndex) => ({
+          unidadDidacticaId: ud.id,
+          unidadDidactica: ud,
+          orden: unidadIndex + 1,
+          inicio: null,
+          fin: null,
+        })),
+      }))];
+    });
   };
   const cambiarInstancias = (moduloId:number,count:number) => {
     setGrupoModulos(prev=>{
@@ -521,7 +545,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       const option=modulosOpciones.find(item=>item.id===moduloId);
       const units=(option?.unidadDidacticas??[]).map((ud,index)=>({unidadDidacticaId:ud.id,unidadDidactica:ud,orden:index+1,inicio:null,fin:null}));
       const expanded=Array.from({length:count},(_,index)=>current[index]??{moduloId,modulo:option??current[0]?.modulo,instancia:index+1,sufijo:null,orden:Math.max(0,...prev.map(item=>item.orden??0))+index+1,obligatorio:true,unidadDidacticas:units});
-      if (count===1) expanded[0]={...expanded[0],sufijo:null};
       const first=prev.findIndex(item=>item.moduloId===moduloId);
       const others=prev.filter(item=>item.moduloId!==moduloId);
       others.splice(first,0,...expanded);
@@ -587,6 +610,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
           grupoModulos?: Array<{
             moduloId: number;
             instancia?: number | null;
+            sufijo?: string | null;
             orden?: number | null;
             obligatorio?: boolean | null;
             inicio?: string | null;
@@ -765,15 +789,21 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
             sx={{ gridColumn: '1 / -1' }}
           />
 
-          <Box sx={{gridColumn:'1 / -1',display:'flex',gap:1,alignItems:'center'}}>
-            <FormControl fullWidth>
-              <InputLabel id="grupo-modulo-agregar-label">Módulo para agregar</InputLabel>
-              <Select labelId="grupo-modulo-agregar-label" label="Módulo para agregar" value={moduloParaAgregar} onChange={event=>setModuloParaAgregar(String(event.target.value))} disabled={loadingOptions||grupoModulos.length>=6}>
-                {modulosOpciones.filter(item=>!grupoModulos.some(gm=>gm.moduloId===item.id)).map(item=><MenuItem key={item.id} value={String(item.id)}>{item.tituloComercial||item.titulo||`Módulo ${item.id}`}</MenuItem>)}
-              </Select>
-            </FormControl>
-            <Button variant="outlined" disabled={!moduloParaAgregar||grupoModulos.length>=6} onClick={agregarModulo}>Agregar</Button>
-          </Box>
+          <MultiSelectWithActions<number>
+            label="Módulos para agregar"
+            labelId="grupo-modulo-agregar-label"
+            value={EMPTY_MODULE_SELECTION}
+            options={modulosOpciones
+              .filter(item => !grupoModulos.some(gm => gm.moduloId === item.id))
+              .map(item => ({ value: item.id, label: item.tituloComercial || item.titulo || `Módulo ${item.id}` }))}
+            onChange={agregarModulos}
+            getOptionDisabled={(option, pendientes) =>
+              !pendientes.includes(option.value) && pendientes.length >= 6 - grupoModulos.length}
+            disabled={loadingOptions || grupoModulos.length >= 6}
+            displayEmpty
+            size="medium"
+            sx={{ gridColumn: '1 / -1' }}
+          />
           {Array.from(new Set(grupoModulos.map(item=>item.moduloId))).map(moduloId=>{
             const items=grupoModulos.filter(item=>item.moduloId===moduloId);
             return <Box key={moduloId} sx={{gridColumn:'1 / -1',display:'flex',gap:1,alignItems:'center'}}>
@@ -934,7 +964,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
                     </Box>
 
                     <Box sx={{display:'flex',gap:1,alignItems:'center',flexWrap:'wrap'}}>
-                      {grupoModulos.filter(item=>item.moduloId===modulo.moduloId).length>1 && <TextField label={`Sufijo de instancia ${modulo.instancia??1}`} value={modulo.sufijo??''} onChange={event=>actualizarInstancia(modulo.moduloId,modulo.instancia??1,{sufijo:event.target.value})} inputProps={{maxLength:80}} size="small" sx={{flex:1,minWidth:180}} />}
+                      <TextField label={`Sufijo de instancia ${modulo.instancia??1}`} value={modulo.sufijo??''} onChange={event=>actualizarInstancia(modulo.moduloId,modulo.instancia??1,{sufijo:event.target.value})} inputProps={{maxLength:80}} size="small" sx={{flex:1,minWidth:180}} />
                       <TextField label="Orden" type="number" value={modulo.orden??''} onChange={event=>actualizarInstancia(modulo.moduloId,modulo.instancia??1,{orden:event.target.value?Number(event.target.value):null})} size="small" inputProps={{min:1}} sx={{width:100}} />
                       <FormControlLabel label="Obligatorio" control={<Checkbox checked={modulo.obligatorio??true} onChange={event=>actualizarInstancia(modulo.moduloId,modulo.instancia??1,{obligatorio:event.target.checked})} />} />
                     </Box>

@@ -28,7 +28,7 @@ const lines = [
   '## Verificacion', '',
   '- Compilacion TypeScript y produccion Next.js completadas.',
   '- Pruebas de horas 399, 400 y 401; opcion ocupacional y unidades compartidas.',
-  '- Trece consultas verificadas de estructura, unidades, capacidades, grupos, paquetes, matricula, registro auxiliar y reportes.',
+  '- Consultas verificadas de estructura, unidades, capacidades, grupos, matricula, registro auxiliar y reportes.',
   '- Certificado Excel verificado: agrupacion por competencia, capacidades y nota.',
   '- Registro auxiliar verificado para los cinco modulos solicitados: Monitoreo y Acciones (5 unidades), Diseno y Corte de Articulos (5), Aparado/Armado/Acabado de Calzado (5), Decoracion y Presentacion (7), Tecnicas Basicas de Elaboraciones Culinarias (6). Se conservaron sus capacidades e indicadores.',
   '- Guardado sin cambios de competencia, capacidad y unidad compartida conserva datos y relaciones.',

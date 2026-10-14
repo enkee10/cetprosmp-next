@@ -14,7 +14,9 @@ test('new repeated modules need different suffixes on consecutive instances', ()
   assert.throws(() => validarInstancias([{moduloId:1,instancia:1,sufijo:'A'},{moduloId:1,instancia:2,sufijo:'a'}]), /sufijo/);
   assert.throws(() => validarInstancias([{moduloId:1,instancia:1},{moduloId:1,instancia:1}]), /repetida/);
   assert.throws(() => validarInstancias([{moduloId:1,instancia:2}]), /consecutivamente/);
-  assert.throws(() => validarInstancias([{moduloId:1,instancia:1,sufijo:'A'}]), /más de una/);
+  validarInstancias([{moduloId:1,instancia:1,sufijo:'A'}]);
+  validarInstancias([{moduloId:1,instancia:1}]);
+  validarInstancias([{moduloId:1,instancia:1,sufijo:'A'},{moduloId:2,instancia:1,sufijo:'A'}]);
   validarInstancias([{moduloId:1,instancia:1,sufijo:'A'},{moduloId:1,instancia:2,sufijo:'B'}]);
 });
 

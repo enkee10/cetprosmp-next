@@ -28,9 +28,6 @@ const LIST_GRUPOS_NOMBRE_QUERY = `
     grupos(limit: 10000) {
       id
       nombreDisplay
-      paquete {
-        titulo
-      }
       turnoNombre
       turno {
         nombre
@@ -54,6 +51,7 @@ const LIST_GRUPO_MODULOS_NOMBRE_QUERY = `
     grupoModulos(limit: 10000) {
       id
       nombre
+      sufijo
       grupoId
       grupo {
         id
@@ -102,9 +100,8 @@ function normalize(value) {
 }
 
 function buildGrupoNombre(grupo, fallbackModulo) {
-  const paqueteNombre = normalize(
-    grupo?.paquete?.titulo
-      || fallbackModulo?.tituloComercial
+  const moduloNombre = normalize(
+    fallbackModulo?.tituloComercial
       || fallbackModulo?.titulo
       || (fallbackModulo?.id ? `Modulo ${fallbackModulo.id}` : ""),
   );
@@ -113,7 +110,7 @@ function buildGrupoNombre(grupo, fallbackModulo) {
   const docenteNombre = getDocenteNombreForGrupoModulo(grupo?.personal ?? null);
 
   return [
-    paqueteNombre,
+    moduloNombre,
     turnoNombre ? `[${turnoNombre}]` : "",
     horarioNombre,
     docenteNombre ? `(${docenteNombre})` : "",
@@ -148,11 +145,11 @@ async function main() {
         nextNombre,
       };
     })
-    .filter((item) => item.nextNombre && item.previousNombre !== item.nextNombre);
+    .filter((item) => item.nextNombre && !item.previousNombre);
 
   const changes = grupoModulos
     .map((item) => {
-      const nextNombre = normalize(buildGrupoModuloNombreRelacional(item.grupo, item.modulo));
+      const nextNombre = normalize([buildGrupoModuloNombreRelacional(item.grupo, item.modulo), item.sufijo].filter(Boolean).join(' '));
       return {
         id: item.id,
         grupoId: item.grupoId,
@@ -161,7 +158,7 @@ async function main() {
         nextNombre,
       };
     })
-    .filter((item) => item.nextNombre && item.previousNombre !== item.nextNombre);
+    .filter((item) => item.nextNombre && !item.previousNombre);
 
   console.log(`Grupos leidos: ${grupos.length}`);
   console.log(`Grupos por actualizar: ${grupoChanges.length}`);

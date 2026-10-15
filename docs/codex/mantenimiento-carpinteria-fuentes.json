@@ -1,0 +1,865 @@
+{
+  "alcance": "Transcripción estructurada de los dos Word. Las fechas históricas se omiten expresamente; no se ha programado el calendario de 2026-II.",
+  "fuentes": [
+    "CARPINTERIA EN MADERA 2025 II.docx: programación explícita de Mantenimiento de Carpintería, 2025-II.",
+    "SILABO TECNICAS DE CARPINTERIA 2026 I.docx: sílabo titulado Carpintería en Madera, 2026-I; fuente complementaria."
+  ],
+  "modulo": {
+    "nombreAcademico": "Mantenimiento de Carpintería",
+    "tituloAlternativoDelSilabo": "Carpintería en Madera",
+    "horasTotales": 300,
+    "horasFormacionTecnica": 180,
+    "horasFormacionComplementaria": 30,
+    "horasPractica": 90,
+    "competenciaProgramacion": "Identifica máquinas y herramientas de carpintería y ejecuta el mantenimiento de muebles de madera aplicando técnicas y procedimientos y el cumplimiento de las normas de seguridad e higiene para obtener productos de calidad que demanda el mercado laboral y así gestionar su propio campo laboral",
+    "competenciaAlternativaProgramacion": "Identifica, organiza, diseña sus trabajos en las áreas correspondientes al taller teniendo en cuenta, el uso de sus herramientas, instrumentos y materiales de trabajo para el desarrollo de su proyecto cumpliendo las normas de seguridad industrial",
+    "propositosSilabo": [
+      "1.- Es el Identificar, distribución y organización del área de trabajo de un taller; cumpliendo los requisitos mínimos de ella, del cual manipulen y operen las herramientas, equipos y maquinas con total seguridad en la elaboración de un producto seleccionado por el estudiante de acuerdo al módulo.",
+      "2.- Identificar, distribución y organización los ambientes de un baño cumpliendo; requisitos mínimos de ella, del cual manipulen y operen los mobiliarios en la habitación con seguridad en la elaboración de un producto seleccionado por el estudiante de acuerdo al módulo",
+      "3.- Identificar, la distribución y orientación de los ambientes destinados en un domicilio para brindar el mantenimiento o construcción de la puerta en un ambiente destinado cumpliendo; los requisitos mínimos de ella, del cual manipulen y operen en la habitación con seguridad en la elaboración de un producto seleccionado por el estudiante de acuerdo al módulo.",
+      "4.- Identificar, la distribución y orientación de los ambientes de dormitorio y los muebles que componen en la habitación para luego seleccionar el mueble necesario para su construcción teniendo en cuenta sus características y requisitos mínimos del cual sea necesario en ambiente cumpliendo su objetivo del cual ha sido construido.",
+      "5.- Identificar, la distribución y orientación de los ambientes de oficina y los muebles que componen en la habitación para luego seleccionar el mueble necesario para su construcción teniendo en cuenta sus características y requisitos mínimos del cual sea necesario en ambiente cumpliendo su objetivo del cual ha sido construido",
+      "6.- Reconocer sus capacidades formativas, y personales en el fortalecimiento de sus hábitos diarios con la sociedad y comunidad del cual les permita estar adecuado a cualquier adversidad que la sociedad le pida y desee"
+    ],
+    "sumillasSilabo": [
+      "La unidad didáctica N° 1 ORGANIZA EQUIPOS, HERRAMIENTAS Y MATERIALES DE CARPINTERÍA, comprende contenidos de carácter teórico -práctico. De cómo organizar y acondicionar un taller en el área con sus respectivas implementaciones por cada área cumpliendo las normas de seguridad industrial y requisito mínimos necesarios de ella.",
+      "La unidad didáctica N° 2 ELABORACIÓN GABINETES DE BAÑO, comprende contenidos de carácter teórico -práctico. De cómo organizar, elabora y diseñar mobiliarios de baño acondicionado a las características del ambiente con que cuenta la habitación con sus respectivas implementaciones cumpliendo las normas de seguridad industrial y requisito mínimos necesarios de ella.",
+      "La unidad didáctica N° 3 MANTENIMIENTO DE PUERTAS INTERIORES Y EXTERIORES, comprende contenidos de carácter teórico -práctico. De cómo organizar, elabora y diseñar y brindar el mantenimiento de puertas de exteriores e interiores en una casa o ambiente brindándole la en esta unidad el dar a conocer los diversos tipos de puertas que separa a un ambiente del otro con la bridar seguridad y privacidad en cada ambiente destinado de una casa cumpliendo los requisitos de seguridad industrial en la construcción de ella.",
+      "La unidad didáctica N° 4 ELABORACION DE MESA DE NOCHE, comprende contenidos de carácter teórico -práctico. De cómo organizar, diseñar su boceto, cubicar la madera para la elaboración de un mueble de dormitorio teniendo en cuenta sus características, color y modelo del mueble cumpliendo las normas de seguridad e higiene en el taller.",
+      "La unidad didáctica N°5 ELABORACION ESTANTE DE OFICINA AEREO, comprende contenidos de carácter teórico - práctico. De cómo organizar, diseñar su boceto y cubicar la madera para la elaboración de un mueble de OFICINA teniendo en cuenta sus características, color y modelo del mueble teniendo en cuenta las normas de seguridad e higiene en el taller.",
+      "La unidad didáctica N°6 GESTIÓN EMPRESARIAL - FORMACIÓN Y ORIENTACIÓN LABORA Analiza las condiciones para desarrollar un negocio sostenible respondiendo a las necesidades del mercado, proyectando los recursos para su funcionamiento, y desarrollando una adecuada estrategia de ventas"
+    ],
+    "competenciasSilabo": [
+      "U.C. 1 Identifica organiza e implementas las áreas que componen un taller de carpintería teniendo en cuenta los requisitos mínimos y normas de seguridad",
+      "U.C. 2 Identifica organiza y clasifica las herramientas que componen en un taller de carpintería teniendo en cuenta los requisitos mínimos y normas de seguridad",
+      "U.C. 3 Identifica organiza y clasifica las maquinarias que componen en un taller de carpintería teniendo en cuenta los requisitos mínimos y normas de seguridad",
+      "U.C. 4 Identifica clasifica las diversidades de materiales que componen para ejecutar en la elaboración de su proyecto teniendo en cuenta las herramientas, equipos y máquinas para transformar la materia prima en un producto o bien teniendo en cuenta normas de seguridad y el cuidado de su medio ambiente",
+      "U.C. 5 Identifica y practica con diversidad de materiales que compone en el desarrollo del dibujo teniendo en cuenta las recomendaciones y condiciones para realizar su producto en proyección",
+      "U.C 6 Identifica y selecciona materia prima e insumos, instrumentos, y equipos. Según el plan de producción, aplicando buenas prácticas de manufactura (BPM) y la normativa correspondiente."
+    ],
+    "capacidadesSilabo": [
+      "C.U.D.1 Organizar el área de trabajo según el plan de producción, aplicando buenas prácticas de manufactura (BPM) y la normativa correspondiente.",
+      "C.U.D.2 Ejecuta el proceso de armado de gabinete de baño considerando las normas técnicas",
+      "C.U.D.3 Realiza la construcción y armado de una puerta de interiores y exteriores teniendo encueta las indicaciones técnicas y el mantenimiento respectivo",
+      "C.U.D.4 identificar los mobiliarios que compone en un ambiente de dormitorio del cual organice nuestros elementos personales de nuestra habitación brinda la comodidad y relajo para el poder reponer energías",
+      "C.U.D.5 identificar los mobiliarios que compone en un ambiente de oficina del cual organice nuestros elementos personales de nuestra habitación brinda la comodidad la identificación y orientación de nuestros productos personales en el indicado mueble.",
+      "C.U.D.6 fortalecer las capacidades complementarias que le permita fortalecer estos contenidos complementarios para la mejora de su formación técnica y personal"
+    ],
+    "materialesGeneralesProgramacion": [
+      "Instrumentos, equipos, herramientas y materiales con que cuenta el Centro educativo y otros que traerá el Docente y el Alumno / Manuales, separatas, libros, revistas. / Audiovisuales (videos de máquinas de corte, fotos, herramientas) / Computadoras: internet. / Convencionales: pizarra, plumón.",
+      "HERRAMIENTAS / Martillos, formones, escuadras, winchas etc. / MÁQUINA: / Sierra circular, garlopa, atornilladores y otros.",
+      "Thinner, selladora, lacas, waypes, brocha, ocres, lijas de números 40,80,120,250,360,450."
+    ],
+    "aprendizajePracticaSilabo": "Fortalecer los conocimientos adquiridos realizando sus prácticas dentro de la institución o instituciones u otros en condiciones reales de trabajo",
+    "bibliografiaProgramacion": [
+      "LIBRO DE INSTRUCCIÓN EN CARPINTERÍA",
+      "COLECCIÓN TÉCNICAS PROFESIONALES DE ATRIUM DE CARPINTERIA OCEANO",
+      "CURSO DE CARPINTERIA L.J.KOZAR.",
+      "MANUAL DE CARPINTERÍA BÁSICA PERALTA TUPIAS.",
+      "MATERIAL DE ACABADO TEKNO.",
+      "ENSAMBLES DE MADERA JOSE CARDENAS DEL CARPIO"
+    ]
+  },
+  "unidades": [
+    {
+      "numero": 1,
+      "nombre": "ORGANIZA EQUIPOS, HERRAMIENTAS Y MATERIALES DE CARPINTERÍA",
+      "horas": 48,
+      "fuenteProgramacion": {
+        "documento": "CARPINTERIA EN MADERA 2025 II.docx",
+        "tablaWord": 19
+      },
+      "fuenteSilabo": {
+        "documento": "SILABO TECNICAS DE CARPINTERIA 2026 I.docx",
+        "tablaWord": 2
+      },
+      "capacidadProgramacion": "Identifica, organiza sus áreas de trabajos en el taller de carpintería haciendo usos de sus herramientas y materiales de trabajo cumpliendo las normas de seguridad",
+      "criteriosEvaluacion": "Identifica los diversos talleres y herramientas usados en la especialidad / Identifica calcula, selecciona y reconoce sus materiales a trabajar naturales y artificiales por medio de sus herramientas de la especialidad",
+      "aprendizajeGlobalSilabo": "El identificar la diversidad de áreas que un taller de carpintería y las herramientas y maquinas que lo componen en una actividad productiva",
+      "actividadesProgramacion": [
+        {
+          "numero": 1,
+          "referencia": "tabla 19, fila 3",
+          "aprendizaje": "Acondicionamiento del taller de acuerdo a los requisitos mínimos",
+          "contenidos": "El taller: Definición, áreas, ventajas / Requerimientos a la hora de organizar un taller / Orden / Seguridad personal. / Limpieza en el área de trabajo / Mantenimiento de las herramientas / Normas de seguridad en el taller",
+          "procedimientos": "Organizamos nuestro taller de carpintería en madera. / Elaboramos nuestras normas de convivencia / Identificamos las normas de seguridad e higiene / Realiza bosquejo del taller",
+          "nombre": "Organiza el taller, normas de convivencia",
+          "horas": 6
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 19, fila 4",
+          "aprendizaje": "Identifica los equipos y herramientas que componen en el taller de carpintería",
+          "contenidos": "Definición de equipo y herramientas / Clasificación: trazo, medición, prueba,",
+          "procedimientos": "Identifica y clasifica herramientas de trazo y prueba",
+          "nombre": "Identifica equipos y herramientas",
+          "horas": 6
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 19, fila 5",
+          "aprendizaje": "Selección del material adecuado al trabajo",
+          "contenidos": "Materia prima: Definición, Importancia, Tipos / Materia prima natural / Materiales artificiales",
+          "procedimientos": "Reconocemos nuestra materia prima a trabajar como elemento natural y artificial",
+          "nombre": "Selecciona el material adecuado para el desarrollo de sus proyectos",
+          "horas": 6
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 19, fila 6",
+          "aprendizaje": "Identificación de su materia prima natural",
+          "contenidos": "El árbol: / Definición partes, / La madera",
+          "procedimientos": "Identifica y clasifica su recurso natural como elemento primordial para el armado de muebles",
+          "nombre": "Selecciona su material (la madera)",
+          "horas": 6
+        },
+        {
+          "numero": 5,
+          "referencia": "tabla 19, fila 7",
+          "aprendizaje": "Preparación de maquinarias",
+          "contenidos": "Máquinas de la especialidad / Tipos de máquinas / Máquinas mayores , livianas, y portátiles",
+          "procedimientos": "Identifica diferentes tipos de máquinas y funcionamiento",
+          "nombre": "operar máquinas de carpintería",
+          "horas": 6
+        },
+        {
+          "numero": 6,
+          "referencia": "tabla 19, fila 8",
+          "aprendizaje": "Manejo de máquinas",
+          "contenidos": "Máquinas menores / Maquinas livianas sierra circular, garlopa radial sierra cinta / Definición , partes, funciones específicas y normas de seguridad",
+          "procedimientos": "mecanizado de la madera (trazado, corte, cepillado, taladrado, ajuste, ensamblado), / Mantenimiento y calibración de las máquinas eléctricas",
+          "nombre": "Realiza el mantenimiento de máquinas y herramientas",
+          "horas": 6
+        },
+        {
+          "numero": 7,
+          "referencia": "tabla 19, fila 9",
+          "aprendizaje": "Introducción al dibujo técnico",
+          "contenidos": "Dibujo técnico, definición, instrumentos, materiales e insumos",
+          "procedimientos": "Realiza dibujo técnico con precisión",
+          "nombre": "Realiza el diseño de dibujo técnico",
+          "horas": 6
+        },
+        {
+          "numero": 8,
+          "referencia": "tabla 19, fila 10",
+          "aprendizaje": "Realización de dibujo de muebles",
+          "contenidos": "El dibujo. Vistas principales. proyecciones / isometrica",
+          "procedimientos": "Elabora el dibujo con proyecciones y vistas",
+          "nombre": "Diseña muebles",
+          "horas": 6
+        }
+      ],
+      "actividadesSilabo": [
+        {
+          "numero": 1,
+          "referencia": "tabla 2, fila 4",
+          "indicador": "Identifica, organiza el taller, distribuyendo, y clasifica los elementos que componen en el taller con los equipos de trabajo para el desarrollo del su plan productivo",
+          "actividadYContenidos": "1- El área de trabajo / Definición del taller y áreas que lo componen en el trabajo. / Requisitos mínimos de las áreas del taller de carpintería / Distribución y señalización y croquis del taller.",
+          "recursosMateriales": "Pptx / Normas de convivencia / Hojas de Información / Hojas de Operación / Afiches de seguridad",
+          "horas": 6
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 2, fila 5",
+          "indicador": "Identifica las herramientas y equipos para brinda el mantenimiento el preventivo y correctivo de las herramientas, equipos, máquinas de la especialidad para el desarrollo de sus proyectos",
+          "actividadYContenidos": "2 Herramientas de especialidad / Definición de herramientas manuales / Herramientas de trazo definición tipos partes y normas de seguridad / Herramientas de prueba definición tipos partes y normas de seguridad / Herramientas de medición definición tipos partes y normas de seguridad",
+          "recursosMateriales": null,
+          "horas": 6
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 2, fila 6",
+          "indicador": "Identifica y selecciona materia prima e insumos, instrumentos, y equipos. Según el plan de producción, aplicando buenas prácticas de manufactura (BPM) y la normativa correspondiente.",
+          "actividadYContenidos": "3 La materia prima e insumos / Materia prima. Tipos. Características / Materia prima natural / Materia prima artificial",
+          "recursosMateriales": "Pptx / Normas de convivencia / Hojas de Información / Hojas de Operación / Afiches de seguridad",
+          "horas": 6
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 2, fila 7",
+          "indicador": "Identifica las herramientas, equipos y máquinas para brinda el mantenimiento el preventivo y correctivo de los equipos, de trabajo en la especialidad para el desarrollo de sus proyectos",
+          "actividadYContenidos": "4. Máquinas de la especialidad / Definición de máquinas de la especialidad / Tipos de máquinas mayores, livianas, y portátiles / La sierra circular, definición partes, operaciones principales, y normas de seguridad / La garlopa, definición partes, operaciones principales, y normas de seguridad",
+          "recursosMateriales": "Pptx / Normas de convivencia / Hojas de Información / Hojas de Operación / Afiches de seguridad / ,",
+          "horas": 6
+        },
+        {
+          "numero": 5,
+          "referencia": "tabla 2, fila 8",
+          "indicador": null,
+          "actividadYContenidos": "5. Máquinas de la especialidad / Maquinas livianas / La sierra cinta definición partes, operaciones principales, y normas de seguridad / La cepilladora definición partes, operaciones principales, y normas de seguridad",
+          "recursosMateriales": null,
+          "horas": 6
+        },
+        {
+          "numero": 6,
+          "referencia": "tabla 2, fila 9",
+          "indicador": "Aplica y desarrolla los procedimientos de las normas de seguridad explica los procedimientos de limpieza y desinfección de los materiales y equipos tomando en cuenta la ficha técnica establecida.",
+          "actividadYContenidos": "6. Normas de seguridad de herramientas y máquinas de la especialidad / Normas de seguridad de las herramientas de trazo, prueba, y medida / Normas de seguridad de las máquinas de la especialidad sierra circular, radial",
+          "recursosMateriales": "Pptx / Normas de convivencia / Hojas de Información / Hojas de Operación / Afiches de seguridad,",
+          "horas": 6
+        },
+        {
+          "numero": 7,
+          "referencia": "tabla 2, fila 10",
+          "indicador": "Identifica y practica con diversidad de materiales que compone en el desarrollo del dibujo teniendo en cuenta las recomendaciones y condiciones para realizar su producto en proyección",
+          "actividadYContenidos": "7. Dibujo técnico / Definición, tipos y clases de dibujo / Instrumentos de dibujo técnico definición y clases",
+          "recursosMateriales": "Pptx / Normas de convivencia / Hojas de Información / Hojas de Operación técnica de dibujo",
+          "horas": 6
+        },
+        {
+          "numero": 8,
+          "referencia": "tabla 2, fila 11",
+          "indicador": null,
+          "actividadYContenidos": "8. Dibujo técnico / Proyección isométrica / definición y técnicas de manejo de la proyección isométrica",
+          "recursosMateriales": null,
+          "horas": 6
+        }
+      ]
+    },
+    {
+      "numero": 2,
+      "nombre": "ELABORACIÓN GABINETES DE BAÑO",
+      "horas": 36,
+      "fuenteProgramacion": {
+        "documento": "CARPINTERIA EN MADERA 2025 II.docx",
+        "tablaWord": 22
+      },
+      "fuenteSilabo": {
+        "documento": "SILABO TECNICAS DE CARPINTERIA 2026 I.docx",
+        "tablaWord": 3
+      },
+      "capacidadProgramacion": "Ejecuta el proceso de armado de gabinete de baño considerando las normas técnicas",
+      "criteriosEvaluacion": "Realiza el proceso de habilitación de gabinete de baño con habilidad y destreza / Realiza el armado y acabado de mueble gabinete de baño con seguridad e higiene",
+      "aprendizajeGlobalSilabo": "Habilitación y operatividad de las máquinas según especificaciones técnicas",
+      "actividadesProgramacion": [
+        {
+          "numero": 1,
+          "referencia": "tabla 22, fila 3",
+          "aprendizaje": "Elaboración de croquis de mueble de baño",
+          "contenidos": "Ambiente de baño / Definición de muebles de baño, tipos, importancia",
+          "procedimientos": "Realiza el croquis del gabinete de baño",
+          "nombre": "croquis de gabinete de baño",
+          "horas": 6
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 22, fila 4",
+          "aprendizaje": "Ejecución de cálculo y presupuesto",
+          "contenidos": "Concepto de cálculo de materiales / Cubicación de materiales",
+          "procedimientos": "realiza el cálculo de materiales del gabinete de baño / elabora un presupuesto",
+          "nombre": "calculo y presupuesto de materiales trabajo",
+          "horas": 6
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 22, fila 5",
+          "aprendizaje": "Habilitación de materiales",
+          "contenidos": "Dibujo en proyección isométrica y ortogonal",
+          "procedimientos": "Realiza su dibujo del mueble en proyección",
+          "nombre": "habilitando los materiales",
+          "horas": 6
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 22, fila 6",
+          "aprendizaje": "Realización del pre armado (presentación de proyecto)",
+          "contenidos": "Preparación de la madera / Habilitado. Herramientas de corte",
+          "procedimientos": "Identifica las piezas principales del mueble",
+          "nombre": "realizando en pre armado (presentación de proyecto)",
+          "horas": 6
+        },
+        {
+          "numero": 5,
+          "referencia": "tabla 22, fila 7",
+          "aprendizaje": "Realización de armado del mueble gabinete de baño",
+          "contenidos": "Condiciones para armar un mueble de baño / Mantenimiento y calibración de las máquinas eléctricas",
+          "procedimientos": "Reconocimiento de los tipos de uniones en madera caja y espiga",
+          "nombre": "Realizando el armado de muebles gabinete de baño",
+          "horas": 6
+        },
+        {
+          "numero": 6,
+          "referencia": "tabla 22, fila 8",
+          "aprendizaje": "Realización de acabado del mueble",
+          "contenidos": "Máquinas de la especialidad: / Sierra cinta, torno / Definición partes , operaciones principales y normas de seguridad",
+          "procedimientos": "mecanizado de la madera y operación de la máquinas de la especialidad",
+          "nombre": "calibración de máquinas de la especialidad al modelo y medida seleccionada",
+          "horas": 6
+        }
+      ],
+      "actividadesSilabo": [
+        {
+          "numero": 1,
+          "referencia": "tabla 3, fila 4",
+          "indicador": "Identifica clasifica las diversidades de materiales que componen para ejecutar en la elaboración de su proyecto teniendo en cuenta las herramientas, equipos y máquinas para transformar la materia prima en un producto o bien teniendo en cuenta normas de seguridad y el cuidado de su medio ambiente",
+          "actividadYContenidos": "Ambiente de baño / Definición de muebles de baño, tipos, importancia",
+          "recursosMateriales": "Pptx / Hojas de / Información / Hojas de / operación / Ficha técnica",
+          "horas": 6
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 3, fila 5",
+          "indicador": "Identifica clasifica las diversidades de materiales que componen para ejecutar en la elaboración de su proyecto teniendo en cuenta las herramientas, equipos y máquinas para transformar la materia prima en un producto o bien teniendo en cuenta normas de seguridad y el cuidado de su medio ambiente",
+          "actividadYContenidos": "La cubicación / Concepto de cálculo de materiales / Cubicación de materiales",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica",
+          "horas": 6
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 3, fila 6",
+          "indicador": "Identifica y selecciona materia prima e insumos, instrumentos, y equipos. Según el plan de producción, aplicando buenas prácticas de manufactura (BPM) y la normativa correspondiente.",
+          "actividadYContenidos": "Tecnología de la madera / la madera. definición y características / Habilitado. Herramientas de corte",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica",
+          "horas": 6
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 3, fila 7",
+          "indicador": "Identifica y desarrolla las técnicas de dibujo en el desarrollo de su proyecto",
+          "actividadYContenidos": "Dibujo en proyección isométrica y ortogonal / Definición e importancia y practicas",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica",
+          "horas": 6
+        },
+        {
+          "numero": 5,
+          "referencia": "tabla 3, fila 8",
+          "indicador": "Identifica las herramientas, equipos y máquinas para brinda el mantenimiento el preventivo y correctivo de los equipos, de trabajo en la especialidad para el desarrollo de sus proyectos",
+          "actividadYContenidos": "Sesión 5 / Condiciones para armar un mueble de baño / Mantenimiento y calibración de las máquinas eléctricas",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica",
+          "horas": 6
+        },
+        {
+          "numero": 6,
+          "referencia": "tabla 3, fila 9",
+          "indicador": "Aplica y desarrolla los procedimientos de las normas de seguridad explica los procedimientos de limpieza y desinfección de los materiales y equipos tomando en cuenta la ficha técnica establecida.",
+          "actividadYContenidos": "Sesión 6 / Máquinas de la especialidad: / Sierra cinta, torno / Definición partes , operaciones principales y normas de seguridad",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica",
+          "horas": 6
+        }
+      ]
+    },
+    {
+      "numero": 3,
+      "nombre": "MANTENIMIENTO DE PUERTAS INTERIORES Y EXTERIORES",
+      "horas": 36,
+      "fuenteProgramacion": {
+        "documento": "CARPINTERIA EN MADERA 2025 II.docx",
+        "tablaWord": 25
+      },
+      "fuenteSilabo": {
+        "documento": "SILABO TECNICAS DE CARPINTERIA 2026 I.docx",
+        "tablaWord": 4
+      },
+      "capacidadProgramacion": "Realiza en / mantenimiento de / puerta de interiores / y exteriores con / calidad",
+      "criteriosEvaluacion": "Realiza en mantenimiento de puertas de interiores con calidad / Realiza en mantenimiento de puertas de exteriores con calidad",
+      "aprendizajeGlobalSilabo": "Reconocer las características funcionales de una puerta de exterior e interior teniendo en cuenta su diseño, color, y decoración del ambiente domiciliario",
+      "actividadesProgramacion": [
+        {
+          "numero": 1,
+          "referencia": "tabla 25, fila 3",
+          "aprendizaje": "Realización de análisis, diagnóstico de puertas y elabora bocetos",
+          "contenidos": "LA PUERTA: Definición de puerta, Partes, Características, Elementos mecánicos / Mantenimiento de puertas / BOSQUEJO DE PUERTAS",
+          "procedimientos": "Realiza el diagnóstico para el mantenimiento de puertas / Realiza bosquejo de puertas de interior y exterior",
+          "nombre": "Realiza el diagnóstico de puertas y bosquejo",
+          "horas": 6
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 25, fila 4",
+          "aprendizaje": "Elaboración de cálculo de materiales y habilitado de puertas de interiores",
+          "contenidos": "CUBICACIÓN DE MATERIALES / ( MADERA) / calcula materiales / Mantenimientos de puertas",
+          "procedimientos": "Realiza el diagnóstico y calcula materiales / Elabora la habilitación de materiales",
+          "nombre": "Realiza el cálculo de material y habilita puerta interior",
+          "horas": 6
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 25, fila 5",
+          "aprendizaje": "Realización del mantenimiento de puertas interiores",
+          "contenidos": "MÁQUINAS EN EL PROCESO DE HABILITADO: / La garlopa",
+          "procedimientos": "Realiza el mantenimiento de puertas de interiores",
+          "nombre": "Realizando el mantenimiento de puertas interiores",
+          "horas": 6
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 25, fila 6",
+          "aprendizaje": "Elaboración de cálculo de materiales y habilitado de puertas de exteriores",
+          "contenidos": "La sierra circular / La escopladura horizontal y vertical",
+          "procedimientos": "Calcula materiales para puerta de exteriores / Realiza el habilitado de materiales",
+          "nombre": "Realiza el cálculo de material y habilita puerta exterior",
+          "horas": 6
+        },
+        {
+          "numero": 5,
+          "referencia": "tabla 25, fila 7",
+          "aprendizaje": "Realización del mantenimiento de puertas exteriores",
+          "contenidos": "UNIONES EN MADERA / Tipos de uniones en madera Ensambles, acoplamientos",
+          "procedimientos": "Realiza el mantenimiento de la puerta de exteriores",
+          "nombre": "Realizando el mantenimiento de puertas exteriores",
+          "horas": 6
+        },
+        {
+          "numero": 6,
+          "referencia": "tabla 25, fila 8",
+          "aprendizaje": "Elaboración de acabados de puertas con control de calidad",
+          "contenidos": "ACABADOS / Laca selladora / Duco / Barnices / Disolventes",
+          "procedimientos": "Realiza acabados de puerta con control de calidad",
+          "nombre": "Realiza acabados de las puertas con calidad",
+          "horas": 6
+        }
+      ],
+      "actividadesSilabo": [
+        {
+          "numero": 1,
+          "referencia": "tabla 4, fila 4",
+          "indicador": "Identifica clasifica las diversidades de materiales que componen para ejecutar en la elaboración de su proyecto teniendo en cuenta las herramientas, equipos y máquinas para transformar la materia prima en un producto o bien teniendo en cuenta normas de seguridad / y el cuidado de su medio ambiente",
+          "actividadYContenidos": "LA PUERTA: / Definición de puerta, Partes, Características, / Elementos mecánicos / Mantenimiento de puertas / Bosquejo de puertas",
+          "recursosMateriales": "Pptx / Hojas de Información / Videos",
+          "horas": 6
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 4, fila 5",
+          "indicador": "Identifica clasifica las diversidades de materiales que componen para ejecutar en la elaboración de su proyecto teniendo en cuenta las herramientas, equipos y máquinas para transformar la materia prima en un producto o bien teniendo en cuenta normas de seguridad y el cuidado de su medio ambiente",
+          "actividadYContenidos": "CUBICACIÓN DE MATERIALES / (MADERA) / calcula materiales / Mantenimientos de puertas",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica / materiales / Equipos",
+          "horas": 6
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 4, fila 6",
+          "indicador": "Identifica las herramientas, / equipos y máquinas para brinda el mantenimiento el preventivo y correctivo de los equipos, de trabajo en la especialidad para el desarrollo de sus proyectos",
+          "actividadYContenidos": "MÁQUINAS EN EL PROCESO DE / HABILITADO: / Proceso, recomendaciones y características de la operación de cada una de ellas en el proceso de su manejo",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica / Normas de seguridad en su uso",
+          "horas": 6
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 4, fila 7",
+          "indicador": "Identifica las herramientas, / equipos y máquinas para brinda el mantenimiento el preventivo y correctivo de los equipos, de trabajo en la especialidad para el desarrollo de sus proyectos",
+          "actividadYContenidos": "MAQUINAS USADAS EN LA HABILITACION / La sierra circular / La escopladura horizontal y Vertical / La garlopa; / Definición y características de cada uno de ellas",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica / Normas de seguridad en su uso",
+          "horas": 6
+        },
+        {
+          "numero": 5,
+          "referencia": "tabla 4, fila 8",
+          "indicador": "Identifica las herramientas, / equipos y máquinas para brinda el mantenimiento el preventivo y correctivo de los equipos, de trabajo en la especialidad para el desarrollo de sus proyecto",
+          "actividadYContenidos": "UNIONES EN MADERA / Tipos de uniones en madera / Ensambles, acoplamientos / Definición y características de cada uno de ellas",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica / Normas de Seguridad en su preparación",
+          "horas": 6
+        },
+        {
+          "numero": 6,
+          "referencia": "tabla 4, fila 9",
+          "indicador": "Aplica y desarrolla los procedimientos de las normas de seguridad explica los procedimientos de limpieza y desinfección de los materiales y equipos tomando en cuenta la ficha técnica establecida.",
+          "actividadYContenidos": "ACABADOS / Laca selladora / Duco / Barnices / Disolventes / Definiciones y característica de cada una de ellas",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica / Normas de seguridad en su uso",
+          "horas": 6
+        }
+      ]
+    },
+    {
+      "numero": 4,
+      "nombre": "ELABORACIÓN DE MESA NOCHE",
+      "horas": 36,
+      "fuenteProgramacion": {
+        "documento": "CARPINTERIA EN MADERA 2025 II.docx",
+        "tablaWord": 28
+      },
+      "fuenteSilabo": {
+        "documento": "SILABO TECNICAS DE CARPINTERIA 2026 I.docx",
+        "tablaWord": 5
+      },
+      "capacidadProgramacion": "Ejecutando la mesa de noche manejando las normas técnicas de construcción",
+      "criteriosEvaluacion": "Realiza el proceso de habilitación de mesa de noche con habilidad y destreza / Realiza el armado y acabado de mueble mesa de noche con seguridad e higiene",
+      "aprendizajeGlobalSilabo": "Reconocer y construir mobiliarios de un ambiente de dormitorio con las características funcionales de del mueble teniendo en cuenta su diseño, color, decoración ya característica del mueble que compone en este ambiente",
+      "actividadesProgramacion": [
+        {
+          "numero": 1,
+          "referencia": "tabla 28, fila 3",
+          "aprendizaje": "Elaboración de bosquejo de mesa de noche",
+          "contenidos": "MUEBLES DE DORMITORIO / Dibujo de mesa de noche",
+          "procedimientos": "Realiza el bosquejo del mueble y cubicación de materiales",
+          "nombre": "Realiza el bosquejo de Mesa de noche,",
+          "horas": 6
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 28, fila 4",
+          "aprendizaje": "Ejecución de cálculo de materiales y habilita el mueble",
+          "contenidos": "CUBICACIÓN DE MATERIALES mueble de dormitorio",
+          "procedimientos": "mecanizado de la madera (trazado, corte, cepillado, taladrado, ajuste, ensamblado),",
+          "nombre": "Calcula y presupuesta materiales, habilita el mueble",
+          "horas": 6
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 28, fila 5",
+          "aprendizaje": "Realización del pre armado (presentación de proyecto)",
+          "contenidos": "Condiciones para armar un mueble",
+          "procedimientos": "Realiza la habilitación del material (trazado, corte, cepillado, taladrado, ajuste",
+          "nombre": "Realizando en pre armado (presentación de proyecto)",
+          "horas": 6
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 28, fila 6",
+          "aprendizaje": "Elaboración de cajones de la mesa de noche",
+          "contenidos": "MÁQUINAS EN EL PROCESO DE HABILITADO: / La garlopa, La sierra circular / La escopladura",
+          "procedimientos": "Reconocimiento de los tipos de uniones en madera caja y espiga / Mantenimiento y calibración de las maquinas eléctricas",
+          "nombre": "Realiza cajas de la mesa de noche",
+          "horas": 6
+        },
+        {
+          "numero": 5,
+          "referencia": "tabla 28, fila 7",
+          "aprendizaje": "Realización de armado del mueble mesa de noche",
+          "contenidos": "UNIONES EN MADERA / Tipos de uniones en madera / Ensambles, acoplamientos",
+          "procedimientos": "Realiza el ensamble y mecanizado de la madera,",
+          "nombre": "Realizando el armado de muebles mesa de noche",
+          "horas": 6
+        },
+        {
+          "numero": 6,
+          "referencia": "tabla 28, fila 8",
+          "aprendizaje": "Realización de acabado del mueble",
+          "contenidos": "ACABADOS DEL MUEBLE",
+          "procedimientos": "Realiza el acabado del mueble con prolijidad",
+          "nombre": "Realizando el acabado del mueble",
+          "horas": 6
+        }
+      ],
+      "actividadesSilabo": [
+        {
+          "numero": 1,
+          "referencia": "tabla 5, fila 4",
+          "indicador": "Identifica y selecciona materia prima e insumos, instrumentos, y equipos. Según el plan de producción, aplicando buenas Prácticas de manufactura (BPM) y la normativa Correspondiente.",
+          "actividadYContenidos": "Muebles de dormitorio / Definición de ambiente de dormitorio / Requisitos mínimos de un ambiente de / dormitorio / Muebles que integran un ambiente de dormitorio",
+          "recursosMateriales": "Pptx / Hojas de Información / Videos al tema y recomendaciones",
+          "horas": 6
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 5, fila 5",
+          "indicador": "Identifica clasifica las diversidades de materiales que componen para ejecutar en la elaboración de su proyecto teniendo en cuenta las herramientas, equipos y máquinas para transformar la materia prima en un producto o bien teniendo en cuenta normas de seguridad y el cuidado de su medio ambiente",
+          "actividadYContenidos": "Cubicación de materiales / Definición / Características al cubicar / mobiliarios de dormitorio / Practica de cubicación",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica",
+          "horas": 6
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 5, fila 6",
+          "indicador": "Identifica las herramientas, equipos y máquinas para brinda el mantenimiento el preventivo y correctivo de los equipos, de trabajo en la especialidad para el desarrollo de sus proyectos",
+          "actividadYContenidos": "Máquinas de la especialidad / Definición de máquinas de la especialidad / Tipos de máquinas / La sierra circular, definición partes, operaciones principales, y normas de seguridad / La garlopa, definición partes, operaciones principales, y normas de seguridad",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica / normas de seguridad en su operación",
+          "horas": 6
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 5, fila 7",
+          "indicador": "Identifica y selecciona materia prima e insumos, instrumentos, y equipos. Según el plan de producción, aplicando buenas prácticas de manufactura (BPM) y la normativa correspondiente",
+          "actividadYContenidos": "Uniones en madera / Definición / Tipos de uniones / Máquinas para el proceso de habilitación de unión en madera",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica / Normas de seguridad en su preparación",
+          "horas": 6
+        },
+        {
+          "numero": 5,
+          "referencia": "tabla 5, fila 8",
+          "indicador": "Identifica las herramientas, / equipos y máquinas para brinda el mantenimiento el preventivo y correctivo de los equipos, de trabajo en la especialidad",
+          "actividadYContenidos": "Herramientas manuales / Definición de herramientas / Herramientas principales en la habilitación de las uniones en madera",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica / normas de seguridad en su operación",
+          "horas": 6
+        },
+        {
+          "numero": 6,
+          "referencia": "tabla 5, fila 9",
+          "indicador": "Aplica y desarrolla los / procedimientos de las normas de seguridad explica los procedimientos de / limpieza y desinfección de los materiales y equipos tomando en cuenta la ficha técnica establecida.",
+          "actividadYContenidos": "Acabados del mueble / Definición / Tipos de acabados / Materiales para acabados / Técnicas de acabado",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica / Normas de seguridad en su uso",
+          "horas": 6
+        }
+      ]
+    },
+    {
+      "numero": 5,
+      "nombre": "ESTANTE DE OFICINA AÉREO",
+      "horas": 24,
+      "fuenteProgramacion": {
+        "documento": "CARPINTERIA EN MADERA 2025 II.docx",
+        "tablaWord": 31
+      },
+      "fuenteSilabo": {
+        "documento": "SILABO TECNICAS DE CARPINTERIA 2026 I.docx",
+        "tablaWord": 6
+      },
+      "capacidadProgramacion": "Ejecuta el / proceso de construcción del / estante de / oficina aérea con acabado de calidad",
+      "criteriosEvaluacion": "Realiza el proceso de habilitación de estante con habilidad y destreza / Realiza el armado y acabado de mueble estante con seguridad e higiene",
+      "aprendizajeGlobalSilabo": "Reconocer y construir mobiliarios de un ambiente de oficina con las características funcionales del mueble teniendo en cuenta su diseño, color, decoración y las característica del mueble que compone en este ambiente",
+      "actividadesProgramacion": [
+        {
+          "numero": 1,
+          "referencia": "tabla 31, fila 3",
+          "aprendizaje": "Elaboración de bosquejo de estante aéreo",
+          "contenidos": "Definición de muebles de oficina / ambiente de oficina / Dibujo del mueble de oficina (gabinete)",
+          "procedimientos": "Realiza el bosquejo del estante aéreo y cubicación de materiales",
+          "nombre": "Realizando bosquejo de estante de oficina",
+          "horas": 6
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 31, fila 4",
+          "aprendizaje": "Ejecución de cálculo de materiales y habilita el mueble",
+          "contenidos": "Tipos de muebles de oficina / Importancia de los muebles de oficina / Cubicación de materiales ( madera)",
+          "procedimientos": "Realiza el cálculo de materiales / Reconoce el mecanizado de la madera (trazado, corte, cepillado, taladrado, ajuste, ensamblado",
+          "nombre": "Elabora el cálculo de materiales y habilita el mueble",
+          "horas": 6
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 31, fila 5",
+          "aprendizaje": "Realización del pre armado (presentación de proyecto)",
+          "contenidos": "Condiciones para armar un mueble de oficina / Máquinas en el proceso de habilitado: / La garlopa / La sierra circular / La escopladura",
+          "procedimientos": "Mecanizado de la madera (trazado, corte, cepillado, taladrado, ajuste, ensamblado), / tipos de uniones en madera caja y espiga / Mantenimiento y calibración de las máquinas eléctricas",
+          "nombre": "Realizando en pre armado (presentación de proyecto)",
+          "horas": 6
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 31, fila 6",
+          "aprendizaje": "Realización de armado del mueble estante aéreo y acabado",
+          "contenidos": "Tipos de uniones en madera / Ensambles / Acabados del mueble",
+          "procedimientos": "acabado (lijado, teñido, pulido, imprimación y barnizado) e instalación en obra / operaciones del proceso de pintado, barnizado y laqueado",
+          "nombre": "Realizando el armado del estante de oficina con acabados de calidad",
+          "horas": 6
+        }
+      ],
+      "actividadesSilabo": [
+        {
+          "numero": 1,
+          "referencia": "tabla 6, fila 4",
+          "indicador": "Identifica y selecciona materia prima e insumos, instrumentos, y equipos. Según el plan de producción, aplicando buenas Prácticas de manufactura (BPM) y la normativa Correspondiente.",
+          "actividadYContenidos": "Muebles de oficina / Definición de ambiente de oficina / Requisitos mínimos de un ambiente de oficina / Muebles que integran un ambiente de oficina",
+          "recursosMateriales": "Pptx / Hojas de Información / Videos al tema y recomendaciones",
+          "horas": 6
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 6, fila 5",
+          "indicador": "Identifica clasifica las diversidades de materiales que componen para ejecutar en la elaboración de su proyecto teniendo en cuenta las herramientas, equipos y máquinas para transformar la materia prima en un producto o bien teniendo en cuenta normas de seguridad y el cuidado de su medio ambiente",
+          "actividadYContenidos": "TIPOS DE OFICINA / Definición / Característica ambiente de oficina / Practica de cubicación",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica",
+          "horas": 6
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 6, fila 6",
+          "indicador": "Identifica las herramientas, equipos y máquinas para brinda el mantenimiento el preventivo y correctivo de los equipos, de trabajo en la especialidad para el desarrollo de sus proyectos",
+          "actividadYContenidos": "Máquinas de la especialidad / Definición de máquinas de la especialidad / Tipos de máquinas / La sierra circular, definición partes, operaciones principales, y normas de seguridad / La garlopa, definición partes, operaciones principales, y normas de seguridad",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica / Normas de seguridad en su operación",
+          "horas": 6
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 6, fila 7",
+          "indicador": "Identifica y selecciona materia prima e insumos, instrumentos, y equipos. Según el plan de producción, aplicando buenas prácticas de manufactura (BPM) y la normativa correspondiente",
+          "actividadYContenidos": "Uniones en madera / Definición / Tipos de uniones / Máquinas para el proceso de habilitación de unión en madera",
+          "recursosMateriales": "Pptx / Hojas de Información / Hojas de operación / Ficha técnica / Normas de seguridad en su preparación",
+          "horas": 6
+        }
+      ]
+    },
+    {
+      "numero": 6,
+      "nombre": "GESTIÓN EMPRESARIAL Y ORIENTACIÓN LABORAL",
+      "horas": 30,
+      "fuenteProgramacion": {
+        "documento": "CARPINTERIA EN MADERA 2025 II.docx",
+        "tablaWord": 34
+      },
+      "fuenteSilabo": {
+        "documento": "SILABO TECNICAS DE CARPINTERIA 2026 I.docx",
+        "tablaWord": 8
+      },
+      "capacidadProgramacion": "Analiza las condiciones para desarrollar un negocio sostenible respondiendo a las necesidades del mercado, proyectando los recursos para su funcionamiento, y desarrollando una adecuada estrategia de ventas.",
+      "criteriosEvaluacion": "Identifica una oportunidad de negocio y reconoce las características de un proyecto de negocio viable, vinculándolo a su ámbito profesional. / Analiza estrategias para la promoción de un negocio por medios digitales y tradicionales, considerando factores de riesgo, inversión e impacto en el público objetivo",
+      "aprendizajeGlobalSilabo": "",
+      "actividadesProgramacion": [
+        {
+          "numero": 1,
+          "referencia": "tabla 34, fila 3",
+          "aprendizaje": "MODULO 1: Desarrollo de un negocio viable / Conocimiento de que es y cuáles son los principios básicos del emprendimiento.",
+          "contenidos": "Tema 1: Las fortalezas y actitudes personales: qué necesito para emprender / El emprendimiento y sus principios básicos / Definición de fortalezas y debilidades / Las fortalezas y actitudes de un emprendedor",
+          "procedimientos": "Desarrollan las características emprendedoras personales. / Realicemos una indagación de algunos emprendimientos que se están dando en nuestro país.",
+          "nombre": "Identificando mis fortalezas y aptitudes personales y de emprendimiento",
+          "horas": 3
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 34, fila 4",
+          "aprendizaje": "Identificación de oportunidades de negocio a partir de las necesidades o insight aplicando el pensamiento de diseño e ideas innovadoras.",
+          "contenidos": "Tema 2: Las oportunidades de negocio: como reconocerlas / ¿Qué es una oportunidad de negocio? / ¿Cómo identificar una oportunidad de negocio? / Pensamiento de diseño e ideas innovadoras",
+          "procedimientos": "Identifica y describe una idea de negocio / Analiza los principios del design thinking e idea de negocio",
+          "nombre": "Identificando las oportunidades de negocio aplicando diseño e ideas innovadoras",
+          "horas": 3
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 34, fila 5",
+          "aprendizaje": "MÓDULO 2: Características de un negocio viable / Conocimiento de la metodología Startup y el Lienzo lean Canvas",
+          "contenidos": "Tema 3: El modelo de negocio / Metodología Lean Startup y el lienzo Lean Canvas. / Segmentación y el perfil del cliente / Identificación del problema",
+          "procedimientos": "Describe el modelo de negocio en relación costo – beneficio: Conoce la Metodología Lean Startup y el Lienzo Lean Canvas",
+          "nombre": "Aplicando la herramienta Lean Canvas para prototipar su modelo de negocio en las categorías de clientes y problemas.",
+          "horas": 3
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 34, fila 6",
+          "aprendizaje": "Descripción de los beneficios que ofrece su propuesta de valor a los clientes",
+          "contenidos": "Tema 4: Propuesta de valor / Propuesta de valor y el mapa de valor / Solución / La comunicación: segmento de clientes",
+          "procedimientos": "Redacta una lista de factores de la Propuesta de valor: idea emprendedora / La comunicación con el segmento de clientes",
+          "nombre": "Aplicando la herramienta lean Canvas para prototipar su modelo de negocio en las categorías de Propuesta de valor, solución y canales",
+          "horas": 3
+        },
+        {
+          "numero": 5,
+          "referencia": "tabla 34, fila 7",
+          "aprendizaje": "Descripción de la relación costo-beneficio vinculada a la operación de su propuesta de valor.",
+          "contenidos": "Tema 5: Estructura de costos, precios y financiamiento / Flujo de ingresos, Estructura de costos, Estrategia de precios / Inversión inicial y fuentes de financiamiento",
+          "procedimientos": "Redactan con criterio técnico un presupuesto y el costo de un producto o servicio. / El punto de equilibrio",
+          "nombre": "Relacionando costo-beneficio vinculada a la operación de su propuesta de valor",
+          "horas": 3
+        },
+        {
+          "numero": 6,
+          "referencia": "tabla 34, fila 8",
+          "aprendizaje": "Identificación de los indicadores claros medibles, para la toma de decisiones y reconocimiento de su ventaja competitiva",
+          "contenidos": "Tema 6: Métricas clave, ventajas competitivas / ¿Qué es una métrica?, Métricas clave / La ventaja competitiva. Ventaja especial .",
+          "procedimientos": "Diseña actividades clave a medir como indicadores para la toma de decisiones y contribuyen a llevar un control de la campaña de marketing",
+          "nombre": "Identificando los indicadores claves medibles, para la toma de decisiones y reconoce su ventaja",
+          "horas": 3
+        },
+        {
+          "numero": 7,
+          "referencia": "tabla 34, fila 9",
+          "aprendizaje": "MÓDULO 3: Promoción de productos y servicios / Identificación y reconocimiento de medios tradicionales a utilizar de manera eficaz e innovadora.",
+          "contenidos": "Tema 7: Promoción del producto / Promoción de productos por medios tradicionales de manera innovadora, El Elevator Pitch, Demo pitch / Estrategias de relacionamiento con el cliente",
+          "procedimientos": "Identifica medios tradicionales que puede utilizar eficaz e innovadoramente para promocionar sus productos / Pone en práctica la técnica “Elevator Pitch”",
+          "nombre": "Utilidad de promocionar sus productos, empleando medios tradicionales de forma innovadora. Poner en práctica el Elevator pitch.",
+          "horas": 3
+        },
+        {
+          "numero": 8,
+          "referencia": "tabla 34, fila 10",
+          "aprendizaje": "Conocimiento e identificación de las principales estrategias de social media y el concepto de Community Manager y su función en la publicidad digital.",
+          "contenidos": "Tema 8: Publicidad digital / Estrategias de Social Media / El Community Manager (CM) .",
+          "procedimientos": "Conoce las estrategias de Social Media. / concepto de Community Manager y valora su función en la publicidad digital de su negocio",
+          "nombre": "Estrategias de Social Media que pueden aplicarse a su negocio..",
+          "horas": 3
+        },
+        {
+          "numero": 9,
+          "referencia": "tabla 34, fila 11",
+          "aprendizaje": "Conocimiento de las principales características del Facebook.",
+          "contenidos": "Tema 9: El comercio digital / Vender por internet. Facebook en los negocios. / Creación de anuncios y contenido Fan page.",
+          "procedimientos": "Identifica las ventajas y posibilidades del Comercio Digital / Creación de páginas de Facebook y Fan Page",
+          "nombre": "Creando y configurando un Fan page en Facebook con contenidos que promocionen su negocio.",
+          "horas": 3
+        },
+        {
+          "numero": 10,
+          "referencia": "tabla 34, fila 12",
+          "aprendizaje": "Identifica sus derechos y deberes como trabajador",
+          "contenidos": "Derechos y deberes laborales",
+          "procedimientos": "Identifica los derechos y deberes del trabajador en un organizador gráfico",
+          "nombre": "Identifica sus derechos laborales en un organizador gráfico",
+          "horas": 3
+        }
+      ],
+      "actividadesSilabo": [
+        {
+          "numero": 1,
+          "referencia": "tabla 8, fila 4",
+          "indicador": "Valora y complementar el reforzamientos en sus actividades personales y profesionales",
+          "actividadYContenidos": "Tema 1: Las fortalezas y actitudes personales: qué necesito para emprender / El emprendimiento y sus principios básicos / Definición de fortalezas y debilidades / Las fortalezas y actitudes de un emprendedor",
+          "recursosMateriales": "Pptx / Hojas de / Información / Video al programa",
+          "horas": 3
+        },
+        {
+          "numero": 2,
+          "referencia": "tabla 8, fila 5",
+          "indicador": "Valora y complementar el reforzamientos en sus actividades personales y profesionales",
+          "actividadYContenidos": "Tema 2: Las oportunidades de negocio: como reconocerlas / ¿Qué es una oportunidad de negocio? / ¿Cómo identificar una oportunidad de negocio? / Pensamiento de diseño e ideas innovadoras",
+          "recursosMateriales": "Pptx / Hojas de / Información / Video al programa",
+          "horas": 3
+        },
+        {
+          "numero": 3,
+          "referencia": "tabla 8, fila 6",
+          "indicador": "Valora y complementar el reforzamientos en sus actividades personales y profesionales",
+          "actividadYContenidos": "Tema 3: El modelo de negocio / Metodología Lean Startup y el lienzo Lean Canvas. / Segmentación y el perfil del cliente / Identificación del problema",
+          "recursosMateriales": "Pptx / Hojas de / Información / Video al programa",
+          "horas": 3
+        },
+        {
+          "numero": 4,
+          "referencia": "tabla 8, fila 7",
+          "indicador": "Valora y complementar el reforzamientos en sus actividades personales y profesionales",
+          "actividadYContenidos": "Tema 4: Propuesta de valor / Propuesta de valor y el mapa de valor / Solución / La comunicación: segmento de clientes",
+          "recursosMateriales": "Pptx / Hojas de / Información / Video al programa",
+          "horas": 3
+        },
+        {
+          "numero": 5,
+          "referencia": "tabla 8, fila 8",
+          "indicador": "Valora y complementar el reforzamientos en sus actividades personales y profesionales",
+          "actividadYContenidos": "Tema 5: Estructura de costos, precios y financiamiento / Flujo de ingresos, Estructura de costos, Estrategia de precios / Inversión inicial y fuentes de financiamiento",
+          "recursosMateriales": "Pptx / Hojas de / Información / Video al programa",
+          "horas": 3
+        },
+        {
+          "numero": 6,
+          "referencia": "tabla 8, fila 9",
+          "indicador": "Valora y complementar el reforzamientos en sus actividades personales y profesionales",
+          "actividadYContenidos": "Tema 6: Métricas clave, ventajas competitivas / ¿Qué es una métrica?, Métricas clave / La ventaja competitiva. Ventaja especial",
+          "recursosMateriales": "Pptx / Hojas de / Información / Video al programa",
+          "horas": 3
+        },
+        {
+          "numero": 7,
+          "referencia": "tabla 8, fila 10",
+          "indicador": "Valora y complementar el reforzamientos en sus actividades personales y profesionales",
+          "actividadYContenidos": "Tema 7: Promoción del producto / Promoción de productos por medios tradicionales de manera innovadora, El Elevator Pitch, Demo pitch / Estrategias de relacionamiento con el cliente",
+          "recursosMateriales": "Pptx / Hojas de / Información / Video al programa",
+          "horas": 3
+        },
+        {
+          "numero": 8,
+          "referencia": "tabla 8, fila 11",
+          "indicador": "Valora y complementar el reforzamientos en sus actividades personales y profesionales",
+          "actividadYContenidos": "Tema 8: Publicidad digital / Estrategias de Social Media / El Community Manager (CM",
+          "recursosMateriales": "Pptx / Hojas de / Información / Video al programa",
+          "horas": 3
+        },
+        {
+          "numero": 9,
+          "referencia": "tabla 8, fila 12",
+          "indicador": "Valora y complementar el reforzamientos en sus actividades personales y profesionales",
+          "actividadYContenidos": "Tema 9: El comercio digital / Vender por internet. Facebook en los negocios. / Creación de anuncios y contenido Fan pág.",
+          "recursosMateriales": "Pptx / Hojas de / Información / Video al programa",
+          "horas": 3
+        },
+        {
+          "numero": 10,
+          "referencia": "tabla 8, fila 13",
+          "indicador": "Valora y complementar el reforzamientos en sus actividades personales y profesionales",
+          "actividadYContenidos": "Derechos y deberes laborales",
+          "recursosMateriales": "Pptx / Hojas de / Información / Video al programa",
+          "horas": 3
+        }
+      ]
+    }
+  ]
+}

@@ -142,6 +142,17 @@ type EfsrtPppPromedioRow = {
   moduloEstudianteId: number;
 };
 
+type SesionProgramada = {
+  id: string;
+  tipo: 'curricular' | 'ppp';
+  numero: number | null;
+  nombre: string;
+  unidad: string | null;
+  inicio: string;
+  fin: string;
+  horasAcademicas: number | null;
+};
+
 type RegistroAuxiliar = {
   grupo: {
     id: number;
@@ -186,6 +197,7 @@ type RegistroAuxiliar = {
     } | null;
   } | null;
   estructura: Unidad[];
+  sesiones?: SesionProgramada[];
   estudiantes: Estudiante[];
   notas: NotaRow[];
   promediosEfsrtPpp?: EfsrtPppPromedioRow[];
@@ -385,11 +397,24 @@ const buildIndicatorColumns = (estructura: Unidad[]) => {
   return columns;
 };
 
-const getGrupoModuloLabel = (grupoModulo: GrupoModuloOption) =>
-  grupoModulo.nombre ||
-  `${grupoModulo.grupo.nombreDisplay || `Grupo ${grupoModulo.grupo.id}`} - ${
-    grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || `Modulo ${grupoModulo.moduloId}`
+const getGrupoModuloLabel = (grupoModulo: GrupoModuloOption) => {
+  const titulo = grupoModulo.modulo?.titulo?.trim();
+  const nombre = grupoModulo.nombre?.trim();
+  if (titulo && nombre && !nombre.toLocaleLowerCase('es-PE').startsWith(titulo.toLocaleLowerCase('es-PE'))) {
+    return `${titulo} — ${nombre}`;
+  }
+  return nombre || `${grupoModulo.grupo.nombreDisplay || `Grupo ${grupoModulo.grupo.id}`} - ${
+    titulo || grupoModulo.modulo?.tituloComercial || `Modulo ${grupoModulo.moduloId}`
   }`;
+};
+
+const formatSesionFecha = (value: string) => new Intl.DateTimeFormat('es-PE', {
+  timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric',
+}).format(new Date(value));
+
+const formatSesionHora = (value: string) => new Intl.DateTimeFormat('es-PE', {
+  timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+}).format(new Date(value));
 
 export default function RegistroAuxiliarPage() {
   const searchParams = useSearchParams();
@@ -1495,6 +1520,23 @@ export default function RegistroAuxiliarPage() {
       {error && <AutoDismissAlert severity="error" sx={{ mb: 1.5 }}>{error}</AutoDismissAlert>}
       <AutoDismissAlert message={message} severity="success" sx={{ mb: 1.5 }} />
 
+      {registro && (registro.sesiones?.length ?? 0) > 0 && (
+        <Paper sx={{ mb: 1, p: 1.5, border: '1px solid #d4dce5' }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
+            Sesiones programadas ({registro.sesiones?.length})
+          </Typography>
+          <Box sx={{ maxHeight: 245, overflowY: 'auto' }}>
+            {registro.sesiones?.map((sesion) => (
+              <Box key={sesion.id} sx={{ display: 'grid', gridTemplateColumns: { xs: '90px 1fr', md: '110px 110px 60px 1fr' }, gap: 1, py: 0.55, px: 0.75, borderTop: '1px solid #e8edf2', fontSize: 13 }}>
+                <Box>{formatSesionFecha(sesion.inicio)}</Box>
+                <Box>{formatSesionHora(sesion.inicio)}–{formatSesionHora(sesion.fin)}</Box>
+                <Box>{sesion.horasAcademicas ?? '—'} h</Box>
+                <Box>{sesion.tipo === 'ppp' ? 'PPP' : `Sesión ${sesion.numero ?? '—'}`} · {sesion.nombre}{sesion.unidad ? ` · ${sesion.unidad}` : ''}</Box>
+              </Box>
+            ))}
+          </Box>
+        </Paper>
+      )}
       <Paper sx={{ overflow: 'hidden', borderRadius: 1, border: '1px solid #2d2d2d' }}>
         <Box
           ref={registroScrollRef}

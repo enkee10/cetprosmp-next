@@ -287,6 +287,19 @@ const REGISTRO_AUXILIAR_CONTEXT_QUERY = `
 
 const REGISTRO_AUXILIAR_DETAIL_QUERY = `
   query RegistroAuxiliarDetail($grupoModuloId: Int!, $grupoId: Int!, $moduloId: Int!) {
+    sesionesCurriculares: grupoModuloActividades(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 1000, orderBy: [{ inicio: ASC }, { segmento: ASC }]) {
+      id inicio fin
+      actividad {
+        id nombre numeroSesion duracion
+        aprendizaje { indicadorCapacidad { capacidadTerminal { unidadDidacticaId } } }
+      }
+    }
+    practicasProgramadas: efsrtPppPracticas(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 1000) {
+      id numero titulo fecha
+    }
+    jornadasProgramadas: grupoModuloJornadas(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 1000) {
+      fecha tipo inicio fin horas
+    }
     grupoModuloUnidadesDidacticas(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 500) {
       id
       orden
@@ -1453,6 +1466,9 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
     const { grupoId, moduloId } = grupoModulo;
 
     const response = await dataConnect.executeGraphql<{
+      sesionesCurriculares: Array<{ id: number; inicio: string; fin: string; actividad: { id: number; nombre?: string | null; numeroSesion?: number | null; duracion?: number | null; aprendizaje?: { indicadorCapacidad?: { capacidadTerminal?: { unidadDidacticaId?: number | null } | null } | null } | null } }>;
+      practicasProgramadas: Array<{ id: number; numero: number; titulo?: string | null; fecha?: string | null }>;
+      jornadasProgramadas: Array<{ fecha: string; tipo: string; inicio: string; fin: string; horas: number }>;
       grupoModuloUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
       competenciaUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
       unidadesDidacticas: RegistroAuxiliarUnidad[];
@@ -1487,6 +1503,37 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
     }
 
     const unidadById = new Map((response.data.unidadesDidacticas ?? []).map((unidad) => [unidad.id, unidad]));
+    const jornadasPpp = new Map((response.data.jornadasProgramadas ?? [])
+      .filter((jornada) => jornada.tipo === "ppp")
+      .map((jornada) => [jornada.fecha, jornada]));
+    const sesiones = [
+      ...(response.data.sesionesCurriculares ?? []).map((item) => ({
+        id: `curricular-${item.id}`,
+        tipo: "curricular",
+        numero: item.actividad.numeroSesion ?? null,
+        nombre: item.actividad.nombre ?? "Sesión curricular",
+        unidad: unidadById.get(item.actividad.aprendizaje?.indicadorCapacidad?.capacidadTerminal?.unidadDidacticaId ?? -1)?.nombre ?? null,
+        inicio: item.inicio,
+        fin: item.fin,
+        horasAcademicas: item.actividad.duracion ?? null,
+      })),
+      ...(response.data.practicasProgramadas ?? []).flatMap((item) => {
+        const fecha = item.fecha ? new Intl.DateTimeFormat("en-CA", {
+          timeZone: "America/Lima", year: "numeric", month: "2-digit", day: "2-digit",
+        }).format(new Date(item.fecha)) : null;
+        const jornada = fecha ? jornadasPpp.get(fecha) : null;
+        return jornada ? [{
+          id: `ppp-${item.id}`,
+          tipo: "ppp",
+          numero: item.numero,
+          nombre: item.titulo ?? `Práctica ${item.numero}`,
+          unidad: null,
+          inicio: jornada.inicio,
+          fin: jornada.fin,
+          horasAcademicas: jornada.horas,
+        }] : [];
+      }),
+    ].sort((a, b) => Date.parse(a.inicio) - Date.parse(b.inicio) || (a.numero ?? 0) - (b.numero ?? 0));
     const estructura = unidadIds
       .map((unidadId) => unidadById.get(unidadId))
       .filter((unidad): unidad is RegistroAuxiliarUnidad => Boolean(unidad))
@@ -1523,6 +1570,7 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
       grupo: grupoModulo.grupo ?? null,
       grupoModulo,
       estructura,
+      sesiones,
       estudiantes: modulosEstudiantes
         .filter((item) => !item.matricula?.archivado)
         .sort((a, b) => {

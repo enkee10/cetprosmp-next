@@ -111,11 +111,14 @@ const getGrupoModuloMenuName = (value: string | null | undefined) => {
   return text.split('[')[0]?.trim() || text;
 };
 
-const getModuloMenuName = (modulo: RegistroAuxiliarDocenteModulo) =>
-  getGrupoModuloMenuName(modulo.nombre) ||
-  modulo.modulo?.titulo ||
-  modulo.modulo?.tituloComercial ||
-  `Modulo ${modulo.moduloId}`;
+const getModuloMenuName = (modulo: RegistroAuxiliarDocenteModulo) => {
+  const titulo = modulo.modulo?.titulo?.trim();
+  const nombreGrupo = getGrupoModuloMenuName(modulo.nombre);
+  if (titulo && nombreGrupo && normalizeMenuText(titulo) !== normalizeMenuText(nombreGrupo)) {
+    return `${titulo} (${nombreGrupo})`;
+  }
+  return titulo || nombreGrupo || modulo.modulo?.tituloComercial || `Modulo ${modulo.moduloId}`;
+};
 
 const buildDocenteMatriculaPath = (
   grupoModuloId: number,

@@ -33,13 +33,13 @@ export interface ParteDiarioRow {
   recordId?: number | null; valoraciones?: Record<ValuationField, number | null>;
   jornadaId: number | null; tipoUnidad: 'curricular' | 'ppp' | 'efsrt'; practicaTipo: 'ppp' | 'efsrt'; actividadManual: string; pendiente: boolean;
   docenteNombre: string; docenteNombreCompleto: string; avatar: string | null; turno: string; turnoOrden: number;
-  modulo: string; unidadDidacticaId: number | null; unidad: string; actividadId: number | null; actividad: string;
+  modulo: string; unidadDidacticaId: number | null; unidad: string; actividadId: number | null; actividad: string; actividadNumero?: number | null;
   matriculados: number; asistentes: number | null; usoMedios: string; silabo: string; fichaActividad: string; instrumentoEvaluacion: string;
   registroAsistencia: string; registroAuxiliarEvaluacion: string;
   material: string; tareas: string; firma: string | null; observaciones: string[]; version: string | null;
 }
 export interface ParteDiarioData { fecha: string; laborable: boolean; mensaje: string | null; filas: ParteDiarioRow[] }
-export interface ParteActividad { id: number; nombre: string | null; fechas?: string[] }
+export interface ParteActividad { id: number; nombre: string | null; numeroSesion?: number | null; fechas?: string[] }
 export interface ParteUnidad { id: number; nombre: string | null; actividades: ParteActividad[] }
 export const unitLabel = (name: string | null) => (name || '').toLocaleUpperCase('es');
 export const numberedUnitLabel = (unit: ParteUnidad, index: number) => `UD${index + 1}: ${unitLabel(unit.nombre)}`;
@@ -55,6 +55,12 @@ export function isProgrammedParteUnit(row: ParteDiarioRow, value: string, units:
   return value === (row.tipoUnidadProgramada || row.tipoUnidad);
 }
 export const activityLabel = (name: string | null) => (name || '').toLocaleLowerCase('es').replace(/(^|[.!?]\s*|\n\s*)([\p{L}])/gu, (_all, prefix: string, letter: string) => prefix + letter.toLocaleUpperCase('es'));
+export const selectedParteActivityLabel = (row: ParteDiarioRow, activities: ParteActividad[] = []) => {
+  const index = activities.findIndex(activity => activity.id === row.actividadId);
+  const number = index >= 0 ? activities[index].numeroSesion ?? index + 1 : row.actividadNumero;
+  const name = activityLabel(row.actividad || (index >= 0 ? activities[index].nombre : null));
+  return name ? `${number != null ? `${number}. ` : ''}${name}` : '';
+};
 export const activityDatesLabel = (dates?: string[]) => dates?.length ? dates.map(date => `${date.slice(8,10)}/${date.slice(5,7)}/${date.slice(2,4)}`).join(', ') : 'Sin fecha programada';
 export const parteDateLabel = (fecha: string) => {
   const date = new Date(`${fecha}T12:00:00Z`), format = (options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('es-PE', { ...options, timeZone: 'America/Lima' }).format(date).toLowerCase().replace('.', '');
@@ -71,9 +77,9 @@ export const parteTeacherGroupLabel = (row: ParteDiarioRow) => {
 };
 export const parteUnitValue = (row: ParteDiarioRow) => row.tipoUnidad === 'curricular' ? (row.unidadDidacticaId == null ? '' : `u:${row.unidadDidacticaId}`) : row.tipoUnidad;
 export function changeParteUnit(row: ParteDiarioRow, value: string, units: ParteUnidad[]): ParteDiarioRow {
-  if (value === 'ppp' || value === 'efsrt') return { ...row, tipoUnidad: value, unidadDidacticaId: null, actividadId: null, unidad: value.toUpperCase(), actividadManual: '', actividad: '' };
+  if (value === 'ppp' || value === 'efsrt') return { ...row, tipoUnidad: value, unidadDidacticaId: null, actividadId: null, actividadNumero: null, unidad: value.toUpperCase(), actividadManual: '', actividad: '' };
   const unit = units.find(u => `u:${u.id}` === value), first = unit?.actividades[0];
-  return { ...row, tipoUnidad: 'curricular', unidadDidacticaId: unit?.id ?? null, unidad: unit?.nombre || '', actividadId: first?.id ?? null, actividad: first?.nombre || '', actividadManual: '' };
+  return { ...row, tipoUnidad: 'curricular', unidadDidacticaId: unit?.id ?? null, unidad: unit?.nombre || '', actividadId: first?.id ?? null, actividadNumero: first ? first.numeroSesion ?? 1 : null, actividad: first?.nombre || '', actividadManual: '' };
 }
 
 // The signature stays transparent and is cropped to its ink, preserving its aspect ratio.

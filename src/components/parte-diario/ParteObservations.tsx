@@ -5,9 +5,12 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VoiceObservation from './VoiceObservation';
 
-export default function ParteObservations({values,onChange,disabled=false,voice=false,onBusyChange,onPendingChange}:{values:string[];onChange:(values:string[])=>void;disabled?:boolean;voice?:boolean;onBusyChange?:(busy:boolean)=>void;onPendingChange?:(pending:boolean)=>void}) {
- const [text,setText]=useState(''),[editing,setEditing]=useState<number|null>(null),[busy,setBusy]=useState(false);
- const pending=(value:string,index:number|null)=>{setText(value);setEditing(index);onPendingChange?.(!!value.trim()||index!==null);};
+export type ParteObservationInput = { text: string; editing: number | null };
+
+export default function ParteObservations({values,onChange,disabled=false,voice=false,onBusyChange,onPendingChange,inputDraft,onInputDraftChange}:{values:string[];onChange:(values:string[])=>void;disabled?:boolean;voice?:boolean;onBusyChange?:(busy:boolean)=>void;onPendingChange?:(pending:boolean)=>void;inputDraft?:ParteObservationInput;onInputDraftChange?:(draft:ParteObservationInput)=>void}) {
+ const [localInput,setLocalInput]=useState<ParteObservationInput>({text:'',editing:null}),[busy,setBusy]=useState(false);
+ const {text,editing}=inputDraft??localInput;
+ const pending=(value:string,index:number|null)=>{const next={text:value,editing:index};if(onInputDraftChange)onInputDraftChange(next);else setLocalInput(next);onPendingChange?.(!!value.trim()||index!==null);};
  const add=(value:string)=>onChange([...values,value.trim()]);
  const commit=()=>{if(!text.trim())return;onChange(editing===null?[...values,text.trim()]:values.map((v,i)=>i===editing?text.trim():v));pending('',null);};
  return <Stack gap={1}>

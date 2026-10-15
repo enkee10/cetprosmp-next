@@ -32,7 +32,6 @@ const protectedRelations = [
 
 export async function saveGrupoWithModulos(
   grupoId: number | null, payload: DataConnectGrupoInput, detalles: DetalleInstancia[],
-  nombrePersonalizado?: string | null,
 ) {
   const moduloIds = Array.from(new Set(detalles.map(item => item.moduloId)));
   const [catalog, existing] = await Promise.all([
@@ -100,7 +99,7 @@ export async function saveGrupoWithModulos(
     const nombreGenerado = buildGrupoModuloNombreRelacional(context,modulo,suffix);
     const data: Record<string,unknown> = {
       moduloId:detalle.moduloId, instancia:detalle.instancia,
-      nombre:nombrePersonalizado?.trim() ? `${nombreGenerado} — ${nombrePersonalizado.trim()}` : nombreGenerado,
+      nombre:nombreGenerado,
       sufijo:suffix,
       orden:detalle.orden??old?.orden??index+1,
       obligatorio:detalle.obligatorio??old?.obligatorio??true,

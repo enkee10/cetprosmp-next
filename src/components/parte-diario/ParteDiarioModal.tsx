@@ -1,18 +1,24 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Avatar, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { selectedParteUnitLabel,isProgrammedParteUnit,numberedUnitLabel,parteMissingFields,changeParteUnit, MEDIOS_OPTIONS, FICHA_OPTIONS,INSTRUMENTO_OPTIONS,REG_ASISTENCIA_OPTIONS,REG_AUX_EVALUACION_OPTIONS,TAREAS_OPTIONS, MATERIAL_OPTIONS, parteTeacherGroupLabel, ParteDiarioRow, parteUnitValue, ParteUnidad, SILABO_OPTIONS } from '@/lib/parteDiario';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import SignaturePad from './SignaturePad';
-import ParteObservations from './ParteObservations';
+import ParteObservations, { ParteObservationInput } from './ParteObservations';
 import { parteThreeLines } from './parteFieldStyles';
 import ParteActivitySelect from './ParteActivitySelect';
 
-export default function ParteDiarioModal({ row, fecha, onClose, onSaved, reportRecordId,onDeleted }: { row: ParteDiarioRow; fecha: string; onClose: () => void; onSaved: () => void; reportRecordId?:number;onDeleted?:()=>void }) {
-  const [draft, setDraft] = useState({ ...row }), [unidades, setUnidades] = useState<ParteUnidad[]>([]), [loading, setLoading] = useState(true), [saving, setSaving] = useState(false), [error, setError] = useState('');
-  const [pendingObservation,setPendingObservation]=useState(false);
+export default function ParteDiarioModal({ row, fecha, onClose, onSaved, onDraftChange, observationInput, onObservationInputChange, reportRecordId,onDeleted }: { row: ParteDiarioRow; fecha: string; onClose: () => void; onSaved: () => void; onDraftChange?: (draft: ParteDiarioRow) => void; observationInput?: ParteObservationInput; onObservationInputChange?: (value: ParteObservationInput) => void; reportRecordId?:number;onDeleted?:()=>void }) {
+  const [localDraft, setLocalDraft] = useState({ ...row }), [unidades, setUnidades] = useState<ParteUnidad[]>([]), [loading, setLoading] = useState(true), [saving, setSaving] = useState(false), [error, setError] = useState('');
+  const draft = onDraftChange ? row : localDraft;
+  const setDraft = (update: (previous: ParteDiarioRow) => ParteDiarioRow) => {
+    if (onDraftChange) onDraftChange(update(row));
+    else setLocalDraft(update);
+  };
+  const [pendingObservationInput,setPendingObservationInput]=useState(false);
+  const pendingObservation = pendingObservationInput || !!observationInput?.text.trim() || observationInput?.editing != null;
   useEffect(() => {
     let active = true;
     httpsCallable<unknown, { unidades: ParteUnidad[] }>(functions, reportRecordId?'getParteReporteOpciones':'getParteDiarioOpciones')(reportRecordId?{id:reportRecordId}:{ fecha, grupoModuloId: row.grupoModuloId, actividadProgramadaId: row.actividadProgramadaId, jornadaId: row.jornadaId })
@@ -20,7 +26,7 @@ export default function ParteDiarioModal({ row, fecha, onClose, onSaved, reportR
     return () => { active = false; };
   }, [row.actividadProgramadaId, row.grupoModuloId, row.jornadaId,reportRecordId,fecha]);
   const actividades = unidades.find(u => u.id === draft.unidadDidacticaId)?.actividades ?? [];
-  const setFirma = useCallback((firma: string | null) => setDraft(previous => ({ ...previous, firma })), []);
+  const setFirma = (firma: string | null) => setDraft(previous => ({ ...previous, firma }));
   const save = async () => {
     if (pendingObservation) { setError('Añade o termina de editar la observación antes de guardar.'); return; }
     if (!draft.firma) { setError('Firma el parte antes de guardarlo.'); return; }
@@ -44,7 +50,7 @@ export default function ParteDiarioModal({ row, fecha, onClose, onSaved, reportR
         <TextField id="parte-unidad" select label="Unidad" value={parteUnitValue(draft)} disabled={saving} onChange={event => setDraft(previous => changeParteUnit(previous, event.target.value, unidades))} sx={{'& .MuiSelect-select':{minHeight:56,display:'flex',alignItems:'center',whiteSpace:'normal'}}} slotProps={{inputLabel:{shrink:true},select:{displayEmpty:true,renderValue:()=> <Typography component="span" sx={parteThreeLines}>{selectedParteUnitLabel(draft,unidades)||'Seleccionar unidad'}</Typography>}}}>
           <MenuItem value="" disabled>Seleccionar unidad</MenuItem>{unidades.map((u,index) => <MenuItem key={u.id} value={`u:${u.id}`}><Typography sx={{...parteThreeLines,fontWeight:isProgrammedParteUnit(row,`u:${u.id}`,unidades)?700:400}}>{numberedUnitLabel(u,index)}</Typography></MenuItem>)}<MenuItem value={row.practicaTipo} sx={{fontWeight:isProgrammedParteUnit(row,row.practicaTipo,unidades)?700:400}}>{row.practicaTipo.toUpperCase()}</MenuItem>
         </TextField>
-        {draft.tipoUnidad !== 'curricular' ? <TextField multiline required label="Actividad / sesión" placeholder={`Escribir actividad de ${draft.tipoUnidad.toUpperCase()}`} value={draft.actividadManual} disabled={saving} slotProps={{inputLabel:{shrink:true},htmlInput:{maxLength:500}}} onChange={event=>setDraft(previous=>({...previous,actividadManual:event.target.value,actividad:event.target.value}))}/> : <ParteActivitySelect row={draft} fecha={fecha} reportRecordId={reportRecordId} actividades={actividades} disabled={saving} onChange={a=>{setDraft(previous=>({...previous,actividadId:a.id,actividad:a.nombre||''}));setUnidades(previous=>previous.map(u=>({...u,actividades:u.actividades.map(item=>item.id===a.id?a:item)})));}}/>}
+        {draft.tipoUnidad !== 'curricular' ? <TextField multiline required label="Actividad / sesión" placeholder={`Escribir actividad de ${draft.tipoUnidad.toUpperCase()}`} value={draft.actividadManual} disabled={saving} slotProps={{inputLabel:{shrink:true},htmlInput:{maxLength:500}}} onChange={event=>setDraft(previous=>({...previous,actividadManual:event.target.value,actividad:event.target.value}))}/> : <ParteActivitySelect row={draft} fecha={fecha} reportRecordId={reportRecordId} actividades={actividades} disabled={saving} onChange={a=>{setDraft(previous=>({...previous,actividadId:a.id,actividadNumero:a.numeroSesion??null,actividad:a.nombre||''}));setUnidades(previous=>previous.map(u=>({...u,actividades:u.actividades.map(item=>item.id===a.id?a:item)})));}}/>}
         {draft.tipoUnidad === 'curricular' && !actividades.length && <AutoDismissAlert severity="info">La unidad seleccionada no tiene actividades cargadas.</AutoDismissAlert>}
         <Stack direction="row" alignItems="center" gap={3}><Typography>Matriculados: <strong>{row.matriculados}</strong></Typography><TextField label="Asistentes" required type="number" value={draft.asistentes ?? ''} disabled={saving} sx={{ width: 180 }} slotProps={{ inputLabel:{shrink:true}, htmlInput: { min: 0, max: row.matriculados, step: 1 } }} onChange={event => setDraft(previous => ({ ...previous, asistentes: event.target.value === '' ? null : Number(event.target.value) }))} /></Stack>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
@@ -58,8 +64,8 @@ export default function ParteDiarioModal({ row, fecha, onClose, onSaved, reportR
           {documentSelect('tareas', 'Tareas', TAREAS_OPTIONS)}
         </Box>
         <Typography fontWeight={600}>Observaciones</Typography>
-        <ParteObservations values={draft.observaciones} onChange={observaciones=>setDraft(previous=>({...previous,observaciones}))} disabled={saving} onPendingChange={setPendingObservation}/>
-        <SignaturePad initialValue={row.firma} onChange={setFirma} disabled={saving} />
+        <ParteObservations values={draft.observaciones} onChange={observaciones=>setDraft(previous=>({...previous,observaciones}))} disabled={saving} inputDraft={observationInput} onInputDraftChange={onObservationInputChange} onPendingChange={setPendingObservationInput}/>
+        <SignaturePad initialValue={draft.firma} onChange={setFirma} disabled={saving} />
       </Stack>}
     </DialogContent>
     <DialogActions sx={{ p: 2 }}>{onDeleted&&row.recordId&&<Button color="error" onClick={()=>void remove()} disabled={saving} sx={{mr:'auto'}}>Eliminar registro</Button>}<Button onClick={onClose} disabled={saving}>Cancelar</Button><Button variant="contained" disabled={saving || loading || !draft.firma || parteMissingFields(draft).length > 0 || pendingObservation} onClick={() => void save()}>{saving ? 'Guardando…' : 'Guardar'}</Button></DialogActions>

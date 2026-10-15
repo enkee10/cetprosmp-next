@@ -612,8 +612,7 @@ export const createOrUpdateGrupo = https.onCall(async (data, context) => {
   const detalles = Array.from(normalizeGrupoModuloDetalles(data?.grupoModulos).values());
   try {
     const [previousEmail, workspaceContext] = await Promise.all([getPreviousGrupoWorkspaceCorreo(grupoId), getGrupoWorkspaceContext(payload)]);
-    const nombrePersonalizado = typeof data?.nombrePersonalizado === 'string' ? data.nombrePersonalizado.trim() : null;
-    const savedId = await saveGrupoWithModulos(grupoId,payload,detalles,nombrePersonalizado);
+    const savedId = await saveGrupoWithModulos(grupoId,payload,detalles);
     const workspace = await syncGrupoToWorkspace({
       email:payload.workspaceCorreo??"",previousEmail,name:payload.workspaceName??"",
       description:`Grupo: ${payload.nombreDisplay??""}`,

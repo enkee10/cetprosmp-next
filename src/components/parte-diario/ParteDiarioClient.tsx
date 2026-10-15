@@ -12,6 +12,7 @@ import { dayInLima } from '@/lib/calendar';
 import { isParteSaved, parteMissingFields, ParteDiarioData, ParteDiarioRow, parteTeacherGroupLabel, ParteUnidad } from '@/lib/parteDiario';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import ParteDiarioModal from './ParteDiarioModal';
+import type { ParteObservationInput } from './ParteObservations';
 import ParteDiarioRowFields from './ParteDiarioRowFields';
 import ParteDateFilter from './ParteDateFilter';
 import ParteAccountMenu from './ParteAccountMenu';
@@ -26,11 +27,12 @@ export default function ParteDiarioClient() {
   const [dateFilter,setDateFilter]=useState<string|null>(null),[drafts,setDrafts]=useState<Record<string,ParteDiarioRow>>({}),[unitCache,setUnitCache]=useState<Record<number,ParteUnidad[]>>({}),[signatureRow,setSignatureRow]=useState<ParteDiarioRow|null>(null),[saving,setSaving]=useState(false);
   const observationPending=useRef(new Set<string>()),unitEpoch=useRef(0);
   const [draftEpoch,setDraftEpoch]=useState(0),[openObservationKey,setOpenObservationKey]=useState<string|null>(null);
+  const [modalObservationDrafts,setModalObservationDrafts]=useState<Record<string,ParteObservationInput>>({});
   const unitRequests=useRef(new Set<number>()),fecha=dateFilter||today;
   const [scrolled, setScrolled] = useState({ x: false, y: false });
   const load = useCallback(async (clearDrafts=false) => {
     if ( authLoading || permissionLoading || !user || !can('parte-diario', 'view')) return;
-    const id = ++request.current; setLoading(true); setError('');if(clearDrafts){setOpenObservationKey(null);observationPending.current.clear();unitEpoch.current++;setDraftEpoch(n=>n+1);setDrafts({});setUnitCache({});unitRequests.current.clear();}
+    const id = ++request.current; setLoading(true); setError('');if(clearDrafts){setOpenObservationKey(null);observationPending.current.clear();unitEpoch.current++;setDraftEpoch(n=>n+1);setDrafts({});setModalObservationDrafts({});setUnitCache({});unitRequests.current.clear();}
     try { const result = await httpsCallable<{fecha:string}, ParteDiarioData>(functions, 'getParteDiario')({fecha}); if (id === request.current) setData(result.data); }
     catch (err) { if (id === request.current) setError(err instanceof Error ? err.message : 'No se pudo cargar el parte diario.'); }
     finally { if (id === request.current) setLoading(false); }
@@ -38,10 +40,21 @@ export default function ParteDiarioClient() {
   const invalidateRequest = useCallback(() => { request.current++; }, []);
   useEffect(() => { void load(); return invalidateRequest; }, [load, today, invalidateRequest]);
   useEffect(() => { const timer = window.setInterval(() => setToday(dayInLima(new Date())), 60000); return () => window.clearInterval(timer); }, []);
-  useEffect(()=>{setDrafts({});setUnitCache({});setSignatureRow(null);setSelected(null);setOpenObservationKey(null);observationPending.current.clear();unitEpoch.current++;unitRequests.current.clear();},[user?.uid,fecha]);
+  useEffect(()=>{setDrafts({});setModalObservationDrafts({});setUnitCache({});setSignatureRow(null);setSelected(null);setOpenObservationKey(null);observationPending.current.clear();unitEpoch.current++;unitRequests.current.clear();},[user?.uid,fecha]);
+  useEffect(() => {
+    if (!openObservationKey) return;
+    const closeOutsideObservation = (event: PointerEvent) => {
+      const cell = event.target instanceof Element ? event.target.closest('[data-parte-observation-key]') : null;
+      const nextKey = cell?.getAttribute('data-parte-observation-editable') === 'true'
+        ? cell.getAttribute('data-parte-observation-key') : null;
+      if (nextKey !== openObservationKey) setOpenObservationKey(nextKey);
+    };
+    document.addEventListener('pointerdown', closeOutsideObservation);
+    return () => document.removeEventListener('pointerdown', closeOutsideObservation);
+  }, [openObservationKey]);
   const loadUnits=async(row:ParteDiarioRow)=>{if(unitCache[row.grupoModuloId]||unitRequests.current.has(row.grupoModuloId))return;unitRequests.current.add(row.grupoModuloId);const epoch=unitEpoch.current;try{const r=await httpsCallable<unknown,{unidades:ParteUnidad[]}>(functions,'getParteDiarioOpciones')({...row,fecha});if(epoch!==unitEpoch.current)return;setUnitCache(previous=>({...previous,[row.grupoModuloId]:r.data.unidades}));}catch(e){if(epoch!==unitEpoch.current)return;unitRequests.current.delete(row.grupoModuloId);setError(e instanceof Error?e.message:'No se pudieron cargar las actividades.');}};
-  const updateRow=(row:ParteDiarioRow)=>{if(isParteSaved(row))return;setDrafts(previous=>({...previous,[row.key]:row}));if(row.actividadId&&row.tipoUnidad==='curricular')setUnitCache(previous=>Object.fromEntries(Object.entries(previous).map(([id,us])=>[id,us.map(u=>({...u,actividades:u.actividades.map(a=>a.id===row.actividadId?{...a,nombre:row.actividad}:a)}))])));};
-  const saveSigned=async(firma:string)=>{if(!signatureRow)return;if(observationPending.current.has(signatureRow.key))throw new Error('Agrega o termina de editar la observación antes de guardar.');setSaving(true);try{const row=drafts[signatureRow.key]||signatureRow;if(parteMissingFields(row).length)throw new Error('Completa todos los campos antes de guardar.');await httpsCallable(functions,'saveParteDiario')({...row,fecha,firma});setSignatureRow(null);setOpenObservationKey(null);observationPending.current.delete(row.key);setDrafts(previous=>{const next={...previous};delete next[row.key];return next;});setNotice('Parte diario guardado.');await load();}finally{setSaving(false);}};
+  const updateRow=(row:ParteDiarioRow)=>{setDrafts(previous=>({...previous,[row.key]:row}));if(row.actividadId&&row.tipoUnidad==='curricular')setUnitCache(previous=>{let changed=false;const next=Object.fromEntries(Object.entries(previous).map(([id,units])=>[id,units.map(unit=>({...unit,actividades:unit.actividades.map(activity=>{if(activity.id!==row.actividadId||activity.nombre===row.actividad)return activity;changed=true;return {...activity,nombre:row.actividad};})}))]));return changed?next:previous;});};
+  const saveSigned=async(firma:string)=>{if(!signatureRow)return;const pendingModal=modalObservationDrafts[signatureRow.key];if(observationPending.current.has(signatureRow.key)||!!pendingModal?.text.trim()||pendingModal?.editing!=null)throw new Error('Agrega o termina de editar la observación antes de guardar.');setSaving(true);try{const row=drafts[signatureRow.key]||signatureRow;if(parteMissingFields(row).length)throw new Error('Completa todos los campos antes de guardar.');await httpsCallable(functions,'saveParteDiario')({...row,fecha,firma});setSignatureRow(null);setOpenObservationKey(null);observationPending.current.delete(row.key);setDrafts(previous=>{const next={...previous};delete next[row.key];return next;});setModalObservationDrafts(previous=>{const next={...previous};delete next[row.key];return next;});setNotice('Parte diario guardado.');await load();}finally{setSaving(false);}};
   const currentData=data?.fecha===fecha?data:null,editable=can('parte-diario','edit')&&fecha<=today;
   if (authLoading || (user && permissionLoading)) return <Box sx={{ p: 5 }}><CircularProgress aria-label="Cargando parte diario" /></Box>;
   if (!user) return <Box sx={{ p: 4 }}><Typography sx={{ mb: 2 }}>Inicia sesión para registrar el Parte Diario.</Typography><Button variant="contained" onClick={() => void loginWithGoogle().catch(err => setError(err.message))}>Iniciar sesión</Button>{error && <AutoDismissAlert severity="error">{error}</AutoDismissAlert>}</Box>;
@@ -70,6 +83,6 @@ export default function ParteDiarioClient() {
       </Table>
     </TableContainer>}
     {signatureRow&&<ParteSignatureDialog initialValue={signatureRow.firma} saving={saving} onClose={()=>setSignatureRow(null)} onAccept={saveSigned}/>}
-    {selected && currentData && <ParteDiarioModal key={selected.key} row={selected} fecha={fecha} onClose={() => setSelected(null)} onSaved={() => { observationPending.current.delete(selected.key);setDrafts(previous=>{const next={...previous};delete next[selected.key];return next;});setSelected(null);setOpenObservationKey(null);setUnitCache({});unitRequests.current.clear();setNotice('Parte diario guardado.'); void load(); }} onDeleted={can('parte-diario','delete')?()=>{setSelected(null);setNotice('Registro eliminado.');void load();}:undefined}/>}
+    {selected && currentData && <ParteDiarioModal key={selected.key} row={drafts[selected.key]||selected} fecha={fecha} onDraftChange={updateRow} observationInput={modalObservationDrafts[selected.key]||{text:'',editing:null}} onObservationInputChange={value=>setModalObservationDrafts(previous=>({...previous,[selected.key]:value}))} onClose={() => setSelected(null)} onSaved={() => { observationPending.current.delete(selected.key);setDrafts(previous=>{const next={...previous};delete next[selected.key];return next;});setModalObservationDrafts(previous=>{const next={...previous};delete next[selected.key];return next;});setSelected(null);setOpenObservationKey(null);setUnitCache({});unitRequests.current.clear();setNotice('Parte diario guardado.'); void load(); }} onDeleted={can('parte-diario','delete')?()=>{setDrafts(previous=>{const next={...previous};delete next[selected.key];return next;});setModalObservationDrafts(previous=>{const next={...previous};delete next[selected.key];return next;});setSelected(null);setNotice('Registro eliminado.');void load();}:undefined}/>}
   </Box>;
 }

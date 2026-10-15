@@ -586,7 +586,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         {
           id?: number;
           nombreDisplay: string;
-          nombrePersonalizado?: string | null;
           workspaceName?: string | null;
           workspaceCorreo?: string | null;
           descripcion: string;
@@ -620,8 +619,6 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       await createOrUpdateGrupo({
         id: grupoId ? Number(grupoId) : undefined,
         nombreDisplay: nombreGrupo.trim(),
-        nombrePersonalizado: nombreManualEdit && nombreGrupo.trim() !== nombreCalculado.trim()
-          ? nombreGrupo.trim() : null,
         workspaceName: finalWorkspaceName,
         workspaceCorreo: finalWorkspaceCorreo,
         descripcion,

@@ -48,10 +48,11 @@ test('creating and editing a group names each group-module from its academic tit
     assert.equal(mutations[0].gm0Nombre, 'Confecciones de Muebles en Melamine (ago-oct) [Noche] Lun - Vie (Richard Ramos)');
     assert.equal(mutations[0].gm1Nombre, 'Mantenimiento de Carpintería (oct-dic) [Noche] Lun - Vie (Richard Ramos)');
 
-    await saveGrupoWithModulos(165, payload, [detail(32, '(ago-oct)', 1), detail(31, '(oct-dic)', 2)], 'Grupo de Richard');
+    catalog.horario.nombre = 'Mar - Vie';
+    await saveGrupoWithModulos(165, { ...payload, nombreDisplay: 'Grupo de Richard actualizado' }, [detail(32, '(ago-oct)', 1), detail(31, '(oct-dic)', 2)]);
     const edited = mutations[1] as { gm0: { nombre: string }; gm1: { nombre: string } };
-    assert.equal(edited.gm0.nombre, `${mutations[0].gm0Nombre} — Grupo de Richard`);
-    assert.equal(edited.gm1.nombre, `${mutations[0].gm1Nombre} — Grupo de Richard`);
+    assert.equal(edited.gm0.nombre, 'Confecciones de Muebles en Melamine (ago-oct) [Noche] Mar - Vie (Richard Ramos)');
+    assert.equal(edited.gm1.nombre, 'Mantenimiento de Carpintería (oct-dic) [Noche] Mar - Vie (Richard Ramos)');
   } finally {
     client.executeGraphql = original;
   }

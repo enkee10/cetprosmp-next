@@ -11,6 +11,7 @@ import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
 import { GrupoForm } from '@/components/intranet/grupos/GrupoForm';
+import { isNombreGrupoGenerado, nombreGrupoCalculado } from '@/components/intranet/grupos/nombres';
 import { getPersonalShortName } from '@/components/intranet/grupos/personalName';
 import { useAppSettings } from '@/hooks/useAppSettings';
 
@@ -45,6 +46,8 @@ interface Grupo {
     id: number;
     orden: number | null;
     obligatorio: boolean | null;
+    instancia?: number | null;
+    sufijo?: string | null;
     grupoId: number;
     moduloId: number;
     modulo?: { titulo: string | null; tituloComercial: string | null } | null;
@@ -57,7 +60,11 @@ const getGrupoPersonalUsername = (grupo: Grupo) =>
     grupo.personal?.user?.apellidoPaterno,
   );
 
-const getGrupoNombre = (grupo: Grupo) => grupo.nombreDisplay || (grupo.grupoModulos ?? []).map(item => item.modulo?.tituloComercial || item.modulo?.titulo).filter(Boolean).join(' / ');
+const getGrupoNombre = (grupo: Grupo) => {
+  const calculado = nombreGrupoCalculado(grupo.grupoModulos ?? [], grupo.turno?.nombre || grupo.turnoNombre,
+    grupo.horario?.nombre, getGrupoPersonalUsername(grupo));
+  return isNombreGrupoGenerado(grupo) ? calculado : grupo.nombreDisplay || calculado;
+};
 
 const selectMenuProps = {
   disableScrollLock: true,
@@ -238,7 +245,7 @@ export default function GruposPage() {
           (row.grupoModulos || [])
             .slice()
             .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId)
-            .map((item) => item.modulo?.tituloComercial || item.modulo?.titulo || `Modulo ${item.moduloId}`)
+            .map((item) => [item.modulo?.titulo || `Modulo ${item.moduloId}`, item.sufijo?.trim()].filter(Boolean).join(' '))
             .join(' / '),
       },
       {

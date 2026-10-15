@@ -28,6 +28,7 @@ import { app } from '@/lib/firebase';
 import { getDateOnlyLocalDate, toDateOnlyInputValue } from '@/lib/dateOnly';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { getPersonalShortName } from './personalName';
+import { isNombreGrupoGenerado, nombreGrupoCalculado, tituloModulo, tituloModulos } from './nombres';
 
 interface GrupoFormProps {
   grupoId?: string;
@@ -51,6 +52,9 @@ interface GrupoData {
   personalId: number | null;
   turnoId: number | null;
   horarioId: number | null;
+  turno?: { nombre?: string | null } | null;
+  horario?: { nombre?: string | null } | null;
+  personal?: { displayName?: string | null; user?: { username?: string | null; apellidoPaterno?: string | null } | null } | null;
   grupoModulos?: GrupoModuloDetalle[];
 }
 
@@ -204,22 +208,13 @@ const buildWorkspaceCorreo = (
   return trimTitleFromRight(titleSegment, prefix, suffix, WORKSPACE_CORREO_MAX_LENGTH);
 };
 
-const tituloModulos = (items: GrupoModuloDetalle[]) => {
-  const grouped = new Map<number, GrupoModuloDetalle[]>();
-  for (const item of items) { const group=grouped.get(item.moduloId)??[]; group.push(item); grouped.set(item.moduloId,group); }
-  return Array.from(grouped.values()).map(group => {
-    const first=group[0]; const title=first.modulo?.tituloComercial || first.modulo?.titulo || `Módulo ${first.moduloId}`;
-    return group.length>1 ? `${title} x${group.length}` : title;
-  }).join(' / ');
-};
-
 const toDateInputValue = (value: string | null | undefined) => {
   return toDateOnlyInputValue(value) || String(value ?? '').slice(0, 10);
 };
 
 const getModuloLabel = (modulo: GrupoModuloDetalle) =>
   [
-    modulo.modulo?.tituloComercial || modulo.modulo?.titulo || `Modulo ${modulo.moduloId}`,
+    [tituloModulo(modulo), modulo.sufijo?.trim()].filter(Boolean).join(' '),
     `Instancia ${modulo.instancia ?? 1}`,
   ].filter(Boolean).join(' ');
 
@@ -386,7 +381,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
 
         if (fetched) {
           setNombreDisplay(fetched.nombreDisplay || '');
-          setNombreManualEdit(true);
+          setNombreManualEdit(!isNombreGrupoGenerado(fetched));
           setDescripcion(fetched.descripcion || '');
           setTurnoNombre(fetched.turnoNombre || '');
           setWorkspaceName(fetched.workspaceName || '');
@@ -434,13 +429,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
   const selectedHorario = horarios.find((horario) => String(horario.id) === horarioId) || null;
   const selectedPersonalName = getPersonalUsername(selectedPersonal);
   const nombreCalculado = useMemo(
-    () =>
-      [
-        tituloModulos(grupoModulos),
-        selectedTurno?.nombre ? `[${selectedTurno.nombre}]` : '',
-        selectedHorario?.nombre?.trim() || '',
-        selectedPersonalName ? `(${selectedPersonalName})` : '',
-      ].filter(Boolean).join(' '),
+    () => nombreGrupoCalculado(grupoModulos, selectedTurno?.nombre, selectedHorario?.nombre, selectedPersonalName),
     [selectedHorario, grupoModulos, selectedPersonalName, selectedTurno],
   );
   const nombreGrupo = nombreManualEdit ? nombreDisplay : nombreCalculado;
@@ -597,6 +586,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
         {
           id?: number;
           nombreDisplay: string;
+          nombrePersonalizado?: string | null;
           workspaceName?: string | null;
           workspaceCorreo?: string | null;
           descripcion: string;
@@ -630,6 +620,8 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       await createOrUpdateGrupo({
         id: grupoId ? Number(grupoId) : undefined,
         nombreDisplay: nombreGrupo.trim(),
+        nombrePersonalizado: nombreManualEdit && nombreGrupo.trim() !== nombreCalculado.trim()
+          ? nombreGrupo.trim() : null,
         workspaceName: finalWorkspaceName,
         workspaceCorreo: finalWorkspaceCorreo,
         descripcion,
@@ -795,7 +787,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
             value={EMPTY_MODULE_SELECTION}
             options={modulosOpciones
               .filter(item => !grupoModulos.some(gm => gm.moduloId === item.id))
-              .map(item => ({ value: item.id, label: item.tituloComercial || item.titulo || `Módulo ${item.id}` }))}
+              .map(item => ({ value: item.id, label: item.titulo || `Módulo ${item.id}` }))}
             onChange={agregarModulos}
             getOptionDisabled={(option, pendientes) =>
               !pendientes.includes(option.value) && pendientes.length >= 6 - grupoModulos.length}
@@ -807,7 +799,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
           {Array.from(new Set(grupoModulos.map(item=>item.moduloId))).map(moduloId=>{
             const items=grupoModulos.filter(item=>item.moduloId===moduloId);
             return <Box key={moduloId} sx={{gridColumn:'1 / -1',display:'flex',gap:1,alignItems:'center'}}>
-              <Typography sx={{flex:1}}>{items[0].modulo?.tituloComercial||items[0].modulo?.titulo||`Módulo ${moduloId}`}</Typography>
+              <Typography sx={{flex:1}}>{tituloModulo(items[0])}</Typography>
               <FormControl size="small" sx={{minWidth:110}}>
                 <InputLabel id={`grupo-instancias-${moduloId}-label`}>Instancias</InputLabel>
                 <Select labelId={`grupo-instancias-${moduloId}-label`} label="Instancias" value={items.length} onChange={event=>cambiarInstancias(moduloId,Number(event.target.value))}>

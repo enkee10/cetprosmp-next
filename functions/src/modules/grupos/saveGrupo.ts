@@ -3,7 +3,7 @@ import { dataConnect } from '../core/dataConnectCore.js';
 import { projectUnidadRelations } from '../competencias/model.js';
 import { buildGrupoModuloNombreRelacional, GrupoModuloNombreContext } from '../core/grupoModuloNombre.js';
 import { DataConnectCompetenciaUnidadDidactica, DataConnectGrupoInput, DataConnectGrupoModulo, DataConnectGrupoModuloUnidadDidactica, DataConnectModulo } from '../core/types.js';
-import { claveInstancia, nombreConSufijo, validarInstancias } from './configuracion.js';
+import { claveInstancia, validarInstancias } from './configuracion.js';
 
 export interface DetalleInstancia {
   moduloId: number;
@@ -30,7 +30,10 @@ const protectedRelations = [
   ['matriculaCambiosModulo','grupoModuloAnteriorId'], ['matriculaCambiosModulo','grupoModuloNuevoId'],
 ] as const;
 
-export async function saveGrupoWithModulos(grupoId: number | null, payload: DataConnectGrupoInput, detalles: DetalleInstancia[]) {
+export async function saveGrupoWithModulos(
+  grupoId: number | null, payload: DataConnectGrupoInput, detalles: DetalleInstancia[],
+  nombrePersonalizado?: string | null,
+) {
   const moduloIds = Array.from(new Set(detalles.map(item => item.moduloId)));
   const [catalog, existing] = await Promise.all([
     dataConnect.executeGraphql<{
@@ -94,10 +97,11 @@ export async function saveGrupoWithModulos(grupoId: number | null, payload: Data
     const old = byKey.get(claveInstancia(detalle.moduloId,detalle.instancia));
     const modulo = catalog.data.modulos.find(item=>item.id===detalle.moduloId)!;
     const suffix = detalle.sufijo?.trim() || null;
-    const baseName = old?.nombre?.trim() || buildGrupoModuloNombreRelacional(context,modulo);
+    const nombreGenerado = buildGrupoModuloNombreRelacional(context,modulo,suffix);
     const data: Record<string,unknown> = {
       moduloId:detalle.moduloId, instancia:detalle.instancia,
-      nombre:old?.nombre && (old.sufijo??null)===suffix ? old.nombre : nombreConSufijo(baseName,old?.sufijo,suffix), sufijo:suffix,
+      nombre:nombrePersonalizado?.trim() ? `${nombreGenerado} — ${nombrePersonalizado.trim()}` : nombreGenerado,
+      sufijo:suffix,
       orden:detalle.orden??old?.orden??index+1,
       obligatorio:detalle.obligatorio??old?.obligatorio??true,
       inicio:detalle.hasInicio?detalle.inicio??null:old?.inicio??null,

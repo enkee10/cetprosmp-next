@@ -1,13 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
-import { nombreConSufijo, validarInstancias } from './configuracion.js';
-
-test('suffix changes preserve the existing name without accumulating suffixes', () => {
-  const name = 'Nombre editado [Tarde] (Docente)';
-  assert.equal(nombreConSufijo(name, null, 'A'), `${name} A`);
-  assert.equal(nombreConSufijo(`${name} A`, 'A', 'B'), `${name} B`);
-  assert.equal(nombreConSufijo(`${name} B`, 'B', null), name);
-});
+import { validarInstancias } from './configuracion.js';
 
 test('new repeated modules need different suffixes on consecutive instances', () => {
   assert.throws(() => validarInstancias([{moduloId:1,instancia:1},{moduloId:1,instancia:2}]), /sufijo/);

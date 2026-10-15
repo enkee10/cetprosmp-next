@@ -66,7 +66,7 @@ export function getSemestreCodigoForGrupoModulo(titulo: string | null | undefine
 }
 
 export function getModuloNombreForGrupoModulo(modulo: GrupoModuloNombreModulo) {
-  return normalizeSpaces(modulo?.titulo || modulo?.tituloComercial || (modulo?.id ? `Modulo ${modulo.id}` : ""));
+  return normalizeSpaces(modulo?.titulo || (modulo?.id ? `Modulo ${modulo.id}` : ""));
 }
 
 export function getDocenteNombreForGrupoModulo(personal: NombrePersonal) {
@@ -76,8 +76,9 @@ export function getDocenteNombreForGrupoModulo(personal: NombrePersonal) {
 export function buildGrupoModuloNombreRelacional(
   grupo: GrupoModuloNombreContext,
   modulo: GrupoModuloNombreModulo,
+  sufijo?: string | null,
 ) {
-  const moduloNombre = getModuloNombreForGrupoModulo(modulo);
+  const moduloNombre = [getModuloNombreForGrupoModulo(modulo), normalizeSpaces(sufijo)].filter(Boolean).join(" ");
   const turnoNombre = normalizeSpaces(grupo?.turno?.nombre || grupo?.turnoNombre);
   const horarioNombre = normalizeSpaces(grupo?.horario?.nombre);
   const docenteNombre = getDocenteNombreForGrupoModulo(grupo?.personal ?? null);

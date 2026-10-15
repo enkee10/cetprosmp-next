@@ -2,13 +2,6 @@ export const MAX_INSTANCIAS_GRUPO = 6;
 
 export const claveInstancia = (moduloId: number, instancia = 1) => `${moduloId}:${instancia}`;
 
-export function nombreConSufijo(nombre: string, anterior?: string | null, siguiente?: string | null) {
-  let base = nombre.trim();
-  const old = anterior?.trim();
-  if (old && base.endsWith(` ${old}`)) base = base.slice(0, -old.length).trimEnd();
-  return [base, siguiente?.trim()].filter(Boolean).join(' ');
-}
-
 export function validarInstancias(
   items: Array<{ moduloId: number; instancia: number; sufijo?: string | null }>,
   anteriores: Array<{ moduloId: number; instancia?: number | null; sufijo?: string | null }> = [],

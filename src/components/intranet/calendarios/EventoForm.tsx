@@ -24,6 +24,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 import { CALENDAR_EVENT_TYPES, calendarEventTypeLabel, localInputInLima, limaInputToIso } from '@/lib/calendar';
+import { isNombreGrupoGenerado, nombreGrupoCalculado } from '@/components/intranet/grupos/nombres';
+import { getPersonalShortName } from '@/components/intranet/grupos/personalName';
 
 interface EventoFormProps {
   initialDate?: string;
@@ -93,6 +95,8 @@ interface GrupoOption {
   nombreDisplay: string | null;
   turnoNombre: string | null;
   turno?: { nombre: string | null } | null;
+  horario?: { nombre?: string | null } | null;
+  personal?: { displayName?: string | null; user?: { username?: string | null; apellidoPaterno?: string | null } | null } | null;
   estado: string | null;
   grupoModulos?: GrupoModuloOption[];
 }
@@ -125,6 +129,8 @@ interface GrupoModuloOption {
   obligatorio: boolean | null;
   grupoId: number;
   moduloId: number;
+  sufijo?: string | null;
+  instancia?: number | null;
   modulo?: {
     titulo: string | null;
     tituloComercial: string | null;
@@ -196,13 +202,20 @@ const dateTimeLocalToIso = (value: string) => {
   return value ? limaInputToIso(value) : null;
 };
 
-const getGrupoLabel = (grupo: GrupoOption) =>
-  [grupo.nombreDisplay || `Grupo ${grupo.id}`, grupo.turno?.nombre || grupo.turnoNombre].filter(Boolean).join(' - ');
+const getGrupoLabel = (grupo: GrupoOption) => {
+  const docente = getPersonalShortName(grupo.personal?.user?.username || grupo.personal?.displayName || '',
+    grupo.personal?.user?.apellidoPaterno);
+  const nombre = isNombreGrupoGenerado(grupo)
+    ? nombreGrupoCalculado(grupo.grupoModulos ?? [], grupo.turno?.nombre || grupo.turnoNombre,
+      grupo.horario?.nombre, docente)
+    : grupo.nombreDisplay || `Grupo ${grupo.id}`;
+  return [nombre, grupo.turno?.nombre || grupo.turnoNombre].filter(Boolean).join(' - ');
+};
 
 const getGrupoModuloLabel = (grupo: GrupoOption, grupoModulo: GrupoModuloOption) =>
   [
     getGrupoLabel(grupo),
-    grupoModulo.modulo?.tituloComercial || grupoModulo.modulo?.titulo || `Modulo ${grupoModulo.moduloId}`,
+    [grupoModulo.modulo?.titulo || `Modulo ${grupoModulo.moduloId}`, grupoModulo.sufijo?.trim()].filter(Boolean).join(' '),
   ].filter(Boolean).join(' / ');
 
 const getTextLabel = (item: TextoAcademicoOption) =>
@@ -436,7 +449,7 @@ export function EventoForm({ eventoId, asModal = false, onSaved, onCancel, initi
     return new Map<string, { id: string; label: string }[]>([
       ['grupo', toOptions(grupos, getGrupoLabel)],
       ['grupo_modulo', grupoModuloOptions],
-      ['modulo', toOptions(modulos, (item) => item.tituloComercial || item.titulo || `Modulo ${item.id}`)],
+      ['modulo', toOptions(modulos, (item) => item.titulo || `Modulo ${item.id}`)],
       ['unidad_didactica', toOptions(unidadesDidacticas, (item) => [item.sigla, item.nombre || `Unidad ${item.id}`].filter(Boolean).join(' - '))],
       ['capacidad_terminal', toOptions(capacidadesTerminales, getTextLabel)],
       ['indicador_capacidad', toOptions(indicadoresCapacidad, getTextLabel)],

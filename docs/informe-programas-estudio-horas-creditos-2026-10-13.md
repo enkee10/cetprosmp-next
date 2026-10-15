@@ -58,9 +58,18 @@ Se encontraron referencias documentales que no coinciden con el nombre de la uni
 | Soporte Técnico y Operaciones de Centros de Computo | 5 | Habilidades Comunicativas | M1!D225 |
 | Soporte Técnico y Operaciones de Centros de Computo | 5 | Herramientas de oficina y aplicaciones de internet | M1!D235 |
 
-## Pendiente de documento
+## Actualización posterior: módulo 35
 
-El ZIP no incluye «Operaciones Básicas en Confección Industrial (PFC)», módulo 35 «MANEJO DE MAQUINAS INDUSTRIALES DE CONFECCION». Sus tres unidades y su EFSRT conservan los datos anteriores y los desgloses faltantes se muestran como **No registrado**.
+El ZIP original no incluía «Operaciones Básicas en Confección Industrial (PFC)». El 14/10/2026 se completó el módulo 35, «MANEJO DE MAQUINAS INDUSTRIALES DE CONFECCION», con la hoja **ANEXO 3** del archivo `PFC 2026-2 MANEJO DE MAQUINAS INDUSTRIALES DE CONFECCION3 (1).xlsx`, y se verificó en remoto.
+
+| Unidad | Horas teóricas | Horas prácticas | Créditos teóricos | Créditos prácticos |
+|---|---:|---:|---:|---:|
+| Operación de Máquinas Industriales de Confección | 16 | 64 | 1 | 2 |
+| Confección Industrial de Prendas de Vestir | 32 | 32 | 2 | 1 |
+| Comunicación Efectiva | 32 | 0 | 2 | 0 |
+| EFSRT | 0 | 64 | 0 | 2 |
+
+Las tres unidades y la EFSRT suman **240 horas y 10 créditos**. Se corrigieron los totales anteriores de las unidades 90 y 91 y de la EFSRT para que coincidan con sus desgloses y con el total del módulo. La hoja fuente se titula «programa de formación continua»; no se modificó la clasificación de la carrera.
 
 ## Comprobación
 

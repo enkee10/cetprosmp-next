@@ -3,15 +3,17 @@ import { useEffect, useState } from 'react';
 import { Box, ButtonBase, MenuItem, TableCell, TextField, Typography } from '@mui/material';
 import { activityLabel, changeParteUnit, FICHA_OPTIONS, INSTRUMENTO_OPTIONS, REG_ASISTENCIA_OPTIONS, REG_AUX_EVALUACION_OPTIONS, isParteSaved, isProgrammedParteUnit, MATERIAL_OPTIONS, MEDIOS_OPTIONS, numberedUnitLabel, selectedParteActivityLabel, selectedParteUnitLabel, parteUnitValue, ParteDiarioRow, ParteUnidad, SILABO_OPTIONS, TAREAS_OPTIONS } from '@/lib/parteDiario';
 import ParteActivitySelect from './ParteActivitySelect';
-import ParteObservations from './ParteObservations';
+import ParteObservations, { ParteObservationList, ParteObservationInput } from './ParteObservations';
+import ParteObservationsHistory from './ParteObservationsHistory';
 import { parteSavedColor, parteThreeLines } from './parteFieldStyles';
 type Field = 'usoMedios' | 'silabo' | 'fichaActividad' | 'instrumentoEvaluacion' | 'registroAsistencia' | 'registroAuxiliarEvaluacion' | 'material' | 'tareas';
-export default function ParteDiarioRowFields({ row, fecha, units, onLoadUnits, onChange, onSign, onObservationPending, observationsOpen, onOpenObservations, editable, disabled }: {
+export default function ParteDiarioRowFields({ row, fecha, units, onLoadUnits, onChange, onSign, onObservationPending, observationInput, onObservationInputChange, observationsOpen, onOpenObservations, editable, disabled }: {
   row: ParteDiarioRow; fecha: string; units: ParteUnidad[]; onLoadUnits: () => void; onChange: (row: ParteDiarioRow) => void; onSign: () => void;
   onObservationPending: (pending: boolean) => void; observationsOpen: boolean; onOpenObservations: () => void; editable: boolean; disabled: boolean;
+  observationInput: ParteObservationInput; onObservationInputChange: (value: ParteObservationInput) => void;
 }) {
   const saved = isParteSaved(row), update = (patch: Partial<ParteDiarioRow>) => onChange({ ...row, ...patch });
-  const [observationsVisited, setObservationsVisited] = useState(false);
+  const [observationsVisited, setObservationsVisited] = useState(false),[history,setHistory]=useState(false);
   useEffect(() => { if (observationsOpen) setObservationsVisited(true); }, [observationsOpen]);
   const openObservations = () => { setObservationsVisited(true); onOpenObservations(); };
   const text = (value: string | number | null) => <Typography variant="body2" title={String(value ?? '')} sx={{ ...parteThreeLines, px: '6px', color: saved ? parteSavedColor : 'inherit' }}>{value ?? ''}</Typography>;
@@ -40,9 +42,11 @@ export default function ParteDiarioRowFields({ row, fecha, units, onLoadUnits, o
       <ButtonBase disabled={disabled} aria-label={`Firmar parte de ${row.docenteNombre}`} onClick={onSign} sx={{ position: 'absolute', inset: 0, width: '100%', overflow: 'hidden' }}>Firmar</ButtonBase>}
     </TableCell>
     <TableCell data-parte-observation-key={row.key} data-parte-observation-editable={!saved && editable && !disabled} sx={{ p: '6px !important', color: saved ? parteSavedColor : 'inherit' }}>
-      {!saved && editable && observationsVisited && <Box sx={{ display: observationsOpen ? 'block' : 'none' }}><ParteObservations values={row.observaciones} onChange={observaciones => update({ observaciones })} onPendingChange={onObservationPending} disabled={disabled} /></Box>}
-      {!observationsOpen && <Box onClick={() => { if (!saved && editable && !disabled) openObservations(); }}>{row.observaciones.length ? <Box component="ul" sx={{ pl: 2, m: 0, '& li': { mb: '5px', whiteSpace: 'pre-wrap' } }}>{row.observaciones.map((value, index) => <li key={index}>{value}</li>)}</Box> :
+      {!saved && editable && observationsVisited && <Box sx={{ display: observationsOpen ? 'block' : 'none' }}><ParteObservations active={observationsOpen} row={row} values={row.observaciones} compromisos={row.compromisos} onChange={(observaciones,compromisos) => update({ observaciones,compromisos })} inputDraft={observationInput} onInputDraftChange={onObservationInputChange} onPendingChange={onObservationPending} disabled={disabled} /></Box>}
+      {!observationsOpen && <Box onClick={() => { if (!saved && editable && !disabled) openObservations(); }}>{row.observaciones.length ? <ParteObservationList values={row.observaciones} compromisos={row.compromisos}/> :
         editable && !saved && <ButtonBase disabled={disabled} onClick={openObservations} sx={{ minHeight: 50, width: '100%', fontSize: 12 }}>Agregar observación</ButtonBase>}</Box>}
+      {!observationsOpen&&<ButtonBase onClick={()=>setHistory(true)} disabled={disabled} sx={{p:1,fontSize:12}}>Historial</ButtonBase>}
+      {history&&<ParteObservationsHistory row={row} canEdit={editable} onClose={()=>setHistory(false)}/>}
     </TableCell>
   </>;
 }

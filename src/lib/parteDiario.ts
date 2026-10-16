@@ -1,4 +1,6 @@
 import { valuationLabels, ValuationField } from '../../functions/src/modules/parte-diario/valuations';
+import type { ParteCompromiso } from '../../functions/src/modules/parte-diario/commitmentModel';
+export type { ParteCompromiso };
 export const SILABO_OPTIONS = valuationLabels('silabo');
 export const MEDIOS_OPTIONS = valuationLabels('usoMedios');
 export const FICHA_OPTIONS = valuationLabels('fichaActividad');
@@ -8,7 +10,9 @@ export const REG_AUX_EVALUACION_OPTIONS = valuationLabels('registroAuxiliarEvalu
 export const MATERIAL_OPTIONS = valuationLabels('material');
 export const TAREAS_OPTIONS = valuationLabels('tareas');
 export { valuationLabels };
-export const isParteSaved = (row: ParteDiarioRow) => !!(row.recordId && row.firma);
+export const isParteSaved = (row: ParteDiarioRow) => !row.borrador && !!(row.recordId && row.firma);
+export const isParteDraft = (row: ParteDiarioRow) => !!row.borrador || !!(row.recordId && !row.firma);
+export interface ParteEditor { uid: string; nombre: string; avatar: string | null }
 export function parteMissingFields(row: ParteDiarioRow): string[] {
   const missing: string[] = [];
   if (row.tipoUnidad === 'curricular' && !row.pendiente) {
@@ -26,6 +30,10 @@ export function parteMissingFields(row: ParteDiarioRow): string[] {
   return missing;
 }
 export interface ParteDiarioRow {
+  compromisos?: ParteCompromiso[];
+  borrador?: boolean;
+  borradorConflicto?: boolean;
+  editor?: ParteEditor | null;
   unidadesOrdenadas?: { id: number; nombre: string | null }[];
   tipoUnidadProgramada?: 'curricular' | 'ppp' | 'efsrt';
   actividadesDelDia?: { id: number; nombre: string; unidad: string; unidadId: number | null }[];

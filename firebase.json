@@ -1,6 +1,7 @@
 {
   "hosting": {
     "source": ".",
+    "predeploy": ["node scripts/prepare-hosting-deploy.cjs"],
     "ignore": [
       "firebase.json",
       "**/.*",

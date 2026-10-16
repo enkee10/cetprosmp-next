@@ -1,5 +1,7 @@
 import { https, runWith } from "firebase-functions/v1";
 import sharp from "sharp";
+import { randomUUID } from "node:crypto";
+import { normalizeCompromisos, readCompromisos } from "./commitmentModel.js";
 import { google } from "googleapis";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { requirePermission,hasPermission } from "../core/permissions.js";
@@ -8,6 +10,8 @@ import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
 import { PARTE_VALUATIONS, VALUATION_FIELDS, valuationScore, valuationLabels, scoreColumn } from "./valuations.js";
 
 import { consolidateDailyRows } from './dailyRows.js';
+import { isParteCoordinator } from './eligibility.js';
+import { parteEditors } from './editors.js';
 
 export const SILABO_VALUES = valuationLabels('silabo');
 export const todayInLima = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
@@ -22,14 +26,14 @@ const nullableId = (v: unknown) => v == null || v === "" ? null : positiveId(v);
 const rangeFor = (fecha: string) => ({ inicio: `${fecha}T05:00:00.000Z`, fin: new Date(Date.parse(`${fecha}T05:00:00Z`) + 86400000).toISOString() });
 const graph = async <T>(query: string, variables: Record<string, unknown> = {}) => (await dataConnect.executeGraphql<T, Record<string, unknown>>(query, { variables })).data;
 type TipoUnidad = "curricular" | "ppp" | "efsrt";
-type Teacher = { id: number; displayName: string | null; user: { nombre: string | null; apellidoPaterno: string | null; apellidoMaterno: string | null; apellidos: string | null; avatar: string | null } | null };
-type GroupModule = { id: number; nombre: string | null; moduloId: number; modulo: { titulo: string | null; plan: { carrera: { tipoCarrera: { nombre: string | null } | null } | null } | null }; grupoId: number; grupo: { semestreId: number | null; archivado: boolean | null; personal: Teacher | null; turnoNombre: string | null; turno: { nombre: string | null } | null } };
+type Teacher = { id: number; displayName: string | null; user: { nombre: string | null; apellidoPaterno: string | null; apellidoMaterno: string | null; apellidos: string | null; avatar: string | null; rol?: { titulo: string | null } | null } | null };
+type GroupModule = { id: number; nombre: string | null; moduloId: number; modulo: { titulo: string | null; plan: { carrera: { tipoCarrera: { nombre: string | null } | null } | null } | null }; grupoId: number; grupo: { semestreId: number | null; semestre?: { coordinador1Id: number | null; coordinador2Id: number | null } | null; archivado: boolean | null; personal: Teacher | null; turnoNombre: string | null; turno: { nombre: string | null } | null } };
 type Schedule = { id: number; inicio: string; fin: string; actividadId: number; grupoModuloId: number; evento: { estado: string | null } | null; actividad: { id: number; nombre: string | null; numeroSesion: number | null; orden: number | null; aprendizaje: { indicadorCapacidad: { capacidadTerminal: { unidadDidacticaId: number } } } | null }; grupoModulo: GroupModule };
 type Jornada = { id: number; tipo: TipoUnidad; pendiente: boolean; evento: { estado: string | null } | null; inicio: string; fin: string; grupoModuloId: number; grupoModulo: GroupModule };
-type Saved = { id: number; docente: Teacher; grupoModuloId: number; actividadProgramadaId: number | null; jornadaId: number | null; unidadDidacticaId: number | null; actividadId: number | null; tipoUnidad: TipoUnidad; actividadManual: string | null; asistentes: number | null; usoMedios: string | null; matriculados: number; grupoModulo: GroupModule; silabo: string; fichaActividad: string; instrumentoEvaluacion: string; registroAsistencia: string | null; registroAuxiliarEvaluacion: string | null; material: string; tareas: string; firma: string | null; observaciones: string[]; fechaActualizacion: string; unidadDidactica: { nombre: string | null } | null; actividad: { nombre: string | null; numeroSesion: number | null; orden: number | null } | null };
-export const SAVED_FIELDS = `id grupoModuloId actividadProgramadaId jornadaId unidadDidacticaId actividadId tipoUnidad actividadManual asistentes matriculados usoMedios usoMediosValor silabo fichaActividad instrumentoEvaluacion registroAsistencia registroAuxiliarEvaluacion material tareas silaboValor fichaActividadValor instrumentoEvaluacionValor registroAsistenciaValor registroAuxiliarEvaluacionValor materialValor tareasValor firma observaciones fechaActualizacion docente{id displayName user{nombre apellidoPaterno apellidoMaterno apellidos avatar}} unidadDidactica{nombre} actividad{nombre numeroSesion orden}`;
-const GROUP_FIELDS = `id nombre moduloId modulo{titulo plan{carrera{tipoCarrera{nombre}}}} grupoId grupo{semestreId archivado turnoNombre turno{nombre} personal{id displayName user{nombre apellidoPaterno apellidoMaterno apellidos avatar}}}`;
-export const DAY_SCHEDULE_QUERY = `query ParteDiarioSchedule($inicio:Timestamp!,$fin:Timestamp!){grupoModuloActividades(where:{inicio:{lt:$fin},fin:{gt:$inicio}},limit:1000,orderBy:{inicio:ASC}){id inicio fin actividadId grupoModuloId evento{estado} actividad{id nombre numeroSesion orden aprendizaje{indicadorCapacidad{capacidadTerminal{unidadDidacticaId}}}} grupoModulo{${GROUP_FIELDS}}}}`;
+type Saved = { compromisos: unknown; actualizadoPor: string; id: number; docente: Teacher; grupoModuloId: number; actividadProgramadaId: number | null; jornadaId: number | null; unidadDidacticaId: number | null; actividadId: number | null; tipoUnidad: TipoUnidad; actividadManual: string | null; asistentes: number | null; usoMedios: string | null; matriculados: number; grupoModulo: GroupModule; silabo: string; fichaActividad: string; instrumentoEvaluacion: string; registroAsistencia: string | null; registroAuxiliarEvaluacion: string | null; material: string; tareas: string; firma: string | null; observaciones: string[]; fechaActualizacion: string; unidadDidactica: { nombre: string | null } | null; actividad: { nombre: string | null; numeroSesion: number | null; orden: number | null } | null };
+export const SAVED_FIELDS = `id actualizadoPor grupoModuloId actividadProgramadaId jornadaId unidadDidacticaId actividadId tipoUnidad actividadManual asistentes matriculados usoMedios usoMediosValor silabo fichaActividad instrumentoEvaluacion registroAsistencia registroAuxiliarEvaluacion material tareas silaboValor fichaActividadValor instrumentoEvaluacionValor registroAsistenciaValor registroAuxiliarEvaluacionValor materialValor tareasValor firma observaciones compromisos fechaActualizacion docente{id displayName user{nombre apellidoPaterno apellidoMaterno apellidos avatar rol{titulo}}} unidadDidactica{nombre} actividad{nombre numeroSesion orden}`;
+const GROUP_FIELDS = `id nombre moduloId modulo{titulo plan{carrera{tipoCarrera{nombre}}}} grupoId grupo{semestreId semestre{coordinador1Id coordinador2Id} archivado turnoNombre turno{nombre} personal{id displayName user{nombre apellidoPaterno apellidoMaterno apellidos avatar rol{titulo}}}}`;
+export const DAY_SCHEDULE_QUERY = `query ParteDiarioSchedule($inicio:Timestamp!,$fin:Timestamp!){grupoModuloActividades(where:{inicio:{lt:$fin},fin:{gt:$inicio}},limit:1000,orderBy:{inicio:ASC}){id inicio fin actividadId grupoModuloId evento{estado} actividad{id nombre numeroSesion orden aprendizaje{indicadorCapacidad{capacidadTerminal{unidadDidacticaId}}}} grupoModulo{${GROUP_FIELDS}}} semestres(limit:1000){coordinador1Id coordinador2Id}}`;
 export const JORNADAS_QUERY = `query ParteDiarioJornadas($fecha:Date!){grupoModuloJornadas(where:{fecha:{eq:$fecha}},limit:1000,orderBy:{inicio:ASC}){id tipo pendiente evento{estado} inicio fin grupoModuloId grupoModulo{${GROUP_FIELDS}}}}`;
 export const SAVED_DAY_QUERY = `query ParteDiarioSaved($fecha:Date!){parteDiarioRegistros(where:{fecha:{eq:$fecha}},limit:1000){${SAVED_FIELDS} grupoModulo{${GROUP_FIELDS}}}}`;
 export const DAY_UNITS_QUERY = `query ParteDiarioUnits($ids:[Int!]!){unidadesDidacticas(where:{id:{in:$ids}},limit:1000){id nombre}}`;
@@ -58,15 +62,17 @@ export async function isWorkingDay(fecha: string) {
 export async function loadParteDiario(fecha = todayInLima()) {
  if (!await isWorkingDay(fecha)) return { fecha, laborable: false, mensaje: "Hoy no es día laborable", filas: [] };
  const [scheduled, days, saved, configured] = await Promise.all([
-  graph<{ grupoModuloActividades: Schedule[] }>(DAY_SCHEDULE_QUERY, rangeFor(fecha)), graph<{ grupoModuloJornadas: Jornada[] }>(JORNADAS_QUERY, { fecha }),
+  graph<{ grupoModuloActividades: Schedule[]; semestres: {coordinador1Id:number|null;coordinador2Id:number|null}[] }>(DAY_SCHEDULE_QUERY, rangeFor(fecha)), graph<{ grupoModuloJornadas: Jornada[] }>(JORNADAS_QUERY, { fecha }),
   graph<{ parteDiarioRegistros: Saved[] }>(SAVED_DAY_QUERY, { fecha }), getConfiguredSemestreConsultaIds(),
  ]);
  if ([scheduled.grupoModuloActividades.length, days.grupoModuloJornadas.length, saved.parteDiarioRegistros.length].includes(1000)) throw new https.HttpsError("resource-exhausted", "Demasiadas sesiones para el parte diario.");
- const eligible = (gm: GroupModule) => !gm.grupo.archivado && !!gm.grupo.personal && (fecha !== todayInLima() || !configured.length || configured.includes(gm.grupo.semestreId ?? 0));
+ const coordinatorIds = new Set(scheduled.semestres.flatMap(s=>[s.coordinador1Id,s.coordinador2Id]).filter((id):id is number=>id!=null));
+ const isCoordinator = (person:Teacher|null) => !!person && (coordinatorIds.has(person.id) || isParteCoordinator(person));
+ const eligible = (gm: GroupModule) => !gm.grupo.archivado && !!gm.grupo.personal && !isCoordinator(gm.grupo.personal) && (fecha !== todayInLima() || !configured.length || configured.includes(gm.grupo.semestreId ?? 0));
  const unique = new Map<string, Schedule>();
  for (const s of scheduled.grupoModuloActividades) if (s.evento?.estado !== "cancelado" && eligible(s.grupoModulo) && s.actividad.aprendizaje) { const key = `${s.grupoModuloId}:a:${s.actividadId}`; if (!unique.has(key)) unique.set(key, s); }
  const jornadas = days.grupoModuloJornadas.filter(j => eligible(j.grupoModulo) && j.evento?.estado !== "cancelado" && (j.tipo !== "curricular" || j.pendiente && ![...unique.values()].some(s => s.grupoModuloId === j.grupoModuloId)));
- const historicalSaved = fecha < todayInLima() ? saved.parteDiarioRegistros.filter(r=>!!r.firma) : [];
+ const historicalSaved = fecha < todayInLima() ? saved.parteDiarioRegistros.filter(r=>!!r.firma && !isCoordinator(r.grupoModulo.grupo.personal) && !isCoordinator(r.docente)) : [];
  const modules = [...new Map([...unique.values(), ...jornadas, ...historicalSaved].map(s => [s.grupoModuloId, s.grupoModulo])).values()];
  const unitIds = [...new Set([...unique.values()].map(s => s.actividad.aprendizaje!.indicadorCapacidad.capacidadTerminal.unidadDidacticaId))];
  const units = new Map((unitIds.length ? (await graph<{ unidadesDidacticas: { id: number; nombre: string | null }[] }>(DAY_UNITS_QUERY, { ids: unitIds })).unidadesDidacticas : []).map(u => [u.id, u]));
@@ -83,19 +89,20 @@ export async function loadParteDiario(fecha = todayInLima()) {
  const sources = [...unique.values()].map(s => ({ gm: s.grupoModulo, inicio: s.inicio, actividadProgramadaId: s.actividadId as number | null, jornadaId: null as number | null, tipoUnidad: "curricular" as TipoUnidad, unitId: s.actividad.aprendizaje!.indicadorCapacidad.capacidadTerminal.unidadDidacticaId as number | null, activity: s.actividad.nombre, activityNumber: s.actividad.numeroSesion ?? s.actividad.orden, pendiente: false }));
  sources.push(...jornadas.map(j => ({ gm: j.grupoModulo, inicio: j.inicio, actividadProgramadaId: null, jornadaId: j.id, tipoUnidad: j.tipo, unitId: null, activity: null, activityNumber: null, pendiente: j.tipo === "curricular" })));
  for (const r of historicalSaved) if (!sources.some(s=>s.gm.id===r.grupoModuloId&&(r.actividadProgramadaId!=null?s.actividadProgramadaId===r.actividadProgramadaId:s.jornadaId===r.jornadaId))) sources.push({gm:r.grupoModulo,inicio:rangeFor(fecha).inicio,actividadProgramadaId:r.actividadProgramadaId,jornadaId:r.jornadaId,tipoUnidad:r.tipoUnidad,unitId:r.unidadDidacticaId,activity:r.actividad?.nombre??r.actividadManual,activityNumber:r.actividad?.numeroSesion??r.actividad?.orden??null,pendiente:r.actividadProgramadaId==null&&r.tipoUnidad==='curricular'});
+ const editors = await parteEditors(saved.parteDiarioRegistros.map(r => r.actualizadoPor));
  const candidates = sources.map(s => {
   const gm = s.gm;
   const r = saved.parteDiarioRegistros.find(r => r.grupoModuloId === gm.id && (s.actividadProgramadaId != null ? r.actividadProgramadaId === s.actividadProgramadaId : r.jornadaId === s.jornadaId));
   const docente = r?.docente || gm.grupo.personal!, names = teacherNames(docente), turno = shiftFor(gm.grupo.turno?.nombre || gm.grupo.turnoNombre, s.inicio);
   const practicaTipo = /ocupacional/i.test(gm.modulo.plan?.carrera?.tipoCarrera?.nombre || "") ? "ppp" as const : "efsrt" as const;
   const tipoUnidad = r?.tipoUnidad ?? s.tipoUnidad, actividadManual = r?.actividadManual ?? "";
-  return { inicio: s.inicio, programada: s.actividadProgramadaId == null ? null : { id: s.actividadProgramadaId, nombre: s.activity || "", unidad: units.get(s.unitId ?? 0)?.nombre || "Pendiente de sílabo", unidadId: s.unitId }, row: { recordId: r?.id ?? null, valoraciones: Object.fromEntries(VALUATION_FIELDS.map(field=>[field,r?valuationScore(field,r[field]):null])), key: `${gm.id}:${s.actividadProgramadaId != null ? `a:${s.actividadProgramadaId}` : `j:${s.jornadaId}`}`, grupoModuloId: gm.id, moduloId: gm.moduloId, docenteId: docente.id, actividadProgramadaId: s.actividadProgramadaId, jornadaId: s.jornadaId, pendiente: s.pendiente, practicaTipo,
+  return { coordinator: isCoordinator(docente), inicio: s.inicio, programada: s.actividadProgramadaId == null ? null : { id: s.actividadProgramadaId, nombre: s.activity || "", unidad: units.get(s.unitId ?? 0)?.nombre || "Pendiente de sílabo", unidadId: s.unitId }, row: { editor: r ? editors.get(r.actualizadoPor) ?? {uid:r.actualizadoPor,nombre:"Coordinador",avatar:null} : null, recordId: r?.id ?? null, valoraciones: Object.fromEntries(VALUATION_FIELDS.map(field=>[field,r?valuationScore(field,r[field]):null])), key: `${gm.id}:${s.actividadProgramadaId != null ? `a:${s.actividadProgramadaId}` : `j:${s.jornadaId}`}`, grupoModuloId: gm.id, moduloId: gm.moduloId, docenteId: docente.id, actividadProgramadaId: s.actividadProgramadaId, jornadaId: s.jornadaId, pendiente: s.pendiente, practicaTipo,
    docenteNombre: names.lista, docenteNombreCompleto: names.completo, apellidoPaterno: names.paterno, avatar: docente.user?.avatar ?? null, turno: turno.nombre, turnoOrden: turno.orden, modulo: gm.nombre || gm.modulo.titulo || "Sin módulo",
    tipoUnidad, tipoUnidadProgramada: s.tipoUnidad, actividadManual, unidadDidacticaId: r ? r.unidadDidacticaId : s.unitId, unidad: tipoUnidad !== "curricular" ? tipoUnidad.toUpperCase() : r?.unidadDidactica?.nombre ?? units.get(s.unitId ?? 0)?.nombre ?? "Pendiente de sílabo",
    actividadId: r ? r.actividadId : s.actividadProgramadaId, actividad: tipoUnidad !== "curricular" ? actividadManual : r?.actividad?.nombre ?? s.activity ?? "Pendiente de sílabo", actividadNumero: tipoUnidad === "curricular" ? r?.actividad?.numeroSesion ?? r?.actividad?.orden ?? s.activityNumber : null, matriculados: r?.matriculados ?? counts.get(gm.id)?.size ?? 0,
-   asistentes: r?.asistentes ?? null, usoMedios: r?.usoMedios ?? '', silabo: r?.silabo ?? '', fichaActividad: r?.fichaActividad ?? '', instrumentoEvaluacion: r?.instrumentoEvaluacion ?? '', registroAsistencia: r?.registroAsistencia ?? '', registroAuxiliarEvaluacion: r?.registroAuxiliarEvaluacion ?? '', material: r?.material ?? '', tareas: r?.tareas ?? '', firma: r?.firma ?? null, observaciones: r?.observaciones ?? [], version: r?.fechaActualizacion ?? null } };
+   asistentes: r?.asistentes ?? null, usoMedios: r?.usoMedios ?? '', silabo: r?.silabo ?? '', fichaActividad: r?.fichaActividad ?? '', instrumentoEvaluacion: r?.instrumentoEvaluacion ?? '', registroAsistencia: r?.registroAsistencia ?? '', registroAuxiliarEvaluacion: r?.registroAuxiliarEvaluacion ?? '', material: r?.material ?? '', tareas: r?.tareas ?? '', firma: r?.firma ?? null, observaciones: r?.observaciones ?? [], compromisos: r ? readCompromisos(r.compromisos) : [], version: r?.fechaActualizacion ?? null } };
  });
- const filas = consolidateDailyRows(candidates).sort((a, b) => a.turnoOrden - b.turnoOrden || a.apellidoPaterno.localeCompare(b.apellidoPaterno, "es", { sensitivity: "base" }) || a.docenteNombre.localeCompare(b.docenteNombre, "es") || a.grupoModuloId - b.grupoModuloId || (a.actividadProgramadaId ?? 0) - (b.actividadProgramadaId ?? 0));
+ const filas = consolidateDailyRows(candidates.filter(c => !c.coordinator)).sort((a, b) => a.turnoOrden - b.turnoOrden || a.apellidoPaterno.localeCompare(b.apellidoPaterno, "es", { sensitivity: "base" }) || a.docenteNombre.localeCompare(b.docenteNombre, "es") || a.grupoModuloId - b.grupoModuloId || (a.actividadProgramadaId ?? 0) - (b.actividadProgramadaId ?? 0));
  const moduleIds = [...new Set(filas.map(row => row.moduloId))];
  const orderedUnits = moduleIds.length ? (await graph<{competenciaUnidadesDidacticas:{competencia:{moduloId:number};unidadDidactica:{id:number;nombre:string|null}}[]}>(ORDERED_UNITS_QUERY,{ids:moduleIds})).competenciaUnidadesDidacticas : [];
  if (orderedUnits.length === 10000) throw new https.HttpsError('resource-exhausted','Demasiadas unidades para el parte diario.');
@@ -113,7 +120,7 @@ export async function parteChoices(moduloId: number, grupoModuloId?: number) {
 function originMatches(row: Awaited<ReturnType<typeof loadParteDiario>>["filas"][number], data: Record<string, unknown>) {
  return row.grupoModuloId === positiveId(data.grupoModuloId) && (row.actividadProgramadaId != null ? row.actividadProgramadaId === nullableId(data.actividadProgramadaId) && nullableId(data.jornadaId) === null : row.jornadaId === nullableId(data.jornadaId) && nullableId(data.actividadProgramadaId) === null);
 }
-export const getParteDiario = runWith({ timeoutSeconds: 120 }).https.onCall(async (data, context) => { await requirePermission(context, "parte-diario", "view"); return loadParteDiario(parteFecha(data?.fecha)); });
+export const getParteDiario = runWith({ timeoutSeconds: 180 }).https.onCall(async (data, context) => { await requirePermission(context, "parte-diario", "view"); return loadParteDiario(parteFecha(data?.fecha)); });
 export const getParteDiarioOpciones = https.onCall(async (data, context) => {
  await requirePermission(context, "parte-diario", "view"); const day = await loadParteDiario(parteFecha(data?.fecha)), row = day.filas.find(r => originMatches(r, data || {}));
  if (!row) throw new https.HttpsError("not-found", "La sesión no está programada para la fecha seleccionada.");
@@ -183,8 +190,8 @@ export async function normalizeSignature(value: unknown) {
   return `data:image/png;base64,${png.toString("base64")}`;
  } catch { throw new https.HttpsError("invalid-argument", "No se pudo procesar la firma."); }
 }
-export type ParteSourceRow = Pick<Awaited<ReturnType<typeof loadParteDiario>>['filas'][number], 'grupoModuloId'|'moduloId'|'docenteId'|'actividadProgramadaId'|'jornadaId'|'practicaTipo'|'pendiente'|'matriculados'|'version'|'silabo'|'fichaActividad'|'instrumentoEvaluacion'|'registroAsistencia'|'registroAuxiliarEvaluacion'|'material'|'tareas'|'usoMedios'>;
-export async function validateParteInput(data: Record<string,unknown>, row: ParteSourceRow) {
+export type ParteSourceRow = Pick<Awaited<ReturnType<typeof loadParteDiario>>['filas'][number], 'grupoModuloId'|'moduloId'|'docenteId'|'actividadProgramadaId'|'jornadaId'|'practicaTipo'|'pendiente'|'matriculados'|'version'|'silabo'|'fichaActividad'|'instrumentoEvaluacion'|'registroAsistencia'|'registroAuxiliarEvaluacion'|'material'|'tareas'|'usoMedios'|'observaciones'|'compromisos'>;
+export async function validateParteInput(data: Record<string,unknown>, row: ParteSourceRow, uid: string) {
  if ((data?.version ?? null) !== row.version) throw new https.HttpsError("aborted", "El registro cambió. Actualiza la lista antes de guardar.");
  const firma = await normalizeSignature(data.firma);
  if (!firma) throw new https.HttpsError("failed-precondition", "Firma el parte antes de guardarlo.");
@@ -207,13 +214,18 @@ export async function validateParteInput(data: Record<string,unknown>, row: Part
  for (const field of VALUATION_FIELDS) { const value = clean(data[field]), score=valuationScore(field,value);if(score===null)throw new https.HttpsError('invalid-argument','Selecciona una valoración válida.');values[field]=PARTE_VALUATIONS[field].find(label=>valuationScore(field,label)===score)!;values[scoreColumn(field)]=score; }
  const observaciones = data.observaciones ?? [];
  if (!Array.isArray(observaciones) || observaciones.length > 50 || observaciones.some((v: unknown) => typeof v !== "string" || !v.trim() || v.length > 4000)) throw new https.HttpsError("invalid-argument", "Observaciones inválidas.");
- return {unidadDidacticaId,actividadId,tipoUnidad,actividadManual,asistentes,...values,firma,observaciones:(observaciones as string[]).map(v=>v.trim())};
+ let compromisos;
+ try {
+  if(data.compromisos===undefined && row.compromisos.length && JSON.stringify(observaciones)!==JSON.stringify(row.observaciones))throw new Error('Actualiza el formulario para conservar los compromisos de las observaciones.');
+  compromisos=normalizeCompromisos(data.compromisos??row.compromisos,observaciones as string[],row.compromisos,uid,new Date().toISOString(),randomUUID);
+ }catch(error){throw new https.HttpsError('invalid-argument',(error as Error).message);}
+ return {unidadDidacticaId,actividadId,tipoUnidad,actividadManual,asistentes,...values,firma,compromisos,observaciones:(observaciones as string[]).map(v=>v.trim())};
 }
-export const saveParteDiario = runWith({ timeoutSeconds: 120 }).https.onCall(async (data, context) => {
+export const saveParteDiario = runWith({ timeoutSeconds: 180 }).https.onCall(async (data, context) => {
  await requirePermission(context, "parte-diario", "edit"); const fecha = parteFecha(data?.fecha); const day = await loadParteDiario(fecha);
  if (!day.laborable || fecha > todayInLima()) throw new https.HttpsError("failed-precondition", "El parte diario se registra en días laborables hasta la fecha actual.");
  const row = day.filas.find(r => originMatches(r, data || {})); if (!row) throw new https.HttpsError("not-found", "La sesión no está programada para hoy.");
- const validated=await validateParteInput(data,row),now=new Date().toISOString();
+ const validated=await validateParteInput(data,row,context.auth!.uid),now=new Date().toISOString();
  const payload = { fecha: day.fecha, grupoModuloId: row.grupoModuloId, docenteId: row.docenteId, actividadProgramadaId: row.actividadProgramadaId, jornadaId: row.jornadaId, matriculados: row.matriculados,...validated, actualizadoPor: context.auth!.uid, fechaActualizacion: now };
  const identity = row.actividadProgramadaId != null ? 'actividadProgramadaId:{eq:$origin}' : 'jornadaId:{eq:$origin}';
  const lookup = `query FindParte($fecha:Date!,$gm:Int!,$origin:Int!){parteDiarioRegistros(where:{fecha:{eq:$fecha},grupoModuloId:{eq:$gm},${identity}},limit:2){id fechaActualizacion}}`;
@@ -227,7 +239,7 @@ export const saveParteDiario = runWith({ timeoutSeconds: 120 }).https.onCall(asy
  return { ok: true,recordId:stored.parteDiarioRegistros[0].id,fechaActualizacion: stored.parteDiarioRegistros[0].fechaActualizacion, firma:validated.firma };
 });
 
-export const transcribeParteDiario = runWith({ timeoutSeconds: 120, memory: "512MB" }).https.onCall(async (data, context) => {
+export const transcribeParteDiario = runWith({ timeoutSeconds: 180, memory: "512MB" }).https.onCall(async (data, context) => {
  if(!await hasPermission(context,'parte-diario','edit')&&!await hasPermission(context,'reportes-parte-diario','edit'))throw new https.HttpsError('permission-denied','No tienes permiso para transcribir actividades u observaciones del Parte Diario.');
  const mimeType = clean(data?.mimeType).split(";")[0];
  if (!["audio/webm", "audio/mp4", "audio/ogg", "audio/wav", "audio/mpeg"].includes(mimeType) || typeof data?.audio !== "string" || data.audio.length > 2800000 || !/^[A-Za-z0-9+/=]+$/.test(data.audio)) throw new https.HttpsError("invalid-argument", "Grabación inválida o demasiado larga.");

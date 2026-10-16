@@ -27575,6 +27575,14 @@ input ParteDiarioRegistro_Data {
   """
   asistentes_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `ParteDiarioRegistro`.`compromisos` of type `Any`
+  """
+  compromisos: Any
+  """
+  ✨ `_expr` server value variant of `compromisos` (✨ Generated from Field `ParteDiarioRegistro`.`compromisos` of type `Any`)
+  """
+  compromisos_expr: Any_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `ParteDiarioRegistro`.`creadoPor` of type `String!`
   """
   creadoPor: String
@@ -27908,6 +27916,10 @@ input ParteDiarioRegistro_Filter {
   """
   asistentes: Int_Filter
   """
+  ✨ Generated from Field `ParteDiarioRegistro`.`compromisos` of type `Any`
+  """
+  compromisos: Any_Filter
+  """
   ✨ Generated from Field `ParteDiarioRegistro`.`creadoPor` of type `String!`
   """
   creadoPor: String_Filter
@@ -28061,6 +28073,10 @@ input ParteDiarioRegistro_Having {
   ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_count` of type `Int!`
   """
   asistentes_count: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`compromisos_count` of type `Int!`
+  """
+  compromisos_count: Int_Filter
   """
   ✨ Generated from Field `ParteDiarioRegistro`.`creadoPor_count` of type `Int!`
   """
@@ -28322,6 +28338,10 @@ input ParteDiarioRegistro_Having {
   """
   asistentes_min: Int_Filter
   """
+  ✨ Generated from Field `ParteDiarioRegistro`.`compromisos_min` of type `Any`
+  """
+  compromisos_min: Any_Filter
+  """
   ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_min` of type `Int`
   """
   docenteId_min: Int_Filter
@@ -28401,6 +28421,10 @@ input ParteDiarioRegistro_Having {
   ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_max` of type `Int`
   """
   asistentes_max: Int_Filter
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`compromisos_max` of type `Any`
+  """
+  compromisos_max: Any_Filter
   """
   ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_max` of type `Int`
   """
@@ -28565,6 +28589,10 @@ input ParteDiarioRegistro_Order {
   """
   asistentes: OrderDirection
   """
+  ✨ Generated from Field `ParteDiarioRegistro`.`compromisos` of type `Any`
+  """
+  compromisos: OrderDirection
+  """
   ✨ Generated from Field `ParteDiarioRegistro`.`creadoPor` of type `String!`
   """
   creadoPor: OrderDirection
@@ -28680,6 +28708,10 @@ input ParteDiarioRegistro_Order {
   ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_count` of type `Int!`
   """
   asistentes_count: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`compromisos_count` of type `Int!`
+  """
+  compromisos_count: OrderDirection
   """
   ✨ Generated from Field `ParteDiarioRegistro`.`creadoPor_count` of type `Int!`
   """
@@ -28941,6 +28973,10 @@ input ParteDiarioRegistro_Order {
   """
   asistentes_min: OrderDirection
   """
+  ✨ Generated from Field `ParteDiarioRegistro`.`compromisos_min` of type `Any`
+  """
+  compromisos_min: OrderDirection
+  """
   ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_min` of type `Int`
   """
   docenteId_min: OrderDirection
@@ -29020,6 +29056,10 @@ input ParteDiarioRegistro_Order {
   ✨ Generated from Field `ParteDiarioRegistro`.`asistentes_max` of type `Int`
   """
   asistentes_max: OrderDirection
+  """
+  ✨ Generated from Field `ParteDiarioRegistro`.`compromisos_max` of type `Any`
+  """
+  compromisos_max: OrderDirection
   """
   ✨ Generated from Field `ParteDiarioRegistro`.`docenteId_max` of type `Int`
   """

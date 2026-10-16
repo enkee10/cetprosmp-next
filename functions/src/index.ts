@@ -190,3 +190,5 @@ export { getCalendarioAgenda, previewProgramacionHoraria, createProgramacionHora
 export { getParteDiario, getParteDiarioOpciones, getParteDiarioCuentas, renameParteActividad, saveParteDiario, transcribeParteDiario } from "./modules/parte-diario/handlers.js";
 export { exportMatriculasAvanza } from "./modules/matriculas/handlers.js";
 export {getParteReporte,getParteReporteRegistro,getParteReporteOpciones,saveParteReporteRegistro,deleteParteDiarioRegistro,saveParteInforme} from './modules/parte-diario/reports.js';
+
+export {getParteObservacionesHistorial,saveParteCompromisoSeguimiento} from './modules/parte-diario/commitments.js';

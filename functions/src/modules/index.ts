@@ -234,3 +234,5 @@ export { saveEstructuraAcademicaSesionItem } from "./academico/curricularEditing
 export { listMateriales, getMaterial, createOrUpdateMaterial, deleteMaterial } from "./materiales/handlers.js";
 export { getParteDiario, getParteDiarioOpciones, saveParteDiario, transcribeParteDiario } from "./parte-diario/handlers.js";
 export {getParteReporte,getParteReporteRegistro,getParteReporteOpciones,saveParteReporteRegistro,deleteParteDiarioRegistro,saveParteInforme} from './parte-diario/reports.js';
+
+export {getParteObservacionesHistorial,saveParteCompromisoSeguimiento} from './parte-diario/commitments.js';

@@ -1,0 +1,15 @@
+# Parte Diario: borradores persistentes (solo local)
+
+Actualización: publicado en remoto el 16/10/2026. Ver `despliegue-parte-diario-2026-10-16.md`. Lo siguiente describe la preparación y las pruebas locales previas.
+
+Cambios preparados localmente el 16 de octubre de 2026. No se desplegaron funciones, Hosting ni cambios de base de datos en remoto.
+
+- El formulario tiene una X accesible en la esquina superior derecha. X, Cerrar, Escape y cierre exterior conservan los cambios como borrador.
+- Los borradores se conservan en `localStorage`, por fecha y grupo-módulo. Los campos generales se escriben al cambiarlos; observaciones y compromisos mantienen las pulsaciones dentro de su campo y conservan el texto al confirmar, salir del campo o cerrar el modal. También se conserva al salir de la página. Se mantienen al actualizar, cambiar de cuenta en el mismo navegador o cerrar y volver a abrir el navegador o la aplicación instalada. Esto incluye observaciones todavía sin agregar y firmas pendientes de confirmar.
+- La lista y el encabezado del modal muestran `(Borrador)` o `(Guardado)`, seguido del avatar circular de 20 × 20 px del último editor. El nombre aparece al pasar por el avatar. Los partes guardados obtienen su autor desde `actualizadoPor`, resolviendo los perfiles en una consulta agrupada; no se modifica el esquema.
+- Los borradores permanecen en este navegador y dispositivo. No se sincronizan entre dispositivos. Al borrar los datos del navegador se eliminan también los borradores.
+- Los borradores no se envían a los registros usados por los informes. Dibujar una firma pendiente mantiene el estado Borrador; solo el guardado explícito y válido crea o actualiza el parte firmado. Si se edita un parte ya firmado, los informes conservan la última versión firmada hasta confirmar la actualización; las modificaciones pendientes no alteran sus indicadores.
+- La primera modificación de un parte firmado retira su firma anterior del borrador. Si otro usuario actualizó el registro guardado, el borrador conserva su versión anterior y sus datos; el control de versión del servidor impide sobrescribir la actualización. El formulario permite descartar explícitamente el borrador y recuperar el registro actual.
+- Guardar con éxito o eliminar el registro limpia su borrador. Si el navegador impide escribir en el almacenamiento, se muestra el error y los datos permanecen en memoria mientras la aplicación siga abierta.
+
+Verificaciones: `node scripts/test-parte-drafts.cjs`, TypeScript y ESLint de los archivos modificados, compilación de Functions, consultas de solo lectura al emulador SQL Connect y prueba de los componentes reales en Chromium en el puerto 3001. La prueba de navegador verificó cierre completo y reapertura, campos y observación pendiente, 20 px, cambio de autor, guardado explícito, conservación del parte firmado anterior, conflicto de versiones y formulario abierto desde reportes. Los servicios de esa prueba de interfaz son simulados y las solicitudes externas están bloqueadas; la resolución de autores se comprobó por separado en el emulador local.

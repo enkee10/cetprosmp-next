@@ -9,7 +9,7 @@ import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import ActivityOptionLabel from './ActivityOptionLabel';
 import { parteThreeLines } from './parteFieldStyles';
 
-export default function ParteActivitySelect({row,fecha,actividades,onChange,disabled,reportRecordId,label='Actividad / sesión'}:{row:ParteDiarioRow;fecha:string;actividades:ParteActividad[];onChange:(activity:ParteActividad)=>void;disabled?:boolean;reportRecordId?:number;label?:string}) {
+export default function ParteActivitySelect({row,fecha,actividades,onChange,disabled,reportRecordId,label='Actividad / sesión',error:invalid=false,id}:{row:ParteDiarioRow;fecha:string;actividades:ParteActividad[];onChange:(activity:ParteActividad)=>void;disabled?:boolean;reportRecordId?:number;label?:string;error?:boolean;id?:string}) {
  const [anchor,setAnchor]=useState<HTMLElement|null>(null),[selected,setSelected]=useState<number|null>(row.actividadId),[editing,setEditing]=useState(false),[name,setName]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const chosen=actividades.find(a=>a.id===selected);
  const open=(element:HTMLElement)=>{setSelected(row.actividadId);setEditing(false);setError('');setAnchor(element);};
@@ -18,7 +18,7 @@ export default function ParteActivitySelect({row,fecha,actividades,onChange,disa
   onChange({...chosen,nombre,numeroSesion:chosen.numeroSesion??actividades.findIndex(activity=>activity.id===chosen.id)+1});setAnchor(null);
  }catch(e){setError(e instanceof Error?e.message:'No se pudo guardar la actividad.');}finally{setBusy(false);}};
  return <>
-  <ButtonBase role="combobox" aria-label={label} aria-expanded={!!anchor} aria-controls={anchor?'parte-activity-options':undefined} disabled={disabled} onClick={e=>open(e.currentTarget)} sx={{width:'100%',minHeight:44,px:1,py:1,border:'1px solid',borderColor:'divider',borderRadius:1,textAlign:'left',justifyContent:'space-between',gap:1}}><Typography variant="body2" sx={{...parteThreeLines,flex:1}}>{selectedParteActivityLabel(row,actividades)||'Seleccionar actividad'}</Typography><ExpandMoreIcon fontSize="small"/></ButtonBase>
+  <ButtonBase id={id} role="combobox" aria-label={label} aria-invalid={invalid||undefined} aria-expanded={!!anchor} aria-controls={anchor?'parte-activity-options':undefined} disabled={disabled} onClick={e=>open(e.currentTarget)} sx={{width:'100%',minHeight:44,px:1,py:1,border:'1px solid',borderColor:invalid?'error.main':'divider',color:invalid?'error.main':undefined,borderRadius:1,textAlign:'left',justifyContent:'space-between',gap:1}}><Typography variant="body2" sx={{...parteThreeLines,flex:1}}>{selectedParteActivityLabel(row,actividades)||'Seleccionar actividad'}</Typography><ExpandMoreIcon fontSize="small"/></ButtonBase>
   <Popover open={!!anchor} anchorEl={anchor} onClose={()=>{if(!busy)setAnchor(null);}} anchorOrigin={{vertical:'bottom',horizontal:'left'}} slotProps={{paper:{sx:{width:560,maxWidth:'calc(100vw - 24px)',maxHeight:'70dvh'}}}}>
    {error&&<AutoDismissAlert severity="error" sx={{m:1}}>{error}</AutoDismissAlert>}
    <Box id="parte-activity-options" role="listbox" aria-label="Actividades disponibles" sx={{maxHeight:'calc(70dvh - 80px)',overflow:'auto'}}>

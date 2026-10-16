@@ -2,6 +2,7 @@
 const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const seed = require('./data/calendarizacion-2026-jornadas.json');
+const { scheduleDay, rebalanceSlots } = require('./alternating-calendar.cjs');
 const MINUTES = seed.minutesPerAcademicHour;
 const day = value => String(value || '').slice(0, 10);
 const weekday = value => new Date(value + 'T12:00:00Z').getUTCDay();
@@ -83,13 +84,13 @@ function scheduleActivities(activities, durations, slots, gm, shift) {
   let slotIndex = 0, used = 0;
   const segments = [];
   for (const activity of activities) {
-    let left = durations.get(activity.id), segment = 1;
+    let left = Math.round(durations.get(activity.id) * 60), segment = 1;
     while (left > 0) {
       const slot = slots[slotIndex]; assert.ok(slot, `No caben las actividades del grupo-módulo ${gm.id}.`);
-      const minutes = Math.min(left, slot.minutes - used), start = Date.parse(`${slot.date}T${shift.hora_inicio.slice(11, 19)}-05:00`) + (slot.offset + used) * 60000;
-      segments.push({ activityId: activity.id, unitId: activity.unitId, segment: segment++, start: new Date(start).toISOString(), end: new Date(start + minutes * 60000).toISOString(), minutes, phase: slot.phase });
-      left -= minutes; used += minutes;
-      if (used === slot.minutes) { slotIndex++; used = 0; }
+      const seconds = Math.min(left, Math.round(slot.minutes * 60) - used), start = Date.parse(`${slot.date}T${shift.hora_inicio.slice(11, 19)}-05:00`) + Math.round(slot.offset * 60000) + used * 1000;
+      segments.push({ activityId: activity.id, unitId: activity.unitId, segment: segment++, start: new Date(start).toISOString(), end: new Date(start + seconds * 1000).toISOString(), minutes: seconds / 60, phase: slot.phase });
+      left -= seconds; used += seconds;
+      if (used === Math.round(slot.minutes * 60)) { slotIndex++; used = 0; }
     }
   }
   assert.equal(slotIndex, slots.length, 'Las actividades no completan las horas del calendario.');
@@ -143,6 +144,12 @@ function reconcileTechnicalDates(plan, data, holidays) {
     }
     assert.equal(displaced,0,`No hay espacio para completar las prácticas de ${g.id}.`);
     g.slots.technical.sort((a,b)=>a.date.localeCompare(b.date)||a.offset-b.offset);g.slots.practice.sort((a,b)=>a.date.localeCompare(b.date));
+    // PDF closing/practice dates and conflict replacements must respect the same
+    // semester-anchored alternation as classes, including after a module change.
+    const days={lmv:[1,3,5],mjv:[2,4,5],lv:[1,2,3,4,5]}[g.pattern];
+    const balanced=rebalanceSlots([...g.slots.technical,...g.slots.employ,...g.slots.practice],date=>scheduleDay(date,days,g.semesterStart,g.semester));
+    g.slots.technical=balanced.slots.filter(s=>s.phase==='tecnica');g.slots.employ=balanced.slots.filter(s=>s.phase==='empleabilidad');g.slots.practice=balanced.slots.filter(s=>s.phase==='practica');
+    g.adjustments.push(...balanced.extensions.map(s=>({...s,reason:'Recuperación equitativa por secuencia de días y viernes alternos'})));
     const metadata=g.activities.map(id=>{const first=g.segments.find(s=>s.activityId===id);return {id,unitId:first.unitId,phase:first.phase,minutes:g.segments.filter(s=>s.activityId===id).reduce((n,s)=>n+s.minutes,0)};});
     g.segments=[...scheduleActivities(metadata.filter(a=>a.phase==='tecnica'),new Map(metadata.map(a=>[a.id,a.minutes])),g.slots.technical,g,g.shift),...scheduleActivities(metadata.filter(a=>a.phase==='empleabilidad'),new Map(metadata.map(a=>[a.id,a.minutes])),g.slots.employ,g,g.shift)].sort((a,b)=>a.start.localeCompare(b.start)||a.activityId-b.activityId);
     g.journeys=makeJourneys(g.slots,g.segments,g.shift,g.practiceType);g.start=g.journeys[0].start;g.end=g.journeys.at(-1).end;delete g.slots;delete g.shift;delete g.practiceType;
@@ -152,7 +159,7 @@ function reconcileTechnicalDates(plan, data, holidays) {
 function makeJourneys(slots,segments,shift,practiceType){
   const phases=[...slots.technical,...slots.employ,...slots.practice];
   const localDate=value=>new Date(Date.parse(value)-5*3600000).toISOString().slice(0,10);
-  return [...new Set(phases.map(s=>s.date))].sort().map(date=>{const practice=slots.practice.find(s=>s.date===date),curr=[...slots.technical,...slots.employ].filter(s=>s.date===date),selected=practice?[practice]:curr;const base=Date.parse(`${date}T${shift.hora_inicio.slice(11,19)}-05:00`);return {date,type:practice?practiceType:'curricular',start:new Date(base+Math.min(...selected.map(s=>s.offset))*60000).toISOString(),end:new Date(base+Math.max(...selected.map(s=>s.offset+s.minutes))*60000).toISOString(),hours:sum(selected)/MINUTES,curricularHours:sum(curr)/MINUTES,pending:!segments.some(s=>localDate(s.start)===date)&&!practice};});
+  return [...new Set(phases.map(s=>s.date))].sort().map(date=>{const practice=slots.practice.find(s=>s.date===date),curr=[...slots.technical,...slots.employ].filter(s=>s.date===date),selected=practice?[practice]:curr;const base=Date.parse(`${date}T${shift.hora_inicio.slice(11,19)}-05:00`);return {date,type:practice?practiceType:'curricular',start:new Date(base+Math.round(Math.min(...selected.map(s=>s.offset))*60000)).toISOString(),end:new Date(base+Math.round(Math.max(...selected.map(s=>s.offset+s.minutes))*60000)).toISOString(),hours:sum(selected)/MINUTES,curricularHours:sum(curr)/MINUTES,pending:!segments.some(s=>localDate(s.start)===date)&&!practice};});
 }
 
 function buildPlan(data, options = {}) {
@@ -196,7 +203,7 @@ function buildPlan(data, options = {}) {
       for (const a of activities) { const minutes = techDurations.get(a.id) ?? empDurations.get(a.id);if (minutes != null) { const previous = durationUpdates.get(a.id);assert.ok(!previous || previous.minutes === minutes, 'La misma actividad tendría duraciones distintas según el grupo.');durationUpdates.set(a.id,{id:a.id,minutes,hours:minutes/MINUTES,previousHours:a.duracion}); } }
       const journeys = makeJourneys(slots,segments,shift,practiceType);
       const calendar = data.calendarios.find(c=>c.semestre_id===semester.id&&c.duracion===module.horas&&c.horario_id===(module.horas===240&&group.horario_id===6?6:{lmv:1,mjv:3,lv:5}[pattern])) || data.calendarios.find(c=>c.semestre_id===semester.id&&c.duracion===hours&&c.horario_id===({lmv:1,mjv:3,lv:5}[pattern]));assert.ok(calendar,'Falta el calendario del perfil ya importado.');
-      result.groups.push({id:gm.id,groupId:group.id,moduleId:module.id,teacherId:group.personal_id,semester:semester.titulo,calendarId:calendar.id,pattern,cycle:block.cycle,source:block.source,hours:module.horas,practiceHours,employmentHours,technicalHours,adapted,changeHorarioTo:changedHorario??(adapted&&group.horario_id===7?3:null),activities:activities.map(a=>a.id),pendingSyllabus:!activities.length,journeys,segments,start:journeys[0].start,end:journeys.at(-1).end,slots,shift,practiceType,adjustments:[]});
+      result.groups.push({id:gm.id,groupId:group.id,moduleId:module.id,teacherId:group.personal_id,semester:semester.titulo,semesterStart:day(semester.inicio),calendarId:calendar.id,pattern,cycle:block.cycle,source:block.source,hours:module.horas,practiceHours,employmentHours,technicalHours,adapted,changeHorarioTo:changedHorario??(adapted&&group.horario_id===7?3:null),activities:activities.map(a=>a.id),pendingSyllabus:!activities.length,journeys,segments,start:journeys[0].start,end:journeys.at(-1).end,slots,shift,practiceType,adjustments:[]});
     } catch(error) { result.skipped.push({id:gm.id,moduleId:gm.modulo_id,name:gm.nombre,reason:error.message}); }
   }
   reconcileTechnicalDates(result,data,holidays);

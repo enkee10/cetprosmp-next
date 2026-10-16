@@ -14238,6 +14238,15 @@ extend type ParteDiarioRegistro {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "ParteDiarioRegistro.asistentes", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `ParteDiarioRegistro` table where the `compromisos` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  compromisos_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "ParteDiarioRegistro.compromisos", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `ParteDiarioRegistro` table where the `creadoPor` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   creadoPor_count(
@@ -14808,6 +14817,10 @@ extend type ParteDiarioRegistro {
   """
   asistentes_min: Int @fdc_generated(from: "ParteDiarioRegistro.asistentes", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `compromisos` field in the `ParteDiarioRegistro` table.
+  """
+  compromisos_min: Any @fdc_generated(from: "ParteDiarioRegistro.compromisos", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `docenteId` field in the `ParteDiarioRegistro` table.
   """
   docenteId_min: Int @fdc_generated(from: "ParteDiarioRegistro.docenteId", purpose: QUERY_MIN)
@@ -14887,6 +14900,10 @@ extend type ParteDiarioRegistro {
   ✨ Maximum of the `asistentes` field in the `ParteDiarioRegistro` table.
   """
   asistentes_max: Int @fdc_generated(from: "ParteDiarioRegistro.asistentes", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `compromisos` field in the `ParteDiarioRegistro` table.
+  """
+  compromisos_max: Any @fdc_generated(from: "ParteDiarioRegistro.compromisos", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `docenteId` field in the `ParteDiarioRegistro` table.
   """

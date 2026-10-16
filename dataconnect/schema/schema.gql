@@ -875,6 +875,7 @@ type ParteDiarioRegistro @table(name: "parte_diario_registros", singular: "parte
   tareasValor: Int @col(name: "tareas_valor")
   firma: String @col(dataType: "text")
   observaciones: [String!]!
+  compromisos: Any
   creadoPor: String! @col(name: "creado_por")
   actualizadoPor: String! @col(name: "actualizado_por")
   fechaCreacion: Timestamp! @col(name: "fecha_creacion")

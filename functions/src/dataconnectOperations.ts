@@ -642,7 +642,11 @@ export const DELETE_ASPECTOS_EVALUACION_ESTUDIANTES_BY_EVALUACION_ESTUDIANTE_MUT
 `;
 
 export const DELETE_MODULO_ESTUDIANTES_BY_MATRICULA_MUTATION = `
-  mutation DeleteModuloEstudiantesByMatricula($matriculaId: Int!) {
+  mutation DeleteModuloEstudiantesByMatricula($matriculaId: Int!) @transaction {
+    efsrtPppNota_deleteMany(where: { efsrtPppEstudiante: { moduloEstudiante: { matriculaId: { eq: $matriculaId } } } })
+    efsrtPppEstudiante_deleteMany(where: { moduloEstudiante: { matriculaId: { eq: $matriculaId } } })
+    certificadoTituloDocumento_deleteMany(where: { moduloEstudiante: { matriculaId: { eq: $matriculaId } } })
+    certificado_deleteMany(where: { matriculaId: { eq: $matriculaId } })
     moduloEstudiante_deleteMany(where: { matriculaId: { eq: $matriculaId } })
   }
 `;

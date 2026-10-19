@@ -64,6 +64,7 @@ import UserForm from '@/components/intranet/users/UserForm';
 import { imageFileToOptimizedDataUrl } from '@/lib/imageOptimization';
 import AvanzaDownloadDialog from '@/components/intranet/matriculas/AvanzaDownloadDialog';
 import { avanzaDownloadHistoryKey } from '@/lib/avanzaDownload';
+import { buildMatriculaModuloRows, type MatriculaModuloRow } from '@/lib/matriculaModuloRows';
 
 interface SemestreOption {
   id: number;
@@ -1018,32 +1019,10 @@ const getGrupoModuloPrintGroupName = (grupoModulo: MatriculaGrupoModuloOption) =
   return grupoNombre || `Grupo-modulo ${grupoModulo.id}`;
 };
 
-const matriculaBelongsToGrupoModulo = (
-  matricula: MatriculaListItem,
-  grupoModulo: MatriculaGrupoModuloOption,
-) => {
-  const grupoModuloId = Number(grupoModulo.id);
-  const grupoId = Number(grupoModulo.grupo?.id ?? 0);
-  const moduloId = Number(grupoModulo.moduloId ?? 0);
-  return (matricula.modulosEstudiantes || []).some((link) => {
-    const linkGrupoModuloId = Number(link.grupoModuloId ?? link.grupoModulo?.id ?? 0);
-    if (linkGrupoModuloId > 0 && linkGrupoModuloId === grupoModuloId) return true;
+const getMatriculaModuloRowId = (row: MatriculaModuloRow<MatriculaListItem>) => row.rowId;
 
-    const linkGrupoId = Number(link.grupoId ?? link.grupoModulo?.grupoId ?? link.grupoModulo?.grupo?.id ?? 0);
-    const linkModuloId = Number(link.moduloId ?? link.grupoModulo?.moduloId ?? link.grupoModulo?.modulo?.id ?? 0);
-    return Boolean(grupoId > 0 && moduloId > 0 && linkGrupoId === grupoId && linkModuloId === moduloId);
-  });
-};
-
-const getMatriculaGrupoListName = (matricula: MatriculaListItem) => {
-  const nombres = (matricula.modulosEstudiantes || [])
-    .map((link) => asString(link.grupoModulo?.grupo?.nombreDisplay).trim())
-    .filter(Boolean);
-  return Array.from(new Set(nombres)).join(' / ');
-};
-
-const toMatriculaPrintRow = (matricula: MatriculaListItem) => ({
-  id: matricula.id,
+const toMatriculaPrintRow = (matricula: MatriculaModuloRow<MatriculaListItem>) => ({
+  id: matricula.rowId,
   apellidosNombres: studentListName(matricula.user),
   dni: matricula.user?.dni || '',
   celular: matricula.user?.celular || '',
@@ -3107,7 +3086,8 @@ export function MatriculasPage() {
   const [userFormResetKey, setUserFormResetKey] = useState(0);
   const [formResetKey, setFormResetKey] = useState(0);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
-  const [menuMatriculaId, setMenuMatriculaId] = useState<string | null>(null);
+  const [menuMatriculaRow, setMenuMatriculaRow] = useState<MatriculaModuloRow<MatriculaListItem> | null>(null);
+  const menuMatriculaId = menuMatriculaRow ? String(menuMatriculaRow.id) : null;
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 50,
@@ -3409,6 +3389,16 @@ export function MatriculasPage() {
     return grupoModuloFilterOptions.filter((item) => selectedIds.has(String(item.id)));
   }, [directGrupoModuloId, grupoModuloFilterOptions, isDirectGrupoModuloView, selectedGrupoModuloFilterIds]);
 
+  const matriculaRows = useMemo(() => buildMatriculaModuloRows(
+    matriculas,
+    grupoModuloFilterOptions,
+    isDirectGrupoModuloView
+      ? [directGrupoModuloId]
+      : selectedGrupoModuloFilterIds.length > 0
+        ? selectedGrupoModuloFilterIds
+        : isDocente ? grupoModuloFilterOptions.map((item) => String(item.id)) : null,
+  ), [matriculas, grupoModuloFilterOptions, isDirectGrupoModuloView, directGrupoModuloId, selectedGrupoModuloFilterIds, isDocente]);
+
   const pageTitle = useMemo(() => {
     const isDocenteRoute = isDocente || Boolean(directGrupoModuloId);
     if (!isDocenteRoute) return 'Gestion de Matriculas';
@@ -3518,14 +3508,14 @@ export function MatriculasPage() {
     setExportingDocenteSheet(true);
     try {
       const exportSheet = httpsCallable<
-        { matriculaIds: number[] },
+        { matriculaIds: number[]; grupoModuloIds: number[] },
         { ok?: boolean; name?: string; rows?: number; spreadsheetUrl?: string }
       >(
         functions,
         'exportListaMatriculasGeneralGoogleSheet',
         { timeout: 180000 },
       );
-      const result = await exportSheet({ matriculaIds });
+      const result = await exportSheet({ matriculaIds, grupoModuloIds: selectedGrupoModuloFilterIds.map(Number) });
       const spreadsheetUrl = result.data.spreadsheetUrl;
       if (!spreadsheetUrl) {
         sheetWindow?.close();
@@ -3545,7 +3535,7 @@ export function MatriculasPage() {
     } finally {
       setExportingDocenteSheet(false);
     }
-  }, [matriculas]);
+  }, [matriculas, selectedGrupoModuloFilterIds]);
 
   const handleExportAvanza = useCallback(async (desde: string | null) => {
     if (!canUseAvanza) throw new Error('No tienes permiso para descargar AVANZA.');
@@ -3635,7 +3625,7 @@ export function MatriculasPage() {
 
   const buildListaMatriculadosPrintGroups = useCallback(() => {
     const targetGrupoModulos = getListaPrintTargetGrupoModulos();
-    const fallbackRows = matriculas.map(toMatriculaPrintRow);
+    const fallbackRows = matriculaRows.map(toMatriculaPrintRow);
     if (targetGrupoModulos.length === 0) {
       return [{
         id: 'lista-general',
@@ -3647,7 +3637,7 @@ export function MatriculasPage() {
     }
 
     const groups = targetGrupoModulos.map((grupoModulo) => {
-      const matchedMatriculas = matriculas.filter((matricula) => matriculaBelongsToGrupoModulo(matricula, grupoModulo));
+      const matchedMatriculas = matriculaRows.filter((row) => row.grupoModuloId === grupoModulo.id);
       const rows = targetGrupoModulos.length === 1 && matchedMatriculas.length === 0
         ? fallbackRows
         : matchedMatriculas.map(toMatriculaPrintRow);
@@ -3674,7 +3664,7 @@ export function MatriculasPage() {
     getCurrentListDocenteName,
     getCurrentListGroupName,
     getListaPrintTargetGrupoModulos,
-    matriculas,
+    matriculaRows,
   ]);
 
   const handleOpenListaMatriculadosPrint = useCallback(() => {
@@ -3722,13 +3712,13 @@ export function MatriculasPage() {
     setEditingMatriculaId(id);
     setOpenMatriculaModal(true);
     setMenuAnchorEl(null);
-    setMenuMatriculaId(null);
+    setMenuMatriculaRow(null);
   }, []);
 
   const handleOpenFichaMatricula = useCallback((id: string) => {
     window.open(`/intranet/matriculas/ficha?matriculaId=${encodeURIComponent(id)}`, '_blank', 'noopener,noreferrer');
     setMenuAnchorEl(null);
-    setMenuMatriculaId(null);
+    setMenuMatriculaRow(null);
   }, []);
 
   const handleOpenUserForm = useCallback(async (matriculaToEdit?: MatriculaListItem | null) => {
@@ -3833,24 +3823,26 @@ export function MatriculasPage() {
     }
   }, [editingUser, fetchMatriculas, isDocente]);
 
-  const handleDeleteMatricula = useCallback(async (id: string) => {
-    const matricula = matriculas.find((item) => String(item.id) === id);
-    const estudiante = fullName(matricula?.user) || `matricula ${id}`;
-    if (!window.confirm(`Estas seguro de eliminar la matricula de ${estudiante}? Esta accion no elimina al usuario.`)) {
+  const handleDeleteMatricula = useCallback(async (row: MatriculaModuloRow<MatriculaListItem>) => {
+    if (!row.grupoModuloId || !row.moduloEstudianteId) return;
+    const estudiante = fullName(row.user) || `matrícula ${row.id}`;
+    if (!window.confirm(`¿Retirar a ${estudiante} de ${row.grupoModuloNombre}? Sus inscripciones en los demás módulos se conservarán.`)) {
       return;
     }
 
     try {
-      const deleteMatricula = httpsCallable<{ id: number }, { id: number | null }>(functions, 'deleteMatricula');
-      await deleteMatricula({ id: Number(id) });
+      const deleteMatricula = httpsCallable<
+        { id: number; grupoModuloId: number; moduloEstudianteId: number }, { id: number }
+      >(functions, 'deleteMatricula');
+      await deleteMatricula({ id: row.id, grupoModuloId: row.grupoModuloId, moduloEstudianteId: row.moduloEstudianteId });
       setMenuAnchorEl(null);
-      setMenuMatriculaId(null);
+      setMenuMatriculaRow(null);
       void fetchMatriculas();
     } catch (err) {
       console.error('Error deleting matricula: ', err);
-      setError(getCallableErrorMessage(err, 'No se pudo eliminar la matricula.'));
+      setError(getCallableErrorMessage(err, 'No se pudo retirar la inscripción del módulo.'));
     }
-  }, [fetchMatriculas, matriculas]);
+  }, [fetchMatriculas]);
 
   const handleSemestreFilterChange = useCallback((event: SelectChangeEvent<string>) => {
     matriculasFetchRequestRef.current += 1;
@@ -4077,10 +4069,10 @@ export function MatriculasPage() {
       },
       {
         field: 'grupo',
-        headerName: 'Grupo',
+        headerName: 'Grupo-Módulo',
         flex: 1,
         minWidth: 190,
-        valueGetter: (_value, row: MatriculaListItem) => getMatriculaGrupoListName(row),
+        valueGetter: (_value, row: MatriculaModuloRow<MatriculaListItem>) => row.grupoModuloNombre,
       },
       {
         field: 'recibo',
@@ -4120,7 +4112,7 @@ export function MatriculasPage() {
             aria-label="Opciones"
             onClick={(event) => {
               setMenuAnchorEl(event.currentTarget);
-              setMenuMatriculaId(String((params.row as MatriculaListItem).id));
+              setMenuMatriculaRow(params.row as MatriculaModuloRow<MatriculaListItem>);
             }}
           >
             <MoreHorizIcon />
@@ -4264,7 +4256,13 @@ export function MatriculasPage() {
                 <ListItemIcon><GradingIcon fontSize="small" /></ListItemIcon><ListItemText>Notas</ListItemText>
               </MenuItem>
             </Menu>
-            <AvanzaDownloadDialog open={openAvanzaDownload} onClose={() => setOpenAvanzaDownload(false)} historyKey={avanzaDownloadHistoryKey(String(user?.uid || user?.email || ''), selectedSemestreFilterId, selectedGrupoModuloFilterIds)} onDownload={handleExportAvanza} />
+            <AvanzaDownloadDialog
+              open={openAvanzaDownload}
+              onClose={() => setOpenAvanzaDownload(false)}
+              historyKey={avanzaDownloadHistoryKey(String(user?.uid || user?.email || ''), selectedSemestreFilterId, [])}
+              isCompleteList={!isDocente && !directGrupoModuloId && selectedGrupoModuloFilterIds.length === 0}
+              onDownload={handleExportAvanza}
+            />
           </> : null}
         </Stack>
       }
@@ -4273,7 +4271,7 @@ export function MatriculasPage() {
       columnToggleLabel="Campos"
     >
       <IntranetDataGrid
-        rows={matriculas}
+        rows={matriculaRows}
         columns={columns}
         columnVisibilityModel={columnVisibilityModel}
         onColumnVisibilityModelChange={handleColumnVisibilityModelChange}
@@ -4282,7 +4280,7 @@ export function MatriculasPage() {
         filterModel={filterModel}
         onFilterModelChange={handleFilterModelChange}
         loading={loading}
-        getRowId={(row) => row.id}
+        getRowId={getMatriculaModuloRowId}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
       />
@@ -4293,7 +4291,7 @@ export function MatriculasPage() {
         disableScrollLock
         onClose={() => {
           setMenuAnchorEl(null);
-          setMenuMatriculaId(null);
+          setMenuMatriculaRow(null);
         }}
       >
         {canEditRecords ? (
@@ -4314,8 +4312,9 @@ export function MatriculasPage() {
         </MenuItem>
         {canDeleteRecords ? (
           <MenuItem
+            disabled={!menuMatriculaRow?.grupoModuloId || !menuMatriculaRow?.moduloEstudianteId}
             onClick={() => {
-              if (menuMatriculaId) void handleDeleteMatricula(menuMatriculaId);
+              if (menuMatriculaRow) void handleDeleteMatricula(menuMatriculaRow);
             }}
           >
             Eliminar

@@ -5,10 +5,11 @@ import { dataConnect } from '../core/dataConnectCore.js';
 import { avanzaRegistrationRow, AvanzaStudent } from './avanzaRegistration.js';
 import { fillAvanzaTemplate, inspectAvanzaTemplate } from './avanzaTemplate.js';
 import { generateAvanzaPhone, needsAvanzaPhoneReplacement, reserveAvanzaPhoneNumbers } from './avanzaPhones.js';
+import { buildMatriculaModuloRows } from '../core/matriculaModuloRows.js';
 
 type Plan = { id: number; carreraId: number; planEstudio: string | null; anio: number | null; version: { titulo: string | null } | null; periodoVigencia: { titulo: string | null } | null };
 type Career = { id: number; nombre: string | null };
-type Group = { id: number; grupoId: number; moduloId: number; inicio: string | null; fin: string | null; grupo: { semestreId: number; archivado: boolean | null }; modulo: { id: number; titulo: string | null; orden: number | null; planId: number | null; carreraId: number | null } };
+type Group = { id: number; grupoId: number; moduloId: number; inicio: string | null; fin: string | null; grupo: { id?: number; semestreId: number; archivado: boolean | null }; modulo: { id: number; titulo: string | null; orden: number | null; planId: number | null; carreraId: number | null } };
 type Enrollment = { id: number; matriculaId: number; moduloId: number; grupoId: number | null; grupoModuloId: number | null; matricula: { id: number; fecha: string | null; archivado: boolean | null; user: (AvanzaStudent & { id: number }) | null } };
 export type AvanzaExportPeriod = { desde: string | null; hasta: string };
 const identity = (value: string | null): string => (value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' ').toUpperCase();
@@ -81,23 +82,28 @@ export async function createAvanzaExport(semestre: { id: number; titulo: string 
   const allowed = new Set(allowedGroupIds);
   const selected = groups.filter(g => allowed.has(g.id));
   const selectedById = new Map(selected.map(g => [g.id, g]));
-  const selectedByPair = new Map(selected.map(g => [`${g.grupoId}:${g.moduloId}`, g]));
+  const matriculasById = new Map<number, Enrollment['matricula'] & { modulosEstudiantes: Enrollment[] }>();
+  for (const enrollment of data.modulosEstudiantes) {
+    const matricula = matriculasById.get(enrollment.matriculaId) ?? { ...enrollment.matricula, modulosEstudiantes: [] };
+    matricula.modulosEstudiantes.push(enrollment);
+    matriculasById.set(enrollment.matriculaId, matricula);
+  }
+  const moduleRows = buildMatriculaModuloRows([...matriculasById.values()], selected, selected.map(group => String(group.id)));
   const entries: { student: AvanzaStudent & { id: number }; group: Group; careerId: number }[] = [];
-  const seen = new Set<string>();
   const missing: string[] = [];
   const desdeTime = period.desde === null ? null : Date.parse(period.desde);
   const hastaTime = Date.parse(period.hasta);
-  for (const enrollment of data.modulosEstudiantes) {
-    if (enrollment.matricula.archivado === true) continue;
+  for (const enrollment of moduleRows) {
+    if (enrollment.archivado === true) continue;
     if (desdeTime !== null) {
-      const fecha = Date.parse(enrollment.matricula.fecha || '');
+      const fecha = Date.parse(enrollment.fecha || '');
       // Consecutive downloads use (desde, hasta] to avoid repeating the cutoff.
       if (!Number.isFinite(fecha) || fecha <= desdeTime || fecha > hastaTime) continue;
     }
-    const group = enrollment.grupoModuloId ? selectedById.get(enrollment.grupoModuloId) : selectedByPair.get(`${enrollment.grupoId}:${enrollment.moduloId}`);
+    const group = selectedById.get(enrollment.grupoModuloId ?? 0);
     if (!group) continue;
-    const student = enrollment.matricula.user;
-    if (!student) fail(`La matrícula ${enrollment.matriculaId} no tiene estudiante.`);
+    const student = enrollment.user;
+    if (!student) fail(`La matrícula ${enrollment.id} no tiene estudiante.`);
     let mapped = group, careerId = careerOf(group);
     if (identity(group.modulo.titulo).startsWith('MANEJO DE MAQUINAS INDUSTRIALES')) {
       const career = data.carreras.find(c => identity(c.nombre) === 'COSTURA Y ACABADOS');
@@ -108,10 +114,7 @@ export async function createAvanzaExport(semestre: { id: number; titulo: string 
       mapped = candidates[0]; careerId = career!.id;
     }
     if (!careerId) fail(`El módulo ${group.modulo.titulo || group.moduloId} no tiene una carrera asignada.`);
-    // One inscription per student/module, even when enrolled in two groups of that module.
-    const key = `${student!.id}:${careerId}:${mapped.moduloId}`;
-    if (seen.has(key)) continue;
-    seen.add(key); entries.push({ student: student!, group: mapped, careerId: careerId! });
+    entries.push({ student: student!, group: mapped, careerId: careerId! });
   }
   if (!entries.length) fail(period.desde ? 'No hay matrículas posteriores a esa fecha y hora para los grupos seleccionados.' : 'No hay matrículas del semestre actual para los grupos seleccionados.');
   const reservedPhones = entries.some(entry => needsAvanzaPhoneReplacement(entry.student.celular)) ? await getReservedAvanzaPhones() : new Set<string>();

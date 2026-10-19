@@ -21,6 +21,8 @@ import {
   DataConnectUserInput,
 } from "../core/types.js";
 import { deleteMatriculaTree } from "../core/matriculaDeletion.js";
+import { deleteMatriculaModulo } from "../core/matriculaModuloDeletion.js";
+import { syncMatriculasCurrentSemesterSheetBestEffort } from "../matriculas/googleSheetsSync.js";
 import { ensureNoMatriculaScheduleConflicts } from "../core/matriculaScheduleValidation.js";
 import { getNextCodigoInscripcionForCurrentYear } from "../core/matriculaCodigoInscripcion.js";
 import { getDatosGeneralesGlobales as fetchDatosGeneralesGlobales } from "../datos-generales/service.js";
@@ -1770,51 +1772,18 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
 });
 
 export const retireRegistroAuxiliarMatricula = https.onCall(async (data: RegistroAuxiliarRetireMatriculaInput, context) => {
-  await requirePermission(context, "registro-auxiliar", "delete");
-
   const grupoModuloId = toNumber(data?.grupoModuloId, -1);
   const moduloEstudianteId = toNumber(data?.moduloEstudianteId, -1);
   if (grupoModuloId <= 0 || moduloEstudianteId <= 0) {
     throw new https.HttpsError("invalid-argument", "grupoModuloId y moduloEstudianteId son requeridos.");
   }
+  await ensureRegistroAuxiliarAccess(context, grupoModuloId, "delete");
 
   try {
-    const response = await dataConnect.executeGraphql<{
-      grupoModulo: { id: number; grupoId?: number | null; moduloId?: number | null } | null;
-      moduloEstudiante: {
-        id: number;
-        matriculaId: number;
-        moduloId?: number | null;
-        grupoId?: number | null;
-        matricula?: {
-          id?: number | null;
-          archivado?: boolean | null;
-          user?: { id?: number | null; documentId?: string | null; blocked?: boolean | null } | null;
-        } | null;
-      } | null;
-    }, { grupoModuloId: number; moduloEstudianteId: number }>(
-      REGISTRO_AUXILIAR_RETIRE_MATRICULA_QUERY,
-      { variables: { grupoModuloId, moduloEstudianteId } },
-    );
-
-    const grupoModulo = response.data.grupoModulo;
-    const moduloEstudiante = response.data.moduloEstudiante;
-    if (!grupoModulo?.grupoId || !grupoModulo?.moduloId || !moduloEstudiante?.matriculaId) {
-      throw new https.HttpsError("not-found", "No se encontro la matricula solicitada.");
-    }
-    if (moduloEstudiante.grupoId !== grupoModulo.grupoId || moduloEstudiante.moduloId !== grupoModulo.moduloId) {
-      throw new https.HttpsError("failed-precondition", "La matricula no pertenece a este grupo-modulo.");
-    }
-
-    const userId = moduloEstudiante.matricula?.user?.id ?? null;
-    const deletedMatriculaId = await deleteMatriculaTree(moduloEstudiante.matriculaId);
-
+    const result = await deleteMatriculaModulo(grupoModuloId, moduloEstudianteId);
+    await syncMatriculasCurrentSemesterSheetBestEffort("retirar inscripción desde registro auxiliar");
     return {
-      grupoModuloId,
-      moduloEstudianteId,
-      matriculaId: deletedMatriculaId,
-      userId,
-      deleted: true,
+      ...result,
       userBlocked: false,
     };
   } catch (error) {

@@ -24,10 +24,11 @@ type Props = {
   open: boolean;
   onClose: () => void;
   historyKey: string;
+  isCompleteList: boolean;
   onDownload: (desde: string | null) => Promise<{ hasta: string; pendingRows: number; missingRows: number }>;
 };
 
-export default function AvanzaDownloadDialog({ open, onClose, historyKey, onDownload }: Props) {
+export default function AvanzaDownloadDialog({ open, onClose, historyKey, isCompleteList, onDownload }: Props) {
   const [mode, setMode] = useState('all');
   const [lastDownload, setLastDownload] = useState<string | null>(null);
   const [reference, setReference] = useState(AVANZA_INITIAL_DOWNLOAD);
@@ -69,8 +70,8 @@ export default function AvanzaDownloadDialog({ open, onClose, historyKey, onDown
     setError(null);
     try {
       const result = await onDownload(desde);
-      // A partial ZIP must not advance past inscriptions that were excluded.
-      if (result.pendingRows === 0 && result.missingRows === 0 && Number.isFinite(Date.parse(result.hasta))) {
+      // Only a complete, successful management-list export advances the reference.
+      if (isCompleteList && mode === 'all' && result.pendingRows === 0 && result.missingRows === 0 && Number.isFinite(Date.parse(result.hasta))) {
         try { window.localStorage.setItem(historyKey, result.hasta); } catch { /* Download remains successful. */ }
       }
       onClose();
@@ -91,8 +92,8 @@ export default function AvanzaDownloadDialog({ open, onClose, historyKey, onDown
       <Stack spacing={2}>
         <AutoDismissAlert message={error} onClose={() => setError(null)} />
         <RadioGroup value={mode} onChange={event => setMode(event.target.value)} aria-label="Matrículas a descargar">
-          <FormControlLabel value="all" control={<Radio />} label="Todas las matrículas" disabled={busy} />
-          <FormControlLabel value="since" control={<Radio />} label="Desde una fecha y hora" disabled={busy} />
+          <FormControlLabel value="all" control={<Radio />} label="Todas las matriculas filtradas por (Grupo-Modulo)" disabled={busy} />
+          <FormControlLabel value="since" control={<Radio />} label="Desde una fecha y hora de matrícula" disabled={busy} />
         </RadioGroup>
         {mode === 'since' && <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es" localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'minmax(0, 1fr) minmax(0, 1fr)' }, gap: 2 }}>

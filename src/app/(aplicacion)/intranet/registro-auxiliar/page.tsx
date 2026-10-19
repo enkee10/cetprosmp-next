@@ -1313,7 +1313,7 @@ export default function RegistroAuxiliarPage() {
     if (!registro?.grupoModulo?.id) return;
     const studentName = getStudentName(student);
     const confirmed = window.confirm(
-      `Se retirara a ${studentName} de esta matricula. Deseas continuar?`,
+      `¿Retirar a ${studentName} de este grupo-módulo? Sus inscripciones en los demás módulos se conservarán.`,
     );
     if (!confirmed) return;
 
@@ -1329,14 +1329,14 @@ export default function RegistroAuxiliarPage() {
         grupoModuloId: registro.grupoModulo.id,
         moduloEstudianteId: student.id,
       });
-      setMessage('Estudiante retirado de la matricula.');
+      setMessage('Estudiante retirado de este grupo-módulo.');
       await fetchRegistro();
     } catch (err) {
       console.error('Error retiring registro auxiliar matricula', err);
       const message = typeof err === 'object' && err !== null && 'message' in err
         ? String((err as { message?: unknown }).message || '')
         : '';
-      setError(message || 'No se pudo retirar la matricula.');
+      setError(message || 'No se pudo retirar la inscripción del módulo.');
     } finally {
       setRetiringModuloEstudianteId(null);
     }
@@ -2023,7 +2023,7 @@ export default function RegistroAuxiliarPage() {
                           )}
                           {savingStudentNameId === student.id ? <CircularProgress size={14} /> : null}
                           {canDeleteRegistroMatriculas ? (
-                            <Tooltip title="Retirar de la matricula">
+                            <Tooltip title="Retirar de este grupo-módulo">
                               <span>
                                 <IconButton
                                   size="small"

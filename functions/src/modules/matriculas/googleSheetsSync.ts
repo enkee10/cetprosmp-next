@@ -4,6 +4,7 @@ import { https, runWith } from "firebase-functions/v1";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { getRequesterRoleId, isSuperUserContext, requirePermission, requireSuperUser } from "../core/permissions.js";
 import { getDatosGeneralesGlobales } from "../datos-generales/service.js";
+import { buildMatriculaModuloRows } from "../core/matriculaModuloRows.js";
 
 const MATRICULAS_SHEETS_FOLDER_ID = "1RttPJVARZA-KXYtiNG9DrWjTCcHazi9a";
 const MATRICULAS_SHEETS_FILE_NAME = "Matriculas 2026-2 (Respuestas)";
@@ -78,6 +79,7 @@ const DOCENTE_MATRICULADOS_SHEETS_HEADERS = [
   "avatar (mediano)",
   "dni-procesado-frente",
   "dni-procesado-reverso",
+  "Grupo-Módulo",
 ] as const;
 
 type SheetsFileInfo = {
@@ -502,6 +504,27 @@ const LIST_MATRICULAS_BY_IDS_FOR_DOCENTE_SHEET_QUERY = `
     matriculas(where: { id: { in: $matriculaIds }, archivado: { ne: true } }, limit: 1000) {
       ${DOCENTE_MATRICULADO_SHEET_MATRICULA_FIELDS}
     }
+  }
+`;
+
+const LIST_GENERAL_SHEET_MODULE_ROWS_QUERY = `
+  query ListGeneralSheetModuleRows($matriculaIds: [Int!]!, $semestreIds: [Int!]!, $uid: String!) {
+    modulosEstudiantes(where: { matriculaId: { in: $matriculaIds } }, limit: 30001) {
+      id matriculaId grupoId grupoModuloId moduloId
+      grupo { id nombreDisplay }
+      modulo { id titulo tituloComercial }
+      grupoModulo {
+        id nombre grupoId moduloId
+        grupo { id nombreDisplay }
+        modulo { id titulo tituloComercial }
+      }
+    }
+    grupoModulos(where: { grupo: { semestreId: { in: $semestreIds }, archivado: { ne: true } } }, limit: 10000) {
+      id nombre grupoId moduloId
+      grupo { id nombreDisplay personalId }
+      modulo { id titulo tituloComercial }
+    }
+    personals(where: { user: { documentId: { eq: $uid } } }, limit: 100) { id }
   }
 `;
 
@@ -1333,8 +1356,9 @@ async function listDocenteMatriculadosForSheet(
 }
 
 function buildDocenteSheetRows(
-  matriculas: SheetsMatriculaRow[],
+  matriculas: Array<SheetsMatriculaRow & { grupoModuloNombre?: string }>,
   avatarMedianoByUserId: Map<number, string>,
+  grupoModuloNombre = "",
 ): string[][] {
   return matriculas.map((matricula, index) => {
     const user = matricula.user ?? null;
@@ -1360,6 +1384,7 @@ function buildDocenteSheetRows(
       buildHyperlinkFormula(avatarMediano ?? user?.avatar, "avatar"),
       buildHyperlinkFormula(user?.dniImagenFrenteProcesadaUrl, "frente"),
       buildHyperlinkFormula(user?.dniImagenReversoProcesadaUrl, "reverso"),
+      matricula.grupoModuloNombre ?? grupoModuloNombre,
     ];
   });
 }
@@ -1375,11 +1400,11 @@ async function writeDocenteMatriculadosSheet(params: {
 
   await sheets.spreadsheets.values.clear({
     spreadsheetId: params.fileInfo.spreadsheetId,
-    range: `${DOCENTE_MATRICULADOS_SHEETS_TAB_NAME}!A:R`,
+    range: `${DOCENTE_MATRICULADOS_SHEETS_TAB_NAME}!A:S`,
   });
   await sheets.spreadsheets.values.update({
     spreadsheetId: params.fileInfo.spreadsheetId,
-    range: `${DOCENTE_MATRICULADOS_SHEETS_TAB_NAME}!A1:R${rowCount}`,
+    range: `${DOCENTE_MATRICULADOS_SHEETS_TAB_NAME}!A1:S${rowCount}`,
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [[...DOCENTE_MATRICULADOS_SHEETS_HEADERS], ...params.rows],
@@ -1461,7 +1486,7 @@ async function writeDocenteMatriculadosSheet(params: {
               sheetId,
               dimension: "COLUMNS",
               startIndex: 0,
-              endIndex: 15,
+              endIndex: columnCount,
             },
           },
         },
@@ -1500,7 +1525,8 @@ export async function exportDocenteMatriculadosGrupoSheet(
     .map((matricula) => toNumberOrNull(matricula.user?.id))
     .filter((id): id is number => Boolean(id && id > 0));
   const avatarMedianoByUserId = await hydrateAvatarMediano(userIds);
-  const rows = buildDocenteSheetRows(matriculas, avatarMedianoByUserId);
+  const rows = buildDocenteSheetRows(matriculas, avatarMedianoByUserId,
+    grupoModulo.nombre || grupoModulo.modulo?.titulo || grupoModulo.grupo?.nombreDisplay || `Grupo-módulo ${grupoModulo.id}`);
   await writeDocenteMatriculadosSheet({ fileInfo, rows });
 
   return {
@@ -1512,32 +1538,66 @@ export async function exportDocenteMatriculadosGrupoSheet(
   };
 }
 
-export async function exportListaMatriculasGeneralSheet(matriculaIds: number[]) {
+export async function exportListaMatriculasGeneralSheet(
+  matriculaIds: number[], grupoModuloIds: number[], context: https.CallableContext,
+) {
   const ids = Array.from(new Set(
     matriculaIds
       .map((id) => Number(id))
-      .filter((id) => Number.isFinite(id) && id > 0),
-  )).slice(0, 1000);
+      .filter((id) => Number.isInteger(id) && id > 0),
+  ));
   if (ids.length === 0) {
     throw new https.HttpsError("invalid-argument", "Debes indicar matriculas para exportar.");
   }
+  if (ids.length > 5000) throw new https.HttpsError("invalid-argument", "Selecciona hasta 5000 matrículas para exportar.");
 
-  const [fileInfo, response] = await Promise.all([
-    ensureSpreadsheetFile(MATRICULAS_GENERAL_LIST_SHEETS_FILE_NAME, DOCENTE_MATRICULADOS_SHEETS_FOLDER_ID),
-    dataConnect.executeGraphql<{ matriculas: SheetsMatriculaRow[] }, { matriculaIds: number[] }>(
+  const requests = [];
+  for (let offset = 0; offset < ids.length; offset += 1000) {
+    requests.push(dataConnect.executeGraphql<{ matriculas: SheetsMatriculaRow[] }, { matriculaIds: number[] }>(
       LIST_MATRICULAS_BY_IDS_FOR_DOCENTE_SHEET_QUERY,
-      { variables: { matriculaIds: ids } },
-    ),
-  ]);
+      { variables: { matriculaIds: ids.slice(offset, offset + 1000) } },
+    ));
+  }
+  const responses = await Promise.all(requests);
   const orderById = new Map(ids.map((id, index) => [id, index]));
-  const matriculas = (response.data.matriculas ?? [])
-    .slice()
+  const matriculas = responses.flatMap((response) => response.data.matriculas ?? [])
     .sort((a, b) => (orderById.get(a.id) ?? 0) - (orderById.get(b.id) ?? 0));
-  const userIds = matriculas
+  const userIds = Array.from(new Set(matriculas
     .map((matricula) => toNumberOrNull(matricula.user?.id))
-    .filter((id): id is number => Boolean(id && id > 0));
-  const avatarMedianoByUserId = await hydrateAvatarMediano(userIds);
-  const rows = buildDocenteSheetRows(matriculas, avatarMedianoByUserId);
+    .filter((id): id is number => Boolean(id && id > 0))));
+  const [modulesResponse, avatarMedianoByUserId] = await Promise.all([
+    dataConnect.executeGraphql<{
+      modulosEstudiantes: Array<SheetsModuloEstudianteRow & { matriculaId: number }>;
+      grupoModulos: DocenteGrupoModuloSheetRow[];
+      personals: Array<{ id: number }>;
+    }, { matriculaIds: number[]; semestreIds: number[]; uid: string }>(LIST_GENERAL_SHEET_MODULE_ROWS_QUERY, {
+      variables: { matriculaIds: ids, semestreIds: Array.from(new Set(matriculas.map((item) => item.semestreId).filter((id): id is number => Boolean(id)))), uid: context.auth?.uid ?? "" },
+    }),
+    hydrateAvatarMediano(userIds),
+  ]);
+  const moduleData = modulesResponse.data;
+  if (moduleData.modulosEstudiantes.length > 30000 || moduleData.grupoModulos.length === 10000) {
+    throw new https.HttpsError("failed-precondition", "La lista supera el límite de exportación. Selecciona menos grupos-módulos.");
+  }
+  const personalIds = new Set(moduleData.personals.map((item) => item.id));
+  const isDocente = !isSuperUserContext(context) && getRequesterRoleId(context) === 4;
+  const grupos = moduleData.grupoModulos.filter((item) => !isDocente || personalIds.has(item.grupo?.personalId ?? 0));
+  const linksByMatricula = new Map<number, SheetsModuloEstudianteRow[]>();
+  for (const link of moduleData.modulosEstudiantes) {
+    const links = linksByMatricula.get(link.matriculaId) ?? [];
+    links.push(link);
+    linksByMatricula.set(link.matriculaId, links);
+  }
+  const visibleIds = grupoModuloIds.length ? grupoModuloIds.map(String) : isDocente ? grupos.map((item) => String(item.id)) : null;
+  const allowedIds = new Set(grupos.map((item) => String(item.id)));
+  const moduleRows = buildMatriculaModuloRows(
+    matriculas.map((item) => ({ ...item, modulosEstudiantes: linksByMatricula.get(item.id) ?? [] })),
+    grupos,
+    visibleIds === null ? null : visibleIds.filter((id) => allowedIds.has(id)),
+  );
+  const rows = buildDocenteSheetRows(moduleRows, avatarMedianoByUserId);
+  if (!rows.length) throw new https.HttpsError("failed-precondition", "No hay matrículas para los grupos-módulos seleccionados.");
+  const fileInfo = await ensureSpreadsheetFile(MATRICULAS_GENERAL_LIST_SHEETS_FILE_NAME, DOCENTE_MATRICULADOS_SHEETS_FOLDER_ID);
   await writeDocenteMatriculadosSheet({ fileInfo, rows });
 
   return {
@@ -1798,7 +1858,11 @@ export const exportListaMatriculasGeneralGoogleSheet = runWith({ timeoutSeconds:
   async (data, context) => {
     await requirePermission(context, "matriculas", "view");
     const matriculaIds = Array.isArray(data?.matriculaIds) ? data.matriculaIds : [];
-    return exportListaMatriculasGeneralSheet(matriculaIds);
+    const grupoModuloIds = data?.grupoModuloIds ?? [];
+    if (!Array.isArray(grupoModuloIds) || grupoModuloIds.length > 2000 || grupoModuloIds.some((id: unknown) => !Number.isInteger(id) || Number(id) <= 0)) {
+      throw new https.HttpsError("invalid-argument", "El filtro de grupos-módulos no es válido.");
+    }
+    return exportListaMatriculasGeneralSheet(matriculaIds, grupoModuloIds, context);
   },
 );
 

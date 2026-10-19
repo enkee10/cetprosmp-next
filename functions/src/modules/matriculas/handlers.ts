@@ -21,6 +21,7 @@ import {
   upsertDataConnectUserByDocumentId,
 } from "../core/dataConnectCore.js";
 import { deleteMatriculaTree } from "../core/matriculaDeletion.js";
+import { deleteMatriculaModulo } from "../core/matriculaModuloDeletion.js";
 import { ensureNoMatriculaScheduleConflicts } from "../core/matriculaScheduleValidation.js";
 import {
   getNextCodigoInscripcionForCurrentYear,
@@ -6063,7 +6064,13 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
 
     const grupoMapping = await getGrupoModuloMapping(semestreId, grupoId);
     await ensureNoMatriculaDuplicates(userId, semestreId, grupoMapping.grupoId, recibo, matriculaId);
-    const moduloGrupos = grupoMapping.moduloGrupos;
+    const groupChanged = Number(currentMatricula.grupoId) !== grupoMapping.grupoId
+      || Number(currentMatricula.semestreId) !== semestreId;
+    const moduloGrupos = groupChanged ? grupoMapping.moduloGrupos : previousModuloItems.map((item) => ({
+      grupoModuloId: item.grupoModuloId ?? item.grupoModulo?.id,
+      grupoId: item.grupoId ?? grupoMapping.grupoId,
+      moduloId: Number(item.moduloId),
+    }));
     if (moduloGrupos.length < 1 || moduloGrupos.length > 6) {
       throw new https.HttpsError(
         "failed-precondition",
@@ -6110,11 +6117,13 @@ export const updateMatriculaFormulario = https.onCall(async (data, context) => {
       fechaCambio,
       registradoPorId: await getRequesterDataConnectUserId(context),
     });
-    await replaceModuloEstudiantesForMatricula(
-      savedMatriculaId,
-      moduloGrupos,
-      grupoMapping.grupoId,
-    );
+    if (groupChanged) {
+      await replaceModuloEstudiantesForMatricula(
+        savedMatriculaId,
+        moduloGrupos,
+        grupoMapping.grupoId,
+      );
+    }
     let workspaceGroup: Awaited<ReturnType<typeof syncMatriculaWorkspaceGroupChange>> | { warning: string; skipped: true } | null = null;
     const workspaceWarnings = [savedUser.workspaceWarning].filter((item): item is string => Boolean(item));
     try {
@@ -6179,15 +6188,18 @@ export const deleteMatricula = https.onCall(async (data, context) => {
   await requirePermission(context, "matriculas", "delete");
 
   const matriculaId = toNumber(data?.id, -1);
-  if (matriculaId <= 0) {
-    throw new https.HttpsError("invalid-argument", "id is required.");
+  const grupoModuloId = toNumber(data?.grupoModuloId, -1);
+  const moduloEstudianteId = toNumber(data?.moduloEstudianteId, -1);
+  if (matriculaId <= 0 || grupoModuloId <= 0 || moduloEstudianteId <= 0) {
+    throw new https.HttpsError("invalid-argument", "Selecciona una inscripción con matrícula, grupo-módulo y módulo-estudiante.");
   }
 
   try {
-    const deletedId = await deleteMatriculaTree(matriculaId);
-    await syncMatriculasCurrentSemesterSheetBestEffort("eliminar matricula");
-    return { id: deletedId };
+    const result = await deleteMatriculaModulo(grupoModuloId, moduloEstudianteId, matriculaId);
+    await syncMatriculasCurrentSemesterSheetBestEffort("retirar inscripción de grupo-módulo");
+    return { ...result, id: matriculaId };
   } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
     console.error("Error in deleteMatricula:", error);
     throw new https.HttpsError("internal", "No se pudo eliminar la matricula.");
   }

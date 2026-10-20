@@ -1,5 +1,8 @@
 'use client';
 
+import { useCurrentSemestresFilter } from '@/hooks/useCurrentSemestreFilter';
+import { useAppSettings } from '@/hooks/useAppSettings';
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Box,
@@ -28,7 +31,6 @@ import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
-import { dateOnlyTimestamp } from '@/lib/dateOnly';
 import { functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
@@ -135,22 +137,9 @@ function renderSelectedNames(ids: number[], options: Array<{ id: number; nombre?
   return names.length > 2 ? `${names.slice(0, 2).join(', ')} +${names.length - 2}` : names.join(', ');
 }
 
-function semesterDateTime(value?: string | null) {
-  return dateOnlyTimestamp(value);
-}
-
-function currentOrLatestSemester(semestres: SemestreOption[]) {
-  const today = Date.now();
-  const current = semestres.find((semestre) => {
-    const inicio = semesterDateTime(semestre.inicio);
-    const fin = semesterDateTime(semestre.fin);
-    return inicio !== null && fin !== null && inicio <= today && today <= fin;
-  });
-  if (current) return current;
-  return [...semestres].sort((a, b) => (semesterDateTime(b.inicio) ?? b.id) - (semesterDateTime(a.inicio) ?? a.id))[0] ?? null;
-}
-
 export default function CertificadosTitulosPage() {
+  const { settings } = useAppSettings();
+  const currentSemestreId = settings.general.semestreActualId;
   const { can, loading: permissionsLoading } = useIntranetPermissions();
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
@@ -162,7 +151,7 @@ export default function CertificadosTitulosPage() {
   const [estudiantes, setEstudiantes] = useState<OptionsResponse['estudiantes']>([]);
   const [documentos, setDocumentos] = useState<CertificadoTituloDocumento[]>([]);
   const [tipoDocumento, setTipoDocumento] = useState<TipoDocumento>('certificado');
-  const [semestreIds, setSemestreIds] = useState<number[]>([]);
+  const [semestreIds, setSemestreIds] = useCurrentSemestresFilter();
   const [grupoModuloIds, setGrupoModuloIds] = useState<number[]>([]);
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>(createEmptySelectionModel);
   const [selectionOrder, setSelectionOrder] = useState<string[]>([]);
@@ -188,17 +177,12 @@ export default function CertificadosTitulosPage() {
           .map((item) => item.semestreId)
           .filter((id): id is number => typeof id === 'number'),
       );
-      const nextSemestres = (result.data.semestres || []).filter((semestre) => semestreIdsConRegistros.has(semestre.id));
+      const nextSemestres = (result.data.semestres || []).filter((semestre) => semestreIdsConRegistros.has(semestre.id) || semestre.id === currentSemestreId);
       setSemestres(nextSemestres);
       setGrupoModulos(result.data.grupoModulos || []);
       setEstudiantes(nextEstudiantes);
       setDocumentos(result.data.documentos || []);
-      setSemestreIds((current) => {
-        const validCurrent = current.filter((id) => semestreIdsConRegistros.has(id));
-        if (validCurrent.length) return validCurrent;
-        const preferred = currentOrLatestSemester(nextSemestres);
-        return preferred ? [preferred.id] : [];
-      });
+
     } catch (err) {
       console.error('Error loading certificados y titulos:', err);
       setMessage('No se pudieron cargar los certificados y titulos.');
@@ -206,7 +190,7 @@ export default function CertificadosTitulosPage() {
     } finally {
       setLoadingOptions(false);
     }
-  }, []);
+  }, [currentSemestreId]);
 
   useEffect(() => {
     if (permissionsLoading) return;

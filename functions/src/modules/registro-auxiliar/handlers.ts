@@ -1,4 +1,5 @@
 import { https } from "firebase-functions/v1";
+import { getConfiguredCurrentSemestreId, loadCurrentDocenteModulos } from "../core/docenteSemester.js";
 import { dataConnect } from "../core/dataConnectCore.js";
 import {
   asNullableTimestamp,
@@ -29,7 +30,6 @@ import { getDatosGeneralesGlobales as fetchDatosGeneralesGlobales } from "../dat
 import { getRequesterRoleId, isSuperUserContext, PermissionAction, requirePermission } from "../core/permissions.js";
 import {
   getConfiguredSemestreConsultaIds,
-  getDocenteMenuSemestreSelection,
 } from "../settings/handlers.js";
 
 type RegistroAuxiliarNotaInput = {
@@ -415,7 +415,7 @@ const REGISTRO_AUXILIAR_DOCENTE_MODULOS_QUERY = `
     users(where: { documentId: { eq: $uid } }, limit: 1) {
       id
     }
-    personals(limit: 10000) {
+    personals(where: { user: { documentId: { eq: $uid } } }, limit: 100) {
       id
       userId
     }
@@ -466,7 +466,7 @@ const REGISTRO_AUXILIAR_ACCESS_QUERY = `
     users(where: { documentId: { eq: $uid } }, limit: 1) {
       id
     }
-    personals(limit: 10000) {
+    personals(where: { user: { documentId: { eq: $uid } } }, limit: 100) {
       id
       userId
     }
@@ -475,6 +475,7 @@ const REGISTRO_AUXILIAR_ACCESS_QUERY = `
       grupo {
         id
         personalId
+        semestreId
       }
     }
   }
@@ -870,22 +871,23 @@ async function ensureRegistroAuxiliarAccess(
   const uid = context.auth?.uid;
   if (!uid) throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
 
-  const response = await dataConnect.executeGraphql<{
+  const [response, currentSemestreId] = await Promise.all([dataConnect.executeGraphql<{
     users: Array<{ id: number }>;
     personals: Array<{ id: number; userId?: number | null }>;
     grupoModulo: {
       id: number;
-      grupo?: { id?: number | null; personalId?: number | null } | null;
+      grupo?: { id?: number | null; personalId?: number | null; semestreId?: number | null } | null;
     } | null;
   }, { uid: string; grupoModuloId: number }>(
     REGISTRO_AUXILIAR_ACCESS_QUERY,
     { variables: { uid, grupoModuloId } },
-  );
+  ), getConfiguredCurrentSemestreId()]);
 
   const userId = response.data.users?.[0]?.id;
   const personalIds = getPersonalIdsForUserId(userId, response.data.personals ?? []);
   const personalId = response.data.grupoModulo?.grupo?.personalId;
-  if (!personalId || !personalIds.has(personalId)) {
+  if (!personalId || !personalIds.has(personalId) || !currentSemestreId
+    || response.data.grupoModulo?.grupo?.semestreId !== currentSemestreId) {
     throw new https.HttpsError("permission-denied", "No tienes permiso para abrir este modulo.");
   }
 }
@@ -1328,6 +1330,10 @@ function mergeModuloEstudiantesForGrupoModulo(
 export const listRegistroAuxiliarDocenteModulos = https.onCall(async (data, context) => {
   await requirePermission(context, "registro-auxiliar", "view");
 
+  if (isDocenteRegistroRequester(context)) {
+    return loadCurrentDocenteModulos(context.auth!.uid);
+  }
+
   const requestedSemestreTitulo = String(data?.semestreTitulo ?? "").trim();
   const uid = context.auth?.uid;
   if (!uid) {
@@ -1356,35 +1362,14 @@ export const listRegistroAuxiliarDocenteModulos = https.onCall(async (data, cont
       return !allowedSemestreIds || allowedSemestreIds.has(Number(semestreId));
     });
 
-    const isDocenteRequester = isDocenteRegistroRequester(context);
-    const hasExplicitSemestre = Boolean(requestedSemestreTitulo);
-    const docenteSemestreSelection = isDocenteRequester && !hasExplicitSemestre
-      ? await getDocenteMenuSemestreSelection(semestres)
-      : null;
-    const semestreTitulo = docenteSemestreSelection?.currentSemestreTitulo
-      ?? resolveSemestreTituloVigente(
-        semestres,
-        requestedSemestreTitulo,
-      );
-    const modulosByRequester = filterRegistroAuxiliarModulosForRequester({
+    const semestreTitulo = resolveSemestreTituloVigente(semestres, requestedSemestreTitulo);
+    const modulos = sortRegistroAuxiliarModulos(filterRegistroAuxiliarModulosForRequester({
       context,
       userId: response.data.users?.[0]?.id,
       personals: response.data.personals ?? [],
       modulos: grupoModulos,
-      semestreTitulo: hasExplicitSemestre ? semestreTitulo : null,
-    });
-    const docenteSemestreIds = docenteSemestreSelection
-      ? new Set(docenteSemestreSelection.semestreIds)
-      : null;
-    const modulos = sortRegistroAuxiliarModulos(
-      docenteSemestreIds
-        ? modulosByRequester.filter((item) => {
-          const semestreId = getRegistroAuxiliarModuloSemestreId(item);
-          return semestreId != null && docenteSemestreIds.has(semestreId);
-        })
-        : modulosByRequester,
-      docenteSemestreSelection?.orderById,
-    );
+      semestreTitulo: requestedSemestreTitulo ? semestreTitulo : null,
+    }));
 
     return { modulos, semestreTitulo };
   } catch (error) {
@@ -1396,6 +1381,16 @@ export const listRegistroAuxiliarDocenteModulos = https.onCall(async (data, cont
 
 export const listRegistroAuxiliarOpciones = https.onCall(async (_data, context) => {
   await requirePermission(context, "registro-auxiliar", "view");
+
+  if (isDocenteRegistroRequester(context)) {
+    const [{ modulos, semestre }, datoGeneral] = await Promise.all([
+      loadCurrentDocenteModulos(context.auth!.uid), fetchDatosGeneralesGlobales(),
+    ]);
+    return {
+      grupos: buildRegistroAuxiliarGrupos(modulos), semestres: semestre ? [semestre] : [],
+      datoGeneral, datosGenerales: datoGeneral,
+    };
+  }
 
   const uid = context.auth?.uid;
   if (!uid) {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   Autocomplete,
   Avatar,
@@ -65,6 +65,8 @@ import { imageFileToOptimizedDataUrl } from '@/lib/imageOptimization';
 import AvanzaDownloadDialog from '@/components/intranet/matriculas/AvanzaDownloadDialog';
 import { avanzaDownloadHistoryKey } from '@/lib/avanzaDownload';
 import { buildMatriculaModuloRows, type MatriculaModuloRow } from '@/lib/matriculaModuloRows';
+import { loadDocenteModulos } from '@/lib/docenteModulos';
+import { getMatriculaListsRevision, invalidateMatriculaLists, loadMatriculaPage, peekMatriculaPage, subscribeMatriculaLists } from '@/lib/matriculasListCache';
 
 interface SemestreOption {
   id: number;
@@ -88,27 +90,12 @@ function getCurrentMatriculaSemestreId(settings: AppSettings) {
   return Number.isFinite(currentId) && currentId > 0 ? String(currentId) : '';
 }
 
-function buildPlaceholderSemestreOptions(ids: number[]): SemestreOption[] {
-  return ids.map((id) => ({ id, titulo: `Semestre ${id}`, placeholder: true }));
-}
-
 function buildDisplayedSemestreIds(currentSemestreId: string, configuredIds: number[]) {
   const currentId = Number(currentSemestreId);
   return Array.from(new Set([
     ...(Number.isFinite(currentId) && currentId > 0 ? [currentId] : []),
     ...configuredIds,
   ]));
-}
-
-function mergeCurrentSemestrePlaceholder(
-  currentSemestreId: string,
-  options: SemestreOption[],
-) {
-  const currentId = Number(currentSemestreId);
-  if (!Number.isFinite(currentId) || currentId <= 0 || options.some((semestre) => semestre.id === currentId)) {
-    return options;
-  }
-  return [{ id: currentId, titulo: `Semestre ${currentId}`, placeholder: true }, ...options];
 }
 
 function truncateMiddleText(value: string, maxLength = 30) {
@@ -2145,6 +2132,7 @@ export function MatriculaForm({
         isEditing ? 'Matricula actualizada correctamente.' : 'Matricula registrada correctamente.',
         ...workspaceWarnings.map((warning) => `Advertencia Workspace: ${warning}`),
       ].join('\n'));
+      invalidateMatriculaLists();
       onSaved({ id: result.data.id });
     } catch (error) {
       setMessage(getCallableErrorMessage(error, isEditing ? 'No se pudo actualizar la matricula.' : 'No se pudo registrar la matricula.'));
@@ -3056,15 +3044,31 @@ export function MatriculaForm({
 
 export function MatriculasPage() {
   const { user } = useAuth();
-  const { can } = useIntranetPermissions();
+  const { can, loading: loadingPermissions } = useIntranetPermissions();
   const { settings, loading: loadingSettings } = useAppSettings();
+  const currentSemestreId = getCurrentMatriculaSemestreId(settings);
+  const configuredSemestreIdsKey = getConfiguredMatriculaSemestreIds(settings).join(',');
   const searchParams = useSearchParams();
   const isDocente = Number(user?.role ?? 0) === 4 && Number(user?.level ?? 0) < 600;
+  const directGrupoModuloId = useMemo(() => {
+    const id = Number(searchParams.get('grupoModuloId') || 0);
+    return Number.isFinite(id) && id > 0 ? String(id) : '';
+  }, [searchParams]);
+  const isDirectGrupoModuloView = isDocente && Boolean(directGrupoModuloId);
   const canCreateRecords = can('matriculas', 'create');
   const canEditRecords = can('matriculas', 'edit');
   const canDeleteRecords = !isDocente && can('matriculas', 'delete');
   const canUseAvanza = can('avanza', 'view') && can('matriculas', 'view');
-  const [matriculas, setMatriculas] = useState<MatriculaListItem[]>([]);
+  const [pageRows, setPageRows] = useState<MatriculaModuloRow<MatriculaListItem>[]>([]);
+  const [pageRowsKey, setPageRowsKey] = useState('');
+  const [rowCount, setRowCount] = useState(0);
+  const [pageAvatars, setPageAvatars] = useState<Record<string, { avatarTiny?: string }>>({});
+  const listRevision = useSyncExternalStore(subscribeMatriculaLists, getMatriculaListsRevision, () => 0);
+  const matriculaRows = useMemo(() => pageRows.map((row) => {
+    const avatar = pageAvatars[String(row.user?.id)];
+    return avatar && row.user ? { ...row, user: { ...row.user, ...avatar } } : row;
+  }), [pageRows, pageAvatars]);
+  const matriculas = useMemo(() => Array.from(new Map(matriculaRows.map((row) => [row.id, row])).values()), [matriculaRows]);
   const [loading, setLoading] = useState(true);
   const [loadingFilters, setLoadingFilters] = useState(true);
   const [exportingDocenteSheet, setExportingDocenteSheet] = useState(false);
@@ -3073,10 +3077,14 @@ export function MatriculasPage() {
   const [openAvanzaDownload, setOpenAvanzaDownload] = useState(false);
   const [avanzaNotice, setAvanzaNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [semestreFilterOptions, setSemestreFilterOptions] = useState<SemestreOption[]>([]);
-  const [selectedSemestreFilterId, setSelectedSemestreFilterId] = useState('');
+  const semestreFilterOptions = useMemo<SemestreOption[]>(() => {
+    const ids = buildDisplayedSemestreIds(currentSemestreId, isDocente ? [] : configuredSemestreIdsKey.split(',').map(Number).filter(Boolean));
+    return ids.map((id) => settings.general.semestres.find((item) => item.id === id)
+      ?? { id, titulo: `Semestre ${id}`, placeholder: true });
+  }, [currentSemestreId, isDocente, configuredSemestreIdsKey, settings.general.semestres]);
+  const [selectedSemestreFilterId, setSelectedSemestreFilterId] = useState(() => getCurrentMatriculaSemestreId(settings));
   const [grupoModuloFilterOptions, setGrupoModuloFilterOptions] = useState<MatriculaGrupoModuloOption[]>([]);
-  const [selectedGrupoModuloFilterIds, setSelectedGrupoModuloFilterIds] = useState<string[]>([]);
+  const [selectedGrupoModuloFilterIds, setSelectedGrupoModuloFilterIds] = useState<string[]>(() => isDirectGrupoModuloView ? [directGrupoModuloId] : []);
   const matriculasFetchRequestRef = useRef(0);
   const [openMatriculaModal, setOpenMatriculaModal] = useState(false);
   const [editingMatriculaId, setEditingMatriculaId] = useState<string | null>(null);
@@ -3094,15 +3102,15 @@ export function MatriculasPage() {
   });
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
   const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+  const [queryFilterModel, setQueryFilterModel] = useState(filterModel);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setQueryFilterModel(filterModel), 250);
+    return () => window.clearTimeout(timer);
+  }, [filterModel]);
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>(() => defaultMatriculaColumnVisibilityModel(isDocente));
   const docenteGridPreferencesLoadedKeyRef = useRef('');
 
-  const directGrupoModuloId = useMemo(() => {
-    const id = Number(searchParams.get('grupoModuloId') || 0);
-    return Number.isFinite(id) && id > 0 ? String(id) : '';
-  }, [searchParams]);
-  const isDirectGrupoModuloView = isDocente && Boolean(directGrupoModuloId);
   const docenteGridPreferencesKey = useMemo(() => {
     if (!isDocente) return '';
     const userKey = String(user?.uid || user?.email || '').trim();
@@ -3174,86 +3182,38 @@ export function MatriculasPage() {
   );
 
   const selectedSemestreFilterLabel = selectedSemestreFilter?.placeholder ? '' : getSemestreLabel(selectedSemestreFilter);
-  const matriculaListSemestreTitulo = !isDirectGrupoModuloView ? selectedSemestreFilterLabel : '';
 
   useEffect(() => {
     if (loadingSettings) return;
 
-    let active = true;
-    const configuredSemestreIds = getConfiguredMatriculaSemestreIds(settings);
-    const currentSemestreId = getCurrentMatriculaSemestreId(settings);
-
-    setSemestreFilterOptions(buildPlaceholderSemestreOptions(
-      buildDisplayedSemestreIds(currentSemestreId, configuredSemestreIds),
-    ));
-    if (!isDirectGrupoModuloView) {
-      setSelectedSemestreFilterId(currentSemestreId);
+    setSelectedSemestreFilterId(currentSemestreId);
+    if (isDirectGrupoModuloView) {
+      setSelectedGrupoModuloFilterIds((current) => areStringArraysEqual(current, [directGrupoModuloId]) ? current : [directGrupoModuloId]);
     }
 
-    const loadFilterSemestres = async () => {
-      setLoadingFilters(true);
-      try {
-        const listMatriculaSemestres = httpsCallable<{ semestreIds?: number[] }, { semestres?: SemestreOption[] }>(
-          functions,
-          'listMatriculaSemestres',
-          { timeout: 12000 },
-        );
-        const result = await withTimeout(
-          listMatriculaSemestres({ semestreIds: configuredSemestreIds }),
-          14000,
-          'listMatriculaSemestres',
-        );
-        if (!active) return;
-        const nextSemestres = result.data.semestres || [];
-        setSemestreFilterOptions(mergeCurrentSemestrePlaceholder(currentSemestreId, nextSemestres));
-      } catch (err) {
-        console.error('Error fetching matricula semestres: ', err);
-        if (active) {
-          setSemestreFilterOptions(buildPlaceholderSemestreOptions(
-            buildDisplayedSemestreIds(currentSemestreId, configuredSemestreIds),
-          ));
-        }
-      } finally {
-        if (active) setLoadingFilters(false);
-      }
-    };
-
-    if (configuredSemestreIds.length > 0) {
-      void loadFilterSemestres();
-    } else {
-      setLoadingFilters(false);
-    }
-    return () => {
-      active = false;
-    };
-  }, [isDirectGrupoModuloView, loadingSettings, settings]);
+  }, [currentSemestreId, directGrupoModuloId, isDirectGrupoModuloView, loadingSettings]);
 
   useEffect(() => {
-    if (loadingSettings) return;
+    if (loadingSettings || loadingPermissions) return;
 
     let active = true;
 
     const loadGrupoModuloFilters = async () => {
       setGrupoModuloFilterOptions([]);
-      if (!isDirectGrupoModuloView && !selectedSemestreFilterLabel) {
+      if (!selectedSemestreFilterId) {
+        setLoadingFilters(false);
         return;
       }
 
       setLoadingFilters(true);
       try {
-        const listMatriculaDocenteGrupos = httpsCallable<
-          { semestreTitulo?: string | null },
-          { grupoModulos?: MatriculaGrupoModuloOption[]; semestreTitulo?: string | null }
-        >(functions, 'listMatriculaDocenteGrupos', { timeout: 12000 });
-        const result = await withTimeout(
-          listMatriculaDocenteGrupos({
-            semestreTitulo: isDirectGrupoModuloView ? null : selectedSemestreFilterLabel,
-          }),
-          14000,
-          'listMatriculaDocenteGrupos',
-        );
+        const options: MatriculaGrupoModuloOption[] = isDocente
+          ? (await loadDocenteModulos({ uid: user?.uid ?? '', semestreId: Number(selectedSemestreFilterId), matriculas: true })).modulos
+          : (await withTimeout(httpsCallable<
+              { semestreId: number }, { grupoModulos?: MatriculaGrupoModuloOption[] }
+            >(functions, 'listMatriculaDocenteGrupos', { timeout: 12000 })({ semestreId: Number(selectedSemestreFilterId) }),
+            14000, 'listMatriculaDocenteGrupos')).data.grupoModulos ?? [];
         if (!active) return;
-        const options = result.data.grupoModulos || [];
         if (isDirectGrupoModuloView) {
           const directGrupoModulo = options.find((item) => String(item.id) === directGrupoModuloId) ?? null;
           const directSemestre = directGrupoModulo ? getGrupoModuloSemestreOption(directGrupoModulo) : null;
@@ -3265,13 +3225,6 @@ export function MatriculasPage() {
             return;
           }
 
-          setSemestreFilterOptions((current) => {
-            if (current.some((semestre) => semestre.id === directSemestre.id)) return current;
-            return [directSemestre, ...current];
-          });
-          setSelectedSemestreFilterId((current) =>
-            current === String(directSemestre.id) ? current : String(directSemestre.id),
-          );
           setGrupoModuloFilterOptions(options);
           setSelectedGrupoModuloFilterIds((current) =>
             areStringArraysEqual(current, [directGrupoModuloId]) ? current : [directGrupoModuloId],
@@ -3304,16 +3257,33 @@ export function MatriculasPage() {
     directGrupoModuloId,
     isDirectGrupoModuloView,
     loadingSettings,
+    loadingPermissions,
     selectedSemestreFilterId,
-    selectedSemestreFilterLabel,
+    isDocente,
+    user?.uid,
   ]);
 
   useEffect(() => {
     matriculasFetchRequestRef.current += 1;
-    setMatriculas([]);
+    setPageRows([]);
+    setRowCount(0);
     setLoading(Boolean(selectedSemestreFilterId));
     setPaginationModel((current) => current.page === 0 ? current : { ...current, page: 0 });
   }, [selectedSemestreFilterId]);
+
+  const pageRequest = useMemo(() => ({
+    semestreId: Number(selectedSemestreFilterId),
+    grupoModuloIds: selectedGrupoModuloFilterIds.map(Number).filter(Boolean),
+    page: paginationModel.page,
+    pageSize: paginationModel.pageSize,
+    sortModel,
+    filterModel: queryFilterModel,
+    quickFilterFields: ['fecha', 'estudiante', 'documento', 'periodo', 'celular', 'grupo', 'recibo', 'responsableFormulario', 'archivado',
+      ...(isDocente ? ['fechaNacimiento', 'edad', 'sexo', 'direccion', 'distrito'] : [])]
+      .filter((field) => queryFilterModel.quickFilterExcludeHiddenColumns === false || columnVisibilityModel[field] !== false),
+  }), [selectedSemestreFilterId, selectedGrupoModuloFilterIds, paginationModel, sortModel, queryFilterModel, columnVisibilityModel, isDocente]);
+  const pageCacheKey = useMemo(() => JSON.stringify([user?.uid, user?.role, user?.level, pageRequest]), [user?.uid, user?.role, user?.level, pageRequest]);
+  type PageResult = { rows: MatriculaModuloRow<MatriculaListItem>[]; rowCount: number };
 
   const fetchMatriculas = useCallback(async () => {
     if (loadingSettings) {
@@ -3323,37 +3293,33 @@ export function MatriculasPage() {
 
     const semestreId = Number(selectedSemestreFilterId);
     if (!semestreId) {
-      setMatriculas([]);
+      setPageRows([]);
+      setRowCount(0);
       setLoading(false);
       return;
     }
 
     if (isDirectGrupoModuloView && !selectedGrupoModuloFilterIds.includes(directGrupoModuloId)) {
-      setMatriculas([]);
-      setLoading(true);
+      setPageRows([]);
+      setRowCount(0);
+      setLoading(false);
       return;
     }
 
     const requestId = matriculasFetchRequestRef.current + 1;
     matriculasFetchRequestRef.current = requestId;
-    setLoading(true);
+    setLoading(!peekMatriculaPage(pageCacheKey));
+    const requestRevision = listRevision;
     try {
-      const listMatriculas = httpsCallable<
-        {
-          grupoModuloIds?: number[];
-          semestreId?: number | null;
-          semestreTitulo?: string | null;
-        },
-        { matriculas?: MatriculaListItem[] }
-      >(functions, 'listMatriculas');
-      const result = await listMatriculas({
-        grupoModuloIds: selectedGrupoModuloFilterIds.map((id) => Number(id)).filter(Boolean),
-        semestreId,
-        semestreTitulo: matriculaListSemestreTitulo || null,
-      });
-      if (matriculasFetchRequestRef.current !== requestId) return;
-      const nextMatriculas = result.data.matriculas || [];
-      setMatriculas(nextMatriculas);
+      const result = await loadMatriculaPage(pageCacheKey, async () =>
+        (await httpsCallable<typeof pageRequest, PageResult>(functions, 'listMatriculasPage')(pageRequest)).data);
+      if (matriculasFetchRequestRef.current !== requestId || requestRevision !== getMatriculaListsRevision()) return;
+      setPageRows(result.rows);
+      setPageRowsKey(pageCacheKey);
+      setRowCount(result.rowCount);
+      if (!result.rows.length && result.rowCount > 0 && paginationModel.page > 0) {
+        setPaginationModel((current) => ({ ...current, page: Math.max(0, Math.ceil(result.rowCount / current.pageSize) - 1) }));
+      }
       setError(null);
     } catch (err) {
       if (matriculasFetchRequestRef.current !== requestId) return;
@@ -3368,12 +3334,35 @@ export function MatriculasPage() {
     loadingSettings,
     selectedGrupoModuloFilterIds,
     selectedSemestreFilterId,
-    matriculaListSemestreTitulo,
+    pageCacheKey,
+    pageRequest,
+    paginationModel.page,
+    listRevision,
   ]);
 
   useEffect(() => {
     void fetchMatriculas();
+    return () => { matriculasFetchRequestRef.current += 1; };
   }, [fetchMatriculas]);
+
+  useEffect(() => {
+    // Pagination changes before its records arrive. Never cache the previous rows' photos under the new page.
+    if (loading || pageRowsKey !== pageCacheKey || !pageRows.length || columnVisibilityModel.avatar === false || !settings.visualizaciones.mostrarImagenAvatarEstudiantesEnListas) return;
+    let active = true;
+    const requestRevision = getMatriculaListsRevision();
+    const matriculaIds = Array.from(new Set(pageRows.map((row) => row.id)));
+    void loadMatriculaPage(`${pageCacheKey}|avatars|${matriculaIds.join(',')}`, async () =>
+      (await httpsCallable<{
+        semestreId: number; grupoModuloIds: number[]; matriculaIds: number[];
+      }, { avatars: Record<string, { avatarTiny?: string }> }>(functions, 'getMatriculasPageAvatars')({
+        semestreId: pageRequest.semestreId, grupoModuloIds: pageRequest.grupoModuloIds, matriculaIds,
+      })).data).then((result) => {
+        if (active && requestRevision === getMatriculaListsRevision()) setPageAvatars(result.avatars);
+      }).catch((error) => {
+        if (active) console.warn('No se pudieron cargar los avatares de la página de matrículas.', error);
+      });
+    return () => { active = false; };
+  }, [loading, pageRows, pageRowsKey, pageCacheKey, pageRequest.semestreId, pageRequest.grupoModuloIds, columnVisibilityModel.avatar, settings.visualizaciones.mostrarImagenAvatarEstudiantesEnListas]);
 
   const grupoModuloFilterLabelById = useMemo(
     () => new Map(grupoModuloFilterOptions.map((item) => [String(item.id), getGrupoModuloFilterLabel(item)])),
@@ -3389,15 +3378,12 @@ export function MatriculasPage() {
     return grupoModuloFilterOptions.filter((item) => selectedIds.has(String(item.id)));
   }, [directGrupoModuloId, grupoModuloFilterOptions, isDirectGrupoModuloView, selectedGrupoModuloFilterIds]);
 
-  const matriculaRows = useMemo(() => buildMatriculaModuloRows(
-    matriculas,
-    grupoModuloFilterOptions,
-    isDirectGrupoModuloView
-      ? [directGrupoModuloId]
-      : selectedGrupoModuloFilterIds.length > 0
-        ? selectedGrupoModuloFilterIds
-        : isDocente ? grupoModuloFilterOptions.map((item) => String(item.id)) : null,
-  ), [matriculas, grupoModuloFilterOptions, isDirectGrupoModuloView, directGrupoModuloId, selectedGrupoModuloFilterIds, isDocente]);
+  const loadCompleteList = useCallback(async () => {
+    const result = await httpsCallable<{ semestreId: number; grupoModuloIds: number[] }, { matriculas: MatriculaListItem[] }>(functions, 'listMatriculas')({
+      semestreId: pageRequest.semestreId, grupoModuloIds: pageRequest.grupoModuloIds,
+    });
+    return result.data.matriculas;
+  }, [pageRequest.semestreId, pageRequest.grupoModuloIds]);
 
   const pageTitle = useMemo(() => {
     const isDocenteRoute = isDocente || Boolean(directGrupoModuloId);
@@ -3488,12 +3474,6 @@ export function MatriculasPage() {
   }, [directGrupoModuloId]);
 
   const handleExportGeneralSheet = useCallback(async () => {
-    const matriculaIds = matriculas.map((item) => Number(item.id)).filter((id) => Number.isFinite(id) && id > 0);
-    if (matriculaIds.length === 0) {
-      setError('No hay matriculas cargadas para exportar.');
-      return;
-    }
-
     const sheetWindow = window.open('', '_blank');
     if (sheetWindow) {
       sheetWindow.document.title = 'Generando Google Sheets';
@@ -3507,6 +3487,8 @@ export function MatriculasPage() {
 
     setExportingDocenteSheet(true);
     try {
+      const matriculaIds = (await loadCompleteList()).map((item) => item.id);
+      if (!matriculaIds.length) throw new Error('No hay matrículas para exportar.');
       const exportSheet = httpsCallable<
         { matriculaIds: number[]; grupoModuloIds: number[] },
         { ok?: boolean; name?: string; rows?: number; spreadsheetUrl?: string }
@@ -3535,7 +3517,7 @@ export function MatriculasPage() {
     } finally {
       setExportingDocenteSheet(false);
     }
-  }, [matriculas, selectedGrupoModuloFilterIds]);
+  }, [loadCompleteList, selectedGrupoModuloFilterIds]);
 
   const handleExportAvanza = useCallback(async (desde: string | null) => {
     if (!canUseAvanza) throw new Error('No tienes permiso para descargar AVANZA.');
@@ -3623,9 +3605,9 @@ export function MatriculasPage() {
     return grupoModuloFilterOptions;
   }, [directGrupoModuloId, grupoModuloFilterOptions, isDirectGrupoModuloView, selectedGrupoModuloFilterIds]);
 
-  const buildListaMatriculadosPrintGroups = useCallback(() => {
+  const buildListaMatriculadosPrintGroups = useCallback((printRows: MatriculaModuloRow<MatriculaListItem>[]) => {
     const targetGrupoModulos = getListaPrintTargetGrupoModulos();
-    const fallbackRows = matriculaRows.map(toMatriculaPrintRow);
+    const fallbackRows = printRows.map(toMatriculaPrintRow);
     if (targetGrupoModulos.length === 0) {
       return [{
         id: 'lista-general',
@@ -3637,7 +3619,7 @@ export function MatriculasPage() {
     }
 
     const groups = targetGrupoModulos.map((grupoModulo) => {
-      const matchedMatriculas = matriculaRows.filter((row) => row.grupoModuloId === grupoModulo.id);
+      const matchedMatriculas = printRows.filter((row) => row.grupoModuloId === grupoModulo.id);
       const rows = targetGrupoModulos.length === 1 && matchedMatriculas.length === 0
         ? fallbackRows
         : matchedMatriculas.map(toMatriculaPrintRow);
@@ -3664,31 +3646,38 @@ export function MatriculasPage() {
     getCurrentListDocenteName,
     getCurrentListGroupName,
     getListaPrintTargetGrupoModulos,
-    matriculaRows,
   ]);
 
-  const handleOpenListaMatriculadosPrint = useCallback(() => {
-    if (matriculas.length === 0) {
-      setError('No hay matriculas cargadas para visualizar.');
-      return;
+  const handleOpenListaMatriculadosPrint = useCallback(async () => {
+    const printWindow = window.open('', '_blank');
+    if (printWindow) printWindow.document.body.textContent = 'Preparando lista completa...';
+    try {
+      const allMatriculas = await loadCompleteList();
+      const printRows = buildMatriculaModuloRows(allMatriculas, grupoModuloFilterOptions,
+        isDirectGrupoModuloView ? [directGrupoModuloId]
+          : selectedGrupoModuloFilterIds.length ? selectedGrupoModuloFilterIds
+            : isDocente ? grupoModuloFilterOptions.map((item) => String(item.id)) : null);
+      const groups = buildListaMatriculadosPrintGroups(printRows);
+      const payload = {
+        title: 'Lista de Matriculados',
+        grupoNombre: getCurrentListGroupName(),
+        coordinadorNombre: getCurrentListCoordinadorName(),
+        docenteNombre: getCurrentListDocenteName(),
+        groups,
+        rows: groups.flatMap((group) => group.rows),
+      };
+      window.localStorage.setItem(MATRICULA_LIST_PRINT_STORAGE_KEY, JSON.stringify(payload));
+      if (printWindow) { printWindow.opener = null; printWindow.location.href = '/intranet/matriculas/lista'; }
+    } catch (err) {
+      printWindow?.close();
+      setError(getCallableErrorMessage(err, 'No se pudo preparar la lista completa.'));
     }
-    const groups = buildListaMatriculadosPrintGroups();
-    const payload = {
-      title: 'Lista de Matriculados',
-      grupoNombre: getCurrentListGroupName(),
-      coordinadorNombre: getCurrentListCoordinadorName(),
-      docenteNombre: getCurrentListDocenteName(),
-      groups,
-      rows: groups.flatMap((group) => group.rows),
-    };
-    window.localStorage.setItem(MATRICULA_LIST_PRINT_STORAGE_KEY, JSON.stringify(payload));
-    window.open('/intranet/matriculas/lista', '_blank', 'noopener,noreferrer')?.focus();
   }, [
     buildListaMatriculadosPrintGroups,
     getCurrentListCoordinadorName,
     getCurrentListDocenteName,
     getCurrentListGroupName,
-    matriculas,
+    loadCompleteList, grupoModuloFilterOptions, isDirectGrupoModuloView, directGrupoModuloId, selectedGrupoModuloFilterIds, isDocente,
   ]);
 
   const handleDismissModal = useCallback(() => {
@@ -3699,8 +3688,7 @@ export function MatriculasPage() {
     setOpenMatriculaModal(false);
     setEditingMatriculaId(null);
     setFormResetKey((prev) => prev + 1);
-    void fetchMatriculas();
-  }, [fetchMatriculas]);
+  }, []);
 
   const handleCreateMatricula = useCallback(() => {
     setEditingMatriculaId(null);
@@ -3814,14 +3802,14 @@ export function MatriculasPage() {
 
       setOpenUserModal(false);
       setEditingUser(null);
-      void fetchMatriculas();
+      invalidateMatriculaLists();
     } catch (err) {
       console.error('Error saving user from matriculas: ', err);
       setError(getCallableErrorMessage(err, 'No se pudo guardar el usuario.'));
     } finally {
       setUserFormSubmitting(false);
     }
-  }, [editingUser, fetchMatriculas, isDocente]);
+  }, [editingUser, isDocente]);
 
   const handleDeleteMatricula = useCallback(async (row: MatriculaModuloRow<MatriculaListItem>) => {
     if (!row.grupoModuloId || !row.moduloEstudianteId) return;
@@ -3837,16 +3825,17 @@ export function MatriculasPage() {
       await deleteMatricula({ id: row.id, grupoModuloId: row.grupoModuloId, moduloEstudianteId: row.moduloEstudianteId });
       setMenuAnchorEl(null);
       setMenuMatriculaRow(null);
-      void fetchMatriculas();
+      invalidateMatriculaLists();
     } catch (err) {
       console.error('Error deleting matricula: ', err);
       setError(getCallableErrorMessage(err, 'No se pudo retirar la inscripción del módulo.'));
     }
-  }, [fetchMatriculas]);
+  }, []);
 
   const handleSemestreFilterChange = useCallback((event: SelectChangeEvent<string>) => {
     matriculasFetchRequestRef.current += 1;
-    setMatriculas([]);
+    setPageRows([]);
+    setPageAvatars({});
     setLoading(true);
     setSelectedSemestreFilterId(String(event.target.value));
     setSelectedGrupoModuloFilterIds([]);
@@ -3868,10 +3857,12 @@ export function MatriculasPage() {
 
   const handleSortModelChange = useCallback((nextModel: GridSortModel) => {
     setSortModel(nextModel);
+    setPaginationModel((current) => ({ ...current, page: 0 }));
   }, []);
 
   const handleFilterModelChange = useCallback((nextModel: GridFilterModel) => {
     setFilterModel(nextModel);
+    setPaginationModel((current) => ({ ...current, page: 0 }));
   }, []);
 
   const isGrupoColumnVisible = columnVisibilityModel.grupo !== false;
@@ -3889,7 +3880,7 @@ export function MatriculasPage() {
         sortable: false,
         filterable: false,
         disableColumnMenu: true,
-        renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => paginationModel.page * paginationModel.pageSize + params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
       {
         field: 'avatar',
@@ -3922,7 +3913,7 @@ export function MatriculasPage() {
               }}
             >
               <Avatar
-                src={row.user?.avatarTiny || row.user?.avatar || undefined}
+                src={row.user?.avatarTiny || undefined}
                 alt={studentListName(row.user)}
                 sx={{
                   width: 48,
@@ -4120,7 +4111,7 @@ export function MatriculasPage() {
         ),
       },
     ],
-    [handleOpenUserForm, isDocente, isGrupoColumnVisible],
+    [handleOpenUserForm, isDocente, isGrupoColumnVisible, paginationModel.page, paginationModel.pageSize],
   );
 
   const columnToggleItems = useMemo(
@@ -4153,7 +4144,7 @@ export function MatriculasPage() {
                   label="Semestre"
                   value={selectedSemestreFilterId}
                   onChange={handleSemestreFilterChange}
-                  disabled={loadingFilters}
+                  disabled={loadingSettings || semestreFilterOptions.length === 0}
                   MenuProps={{ disableScrollLock: true }}
                 >
                   {semestreFilterOptions.map((semestre) => (
@@ -4282,6 +4273,10 @@ export function MatriculasPage() {
         loading={loading}
         getRowId={getMatriculaModuloRowId}
         paginationModel={paginationModel}
+        paginationMode="server"
+        sortingMode="server"
+        filterMode="server"
+        rowCount={rowCount}
         onPaginationModelChange={setPaginationModel}
       />
 

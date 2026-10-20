@@ -1,5 +1,6 @@
 ﻿'use client'
 import React, { useState, useEffect, useRef } from 'react';
+import { invalidateMatriculaLists } from '@/lib/matriculasListCache';
 import { useForm, Controller, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -491,6 +492,7 @@ const UserForm: React.FC<UserFormProps> = ({
           'deleteUserAvatarImage',
         );
         await deleteUserAvatarImage({ documentId });
+        invalidateMatriculaLists();
       }
 
       setValue('avatar', '', {

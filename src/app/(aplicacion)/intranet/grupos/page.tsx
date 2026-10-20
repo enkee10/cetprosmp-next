@@ -14,6 +14,7 @@ import { GrupoForm } from '@/components/intranet/grupos/GrupoForm';
 import { isNombreGrupoGenerado, nombreGrupoCalculado } from '@/components/intranet/grupos/nombres';
 import { getPersonalShortName } from '@/components/intranet/grupos/personalName';
 import { useAppSettings } from '@/hooks/useAppSettings';
+import { useCurrentSemestreFilter } from '@/hooks/useCurrentSemestreFilter';
 
 interface Grupo {
   id: number;
@@ -78,27 +79,6 @@ interface SemestreFilterOption {
   archivado?: boolean | null;
 }
 
-function pickDefaultSemestreId(options: SemestreFilterOption[], configuredSemestreId?: number | null) {
-  if (configuredSemestreId && options.some((option) => option.id === configuredSemestreId)) {
-    return String(configuredSemestreId);
-  }
-  const today = new Date();
-  const current = options.find((option) => {
-    if (option.archivado) return false;
-    if (!option.inicio || !option.fin) return false;
-    const start = new Date(`${option.inicio}T00:00:00`);
-    const end = new Date(`${option.fin}T23:59:59`);
-    return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start <= today && today <= end;
-  });
-  if (current) return String(current.id);
-
-  const sorted = options.slice().sort((a, b) => {
-    const aTime = a.inicio ? new Date(`${a.inicio}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
-    const bTime = b.inicio ? new Date(`${b.inicio}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
-    return bTime - aTime || b.id - a.id;
-  });
-  return sorted[0] ? String(sorted[0].id) : '';
-}
 
 export default function GruposPage() {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
@@ -113,7 +93,7 @@ export default function GruposPage() {
     page: 0,
     pageSize: 30,
   });
-  const [selectedSemestreId, setSelectedSemestreId] = useState('');
+  const [selectedSemestreId, setSelectedSemestreId] = useCurrentSemestreFilter();
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
       numero: true,
@@ -359,19 +339,13 @@ export default function GruposPage() {
         archivado: grupo.semestre?.archivado ?? null,
       });
     });
+    const currentId = settings.general.semestreActualId;
+    if (currentId && !byId.has(currentId)) byId.set(currentId, { id: currentId, titulo: `Semestre ${currentId}` });
     return Array.from(byId.values()).sort((a, b) =>
       String(b.titulo).localeCompare(String(a.titulo), 'es', { numeric: true }) || b.id - a.id,
     );
-  }, [grupos]);
+  }, [grupos, settings.general.semestreActualId]);
 
-  useEffect(() => {
-    if (semestreOptions.length === 0) {
-      if (selectedSemestreId) setSelectedSemestreId('');
-      return;
-    }
-    if (selectedSemestreId && semestreOptions.some((option) => String(option.id) === selectedSemestreId)) return;
-    setSelectedSemestreId(pickDefaultSemestreId(semestreOptions, settings.general.semestreActualId));
-  }, [selectedSemestreId, semestreOptions, settings.general.semestreActualId]);
 
   const filteredGrupos = useMemo(() => {
     if (!selectedSemestreId) return grupos;

@@ -19,10 +19,10 @@ const buildIntranetNodes = (sections: IntranetMenuSection[]): MenuTreeNode[] =>
   }));
 
 export default function IntranetMenuWrapper() {
-  const { sections, loading } = useIntranetMenuSections();
+  const { sections } = useIntranetMenuSections();
   const nodes = useMemo(() => buildIntranetNodes(sections), [sections]);
 
-  if (loading || nodes.length === 0) return null;
+  if (nodes.length === 0) return null;
 
   return (
     <FlyoutMenuTree

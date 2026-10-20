@@ -1,9 +1,11 @@
+export { listDocenteMenuModulos } from "./modules/core/docenteSemester.js";
 export {
   assignDefaultRole,
   syncDataConnectUserOnAuthDelete,
   registerUser,
   resolveLoginEmail,
   getMyProfile,
+  getMyAvatar,
   listUserGrupoModuloHistorial,
   listRoles,
   getRole,
@@ -132,6 +134,8 @@ export {
   listFormularioMatriculaSemestres,
   listMatriculaDocenteGrupos,
   listMatriculas,
+  listMatriculasPage,
+  getMatriculasPageAvatars,
   listMatriculaSemestres,
   listMatriculaGruposBySemestre,
   onMatriculaAvatarExtractionJobCreated,

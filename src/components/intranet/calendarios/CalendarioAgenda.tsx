@@ -1,5 +1,7 @@
 'use client';
 
+import { useCurrentSemestreFilter } from '@/hooks/useCurrentSemestreFilter';
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
@@ -25,7 +27,7 @@ export default function CalendarioAgenda() {
   const [day, setDay] = useState(() => dayInLima(new Date()));
   const [view, setView] = useState<CalendarView>('mes');
   const [data, setData] = useState<AgendaData>({ eventos: [], calendarios: [], grupoModulos: [] });
-  const [semestre, setSemestre] = useState('all');
+  const [semestre, setSemestre] = useCurrentSemestreFilter('all');
   const [selectedCalendars, setSelectedCalendars] = useState<number[] | null>(null);
   const [type, setType] = useState('');
   const [groupModule, setGroupModule] = useState('');
@@ -162,6 +164,7 @@ export default function CalendarioAgenda() {
             }
           }}>
           <MenuItem value="all">Todos</MenuItem>
+          {semestre !== 'all' && !(data.semestres ?? []).some(row => String(row.id) === semestre) ? <MenuItem value={semestre}>Semestre {semestre}</MenuItem> : null}
           {(data.semestres ?? []).map(row => <MenuItem key={row.id} value={String(row.id)}>{row.titulo || `Semestre ${row.id}`}</MenuItem>)}
         </TextField>
       </Stack>

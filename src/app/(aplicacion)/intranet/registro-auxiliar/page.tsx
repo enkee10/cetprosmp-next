@@ -27,6 +27,8 @@ import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import { useAuth } from '@/context/AuthContext';
+import { useCurrentSemestreFilter } from '@/hooks/useCurrentSemestreFilter';
+import { invalidateMatriculaLists } from '@/lib/matriculasListCache';
 import { app } from '@/lib/firebase';
 import { formatDateOnly, toDateOnlyInputValue } from '@/lib/dateOnly';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
@@ -423,7 +425,7 @@ export default function RegistroAuxiliarPage() {
   const [grupos, setGrupos] = useState<GrupoOption[]>([]);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [datosGenerales, setDatosGenerales] = useState<DatosGenerales | null>(null);
-  const [semestreId, setSemestreId] = useState('');
+  const [semestreId, setSemestreId] = useCurrentSemestreFilter();
   const [grupoModuloId, setGrupoModuloId] = useState('');
   const [registro, setRegistro] = useState<RegistroAuxiliar | null>(null);
   const [notas, setNotas] = useState<Record<string, string>>({});
@@ -472,14 +474,14 @@ export default function RegistroAuxiliarPage() {
     if (!directGrupoModuloId) return;
     setGrupoModuloId(directGrupoModuloId);
     setSemestreId('');
-  }, [directGrupoModuloId]);
+  }, [directGrupoModuloId, setSemestreId]);
 
   useEffect(() => {
     const fetchOptions = async () => {
       setLoadingOptions(true);
       setError(null);
       try {
-        if (auth.currentUser) await auth.currentUser.getIdToken(true);
+        if (auth.currentUser) await auth.currentUser.getIdToken();
         const getDatosGeneralesGlobales = httpsCallable<
           undefined,
           { datoGeneral?: DatosGenerales | null; datosGenerales?: DatosGenerales | null }
@@ -554,12 +556,6 @@ export default function RegistroAuxiliarPage() {
     () => semestres.filter((semestre) => availableSemestreIds.has(semestre.id)),
     [availableSemestreIds, semestres],
   );
-
-  useEffect(() => {
-    if (isDirectRegistro || isDocente) return;
-    if (semestreOptions.some((semestre) => String(semestre.id) === semestreId)) return;
-    setSemestreId(semestreOptions[0] ? String(semestreOptions[0].id) : '');
-  }, [isDirectRegistro, isDocente, semestreId, semestreOptions]);
 
   const filteredGrupoModuloOptions = useMemo(
     () =>
@@ -757,6 +753,7 @@ export default function RegistroAuxiliarPage() {
         nombres: nextDraft.nombres,
       });
       const updatedUser = result.data.user;
+      invalidateMatriculaLists();
       setRegistro((current) => {
         if (!current) return current;
         return {
@@ -1295,6 +1292,7 @@ export default function RegistroAuxiliarPage() {
         dni,
       });
       setMessage('Matricula creada y agregada al registro.');
+      invalidateMatriculaLists();
       setEditingNewMatricula(false);
       setNewMatriculaDni('');
       await fetchRegistro();
@@ -1329,6 +1327,7 @@ export default function RegistroAuxiliarPage() {
         grupoModuloId: registro.grupoModulo.id,
         moduloEstudianteId: student.id,
       });
+      invalidateMatriculaLists();
       setMessage('Estudiante retirado de este grupo-módulo.');
       await fetchRegistro();
     } catch (err) {
@@ -1468,6 +1467,9 @@ export default function RegistroAuxiliarPage() {
                 MenuProps={selectMenuProps}
                 onChange={(event) => setSemestreId(String(event.target.value))}
               >
+                {semestreId && !semestreOptions.some((item) => String(item.id) === semestreId) ? (
+                  <MenuItem value={semestreId}>Semestre {semestreId}</MenuItem>
+                ) : null}
                 {semestreOptions.map((semestre) => (
                   <MenuItem key={semestre.id} value={String(semestre.id)}>
                     {semestre.titulo || `Semestre ${semestre.id}`}

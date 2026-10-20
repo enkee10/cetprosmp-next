@@ -1,4 +1,5 @@
 import { https } from "firebase-functions/v1";
+import { getConfiguredCurrentSemestreId } from "../core/docenteSemester.js";
 import {
   INSERT_APP_SETTING_MUTATION,
   UPDATE_APP_SETTING_MUTATION,
@@ -53,7 +54,7 @@ const DEFAULT_SETTINGS = {
     activarReconocimientoDni: true,
     semestreActualId: null as number | null,
     semestresConsultaIds: [] as number[],
-    usarListasSemestreAnteriorDocentes: true,
+    usarListasSemestreAnteriorDocentes: false,
   },
   formularioMatricula: {
     aceptaRespuestas: false,
@@ -210,6 +211,7 @@ const SETTING_DEFINITIONS: Record<string, SettingDefinition> = {
 
 const LIST_APP_SETTINGS_QUERY = `
   query ListAppSettingsManual {
+    semestres(limit: 500, orderBy: [{id: DESC}]) { id titulo inicio fin }
     appSettings(limit: 500) {
       id
       settingKey
@@ -340,7 +342,7 @@ function buildSettingsResponse(items: DataConnectAppSetting[]) {
       }
     }
     if (item.settingKey === USE_PREVIOUS_SEMESTRE_DOCENTE_LISTS_KEY) {
-      settings.general.usarListasSemestreAnteriorDocentes = item.boolValue !== false;
+      settings.general.usarListasSemestreAnteriorDocentes = false;
     }
     if (item.settingKey === MATRICULA_FORM_ACCEPTS_RESPONSES_KEY) {
       settings.formularioMatricula.aceptaRespuestas = Boolean(item.boolValue);
@@ -489,59 +491,16 @@ type DocenteMenuSemestreOption = {
   } | null;
 };
 
-const getSemestreSortTime = (value?: string | null) => {
-  if (!value) return Number.NEGATIVE_INFINITY;
-  const time = new Date(`${value}T00:00:00`).getTime();
-  return Number.isFinite(time) ? time : Number.NEGATIVE_INFINITY;
-};
-
-const sortDocenteMenuSemestresAsc = <T extends DocenteMenuSemestreOption>(semestres: T[]) =>
-  semestres.slice().sort((a, b) =>
-    getSemestreSortTime(a.inicio) - getSemestreSortTime(b.inicio) ||
-    String(a.anio?.nombre ?? a.anio?.titulo ?? "").localeCompare(
-      String(b.anio?.nombre ?? b.anio?.titulo ?? ""),
-      "es",
-      { numeric: true },
-    ) ||
-    String(a.titulo ?? "").localeCompare(String(b.titulo ?? ""), "es", { numeric: true }) ||
-    a.id - b.id,
-  );
-
-export async function getDocenteMenuSemestreSelection<T extends DocenteMenuSemestreOption>(
-  semestresInput: T[],
-) {
-  const semestres = sortDocenteMenuSemestresAsc(
-    semestresInput.filter((semestre) => Boolean(semestre?.id)),
-  );
-  const response = await dataConnect.executeGraphql<
-    { appSettings: DataConnectAppSetting[] },
-    Record<string, never>
-  >(LIST_APP_SETTINGS_QUERY);
-  const settings = buildSettingsResponse(response.data.appSettings ?? []);
-  const currentSemestre =
-    semestres.find((semestre) => semestre.id === settings.general.semestreActualId) ??
-    semestres.find((semestre) => String(semestre.titulo ?? "").trim() === "2026-1") ??
-    semestres[semestres.length - 1] ??
-    null;
-
-  const selected = currentSemestre ? [currentSemestre] : [];
-  if (currentSemestre && settings.general.usarListasSemestreAnteriorDocentes) {
-    const currentIndex = semestres.findIndex((semestre) => semestre.id === currentSemestre.id);
-    const previousSemestre = currentIndex > 0 ? semestres[currentIndex - 1] : null;
-    if (previousSemestre) selected.push(previousSemestre);
-  }
-
-  const semestreIds = selected.map((semestre) => semestre.id);
-  const semestreTitulos = selected.map((semestre) => String(semestre.titulo ?? "").trim()).filter(Boolean);
-  const orderById = new Map<number, number>();
-  semestreIds.forEach((id, index) => orderById.set(id, index));
-
+export async function getDocenteMenuSemestreSelection<T extends DocenteMenuSemestreOption>(semestres: T[]) {
+  const currentId = await getConfiguredCurrentSemestreId();
+  const currentSemestre = semestres.find((semestre) => semestre.id === currentId) ?? null;
+  const semestreIds = currentSemestre ? [currentSemestre.id] : [];
   return {
     semestreIds,
-    semestreTitulos,
+    semestreTitulos: currentSemestre?.titulo ? [currentSemestre.titulo.trim()] : [],
     currentSemestreId: currentSemestre?.id ?? null,
     currentSemestreTitulo: currentSemestre?.titulo ?? null,
-    orderById,
+    orderById: new Map(semestreIds.map((id, index) => [id, index])),
   };
 }
 
@@ -550,11 +509,12 @@ export const getAppSettings = https.onCall(async (_data, context) => {
 
   try {
     const response = await dataConnect.executeGraphql<
-      { appSettings: DataConnectAppSetting[] },
+      { appSettings: DataConnectAppSetting[]; semestres: Array<{ id: number; titulo?: string | null; inicio?: string | null; fin?: string | null }> },
       Record<string, never>
     >(LIST_APP_SETTINGS_QUERY);
 
-    return { settings: buildSettingsResponse(response.data.appSettings ?? []) };
+    const settings = buildSettingsResponse(response.data.appSettings ?? []);
+    return { settings: { ...settings, general: { ...settings.general, semestres: response.data.semestres ?? [] } } };
   } catch (error) {
     console.error("Error in getAppSettings:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar las configuraciones.");
@@ -594,8 +554,7 @@ export const saveAppSettings = https.onCall(async (data, context) => {
   const semestresConsultaIds = semestresConsultaIdsRaw
     .map((id) => Number(id))
     .filter((id) => Number.isFinite(id) && id > 0);
-  const usarListasSemestreAnteriorDocentes =
-    general?.usarListasSemestreAnteriorDocentes !== false;
+  const usarListasSemestreAnteriorDocentes = false;
   const usarRecorteFotografiaComoAvatarEstudiantes = Boolean(
     visualizaciones?.usarRecorteFotografiaComoAvatarEstudiantes,
   );

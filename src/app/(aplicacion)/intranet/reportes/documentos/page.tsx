@@ -1,5 +1,7 @@
 'use client';
 
+import { useCurrentSemestreFilter } from '@/hooks/useCurrentSemestreFilter';
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Box,
@@ -27,7 +29,6 @@ import { httpsCallable } from 'firebase/functions';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
-import { dateOnlyTimestamp } from '@/lib/dateOnly';
 import { auth, functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
@@ -153,30 +154,6 @@ function openUrl(url?: string | null) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-function toTimestamp(value?: string | null) {
-  return dateOnlyTimestamp(value);
-}
-
-function getDefaultSemestreId(semestres: SemestreOption[], current: string) {
-  if (current && semestres.some((semestre) => String(semestre.id) === current)) return current;
-  const now = Date.now();
-  const dated = semestres.map((semestre) => ({
-    semestre,
-    inicio: toTimestamp(semestre.inicio),
-    fin: toTimestamp(semestre.fin),
-  }));
-  const active = dated.find((item) =>
-    (item.inicio != null || item.fin != null) &&
-    (item.inicio == null || item.inicio <= now) &&
-    (item.fin == null || item.fin >= now),
-  )?.semestre.id;
-  if (active) return String(active);
-  const lastStarted = dated
-    .filter((item) => item.inicio != null && item.inicio <= now)
-    .sort((a, b) => (b.inicio ?? 0) - (a.inicio ?? 0))[0]?.semestre.id;
-  return String(lastStarted || semestres[0]?.id || '');
-}
-
 export default function RegistroAcademicosPage() {
   const { can, loading: permissionsLoading } = useIntranetPermissions();
   const [loadingOptions, setLoadingOptions] = useState(true);
@@ -188,7 +165,7 @@ export default function RegistroAcademicosPage() {
   const [grupoModulos, setGrupoModulos] = useState<GrupoModuloOption[]>([]);
   const [documentos, setDocumentos] = useState<RegistroAcademicoDocumento[]>([]);
   const [tipoDocumento, setTipoDocumento] = useState<TipoDocumento>('acta');
-  const [semestreId, setSemestreId] = useState('');
+  const [semestreId, setSemestreId] = useCurrentSemestreFilter();
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>(createEmptySelectionModel);
   const [selectionOrder, setSelectionOrder] = useState<number[]>([]);
   const [rowMenuAnchor, setRowMenuAnchor] = useState<HTMLElement | null>(null);
@@ -212,7 +189,6 @@ export default function RegistroAcademicosPage() {
       setSemestres(nextSemestres);
       setGrupoModulos(result.data.grupoModulos || []);
       setDocumentos(result.data.documentos || []);
-      setSemestreId((current) => getDefaultSemestreId(nextSemestres, current));
     } catch (err) {
       console.error('Error loading registros academicos options:', err);
       setMessage('No se pudieron cargar los registros academicos.');
@@ -466,6 +442,9 @@ export default function RegistroAcademicosPage() {
               onChange={(event) => setSemestreId(event.target.value)}
               disabled={loadingOptions}
             >
+              {semestreId && !semestres.some((item) => String(item.id) === semestreId) ? (
+                <MenuItem value={semestreId}>Semestre {semestreId}</MenuItem>
+              ) : null}
               {semestres.map((semestre) => (
                 <MenuItem key={semestre.id} value={String(semestre.id)}>
                   {semestre.titulo || `Semestre ${semestre.id}`}

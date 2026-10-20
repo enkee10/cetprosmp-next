@@ -145,7 +145,7 @@ const applySemestreDefaults = (
 
 export default function SettingsPage() {
   const { can, loading: loadingPermissions } = useIntranetPermissions();
-  const { settings, loading, reload } = useAppSettings();
+  const { settings, loading, setSettings } = useAppSettings();
   const [draft, setDraft] = useState<AppSettings>(defaultAppSettings);
   const [saving, setSaving] = useState(false);
   const [generatingCodes, setGeneratingCodes] = useState(false);
@@ -216,9 +216,9 @@ export default function SettingsPage() {
       );
       const result = await saveAppSettings(safeDraft);
       if (result.data.settings) {
+        setSettings(result.data.settings);
         setDraft(normalizeDraftSettings(result.data.settings));
       }
-      await reload();
       setMessage('Configuraciones guardadas.');
       setMessageSeverity('success');
     } catch (error) {
@@ -228,7 +228,7 @@ export default function SettingsPage() {
     } finally {
       setSaving(false);
     }
-  }, [reload, safeDraft]);
+  }, [setSettings, safeDraft]);
 
   const handleGenerateInscriptionCodes = useCallback(async () => {
     const confirmed = window.confirm(
@@ -314,24 +314,7 @@ export default function SettingsPage() {
             </Button>
           </Box>
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={safeDraft.general.usarListasSemestreAnteriorDocentes}
-                disabled={loading || saving || !canEditSettings}
-                onChange={(event) =>
-                  setDraft((current) => ({
-                    ...current,
-                    general: {
-                      ...normalizeDraftSettings(current).general,
-                      usarListasSemestreAnteriorDocentes: event.target.checked,
-                    },
-                  }))
-                }
-              />
-            }
-            label="Usar listas del semestre anterior para Docentes"
-          />
+
 
           <FormControl fullWidth size="small" disabled={loading || saving || loadingSemestres || !canEditSettings}>
             <InputLabel>Semestre Actual</InputLabel>

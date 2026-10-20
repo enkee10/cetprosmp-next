@@ -58,8 +58,8 @@ export const PERMISSION_ENTITIES: PermissionEntity[] = [
 const entityIds = new Set(PERMISSION_ENTITIES.map((entity) => entity.id));
 
 const GET_ROLE_PERMISSION_QUERY = `
-  query GetRolePermissionManual($roleId: Int!, $entity: String!) {
-    rolePermissions(where: { roleId: { eq: $roleId }, entity: { eq: $entity } }, limit: 1) {
+  query GetRolePermissionManual($roleId: Int!, $entities: [String!]!) {
+    rolePermissions(where: { roleId: { eq: $roleId }, entity: { in: $entities } }, limit: 100) {
       id
       roleId
       entity
@@ -119,10 +119,11 @@ function permissionFieldForAction(action: PermissionAction) {
   }[action] as "canView" | "canCreate" | "canEdit" | "canDelete";
 }
 
-export async function hasPermission(context: https.CallableContext, entity: string, action: PermissionAction) {
+async function permittedEntities(context: https.CallableContext, entities: string[], action: PermissionAction): Promise<Set<string>> {
   requireAuthenticated(context);
-  if (isSuperUserContext(context)) return true;
-  if (!entityIds.has(entity)) return false;
+  if (isSuperUserContext(context)) return new Set(entities);
+  entities = entities.filter((entity) => entityIds.has(entity));
+  if (!entities.length) return new Set();
 
   let roleId = getRequesterRoleId(context);
   let role: DataConnectRole | { titulo?: string | null; scala?: number | null } | null = null;
@@ -139,26 +140,37 @@ export async function hasPermission(context: https.CallableContext, entity: stri
       const requester = requesterResponse.data.users?.[0] ?? null;
       if (requester?.rolId) roleId = requester.rolId;
       role = requester?.rol ?? null;
-      if (Number(role?.scala ?? 0) >= SUPERUSER_LEVEL) return true;
+      if (Number(role?.scala ?? 0) >= SUPERUSER_LEVEL) return new Set(entities);
     } catch (error) {
       console.warn("No se pudo resolver el rol real para permisos; se usaran claims.", error);
     }
   }
 
-  if (roleId <= 0) return false;
+  if (roleId <= 0) return new Set();
 
   role = role ?? await getRoleById(roleId);
-  if (!role || isBlockedIntranetRole(roleId, role.titulo)) return false;
+  if (!role || isBlockedIntranetRole(roleId, role.titulo)) return new Set();
 
   const response = await dataConnect.executeGraphql<{
     rolePermissions: Array<Record<string, unknown>>;
-  }, { roleId: number; entity: string }>(
+  }, { roleId: number; entities: string[] }>(
     GET_ROLE_PERMISSION_QUERY,
-    { variables: { roleId, entity } },
+    { variables: { roleId, entities } },
   );
 
-  const permission = response.data.rolePermissions?.[0] ?? null;
-  return Boolean(permission?.[permissionFieldForAction(action)]);
+  return new Set((response.data.rolePermissions ?? [])
+    .filter((permission) => Boolean(permission[permissionFieldForAction(action)]))
+    .map((permission) => String(permission.entity)));
+}
+
+export async function hasPermission(context: https.CallableContext, entity: string, action: PermissionAction) {
+  return (await permittedEntities(context, [entity], action)).has(entity);
+}
+
+export async function requirePermissions(context: https.CallableContext, entities: string[], action: PermissionAction) {
+  const allowed = await permittedEntities(context, entities, action);
+  const denied = entities.find((entity) => !allowed.has(entity));
+  if (denied) throw new https.HttpsError("permission-denied", `No tienes permiso para ${action} en ${denied}.`);
 }
 
 export async function requirePermission(

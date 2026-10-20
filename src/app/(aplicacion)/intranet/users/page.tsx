@@ -1,4 +1,5 @@
 'use client';
+import { invalidateMatriculaLists } from '@/lib/matriculasListCache';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
@@ -419,6 +420,7 @@ const UsersPage = () => {
           apellidoMaterno,
           correo_institucional: correo_institucional ?? correoInstitucional ?? null,
         });
+        invalidateMatriculaLists();
         setMenuAnchorEl(null);
         setMenuUser(null);
         fetchUsers();
@@ -455,6 +457,7 @@ const UsersPage = () => {
           previousPhotoURL: selectedUser.photoURL ?? null,
           ...dataToUpdate,
         }) as { data?: { workspaceWarning?: string | null } };
+        invalidateMatriculaLists();
         workspaceWarning =
           typeof updateResult.data?.workspaceWarning === 'string'
             ? updateResult.data.workspaceWarning

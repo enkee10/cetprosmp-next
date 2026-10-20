@@ -1,5 +1,7 @@
 'use client';
 
+import { useAppSettings } from '@/hooks/useAppSettings';
+
 import { CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Box, FormControl, GlobalStyles, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { getAuth } from 'firebase/auth';
@@ -647,13 +649,14 @@ const chunkStudents = (students: Estudiante[], size: number) => {
 };
 
 export default function RegistroAuxiliarPrintPage() {
+  const { settings, loading: loadingSettings } = useAppSettings();
   const searchParams = useSearchParams();
   const initialGrupoModuloId = searchParams.get('grupoModuloId') || '';
   const auth = getAuth(app);
   const functions = useMemo(() => getFunctions(app), []);
   const [grupos, setGrupos] = useState<GrupoOption[]>([]);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
-  const [semestreId, setSemestreId] = useState('');
+  const [semestreId, setSemestreId] = useState(() => initialGrupoModuloId ? '' : String(settings.general.semestreActualId ?? ''));
   const [grupoModuloId, setGrupoModuloId] = useState(initialGrupoModuloId);
   const [registro, setRegistro] = useState<RegistroAuxiliar | null>(null);
   const [datosGenerales, setDatosGenerales] = useState<DatosGenerales | null>(null);
@@ -685,9 +688,10 @@ export default function RegistroAuxiliarPrintPage() {
     let active = true;
 
     const loadOptions = async () => {
+      if (loadingSettings) return;
       setLoadingOptions(true);
       try {
-        if (auth.currentUser) await auth.currentUser.getIdToken(true);
+        if (auth.currentUser) await auth.currentUser.getIdToken();
         const listRegistroAuxiliarOpciones = httpsCallable<
           undefined,
           {
@@ -717,7 +721,7 @@ export default function RegistroAuxiliarPrintPage() {
     return () => {
       active = false;
     };
-  }, [auth, functions]);
+  }, [auth, functions, loadingSettings]);
 
   const grupoModuloOptions = useMemo<GrupoModuloOption[]>(
     () =>
@@ -768,9 +772,8 @@ export default function RegistroAuxiliarPrintPage() {
       setSemestreId(String(current.grupo.semestreId));
       return;
     }
-    const firstSemestre = semestreOptions[0];
-    if (firstSemestre) setSemestreId(String(firstSemestre.id));
-  }, [grupoModuloId, grupoModuloOptions, semestreId, semestreOptions]);
+    setSemestreId(String(settings.general.semestreActualId ?? ''));
+  }, [grupoModuloId, grupoModuloOptions, semestreId, settings.general.semestreActualId]);
 
   useEffect(() => {
     if (!semestreId || !filteredGrupoModuloOptions.length) return;

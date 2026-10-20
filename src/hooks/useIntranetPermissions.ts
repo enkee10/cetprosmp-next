@@ -29,6 +29,7 @@ const normalizePermissions = (items: IntranetPermission[] | undefined | null) =>
 
 const permissionsCache = new Map<string, IntranetPermission[]>();
 const permissionsRequests = new Map<string, Promise<IntranetPermission[]>>();
+const emptyPermissions: IntranetPermission[] = [];
 
 async function loadPermissionsForUser(userUid: string) {
   const cached = permissionsCache.get(userUid);
@@ -58,8 +59,9 @@ async function loadPermissionsForUser(userUid: string) {
 
 export function useIntranetPermissions() {
   const { user } = useAuth();
-  const [permissions, setPermissions] = useState<IntranetPermission[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [snapshot, setSnapshot] = useState<{ uid: string; permissions: IntranetPermission[]; loading: boolean }>({
+    uid: '', permissions: [], loading: true,
+  });
   const userUid = user?.uid ?? '';
   const profileResolved = !user || user.profileResolved !== false;
   const isSuperUser =
@@ -67,44 +69,42 @@ export function useIntranetPermissions() {
     || isSuperUserRole(user?.role)
     || isSuperUserTitle(user?.roleTitle)
     || isSuperUserEmail(user?.email);
+  const cached = permissionsCache.get(userUid);
+  const permissions = cached ?? (snapshot.uid === userUid ? snapshot.permissions : emptyPermissions);
+  const loading = Boolean(userUid) && (!profileResolved
+    || (!isSuperUser && !cached && (snapshot.uid !== userUid || snapshot.loading)));
 
   useEffect(() => {
     let active = true;
 
     const loadPermissions = async () => {
       if (!userUid) {
-        setPermissions([]);
-        setLoading(false);
+        setSnapshot({ uid: '', permissions: [], loading: false });
         return;
       }
 
       if (!profileResolved) {
-        setLoading(true);
         return;
       }
 
       if (isSuperUser) {
-        setPermissions([]);
-        setLoading(false);
+        setSnapshot({ uid: userUid, permissions: [], loading: false });
         return;
       }
 
       const cachedPermissions = permissionsCache.get(userUid);
       if (cachedPermissions) {
-        setPermissions(cachedPermissions);
-        setLoading(false);
+        setSnapshot({ uid: userUid, permissions: cachedPermissions, loading: false });
         return;
       }
 
-      setLoading(true);
+      setSnapshot({ uid: userUid, permissions: [], loading: true });
       try {
         const nextPermissions = await loadPermissionsForUser(userUid);
-        if (active) setPermissions(nextPermissions);
+        if (active) setSnapshot({ uid: userUid, permissions: nextPermissions, loading: false });
       } catch (error) {
         console.error('Error loading intranet permissions:', error);
-        if (active) setPermissions([]);
-      } finally {
-        if (active) setLoading(false);
+        if (active) setSnapshot({ uid: userUid, permissions: [], loading: false });
       }
     };
 

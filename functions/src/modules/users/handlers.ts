@@ -84,6 +84,7 @@ const GET_MY_PROFILE_QUERY = `
       apellidoPaterno
       apellidoMaterno
       rolId
+      blocked
       rol {
         titulo
         scala
@@ -371,6 +372,7 @@ async function executeListUsersQuerySerialized(): Promise<Array<Record<string, u
 
 async function hydrateProcessedAvatarThumbnails(
   users: Array<Record<string, unknown>>,
+  scopeToUsers = false,
 ): Promise<Array<Record<string, unknown>>> {
   const userIds = new Set(
     users
@@ -379,14 +381,25 @@ async function hydrateProcessedAvatarThumbnails(
   );
   if (userIds.size === 0) return users;
 
-  const snapshot = await getFirestore()
-    .collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION)
-    .orderBy("updatedAt", "desc")
-    .limit(1000)
-    .get();
+  const ids = Array.from(userIds);
+  const snapshots = scopeToUsers ? await Promise.all(Array.from({ length: Math.ceil(ids.length / 30) }, (_, index) =>
+    getFirestore().collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION)
+      .where("userId", "in", ids.slice(index * 30, index * 30 + 30))
+      .select("userId", "status", "updatedAt", "avatarTamanos", "avatar")
+      .get())) : [await getFirestore().collection(MATRICULA_AVATAR_EXTRACTION_COLLECTION)
+      .orderBy("updatedAt", "desc").limit(1000)
+      .select("userId", "status", "updatedAt", "avatarTamanos", "avatar").get()];
+  const documents = snapshots.flatMap((snapshot) => snapshot.docs);
+  if (scopeToUsers) documents.sort((a, b) => {
+    const millis = (value: unknown) => {
+      if (value && typeof (value as { toMillis?: unknown }).toMillis === "function") return (value as { toMillis: () => number }).toMillis();
+      return Date.parse(String(value ?? "")) || 0;
+    };
+    return millis(b.data().updatedAt) - millis(a.data().updatedAt);
+  });
 
   const thumbnailByUserId = new Map<number, { avatarTiny?: string; avatarPequeno?: string; avatarMediano?: string }>();
-  snapshot.docs.forEach((doc) => {
+  documents.forEach((doc) => {
     const data = doc.data();
     const userId = toNumber(data.userId, 0);
     if (!userIds.has(userId) || thumbnailByUserId.has(userId) || data.status !== "completed") return;
@@ -641,7 +654,7 @@ export const listUserGrupoModuloHistorial = https.onCall(async (data, context) =
   }
 });
 
-export const getMyProfile = https.onCall(async (_data, context) => {
+export const getMyProfile = https.onCall(async (data, context) => {
   requireAuthenticated(context);
 
   const uid = context.auth?.uid;
@@ -672,7 +685,7 @@ export const getMyProfile = https.onCall(async (_data, context) => {
       };
     }
 
-    const [hydratedProfile] = await hydrateProcessedAvatarThumbnails([profile]);
+    const [hydratedProfile] = data?.includeAvatar === false ? [profile] : await hydrateProcessedAvatarThumbnails([profile], true);
     const resolvedProfile = hydratedProfile ?? profile;
     const roleId = toNumber(resolvedProfile.rolId, roleIdFromClaims);
     const embeddedRoleTitle = asNullableString((resolvedProfile.rol as { titulo?: unknown } | null)?.titulo);
@@ -691,6 +704,19 @@ export const getMyProfile = https.onCall(async (_data, context) => {
     console.error("Error in getMyProfile:", error);
     throw new https.HttpsError("internal", "No se pudo cargar el perfil del usuario.");
   }
+});
+
+// The current user's photo is optional UI data and must not hold up access or menus.
+export const getMyAvatar = https.onCall(async (_data, context) => {
+  requireAuthenticated(context);
+  const response = await dataConnect.executeGraphql<{ users: Array<Record<string, unknown>> }, { documentId: string }>(
+    GET_MY_PROFILE_QUERY, { variables: { documentId: context.auth!.uid } },
+  );
+  const profile = response.data.users?.[0];
+  if (!profile) return { profile: null };
+  const [hydrated] = await hydrateProcessedAvatarThumbnails([profile], true);
+  return { profile: { avatar: hydrated.avatar ?? null, recorteFotografia: hydrated.recorteFotografia ?? null,
+    avatarPequeno: hydrated.avatarPequeno ?? null, avatarTiny: hydrated.avatarTiny ?? null } };
 });
 
 export const createNewUser = https.onCall(async (data, context) => {

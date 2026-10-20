@@ -5,6 +5,7 @@ import { GoogleAuthProvider, onAuthStateChanged, sendEmailVerification, sendPass
 import { auth, functions } from '@/lib/firebase'; // importa servicios cliente de Firebase ya configurados
 import { canAccessIntranet } from '@/lib/intranetPermissions'; // centraliza la regla de acceso a intranet por rol/nivel
 import { httpsCallable } from 'firebase/functions'; // importa las utilidades para llamar la function de registro publico
+import { invalidateMatriculaLists } from '@/lib/matriculasListCache';
 import { Box, CircularProgress } from '@mui/material'; // importa los componentes visuales del estado de carga global
 import { usePathname, useRouter } from 'next/navigation'; // importa la navegacion del App Router para redirigir tras autenticar
 
@@ -130,23 +131,15 @@ const createIntranetAccessDeniedError = () => {
 };
 
 const loadUserDataFromFirebaseUser = async (firebaseUser: FirebaseUser): Promise<UserData> => {
-    try {
-        const refreshMyClaims = httpsCallable(functions, 'refreshMyClaims', { timeout: 10000 });
-        await withTimeout(refreshMyClaims(), 12000, 'refreshMyClaims');
-    } catch (error) {
-        if (!isExpectedAuthError(error)) {
-            console.error('Error refreshing auth claims:', error);
-        }
-    }
-
     let profile: Record<string, unknown> | null = null;
+    let token = await withTimeout(firebaseUser.getIdTokenResult(false), 12000, 'getIdTokenResult');
     try {
-        const getMyProfile = httpsCallable<undefined, { profile?: Record<string, unknown> | null }>(
+        const getMyProfile = httpsCallable<{ includeAvatar: boolean }, { profile?: Record<string, unknown> | null }>(
             functions,
             'getMyProfile',
             { timeout: 10000 },
         );
-        const profileResult = await withTimeout(getMyProfile(), 12000, 'getMyProfile');
+        const profileResult = await withTimeout(getMyProfile({ includeAvatar: false }), 12000, 'getMyProfile');
         profile = profileResult.data.profile ?? null;
     } catch (error) {
         if (!isExpectedAuthError(error)) {
@@ -154,11 +147,18 @@ const loadUserDataFromFirebaseUser = async (firebaseUser: FirebaseUser): Promise
         }
     }
 
-    const token = await withTimeout(firebaseUser.getIdTokenResult(true), 12000, 'getIdTokenResult');
-    const claims = token.claims;
     const roleTitle = resolveProfileRoleTitle(profile);
     const profileRole = resolveProfileRole(profile);
     const profileLevel = resolveProfileLevel(profile);
+    if (profile?.blocked === true) throw createIntranetAccessDeniedError();
+    // Existing tokens are reusable; refresh only when the authoritative SQL profile changed role/level.
+    const missingClaims = !(Number(token.claims.role) > 0) || token.claims.level == null;
+    if (missingClaims || (profileRole && (profileRole !== String(token.claims.role ?? '')
+        || (profileLevel !== null && profileLevel !== Number(token.claims.level ?? 0))))) {
+        await withTimeout(httpsCallable(functions, 'refreshMyClaims', { timeout: 10000 })(), 12000, 'refreshMyClaims');
+        token = await withTimeout(firebaseUser.getIdTokenResult(true), 12000, 'getIdTokenResult');
+    }
+    const claims = token.claims;
     return {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
@@ -197,14 +197,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
 
     useEffect(() => { // sincroniza el contexto con el estado real de Firebase Auth
         let active = true;
+        let generation = 0;
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => { // escucha cambios de sesion del usuario autenticado
+            const requestGeneration = ++generation;
+            const isCurrent = () => active && generation === requestGeneration;
             if (!active) return;
             setLoading(true); // activa el estado de carga mientras se resuelve el nuevo estado de sesion
             if (firebaseUser) { // verifica si existe un usuario autenticado en Firebase
                 let fallbackUserData: UserData | null = null;
                 try {
                     fallbackUserData = await loadFallbackUserDataFromFirebaseUser(firebaseUser);
-                    if (!active) return;
+                    if (!isCurrent()) return;
                     if (canAccessIntranet(fallbackUserData.role, fallbackUserData.level, fallbackUserData.roleTitle, fallbackUserData.email)) {
                         setUser(fallbackUserData);
                         setAuthReady(true);
@@ -217,18 +220,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                 }
                 try {
                     const userData = await loadUserDataFromFirebaseUser(firebaseUser); // construye el usuario con Auth, perfil y claims actualizados
-                    if (!active) return;
+                    if (!isCurrent()) return;
                     if (!canAccessIntranet(userData.role, userData.level, userData.roleTitle, userData.email)) {
                         await signOut(auth);
-                        setUser(null);
+                        if (isCurrent()) setUser(null);
                     } else {
                         setUser(userData); // guarda el usuario para el resto de la app
+                        // Resolve photo independently; a late response cannot restore a signed-out user.
+                        void httpsCallable<undefined, { profile?: Record<string, unknown> | null }>(functions, 'getMyAvatar')()
+                            .then(({ data }) => {
+                                if (!isCurrent()) return;
+                                const photoURL = resolveProfilePhotoURL(data.profile, userData.photoURL);
+                                setUser((current) => current?.uid === firebaseUser.uid ? { ...current, photoURL } : current);
+                            }).catch(() => { /* Keep the existing photo when optional thumbnails are unavailable. */ });
                     }
                 } catch (error) {
                     if (!isExpectedAuthError(error)) {
                         console.error('Error loading auth user:', error);
                     }
-                    if (!active) return;
+                    if (!isCurrent()) return;
+                    if ((error as { code?: string })?.code === 'auth/intranet-access-denied') {
+                        await signOut(auth);
+                        if (isCurrent()) setUser(null);
+                        return;
+                    }
                     if (fallbackUserData && canAccessIntranet(fallbackUserData.role, fallbackUserData.level, fallbackUserData.roleTitle, fallbackUserData.email)) {
                         setUser((current) => {
                             if (current?.uid === firebaseUser.uid) return { ...current, profileResolved: true };
@@ -239,9 +254,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) { // d
                     }
                 }
             } else { // maneja el caso en que no exista un usuario autenticado
-                if (!active) return;
+                if (!isCurrent()) return;
+                invalidateMatriculaLists();
                 setUser(null); // limpia el usuario del contexto al cerrar sesion
             }
+            if (!isCurrent()) return;
             setLoading(false); // desactiva el estado de carga cuando termina la sincronizacion
             setAuthReady(true); // + marca que la sincronizacion inicial ya termino y la interfaz puede quedarse montada
         });

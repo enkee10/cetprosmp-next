@@ -68,7 +68,7 @@ export default function IntranetLayout({
                   minWidth: 0,
                   overflowX: 'hidden',
                   bgcolor: '#fff8e8',
-                  p: { xs: '25px 0 0', md: 3 },
+                  p: '8px',
                 }}
             >
                 <Box sx={{ minHeight: 0 }} />

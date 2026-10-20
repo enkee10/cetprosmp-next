@@ -50,7 +50,7 @@ export function matriculaGridValue(row: MatriculaModuloRow<MatriculaGridIndex>, 
     default: return user?.[field] ?? '';
   }
 }
-function matches(value: unknown, operator: string, filter: unknown) {
+export function matchesGridFilter(value: unknown, operator: string, filter: unknown) {
   const a = text(value), b = text(filter);
   switch (operator) {
     case 'isEmpty': return value == null || a === '';
@@ -82,7 +82,7 @@ export function selectMatriculaPage<T extends MatriculaGridIndex>(rows: Matricul
   const quickValues = (request.filterModel?.quickFilterValues ?? []).filter((value) => String(value).trim());
   const quickFields = (request.quickFilterFields ?? Array.from(fields)).filter((field) => fields.has(field));
   const filtered = rows.filter((row) => {
-    const checks = filters.map((item) => matches(matriculaGridValue(row, item.field), item.operator, item.value));
+    const checks = filters.map((item) => matchesGridFilter(matriculaGridValue(row, item.field), item.operator, item.value));
     if (checks.length && !(request.filterModel?.logicOperator === 'or' ? checks.some(Boolean) : checks.every(Boolean))) return false;
   const quickChecks = quickValues.map((value) => quickFields.some((field) => field === 'edad'
     ? matriculaGridValue(row, field) != null && Number(matriculaGridValue(row, field)) === Number(value)

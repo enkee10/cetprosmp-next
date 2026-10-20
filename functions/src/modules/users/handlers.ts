@@ -28,6 +28,105 @@ import {
   upsertDataConnectUserByDocumentId,
 } from "../core/dataConnectCore.js";
 import { DataConnectUserInput } from "../core/types.js";
+import { selectUserPage, userPageNeedsSearch, type UserGridIndex, type UserGridRequest } from "../core/userListPagination.js";
+
+const USER_LIST_FIELDS = `
+  id documentId username nickName email blocked nombre apellidoPaterno apellidoMaterno
+  celular direccion distrito dni sexo nacionalidad estadoCivil instruccion fechaNacimiento
+  correoInstitucional rolId rol { titulo scala }
+`;
+const USER_SEARCH_FIELDS = `
+  username nickName email blocked celular direccion distrito dni sexo nacionalidad
+  estadoCivil instruccion fechaNacimiento correoInstitucional rolId
+`;
+const GET_USERS_PAGE_QUERY = `query UsersPageDetails($ids: [Int!]!) {
+  users(where: {id: {in: $ids}}, limit: 100) { ${USER_LIST_FIELDS} }
+}`;
+const GET_USER_DETAILS_QUERY = `query UserDetails($documentId: String!) {
+  users(where: {documentId: {eq: $documentId}}, limit: 1) {
+    ${USER_LIST_FIELDS}
+    avatar recorteFotografia telefono tipoDocumento nombreColegio fechaVencimiento
+    fechaCreacion fechaModificacion emailCreador
+    dniImagenFrenteUrl dniImagenReversoUrl dniImagenFrenteProcesadaUrl dniImagenReversoProcesadaUrl
+  }
+}`;
+
+function userListRow(user: Record<string, unknown>) {
+  return {
+    ...user,
+    bloqueado: Boolean(user.blocked),
+    rolTitulo: (user.rol as { titulo?: string | null } | null)?.titulo ?? "Sin Rol",
+    rolLevel: (user.rol as { scala?: number | null } | null)?.scala ?? 0,
+  };
+}
+
+async function executeUsersRead<V extends object>(query: string, variables: V): Promise<UserGridIndex[]> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      const response = await dataConnect.executeGraphql<{ users: UserGridIndex[] }, V>(query, { variables });
+      return response.data.users ?? [];
+    } catch (error) {
+      if (!isTransientDataConnectSqlError(error) || attempt >= 2) throw error;
+      await wait(200 * (attempt + 1));
+    }
+  }
+}
+
+export const listUsersPage = https.onCall(async (data, context) => {
+  await requirePermission(context, "users", "view");
+  const request = (data ?? {}) as UserGridRequest;
+  if ((request.filterModel?.items?.length ?? 0) > 20 || (request.filterModel?.quickFilterValues?.length ?? 0) > 20) {
+    throw new https.HttpsError("invalid-argument", "Demasiados filtros.");
+  }
+  try {
+    const query = `query UsersPageIndex($offset: Int!) {
+      users(limit: 1000, offset: $offset, orderBy: [{id: DESC}]) {
+        id ${userPageNeedsSearch(request) ? USER_SEARCH_FIELDS : ''}
+      }
+    }`;
+    const index: UserGridIndex[] = [];
+    for (let offset = 0; ; offset += 1000) {
+      const batch = await executeUsersRead(query, { offset });
+      index.push(...batch);
+      if (batch.length < 1000) break;
+    }
+    const selected = selectUserPage(index, request);
+    if (!selected.rows.length) return selected;
+    const users = await executeUsersRead(GET_USERS_PAGE_QUERY, { ids: selected.rows.map((row) => row.id) });
+    const byId = new Map(users.map((row) => [row.id, userListRow(row)]));
+    return { rows: selected.rows.flatMap((row) => byId.has(row.id) ? [byId.get(row.id)!] : []), rowCount: selected.rowCount };
+  } catch (error) {
+    console.error("Error in listUsersPage:", error);
+    throw new https.HttpsError("internal", "No se pudo cargar la pagina de usuarios.");
+  }
+});
+
+export const getUsersPageAvatars = https.onCall(async (data, context) => {
+  await requirePermission(context, "users", "view");
+  if (!Array.isArray(data?.userIds) || data.userIds.length > 100
+    || data.userIds.some((id: unknown) => !Number.isSafeInteger(id) || Number(id) <= 0)) {
+    throw new https.HttpsError("invalid-argument", "Solicita como maximo 100 fotografias por ID de usuario.");
+  }
+  const ids = Array.from(new Set<number>(data.userIds));
+  if (!ids.length) return { avatars: {} };
+  const users = await executeUsersRead(`query UsersPageAvatars($ids: [Int!]!) {
+    users(where: {id: {in: $ids}}, limit: 100) { id avatar recorteFotografia }
+  }`, { ids });
+  const hydrated = await hydrateProcessedAvatarThumbnails(users, true);
+  return { avatars: Object.fromEntries(hydrated.map((row) => [String(row.id), {
+    avatarTiny: row.avatarTiny ?? row.avatarPequeno ?? row.avatar,
+    recorteFotografia: row.recorteFotografia,
+  }])) };
+});
+
+export const getUserDetails = https.onCall(async (data, context) => {
+  await requirePermission(context, "users", "view");
+  const documentId = String(data?.documentId ?? '').trim();
+  if (!documentId) throw new https.HttpsError("invalid-argument", "documentId es obligatorio.");
+  const [user] = await executeUsersRead(GET_USER_DETAILS_QUERY, { documentId });
+  if (!user) throw new https.HttpsError("not-found", "No se encontro el usuario.");
+  return { user: userListRow(user) };
+});
 
 const LIST_USERS_QUERY = `
   query ListUsersManual {

@@ -1,13 +1,16 @@
 'use client';
 import { invalidateMatriculaLists } from '@/lib/matriculasListCache';
+import { getListsRevision, loadListPage, peekListPage, subscribeLists } from '@/lib/intranetListCache';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Avatar,
+  Alert,
   Box,
   Button,
   Chip,
   IconButton,
+  LinearProgress,
   Menu,
   MenuItem,
   Stack,
@@ -16,6 +19,8 @@ import {
   GridColDef,
   GridColumnVisibilityModel,
   GridPaginationModel,
+  GridFilterModel,
+  GridSortModel,
 } from '@mui/x-data-grid';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { httpsCallable } from 'firebase/functions';
@@ -79,6 +84,17 @@ interface User {
 
 type UserFormSubmitData = Parameters<React.ComponentProps<typeof UserForm>['onSubmit']>[0];
 type DocumentoSide = 'frente' | 'reverso';
+type UsersPageResult = { rows: User[]; rowCount: number };
+type UserAvatars = Record<string, Pick<User, 'avatarTiny' | 'recorteFotografia'>>;
+const userSearchFields = ['username', 'nickName', 'correoInstitucional', 'email', 'celular', 'sexo',
+  'fechaNacimiento', 'dni', 'nacionalidad', 'estadoCivil', 'instruccion', 'direccion', 'distrito', 'rolId', 'bloqueado'];
+const normalizeUser = (row: User): User => ({
+  ...row,
+  blocked: Boolean(row.blocked),
+  bloqueado: Boolean(row.bloqueado ?? row.blocked),
+  nacionalidad: row.nacionalidad || 'PERUANA',
+  rolId: row.rolId != null && Number.isFinite(Number(row.rolId)) ? Number(row.rolId) : null,
+});
 
 const getCallableErrorMessage = (error: unknown, fallback: string) => {
   const code = (error as { code?: string } | null)?.code;
@@ -103,12 +119,6 @@ const isPermissionDeniedDataConnectError = (error: unknown) => {
     message.includes('@auth rejected the request') ||
     code.includes('permission-denied')
   );
-};
-
-const isDeadlineExceededError = (error: unknown) => {
-  const message = String((error as { message?: string } | null)?.message || '').toLowerCase();
-  const code = String((error as { code?: string } | null)?.code || '').toLowerCase();
-  return code.includes('deadline-exceeded') || message.includes('deadline-exceeded');
 };
 
 const formatDateAsDayMonthYear = (value: unknown) => {
@@ -216,23 +226,38 @@ const UsersPage = () => {
       || normalizedTitle.includes('director');
   }, [isSuperUser, user?.cargo, user?.roleTitle]);
   const [users, setUsers] = useState<User[]>([]);
+  const [rowCount, setRowCount] = useState(0);
+  const [pageRowsKey, setPageRowsKey] = useState('');
+  const [pageAvatars, setPageAvatars] = useState<UserAvatars>({});
+  const [listRevision, setListRevision] = useState(getListsRevision);
+  useEffect(() => subscribeLists(() => setListRevision(getListsRevision())), []);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formSubmitting, setFormSubmitting] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState<string | null>(null);
+  const detailsRequestRef = useRef(0);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [matriculaUser, setMatriculaUser] = useState<User | null>(null);
   const [editorTarget, setEditorTarget] = useState<{ user: User; side: DocumentoSide } | null>(null);
   const [matriculaFormResetKey, setMatriculaFormResetKey] = useState(0);
   const [userFormResetKey, setUserFormResetKey] = useState(0);
   const errorMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fetchUsersInFlightRef = useRef<Promise<void> | null>(null);
+  const fetchUsersRequestRef = useRef(0);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuUser, setMenuUser] = useState<User | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 30,
   });
+  const [sortModel, setSortModel] = useState<GridSortModel>([]);
+  const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+  const [queryFilterModel, setQueryFilterModel] = useState(filterModel);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setQueryFilterModel(filterModel), 250);
+    return () => window.clearTimeout(timer);
+  }, [filterModel]);
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({
       avatar: true,
@@ -254,83 +279,74 @@ const UsersPage = () => {
       actions: true,
     });
 
-  const listUsers = useMemo(
-    () =>
-      httpsCallable<undefined, { users?: Record<string, unknown>[] }>(functions, 'listUsers', {
-        timeout: 60000,
-      }),
-    [],
-  );
+  const pageRequest = useMemo(() => ({
+    ...paginationModel,
+    sortModel,
+    filterModel: queryFilterModel,
+    quickFilterFields: userSearchFields.filter((field) =>
+      queryFilterModel.quickFilterExcludeHiddenColumns === false || columnVisibilityModel[field] !== false),
+  }), [paginationModel, sortModel, queryFilterModel, columnVisibilityModel]);
+  const pageCacheKey = useMemo(() => JSON.stringify(['users', user?.uid, user?.role, user?.level, pageRequest]),
+    [user?.uid, user?.role, user?.level, pageRequest]);
 
-  const fetchUsers = useCallback(
-    async (attempt = 0) => {
-      if (attempt === 0 && fetchUsersInFlightRef.current) {
-        return fetchUsersInFlightRef.current;
+  const fetchUsers = useCallback(async () => {
+    const requestId = ++fetchUsersRequestRef.current;
+    if (!user) {
+      setUsers([]);
+      setRowCount(0);
+      setPageRowsKey('');
+      setPageAvatars({});
+      setLoading(false);
+      return;
+    }
+    const requestRevision = listRevision;
+    setLoading(!peekListPage(pageCacheKey));
+    setErrorMessage(null);
+    try {
+      const result = await loadListPage(pageCacheKey, async () =>
+        (await httpsCallable<typeof pageRequest, UsersPageResult>(functions, 'listUsersPage', { timeout: 60000 })(pageRequest)).data);
+      if (requestId !== fetchUsersRequestRef.current || requestRevision !== getListsRevision()) return;
+      setUsers(result.rows.map(normalizeUser));
+      setPageRowsKey(pageCacheKey);
+      setPageAvatars({});
+      setRowCount(result.rowCount);
+      if (!result.rows.length && result.rowCount > 0 && pageRequest.page > 0) {
+        setPaginationModel((current) => ({ ...current, page: Math.max(0, Math.ceil(result.rowCount / current.pageSize) - 1) }));
       }
-
-      const run = async () => {
-        if (!user) {
-          setUsers([]);
-          setLoading(false);
-          return;
-        }
-
-        setLoading(true);
-        setErrorMessage(null);
-        try {
-          const result = await listUsers();
-          const normalizedUsers: User[] = (result.data.users || []).map((row) => {
-            const roleRaw = row.rolId;
-            const roleParsed =
-              typeof roleRaw === 'string' ? Number(roleRaw) : Number(roleRaw ?? NaN);
-            return {
-              ...(row as unknown as User),
-              blocked: Boolean(row.blocked),
-              bloqueado: Boolean(row.bloqueado ?? row.blocked),
-              nacionalidad: String(row.nacionalidad || 'PERUANA'),
-              rolId: Number.isFinite(roleParsed) ? roleParsed : null,
-            };
-          });
-          setUsers(normalizedUsers);
-        } catch (error) {
-          if (isDeadlineExceededError(error) && attempt < 1) {
-            await new Promise((resolve) => setTimeout(resolve, 900));
-            await fetchUsers(attempt + 1);
-            return;
-          }
-
-          console.error('Error fetching users: ', error);
-          if (isPermissionDeniedDataConnectError(error)) {
-            setErrorMessage(
-              'No tienes acceso para listar usuarios (se requiere claim level >= 600). Cierra sesion e inicia nuevamente para refrescar claims.',
-            );
-          } else {
-            setErrorMessage('No se pudo cargar la lista de usuarios desde Data Connect.');
-          }
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      const promise = run();
-      if (attempt === 0) {
-        fetchUsersInFlightRef.current = promise;
-        promise.finally(() => {
-          if (fetchUsersInFlightRef.current === promise) {
-            fetchUsersInFlightRef.current = null;
-          }
-        });
-      }
-
-      return promise;
-    },
-    [listUsers, user],
-  );
+    } catch (error) {
+      if (requestId !== fetchUsersRequestRef.current || requestRevision !== getListsRevision()) return;
+      console.error('Error fetching users: ', error);
+      setErrorMessage(isPermissionDeniedDataConnectError(error)
+        ? getCallableErrorMessage(error, 'No tienes acceso para listar usuarios.')
+        : 'No se pudo cargar la lista de usuarios desde Data Connect.');
+    } finally {
+      if (requestId === fetchUsersRequestRef.current) setLoading(false);
+    }
+  }, [pageCacheKey, pageRequest, user, listRevision]);
 
   useEffect(() => {
     if (authLoading) return;
-    fetchUsers();
+    void fetchUsers();
+    return () => { fetchUsersRequestRef.current += 1; };
   }, [authLoading, fetchUsers]);
+
+  const avatarUserIds = useMemo(() => users.filter((row) =>
+    appSettings.visualizaciones.mostrarImagenAvatarEstudiantesEnListas || !isStudentUser(row)).map((row) => row.id),
+  [users, appSettings.visualizaciones.mostrarImagenAvatarEstudiantesEnListas]);
+  useEffect(() => {
+    if (loading || pageRowsKey !== pageCacheKey || !avatarUserIds.length || columnVisibilityModel.avatar === false) return;
+    let active = true;
+    const requestRevision = getListsRevision();
+    void loadListPage(`${pageCacheKey}|avatars|${avatarUserIds.join(',')}`, async () =>
+      (await httpsCallable<{ userIds: number[] }, { avatars: UserAvatars }>(functions, 'getUsersPageAvatars')({ userIds: avatarUserIds })).data)
+      .then((result) => {
+        if (active && requestRevision === getListsRevision()) setPageAvatars(result.avatars);
+      }).catch((error) => {
+        if (active) console.warn('No se pudieron cargar los avatares de usuarios.', error);
+      });
+    return () => { active = false; };
+  }, [loading, pageRowsKey, pageCacheKey, avatarUserIds, columnVisibilityModel.avatar, listRevision]);
+  const displayUsers = useMemo(() => users.map((row) => ({ ...row, ...pageAvatars[row.id] })), [users, pageAvatars]);
 
   useEffect(() => {
     return () => {
@@ -352,26 +368,48 @@ const UsersPage = () => {
   }, []);
 
   const handleAddUser = () => {
+    detailsRequestRef.current += 1;
+    setDetailsLoading(false);
+    setDetailsError(null);
     setSelectedUser(null);
     setFormOpen(true);
   };
 
-  const handleEditUser = (row: User) => {
+  const handleEditUser = useCallback(async (row: User) => {
+    const requestId = ++detailsRequestRef.current;
     setSelectedUser(row);
     setFormOpen(true);
+    setDetailsLoading(true);
+    setDetailsError(null);
     setMenuAnchorEl(null);
     setMenuUser(null);
-  };
+    try {
+      const result = await httpsCallable<{ documentId: string }, { user: User }>(functions, 'getUserDetails')({ documentId: row.documentId });
+      if (requestId !== detailsRequestRef.current) return;
+      setSelectedUser(normalizeUser(result.data.user));
+      setUserFormResetKey((current) => current + 1);
+    } catch (error) {
+      if (requestId === detailsRequestRef.current) setDetailsError(getCallableErrorMessage(error, 'No se pudieron cargar los datos del usuario.'));
+    } finally {
+      if (requestId === detailsRequestRef.current) setDetailsLoading(false);
+    }
+  }, []);
 
-  const handleMatricularUser = (row: User) => {
-    setMatriculaUser(row);
-    setMatriculaFormResetKey((prev) => prev + 1);
+  const handleMatricularUser = async (row: User) => {
     setMenuAnchorEl(null);
     setMenuUser(null);
+    try {
+      const result = await httpsCallable<{ documentId: string }, { user: User }>(functions, 'getUserDetails')({ documentId: row.documentId });
+      setMatriculaUser(normalizeUser(result.data.user));
+      setMatriculaFormResetKey((prev) => prev + 1);
+    } catch (error) {
+      showTemporaryErrorMessage(getCallableErrorMessage(error, 'No se pudieron cargar los datos del usuario.'));
+    }
   };
 
   const handleDismissUserModal = () => {
     if (formSubmitting) return;
+    detailsRequestRef.current += 1;
     setFormOpen(false);
   };
 
@@ -423,7 +461,6 @@ const UsersPage = () => {
         invalidateMatriculaLists();
         setMenuAnchorEl(null);
         setMenuUser(null);
-        fetchUsers();
       } catch (error) {
         console.error('Error deleting user: ', error);
         setErrorMessage(getCallableErrorMessage(error, 'No se pudo eliminar el usuario.'));
@@ -436,6 +473,7 @@ const UsersPage = () => {
     setFormSubmitting(true);
     setErrorMessage(null);
     let workspaceWarning: string | null = null;
+    let userChanged = false;
     try {
       if (selectedUser) {
         const updateUserProfile = httpsCallable(functions, 'updateUserProfile');
@@ -457,7 +495,7 @@ const UsersPage = () => {
           previousPhotoURL: selectedUser.photoURL ?? null,
           ...dataToUpdate,
         }) as { data?: { workspaceWarning?: string | null } };
-        invalidateMatriculaLists();
+        userChanged = true;
         workspaceWarning =
           typeof updateResult.data?.workspaceWarning === 'string'
             ? updateResult.data.workspaceWarning
@@ -475,9 +513,9 @@ const UsersPage = () => {
       } else {
         const createNewUser = httpsCallable(functions, 'createNewUser');
         await createNewUser(data);
+        userChanged = true;
       }
 
-      await fetchUsers();
       setFormOpen(false);
       setSelectedUser(null);
       setUserFormResetKey((prev) => prev + 1);
@@ -489,6 +527,7 @@ const UsersPage = () => {
       const parsedMessage = getCallableErrorMessage(error, 'No se pudo guardar el usuario.');
       showTemporaryErrorMessage(parsedMessage);
     } finally {
+      if (userChanged) invalidateMatriculaLists();
       setFormSubmitting(false);
       setLoading(false);
     }
@@ -571,7 +610,15 @@ const UsersPage = () => {
           const { avatar, avatarTiny, avatarPequeno, recorteFotografia, nombre, apellidoPaterno } = row;
           return (
             <Box
+              component="button"
+              type="button"
+              aria-label={`Abrir usuario ${row.username}`}
+              onClick={() => void handleEditUser(row)}
               sx={{
+                border: 0,
+                padding: 0,
+                background: 'transparent',
+                cursor: 'pointer',
                 width: '100%',
                 height: '100%',
                 display: 'flex',
@@ -605,8 +652,19 @@ const UsersPage = () => {
         minWidth: 150,
         renderCell: (params) => (
           <Box
+            component="button"
+            type="button"
+            onClick={() => void handleEditUser(params.row as User)}
             title={String(params.value ?? '')}
             sx={{
+              border: 0,
+              padding: 0,
+              background: 'transparent',
+              font: 'inherit',
+              color: 'primary.main',
+              textAlign: 'left',
+              cursor: 'pointer',
+              '&:hover': { textDecoration: 'underline' },
               display: '-webkit-box',
               WebkitBoxOrient: 'vertical',
               WebkitLineClamp: 2,
@@ -699,6 +757,7 @@ const UsersPage = () => {
       },
     ],
     [
+      handleEditUser,
       appSettings.visualizaciones.mostrarImagenAvatarEstudiantesEnListas,
       appSettings.visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes,
     ],
@@ -738,7 +797,7 @@ const UsersPage = () => {
       columnToggleLabel="Campos"
     >
       <IntranetDataGrid
-        rows={users}
+        rows={displayUsers}
         columns={columns}
         columnVisibilityModel={columnVisibilityModel}
         onColumnVisibilityModelChange={setColumnVisibilityModel}
@@ -746,6 +805,20 @@ const UsersPage = () => {
         getRowId={(row) => row.id}
         rowHeight={50}
         paginationModel={paginationModel}
+        rowCount={rowCount}
+        paginationMode="server"
+        sortingMode="server"
+        filterMode="server"
+        sortModel={sortModel}
+        onSortModelChange={(model) => {
+          setSortModel(model);
+          setPaginationModel((current) => ({ ...current, page: 0 }));
+        }}
+        filterModel={filterModel}
+        onFilterModelChange={(model) => {
+          setFilterModel(model);
+          setPaginationModel((current) => ({ ...current, page: 0 }));
+        }}
         onPaginationModelChange={setPaginationModel}
         sx={{
           '& .MuiDataGrid-cell': {
@@ -823,7 +896,13 @@ const UsersPage = () => {
         title={selectedUser ? 'Editar Usuario' : 'Agregar Usuario'}
         maxWidth="md"
       >
-        {formOpen ? (
+        {formOpen && detailsLoading ? <LinearProgress aria-label="Cargando datos del usuario" /> : null}
+        {formOpen && detailsError ? (
+          <Alert severity="error" action={<Button onClick={() => selectedUser && void handleEditUser(selectedUser)}>Reintentar</Button>}>
+            {detailsError}
+          </Alert>
+        ) : null}
+        {formOpen && !detailsLoading && !detailsError ? (
           <UserForm
             key={`${selectedUser ? selectedUser.id : 'new-user'}-${userFormResetKey}`}
             onCancel={handleDismissUserModal}

@@ -7,9 +7,14 @@ import {
   type GridColDef,
   type GridValidRowModel,
   getGridNumericOperators,
+  useGridApiContext,
+  useGridSelector,
+  gridColumnDefinitionsSelector,
+  gridColumnVisibilityModelSelector,
 } from '@mui/x-data-grid';
 import { esES } from '@mui/x-data-grid/locales';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
+import ColumnVisibilityControl, { ColumnVisibilityContext } from './ColumnVisibilityControl';
 
 type IntranetDataGridProps<R extends GridValidRowModel = GridValidRowModel> = DataGridProps<R>;
 
@@ -67,6 +72,30 @@ function isNumericColumn<R extends GridValidRowModel>(column: GridColDef<R>, row
   return sampledValues.every((value) => typeof value === 'number' && Number.isFinite(value));
 }
 
+function ColumnVisibilityHeader({ field }: { field: string }) {
+  const apiRef = useGridApiContext();
+  const columns = useGridSelector(apiRef, gridColumnDefinitionsSelector);
+  const visibility = useGridSelector(apiRef, gridColumnVisibilityModelSelector);
+  const config = useContext(ColumnVisibilityContext);
+  const configuredItems = new Map(config?.items.map((item) => [item.field, item]));
+  const items = columns.filter((column) => column.field !== field && !column.field.startsWith('__'))
+    .map((column) => ({
+      field: column.field,
+      label: configuredItems.get(column.field)?.label || column.headerName || column.field,
+      checked: visibility[column.field] !== false,
+      disabled: column.hideable === false || configuredItems.get(column.field)?.disabled,
+    }));
+
+  return <ColumnVisibilityControl
+    items={items}
+    label={config?.label}
+    onToggleColumn={(columnField, checked) => {
+      if (config?.onToggleColumn && configuredItems.has(columnField)) config.onToggleColumn(columnField, checked);
+      else apiRef.current.setColumnVisibility(columnField, checked);
+    }}
+  />;
+}
+
 export default function IntranetDataGrid<R extends GridValidRowModel = GridValidRowModel>({
   autoHeight = true,
   columnHeaderHeight = 40,
@@ -80,15 +109,33 @@ export default function IntranetDataGrid<R extends GridValidRowModel = GridValid
   sx,
   ...props
 }: IntranetDataGridProps<R>) {
+  const columnControlField = props.columns.find((column) => column.field === 'actions')?.field ?? '__columnVisibility__';
   const columns = useMemo(
-    () =>
-      props.columns?.map((column) =>
+    () => {
+      const result = props.columns.map((column) =>
         isNumericColumn(column, props.rows)
           ? { ...column, type: 'number' as const, filterOperators: numericFilterOperators }
           : column,
-      ),
-    [props.columns, props.rows],
+      );
+      const existing = result.find((column) => column.field === columnControlField);
+      const control: GridColDef<R> = {
+        ...(existing ?? { field: columnControlField, width: 56, minWidth: 56, renderCell: () => null }),
+        headerName: 'Campos',
+        headerAlign: 'center',
+        sortable: false,
+        filterable: false,
+        hideable: false,
+        disableColumnMenu: true,
+        disableExport: true,
+        renderHeader: () => <ColumnVisibilityHeader field={columnControlField} />,
+      };
+      return [...result.filter((column) => column.field !== columnControlField), control];
+    },
+    [props.columns, props.rows, columnControlField],
   );
+  const columnVisibilityModel = useMemo(() => props.columnVisibilityModel
+    ? { ...props.columnVisibilityModel, [columnControlField]: true }
+    : undefined, [props.columnVisibilityModel, columnControlField]);
   const basePaginationSlotProps = (slotProps?.basePagination ?? {}) as Record<string, any>;
   const basePaginationNestedSlotProps = (basePaginationSlotProps.slotProps ?? {}) as Record<string, any>;
   const basePaginationSelectSlotProps = (basePaginationNestedSlotProps.select ?? {}) as Record<string, any>;
@@ -98,12 +145,17 @@ export default function IntranetDataGrid<R extends GridValidRowModel = GridValid
       <DataGrid
         {...props}
         columns={columns}
+        columnVisibilityModel={columnVisibilityModel}
         autoHeight={autoHeight}
         columnHeaderHeight={columnHeaderHeight}
         disableColumnSelector={disableColumnSelector}
         disableRowSelectionOnClick={disableRowSelectionOnClick}
         initialState={{
           ...initialState,
+          columns: {
+            ...initialState?.columns,
+            columnVisibilityModel: { ...initialState?.columns?.columnVisibilityModel, [columnControlField]: true },
+          },
           pagination: {
             ...initialState?.pagination,
             paginationModel: {

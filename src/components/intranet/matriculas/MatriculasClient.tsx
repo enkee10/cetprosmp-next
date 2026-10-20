@@ -31,6 +31,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import ClearIcon from '@mui/icons-material/Clear';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -4196,39 +4197,18 @@ export function MatriculasPage() {
               </IconButton>
             </span>
           </Tooltip>
-          {isDirectGrupoModuloView ? (
-            <Button
-              variant="outlined"
-              onClick={handleExportDocenteSheet}
-              disabled={exportingDocenteSheet || loadingFilters || loading}
-              startIcon={
-                <Box
-                  component="img"
-                  src="/icons/sheets.png"
-                  alt=""
-                  sx={{ width: 20, height: 20, objectFit: 'contain' }}
-                />
-              }
-            >
-              Descargar
-            </Button>
-          ) : (
-            <Button
-              variant="outlined"
-              onClick={handleExportGeneralSheet}
-              disabled={exportingDocenteSheet || loading}
-              startIcon={
-                <Box
-                  component="img"
-                  src="/icons/sheets.png"
-                  alt=""
-                  sx={{ width: 20, height: 20, objectFit: 'contain' }}
-                />
-              }
-            >
-              Descargar
-            </Button>
-          )}
+          <Tooltip title="Descargar lista en Google Sheets">
+            <span>
+              <IconButton
+                color="primary"
+                aria-label="Descargar lista"
+                onClick={isDirectGrupoModuloView ? handleExportDocenteSheet : handleExportGeneralSheet}
+                disabled={exportingDocenteSheet || loading || (isDirectGrupoModuloView && loadingFilters)}
+              >
+                <FileDownloadOutlinedIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
           {canUseAvanza ? <>
             <Tooltip title="AVANZA">
               <span>

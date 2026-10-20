@@ -2,11 +2,12 @@
 
 import React from 'react';
 import {
-  Button,
+  IconButton,
   Checkbox,
   ListItemText,
   Menu,
   MenuItem,
+  Tooltip,
 } from '@mui/material';
 import ViewColumnOutlinedIcon from '@mui/icons-material/ViewColumnOutlined';
 
@@ -23,6 +24,8 @@ interface ColumnVisibilityControlProps {
   onToggleColumn?: (field: string, checked: boolean) => void;
 }
 
+export const ColumnVisibilityContext = React.createContext<ColumnVisibilityControlProps | null>(null);
+
 const ColumnVisibilityControl: React.FC<ColumnVisibilityControlProps> = ({
   items,
   label = 'Campos',
@@ -30,6 +33,7 @@ const ColumnVisibilityControl: React.FC<ColumnVisibilityControlProps> = ({
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
+  const menuId = React.useId();
 
   if (items.length === 0) {
     return null;
@@ -37,14 +41,35 @@ const ColumnVisibilityControl: React.FC<ColumnVisibilityControlProps> = ({
 
   return (
     <>
-      <Button
-        variant="outlined"
-        startIcon={<ViewColumnOutlinedIcon />}
-        onClick={(event) => setAnchorEl(event.currentTarget)}
-      >
-        {label}
-      </Button>
+      <Tooltip title={label}>
+        <IconButton
+          size="small"
+          color="primary"
+          aria-label={label}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          aria-controls={open ? menuId : undefined}
+          onClick={(event) => {
+            event.stopPropagation();
+            setAnchorEl(event.currentTarget);
+          }}
+          onKeyDown={(event) => event.stopPropagation()}
+          sx={{
+            width: 32,
+            height: 32,
+            border: '1px solid',
+            borderColor: 'primary.main',
+            borderRadius: 1,
+            bgcolor: open ? '#90caf9' : 'transparent',
+            '&:hover': { bgcolor: open ? '#90caf9' : '#e3f2fd' },
+            '&:active': { bgcolor: '#90caf9' },
+          }}
+        >
+          <ViewColumnOutlinedIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
       <Menu
+        id={menuId}
         anchorEl={anchorEl}
         open={open}
         disableScrollLock

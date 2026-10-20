@@ -7,7 +7,8 @@ import {
 } from '@mui/material';
 import type { AlertColor } from '@mui/material';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
-import ColumnVisibilityControl, {
+import {
+  ColumnVisibilityContext,
   type ColumnToggleItem,
 } from '@/components/intranet/ColumnVisibilityControl';
 
@@ -70,20 +71,17 @@ const IntranetListLayout: React.FC<IntranetListLayoutProps> = ({
         >
           <Box sx={{ minWidth: 0, flex: '1 1 auto' }}>{commands}</Box>
 
-          {columnToggleItems ? (
-            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-              <ColumnVisibilityControl
-                items={columnToggleItems}
-                label={columnToggleLabel}
-                onToggleColumn={onToggleColumn}
-              />
-            </Box>
-          ) : null}
         </Box>
       </Box>}
 
       <Box sx={{ width: '100%', minWidth: 0, overflowX: 'auto' }}>
-        {children}
+        <ColumnVisibilityContext.Provider value={columnToggleItems ? {
+          items: columnToggleItems,
+          label: columnToggleLabel,
+          onToggleColumn,
+        } : null}>
+          {children}
+        </ColumnVisibilityContext.Provider>
       </Box>
     </Box>
   );

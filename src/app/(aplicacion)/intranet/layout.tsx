@@ -57,7 +57,7 @@ export default function IntranetLayout({
               maxWidth: '100vw',
               minWidth: 0,
               ml: 'calc(50% - 50vw)',
-              mt: "-16px",
+              mt: { xs: '0px', md: '-16px' },
             }}
         >
             <IntranetSidebar />
@@ -68,7 +68,7 @@ export default function IntranetLayout({
                   minWidth: 0,
                   overflowX: 'hidden',
                   bgcolor: '#fff8e8',
-                  p: '8px',
+                  p: { xs: '0px', md: '10px' },
                 }}
             >
                 <Box sx={{ minHeight: 0 }} />

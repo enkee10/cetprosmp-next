@@ -69,6 +69,7 @@ export default function IntranetSidebar() {
         overflow: 'visible',
         position: 'relative',
         zIndex: 20,
+        boxShadow: '2px 0 4px -1px rgba(0, 0, 0, 0.2), 4px 0 5px 0 rgba(0, 0, 0, 0.14), 1px 0 10px 0 rgba(0, 0, 0, 0.12)',
         '& .MuiDivider-root': {
           borderColor: 'rgba(255,255,255,0.08)',
         },

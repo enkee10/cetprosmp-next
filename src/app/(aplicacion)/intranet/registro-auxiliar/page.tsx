@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   Button,
@@ -144,17 +144,6 @@ type EfsrtPppPromedioRow = {
   moduloEstudianteId: number;
 };
 
-type SesionProgramada = {
-  id: string;
-  tipo: 'curricular' | 'ppp';
-  numero: number | null;
-  nombre: string;
-  unidad: string | null;
-  inicio: string;
-  fin: string;
-  horasAcademicas: number | null;
-};
-
 type RegistroAuxiliar = {
   grupo: {
     id: number;
@@ -199,7 +188,6 @@ type RegistroAuxiliar = {
     } | null;
   } | null;
   estructura: Unidad[];
-  sesiones?: SesionProgramada[];
   estudiantes: Estudiante[];
   notas: NotaRow[];
   promediosEfsrtPpp?: EfsrtPppPromedioRow[];
@@ -410,14 +398,6 @@ const getGrupoModuloLabel = (grupoModulo: GrupoModuloOption) => {
   }`;
 };
 
-const formatSesionFecha = (value: string) => new Intl.DateTimeFormat('es-PE', {
-  timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric',
-}).format(new Date(value));
-
-const formatSesionHora = (value: string) => new Intl.DateTimeFormat('es-PE', {
-  timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-}).format(new Date(value));
-
 export default function RegistroAuxiliarPage() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -455,6 +435,7 @@ export default function RegistroAuxiliarPage() {
   const [cellSelection, setCellSelection] = useState<CellSelection | null>(null);
   const [selectingCells, setSelectingCells] = useState(false);
   const editableCellRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const registroFrameRef = useRef<HTMLDivElement | null>(null);
   const registroScrollRef = useRef<HTMLDivElement | null>(null);
   const selectionPointerRef = useRef<{ x: number; y: number } | null>(null);
   const autoScrollFrameRef = useRef<number | null>(null);
@@ -469,6 +450,40 @@ export default function RegistroAuxiliarPage() {
   const canEditModuloFechas = canEditRegistro;
   const canCreateRegistroMatriculas = can('registro-auxiliar', 'create');
   const canDeleteRegistroMatriculas = can('registro-auxiliar', 'delete');
+
+  useLayoutEffect(() => {
+    const container = registroFrameRef.current;
+    if (!container) return;
+
+    let frame: number | null = null;
+    const viewport = window.visualViewport;
+    const updateHeight = () => {
+      frame = null;
+      const viewportBottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
+      const height = Math.max(0, viewportBottom - container.getBoundingClientRect().top - 10);
+      container.style.setProperty('--registro-frame-height', `${height}px`);
+    };
+    const scheduleUpdate = () => {
+      if (frame === null) frame = window.requestAnimationFrame(updateHeight);
+    };
+
+    const observer = new ResizeObserver(scheduleUpdate);
+    if (container.parentElement) observer.observe(container.parentElement);
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+    viewport?.addEventListener('resize', scheduleUpdate);
+    viewport?.addEventListener('scroll', scheduleUpdate);
+    updateHeight();
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+      viewport?.removeEventListener('resize', scheduleUpdate);
+      viewport?.removeEventListener('scroll', scheduleUpdate);
+      if (frame !== null) window.cancelAnimationFrame(frame);
+    };
+  }, []);
 
   useEffect(() => {
     if (!directGrupoModuloId) return;
@@ -1446,7 +1461,7 @@ export default function RegistroAuxiliarPage() {
   };
 
   return (
-    <Box sx={{ pb: 3, overflowAnchor: 'none' }}>
+    <Box sx={{ overflowAnchor: 'none' }}>
       <Stack
         direction={{ xs: 'column', lg: 'row' }}
         spacing={1}
@@ -1459,39 +1474,41 @@ export default function RegistroAuxiliarPage() {
             <Typography variant="h6" sx={{ fontWeight: 800, flex: 1, fontSize: 18, lineHeight: 1.15 }}>
               Registro Auxiliar de Evaluacion
             </Typography>
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', lg: 180 } }} disabled={loadingOptions || !semestreOptions.length}>
-              <InputLabel>Semestre</InputLabel>
-              <Select
-                label="Semestre"
-                value={semestreId}
-                MenuProps={selectMenuProps}
-                onChange={(event) => setSemestreId(String(event.target.value))}
-              >
-                {semestreId && !semestreOptions.some((item) => String(item.id) === semestreId) ? (
-                  <MenuItem value={semestreId}>Semestre {semestreId}</MenuItem>
-                ) : null}
-                {semestreOptions.map((semestre) => (
-                  <MenuItem key={semestre.id} value={String(semestre.id)}>
-                    {semestre.titulo || `Semestre ${semestre.id}`}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', lg: 520 } }} disabled={loadingOptions || !semestreId || !filteredGrupoModuloOptions.length}>
-              <InputLabel>Modulo</InputLabel>
-              <Select
-                label="Modulo"
-                value={grupoModuloId}
-                MenuProps={selectMenuProps}
-                onChange={(event) => setGrupoModuloId(String(event.target.value))}
-              >
-                {filteredGrupoModuloOptions.map((grupoModulo) => (
-                  <MenuItem key={grupoModulo.id} value={String(grupoModulo.id)}>
-                    {getGrupoModuloLabel(grupoModulo)}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', lg: 'auto' }, minWidth: 0 }}>
+              <FormControl size="small" sx={{ width: 100, minWidth: 100, flexShrink: 0 }} disabled={loadingOptions || !semestreOptions.length}>
+                <InputLabel>Semestre</InputLabel>
+                <Select
+                  label="Semestre"
+                  value={semestreId}
+                  MenuProps={selectMenuProps}
+                  onChange={(event) => setSemestreId(String(event.target.value))}
+                >
+                  {semestreId && !semestreOptions.some((item) => String(item.id) === semestreId) ? (
+                    <MenuItem value={semestreId}>Semestre {semestreId}</MenuItem>
+                  ) : null}
+                  {semestreOptions.map((semestre) => (
+                    <MenuItem key={semestre.id} value={String(semestre.id)}>
+                      {semestre.titulo || `Semestre ${semestre.id}`}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl size="small" sx={{ width: { xs: 0, lg: 520 }, flexGrow: { xs: 1, lg: 0 }, minWidth: 0 }} disabled={loadingOptions || !semestreId || !filteredGrupoModuloOptions.length}>
+                <InputLabel>Modulo</InputLabel>
+                <Select
+                  label="Modulo"
+                  value={grupoModuloId}
+                  MenuProps={selectMenuProps}
+                  onChange={(event) => setGrupoModuloId(String(event.target.value))}
+                >
+                  {filteredGrupoModuloOptions.map((grupoModulo) => (
+                    <MenuItem key={grupoModulo.id} value={String(grupoModulo.id)}>
+                      {getGrupoModuloLabel(grupoModulo)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
           </>
         )}
         <Stack direction="row" spacing={0.5} justifyContent="flex-end">
@@ -1522,31 +1539,27 @@ export default function RegistroAuxiliarPage() {
       {error && <AutoDismissAlert severity="error" sx={{ mb: 1.5 }}>{error}</AutoDismissAlert>}
       <AutoDismissAlert message={message} severity="success" sx={{ mb: 1.5 }} />
 
-      {registro && (registro.sesiones?.length ?? 0) > 0 && (
-        <Paper sx={{ mb: 1, p: 1.5, border: '1px solid #d4dce5' }}>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
-            Sesiones programadas ({registro.sesiones?.length})
-          </Typography>
-          <Box sx={{ maxHeight: 245, overflowY: 'auto' }}>
-            {registro.sesiones?.map((sesion) => (
-              <Box key={sesion.id} sx={{ display: 'grid', gridTemplateColumns: { xs: '90px 1fr', md: '110px 110px 60px 1fr' }, gap: 1, py: 0.55, px: 0.75, borderTop: '1px solid #e8edf2', fontSize: 13 }}>
-                <Box>{formatSesionFecha(sesion.inicio)}</Box>
-                <Box>{formatSesionHora(sesion.inicio)}–{formatSesionHora(sesion.fin)}</Box>
-                <Box>{sesion.horasAcademicas ?? '—'} h</Box>
-                <Box>{sesion.tipo === 'ppp' ? 'PPP' : `Sesión ${sesion.numero ?? '—'}`} · {sesion.nombre}{sesion.unidad ? ` · ${sesion.unidad}` : ''}</Box>
-              </Box>
-            ))}
-          </Box>
-        </Paper>
-      )}
-      <Paper sx={{ overflow: 'hidden', borderRadius: 1, border: '1px solid #2d2d2d' }}>
+      <Paper
+        ref={registroFrameRef}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: 'var(--registro-frame-height, 550px)',
+          minHeight: 'min(550px, var(--registro-frame-height, 550px))',
+          maxHeight: 'var(--registro-frame-height, 550px)',
+          overflow: 'hidden',
+          borderRadius: 1,
+          border: '1px solid #2d2d2d',
+        }}
+      >
         <Box
           ref={registroScrollRef}
           onWheelCapture={stopScrollChaining}
           onMouseMove={handleSelectionMouseMove}
           sx={{
             overflow: 'auto',
-            maxHeight: 'calc(100vh - 170px)',
+            flex: 1,
+            minHeight: 0,
             bgcolor: '#fff',
             overscrollBehavior: 'contain',
             overscrollBehaviorX: 'contain',
@@ -1797,7 +1810,7 @@ export default function RegistroAuxiliarPage() {
                         sx={{
                           ...cellBaseSx,
                           ...selectableCellSx(TABLE_HEADER_ROW_START, selectableColumnIndexByKey.get('efsrt-ppp') ?? -1, 3, 1),
-                          bgcolor: '#d9ead3',
+                          bgcolor: '#fff',
                           width: 48,
                           writingMode: 'vertical-rl',
                           transform: 'rotate(180deg)',
@@ -2119,7 +2132,7 @@ export default function RegistroAuxiliarPage() {
                             ...cellBaseSx,
                             ...selectableCellSx(tableRowIndex, selectableColumnIndexByKey.get('efsrt-ppp') ?? -1),
                             p: 0,
-                            bgcolor: '#d9ead3',
+                            bgcolor: '#fff',
                           }}
                         >
                           <Box
@@ -2137,7 +2150,7 @@ export default function RegistroAuxiliarPage() {
                               height: 24,
                               border: 0,
                               px: 0.4,
-                              bgcolor: isCellSelected(tableRowIndex, selectableColumnIndexByKey.get('efsrt-ppp') ?? -1) ? '#eef7e8' : '#d9ead3',
+                              bgcolor: isCellSelected(tableRowIndex, selectableColumnIndexByKey.get('efsrt-ppp') ?? -1) ? '#eaf4ee' : '#fff',
                               color: gradeColor(parseNota(efsrtPppNotas[efsrtPppKey(student.id)])),
                               textAlign: 'center',
                               fontSize: 12,

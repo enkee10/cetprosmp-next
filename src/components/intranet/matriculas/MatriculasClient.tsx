@@ -4137,8 +4137,8 @@ export function MatriculasPage() {
       commands={
         <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
           {!isDocente ? (
-            <>
-              <FormControl size="small" sx={{ width: 100 }}>
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: { xs: '100%', md: 'auto' }, minWidth: 0 }}>
+              <FormControl size="small" sx={{ width: 100, flexShrink: 0 }}>
                 <InputLabel id="matriculas-semestre-filter-label">Semestre</InputLabel>
                 <Select
                   labelId="matriculas-semestre-filter-label"
@@ -4161,7 +4161,7 @@ export function MatriculasPage() {
                 value={selectedGrupoModuloFilterIds}
                 onChange={handleGrupoModuloFilterChange}
                 disabled={loadingFilters || grupoModuloFilterOptions.length === 0}
-                sx={{ width: 320, maxWidth: '100%' }}
+                sx={{ width: { xs: 0, md: 320 }, flexGrow: { xs: 1, md: 0 }, minWidth: 0, maxWidth: '100%' }}
                 options={grupoModuloFilterOptions.map((grupoModulo) => ({
                   value: String(grupoModulo.id),
                   label: getGrupoModuloFilterLabel(grupoModulo),
@@ -4178,11 +4178,11 @@ export function MatriculasPage() {
                   return `${selected.length} seleccionados`;
                 }}
               />
-            </>
+            </Stack>
           ) : null}
           {canCreateRecords ? (
             <Button variant="outlined" startIcon={<AddIcon />} onClick={handleCreateMatricula}>
-              Nueva Matricula
+              Nuevo
             </Button>
           ) : null}
           <Tooltip title="Vista de impresion">

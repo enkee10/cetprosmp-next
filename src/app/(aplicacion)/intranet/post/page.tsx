@@ -315,7 +315,7 @@ export default function PostsPage() {
     <IntranetListLayout
       message={errorMessage}
       messageSeverity="error"
-      title="Administracion de Posts"
+      title="Posts"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button variant="outlined" onClick={handleAddPost}>

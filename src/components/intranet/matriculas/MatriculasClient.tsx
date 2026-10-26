@@ -1,5 +1,7 @@
 'use client';
 
+import { isDocenteRole } from '@/lib/intranetPermissions';
+
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   Autocomplete,
@@ -3050,7 +3052,7 @@ export function MatriculasPage() {
   const currentSemestreId = getCurrentMatriculaSemestreId(settings);
   const configuredSemestreIdsKey = getConfiguredMatriculaSemestreIds(settings).join(',');
   const searchParams = useSearchParams();
-  const isDocente = Number(user?.role ?? 0) === 4 && Number(user?.level ?? 0) < 600;
+  const isDocente = isDocenteRole(user?.role) && Number(user?.level ?? 0) < 600;
   const directGrupoModuloId = useMemo(() => {
     const id = Number(searchParams.get('grupoModuloId') || 0);
     return Number.isFinite(id) && id > 0 ? String(id) : '';
@@ -3388,7 +3390,7 @@ export function MatriculasPage() {
 
   const pageTitle = useMemo(() => {
     const isDocenteRoute = isDocente || Boolean(directGrupoModuloId);
-    if (!isDocenteRoute) return 'Gestion de Matriculas';
+    if (!isDocenteRoute) return 'Matriculas';
 
     const targetGrupoModulo = isDirectGrupoModuloView
       ? grupoModuloFilterOptions.find((item) => String(item.id) === directGrupoModuloId) ?? null

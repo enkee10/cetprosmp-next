@@ -28,7 +28,7 @@ export default function UnidadesDidacticasPage() {
       entityKey="unidadDidactica"
       entityLabel="Unidad Didactica"
       entityPluralLabel="Unidades Didacticas"
-      title="Gestion de Unidades Didacticas"
+      title="Unidades Didacticas"
       createLabel="Crear Unidad Didactica"
       listCallableName="listUnidadesDidacticas"
       getCallableName="getUnidadDidactica"

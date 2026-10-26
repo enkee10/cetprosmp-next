@@ -1,3 +1,4 @@
+import { isDocenteRole } from "../core/authCore.js";
 import { getFirestore } from "firebase-admin/firestore";
 import { google, sheets_v4 } from "googleapis";
 import { https, runWith } from "firebase-functions/v1";
@@ -1296,7 +1297,7 @@ async function loadDocenteGrupoModuloForSheet(
     return grupoModulo;
   }
 
-  if (getRequesterRoleId(context) !== 4) {
+  if (!isDocenteRole(getRequesterRoleId(context))) {
     throw new https.HttpsError("permission-denied", "Solo el docente asignado puede exportar esta lista.");
   }
 
@@ -1580,7 +1581,7 @@ export async function exportListaMatriculasGeneralSheet(
     throw new https.HttpsError("failed-precondition", "La lista supera el límite de exportación. Selecciona menos grupos-módulos.");
   }
   const personalIds = new Set(moduleData.personals.map((item) => item.id));
-  const isDocente = !isSuperUserContext(context) && getRequesterRoleId(context) === 4;
+  const isDocente = !isSuperUserContext(context) && isDocenteRole(getRequesterRoleId(context));
   const grupos = moduleData.grupoModulos.filter((item) => !isDocente || personalIds.has(item.grupo?.personalId ?? 0));
   const linksByMatricula = new Map<number, SheetsModuloEstudianteRow[]>();
   for (const link of moduleData.modulosEstudiantes) {

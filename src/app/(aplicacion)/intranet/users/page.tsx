@@ -782,7 +782,7 @@ const UsersPage = () => {
     <IntranetListLayout
       message={errorMessage}
       messageSeverity="error"
-      title="Administracion de Usuarios"
+      title="Usuarios"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button variant="outlined" onClick={handleAddUser}>

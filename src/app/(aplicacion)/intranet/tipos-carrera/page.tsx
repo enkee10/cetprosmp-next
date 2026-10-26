@@ -9,7 +9,7 @@ export default function TiposCarreraPage() {
       entityKey="tipoCarrera"
       entityLabel="Tipo de Carrera"
       entityPluralLabel="Tipos de Carrera"
-      title="Gestion de Tipos de Carrera"
+      title="Tipos de Carrera"
       createLabel="Crear Tipo de Carrera"
       listCallableName="listTiposCarrera"
       getCallableName="getTipoCarrera"

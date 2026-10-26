@@ -29,12 +29,14 @@ import { GridColDef, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { httpsCallable } from 'firebase/functions';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import IntranetDocumentTitle from '@/components/intranet/IntranetDocumentTitle';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 import { functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
 type TipoDocumento = 'certificado' | 'titulo';
+const PAGE_TITLE = 'Certificados y Titulos';
 type DownloadFormat = 'pdf' | 'excel';
 
 type SemestreOption = {
@@ -397,10 +399,11 @@ export default function CertificadosTitulosPage() {
 
   return (
     <Box sx={{ maxWidth: 1240, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <IntranetDocumentTitle title={PAGE_TITLE} />
       <Stack direction="row" spacing={1.25} alignItems="center">
         <SchoolIcon color="primary" />
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Certificados y Titulos
+          {PAGE_TITLE}
         </Typography>
       </Stack>
 

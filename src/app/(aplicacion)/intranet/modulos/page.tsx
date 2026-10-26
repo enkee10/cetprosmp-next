@@ -413,7 +413,7 @@ export default function ModulosPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Modulos"
+      title="Modulos"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button variant="outlined" onClick={handleCreateModulo}>

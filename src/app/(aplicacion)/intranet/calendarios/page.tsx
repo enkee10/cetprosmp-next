@@ -373,7 +373,7 @@ export default function CalendariosPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Calendarios"
+      title="Calendarios"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button

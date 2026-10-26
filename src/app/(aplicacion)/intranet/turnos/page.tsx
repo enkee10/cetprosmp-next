@@ -149,7 +149,7 @@ export default function TurnosPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Turnos"
+      title="Turnos"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button variant="outlined" onClick={() => { setEditingId(null); setOpenModal(true); }}>

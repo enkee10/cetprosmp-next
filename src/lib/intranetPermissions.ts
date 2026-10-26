@@ -3,6 +3,11 @@ export const normalizeRoleId = (role: string | number | null | undefined) => {
   return Number.isFinite(value) ? value : 0;
 };
 
+export const isDocenteRole = (role: string | number | null | undefined) => {
+  const roleId = normalizeRoleId(role);
+  return roleId === 4 || roleId === 10;
+};
+
 export const isSuperUserLevel = (level = 0) => level >= 600;
 
 export const isSuperUserRole = (role: string | number | null | undefined) => normalizeRoleId(role) >= 600;

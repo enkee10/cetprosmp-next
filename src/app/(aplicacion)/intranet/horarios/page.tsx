@@ -159,7 +159,7 @@ export default function HorariosPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Horarios"
+      title="Horarios"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button variant="outlined" onClick={() => { setEditingId(null); setOpenModal(true); }}>

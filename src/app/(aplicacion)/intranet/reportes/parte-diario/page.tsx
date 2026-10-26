@@ -10,11 +10,13 @@ import {useAppSettings} from '@/hooks/useAppSettings';
 import {dayInLima} from '@/lib/calendar';
 import {activityLabel,unitLabel,parteGroupLabel,ParteDiarioRow} from '@/lib/parteDiario';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import IntranetDocumentTitle from '@/components/intranet/IntranetDocumentTitle';
 import ParteDiarioModal from '@/components/parte-diario/ParteDiarioModal';
 import type {ParteReportData,ParteMetrics,InformeRow} from '../../../../../../functions/src/modules/parte-diario/reportAnalytics';
 import type {ValuationField} from '../../../../../../functions/src/modules/parte-diario/valuations';
 
 type Filters={desde:string;hasta:string;semestreId:number|'';familiaId:number|'';docenteId:number|''};
+const PAGE_TITLE = 'Parte diario';
 const ratingTitles:Record<ValuationField,string>={usoMedios:'Uso de medios en clase',silabo:'Sílabo',fichaActividad:'Ficha de Actividad',instrumentoEvaluacion:'Instrumento de Evaluación',registroAsistencia:'Registro de Asistencia',registroAuxiliarEvaluacion:'Registro Auxiliar de Evaluación',material:'Materiales',tareas:'Tareas'};
 const number=(value:number|null,suffix='')=>value==null?'Sin datos':new Intl.NumberFormat('es-PE',{maximumFractionDigits:1}).format(value)+suffix;
 const percent=(value:number|null)=>number(value,'%');
@@ -38,8 +40,9 @@ export default function ParteDiarioReportPage(){
  if(!can('reportes-parte-diario','view'))return <AutoDismissAlert severity="info">No tienes permiso para ver el reporte Parte diario.</AutoDismissAlert>;
  const total=data?.total,share=(field:ValuationField,values:number[])=>{if(!total?.valoraciones[field].cantidad)return null;return values.reduce((n,v)=>n+total.valoraciones[field].distribucion[v],0)/total.valoraciones[field].cantidad*100;};
  return <Box sx={{p:2}}>
+  <IntranetDocumentTitle title={PAGE_TITLE} />
   <style>{`@media print{body *{visibility:hidden}#parte-report-print,#parte-report-print *{visibility:visible}#parte-report-print{position:absolute;left:0;top:0;width:100%}.no-print{display:none!important}.print-only{display:block!important}#parte-report-print table{break-inside:auto}#parte-report-print tr{break-inside:avoid}}.print-only{display:none}`}</style>
-  <Stack className="no-print" direction="row" alignItems="center" gap={2} sx={{mb:2}}><Typography component="h1" variant="h5" sx={{flex:1}}>Parte diario</Typography><Button startIcon={<DownloadIcon/>} onClick={download} disabled={!data||loading}>CSV</Button><Button startIcon={<PrintIcon/>} onClick={()=>window.print()} disabled={!data||loading}>Imprimir / PDF</Button></Stack>
+  <Stack className="no-print" direction="row" alignItems="center" gap={2} sx={{mb:2}}><Typography component="h1" variant="h5" sx={{flex:1}}>{PAGE_TITLE}</Typography><Button startIcon={<DownloadIcon/>} onClick={download} disabled={!data||loading}>CSV</Button><Button startIcon={<PrintIcon/>} onClick={()=>window.print()} disabled={!data||loading}>Imprimir / PDF</Button></Stack>
   <Paper className="no-print" sx={{p:2,mb:2}}><Stack direction="row" gap={2} flexWrap="wrap">
    <TextField type="date" label="Desde" value={filters.desde} slotProps={{inputLabel:{shrink:true},htmlInput:{max:today}}} onChange={e=>setFilters({...filters,desde:e.target.value})}/><TextField type="date" label="Hasta" value={filters.hasta} slotProps={{inputLabel:{shrink:true},htmlInput:{max:today}}} onChange={e=>setFilters({...filters,hasta:e.target.value})}/>
    <TextField select label="Semestre" value={filters.semestreId} sx={{minWidth:150}} onChange={e=>{const id=e.target.value===''?'':Number(e.target.value),sem=data?.opciones.semestres.find(s=>s.id===id);setFilters({...filters,semestreId:id,desde:sem?.inicio?.slice(0,10)||filters.desde,hasta:sem?.fin?(sem.fin.slice(0,10)<today?sem.fin.slice(0,10):today):filters.hasta});}}><MenuItem value="">Todos</MenuItem>{data?.opciones.semestres.map(s=><MenuItem key={s.id} value={s.id}>{s.titulo}</MenuItem>)}</TextField>

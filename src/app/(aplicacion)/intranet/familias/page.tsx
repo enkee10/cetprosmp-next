@@ -257,7 +257,7 @@ export default function FamiliasPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Familias"
+      title="Familias"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button variant="outlined" onClick={handleCreateFamilia}>

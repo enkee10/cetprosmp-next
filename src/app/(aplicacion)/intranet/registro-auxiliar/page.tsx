@@ -1,5 +1,7 @@
 'use client';
 
+import { isDocenteRole } from '@/lib/intranetPermissions';
+
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
@@ -26,8 +28,10 @@ import { useSearchParams } from 'next/navigation';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import IntranetDocumentTitle from '@/components/intranet/IntranetDocumentTitle';
 import { useAuth } from '@/context/AuthContext';
 import { useCurrentSemestreFilter } from '@/hooks/useCurrentSemestreFilter';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { invalidateMatriculaLists } from '@/lib/matriculasListCache';
 import { app } from '@/lib/firebase';
 import { formatDateOnly, toDateOnlyInputValue } from '@/lib/dateOnly';
@@ -225,7 +229,7 @@ const MODULE_INFO_LEFT_LABEL_COL = 0;
 const MODULE_INFO_LEFT_VALUE_COL = 1;
 const MODULE_INFO_RIGHT_LABEL_COL = 3;
 const MODULE_INFO_RIGHT_VALUE_COL = 4;
-const TEACHER_ROLE_ID = 4;
+const PAGE_TITLE = 'Registro Auxiliar de Evaluación';
 
 const toTitleCase = (value: string | null | undefined) =>
   String(value ?? '')
@@ -402,11 +406,12 @@ export default function RegistroAuxiliarPage() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const { can } = useIntranetPermissions();
+  const { settings } = useAppSettings();
   const [grupos, setGrupos] = useState<GrupoOption[]>([]);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [datosGenerales, setDatosGenerales] = useState<DatosGenerales | null>(null);
   const [semestreId, setSemestreId] = useCurrentSemestreFilter();
-  const [grupoModuloId, setGrupoModuloId] = useState('');
+  const [selectedGrupoModuloId, setGrupoModuloId] = useState('');
   const [registro, setRegistro] = useState<RegistroAuxiliar | null>(null);
   const [notas, setNotas] = useState<Record<string, string>>({});
   const [efsrtPppNotas, setEfsrtPppNotas] = useState<Record<string, string>>({});
@@ -445,7 +450,7 @@ export default function RegistroAuxiliarPage() {
   const functions = useMemo(() => getFunctions(app), []);
   const directGrupoModuloId = searchParams.get('grupoModuloId') || '';
   const isDirectRegistro = Boolean(directGrupoModuloId);
-  const isDocente = Number(user?.role ?? 0) === TEACHER_ROLE_ID && Number(user?.level ?? 0) < 600;
+  const isDocente = isDocenteRole(user?.role) && Number(user?.level ?? 0) < 600;
   const canEditRegistro = can('registro-auxiliar', 'edit');
   const canEditModuloFechas = canEditRegistro;
   const canCreateRegistroMatriculas = can('registro-auxiliar', 'create');
@@ -567,10 +572,13 @@ export default function RegistroAuxiliarPage() {
     [grupoModuloOptions],
   );
 
-  const semestreOptions = useMemo(
-    () => semestres.filter((semestre) => availableSemestreIds.has(semestre.id)),
-    [availableSemestreIds, semestres],
-  );
+  const semestreOptions = useMemo(() => {
+    const options = loadingOptions
+      ? settings.general.semestres
+      : semestres.filter((semestre) => availableSemestreIds.has(semestre.id));
+    const current = settings.general.semestres.find((semestre) => semestre.id === settings.general.semestreActualId);
+    return current && !options.some((semestre) => semestre.id === current.id) ? [current, ...options] : options;
+  }, [availableSemestreIds, loadingOptions, semestres, settings.general.semestres, settings.general.semestreActualId]);
 
   const filteredGrupoModuloOptions = useMemo(
     () =>
@@ -580,11 +588,12 @@ export default function RegistroAuxiliarPage() {
     [grupoModuloOptions, semestreId],
   );
 
-  useEffect(() => {
-    if (isDirectRegistro || isDocente) return;
-    if (filteredGrupoModuloOptions.some((option) => String(option.id) === grupoModuloId)) return;
-    setGrupoModuloId(filteredGrupoModuloOptions[0] ? String(filteredGrupoModuloOptions[0].id) : '');
-  }, [filteredGrupoModuloOptions, grupoModuloId, isDirectRegistro, isDocente]);
+  // Resolve the default in the same render as the options, without waiting for another effect.
+  const grupoModuloId = directGrupoModuloId || (
+    filteredGrupoModuloOptions.some((option) => String(option.id) === selectedGrupoModuloId)
+      ? selectedGrupoModuloId
+      : String(filteredGrupoModuloOptions[0]?.id ?? '')
+  );
 
   const fetchRegistro = useCallback(async () => {
     if (!grupoModuloId) {
@@ -1462,6 +1471,7 @@ export default function RegistroAuxiliarPage() {
 
   return (
     <Box sx={{ overflowAnchor: 'none' }}>
+      <IntranetDocumentTitle title={PAGE_TITLE} />
       <Stack
         direction={{ xs: 'column', lg: 'row' }}
         spacing={1}
@@ -1472,16 +1482,19 @@ export default function RegistroAuxiliarPage() {
         {!isDirectRegistro && !isDocente && (
           <>
             <Typography variant="h6" sx={{ fontWeight: 800, flex: 1, fontSize: 18, lineHeight: 1.15 }}>
-              Registro Auxiliar de Evaluacion
+              {PAGE_TITLE}
             </Typography>
             <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', lg: 'auto' }, minWidth: 0 }}>
-              <FormControl size="small" sx={{ width: 100, minWidth: 100, flexShrink: 0 }} disabled={loadingOptions || !semestreOptions.length}>
+              <FormControl size="small" sx={{ width: 100, minWidth: 100, flexShrink: 0 }} disabled={!semestreOptions.length}>
                 <InputLabel>Semestre</InputLabel>
                 <Select
                   label="Semestre"
                   value={semestreId}
                   MenuProps={selectMenuProps}
-                  onChange={(event) => setSemestreId(String(event.target.value))}
+                  onChange={(event) => {
+                    setSemestreId(String(event.target.value));
+                    setGrupoModuloId('');
+                  }}
                 >
                   {semestreId && !semestreOptions.some((item) => String(item.id) === semestreId) ? (
                     <MenuItem value={semestreId}>Semestre {semestreId}</MenuItem>

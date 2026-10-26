@@ -22,7 +22,7 @@ export default function CapacidadesTerminalesPage() {
       entityKey="capacidadTerminal"
       entityLabel="Capacidad Terminal"
       entityPluralLabel="Capacidades Terminales"
-      title="Gestion de Capacidades Terminales"
+      title="Capacidades Terminales"
       createLabel="Crear Capacidad Terminal"
       listCallableName="listCapacidadesTerminales"
       getCallableName="getCapacidadTerminal"

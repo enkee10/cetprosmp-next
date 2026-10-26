@@ -21,7 +21,7 @@ export default function IndicadoresCapacidadPage() {
       entityKey="indicadorCapacidad"
       entityLabel="Indicador de Capacidad"
       entityPluralLabel="Indicadores de Capacidad"
-      title="Gestion de Indicadores de Capacidad"
+      title="Indicadores de Capacidad"
       createLabel="Crear Indicador"
       listCallableName="listIndicadoresCapacidad"
       getCallableName="getIndicadorCapacidad"

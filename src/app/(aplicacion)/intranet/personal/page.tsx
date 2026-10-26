@@ -586,7 +586,7 @@ export default function PersonalPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Personal"
+      title="Personal"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button

@@ -21,7 +21,7 @@ export default function AprendizajesPage() {
       entityKey="aprendizaje"
       entityLabel="Aprendizaje"
       entityPluralLabel="Aprendizajes"
-      title="Gestion de Aprendizajes"
+      title="Aprendizajes"
       createLabel="Crear Aprendizaje"
       listCallableName="listAprendizajes"
       getCallableName="getAprendizaje"

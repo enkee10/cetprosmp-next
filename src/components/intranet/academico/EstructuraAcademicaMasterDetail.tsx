@@ -28,13 +28,15 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import LinkIcon from '@mui/icons-material/Link';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
-import { isSuperUserEmail, isSuperUserRole, isSuperUserTitle } from '@/lib/intranetPermissions';
+import { isDocenteRole, isSuperUserEmail, isSuperUserRole, isSuperUserTitle } from '@/lib/intranetPermissions';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 import {
@@ -362,6 +364,8 @@ function EditableValue({
   variant = 'caption',
   onSave,
   readOnly = false,
+  details,
+  properties,
 }: {
   value: EditableCellValue | undefined;
   target?: EditableCellTarget;
@@ -369,93 +373,138 @@ function EditableValue({
   variant?: 'caption' | 'body2';
   onSave: (target: EditableCellTarget, value: EditableCellValue) => Promise<void>;
   readOnly?: boolean;
+  details?: ReactNode;
+  properties?: ReactNode;
 }) {
   const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState(draftFromValue(value));
   const committingRef = useRef(false);
+  const editingRef = useRef(false);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!editing) return;
+    const input = inputRef.current;
+    input?.focus();
+    if (target?.valueType === 'text') input?.setSelectionRange(input.value.length, input.value.length);
+  }, [editing, target?.valueType]);
 
   useEffect(() => {
     if (!editing) setDraft(draftFromValue(value));
   }, [editing, value]);
 
   const commit = useCallback(async () => {
-    if (!target || committingRef.current) return;
+    if (!target || !editingRef.current || committingRef.current) return;
     committingRef.current = true;
+    setSaving(true);
     try {
       const nextValue = coerceDraftValue(draft, target.valueType);
       if (!sameEditableValue(value, nextValue)) {
         await onSave(target, nextValue);
       }
+      editingRef.current = false;
       setEditing(false);
     } catch {
       // The parent displays the save error; keep the draft available for correction.
     } finally {
       committingRef.current = false;
+      setSaving(false);
     }
   }, [draft, onSave, target, value]);
 
   const activeTarget = readOnly ? undefined : target;
-
-  if (activeTarget && editing) {
-    return (
-      <TextField
-        autoFocus
-        fullWidth
-        multiline={lines > 1 && activeTarget.valueType === 'text'}
-        maxRows={Math.max(lines, 2)}
-        size="small"
-        type={activeTarget.valueType === 'number' ? 'number' : 'text'}
-        value={draft}
-        onChange={(event) => setDraft(event.target.value)}
-        onClick={(event) => event.stopPropagation()}
-        onDoubleClick={(event) => event.stopPropagation()}
-        onBlur={() => void commit()}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            void commit();
-          }
-          if (event.key === 'Escape') {
-            event.preventDefault();
-            setDraft(draftFromValue(value));
-            setEditing(false);
-          }
-        }}
-        sx={{
-          '& .MuiInputBase-input': {
-            fontSize: variant === 'caption' ? '0.75rem' : '0.875rem',
-            py: 0.35,
-          },
-        }}
-      />
-    );
-  }
+  const beginEditing = () => {
+    if (!activeTarget) return;
+    setDraft(draftFromValue(value));
+    editingRef.current = true;
+    setEditing(true);
+  };
+  const cancel = () => {
+    if (committingRef.current) return;
+    editingRef.current = false;
+    setDraft(draftFromValue(value));
+    setEditing(false);
+  };
 
   return (
-    <Typography
-      component="span"
-      variant={variant}
-      onDoubleClick={(event) => {
-        if (!activeTarget) return;
-        event.preventDefault();
-        event.stopPropagation();
-        setEditing(true);
-      }}
-      title={activeTarget ? 'Doble clic para editar' : undefined}
-      sx={{
-        display: '-webkit-box',
-        WebkitBoxOrient: 'vertical',
-        WebkitLineClamp: lines,
-        overflow: 'hidden',
-        wordBreak: 'break-word',
-        lineHeight: 1.25,
-        cursor: activeTarget ? 'text' : 'inherit',
-        borderBottom: activeTarget ? '1px dotted transparent' : undefined,
-        '&:hover': activeTarget ? { borderBottomColor: 'text.secondary' } : undefined,
+    <Box
+      sx={{ flex: 1, minWidth: 0, alignSelf: 'flex-start', width: '100%' }}
+      onBlur={(event) => {
+        if (editingRef.current && !event.currentTarget.contains(event.relatedTarget as Node | null)) void commit();
       }}
     >
-      {displayText(value)}
-    </Typography>
+      {activeTarget && editing ? (
+        <TextField
+          autoFocus
+          inputRef={inputRef}
+          fullWidth
+          multiline={lines > 1 && activeTarget.valueType === 'text'}
+          maxRows={Math.max(lines, 2)}
+          size="small"
+          type={activeTarget.valueType === 'number' ? 'number' : 'text'}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onClick={(event) => event.stopPropagation()}
+          onDoubleClick={(event) => event.stopPropagation()}
+          slotProps={{ input: { readOnly: saving } }}
+          onKeyDown={(event) => {
+            event.stopPropagation();
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              cancel();
+            }
+          }}
+          sx={{
+            '& .MuiInputBase-input': {
+              fontSize: variant === 'caption' ? '0.75rem' : '0.875rem',
+              py: 0.35,
+            },
+          }}
+        />
+      ) : (
+        <Typography
+          component="span"
+          variant={variant}
+          onDoubleClick={(event) => {
+            if (!activeTarget) return;
+            event.preventDefault();
+            event.stopPropagation();
+            beginEditing();
+          }}
+          title={activeTarget ? 'Doble clic para editar' : undefined}
+          sx={{
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: lines,
+            overflow: 'hidden',
+            wordBreak: 'break-word',
+            lineHeight: 1.25,
+            cursor: activeTarget ? 'text' : 'inherit',
+            borderBottom: activeTarget ? '1px dotted transparent' : undefined,
+            '&:hover': activeTarget ? { borderBottomColor: 'text.secondary' } : undefined,
+          }}
+        >
+          {displayText(value)}
+        </Typography>
+      )}
+      {details}
+      {(properties || (activeTarget && editing)) && (
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5, mt: 0.65 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>{properties}</Box>
+          {activeTarget && editing && (
+            <Stack direction="row" sx={{ flexShrink: 0 }}
+              onMouseDown={(event) => { event.preventDefault(); event.stopPropagation(); }}
+              onClick={(event) => event.stopPropagation()}
+              onDoubleClick={(event) => event.stopPropagation()}
+            >
+              <IconButton size="small" color="success" aria-label="Guardar cambios" title="Guardar cambios" disabled={saving} onClick={() => void commit()}><CheckIcon fontSize="small" /></IconButton>
+              <IconButton size="small" color="error" aria-label="Cancelar cambios" title="Cancelar cambios" disabled={saving} onClick={cancel}><CloseIcon fontSize="small" /></IconButton>
+            </Stack>
+          )}
+        </Box>
+      )}
+    </Box>
   );
 }
 
@@ -477,7 +526,7 @@ function EditableCompetenciaTipo({ id, tipo, readOnly, onSave }: {
   }}>
     <MenuItem value="TECNICA">Técnica</MenuItem><MenuItem value="EMPLEABILIDAD">Para la empleabilidad</MenuItem>
   </Select>;
-  return <Chip size="small" sx={{ mt: 1 }} title={readOnly ? undefined : 'Doble clic para editar'} label={tipo === 'TECNICA' ? 'Técnica' : 'Para la empleabilidad'} onDoubleClick={event => { if (!readOnly) { event.stopPropagation(); setEditing(true); } }} />;
+  return <Chip size="small" title={readOnly ? undefined : 'Doble clic para editar'} label={tipo === 'TECNICA' ? 'Técnica' : 'Para la empleabilidad'} onDoubleClick={event => { if (!readOnly) { event.stopPropagation(); setEditing(true); } }} />;
 }
 
 
@@ -538,7 +587,7 @@ function EditableMetricChip({
         onKeyDown={(event) => {
           if (event.key === 'Enter') {
             event.preventDefault();
-            void commit();
+            event.stopPropagation();
           }
           if (event.key === 'Escape') {
             event.preventDefault();
@@ -652,7 +701,7 @@ function Panel({
             '& > .MuiList-root': { display: 'flex', flexWrap: 'nowrap', alignItems: 'stretch', gap: 1, p: 1, width: 'max-content', minWidth: '100%', boxSizing: 'border-box' },
             '& > .MuiList-root > .MuiListItemButton-root, & > .MuiList-root > .MuiListItem-root': { flex: '0 0 auto', width: cardWidth, minWidth: 0, border: '1px solid', borderColor: 'divider', borderRadius: 1 },
             '& > .MuiList-root > [data-empleabilidad="true"]': { borderWidth: 2, borderColor: 'text.secondary' },
-            '& .MuiListItemText-root': { minWidth: 0 },
+            '& .MuiListItemText-root': { minWidth: 0, my: 0, alignSelf: 'flex-start' },
           }}
         >
           {children}
@@ -683,7 +732,8 @@ export default function EstructuraAcademicaMasterDetail({
 }) {
   const { user } = useAuth();
   const showToolbar = Boolean(user && user.profileResolved !== false && (
-    Number(user.level) > 200
+    (Number(user.level) > 200 && !isDocenteRole(user.role))
+    || Number(user.level) >= 600
     || isSuperUserRole(user.role)
     || isSuperUserTitle(user.roleTitle)
     || isSuperUserEmail(user.email)
@@ -1272,7 +1322,7 @@ export default function EstructuraAcademicaMasterDetail({
           }}
         >
           <Panel
-            title="Modulo"
+            title="Módulos"
             count={filteredModulos.length}
             actions={allowCreate || allowEdit || allowDelete ? (
               <>
@@ -1318,19 +1368,19 @@ export default function EstructuraAcademicaMasterDetail({
                           variant="body2"
                           onSave={saveEditableCell}
                           readOnly={!allowEdit}
+                          details={
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.65, wordBreak: 'break-word' }}>
+                              {[planName(modulo), carreraName(modulo)].filter(Boolean).join(' / ') || `Plan ${modulo.planId ?? '-'}`}
+                            </Typography>
+                          }
+                          properties={
+                            <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
+                              <EditableMetricChip value={modulo.horas} target={{ entity: 'modulo', id: modulo.id, field: 'horas', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit} />
+                              <EditableMetricChip value={modulo.creditos} target={{ entity: 'modulo', id: modulo.id, field: 'creditos', valueType: 'number' }} prefix="Cr " onSave={saveEditableCell} readOnly={!allowEdit} />
+                              <Chip size="small" label={`UD ${unidadCount}`} />
+                            </Stack>
+                          }
                         />
-                      }
-                      secondary={
-                        <Stack spacing={0.65} sx={{ mt: 0.65 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-word' }}>
-                            {[planName(modulo), carreraName(modulo)].filter(Boolean).join(' / ') || `Plan ${modulo.planId ?? '-'}`}
-                          </Typography>
-                          <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
-                            <EditableMetricChip value={modulo.horas} target={{ entity: 'modulo', id: modulo.id, field: 'horas', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit} />
-                            <EditableMetricChip value={modulo.creditos} target={{ entity: 'modulo', id: modulo.id, field: 'creditos', valueType: 'number' }} prefix="Cr " onSave={saveEditableCell} readOnly={!allowEdit} />
-                            <Chip size="small" label={`UD ${unidadCount}`} />
-                          </Stack>
-                        </Stack>
                       }
                     />
                   </ListItemButton>
@@ -1339,7 +1389,7 @@ export default function EstructuraAcademicaMasterDetail({
             </List>
           </Panel>
 
-          <Panel title="Competencia" count={competencias.length} actions={<>
+          <Panel title="Competencias" count={competencias.length} actions={<>
             {allowCreate && <IconButton size="small" title="Crear competencia" disabled={actionLoading || !selectedModulo} onClick={handleCreateCompetencia}><AddIcon fontSize="small" /></IconButton>}
             {allowDelete && <IconButton size="small" title="Eliminar competencia" color="error" disabled={actionLoading || !selectedCompetencia} onClick={handleDeleteCompetencia}><DeleteOutlineIcon fontSize="small" /></IconButton>}
           </>}>
@@ -1363,8 +1413,8 @@ export default function EstructuraAcademicaMasterDetail({
                     <ListItemText
                       primaryTypographyProps={{ component: 'div' }}
                       secondaryTypographyProps={{ component: 'div' }}
-                      primary={<EditableValue value={competencia.nombre || 'Sin nombre'} target={{ entity: 'competencia', id: competencia.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit} />}
-                      secondary={<EditableCompetenciaTipo id={competencia.id} tipo={competencia.tipo} readOnly={!allowEdit} onSave={saveEditableCell} />}
+                      primary={<EditableValue value={competencia.nombre || 'Sin nombre'} target={{ entity: 'competencia', id: competencia.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit}
+                        properties={<EditableCompetenciaTipo id={competencia.id} tipo={competencia.tipo} readOnly={!allowEdit} onSave={saveEditableCell} />} />}
                     />
                   </ListItemButton>
                 ))}
@@ -1373,7 +1423,7 @@ export default function EstructuraAcademicaMasterDetail({
           </Panel>
 
           <Panel
-            title="Unidad"
+            title="Unidades"
             count={unidades.length}
             actions={allowCreate || allowEdit || allowDelete ? (
               <>
@@ -1469,27 +1519,27 @@ export default function EstructuraAcademicaMasterDetail({
                               variant="body2"
                               onSave={saveEditableCell}
                               readOnly={unidadReadOnly}
+                              properties={
+                                <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
+                                  {unidadComun ? <Chip size="small" label="Comun" color="secondary" variant="outlined" /> : null}
+                                  <EditableMetricChip
+                                    value={unidad.duracion}
+                                    target={{ entity: 'unidadDidactica', id: unidad.id, field: 'duracion', valueType: 'number' }}
+                                    suffix=" hr"
+                                    onSave={saveEditableCell}
+                                    readOnly={unidadReadOnly}
+                                  />
+                                  <EditableMetricChip
+                                    value={unidad.creditos}
+                                    target={{ entity: 'unidadDidactica', id: unidad.id, field: 'creditos', valueType: 'number' }}
+                                    prefix="Cr "
+                                    onSave={saveEditableCell}
+                                    readOnly={unidadReadOnly}
+                                  />
+                                  <Chip size="small" label={`CAP ${unidad.capacidadesTerminales.length}`} />
+                                </Stack>
+                              }
                             />
-                          </Stack>
-                        }
-                        secondary={
-                          <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
-                            {unidadComun ? <Chip size="small" label="Comun" color="secondary" variant="outlined" /> : null}
-                            <EditableMetricChip
-                              value={unidad.duracion}
-                              target={{ entity: 'unidadDidactica', id: unidad.id, field: 'duracion', valueType: 'number' }}
-                              suffix=" hr"
-                              onSave={saveEditableCell}
-                              readOnly={unidadReadOnly}
-                            />
-                            <EditableMetricChip
-                              value={unidad.creditos}
-                              target={{ entity: 'unidadDidactica', id: unidad.id, field: 'creditos', valueType: 'number' }}
-                              prefix="Cr "
-                              onSave={saveEditableCell}
-                              readOnly={unidadReadOnly}
-                            />
-                            <Chip size="small" label={`CAP ${unidad.capacidadesTerminales.length}`} />
                           </Stack>
                         }
                       />
@@ -1501,7 +1551,7 @@ export default function EstructuraAcademicaMasterDetail({
           </Panel>
 
           <Panel
-            title="Capacidad"
+            title="Capacidades"
             count={capacidades.length}
             actions={allowCreate || allowDelete ? (
               <>
@@ -1578,14 +1628,14 @@ export default function EstructuraAcademicaMasterDetail({
                             variant="body2"
                             onSave={saveEditableCell}
                             readOnly={!allowEdit || selectedUnidadIsComun}
+                            properties={
+                              <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
+                                {selectedUnidad?.competencia && <Chip size="small"
+                                  label={selectedUnidad.competencia.tipo === 'TECNICA' ? 'Técnica' : 'Para la empleabilidad'} title={selectedUnidad.competencia.nombre} />}
+                                <Chip size="small" label={`IND ${capacidad.indicadoresCapacidad.length}`} />
+                              </Stack>
+                            }
                           />
-                        </Stack>
-                      }
-                      secondary={
-                        <Stack direction="row" spacing={0.5} sx={{ mt: 0.65, flexWrap: 'wrap', rowGap: 0.5 }}>
-                          {selectedUnidad?.competencia && <Chip size="small"
-                            label={selectedUnidad.competencia.tipo === 'TECNICA' ? 'Técnica' : 'Para la empleabilidad'} title={selectedUnidad.competencia.nombre} />}
-                          <Chip size="small" label={`IND ${capacidad.indicadoresCapacidad.length}`} />
                         </Stack>
                       }
                     />
@@ -1597,7 +1647,7 @@ export default function EstructuraAcademicaMasterDetail({
           </Panel>
 
           <Panel
-            title="Indicador"
+            title="Indicadores"
             count={indicadores.length}
             actions={allowCreate || allowDelete ? (
               <>
@@ -1682,7 +1732,7 @@ export default function EstructuraAcademicaMasterDetail({
             )}
           </Panel>
 
-          <Panel title="Sesión" count={sesiones.length} cardWidth={{ xs: 280, sm: 360 }} actions={<>
+          <Panel title="Sesiones" count={sesiones.length} cardWidth={{ xs: 280, sm: 360 }} actions={<>
             {allowCreate && <IconButton size="small" title="Crear sesión" disabled={actionLoading || !selectedIndicador || selectedUnidadIsComun} onClick={handleCreateSesion}><AddIcon fontSize="small" /></IconButton>}
             {allowDelete && <IconButton size="small" title="Eliminar sesión" color="error" disabled={actionLoading || !selectedSesion || selectedUnidadIsComun} onClick={handleDeleteSesion}><DeleteOutlineIcon fontSize="small" /></IconButton>}
           </>}>
@@ -1700,8 +1750,8 @@ export default function EstructuraAcademicaMasterDetail({
                       </Stack>
                       <Box>
                         <Typography variant="caption" color="text.secondary">Nombre de sesión</Typography>
-                        <EditableValue value={sesion.nombre || 'Sin nombre.'} target={{ entity: 'actividad', id: sesion.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || selectedUnidadIsComun} />
-                        <EditableMetricChip value={sesion.duracion ?? null} target={{ entity: 'actividad', id: sesion.id, field: 'duracion', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit || selectedUnidadIsComun} />
+                        <EditableValue value={sesion.nombre || 'Sin nombre.'} target={{ entity: 'actividad', id: sesion.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || selectedUnidadIsComun}
+                          properties={<EditableMetricChip value={sesion.duracion ?? null} target={{ entity: 'actividad', id: sesion.id, field: 'duracion', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit || selectedUnidadIsComun} />} />
                       </Box>
                       {(['contenido', 'material'] as const).map(kind => <SesionItemList key={kind} kind={kind} items={kind === 'contenido' ? sesion.contenidos : sesion.materiales} options={kind === 'material' ? materialOptions : []} canEdit={allowEdit && !selectedUnidadIsComun} disabled={actionLoading} renderText={item => kind === 'material' ? <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{item.texto}</Typography> : <EditableValue value={item.texto} target={{ entity: 'actividadContenido', id: item.id, field: 'texto', valueType: 'text' }} lines={6} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || selectedUnidadIsComun} />} onAdd={data => saveSesionItem(sesion.id, kind, 'add', data)} onRemove={itemId => saveSesionItem(sesion.id, kind, 'remove', { itemId })} onReorder={items => saveSesionItem(sesion.id, kind, 'reorder', { items })} />)}
                     </Stack>

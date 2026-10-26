@@ -28,11 +28,13 @@ import { GridColDef, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { httpsCallable } from 'firebase/functions';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import IntranetDocumentTitle from '@/components/intranet/IntranetDocumentTitle';
 import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import { auth, functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
 type TipoDocumento = 'acta' | 'nomina';
+const PAGE_TITLE = 'Nominas y Actas';
 type DownloadFormat = 'pdf' | 'excel';
 
 type SemestreOption = {
@@ -391,10 +393,11 @@ export default function RegistroAcademicosPage() {
 
   return (
     <Box sx={{ maxWidth: 1180, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <IntranetDocumentTitle title={PAGE_TITLE} />
       <Stack direction="row" spacing={1.25} alignItems="center">
         <ArticleIcon color="primary" />
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Nominas y Actas
+          {PAGE_TITLE}
         </Typography>
       </Stack>
 

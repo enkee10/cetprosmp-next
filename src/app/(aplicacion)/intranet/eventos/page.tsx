@@ -249,7 +249,7 @@ export default function EventosPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Eventos"
+      title="Eventos"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button

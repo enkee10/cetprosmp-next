@@ -449,7 +449,7 @@ export default function PlanesPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Planes"
+      title="Planes"
       commands={
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
           <MultiSelectWithActions

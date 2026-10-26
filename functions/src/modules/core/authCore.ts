@@ -12,6 +12,11 @@ export const authAdmin = getAuth(app);
 export const DEFAULT_ROLE_ID = 1;
 export const STUDENT_ROLE_ID = 3;
 export const TEACHER_ROLE_ID = 4;
+export const TEACHER_COORDINATOR_ROLE_ID = 10;
+export function isDocenteRole(role: string | number | null | undefined): boolean {
+  const roleId = Number(role);
+  return roleId === TEACHER_ROLE_ID || roleId === TEACHER_COORDINATOR_ROLE_ID;
+}
 export const DEFAULT_LEVEL = 0;
 const SUPERADMIN_EMAIL = "enkee03@cetprosmp.edu.pe";
 const SUPERADMIN_ROLE = "600";

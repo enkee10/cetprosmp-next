@@ -40,7 +40,7 @@ export default function ActividadesPage() {
       entityKey="actividad"
       entityLabel="Actividad"
       entityPluralLabel="Actividades"
-      title="Gestion de Actividades"
+      title="Actividades"
       createLabel="Crear Actividad"
       listCallableName="listActividades"
       getCallableName="getActividad"

@@ -24,7 +24,7 @@ const columns = [
 
 export default function CompetenciasPage() {
   return <AcademicCrudPage rowsKey="competencias" entityKey="competencia" entityLabel="Competencia"
-    entityPluralLabel="Competencias" title="Gestion de Competencias" createLabel="Crear Competencia"
+    entityPluralLabel="Competencias" title="Competencias" createLabel="Crear Competencia"
     listCallableName="listCompetencias" getCallableName="getCompetencia" saveCallableName="createOrUpdateCompetencia"
     deleteCallableName="deleteCompetencia" fields={fields} columns={columns} labelField="nombre" modalMaxWidth={800} />;
 }

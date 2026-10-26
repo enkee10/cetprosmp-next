@@ -1,3 +1,4 @@
+import { isDocenteRole } from "./authCore.js";
 import { https } from "firebase-functions/v1";
 import { dataConnect } from "./dataConnectCore.js";
 import { getDocenteNombreForGrupoModulo } from "./grupoModuloNombre.js";
@@ -98,7 +99,7 @@ export async function loadCurrentDocenteModulos(uid: string) {
 
 export const listDocenteMenuModulos = https.onCall(async (data, context) => {
   requireAuthenticated(context);
-  if (getRequesterRoleId(context) !== 4) {
+  if (!isDocenteRole(getRequesterRoleId(context))) {
     throw new https.HttpsError("permission-denied", "Esta vista es solo para docentes.");
   }
   const entities = [

@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import type { AlertColor } from '@mui/material';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
+import IntranetDocumentTitle from '@/components/intranet/IntranetDocumentTitle';
 import {
   ColumnVisibilityContext,
   type ColumnToggleItem,
@@ -43,6 +44,7 @@ const IntranetListLayout: React.FC<IntranetListLayoutProps> = ({
         bgcolor: 'background.paper',
       }}
     >
+      {typeof title === 'string' && <IntranetDocumentTitle title={title} />}
       <AutoDismissAlert
         message={message}
         severity={messageSeverity}

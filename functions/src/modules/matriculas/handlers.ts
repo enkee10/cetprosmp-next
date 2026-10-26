@@ -17,7 +17,7 @@ import {
   toNumber,
   toNumberOrNull,
 } from "../core/userMappers.js";
-import { authAdmin, DEFAULT_LEVEL, STUDENT_ROLE_ID } from "../core/authCore.js";
+import { authAdmin, DEFAULT_LEVEL, STUDENT_ROLE_ID, isDocenteRole } from "../core/authCore.js";
 import {
   dataConnect,
   getRoleById,
@@ -2245,7 +2245,7 @@ function matchesSemestreTitulo(value: string | null | undefined, expected: strin
 }
 
 function isDocenteMatriculaRequester(context: https.CallableContext) {
-  return !isSuperUserContext(context) && getRequesterRoleId(context) === 4;
+  return !isSuperUserContext(context) && isDocenteRole(getRequesterRoleId(context));
 }
 
 function getMatriculaGrupoModuloSemestreId(item: MatriculaDocenteGrupoModulo) {

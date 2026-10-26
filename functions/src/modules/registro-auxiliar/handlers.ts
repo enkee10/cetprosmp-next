@@ -9,7 +9,7 @@ import {
   getIdFromKeyOutput,
   toNumber,
 } from "../core/userMappers.js";
-import { authAdmin, DEFAULT_LEVEL, STUDENT_ROLE_ID, TEACHER_ROLE_ID } from "../core/authCore.js";
+import { authAdmin, DEFAULT_LEVEL, STUDENT_ROLE_ID, isDocenteRole } from "../core/authCore.js";
 import { getRoleById, upsertDataConnectUserByDocumentId } from "../core/dataConnectCore.js";
 import {
   INSERT_MATRICULA_MUTATION,
@@ -756,7 +756,7 @@ function resolveSemestreTituloVigente(
 }
 
 function isDocenteRegistroRequester(context: https.CallableContext) {
-  return !isSuperUserContext(context) && getRequesterRoleId(context) === TEACHER_ROLE_ID;
+  return !isSuperUserContext(context) && isDocenteRole(getRequesterRoleId(context));
 }
 
 function getPersonalIdsForUserId(

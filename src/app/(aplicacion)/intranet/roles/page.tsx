@@ -166,7 +166,7 @@ export default function RolesPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Roles"
+      title="Roles"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button variant="outlined" onClick={handleCreateRole}>

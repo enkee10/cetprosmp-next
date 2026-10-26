@@ -268,7 +268,7 @@ export default function ActEconomicasPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Actividades Economicas"
+      title="Actividades Economicas"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button variant="outlined" onClick={handleCreateActEconomica}>

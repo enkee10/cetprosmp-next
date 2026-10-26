@@ -1,17 +1,17 @@
 'use client';
 
+import { isDocenteRole } from '@/lib/intranetPermissions';
+
 import { useEffect } from 'react';
 import { Box, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import EstructuraAcademicaMasterDetail from '@/components/intranet/academico/EstructuraAcademicaMasterDetail';
 import { useAuth } from '@/context/AuthContext';
 
-const TEACHER_ROLE_ID = 4;
-
 export default function EstructuraAcademicaPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const isDocente = Number(user?.role ?? 0) === TEACHER_ROLE_ID && Number(user?.level ?? 0) < 600;
+  const isDocente = isDocenteRole(user?.role) && Number(user?.level ?? 0) < 600;
 
   useEffect(() => {
     if (!loading && isDocente) {

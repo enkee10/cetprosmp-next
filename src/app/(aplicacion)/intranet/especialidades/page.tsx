@@ -331,7 +331,7 @@ export default function EspecialidadesPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Especialidades"
+      title="Especialidades"
       commands={
         <Stack direction="row" spacing={1.5}>
           <Button variant="outlined" onClick={handleCreateEspecialidad}>

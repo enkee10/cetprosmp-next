@@ -9,7 +9,7 @@ export default function SemestresPage() {
       entityKey="semestre"
       entityLabel="Semestre"
       entityPluralLabel="Semestres"
-      title="Gestion de Semestres"
+      title="Semestres"
       createLabel="Crear Semestre"
       listCallableName="listSemestres"
       getCallableName="getSemestre"

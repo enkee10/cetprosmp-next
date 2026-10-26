@@ -1,3 +1,4 @@
+import { isDocenteRole } from "../core/authCore.js";
 import { displayMaterialLink, listMaterialCatalog } from "../materiales/handlers.js";
 import { updateCurricularExtraCell, createCurricularExtra, deleteCurricularExtra, reorderCurricularExtra } from "./curricularEditing.js";
 import { https } from "firebase-functions/v1";
@@ -586,7 +587,6 @@ type EstructuraAcademicaDocenteGrupoModulo = {
 };
 
 type EstructuraAcademicaActionEntity = "modulo" | "competencia" | "actividad" | "unidadDidactica" | "capacidadTerminal" | "indicadorCapacidad";
-const TEACHER_ROLE_ID = 4;
 
 function groupByNumber<T>(items: T[], keySelector: (item: T) => number | null | undefined) {
   const grouped = new Map<number, T[]>();
@@ -708,13 +708,13 @@ function getPersonalIdsForUserId(
 
 function requireDocenteEstructuraAcademica(context: https.CallableContext) {
   requireAuthenticated(context);
-  if (getRequesterRoleId(context) !== TEACHER_ROLE_ID) {
+  if (!isDocenteRole(getRequesterRoleId(context))) {
     throw new https.HttpsError("permission-denied", "Esta vista es solo para docentes.");
   }
 }
 
 function isDocenteNoSuperUser(context: https.CallableContext) {
-  return getRequesterRoleId(context) === TEACHER_ROLE_ID && Number(context.auth?.token?.level ?? 0) < 600;
+  return isDocenteRole(getRequesterRoleId(context)) && Number(context.auth?.token?.level ?? 0) < 600;
 }
 
 function attachPlanRelationsToModulo(

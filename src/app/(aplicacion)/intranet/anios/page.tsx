@@ -9,7 +9,7 @@ export default function AniosPage() {
       entityKey="anio"
       entityLabel="Año"
       entityPluralLabel="Años"
-      title="Gestión de Años"
+      title="Años"
       createLabel="Crear Año"
       listCallableName="listAnios"
       getCallableName="getAnio"

@@ -1,5 +1,7 @@
 'use client';
 
+import { isDocenteRole } from '@/lib/intranetPermissions';
+
 import { useEffect, useMemo, useState } from 'react';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -38,7 +40,6 @@ type DocenteMenuData = {
   currentSemestreKey: string;
 };
 
-const TEACHER_ROLE_ID = 4;
 const docenteMenuCache = new Map<string, DocenteMenuData>();
 const docenteMenuRequests = new Map<string, Promise<DocenteMenuData>>();
 
@@ -278,7 +279,7 @@ export function useIntranetMenuSections(sourceSections: IntranetMenuSection[] = 
   const { user } = useAuth();
   const { settings, loading: loadingSettings } = useAppSettings();
   const { can, filterSections, loading: loadingPermissions, permissions } = useIntranetPermissions();
-  const isDocente = Number(user?.role ?? 0) === TEACHER_ROLE_ID && Number(user?.level ?? 0) < 600;
+  const isDocente = isDocenteRole(user?.role) && Number(user?.level ?? 0) < 600;
   const canViewRegistroAuxiliar = can('registro-auxiliar', 'view');
   const canViewMatriculas = can('matriculas', 'view');
   const canViewEstructuraAcademica = can('estructura-academica', 'view');

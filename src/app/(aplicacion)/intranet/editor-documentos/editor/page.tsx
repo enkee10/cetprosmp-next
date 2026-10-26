@@ -1,6 +1,8 @@
 import { Suspense } from 'react';
 import { EditorImagenesPage } from '@/components/intranet/editor-documentos/EditorDocumentosClient';
 
+export const metadata = { title: 'Editor de Imagenes' };
+
 export default function EditorImagenesRoutePage() {
   return (
     <Suspense fallback={null}>

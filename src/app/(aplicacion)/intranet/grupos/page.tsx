@@ -357,7 +357,7 @@ export default function GruposPage() {
     <IntranetListLayout
       message={error}
       messageSeverity="error"
-      title="Gestion de Grupos"
+      title="Grupos"
       commands={
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ sm: 'center' }}>
           <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 190 } }}>

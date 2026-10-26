@@ -113,7 +113,7 @@ export default function GrupoModulosPage() {
       entityKey="grupoModulo"
       entityLabel="Grupo-Modulo"
       entityPluralLabel="Grupo-Modulos"
-      title="Gestion de Grupo-Modulo"
+      title="Grupo-Modulo"
       createLabel="Crear Grupo-Modulo"
       listCallableName="listGrupoModulos"
       getCallableName="getGrupoModulo"

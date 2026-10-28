@@ -1481,6 +1481,15 @@ extend type Aprendizaje {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Aprendizaje.indicadorCapacidadId", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Aprendizaje` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  orden_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Aprendizaje.orden", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Aprendizaje` table where the `sigla` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   sigla_count(
@@ -1508,6 +1517,15 @@ extend type Aprendizaje {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Aprendizaje.indicadorCapacidadId", purpose: QUERY_SUM)
   """
+  ✨ Sum the `orden` field in the `Aprendizaje` table.
+  """
+  orden_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Aprendizaje.orden", purpose: QUERY_SUM)
+  """
   ✨ Average the `id` field in the `Aprendizaje` table.
   """
   id_avg(
@@ -1526,6 +1544,15 @@ extend type Aprendizaje {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Aprendizaje.indicadorCapacidadId", purpose: QUERY_AVG)
   """
+  ✨ Average the `orden` field in the `Aprendizaje` table.
+  """
+  orden_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Aprendizaje.orden", purpose: QUERY_AVG)
+  """
   ✨ Minimum of the `id` field in the `Aprendizaje` table.
   """
   id_min: Int @fdc_generated(from: "Aprendizaje.id", purpose: QUERY_MIN)
@@ -1534,6 +1561,10 @@ extend type Aprendizaje {
   """
   indicadorCapacidadId_min: Int @fdc_generated(from: "Aprendizaje.indicadorCapacidadId", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `orden` field in the `Aprendizaje` table.
+  """
+  orden_min: Int @fdc_generated(from: "Aprendizaje.orden", purpose: QUERY_MIN)
+  """
   ✨ Maximum of the `id` field in the `Aprendizaje` table.
   """
   id_max: Int @fdc_generated(from: "Aprendizaje.id", purpose: QUERY_MAX)
@@ -1541,6 +1572,10 @@ extend type Aprendizaje {
   ✨ Maximum of the `indicadorCapacidadId` field in the `Aprendizaje` table.
   """
   indicadorCapacidadId_max: Int @fdc_generated(from: "Aprendizaje.indicadorCapacidadId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `orden` field in the `Aprendizaje` table.
+  """
+  orden_max: Int @fdc_generated(from: "Aprendizaje.orden", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """

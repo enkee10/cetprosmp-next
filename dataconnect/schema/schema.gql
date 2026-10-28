@@ -261,6 +261,7 @@ type IndicadorCapacidad @table(name: "indicadores_capacidad", singular: "indicad
 
 type Aprendizaje @table(name: "aprendizajes") {
   id: Int! @col(dataType: "serial")
+  orden: Int
   descripcion: String
   sigla: String
 

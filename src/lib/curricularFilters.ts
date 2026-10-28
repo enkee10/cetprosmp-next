@@ -155,5 +155,5 @@ export function filterCurricularModules<T extends CurricularModule>(
     return [{ ...module, planId: plan.id, plan,
       planModuloId: relation?.id ?? (module.planId === plan.id ? module.planModuloId : null),
       orden: relation?.orden ?? module.orden } as T];
-  }).sort((a, b) => comparePlans(a.plan ?? {}, b.plan ?? {}) || (a.orden ?? Infinity) - (b.orden ?? Infinity) || a.id - b.id);
+  }).sort((a, b) => comparePlans(a.plan ?? {}, b.plan ?? {}) || (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id);
 }

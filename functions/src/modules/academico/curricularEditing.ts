@@ -5,11 +5,12 @@ import { requirePermission } from "../core/permissions.js";
 import { getIdFromKeyOutput, toNumberOrNull } from "../core/userMappers.js";
 import { expectedCompetenciaType } from "../competencias/model.js";
 import { getModuloCompetenciaContext } from "../competencias/service.js";
+import { nextCurricularChildOrder, nextCurricularOrder, readCurricularCreatedItem } from "./curricularCreation.js";
 
 type Item = { id: number; orden: number; texto: string; materialId?: number | null; material?: { nombre: string } | null };
 type Competencia = { id: number; moduloId: number; nombre: string; tipo: "TECNICA" | "EMPLEABILIDAD"; orden?: number | null };
-type Sesion = { id: number; orden?: number | null; numeroSesion?: number | null; moduloId?: number | null; aprendizaje: { indicadorCapacidadId: number } };
-const nextOrder = (items: Array<{ id: number; orden?: number | null }>) => Math.max(0, ...items.map(item => item.orden ?? item.id)) + 1;
+type Sesion = { id: number; orden?: number | null; numeroSesion?: number | null; moduloId?: number | null; aprendizaje: { id: number; indicadorCapacidadId: number } };
+const nextOrder = nextCurricularOrder;
 const positive = (value: unknown, label: string) => {
   const id = toNumberOrNull(value);
   if (!id || !Number.isInteger(id) || id <= 0) throw new https.HttpsError("invalid-argument", `${label} es obligatorio.`);
@@ -22,7 +23,7 @@ const COMPETENCIA_QUERY = `query CurricularCompetencia($id:Int!) {
 }`;
 const SESIONES_QUERY = `query CurricularSesiones($indicadorId:Int!) {
   actividads(where:{aprendizaje:{indicadorCapacidadId:{eq:$indicadorId}}},limit:5000) {
-    id orden numeroSesion moduloId aprendizaje { indicadorCapacidadId }
+    id orden numeroSesion moduloId aprendizaje { id indicadorCapacidadId }
   }
 }`;
 const REORDER_MODULOS_QUERY = `query CurricularModuleOrder($ids:[Int!]!,$planId:Int!) {
@@ -65,17 +66,35 @@ export async function createCurricularExtra(entity: string, data: Record<string,
     if (!context.programa && tipo === "EMPLEABILIDAD") throw new https.HttpsError("failed-precondition", "Este modulo solo admite competencias tecnicas.");
     const result = await dataConnect.executeGraphql<{ competencia_insert: unknown }, Record<string, unknown>>(`mutation CurricularCreateCompetencia($data:Competencia_Data! @allow(fields:"nombre tipo moduloId orden")) { competencia_insert(data:$data) }`,
       { variables: { data: { nombre: "Nueva competencia", tipo, moduloId, orden: nextOrder(context.competencias) } } });
-    return { id: getIdFromKeyOutput(result.data.competencia_insert) };
+    return readCurricularCreatedItem(entity, getIdFromKeyOutput(result.data.competencia_insert));
+  }
+  if (entity === "aprendizaje") {
+    const indicadorId = positive(data.indicadorCapacidadId, "Indicador");
+    const orden = await nextCurricularChildOrder("aprendizaje", indicadorId);
+    const result = await dataConnect.executeGraphql<{ aprendizaje_insert: unknown }, { indicadorId: number; orden: number }>(`mutation CurricularCreateAprendizaje($indicadorId:Int!,$orden:Int!) {
+      aprendizaje_insert(data:{descripcion:"Nuevo aprendizaje",indicadorCapacidadId:$indicadorId,orden:$orden})
+    }`, { variables: { indicadorId, orden } });
+    return readCurricularCreatedItem(entity, getIdFromKeyOutput(result.data.aprendizaje_insert));
   }
   const moduloId = positive(data.moduloId, "Modulo");
   const indicadorId = positive(data.indicadorCapacidadId, "Indicador");
   const current = await dataConnect.executeGraphql<{ actividads: Sesion[] }, { indicadorId: number }>(SESIONES_QUERY, { variables: { indicadorId } });
   const orden = nextOrder(current.data.actividads.filter(item => item.moduloId == null || item.moduloId === moduloId));
-  const result = await dataConnect.executeGraphql<{ sesion: unknown }, Record<string, unknown>>(`mutation CurricularCreateSesion($moduloId:Int!,$indicadorId:Int!,$orden:Int!) @transaction {
-    aprendizaje:aprendizaje_insert(data:{descripcion:"Nuevo aprendizaje",indicadorCapacidadId:$indicadorId})
+  if (data.aprendizajeId != null) {
+    const aprendizajeId = positive(data.aprendizajeId, "Aprendizaje");
+    const siblings = current.data.actividads.filter(item => item.aprendizaje.id === aprendizajeId && (item.moduloId == null || item.moduloId === moduloId));
+    const result = await dataConnect.executeGraphql<{ sesion: unknown }, Record<string, unknown>>(`mutation CurricularCreateSesionInLearning($moduloId:Int!,$indicadorId:Int!,$aprendizajeId:Int!,$orden:Int!) @transaction {
+      query { aprendizaje(id:$aprendizajeId) @check(expr:"this != null && this.indicadorCapacidadId == vars.indicadorId",message:"El aprendizaje no pertenece a este indicador.") { id indicadorCapacidadId } }
+      sesion:actividad_insert(data:{nombre:"Nueva sesion",aprendizajeId:$aprendizajeId,moduloId:$moduloId,orden:$orden})
+    }`, { variables: { moduloId, indicadorId, aprendizajeId, orden: nextOrder(siblings) } });
+    return readCurricularCreatedItem(entity, getIdFromKeyOutput(result.data.sesion));
+  }
+  const learningOrder = await nextCurricularChildOrder("aprendizaje", indicadorId);
+  const result = await dataConnect.executeGraphql<{ sesion: unknown }, Record<string, unknown>>(`mutation CurricularCreateSesion($moduloId:Int!,$indicadorId:Int!,$orden:Int!,$learningOrder:Int!) @transaction {
+    aprendizaje:aprendizaje_insert(data:{descripcion:"Nuevo aprendizaje",indicadorCapacidadId:$indicadorId,orden:$learningOrder})
     sesion:actividad_insert(data:{nombre:"Nueva sesion",aprendizajeId_expr:"response.aprendizaje.id",moduloId:$moduloId,orden:$orden})
-  }`, { variables: { moduloId, indicadorId, orden } });
-  return { id: getIdFromKeyOutput(result.data.sesion) };
+  }`, { variables: { moduloId, indicadorId, orden, learningOrder } });
+  return readCurricularCreatedItem(entity, getIdFromKeyOutput(result.data.sesion));
 }
 
 export async function deleteCurricularExtra(entity: string, data: Record<string, unknown>) {
@@ -118,12 +137,14 @@ export async function reorderCurricularExtra(entity: string, items: Array<{ id: 
     const current = await dataConnect.executeGraphql<{ competencias: Competencia[] }, { moduloId: number }>(`query CurricularCompetenciaOrder($moduloId:Int!) { competencias(where:{moduloId:{eq:$moduloId}},limit:10000) { id tipo moduloId orden nombre } }`, { variables: { moduloId } });
     const ordered = items.slice().sort((a, b) => a.orden - b.orden).map(item => current.data.competencias.find(row => row.id === item.id));
     if (ordered.some(item => !item)) throw new https.HttpsError("failed-precondition", "La competencia no pertenece a este modulo.");
-    let empleabilidad = false;
-    for (const row of ordered) {
-      if (row!.tipo === "EMPLEABILIDAD") empleabilidad = true;
-      else if (empleabilidad) throw new https.HttpsError("failed-precondition", "Las competencias tecnicas deben ir primero.");
-    }
     for (const item of items) fields.push(`c${item.id}:competencia_update(id:${item.id},data:{orden:${item.orden}})`);
+  } else if (entity === "aprendizaje") {
+    const indicadorId = positive(data.indicadorCapacidadId, "Indicador");
+    const current = await dataConnect.executeGraphql<{ aprendizajes: Array<{ id: number }> }, { indicadorId: number }>(`query CurricularLearningOrder($indicadorId:Int!) {
+      aprendizajes(where:{indicadorCapacidadId:{eq:$indicadorId}},limit:10000) { id }
+    }`, { variables: { indicadorId } });
+    if (items.some(item => !current.data.aprendizajes.some(row => row.id === item.id))) throw new https.HttpsError("failed-precondition", "El aprendizaje no pertenece al indicador.");
+    for (const item of items) fields.push(`a${item.id}:aprendizaje_update(id:${item.id},data:{orden:${item.orden}})`);
   } else {
     const moduloId = positive(data.moduloId, "Modulo");
     const indicadorId = positive(data.indicadorCapacidadId, "Indicador");

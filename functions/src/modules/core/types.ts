@@ -858,6 +858,7 @@ export interface DataConnectIndicadorCapacidadInput {
 
 export interface DataConnectAprendizaje {
   id: number;
+  orden?: number | null;
   descripcion?: string | null;
   sigla?: string | null;
   indicadorCapacidadId?: number | null;

@@ -1,6 +1,7 @@
 import { isDocenteRole } from "../core/authCore.js";
 import { displayMaterialLink, listMaterialCatalog } from "../materiales/handlers.js";
 import { updateCurricularExtraCell, createCurricularExtra, deleteCurricularExtra, reorderCurricularExtra } from "./curricularEditing.js";
+import { nextCurricularChildOrder, nextCurricularOrder, readCurricularCreatedItem, readCurricularUnitAssignments } from "./curricularCreation.js";
 import { https } from "firebase-functions/v1";
 import { parseActividadList, saveActividadLists } from "./actividadLists.js";
 import {
@@ -320,8 +321,8 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
       sigla
       orden
       capacidadTerminalId
-      aprendizajes: aprendizajes_on_indicadorCapacidad(orderBy: { id: ASC }, limit: 1000) {
-        id descripcion sigla indicadorCapacidadId
+      aprendizajes: aprendizajes_on_indicadorCapacidad(orderBy: [{ orden: ASC }, { id: ASC }], limit: 1000) {
+        id descripcion sigla orden indicadorCapacidadId
         actividades: actividads_on_aprendizaje(orderBy: [{ numeroSesion: ASC }, { orden: ASC }, { id: ASC }], limit: 5000) {
           id nombre numeroSesion orden moduloId aprendizajeId duracion fecha
           contenidos: actividadContenidos_on_actividad(orderBy: { orden: ASC }, limit: 1000) { id orden texto }
@@ -454,8 +455,8 @@ const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
       sigla
       orden
       capacidadTerminalId
-      aprendizajes: aprendizajes_on_indicadorCapacidad(orderBy: { id: ASC }, limit: 1000) {
-        id descripcion sigla indicadorCapacidadId
+      aprendizajes: aprendizajes_on_indicadorCapacidad(orderBy: [{ orden: ASC }, { id: ASC }], limit: 1000) {
+        id descripcion sigla orden indicadorCapacidadId
         actividades: actividads_on_aprendizaje(orderBy: [{ numeroSesion: ASC }, { orden: ASC }, { id: ASC }], limit: 5000) {
           id nombre numeroSesion orden moduloId aprendizajeId duracion fecha
           contenidos: actividadContenidos_on_actividad(orderBy: { orden: ASC }, limit: 1000) { id orden texto }
@@ -498,11 +499,13 @@ const GET_ESTRUCTURA_ACADEMICA_DOCENTE_MENU_QUERY = `
 
 const LIST_PLAN_MODULO_RELATIONS_BY_PLAN_QUERY = `
   query ListPlanModuloRelationsByPlan($planId: Int!) {
+    modulos(where: { planId: { eq: $planId } }, limit: 1000) { id orden }
     planModulos(where: { planId: { eq: $planId } }, limit: 1000) {
       id
       orden
       planId
       moduloId
+      modulo { id orden }
     }
   }
 `;
@@ -577,7 +580,7 @@ type EstructuraAcademicaDocenteGrupoModulo = {
   modulo?: EstructuraModulo | null;
 };
 
-type EstructuraAcademicaActionEntity = "modulo" | "competencia" | "actividad" | "unidadDidactica" | "capacidadTerminal" | "indicadorCapacidad";
+type EstructuraAcademicaActionEntity = "modulo" | "competencia" | "actividad" | "aprendizaje" | "unidadDidactica" | "capacidadTerminal" | "indicadorCapacidad";
 
 function groupByNumber<T>(items: T[], keySelector: (item: T) => number | null | undefined) {
   const grouped = new Map<number, T[]>();
@@ -942,11 +945,11 @@ export const updateEstructuraAcademicaCell = https.onCall(async (data, context) 
   }
 });
 
-type ReorderAcademicEntity = "competenciaUnidadDidactica" | "capacidadTerminal" | "indicadorCapacidad" | "modulo" | "competencia" | "actividad";
+type ReorderAcademicEntity = "competenciaUnidadDidactica" | "capacidadTerminal" | "indicadorCapacidad" | "modulo" | "competencia" | "actividad" | "aprendizaje";
 
 function parseReorderAcademicEntity(value: unknown): ReorderAcademicEntity {
   const entity = String(value ?? "");
-  if (["modulo", "competencia", "actividad", "competenciaUnidadDidactica", "capacidadTerminal", "indicadorCapacidad"].includes(entity)) {
+  if (["modulo", "competencia", "actividad", "aprendizaje", "competenciaUnidadDidactica", "capacidadTerminal", "indicadorCapacidad"].includes(entity)) {
     return entity as ReorderAcademicEntity;
   }
   throw new https.HttpsError("invalid-argument", "Invalid reorder entity.");
@@ -959,7 +962,7 @@ function parseReorderItems(value: unknown) {
   return value.map((item, index) => {
     const id = toNumber((item as { id?: unknown } | null)?.id, -1);
     const orden = toNumber((item as { orden?: unknown } | null)?.orden, index + 1);
-    if (id <= 0 || orden <= 0) {
+    if (!Number.isInteger(id) || !Number.isInteger(orden) || id <= 0 || orden <= 0) {
       throw new https.HttpsError("invalid-argument", "Each item must include valid id and orden.");
     }
     return { id, orden };
@@ -973,29 +976,11 @@ export const reorderEstructuraAcademicaItems = https.onCall(async (data, context
   const items = parseReorderItems(data?.items);
 
   try {
-    if (["modulo", "competencia", "actividad"].includes(entity)) return await reorderCurricularExtra(entity, items, data);
-    await Promise.all(items.map(({ id, orden }) => {
-      if (entity === "competenciaUnidadDidactica") {
-        return dataConnect.executeGraphql<
-          { competenciaUnidadDidactica_update: unknown },
-          { id: number; data: DataConnectCompetenciaUnidadDidacticaInput }
-        >(UPDATE_COMPETENCIA_UNIDAD_DIDACTICA_MUTATION, {
-          variables: { id, data: { orden } as unknown as DataConnectCompetenciaUnidadDidacticaInput },
-        });
-      }
-      if (entity === "capacidadTerminal") {
-        return dataConnect.executeGraphql<
-          { capacidadTerminal_update: unknown },
-          { id: number; data: DataConnectCapacidadTerminalInput }
-        >(UPDATE_CAPACIDAD_TERMINAL_MUTATION, { variables: { id, data: { orden } } });
-      }
-      return dataConnect.executeGraphql<
-        { indicadorCapacidad_update: unknown },
-        { id: number; data: DataConnectIndicadorCapacidadInput }
-      >(UPDATE_INDICADOR_CAPACIDAD_MUTATION, { variables: { id, data: { orden } } });
-    }));
-
-    if (entity === "competenciaUnidadDidactica") await reconcileRelationModules(items.map(item => item.id));
+    if (["modulo", "competencia", "actividad", "aprendizaje"].includes(entity)) return await reorderCurricularExtra(entity, items, data);
+    if (new Set(items.map(item => item.id)).size !== items.length) throw new https.HttpsError("invalid-argument", "No se permiten elementos repetidos.");
+    // Changing order preserves the explicit parent and competency type.
+    const fields = items.map(({ id, orden }) => `r${id}:${entity}_update(id:${id},data:{orden:${orden}}) @check(expr:"this != null",message:"El elemento ya no existe.")`);
+    await dataConnect.executeGraphql(`mutation CurricularSaveChildOrder @transaction { ${fields.join("\n")} }`);
     return { updated: items.length };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
@@ -1050,14 +1035,6 @@ function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
       ),
     };
   });
-}
-
-function nextOrder(values: Array<number | null | undefined>) {
-  const max = values.reduce<number>((current, value) => {
-    if (typeof value !== "number" || !Number.isFinite(value)) return current;
-    return Math.max(current, value);
-  }, 0);
-  return max + 1;
 }
 
 export const listEstructuraAcademica = https.onCall(async (_data, context) => {
@@ -1232,7 +1209,7 @@ export const getEstructuraAcademicaDocenteMenu = https.onCall(async (_data, cont
 
 function parseEstructuraActionEntity(value: unknown): EstructuraAcademicaActionEntity {
   const entity = String(value ?? "");
-  if (["modulo", "competencia", "actividad", "unidadDidactica", "capacidadTerminal", "indicadorCapacidad"].includes(entity)) {
+  if (["modulo", "competencia", "actividad", "aprendizaje", "unidadDidactica", "capacidadTerminal", "indicadorCapacidad"].includes(entity)) {
     return entity as EstructuraAcademicaActionEntity;
   }
   throw new https.HttpsError("invalid-argument", "Entidad no soportada.");
@@ -1240,10 +1217,11 @@ function parseEstructuraActionEntity(value: unknown): EstructuraAcademicaActionE
 
 async function nextPlanModuloOrder(planId: number) {
   const response = await dataConnect.executeGraphql<
-    { planModulos: DataConnectPlanModulo[] },
+    { planModulos: Array<DataConnectPlanModulo & { modulo: { id: number; orden?: number | null } }>; modulos: Array<{ id: number; orden?: number | null }> },
     { planId: number }
   >(LIST_PLAN_MODULO_RELATIONS_BY_PLAN_QUERY, { variables: { planId } });
-  return nextOrder((response.data.planModulos ?? []).map((relation) => relation.orden));
+  const linked = new Set(response.data.planModulos.map(relation => relation.moduloId));
+  return nextCurricularOrder([...response.data.modulos.filter(modulo => !linked.has(modulo.id)), ...response.data.planModulos.map(relation => ({ id: relation.moduloId, orden: relation.orden ?? relation.modulo.orden }))]);
 }
 
 async function nextUnidadModuloOrder(moduloId: number) {
@@ -1251,7 +1229,7 @@ async function nextUnidadModuloOrder(moduloId: number) {
     { competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[] },
     { moduloId: number }
   >(LIST_UNIDAD_RELATIONS_BY_MODULO_QUERY, { variables: { moduloId } });
-  return nextOrder(projectUnidadRelations(response.data.competenciaUnidadesDidacticas ?? []).map((relation) => relation.orden));
+  return nextCurricularOrder(response.data.competenciaUnidadesDidacticas ?? []);
 }
 
 async function syncUnidadDidacticaToExistingGrupoModulos(
@@ -1301,7 +1279,7 @@ export const createEstructuraAcademicaItem = https.onCall(async (data, context) 
   const entity = parseEstructuraActionEntity(data?.entity);
 
   try {
-    if (entity === "competencia" || entity === "actividad") return await createCurricularExtra(entity, data);
+    if (entity === "competencia" || entity === "actividad" || entity === "aprendizaje") return await createCurricularExtra(entity, data);
     if (entity === "modulo") {
       const planId = toNumber(data?.planId, -1);
       if (planId <= 0) throw new https.HttpsError("invalid-argument", "planId is required.");
@@ -1324,7 +1302,7 @@ export const createEstructuraAcademicaItem = https.onCall(async (data, context) 
         { planModulo_insert: unknown },
         { data: DataConnectPlanModuloInput }
       >(INSERT_PLAN_MODULO_MUTATION, { variables: { data: { planId, moduloId, orden } } });
-      return { id: moduloId };
+      return readCurricularCreatedItem(entity, moduloId);
     }
 
     if (entity === "unidadDidactica") {
@@ -1340,9 +1318,9 @@ export const createEstructuraAcademicaItem = https.onCall(async (data, context) 
       >(INSERT_UNIDAD_DIDACTICA_MUTATION, { variables: { data: payload } });
       const unidadDidacticaId = getIdFromKeyOutput(created.data.unidadDidactica_insert);
       if (!unidadDidacticaId) throw new Error("No se pudo obtener el id de la unidad didactica creada.");
-      await attachUnidadToModulo(moduloId, unidadDidacticaId, orden, toNumberOrNull(data?.competenciaId) ?? undefined);
+      await attachUnidadToModulo(moduloId, unidadDidacticaId, orden, toNumberOrNull(data?.competenciaId) ?? undefined, { preserveSelectedCompetencia: true });
       await syncUnidadDidacticaToExistingGrupoModulos(moduloId, unidadDidacticaId, orden);
-      return { id: unidadDidacticaId };
+      return { ...await readCurricularCreatedItem(entity, unidadDidacticaId), unitAssignments: await readCurricularUnitAssignments(moduloId) };
     }
 
     if (entity === "capacidadTerminal") {
@@ -1351,12 +1329,13 @@ export const createEstructuraAcademicaItem = https.onCall(async (data, context) 
       const payload = buildCapacidadTerminalDataFromInput({
         descripcion: data?.descripcion ?? "Nueva capacidad terminal",
         unidadDidacticaId,
+        orden: await nextCurricularChildOrder("capacidadTerminal", unidadDidacticaId),
       });
       const created = await dataConnect.executeGraphql<
         { capacidadTerminal_insert: unknown },
         { data: DataConnectCapacidadTerminalInput }
       >(INSERT_CAPACIDAD_TERMINAL_MUTATION, { variables: { data: payload } });
-      return { id: getIdFromKeyOutput(created.data.capacidadTerminal_insert) };
+      return readCurricularCreatedItem(entity, getIdFromKeyOutput(created.data.capacidadTerminal_insert));
     }
 
     const capacidadTerminalId = toNumber(data?.capacidadTerminalId, -1);
@@ -1364,12 +1343,13 @@ export const createEstructuraAcademicaItem = https.onCall(async (data, context) 
     const payload = buildIndicadorCapacidadDataFromInput({
       descripcion: data?.descripcion ?? "Nuevo indicador",
       capacidadTerminalId,
+      orden: await nextCurricularChildOrder("indicadorCapacidad", capacidadTerminalId),
     });
     const created = await dataConnect.executeGraphql<
       { indicadorCapacidad_insert: unknown },
       { data: DataConnectIndicadorCapacidadInput }
     >(INSERT_INDICADOR_CAPACIDAD_MUTATION, { variables: { data: payload } });
-    return { id: getIdFromKeyOutput(created.data.indicadorCapacidad_insert) };
+    return readCurricularCreatedItem(entity, getIdFromKeyOutput(created.data.indicadorCapacidad_insert));
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in createEstructuraAcademicaItem:", error);
@@ -1428,7 +1408,11 @@ export const detachEstructuraAcademicaItem = https.onCall(async (data, context) 
         { competenciaUnidadDidactica_delete: unknown },
         { id: number }
       >(DELETE_COMPETENCIA_UNIDAD_RELATION_MUTATION, { variables: { id: relacionId } });
-      if (previous.data.competenciaUnidadDidactica) await reconcileModuloUnits(previous.data.competenciaUnidadDidactica.competencia.moduloId);
+      if (previous.data.competenciaUnidadDidactica) {
+        const moduloId = previous.data.competenciaUnidadDidactica.competencia.moduloId;
+        await reconcileModuloUnits(moduloId);
+        return { id: relacionId, unitAssignments: await readCurricularUnitAssignments(moduloId) };
+      }
       return { id: relacionId };
     }
 

@@ -117,7 +117,7 @@ export async function reconcileRelationModules(ids: number[]) {
   for (const id of new Set(response.data.competenciaUnidadesDidacticas.map(r => r.competencia.moduloId))) await reconcileModuloUnits(id);
 }
 
-export async function attachUnidadToModulo(moduloId: number, unidadId: number, orden: number, selectedId?: number) {
+export async function attachUnidadToModulo(moduloId: number, unidadId: number, orden: number, selectedId?: number, options: { preserveSelectedCompetencia?: boolean } = {}) {
   const context = await getModuloCompetenciaContext(moduloId);
   if (context.unidadIds.includes(unidadId)) throw new https.HttpsError("already-exists", "La unidad ya pertenece al modulo.");
   const unidad = await dataConnect.executeGraphql<{ unidadDidactica: { nombre?: string } | null }, { id: number }>(
@@ -127,9 +127,11 @@ export async function attachUnidadToModulo(moduloId: number, unidadId: number, o
   const candidate = { id: Number.MAX_SAFE_INTEGER, unidadDidacticaId: unidadId, orden };
   const orderedIds = orderedUnidadRelations([...context.relations, candidate]).map(r => r.unidadDidacticaId);
   const tipo = expectedCompetenciaType(context.programa, context.modulo.horas, orderedIds, unidadId);
-  const competencia = selectedId ? context.competencias.find(c => c.id === selectedId && c.tipo === tipo)
+  const preserve = Boolean(selectedId && options.preserveSelectedCompetencia);
+  const competencia = selectedId ? context.competencias.find(c => c.id === selectedId && (preserve || c.tipo === tipo))
     : await chooseCompetencia(context, tipo, unidad.data.unidadDidactica.nombre ?? "");
   if (!competencia) throw new https.HttpsError("invalid-argument", "Seleccione una competencia compatible del modulo.");
+  if (!context.programa && competencia.tipo !== "TECNICA") throw new https.HttpsError("invalid-argument", "El modulo solo admite competencias tecnicas.");
   const fields = [`query {
     competenciaUnidadesDidacticas(where:{unidadDidacticaId:{eq:${unidadId}}},limit:1)
       @check(expr:"this.size() == 0", message:"La unidad ya pertenece a un modulo.") { id }
@@ -137,6 +139,7 @@ export async function attachUnidadToModulo(moduloId: number, unidadId: number, o
       @check(expr:"this.size() == 0", message:"La unidad ya pertenece a otro modulo.") { id }
   }`, `saved:competenciaUnidadDidactica_insert(data:{competenciaId:${competencia.id},unidadDidacticaId:${unidadId},orden:${orden}})`];
   for (const relation of context.relations) {
+    if (preserve) continue;
     const target = expectedCompetenciaType(context.programa, context.modulo.horas, orderedIds, relation.unidadDidacticaId);
     if (relation.competencia.tipo === target) continue;
     const changed = await chooseCompetencia(context, target, relation.unidadDidactica?.nombre ?? "");

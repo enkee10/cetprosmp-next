@@ -42,75 +42,16 @@ import {
   filterCurricularModules,
   type CurricularPlan,
 } from '@/lib/curricularFilters';
-
-interface SesionDetalle {
-  id: number;
-  nombre: string | null;
-  numeroSesion: number | null;
-  duracion?: number | null;
-  fecha?: string | null;
-  orden: number | null;
-  contenidos: Array<{ id: number; orden: number; texto: string }>;
-  materiales: Array<{ id: number; orden: number; texto: string }>;
-}
-
-interface IndicadorDetalle {
-  id: number;
-  descripcion: string | null;
-  sigla: string | null;
-  orden: number | null;
-  capacidadTerminalId: number | null;
-  aprendizajes?: Array<{ id: number; descripcion: string | null; actividades: SesionDetalle[] }>;
-}
-
-interface CapacidadDetalle {
-  id: number;
-  descripcion: string | null;
-  sigla: string | null;
-  orden: number | null;
-  unidadDidacticaId: number | null;
-  competencias?: Array<{ id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; moduloId: number }>;
-  indicadoresCapacidad: IndicadorDetalle[];
-}
-
-interface UnidadDidacticaDetalle {
-  id: number;
-  relacionId: number;
-  competenciaId: number;
-  competencia: { id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; moduloId: number };
-  orden: number | null;
-  nombre: string | null;
-  duracion: number | null;
-  creditos: number | null;
-  sigla: string | null;
-  capacidadesTerminales: CapacidadDetalle[];
-}
-
-interface ModuloDetalle {
-  id: number;
-  titulo: string | null;
-  tituloComercial: string | null;
-  orden: number | null;
-  descripcion: string | null;
-  competencias: Array<{ id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; orden?: number | null }>;
-  horas: number | null;
-  creditos: number | null;
-  metas: number | null;
-  activo: boolean | null;
-  slug: string | null;
-  comun: boolean | null;
-  planModuloId?: number | null;
-  planId: number | null;
-  planIds?: number[];
-  plan: CurricularPlan | null;
-  planModulos?: Array<{ id: number; planId: number; orden?: number | null; plan?: CurricularPlan | null }>;
-  unidadesDidacticas: UnidadDidacticaDetalle[];
-}
+import {
+  academicLabels, academicLocations, applyAcademicReassignment, reassignmentFor,
+  type AcademicDrag, type Reassignment, type ModuloDetalle, type UnidadDidacticaDetalle, type CapacidadDetalle, type IndicadorDetalle,
+} from '@/lib/curricularReassignment';
+import { applyAcademicCreation, applyAcademicOrder, applyAcademicRemoval, type AcademicCreationResult, type AcademicRemoval, type AcademicRemovalResult } from '@/lib/curricularUpdates';
 
 type EditableAcademicEntity = 'modulo' | 'competencia' | 'actividad' | 'aprendizaje' | 'actividadContenido' | 'actividadMaterial' | 'unidadDidactica' | 'competenciaUnidadDidactica' | 'capacidadTerminal' | 'indicadorCapacidad';
 type EditableValueType = 'text' | 'number' | 'boolean';
 type EditableCellValue = string | number | boolean | null;
-type ReorderAcademicEntity = 'modulo' | 'competencia' | 'actividad' | 'competenciaUnidadDidactica' | 'capacidadTerminal' | 'indicadorCapacidad';
+type ReorderAcademicEntity = 'modulo' | 'competencia' | 'actividad' | 'aprendizaje' | 'competenciaUnidadDidactica' | 'capacidadTerminal' | 'indicadorCapacidad';
 
 interface EditableCellTarget {
   entity: EditableAcademicEntity;
@@ -122,7 +63,7 @@ interface EditableCellTarget {
 
 
 type DragState = {
-  entity: ReorderAcademicEntity;
+  entity: ReorderAcademicEntity | 'aprendizaje';
   id: number;
 };
 
@@ -698,7 +639,15 @@ export default function EstructuraAcademicaMasterDetail({
   const [selectedCapacidadId, setSelectedCapacidadId] = useState<number | null>(null);
   const [selectedIndicadorId, setSelectedIndicadorId] = useState<number | null>(null);
   const [selectedSesionId, setSelectedSesionId] = useState<number | null>(null);
-  const [, setDragState] = useState<DragState | null>(null);
+  const [dragState, setDragState] = useState<DragState | null>(null);
+  const [moveTarget, setMoveTarget] = useState<AcademicDrag | null>(null);
+  const [selectedAprendizajeId, setSelectedAprendizajeId] = useState<number | null>(null);
+  const [movePending, setMovePending] = useState(false);
+  const movePendingRef = useRef(false);
+  const dragPreviewRef = useRef<HTMLElement | null>(null);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hoverKeyRef = useRef<string | null>(null);
+  const createdCardRef = useRef<AcademicDrag | null>(null);
   const [dropIndicator, setDropIndicator] = useState<DropIndicatorState | null>(null);
   const dragStateRef = useRef<DragState | null>(null);
   const dropIndicatorRef = useRef<DropIndicatorState | null>(null);
@@ -708,6 +657,13 @@ export default function EstructuraAcademicaMasterDetail({
   const allowEdit = !readOnly && canEdit;
   const allowCreate = !readOnly && canCreate;
   const allowDelete = !readOnly && canDelete;
+  const locations = useMemo(() => academicLocations(modulos), [modulos]);
+  useEffect(() => {
+    const created = createdCardRef.current;
+    if (!created) return;
+    const card = document.querySelector<HTMLElement>(`[data-academic-entity="${created.entity}"][data-academic-id="${created.id}"]`);
+    if (card) { card.scrollIntoView({ block: 'nearest', inline: 'end', behavior: 'smooth' }); createdCardRef.current = null; }
+  }, [modulos]);
 
   const fetchEstructura = useCallback(async () => {
     setLoading(true);
@@ -795,7 +751,7 @@ export default function EstructuraAcademicaMasterDetail({
 
   const todasUnidades = useMemo(() => selectedModulo?.unidadesDidacticas ?? [], [selectedModulo]);
   const competencias = useMemo(() => (selectedModulo?.competencias ?? []).slice().sort((a, b) =>
-    Number(a.tipo === 'EMPLEABILIDAD') - Number(b.tipo === 'EMPLEABILIDAD') || (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id,
+    (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id,
   ), [selectedModulo]);
   const selectedCompetencia = competencias.find(competencia => competencia.id === selectedCompetenciaId) ?? competencias[0] ?? null;
   const unidades = useMemo(() => todasUnidades.filter(unidad => unidad.competenciaId === selectedCompetencia?.id),
@@ -815,11 +771,19 @@ export default function EstructuraAcademicaMasterDetail({
     () => indicadores.find((indicador) => indicador.id === selectedIndicadorId) ?? indicadores[0] ?? null,
     [indicadores, selectedIndicadorId],
   );
-  const sesiones = useMemo(() => (selectedIndicador?.aprendizajes ?? []).flatMap(aprendizaje =>
+  const aprendizajes = useMemo(() => (selectedIndicador?.aprendizajes ?? []).slice().sort((a, b) => (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id), [selectedIndicador]);
+  const selectedAprendizaje = aprendizajes.find(item => item.id === selectedAprendizajeId) ?? aprendizajes[0] ?? null;
+  const sesiones = useMemo(() => (selectedAprendizaje ? [selectedAprendizaje] : []).flatMap(aprendizaje =>
     (aprendizaje.actividades ?? []).map(actividad => ({ ...actividad, aprendizajeId: aprendizaje.id, aprendizaje: aprendizaje.descripcion })),
-  ).sort((a, b) => (a.orden ?? a.numeroSesion ?? a.id) - (b.orden ?? b.numeroSesion ?? b.id) || a.id - b.id), [selectedIndicador]);
+  ).sort((a, b) => (a.orden ?? a.numeroSesion ?? a.id) - (b.orden ?? b.numeroSesion ?? b.id) || a.id - b.id), [selectedAprendizaje]);
+  useEffect(() => { setSelectedAprendizajeId(null); }, [selectedIndicador?.id]);
 
   const selectedSesion = sesiones.find(item => item.id === selectedSesionId) ?? sesiones[0] ?? null;
+  useEffect(() => {
+    if (selectedSesionId == null) return;
+    const learning = aprendizajes.find(item => item.actividades.some(activity => activity.id === selectedSesionId));
+    if (learning) setSelectedAprendizajeId(learning.id);
+  }, [aprendizajes, selectedSesionId]);
   const materialOptions = useMemo(() => catalogMaterials.map(item => ({ id: item.id, orden: 0, texto: item.nombre })), [catalogMaterials]);
   const saveSesionItem = useCallback(async (actividadId: number, kind: 'contenido' | 'material', action: 'add' | 'remove' | 'reorder', data: { texto?: string; materialId?: number; itemId?: number; items?: Array<{ id: number; orden: number }> }) => {
     if (!allowEdit) throw new Error('No tienes permiso para editar.');
@@ -843,13 +807,27 @@ export default function EstructuraAcademicaMasterDetail({
       if (auth.currentUser) {
         await auth.currentUser.getIdToken(true);
       }
-      const callable = httpsCallable<Record<string, unknown>, { id?: number }>(functions, callableName);
+      const callable = httpsCallable<Record<string, unknown>, AcademicCreationResult | AcademicRemovalResult>(functions, callableName);
       const result = await callable(payload);
-      await fetchEstructura();
-      if (callableName === 'createEstructuraAcademicaItem' && result.data.id) {
+      if (callableName === 'createEstructuraAcademicaItem') {
+        const created = 'item' in result.data ? result.data : null;
+        const assignment = created?.unitAssignments?.find(item => item.unidadDidacticaId === created.id);
+        if (!created?.item || created.item.id !== created.id || !created.entity || !Number.isSafeInteger(created.id) || (payload.entity === 'unidadDidactica' && !assignment)) throw new Error('El servidor no devolvió el registro creado completo. Actualiza la vista para comprobarlo.');
+        createdCardRef.current = payload.entity === 'unidadDidactica'
+          ? { entity: 'competenciaUnidadDidactica', id: assignment!.id }
+          : { entity: payload.entity as AcademicDrag['entity'], id: result.data.id };
+        setModulos(current => applyAcademicCreation(current, created));
+        if (payload.entity === 'modulo') setSelectedModuloId(result.data.id);
         if (payload.entity === 'competencia') setSelectedCompetenciaId(result.data.id);
+        if (payload.entity === 'unidadDidactica') {
+          if (assignment) setSelectedCompetenciaId(assignment.competenciaId);
+          setSelectedUnidadId(result.data.id);
+        }
+        if (payload.entity === 'capacidadTerminal') setSelectedCapacidadId(result.data.id);
+        if (payload.entity === 'indicadorCapacidad') setSelectedIndicadorId(result.data.id);
+        if (payload.entity === 'aprendizaje') setSelectedAprendizajeId(result.data.id);
         if (payload.entity === 'actividad') setSelectedSesionId(result.data.id);
-      }
+      } else setModulos(current => applyAcademicRemoval(current, payload as AcademicRemoval, result.data, planCatalog));
       setError(null);
     } catch (err) {
       console.error(`Error running ${callableName}: `, err);
@@ -857,21 +835,115 @@ export default function EstructuraAcademicaMasterDetail({
     } finally {
       setActionLoading(false);
     }
-  }, [auth, fetchEstructura, functions]);
+  }, [auth, functions, planCatalog]);
 
   const beginDrag = useCallback((event: DragEvent<HTMLElement>, nextDragState: DragState) => {
+    event.stopPropagation();
+    if (movePendingRef.current) { event.preventDefault(); return; }
     dragStateRef.current = nextDragState;
     setDragState(nextDragState);
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', `${nextDragState.entity}:${nextDragState.id}`);
-  }, []);
+    dragPreviewRef.current?.remove();
+    const preview = document.createElement('div');
+    const text = locations.get(`${nextDragState.entity}:${nextDragState.id}`)?.text;
+    preview.textContent = `${academicLabels[nextDragState.entity]} · ${text || nextDragState.id}`;
+    Object.assign(preview.style, { position: 'fixed', top: '-1000px', left: '0', width: '230px', padding: '8px 12px',
+      border: '1px solid #1565c0', borderRadius: '6px', background: '#fff', color: '#16324f',
+      boxShadow: '0 2px 8px #0003', font: '13px sans-serif', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', pointerEvents: 'none' });
+    document.body.appendChild(preview);
+    dragPreviewRef.current = preview;
+    event.dataTransfer.setDragImage(preview, 12, 16);
+  }, [locations]);
 
   const endDrag = useCallback(() => {
     dragStateRef.current = null;
     dropIndicatorRef.current = null;
     setDragState(null);
     setDropIndicator(null);
+    setMoveTarget(null);
+    dragPreviewRef.current?.remove();
+    dragPreviewRef.current = null;
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverKeyRef.current = null;
   }, []);
+
+  useEffect(() => () => {
+    dragPreviewRef.current?.remove();
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+  }, []);
+
+  const persistReassignment = async (move: Reassignment) => {
+    if (!allowEdit || actionLoading || movePendingRef.current) return;
+    movePendingRef.current = true;
+    setMovePending(true);
+    setActionLoading(true);
+    const originalOrder = locations.get(`${move.entity}:${move.id}`)?.orden;
+    setModulos(current => applyAcademicReassignment(current, move));
+    try {
+      const callable = httpsCallable<Reassignment, Reassignment>(functions, 'reassignEstructuraAcademicaItem');
+      const result = await callable(move);
+      if (result.data.orden != null) setModulos(current => academicLocations(current).get(`${move.entity}:${move.id}`)?.orden === result.data.orden ? current : applyAcademicOrder(current,
+        move.entity, [{ id: move.id, orden: result.data.orden! }]));
+      setError(null);
+    } catch (err) {
+      // Restore only affected branches; keep any unrelated state and edits intact.
+      setModulos(current => applyAcademicReassignment(current, { ...move, parentId: move.previousParentId, previousParentId: move.parentId, orden: originalOrder }));
+      setError(err instanceof Error ? err.message : 'No se pudo guardar la reasignación. Se restauró la ubicación anterior.');
+    } finally {
+      movePendingRef.current = false;
+      setMovePending(false);
+      setActionLoading(false);
+    }
+  };
+
+  const rowDragProps = (target: AcademicDrag, reorder?: {
+    onDragOver?: (event: DragEvent<HTMLElement>) => void;
+    onDrop?: (event: DragEvent<HTMLElement>) => void;
+  }) => ({
+    onDragOver: (event: DragEvent<HTMLElement>) => {
+      if (!allowEdit || actionLoading) return;
+      const source = dragStateRef.current;
+      if (!source) return;
+      const move = reassignmentFor(modulos, source, target, locations);
+      if (move) {
+        event.preventDefault(); event.stopPropagation(); event.dataTransfer.dropEffect = 'move';
+        setMoveTarget(current => current?.entity === target.entity && current.id === target.id ? current : target);
+      } else reorder?.onDragOver?.(event);
+      // Hovering an ancestor exposes its children without losing the dragged item.
+      const key = `${target.entity}:${target.id}`;
+      if (source.entity !== target.entity && hoverKeyRef.current !== key) {
+        if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+        hoverKeyRef.current = key;
+        hoverTimerRef.current = setTimeout(() => {
+          if (target.entity === 'modulo') setSelectedModuloId(target.id);
+          if (target.entity === 'competencia') setSelectedCompetenciaId(target.id);
+          if (target.entity === 'competenciaUnidadDidactica') setSelectedUnidadId(locations.get(key)?.unitId ?? null);
+          if (target.entity === 'capacidadTerminal') setSelectedCapacidadId(target.id);
+          if (target.entity === 'indicadorCapacidad') setSelectedIndicadorId(target.id);
+          if (target.entity === 'aprendizaje') setSelectedAprendizajeId(target.id);
+        }, 650);
+      }
+    },
+    onDragLeave: (event: DragEvent<HTMLElement>) => {
+      if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
+      setMoveTarget(current => current?.entity === target.entity && current.id === target.id ? null : current);
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+      hoverKeyRef.current = null;
+      if (target.entity !== 'aprendizaje') clearDropIndicator(target.entity, target.id);
+    },
+    onDrop: (event: DragEvent<HTMLElement>) => {
+      const source = dragStateRef.current;
+      const move = source && reassignmentFor(modulos, source, target, locations);
+      event.preventDefault(); event.stopPropagation();
+      if (move && allowEdit && !actionLoading) void persistReassignment(move);
+      else reorder?.onDrop?.(event);
+      endDrag();
+    },
+    onDragEnd: endDrag,
+    'data-academic-entity': target.entity,
+    'data-academic-id': target.id,
+  });
 
   const updateDropIndicator = useCallback((
     event: DragEvent<HTMLElement>,
@@ -902,10 +974,14 @@ export default function EstructuraAcademicaMasterDetail({
     setDropIndicator(null);
   }, []);
 
-  const dropIndicatorSx = useCallback((entity: ReorderAcademicEntity, id: number) => {
+  const dropIndicatorSx = (entity: DragState['entity'], id: number) => {
     const active = dropIndicator?.entity === entity && dropIndicator.id === id;
+    const canReceive = allowEdit && !actionLoading && dragState && reassignmentFor(modulos, dragState, { entity, id }, locations);
+    const receiving = canReceive && moveTarget?.entity === entity && moveTarget.id === id;
     return {
       position: 'relative' as const,
+      ...(canReceive ? { outline: '1px dashed', outlineColor: 'primary.main', outlineOffset: -2 } : {}),
+      ...(receiving ? { bgcolor: 'action.selected', boxShadow: 'inset 0 0 0 2px var(--mui-palette-primary-main, #1976d2)', '&.Mui-selected': { bgcolor: 'action.selected' } } : {}),
       '&::before': active && dropIndicator.position === 'before'
         ? {
             content: '""',
@@ -933,15 +1009,21 @@ export default function EstructuraAcademicaMasterDetail({
           }
         : undefined,
     };
-  }, [dropIndicator]);
+  };
 
   const persistReorder = useCallback(async (
     entity: ReorderAcademicEntity,
     items: Array<{ id: number; orden: number | null }>,
     scope?: { planId: number | null },
   ) => {
-    if (!allowEdit) return;
+    if (!allowEdit || actionLoading) return;
+    const planId = scope?.planId ?? selectedModulo?.planId;
+    const beforeLocations = academicLocations(modulos);
+    const previous = items.map(item => ({ id: item.id, orden: entity === 'modulo'
+      ? modulos.find(modulo => modulo.id === item.id)?.planModulos?.find(row => row.planId === planId)?.orden ?? beforeLocations.get(`${entity}:${item.id}`)?.orden
+      : beforeLocations.get(`${entity}:${item.id}`)?.orden }));
     setActionLoading(true);
+    setModulos(current => applyAcademicOrder(current, entity, items, planId));
     try {
       if (auth.currentUser) {
         await auth.currentUser.getIdToken(true);
@@ -956,37 +1038,33 @@ export default function EstructuraAcademicaMasterDetail({
         ...scope,
         items: items.map((item, index) => ({ id: item.id, orden: item.orden ?? index + 1 })),
       });
-      if (['modulo', 'competencia', 'actividad', 'competenciaUnidadDidactica'].includes(entity)) await fetchEstructura();
       setError(null);
     } catch (err) {
       console.error('Error reordering academic structure: ', err);
       setError('No se pudo guardar el nuevo orden.');
-      await fetchEstructura();
+      setModulos(current => applyAcademicOrder(current, entity, previous, planId));
     } finally {
       setActionLoading(false);
     }
-  }, [allowEdit, auth, fetchEstructura, functions, selectedModulo?.id, selectedModulo?.planId, selectedIndicador?.id]);
+  }, [actionLoading, allowEdit, auth, functions, modulos, selectedModulo?.id, selectedModulo?.planId, selectedIndicador?.id]);
 
-  const handleExtraDrop = (entity: 'modulo' | 'competencia' | 'actividad', targetId: number, position: DropPosition) => {
+  const handleExtraDrop = (entity: 'modulo' | 'competencia' | 'actividad' | 'aprendizaje', targetId: number, position: DropPosition) => {
     const drag = dragStateRef.current;
     if (!allowEdit || actionLoading || drag?.entity !== entity || drag.id === targetId) return;
-    const list: Array<{ id: number; orden?: number | null }> = entity === 'modulo' ? filteredModulos.filter(item => item.planId === filteredModulos.find(row => row.id === targetId)?.planId) : entity === 'competencia' ? competencias : sesiones;
+    const list: Array<{ id: number; orden?: number | null }> = entity === 'modulo' ? filteredModulos.filter(item => item.planId === filteredModulos.find(row => row.id === targetId)?.planId) : entity === 'competencia' ? competencias : entity === 'aprendizaje' ? aprendizajes : sesiones;
     const source = list.find(item => item.id === drag.id);
     const target = list.find(item => item.id === targetId);
     if (!source || !target) return;
-    if (entity === 'competencia' && competencias.find(item => item.id === drag.id)?.tipo !== competencias.find(item => item.id === targetId)?.tipo) return;
     const ordered = withSequentialOrder(reorderById(list, drag.id, targetId, position, item => item.id));
     void persistReorder(entity, ordered.map(item => ({ id: item.id, orden: item.orden })), entity === 'modulo' ? { planId: filteredModulos.find(item => item.id === targetId)?.planId ?? null } : undefined);
   };
-  const extraDragProps = (entity: 'modulo' | 'competencia' | 'actividad', id: number, enabled: boolean) => ({
+  const extraDragProps = (entity: 'modulo' | 'competencia' | 'actividad' | 'aprendizaje', id: number, enabled: boolean) => rowDragProps({ entity, id }, {
     onDragOver: (event: DragEvent<HTMLElement>) => {
       const source = dragStateRef.current;
-      const sameScope = entity === 'modulo' ? filteredModulos.find(item => item.id === source?.id)?.planId === filteredModulos.find(item => item.id === id)?.planId : entity === 'competencia' ? competencias.find(item => item.id === source?.id)?.tipo === competencias.find(item => item.id === id)?.tipo : true;
+      const sameScope = entity === 'modulo' ? filteredModulos.find(item => item.id === source?.id)?.planId === filteredModulos.find(item => item.id === id)?.planId : true;
       updateDropIndicator(event, entity, id, enabled && sameScope);
     },
-    onDragLeave: () => clearDropIndicator(entity, id),
     onDrop: (event: DragEvent<HTMLElement>) => { event.preventDefault(); if (enabled) handleExtraDrop(entity, id, dropIndicatorRef.current?.position ?? getDropPosition(event)); endDrag(); },
-    onDragEnd: endDrag,
   });
   const handleCreateCompetencia = () => {
     if (selectedModulo) void runStructureAction('createEstructuraAcademicaItem', { entity: 'competencia', moduloId: selectedModulo.id, tipo: selectedCompetencia?.tipo ?? 'TECNICA' });
@@ -995,7 +1073,7 @@ export default function EstructuraAcademicaMasterDetail({
     if (selectedCompetencia && window.confirm('¿Eliminar esta competencia?')) void runStructureAction('detachEstructuraAcademicaItem', { entity: 'competencia', competenciaId: selectedCompetencia.id });
   };
   const handleCreateSesion = () => {
-    if (selectedModulo && selectedIndicador) void runStructureAction('createEstructuraAcademicaItem', { entity: 'actividad', moduloId: selectedModulo.id, indicadorCapacidadId: selectedIndicador.id });
+    if (selectedModulo && selectedIndicador) void runStructureAction('createEstructuraAcademicaItem', { entity: 'actividad', moduloId: selectedModulo.id, indicadorCapacidadId: selectedIndicador.id, aprendizajeId: selectedAprendizaje?.id });
   };
   const handleDeleteSesion = () => {
     if (selectedSesion && window.confirm('¿Eliminar esta sesión con sus contenidos y materiales?')) void runStructureAction('detachEstructuraAcademicaItem', { entity: 'actividad', actividadId: selectedSesion.id });
@@ -1019,9 +1097,6 @@ export default function EstructuraAcademicaMasterDetail({
     const ordered = withSequentialOrder(todasUnidades.map(unidad =>
       unidad.competenciaId === selectedCompetencia?.id ? reordered[nextIndex++] : unidad,
     ));
-    setModulos((current) => current.map((modulo) => (
-      modulo.id === selectedModulo.id ? { ...modulo, unidadesDidacticas: ordered } : modulo
-    )));
     void persistReorder('competenciaUnidadDidactica', ordered.map((unidad) => ({ id: unidad.relacionId, orden: unidad.orden })));
   }, [persistReorder, selectedModulo?.id, selectedCompetencia?.id, todasUnidades, unidades]);
 
@@ -1030,14 +1105,6 @@ export default function EstructuraAcademicaMasterDetail({
     if (!selectedModulo?.id || !selectedUnidad?.id || !currentDrag || currentDrag.entity !== 'capacidadTerminal') return;
     if (currentDrag.id === targetCapacidadId) return;
     const ordered = withSequentialOrder(reorderById(capacidades, currentDrag.id, targetCapacidadId, position, (capacidad) => capacidad.id));
-    setModulos((current) => current.map((modulo) => (
-      modulo.id !== selectedModulo.id ? modulo : {
-        ...modulo,
-        unidadesDidacticas: modulo.unidadesDidacticas.map((unidad) => (
-          unidad.id === selectedUnidad.id ? { ...unidad, capacidadesTerminales: ordered } : unidad
-        )),
-      }
-    )));
     void persistReorder('capacidadTerminal', ordered.map((capacidad) => ({ id: capacidad.id, orden: capacidad.orden })));
   }, [capacidades, persistReorder, selectedModulo?.id, selectedUnidad?.id]);
 
@@ -1046,19 +1113,6 @@ export default function EstructuraAcademicaMasterDetail({
     if (!selectedModulo?.id || !selectedUnidad?.id || !selectedCapacidad?.id || !currentDrag || currentDrag.entity !== 'indicadorCapacidad') return;
     if (currentDrag.id === targetIndicadorId) return;
     const ordered = withSequentialOrder(reorderById(indicadores, currentDrag.id, targetIndicadorId, position, (indicador) => indicador.id));
-    setModulos((current) => current.map((modulo) => (
-      modulo.id !== selectedModulo.id ? modulo : {
-        ...modulo,
-        unidadesDidacticas: modulo.unidadesDidacticas.map((unidad) => (
-          unidad.id !== selectedUnidad.id ? unidad : {
-            ...unidad,
-            capacidadesTerminales: unidad.capacidadesTerminales.map((capacidad) => (
-              capacidad.id === selectedCapacidad.id ? { ...capacidad, indicadoresCapacidad: ordered } : capacidad
-            )),
-          }
-        )),
-      }
-    )));
     void persistReorder('indicadorCapacidad', ordered.map((indicador) => ({ id: indicador.id, orden: indicador.orden })));
   }, [indicadores, persistReorder, selectedCapacidad?.id, selectedModulo?.id, selectedUnidad?.id]);
 
@@ -1072,12 +1126,12 @@ export default function EstructuraAcademicaMasterDetail({
 
   const handleCreateUnidad = useCallback(() => {
     if (!selectedModulo?.id) return;
-    setSelectedCompetenciaId(null);
     void runStructureAction('createEstructuraAcademicaItem', {
       entity: 'unidadDidactica',
       moduloId: selectedModulo.id,
+      competenciaId: selectedCompetencia?.id,
     });
-  }, [runStructureAction, selectedModulo?.id]);
+  }, [runStructureAction, selectedModulo?.id, selectedCompetencia?.id]);
 
   const handleCreateCapacidad = useCallback(() => {
     if (!selectedUnidad?.id) return;
@@ -1203,7 +1257,7 @@ export default function EstructuraAcademicaMasterDetail({
               {careerOptions.map(option => <MenuItem key={option.key} value={option.key}>{option.semester} {option.label}</MenuItem>)}
             </Select>
           </FormControl>
-          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => void fetchEstructura()} disabled={loading}>Actualizar</Button>
+          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => void fetchEstructura()} disabled={loading || actionLoading}>Actualizar</Button>
         </Stack>
       ) : undefined}
     >
@@ -1227,6 +1281,8 @@ export default function EstructuraAcademicaMasterDetail({
             alignItems: 'stretch',
           }}
         >
+          {movePending && <Typography role="status" variant="caption" color="text.secondary">Guardando reasignación…</Typography>}
+          {allowEdit && <Typography variant="caption" color="text.secondary">Arrastra desde el asa y suelta sobre el elemento superior para reasignar. Mantén el puntero sobre una tarjeta para ver su contenido.</Typography>}
           <Panel
             title="Módulos"
             count={filteredModulos.length}
@@ -1273,7 +1329,7 @@ export default function EstructuraAcademicaMasterDetail({
                           lines={2}
                           variant="body2"
                           onSave={saveEditableCell}
-                          readOnly={!allowEdit}
+                          readOnly={!allowEdit || movePending}
                           details={
                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.65, wordBreak: 'break-word' }}>
                               {[planName(modulo), carreraName(modulo)].filter(Boolean).join(' / ') || `Plan ${modulo.planId ?? '-'}`}
@@ -1281,8 +1337,8 @@ export default function EstructuraAcademicaMasterDetail({
                           }
                           properties={
                             <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
-                              <EditableMetricChip value={modulo.horas} target={{ entity: 'modulo', id: modulo.id, field: 'horas', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit} />
-                              <EditableMetricChip value={modulo.creditos} target={{ entity: 'modulo', id: modulo.id, field: 'creditos', valueType: 'number' }} prefix="Cr " onSave={saveEditableCell} readOnly={!allowEdit} />
+                              <EditableMetricChip value={modulo.horas} target={{ entity: 'modulo', id: modulo.id, field: 'horas', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit || movePending} />
+                              <EditableMetricChip value={modulo.creditos} target={{ entity: 'modulo', id: modulo.id, field: 'creditos', valueType: 'number' }} prefix="Cr " onSave={saveEditableCell} readOnly={!allowEdit || movePending} />
                               <Chip size="small" label={`UD ${unidadCount}`} />
                             </Stack>
                           }
@@ -1319,8 +1375,8 @@ export default function EstructuraAcademicaMasterDetail({
                     <ListItemText
                       primaryTypographyProps={{ component: 'div' }}
                       secondaryTypographyProps={{ component: 'div' }}
-                      primary={<EditableValue value={competencia.nombre || 'Sin nombre'} target={{ entity: 'competencia', id: competencia.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit}
-                        properties={<EditableCompetenciaTipo id={competencia.id} tipo={competencia.tipo} readOnly={!allowEdit} onSave={saveEditableCell} />} />}
+                      primary={<EditableValue value={competencia.nombre || 'Sin nombre'} target={{ entity: 'competencia', id: competencia.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending}
+                        properties={<EditableCompetenciaTipo id={competencia.id} tipo={competencia.tipo} readOnly={!allowEdit || movePending} onSave={saveEditableCell} />} />}
                     />
                   </ListItemButton>
                 ))}
@@ -1352,25 +1408,16 @@ export default function EstructuraAcademicaMasterDetail({
             ) : (
               <List dense disablePadding>
                 {unidades.map((unidad) => {
-                  const unidadReadOnly = !allowEdit;
+                  const unidadReadOnly = !allowEdit || movePending;
                   const canDragUnidad = allowEdit && !actionLoading;
 
                   return (
                     <ListItemButton
                       key={`${unidad.relacionId}-${unidad.id}`}
-                      onDragOver={(event) => updateDropIndicator(
-                        event,
-                        'competenciaUnidadDidactica',
-                        unidad.relacionId,
-                        canDragUnidad,
-                      )}
-                      onDragLeave={() => clearDropIndicator('competenciaUnidadDidactica', unidad.relacionId)}
-                      onDrop={(event) => {
-                        event.preventDefault();
-                        handleUnidadDrop(unidad.relacionId, dropIndicatorRef.current?.position ?? getDropPosition(event));
-                        endDrag();
-                      }}
-                      onDragEnd={endDrag}
+                      {...rowDragProps({ entity: 'competenciaUnidadDidactica', id: unidad.relacionId }, {
+ onDragOver: event => updateDropIndicator(event, 'competenciaUnidadDidactica', unidad.relacionId, allowEdit && !actionLoading),
+ onDrop: event => { if (allowEdit && !actionLoading) handleUnidadDrop(unidad.relacionId, dropIndicatorRef.current?.position ?? getDropPosition(event)); },
+ })}
                       selected={selectedUnidad?.id === unidad.id}
                       onClick={() => {
                         setSelectedUnidadId(unidad.id);
@@ -1462,19 +1509,10 @@ export default function EstructuraAcademicaMasterDetail({
                   return (
                   <ListItemButton
                     key={capacidad.id}
-                    onDragOver={(event) => updateDropIndicator(
-                      event,
-                      'capacidadTerminal',
-                      capacidad.id,
-                      canDragCapacidad,
-                    )}
-                    onDragLeave={() => clearDropIndicator('capacidadTerminal', capacidad.id)}
-                    onDrop={(event) => {
-                      event.preventDefault();
-                      handleCapacidadDrop(capacidad.id, dropIndicatorRef.current?.position ?? getDropPosition(event));
-                      endDrag();
-                    }}
-                    onDragEnd={endDrag}
+                    {...rowDragProps({ entity: 'capacidadTerminal', id: capacidad.id }, {
+ onDragOver: event => updateDropIndicator(event, 'capacidadTerminal', capacidad.id, allowEdit && !actionLoading),
+ onDrop: event => { if (allowEdit && !actionLoading) handleCapacidadDrop(capacidad.id, dropIndicatorRef.current?.position ?? getDropPosition(event)); },
+ })}
                     selected={selectedCapacidad?.id === capacidad.id}
                     onClick={() => {
                       setSelectedCapacidadId(capacidad.id);
@@ -1511,7 +1549,7 @@ export default function EstructuraAcademicaMasterDetail({
                             lines={4}
                             variant="body2"
                             onSave={saveEditableCell}
-                            readOnly={!allowEdit}
+                            readOnly={!allowEdit || movePending}
                             properties={
                               <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
                                 {selectedUnidad?.competencia && <Chip size="small"
@@ -1558,19 +1596,10 @@ export default function EstructuraAcademicaMasterDetail({
                   return (
                   <ListItemButton
                     key={indicador.id}
-                    onDragOver={(event) => updateDropIndicator(
-                      event,
-                      'indicadorCapacidad',
-                      indicador.id,
-                      canDragIndicador,
-                    )}
-                    onDragLeave={() => clearDropIndicator('indicadorCapacidad', indicador.id)}
-                    onDrop={(event) => {
-                      event.preventDefault();
-                      handleIndicadorDrop(indicador.id, dropIndicatorRef.current?.position ?? getDropPosition(event));
-                      endDrag();
-                    }}
-                    onDragEnd={endDrag}
+                    {...rowDragProps({ entity: 'indicadorCapacidad', id: indicador.id }, {
+ onDragOver: event => updateDropIndicator(event, 'indicadorCapacidad', indicador.id, allowEdit && !actionLoading),
+ onDrop: event => { if (allowEdit && !actionLoading) handleIndicadorDrop(indicador.id, dropIndicatorRef.current?.position ?? getDropPosition(event)); },
+ })}
                     selected={selectedIndicador?.id === indicador.id}
                     onClick={() => setSelectedIndicadorId(indicador.id)}
                     sx={{
@@ -1604,7 +1633,7 @@ export default function EstructuraAcademicaMasterDetail({
                             lines={4}
                             variant="body2"
                             onSave={saveEditableCell}
-                            readOnly={!allowEdit}
+                            readOnly={!allowEdit || movePending}
                           />
                         </Stack>
                       }
@@ -1616,11 +1645,30 @@ export default function EstructuraAcademicaMasterDetail({
             )}
           </Panel>
 
+          <Panel title="Aprendizajes" count={aprendizajes.length} actions={allowCreate && <IconButton size="small" title="Crear aprendizaje" disabled={actionLoading || !selectedIndicador}
+            onClick={() => selectedIndicador && void runStructureAction('createEstructuraAcademicaItem', { entity: 'aprendizaje', indicadorCapacidadId: selectedIndicador.id })}><AddIcon fontSize="small" /></IconButton>}>
+            {aprendizajes.length === 0 ? <EmptyState label="Sin aprendizajes." /> : (
+              <List dense disablePadding>
+                {aprendizajes.map(aprendizaje => <ListItemButton key={aprendizaje.id} component="div"
+                  selected={selectedAprendizaje?.id === aprendizaje.id}
+                  onClick={() => { setSelectedAprendizajeId(aprendizaje.id); setSelectedSesionId(null); }}
+                  {...extraDragProps('aprendizaje', aprendizaje.id, allowEdit && !actionLoading)}
+                  sx={{ alignItems: 'flex-start', py: 1, ...dropIndicatorSx('aprendizaje', aprendizaje.id) }}>
+                  <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'aprendizaje', id: aprendizaje.id })} />
+                  <EditableValue value={aprendizaje.descripcion || 'Sin descripción.'}
+                    target={{ entity: 'aprendizaje', id: aprendizaje.id, field: 'descripcion', valueType: 'text' }}
+                    lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending}
+                    properties={<Chip size="small" label={`Sesiones ${aprendizaje.actividades.length}`} />} />
+                </ListItemButton>)}
+              </List>
+            )}
+          </Panel>
+
           <Panel title="Sesiones" count={sesiones.length} cardWidth={{ xs: 280, sm: 360 }} actions={<>
             {allowCreate && <IconButton size="small" title="Crear sesión" disabled={actionLoading || !selectedIndicador} onClick={handleCreateSesion}><AddIcon fontSize="small" /></IconButton>}
             {allowDelete && <IconButton size="small" title="Eliminar sesión" color="error" disabled={actionLoading || !selectedSesion} onClick={handleDeleteSesion}><DeleteOutlineIcon fontSize="small" /></IconButton>}
           </>}>
-            {sesiones.length === 0 ? <EmptyState label="Sin sesiones para este indicador." /> : (
+            {sesiones.length === 0 ? <EmptyState label="Sin sesiones para este aprendizaje." /> : (
               <List dense disablePadding>
                 {sesiones.map(sesion => (
                   <ListItemButton key={sesion.id} component="div" selected={selectedSesion?.id === sesion.id} onClick={() => setSelectedSesionId(sesion.id)} {...extraDragProps('actividad', sesion.id, allowEdit && !actionLoading)} sx={{ display: 'block', py: 1.25, ...dropIndicatorSx('actividad', sesion.id) }}>
@@ -1629,15 +1677,15 @@ export default function EstructuraAcademicaMasterDetail({
                         <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'actividad', id: sesion.id })} />
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Typography variant="caption" color="text.secondary">Aprendizaje</Typography>
-                          <EditableValue value={sesion.aprendizaje || 'Sin descripción.'} target={{ entity: 'aprendizaje', id: sesion.aprendizajeId, field: 'descripcion', valueType: 'text' }} lines={6} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit} />
+                          <EditableValue value={sesion.aprendizaje || 'Sin descripción.'} target={{ entity: 'aprendizaje', id: sesion.aprendizajeId, field: 'descripcion', valueType: 'text' }} lines={6} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending} />
                         </Box>
                       </Stack>
                       <Box>
                         <Typography variant="caption" color="text.secondary">Nombre de sesión</Typography>
-                        <EditableValue value={sesion.nombre || 'Sin nombre.'} target={{ entity: 'actividad', id: sesion.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit}
-                          properties={<EditableMetricChip value={sesion.duracion ?? null} target={{ entity: 'actividad', id: sesion.id, field: 'duracion', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit} />} />
+                        <EditableValue value={sesion.nombre || 'Sin nombre.'} target={{ entity: 'actividad', id: sesion.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending}
+                          properties={<EditableMetricChip value={sesion.duracion ?? null} target={{ entity: 'actividad', id: sesion.id, field: 'duracion', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit || movePending} />} />
                       </Box>
-                      {(['contenido', 'material'] as const).map(kind => <SesionItemList key={kind} kind={kind} items={kind === 'contenido' ? sesion.contenidos : sesion.materiales} options={kind === 'material' ? materialOptions : []} canEdit={allowEdit} disabled={actionLoading} renderText={item => kind === 'material' ? <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{item.texto}</Typography> : <EditableValue value={item.texto} target={{ entity: 'actividadContenido', id: item.id, field: 'texto', valueType: 'text' }} lines={6} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit} />} onAdd={data => saveSesionItem(sesion.id, kind, 'add', data)} onRemove={itemId => saveSesionItem(sesion.id, kind, 'remove', { itemId })} onReorder={items => saveSesionItem(sesion.id, kind, 'reorder', { items })} />)}
+                      {(['contenido', 'material'] as const).map(kind => <SesionItemList key={kind} kind={kind} items={kind === 'contenido' ? sesion.contenidos : sesion.materiales} options={kind === 'material' ? materialOptions : []} canEdit={allowEdit} disabled={actionLoading} renderText={item => kind === 'material' ? <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{item.texto}</Typography> : <EditableValue value={item.texto} target={{ entity: 'actividadContenido', id: item.id, field: 'texto', valueType: 'text' }} lines={6} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending} />} onAdd={data => saveSesionItem(sesion.id, kind, 'add', data)} onRemove={itemId => saveSesionItem(sesion.id, kind, 'remove', { itemId })} onReorder={items => saveSesionItem(sesion.id, kind, 'reorder', { items })} />)}
                     </Stack>
                   </ListItemButton>
                 ))}

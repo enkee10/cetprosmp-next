@@ -228,7 +228,6 @@ type UnidadDidactica @table(name: "unidades_didacticas", singular: "unidadDidact
   creditosTeoricos: Int @col(name: "creditos_teoricos")
   creditosPracticos: Int @col(name: "creditos_practicos")
   sigla: String
-  comun: Boolean @default(value: false)
 }
 
 type CompetenciaUnidadDidactica @table(name: "competencia_unidades_didacticas", singular: "competenciaUnidadDidactica", plural: "competenciaUnidadesDidacticas") @unique(fields: ["competencia", "unidadDidactica"]) @index(fields: ["unidadDidacticaId"]) @index(fields: ["competenciaId"]) {
@@ -237,7 +236,7 @@ type CompetenciaUnidadDidactica @table(name: "competencia_unidades_didacticas", 
   competencia: Competencia! @ref(fields: "competenciaId", references: "id")
   competenciaId: Int! @col(name: "competencia_id")
   unidadDidactica: UnidadDidactica! @ref(fields: "unidadDidacticaId", references: "id")
-  unidadDidacticaId: Int! @col(name: "unidad_didactica_id")
+  unidadDidacticaId: Int! @col(name: "unidad_didactica_id") @unique(indexName: "competencia_unidades_didacticas_unidad_didactica_id_key")
 }
 
 type CapacidadTerminal @table(name: "capacidades_terminales", singular: "capacidadTerminal", plural: "capacidadesTerminales") {

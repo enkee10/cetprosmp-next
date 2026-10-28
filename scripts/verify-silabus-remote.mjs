@@ -23,7 +23,7 @@ const data = await query(`query VerifySilabusRemote {
   grupoModuloActividades(limit:10000) {id actividadId grupoModuloId segmento inicio fin eventoId
     evento {id fechaInicio fechaFin minutosHoraAcademica computaHoras semestreId relaciones:eventoRelaciones_on_evento {entidadTipo entidadId}}
     grupoModulo {id moduloId grupo {id semestreId horarioId turnoId}}}
-  unidadesDidacticas(limit:5000) {id nombre sigla duracion creditos comun}
+  unidadesDidacticas(limit:5000) {id nombre sigla duracion creditos}
   capacidadesTerminales(limit:5000) {id descripcion sigla orden unidadDidacticaId}
   indicadoresCapacidad(limit:5000) {id descripcion sigla orden capacidadTerminalId}
   competencias(limit:10000) {id nombre tipo moduloId}

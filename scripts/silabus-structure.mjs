@@ -4,7 +4,7 @@ import { expectedCompetenciaType, isProgramaEstudio } from '../functions/lib/mod
 
 const tables = {
   competencias: { mutation: 'competencia_insert', type: 'Competencia_Data', fields: 'nombre tipo moduloId' },
-  unidadesDidacticas: { mutation: 'unidadDidactica_insert', type: 'UnidadDidactica_Data', fields: 'nombre duracion creditos comun' },
+  unidadesDidacticas: { mutation: 'unidadDidactica_insert', type: 'UnidadDidactica_Data', fields: 'nombre duracion creditos' },
   capacidadesTerminales: { mutation: 'capacidadTerminal_insert', parent: 'unidadDidacticaId' },
   indicadoresCapacidad: { mutation: 'indicadorCapacidad_insert', parent: 'capacidadTerminalId' },
   competenciaUnidadesDidacticas: { mutation: 'competenciaUnidadDidactica_insert' },
@@ -42,7 +42,7 @@ export function missingStructure(rows, mappings, state, context, moduleIds) {
         assert.ok(value == null || Number.isInteger(value) && value > 0, `Valor no entero: ${nombre}/${key}`);
         return value;
       };
-      return insert('unidadesDidacticas', { nombre, duracion: uniqueValue('unitHours'), creditos: uniqueValue('unitCredits'), comun: false }, moduloId);
+      return insert('unidadesDidacticas', { nombre, duracion: uniqueValue('unitHours'), creditos: uniqueValue('unitCredits') }, moduloId);
     });
     units.forEach((unit, index) => {
       const existingLink = simulated.competenciaUnidadesDidacticas.find(v => v.competencia.moduloId === moduloId && v.unidadDidacticaId === unit.id);

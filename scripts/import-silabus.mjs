@@ -27,7 +27,7 @@ export const stateQuery = `query SilabusState {
   modulos(limit:10000,orderBy:{id:ASC}) {id titulo tituloComercial planId plan {carrera {id nombre tipoCarrera {nombre}}}}
   planModulos(limit:10000) {moduloId planId plan {carrera {id nombre tipoCarrera {nombre}}}}
   competenciaUnidadesDidacticas(limit:50000) {id orden unidadDidacticaId competencia {moduloId}}
-  unidadesDidacticas(limit:50000) {id nombre sigla duracion creditos comun}
+  unidadesDidacticas(limit:50000) {id nombre sigla duracion creditos}
   capacidadesTerminales(limit:50000,orderBy:[{orden:ASC},{id:ASC}]) {id descripcion sigla orden unidadDidacticaId}
   indicadoresCapacidad(limit:50000,orderBy:[{orden:ASC},{id:ASC}]) {id descripcion sigla orden capacidadTerminalId}
   aprendizajes(limit:50000) {id descripcion sigla indicadorCapacidadId}

@@ -798,7 +798,6 @@ export interface DataConnectUnidadDidactica {
   duracion?: number | null;
   creditos?: number | null;
   sigla?: string | null;
-  comun?: boolean | null;
   moduloIds?: number[];
   competenciaIds?: number[];
 }
@@ -808,7 +807,6 @@ export interface DataConnectUnidadDidacticaInput {
   duracion?: number | null;
   creditos?: number | null;
   sigla?: string | null;
-  comun?: boolean;
 }
 
 export interface DataConnectCompetenciaUnidadDidactica {
@@ -828,7 +826,6 @@ export interface DataConnectCompetenciaUnidadDidacticaInput {
 }
 
 export interface DataConnectCapacidadTerminal {
-  unidadDidactica?: { competencias: Array<{ competencia: { id: number; nombre: string; tipo: "TECNICA" | "EMPLEABILIDAD"; moduloId: number } }> };
   id: number;
   descripcion?: string | null;
   sigla?: string | null;

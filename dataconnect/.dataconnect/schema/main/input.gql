@@ -37046,14 +37046,6 @@ input UnidadDidactica_Data {
   """
   id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
-  ✨ Generated from Field `UnidadDidactica`.`comun` of type `Boolean`
-  """
-  comun: Boolean
-  """
-  ✨ `_expr` server value variant of `comun` (✨ Generated from Field `UnidadDidactica`.`comun` of type `Boolean`)
-  """
-  comun_expr: Boolean_Expr @fdc_forbiddenInVariables
-  """
   ✨ Generated from Field `UnidadDidactica`.`creditos` of type `Int`
   """
   creditos: Int
@@ -37146,10 +37138,6 @@ input UnidadDidactica_Data {
   """
   capacidadesTerminales_on_unidadDidactica: [CapacidadTerminal_Data!]
   """
-  ✨ Generated from Field `UnidadDidactica`.`competenciaUnidadesDidacticas_on_unidadDidactica` of type `[CompetenciaUnidadDidactica!]!`
-  """
-  competenciaUnidadesDidacticas_on_unidadDidactica: [CompetenciaUnidadDidactica_Data!]
-  """
   ✨ Generated from Field `UnidadDidactica`.`grupoModuloUnidadesDidacticas_on_unidadDidactica` of type `[GrupoModuloUnidadDidactica!]!`
   """
   grupoModuloUnidadesDidacticas_on_unidadDidactica: [GrupoModuloUnidadDidactica_Data!]
@@ -37161,6 +37149,10 @@ input UnidadDidactica_Data {
   ✨ Generated from Field `UnidadDidactica`.`unidadesDidacticasEstudiantes_on_unidadDidactica` of type `[UnidadDidacticaEstudiante!]!`
   """
   unidadesDidacticasEstudiantes_on_unidadDidactica: [UnidadDidacticaEstudiante_Data!]
+  """
+  ✨ Generated from Field `UnidadDidactica`.`competenciaUnidadDidactica_on_unidadDidactica` of type `CompetenciaUnidadDidactica`
+  """
+  competenciaUnidadDidactica_on_unidadDidactica: CompetenciaUnidadDidactica_Data
 }
 """
 ✨ Generated filter input type for table 'UnidadDidactica'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -37182,10 +37174,6 @@ input UnidadDidactica_Filter {
   ✨ Generated from Field `UnidadDidactica`.`id` of type `Int!`
   """
   id: Int_Filter
-  """
-  ✨ Generated from Field `UnidadDidactica`.`comun` of type `Boolean`
-  """
-  comun: Boolean_Filter
   """
   ✨ Generated from Field `UnidadDidactica`.`creditos` of type `Int`
   """
@@ -37223,10 +37211,6 @@ input UnidadDidactica_Filter {
   """
   capacidadesTerminales_on_unidadDidactica: CapacidadTerminal_ListFilter
   """
-  ✨ Generated from Field `UnidadDidactica`.`competenciaUnidadesDidacticas_on_unidadDidactica` of type `[CompetenciaUnidadDidactica!]!`
-  """
-  competenciaUnidadesDidacticas_on_unidadDidactica: CompetenciaUnidadDidactica_ListFilter
-  """
   ✨ Generated from Field `UnidadDidactica`.`grupoModuloUnidadesDidacticas_on_unidadDidactica` of type `[GrupoModuloUnidadDidactica!]!`
   """
   grupoModuloUnidadesDidacticas_on_unidadDidactica: GrupoModuloUnidadDidactica_ListFilter
@@ -37238,6 +37222,10 @@ input UnidadDidactica_Filter {
   ✨ Generated from Field `UnidadDidactica`.`unidadesDidacticasEstudiantes_on_unidadDidactica` of type `[UnidadDidacticaEstudiante!]!`
   """
   unidadesDidacticasEstudiantes_on_unidadDidactica: UnidadDidacticaEstudiante_ListFilter
+  """
+  ✨ Generated from Field `UnidadDidactica`.`competenciaUnidadDidactica_on_unidadDidactica` of type `CompetenciaUnidadDidactica`
+  """
+  competenciaUnidadDidactica_on_unidadDidactica: CompetenciaUnidadDidactica_Filter
 }
 """
 ✨ Generated first-row input type for table 'UnidadDidactica'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -37276,10 +37264,6 @@ input UnidadDidactica_Having {
   ✨ Generated from Field `UnidadDidactica`.`_count` of type `Int!`
   """
   _count: Int_Filter
-  """
-  ✨ Generated from Field `UnidadDidactica`.`comun_count` of type `Int!`
-  """
-  comun_count: Int_Filter
   """
   ✨ Generated from Field `UnidadDidactica`.`creditosPracticos_count` of type `Int!`
   """
@@ -37464,10 +37448,6 @@ input UnidadDidactica_Order {
   """
   id: OrderDirection
   """
-  ✨ Generated from Field `UnidadDidactica`.`comun` of type `Boolean`
-  """
-  comun: OrderDirection
-  """
   ✨ Generated from Field `UnidadDidactica`.`creditos` of type `Int`
   """
   creditos: OrderDirection
@@ -37503,10 +37483,6 @@ input UnidadDidactica_Order {
   ✨ Generated from Field `UnidadDidactica`.`_count` of type `Int!`
   """
   _count: OrderDirection
-  """
-  ✨ Generated from Field `UnidadDidactica`.`comun_count` of type `Int!`
-  """
-  comun_count: OrderDirection
   """
   ✨ Generated from Field `UnidadDidactica`.`creditosPracticos_count` of type `Int!`
   """

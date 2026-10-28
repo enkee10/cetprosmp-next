@@ -20,7 +20,7 @@ const snapshotQuery = `query CompetenciaUnidadBackup {
   competencias(limit:10000) { id nombre tipo moduloId }
   competenciaCapacidades(limit:50000) { id competenciaId capacidadTerminalId }
   unidadDidacticaModulos(limit:50000) { id moduloId unidadDidacticaId orden }
-  unidadesDidacticas(limit:50000) { id nombre duracion creditos sigla comun }
+  unidadesDidacticas(limit:50000) { id nombre duracion creditos sigla }
   capacidadesTerminales(limit:50000) { id descripcion sigla orden unidadDidacticaId }
   indicadoresCapacidad(limit:100000) { id descripcion sigla orden capacidadTerminalId }
   grupoModuloUnidadesDidacticas(limit:50000) { id grupoModuloId unidadDidacticaId orden }
@@ -32,7 +32,7 @@ const snapshotQuery = `query CompetenciaUnidadBackup {
 const preservedQuery = `query PreservedUnidadData {
   modulos(limit:10000) { id titulo horas planId plan { carrera { tipoCarrera { nombre } } } }
   planModulos(limit:50000) { id planId moduloId plan { carrera { tipoCarrera { nombre } } } }
-  unidadesDidacticas(limit:50000) { id nombre duracion creditos sigla comun }
+  unidadesDidacticas(limit:50000) { id nombre duracion creditos sigla }
   capacidadesTerminales(limit:50000) { id descripcion sigla orden unidadDidacticaId }
   indicadoresCapacidad(limit:100000) { id descripcion sigla orden capacidadTerminalId }
   grupoModuloUnidadesDidacticas(limit:50000) { id grupoModuloId unidadDidacticaId orden }

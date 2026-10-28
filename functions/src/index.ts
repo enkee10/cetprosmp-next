@@ -113,7 +113,6 @@ export {
   getMaterial,
   createOrUpdateMaterial,
   deleteMaterial,
-  reuseEstructuraAcademicaItem,
   detachEstructuraAcademicaItem,
   updateEstructuraAcademicaCell,
   reorderEstructuraAcademicaItems,

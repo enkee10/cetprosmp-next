@@ -24,7 +24,7 @@ const legacyQuery = `query BackupCompetencias {
   modulos(limit:10000, orderBy:{id:ASC}) { id titulo tituloComercial orden competencia tipoCompetencia planId plan { carrera { id nombre tipoCarrera { id nombre } } } }
   planModulos(limit:50000) { id moduloId planId plan { carrera { id nombre tipoCarrera { id nombre } } } }
   unidadDidacticaModulos(limit:50000) { id moduloId unidadDidacticaId orden }
-  unidadesDidacticas(limit:50000) { id nombre duracion creditos sigla comun }
+  unidadesDidacticas(limit:50000) { id nombre duracion creditos sigla }
   capacidadesTerminales(limit:50000) { id descripcion sigla orden unidadDidacticaId }
   indicadoresCapacidad(limit:100000) { id descripcion sigla orden capacidadTerminalId }
   capacidadesTerminalesEstudiantes(limit:100000) { id matriculaId capacidadTerminalId }
@@ -80,7 +80,7 @@ function buildMigrationPlan(data) {
 
 const preservedQuery = `query PreservedAcademicData {
   unidadDidacticaModulos(limit:50000) { id moduloId unidadDidacticaId orden }
-  unidadesDidacticas(limit:50000) { id nombre duracion creditos sigla comun }
+  unidadesDidacticas(limit:50000) { id nombre duracion creditos sigla }
   capacidadesTerminales(limit:50000) { id descripcion sigla orden unidadDidacticaId }
   indicadoresCapacidad(limit:100000) { id descripcion sigla orden capacidadTerminalId }
   capacidadesTerminalesEstudiantes(limit:100000) { id matriculaId capacidadTerminalId }

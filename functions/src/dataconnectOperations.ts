@@ -467,13 +467,13 @@ export const DELETE_PLAN_MODULO_MUTATION = `
 `;
 
 export const INSERT_UNIDAD_DIDACTICA_MUTATION = `
-  mutation InsertUnidadDidactica($data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla comun")) {
+  mutation InsertUnidadDidactica($data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla")) {
     unidadDidactica_insert(data: $data)
   }
 `;
 
 export const UPDATE_UNIDAD_DIDACTICA_MUTATION = `
-  mutation UpdateUnidadDidactica($id: Int!, $data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla comun")) {
+  mutation UpdateUnidadDidactica($id: Int!, $data: UnidadDidactica_Data! @allow(fields: "nombre duracion creditos sigla")) {
     unidadDidactica_update(id: $id, data: $data)
   }
 `;

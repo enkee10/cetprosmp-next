@@ -474,16 +474,12 @@ function createImportContext(state, options, dataConnect) {
     counts: {
       created: { modulos: 0, unidades: 0, relaciones: 0, capacidades: 0, indicadores: 0 },
       reused: { modulos: 0, unidades: 0, relaciones: 0, capacidades: 0, indicadores: 0 },
-      skipped: { unresolvedRows: 0, missingCommonRows: 0, emptyRows: 0 },
+      skipped: { unresolvedRows: 0, emptyRows: 0 },
     },
     actions: [],
-    missingCommonUnits: [],
     unitsById: new Map(),
-    unitIdsByNorm: new Map(),
     linksByKey: new Map(),
     unitIdByModuleUnitNorm: new Map(),
-    unitLinkCount: new Map(),
-    commonUnitIdByNorm: new Map(),
     capacityIdByUnitNorm: new Map(),
     indicatorIdByCapacityNorm: new Map(),
     tempId() {
@@ -496,7 +492,6 @@ function createImportContext(state, options, dataConnect) {
   for (const unit of state.unidadesDidacticas ?? []) {
     const id = Number(unit.id);
     context.unitsById.set(id, unit);
-    addMapSet(context.unitIdsByNorm, normalizeText(unit.nombre), id);
   }
 
   for (const link of state.competenciaUnidadesDidacticas ?? []) {
@@ -505,18 +500,7 @@ function createImportContext(state, options, dataConnect) {
     const unit = context.unitsById.get(unitId);
     const unitNorm = normalizeText(unit?.nombre);
     context.linksByKey.set(`${moduloId}:${unitId}`, link);
-    context.unitLinkCount.set(unitId, (context.unitLinkCount.get(unitId) ?? 0) + 1);
     if (unitNorm) context.unitIdByModuleUnitNorm.set(`${moduloId}:${unitNorm}`, unitId);
-  }
-
-  for (const [unitId, count] of context.unitLinkCount.entries()) {
-    if (count > 1) {
-      const unit = context.unitsById.get(unitId);
-      const unitNorm = normalizeText(unit?.nombre);
-      if (unitNorm && !context.commonUnitIdByNorm.has(unitNorm)) {
-        context.commonUnitIdByNorm.set(unitNorm, unitId);
-      }
-    }
   }
 
   for (const capacity of state.capacidadesTerminales ?? []) {
@@ -550,14 +534,7 @@ async function ensureCreatedModules(context, mappings) {
   }
 }
 
-function addMapSet(map, key, value) {
-  if (!key) return;
-  const current = map.get(key) ?? [];
-  current.push(value);
-  map.set(key, current);
-}
-
-async function ensureWhiteUnit(context, row, moduloId) {
+async function ensureModuleUnit(context, row, moduloId) {
   const unitNorm = normalizeText(row.unitName);
   const existingLinkedId = context.unitIdByModuleUnitNorm.get(`${moduloId}:${unitNorm}`);
   if (existingLinkedId) {
@@ -565,36 +542,7 @@ async function ensureWhiteUnit(context, row, moduloId) {
     return existingLinkedId;
   }
 
-  const unlinkedCandidate = (context.unitIdsByNorm.get(unitNorm) ?? [])
-    .find((unitId) => !context.unitLinkCount.get(unitId));
-  if (unlinkedCandidate) {
-    context.counts.reused.unidades += 1;
-    return unlinkedCandidate;
-  }
-
   return createUnit(context, row);
-}
-
-async function ensureCommonUnit(context, row, createIfMissing) {
-  const unitNorm = normalizeText(row.unitName);
-  const commonId = context.commonUnitIdByNorm.get(unitNorm);
-  if (commonId) {
-    context.counts.reused.unidades += 1;
-    return commonId;
-  }
-
-  const existingByName = (context.unitIdsByNorm.get(unitNorm) ?? [])[0];
-  if (existingByName) {
-    context.commonUnitIdByNorm.set(unitNorm, existingByName);
-    context.counts.reused.unidades += 1;
-    return existingByName;
-  }
-
-  if (!createIfMissing) return null;
-
-  const unitId = await createUnit(context, row);
-  context.commonUnitIdByNorm.set(unitNorm, unitId);
-  return unitId;
 }
 
 async function createUnit(context, row) {
@@ -611,7 +559,6 @@ async function createUnit(context, row) {
 
   const unit = { id, ...data };
   context.unitsById.set(id, unit);
-  addMapSet(context.unitIdsByNorm, normalizeText(unit.nombre), id);
   context.counts.created.unidades += 1;
   context.actions.push({ action: "createUnidadDidactica", row: row.rowNumber, id, data });
   return id;
@@ -637,7 +584,6 @@ async function ensureLink(context, row, moduloId, unitId, order) {
 
   const link = { id, ...data };
   context.linksByKey.set(key, link);
-  context.unitLinkCount.set(unitId, (context.unitLinkCount.get(unitId) ?? 0) + 1);
   const unitNorm = normalizeText(context.unitsById.get(unitId)?.nombre);
   if (unitNorm) context.unitIdByModuleUnitNorm.set(`${moduloId}:${unitNorm}`, unitId);
   context.counts.created.relaciones += 1;
@@ -697,7 +643,7 @@ async function insertAndReturnId(dataConnect, mutation, responseField, variables
   return id;
 }
 
-async function processCatalogRow(context, row, mapping, orderMap, common) {
+async function processCatalogRow(context, row, mapping, orderMap) {
   const moduloId = Number(mapping.matchedModuloId);
   const unitNorm = normalizeText(row.unitName);
   if (!unitNorm) {
@@ -705,40 +651,14 @@ async function processCatalogRow(context, row, mapping, orderMap, common) {
     return;
   }
 
-  const unitId = common
-    ? await ensureCommonUnit(context, row, true)
-    : await ensureWhiteUnit(context, row, moduloId);
+  const unitId = await ensureModuleUnit(context, row, moduloId);
   const order = orderMap.get(`${moduloId}:${unitNorm}`) ?? null;
   await ensureLink(context, row, moduloId, unitId, order);
   const capacityId = await ensureCapacity(context, row, unitId);
   await ensureIndicator(context, row, capacityId);
 }
 
-async function processYellowRow(context, row, mapping, orderMap) {
-  const moduloId = Number(mapping.matchedModuloId);
-  const unitNorm = normalizeText(row.unitName);
-  if (!unitNorm) {
-    context.counts.skipped.emptyRows += 1;
-    return;
-  }
-
-  const unitId = await ensureCommonUnit(context, row, false);
-  if (!unitId) {
-    context.counts.skipped.missingCommonRows += 1;
-    context.missingCommonUnits.push({
-      row: row.rowNumber,
-      moduloId,
-      moduloExcel: row.moduleName,
-      unidad: row.unitName,
-    });
-    return;
-  }
-
-  const order = orderMap.get(`${moduloId}:${unitNorm}`) ?? null;
-  await ensureLink(context, row, moduloId, unitId, order);
-}
-
-async function buildPlan(parsed, state, mappings, options, dataConnect) {
+export async function buildPlan(parsed, state, mappings, options, dataConnect) {
   const mappingByNormalizedModule = new Map(mappings.map((mapping) => [mapping.normalized, mapping]));
   const context = createImportContext(state, options, dataConnect);
   await ensureCreatedModules(context, mappings);
@@ -749,6 +669,13 @@ async function buildPlan(parsed, state, mappings, options, dataConnect) {
     blue: parsed.rows.filter((row) => row.color === "blue"),
     yellow: parsed.rows.filter((row) => row.color === "yellow"),
   };
+  const templatesByUnit = new Map();
+  for (const row of [...rowsByPhase.white, ...rowsByPhase.blue]) {
+    const key = normalizeText(row.unitName);
+    const templates = templatesByUnit.get(key) ?? [];
+    templates.push(row);
+    templatesByUnit.set(key, templates);
+  }
 
   for (const row of rowsByPhase.white) {
     const mapping = mappingByNormalizedModule.get(normalizeText(row.moduleName));
@@ -756,7 +683,7 @@ async function buildPlan(parsed, state, mappings, options, dataConnect) {
       context.counts.skipped.unresolvedRows += 1;
       continue;
     }
-    await processCatalogRow(context, row, mapping, orderMap, false);
+    await processCatalogRow(context, row, mapping, orderMap);
   }
 
   for (const row of rowsByPhase.blue) {
@@ -765,7 +692,7 @@ async function buildPlan(parsed, state, mappings, options, dataConnect) {
       context.counts.skipped.unresolvedRows += 1;
       continue;
     }
-    await processCatalogRow(context, row, mapping, orderMap, true);
+    await processCatalogRow(context, row, mapping, orderMap);
   }
 
   for (const row of rowsByPhase.yellow) {
@@ -774,13 +701,15 @@ async function buildPlan(parsed, state, mappings, options, dataConnect) {
       context.counts.skipped.unresolvedRows += 1;
       continue;
     }
-    await processYellowRow(context, row, mapping, orderMap);
+    const templateRows = templatesByUnit.get(normalizeText(row.unitName)) ?? [];
+    for (const source of templateRows.length ? templateRows : [row]) {
+      await processCatalogRow(context, { ...source, rowNumber: row.rowNumber, moduleName: row.moduleName }, mapping, orderMap);
+    }
   }
 
   return {
     counts: context.counts,
     actions: context.actions,
-    missingCommonUnits: context.missingCommonUnits,
   };
 }
 
@@ -872,13 +801,14 @@ async function main() {
 
   report.plan = await buildPlan(parsed, stateResult.data, mappings, options, dataConnect);
   if (unresolved.length) report.status = "ready-with-unresolved-modules";
-  if (report.plan.missingCommonUnits.length) report.status = "ready-with-missing-common-units";
 
   writeReport(options.report, report);
   printSummary(report);
 }
 
-main().catch((error) => {
-  console.error(error?.stack || error?.message || error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  main().catch((error) => {
+    console.error(error?.stack || error?.message || error);
+    process.exitCode = 1;
+  });
+}

@@ -520,7 +520,6 @@ export function buildUnidadDidacticaDataFromInput(input: Record<string, unknown>
     duracion: toNumberOrNull(input.duracion),
     creditos: toNumberOrNull(input.creditos),
     sigla: asNullableString(input.sigla),
-    comun: toBoolean(input.comun),
   });
 }
 

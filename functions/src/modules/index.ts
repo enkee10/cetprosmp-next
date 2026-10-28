@@ -189,7 +189,6 @@ export {
   listEstructuraAcademicaDocente,
   getEstructuraAcademicaDocenteMenu,
   createEstructuraAcademicaItem,
-  reuseEstructuraAcademicaItem,
   detachEstructuraAcademicaItem,
   updateEstructuraAcademicaCell,
   reorderEstructuraAcademicaItems,

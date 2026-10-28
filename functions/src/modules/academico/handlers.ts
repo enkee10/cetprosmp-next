@@ -72,13 +72,12 @@ import {
 
 const LIST_UNIDADES_DIDACTICAS_QUERY = `
   query ListUnidadesDidacticasManual {
-    unidadesDidacticas(limit: 500) {
+    unidadesDidacticas(limit: 5000) {
       id
       nombre
       duracion
       creditos
       sigla
-      comun
     }
     competenciaUnidadesDidacticas(limit: 2000) {
       id
@@ -100,7 +99,6 @@ const GET_UNIDAD_DIDACTICA_QUERY = `
       duracion
       creditos
       sigla
-      comun
     }
     competenciaUnidadesDidacticas(where: { unidadDidacticaId: { eq: $id } }, limit: 2000) {
       id
@@ -116,13 +114,12 @@ const GET_UNIDAD_DIDACTICA_QUERY = `
 
 const LIST_CAPACIDADES_TERMINALES_QUERY = `
   query ListCapacidadesTerminalesManual {
-    capacidadesTerminales(limit: 500) {
+    capacidadesTerminales(limit: 5000) {
       id
       descripcion
       sigla
       orden
       unidadDidacticaId
-      unidadDidactica { competencias: competenciaUnidadesDidacticas_on_unidadDidactica { competencia { id nombre tipo moduloId } } }
     }
   }
 `;
@@ -135,14 +132,13 @@ const GET_CAPACIDAD_TERMINAL_QUERY = `
       sigla
       orden
       unidadDidacticaId
-      unidadDidactica { competencias: competenciaUnidadesDidacticas_on_unidadDidactica { competencia { id nombre tipo moduloId } } }
     }
   }
 `;
 
 const LIST_INDICADORES_CAPACIDAD_QUERY = `
   query ListIndicadoresCapacidadManual {
-    indicadoresCapacidad(limit: 500) {
+    indicadoresCapacidad(limit: 5000) {
       id
       descripcion
       sigla
@@ -166,7 +162,7 @@ const GET_INDICADOR_CAPACIDAD_QUERY = `
 
 const LIST_APRENDIZAJES_QUERY = `
   query ListAprendizajesManual {
-    aprendizajes(limit: 500) {
+    aprendizajes(limit: 5000) {
       id
       descripcion
       sigla
@@ -310,7 +306,6 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
       duracion
       creditos
       sigla
-      comun
     }
     capacidadesTerminales(limit: 50000, orderBy: [{ unidadDidacticaId: ASC }, { orden: ASC }, { id: ASC }]) {
       id
@@ -318,7 +313,6 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
       sigla
       orden
       unidadDidacticaId
-      unidadDidactica { competencias: competenciaUnidadesDidacticas_on_unidadDidactica { competencia { id nombre tipo moduloId } } }
     }
     indicadoresCapacidad(limit: 100000, orderBy: [{ capacidadTerminalId: ASC }, { orden: ASC }, { id: ASC }]) {
       id
@@ -446,7 +440,6 @@ const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
       duracion
       creditos
       sigla
-      comun
     }
     capacidadesTerminales(limit: 50000, orderBy: [{ unidadDidacticaId: ASC }, { orden: ASC }, { id: ASC }]) {
       id
@@ -454,7 +447,6 @@ const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
       sigla
       orden
       unidadDidacticaId
-      unidadDidactica { competencias: competenciaUnidadesDidacticas_on_unidadDidactica { competencia { id nombre tipo moduloId } } }
     }
     indicadoresCapacidad(limit: 100000, orderBy: [{ capacidadTerminalId: ASC }, { orden: ASC }, { id: ASC }]) {
       id
@@ -536,7 +528,6 @@ const LIST_UNIDAD_RELATIONS_BY_MODULO_QUERY = `
       orden
 
       unidadDidacticaId
-      unidadDidactica { competencias: competenciaUnidadesDidacticas_on_unidadDidactica { competencia { id nombre tipo moduloId } } }
 
       competenciaId
       competencia { id nombre tipo moduloId }
@@ -743,6 +734,7 @@ function buildCapacidadesForUnidad(
   capacidadesByUnidadId: Map<number, DataConnectCapacidadTerminal[]>,
   indicadoresByCapacidadId: Map<number, DataConnectIndicadorCapacidad[]>,
   moduloId: number,
+  competencia: DataConnectCompetenciaUnidadDidactica["competencia"],
 ) {
   return sortByOrdenThenId(capacidadesByUnidadId.get(unidadId) ?? [])
     .map((capacidad) => ({
@@ -751,7 +743,7 @@ function buildCapacidadesForUnidad(
       sigla: capacidad.sigla ?? null,
       orden: capacidad.orden ?? null,
       unidadDidacticaId: capacidad.unidadDidacticaId ?? null,
-      competencias: (capacidad.unidadDidactica?.competencias ?? []).map(r => r.competencia),
+      competencias: [competencia],
       indicadoresCapacidad: sortByOrdenThenId(indicadoresByCapacidadId.get(capacidad.id) ?? [])
         .map((indicador) => ({
           id: indicador.id,
@@ -791,12 +783,12 @@ function buildUnidadesForModulo(
         duracion: unidad.duracion ?? null,
         creditos: unidad.creditos ?? null,
         sigla: unidad.sigla ?? null,
-        comun: unidad.comun ?? false,
         capacidadesTerminales: buildCapacidadesForUnidad(
           unidad.id,
           capacidadesByUnidadId,
           indicadoresByCapacidadId,
           moduloId,
+          relation.competencia,
         ),
       }
     })
@@ -828,7 +820,6 @@ const editableAcademicFields: Record<EditableAcademicEntity, Record<string, Edit
     duracion: "number",
     creditos: "number",
     sigla: "text",
-    comun: "boolean",
   },
   competenciaUnidadDidactica: {
     orden: "number",
@@ -1061,29 +1052,6 @@ function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
   });
 }
 
-function buildEstructuraAcademicaOpciones(response: EstructuraAcademicaQueryResponse) {
-  const unidadRelationsByUnidadId = groupByNumber(projectUnidadRelations(response.competenciaUnidadesDidacticas ?? []), (relation) => relation.unidadDidacticaId);
-
-  const modulosComunes: Array<{
-    id: number;
-    titulo: string | null;
-    tituloComercial: string | null;
-    planIds: number[];
-  }> = [];
-
-  const unidadesComunes = (response.unidadesDidacticas ?? [])
-    .filter((unidad) => Boolean(unidad.comun))
-    .map((unidad) => ({
-      id: unidad.id,
-      nombre: unidad.nombre ?? null,
-      sigla: unidad.sigla ?? null,
-      moduloIds: (unidadRelationsByUnidadId.get(unidad.id) ?? []).map((relation) => relation.moduloId),
-    }))
-    .sort((a, b) => String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"));
-
-  return { modulosComunes, unidadesComunes };
-}
-
 function nextOrder(values: Array<number | null | undefined>) {
   const max = values.reduce<number>((current, value) => {
     if (typeof value !== "number" || !Number.isFinite(value)) return current;
@@ -1108,7 +1076,6 @@ export const listEstructuraAcademica = https.onCall(async (_data, context) => {
       modulos: buildEstructuraAcademica(response.data),
       planes: response.data.planes ?? [],
       materiales: await listMaterialCatalog(),
-      opciones: buildEstructuraAcademicaOpciones(response.data),
     };
   } catch (error) {
     console.error("Error in listEstructuraAcademica:", error);
@@ -1196,7 +1163,6 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
     return {
       modulos: buildEstructuraAcademica(estructuraResponse),
       planes: (response.data.planes ?? []).filter((plan) => allowedPlanIds.has(plan.id)),
-      opciones: { modulosComunes: [], unidadesComunes: [] },
       semestreTitulo,
       title,
     };
@@ -1367,7 +1333,6 @@ export const createEstructuraAcademicaItem = https.onCall(async (data, context) 
       const orden = await nextUnidadModuloOrder(moduloId);
       const payload = buildUnidadDidacticaDataFromInput({
         nombre: data?.nombre ?? "Nueva unidad didactica",
-        comun: false,
       });
       const created = await dataConnect.executeGraphql<
         { unidadDidactica_insert: unknown },
@@ -1409,40 +1374,6 @@ export const createEstructuraAcademicaItem = https.onCall(async (data, context) 
     if (error instanceof https.HttpsError) throw error;
     console.error("Error in createEstructuraAcademicaItem:", error);
     throw new https.HttpsError("internal", "No se pudo crear el elemento academico.");
-  }
-});
-
-export const reuseEstructuraAcademicaItem = https.onCall(async (data, context) => {
-  await requirePermission(context, "estructura-academica", "edit");
-
-  const entity = parseEstructuraActionEntity(data?.entity);
-
-  try {
-    if (entity === "modulo") {
-      throw new https.HttpsError("failed-precondition", "La reutilizacion de modulos comunes no esta habilitada.");
-    }
-
-    if (entity === "unidadDidactica") {
-      const moduloId = toNumber(data?.moduloId, -1);
-      const unidadDidacticaId = toNumber(data?.unidadDidacticaId, -1);
-      if (moduloId <= 0 || unidadDidacticaId <= 0) {
-        throw new https.HttpsError("invalid-argument", "moduloId and unidadDidacticaId are required.");
-      }
-      const orden = await nextUnidadModuloOrder(moduloId);
-      await attachUnidadToModulo(moduloId, unidadDidacticaId, orden, toNumberOrNull(data?.competenciaId) ?? undefined);
-      await syncUnidadDidacticaToExistingGrupoModulos(moduloId, unidadDidacticaId, orden);
-      await dataConnect.executeGraphql<
-        { unidadDidactica_update: unknown },
-        { id: number; data: DataConnectUnidadDidacticaInput }
-      >(UPDATE_UNIDAD_DIDACTICA_MUTATION, { variables: { id: unidadDidacticaId, data: { comun: true } } });
-      return { id: unidadDidacticaId };
-    }
-
-    throw new https.HttpsError("invalid-argument", "Solo modulo y unidad didactica se pueden reutilizar.");
-  } catch (error) {
-    if (error instanceof https.HttpsError) throw error;
-    console.error("Error in reuseEstructuraAcademicaItem:", error);
-    throw new https.HttpsError("internal", "No se pudo reutilizar el elemento academico.");
   }
 });
 
@@ -1538,6 +1469,7 @@ function attachUnidadDidacticaModuloIds(
 
   return unidadesDidacticas.map((unidadDidactica) => ({
     ...unidadDidactica,
+    competenciaId: competenciaUnidadesDidacticas.find(r => r.unidadDidacticaId === unidadDidactica.id)?.competenciaId ?? null,
     competenciaIds: competenciaUnidadesDidacticas.filter(r => r.unidadDidacticaId === unidadDidactica.id).map(r => r.competenciaId),
     moduloIds: (moduloIdsByUnidadId.get(unidadDidactica.id) ?? [])
       .slice()
@@ -1603,7 +1535,9 @@ export const getUnidadDidactica = https.onCall(async (data, context) => {
 
 export const createOrUpdateUnidadDidactica = https.onCall(async (data, context) => {
   const payload = buildUnidadDidacticaDataFromInput(data as Record<string, unknown>);
-  const competenciaIds = parseAcademicIds(data?.competenciaIds ?? []);
+  const competenciaIds = data?.competenciaId != null
+    ? parseAcademicIds([Number(data.competenciaId)])
+    : parseAcademicIds(data?.competenciaIds ?? []);
   if (!payload.nombre) {
     throw new https.HttpsError("invalid-argument", "nombre is required.");
   }

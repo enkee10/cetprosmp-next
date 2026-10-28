@@ -19061,40 +19061,6 @@ extend type UnidadDidactica {
     having: CapacidadTerminal_Having
   ): [CapacidadTerminal!]! @fdc_generated(from: "CapacidadTerminal.unidadDidactica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
-  ✨ List `CompetenciaUnidadDidactica` objects in a one-to-many relationship (where `CompetenciaUnidadDidactica`.`unidadDidactica` is this object).
-  """
-  competenciaUnidadesDidacticas_on_unidadDidactica(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: CompetenciaUnidadDidactica_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [CompetenciaUnidadDidactica_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: CompetenciaUnidadDidactica_Having
-  ): [CompetenciaUnidadDidactica!]! @fdc_generated(from: "CompetenciaUnidadDidactica.unidadDidactica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
-  """
   ✨ List `GrupoModuloUnidadDidactica` objects in a one-to-many relationship (where `GrupoModuloUnidadDidactica`.`unidadDidactica` is this object).
   """
   grupoModuloUnidadesDidacticas_on_unidadDidactica(
@@ -19197,6 +19163,10 @@ extend type UnidadDidactica {
     having: UnidadDidacticaEstudiante_Having
   ): [UnidadDidacticaEstudiante!]! @fdc_generated(from: "UnidadDidacticaEstudiante.unidadDidactica", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `CompetenciaUnidadDidactica` objects in a one-to-one relationship (where `CompetenciaUnidadDidactica`.`unidadDidactica` is this object).
+  """
+  competenciaUnidadDidactica_on_unidadDidactica: CompetenciaUnidadDidactica @fdc_generated(from: "CompetenciaUnidadDidactica.unidadDidactica", purpose: QUERY_SINGLE_ONE_TO_ONE)
+  """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
   _metadata: _Metadata @fdc_generated(from: "UnidadDidactica", purpose: METADATA_FIELD)
@@ -19204,15 +19174,6 @@ extend type UnidadDidactica {
   ✨ Count the number of rows in the `UnidadDidactica` table.
   """
   _count: Int! @fdc_generated(from: "UnidadDidactica.", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `UnidadDidactica` table where the `comun` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  comun_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "UnidadDidactica.comun", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `UnidadDidactica` table where the `creditosPracticos` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """

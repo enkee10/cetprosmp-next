@@ -120,7 +120,7 @@ const snapshotQuery = `query CarpinteriaFillState {
   modulo(id:31) {id titulo horas duracionEfsrt creditos descripcion descripcion2}
   competencias(where:{moduloId:{eq:31}},limit:10) {id nombre tipo}
   competenciaUnidadesDidacticas(limit:1000) {id competenciaId unidadDidacticaId orden}
-  unidadesDidacticas(limit:1000) {id nombre duracion creditos comun}
+  unidadesDidacticas(limit:1000) {id nombre duracion creditos}
   capacidadesTerminales(limit:1000) {id descripcion unidadDidacticaId orden}
   indicadoresCapacidad(limit:1000) {id descripcion capacidadTerminalId orden}
   aprendizajes(limit:1000) {id descripcion indicadorCapacidadId}
@@ -183,7 +183,7 @@ if (production) {
 let unit6 = existingDedicatedUnit;
 if (!unit6) {
   const created = await graph(`mutation CreateCarpinteriaBusinessUnit($name:String!) {
-    unidadDidactica_insert(data:{nombre:$name,duracion:30,comun:false})
+    unidadDidactica_insert(data:{nombre:$name,duracion:30})
   }`, { name: dedicatedUnitName });
   unit6 = { id: created.unidadDidactica_insert.id, nombre: dedicatedUnitName, duracion: 30, creditos: null };
   units.set(unit6.id, unit6);

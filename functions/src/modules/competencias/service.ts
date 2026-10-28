@@ -49,11 +49,25 @@ export async function getModuloCompetenciaContext(moduloId: number) {
 
 export async function validateUnidadCompetencias(unidadId: number, value: unknown) {
   const ids = parseAcademicIds(value);
-  const response = await dataConnect.executeGraphql<{ competencias: CompetenciaRow[] }, { ids: number[] }>(
-    `query SelectedUnidadCompetencias($ids:[Int!]!) { competencias(where:{id:{in:$ids}},limit:10000) { id nombre tipo moduloId } }`,
-    { variables: { ids } },
+  if (ids.length !== 1) throw new https.HttpsError("invalid-argument", "Seleccione una sola competencia: cada unidad pertenece a un unico modulo.");
+  const response = await dataConnect.executeGraphql<{
+    competencias: CompetenciaRow[];
+    competenciaUnidadesDidacticas: Array<{ competencia: { moduloId: number } }>;
+    grupoModuloUnidadesDidacticas: Array<{ grupoModulo: { moduloId: number } }>;
+  }, { ids: number[]; unidadId: number }>(
+    `query SelectedUnidadCompetencias($ids:[Int!]!,$unidadId:Int!) {
+      competencias(where:{id:{in:$ids}},limit:10000) { id nombre tipo moduloId }
+      competenciaUnidadesDidacticas(where:{unidadDidacticaId:{eq:$unidadId}},limit:10000) { competencia { moduloId } }
+      grupoModuloUnidadesDidacticas(where:{unidadDidacticaId:{eq:$unidadId}},limit:10000) { grupoModulo { moduloId } }
+    }`,
+    { variables: { ids, unidadId } },
   );
   if (response.data.competencias.length !== ids.length) throw new https.HttpsError("invalid-argument", "Una competencia no existe.");
+  const targetModuloId = response.data.competencias[0].moduloId;
+  if (response.data.competenciaUnidadesDidacticas.some(r => r.competencia.moduloId !== targetModuloId)
+    || response.data.grupoModuloUnidadesDidacticas.some(r => r.grupoModulo.moduloId !== targetModuloId)) {
+    throw new https.HttpsError("failed-precondition", "La unidad ya pertenece a otro modulo. Cree una unidad propia para este modulo.");
+  }
   const modules = new Set<number>();
   for (const competencia of response.data.competencias) {
     if (modules.has(competencia.moduloId)) throw new https.HttpsError("invalid-argument", "La unidad debe tener una sola competencia por modulo.");
@@ -116,7 +130,12 @@ export async function attachUnidadToModulo(moduloId: number, unidadId: number, o
   const competencia = selectedId ? context.competencias.find(c => c.id === selectedId && c.tipo === tipo)
     : await chooseCompetencia(context, tipo, unidad.data.unidadDidactica.nombre ?? "");
   if (!competencia) throw new https.HttpsError("invalid-argument", "Seleccione una competencia compatible del modulo.");
-  const fields = [`saved:competenciaUnidadDidactica_insert(data:{competenciaId:${competencia.id},unidadDidacticaId:${unidadId},orden:${orden}})`];
+  const fields = [`query {
+    competenciaUnidadesDidacticas(where:{unidadDidacticaId:{eq:${unidadId}}},limit:1)
+      @check(expr:"this.size() == 0", message:"La unidad ya pertenece a un modulo.") { id }
+    grupoModuloUnidadesDidacticas(where:{unidadDidacticaId:{eq:${unidadId}},grupoModulo:{moduloId:{ne:${moduloId}}}},limit:1)
+      @check(expr:"this.size() == 0", message:"La unidad ya pertenece a otro modulo.") { id }
+  }`, `saved:competenciaUnidadDidactica_insert(data:{competenciaId:${competencia.id},unidadDidacticaId:${unidadId},orden:${orden}})`];
   for (const relation of context.relations) {
     const target = expectedCompetenciaType(context.programa, context.modulo.horas, orderedIds, relation.unidadDidacticaId);
     if (relation.competencia.tipo === target) continue;

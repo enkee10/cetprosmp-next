@@ -9,7 +9,7 @@ for (const module of ['academico', 'grupos', 'matriculas', 'registro-auxiliar', 
   const source = fs.readFileSync(new URL(`../functions/src/modules/${module}/handlers.ts`, import.meta.url), 'utf8');
   for (const match of source.matchAll(/const (\w+QUERY) = `([\s\S]*?)`;/g)) {
     const [, name, template] = match;
-    if (!template.includes('competenciaUnidadesDidacticas')) continue;
+    if (!template.includes('competenciaUnidad')) continue;
     const fieldsSource = source + fs.readFileSync(new URL('../functions/src/dataconnectOperations.ts', import.meta.url), 'utf8');
     const resolveFields = (text) => text.replace(/\$\{(\w+)\}/g, (_match, fieldName) => {
       const fieldMatch = fieldsSource.match(new RegExp('const ' + fieldName + ' = `([\\s\\S]*?)`;'));
@@ -17,7 +17,7 @@ for (const module of ['academico', 'grupos', 'matriculas', 'registro-auxiliar', 
       return resolveFields(fieldMatch[1]);
     });
     const query = resolveFields(template);
-    if (!query.includes('competenciaUnidadesDidacticas')) continue;
+    if (!query.includes('competenciaUnidad')) continue;
     const variables = {};
     for (const [, variable, type] of query.matchAll(/\$(\w+)\s*:\s*([\[\]\w!]+)/g)) {
       variables[variable] = type.includes('[') ? [1] : type.includes('Int') ? 1 : '';
@@ -31,10 +31,10 @@ const before = (await dataConnect.executeGraphql(`query PreservedUnitLinks {
   competenciaUnidadesDidacticas(limit:50000) { id competenciaId unidadDidacticaId orden }
 }`)).data;
 const unit = (await academic.getUnidadDidactica.run({ id: 98 }, context)).unidadDidactica;
-assert.ok(unit.competenciaIds.length > 1, 'Debe verificar una unidad compartida');
+assert.equal(unit.competenciaIds.length, 1, 'Cada unidad debe tener una sola competencia');
 await academic.createOrUpdateUnidadDidactica.run(unit, context);
 const after = (await dataConnect.executeGraphql(`query PreservedUnitLinks {
   competenciaUnidadesDidacticas(limit:50000) { id competenciaId unidadDidacticaId orden }
 }`)).data;
 assert.deepEqual(after.competenciaUnidadesDidacticas.sort((a,b)=>a.id-b.id), before.competenciaUnidadesDidacticas.sort((a,b)=>a.id-b.id));
-console.log(`${count} consultas verificadas; guardado de unidad compartida conserva relaciones y orden.`);
+console.log(`${count} consultas verificadas; guardado de unidad propia conserva su relacion y orden.`);

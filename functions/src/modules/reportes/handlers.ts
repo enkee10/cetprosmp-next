@@ -10,6 +10,7 @@ import sharp from "sharp";
 import { getStorage } from "firebase-admin/storage";
 import { https, runWith } from "firebase-functions/v1";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { applyPeriodSelection } from "../planes/periodSelection.js";
 import { getDatosGeneralesGlobales } from "../datos-generales/service.js";
 import { requirePermission } from "../core/permissions.js";
 import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
@@ -96,7 +97,7 @@ type ReporteGrupoModuloOption = {
     id: number;
     titulo?: string | null;
     tituloComercial?: string | null;
-    competencias?: Array<{ nombre: string; tipo: string }>;
+    competencias?: Array<{ id: number; nombre: string; tipo: string }>;
     horas?: number | null;
     creditos?: number | null;
     duracionEfsrt?: number | null;
@@ -190,6 +191,8 @@ type ReporteDetalleData = {
   competenciaUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number; competencia: NonNullable<ReporteUnidad["competencia"]> }>;
   unidadesDidacticas: ReporteUnidad[];
   capacidadesTerminales: ReporteCapacidad[];
+  indicadoresCapacidad: Array<{ id: number; orden?: number | null; capacidadTerminalId?: number | null }>;
+  indicadorCapacidadEstudiantes: Array<{ matriculaId: number; indicadorCapacidadId: number; promedio?: number | null }>;
   modulosEstudiantesByGrupoModulo: ReporteEstudiante[];
   modulosEstudiantesLegacy: ReporteEstudiante[];
   unidadesDidacticasEstudiantes: ReportePromedioUnidad[];
@@ -357,7 +360,7 @@ const REPORTE_OPTIONS_QUERY = `
         id
         titulo
         tituloComercial
-        competencias: competencias_on_modulo { nombre tipo }
+        competencias: competencias_on_modulo { id nombre tipo }
         horas
         creditos
         duracionEfsrt
@@ -429,7 +432,7 @@ const REPORTE_DETALLE_QUERY = `
         id
         titulo
         tituloComercial
-        competencias: competencias_on_modulo { nombre tipo }
+        competencias: competencias_on_modulo { id nombre tipo }
         horas
         creditos
         duracionEfsrt
@@ -555,6 +558,8 @@ const REPORTE_DETALLE_QUERY = `
       matriculaId
       unidadDidacticaId
     }
+    indicadoresCapacidad(limit: 100000) { id orden capacidadTerminalId }
+    indicadorCapacidadEstudiantes: indicadoresCapacidadEstudiantes(limit: 200000) { matriculaId indicadorCapacidadId promedio }
     capacidadesTerminalesEstudiantes(limit: 200000) {
       promedio
       matriculaId
@@ -2831,6 +2836,10 @@ function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data:
   const unitMap = unidadPromedioMap(data);
   const efsrtMap = efsrtPromedioMap(data);
   const units = data.unidades.slice(0, unitColumns.length);
+  const unusedUnitColumns = unitColumns.slice(units.length);
+  for (const column of unusedUnitColumns) {
+    for (const row of [6, 12, 13, 35, 41, 42, 65, 66, 67]) addCell(updates, sheetName, `${column}${row}`, "");
+  }
   const clearStudentRow = (row: number) => {
     ["B", "F", ...unitColumns, "AF", "AG", "AH", "AI", "AJ", "AK", "AM", "AO"].forEach((column) => {
       addCell(updates, sheetName, `${column}${row}`, "");
@@ -2856,6 +2865,7 @@ function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data:
   };
   students.forEach((student, index) => {
     const row = index < 20 ? 14 + index : 43 + (index - 20);
+    for (const column of unusedUnitColumns) addCell(updates, sheetName, `${column}${row}`, "");
     addCell(updates, sheetName, `B${row}`, student.matricula?.user?.dni || student.matricula?.codigoInscripcion || "");
     addCell(updates, sheetName, `F${row}`, getStudentName(student));
     const efsrt = efsrtMap.get(student.id);
@@ -2910,6 +2920,10 @@ function fillOpcionActa(updates: SpreadsheetUpdate[], sheetName: string, data: R
   const capacidadMap = capacidadPromedioMap(data);
   const unidadMap = unidadPromedioMap(data);
   const capacidades = data.capacidades.slice(0, capacidadColumns.length);
+  const unusedCapacityColumns = capacidadColumns.slice(capacidades.length);
+  for (const column of unusedCapacityColumns) {
+    for (const row of [7, 42]) addCell(updates, sheetName, `${column}${row}`, "");
+  }
   const studentResults = new Map<number, { puntaje: number | null; promedio: number | null }>();
   const getStudentCapacidadGrades = (student: ReporteEstudiante) => (
     capacidades.map((capacidad) => capacidadMap.get(`${student.matriculaId}:${capacidad.id}`))
@@ -2937,6 +2951,7 @@ function fillOpcionActa(updates: SpreadsheetUpdate[], sheetName: string, data: R
   const students = data.estudiantes.slice(0, 30);
   students.forEach((student, index) => {
     const row = index < 20 ? 20 + index : 55 + (index - 20);
+    for (const column of unusedCapacityColumns) addCell(updates, sheetName, `${column}${row}`, "");
     addCell(updates, sheetName, `B${row}`, index + 1);
     addCell(updates, sheetName, `C${row}`, "G");
     addCell(updates, sheetName, `D${row}`, student.matricula?.codigoInscripcion || "");
@@ -3272,6 +3287,7 @@ async function buildReporteData(grupoModuloId: number) {
 
   const grupoModulo = response.data.grupoModulo;
   if (!grupoModulo) throw new https.HttpsError("not-found", "No se encontro el grupo-modulo solicitado.");
+  await applyPeriodSelection(response.data, seed.moduloId, seed.grupo.semestreId, usesOpcionOcupacionalRules(grupoModulo.modulo?.plan?.carrera?.tipoCarrera?.nombre));
   const unidadIds = buildUnidadIds(response.data);
   const unidadIdSet = new Set(unidadIds);
   const unidadesById = new Map((response.data.unidadesDidacticas ?? []).map((unidad) => [unidad.id, unidad]));

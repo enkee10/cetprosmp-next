@@ -303,6 +303,16 @@ export default function SettingsPage() {
             <Divider />
           </Box>
 
+          <FormControlLabel
+            label="Poder ocultar de la Programación para Opciones Ocupacionales"
+            control={<Switch checked={safeDraft.general.poderOcultarProgramacionOpcionesOcupacionales}
+              disabled={loading || saving || !canEditSettings}
+              onChange={(_, checked) => setDraft(current => ({
+                ...normalizeDraftSettings(current),
+                general: { ...normalizeDraftSettings(current).general, poderOcultarProgramacionOpcionesOcupacionales: checked },
+              }))} />}
+          />
+
           <Box>
             <Button
               variant="outlined"

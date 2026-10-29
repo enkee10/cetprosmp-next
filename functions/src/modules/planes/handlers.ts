@@ -1,4 +1,5 @@
-import { https } from "firebase-functions/v1";
+import { createPlanWithPreviousCurriculum } from "./clonePlan.js";
+import { https, runWith } from "firebase-functions/v1";
 import {
   buildPlanDataFromInput,
   getIdFromKeyOutput,
@@ -10,7 +11,6 @@ import { requirePermission } from "../core/permissions.js";
 import { DataConnectPlan, DataConnectPlanInput } from "../core/types.js";
 import {
   DELETE_PLAN_MUTATION,
-  INSERT_PLAN_MUTATION,
   UPDATE_PLAN_MUTATION,
 } from "../../dataconnectOperations.js";
 
@@ -99,7 +99,7 @@ export const getPlan = https.onCall(async (data, context) => {
   }
 });
 
-export const createOrUpdatePlan = https.onCall(async (data, context) => {
+export const createOrUpdatePlan = runWith({ timeoutSeconds: 300, memory: "512MB" }).https.onCall(async (data, context) => {
   const payload = buildPlanDataFromInput(data as Record<string, unknown>);
   if (!payload.tituloComercial && !payload.periodoVigenciaId) {
     throw new https.HttpsError("invalid-argument", "tituloComercial or periodoVigenciaId is required.");
@@ -121,15 +121,7 @@ export const createOrUpdatePlan = https.onCall(async (data, context) => {
       return { id: getIdFromKeyOutput(updated.data.plan_update) ?? planId };
     }
 
-    const created = await dataConnect.executeGraphql<
-      { plan_insert: unknown },
-      { data: DataConnectPlanInput }
-    >(
-      INSERT_PLAN_MUTATION,
-      { variables: { data: payload } },
-    );
-
-    return { id: getIdFromKeyOutput(created.data.plan_insert) };
+    return await createPlanWithPreviousCurriculum(payload);
   } catch (error) {
     console.error("Error in createOrUpdatePlan:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while saving plan.");

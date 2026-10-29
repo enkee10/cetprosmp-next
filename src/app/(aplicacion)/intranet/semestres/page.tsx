@@ -66,6 +66,7 @@ export default function SemestresPage() {
           optionValueType: 'number',
         },
         { name: 'descripcion', label: 'Descripcion', type: 'textarea' },
+        { name: 'archivado', label: 'Archivado', type: 'boolean' },
       ]}
       columns={[
         { field: 'titulo', headerName: 'Titulo', flex: 1, minWidth: 180 },

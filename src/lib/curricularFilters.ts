@@ -3,12 +3,14 @@ export interface CurricularPlan {
   planEstudio?: string | null;
   tituloComercial?: string | null;
   anio?: number | null;
-  version?: { titulo?: string | null } | null;
+  versionId?: number | null;
+  version?: { id?: number; titulo?: string | null } | null;
   periodoVigencia?: { titulo?: string | null } | null;
   carrera?: {
     id?: number | null;
     nombre?: string | null;
     tituloComercial?: string | null;
+    tipoCarrera?: { nombre?: string | null } | null;
     especialidad?: {
       id?: number | null;
       titulo?: string | null;
@@ -140,7 +142,7 @@ export function curricularCareerOptions(plans: CurricularPlan[], selectedPlans: 
 }
 
 export function filterCurricularModules<T extends CurricularModule>(
-  modules: T[], plans: CurricularPlan[], selectedPlans: string[], selectedCareer: CurricularCareerOption | null,
+  modules: T[], plans: CurricularPlan[], selectedPlans: string[], selectedCareer: Pick<CurricularCareerOption, 'planIds'> | null,
 ): T[] {
   const allowed = new Set(selectedCareer ? selectedCareer.planIds
     : curricularPlanOptions(plans).filter(option => selectedPlans.includes('all') || selectedPlans.includes(option.key)).flatMap(option => option.planIds));
@@ -156,4 +158,27 @@ export function filterCurricularModules<T extends CurricularModule>(
       planModuloId: relation?.id ?? (module.planId === plan.id ? module.planModuloId : null),
       orden: relation?.orden ?? module.orden } as T];
   }).sort((a, b) => comparePlans(a.plan ?? {}, b.plan ?? {}) || (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id);
+}
+
+/** Each option is a specific plan, even when its displayed name is repeated. */
+export function curricularStudyPlanOptions(plans: CurricularPlan[]): CurricularPlanOption[] {
+  const named = plans.filter(plan => plan.id).map(plan => ({ plan,
+    name: [plan.planEstudio?.trim().slice(-4),
+      plan.carrera?.tituloComercial?.trim() || plan.carrera?.nombre?.trim() || plan.tituloComercial?.trim() || planLabel(plan),
+    ].filter(Boolean).join(' ').replace(/\s+/g, ' '),
+  }));
+  const counts = new Map<string, number>();
+  for (const item of named) counts.set(normalized(item.name), (counts.get(normalized(item.name)) ?? 0) + 1);
+  const options = named.map(({ plan, name }) => {
+    const rawVersion = plan.version?.titulo?.trim() || '';
+    const match = rawVersion.match(/\b((?:19|20|21)\d{2})\s*[-/]\s*(II|I|1|2)\b/i);
+    const version = match ? `${match[1].slice(-2)}-${/^(2|II)$/i.test(match[2]) ? '2' : '1'}` : shortCurricularSemester(rawVersion);
+    const label = (counts.get(normalized(name)) ?? 0) > 1 ? `${name} v.${version || 'sin definir'}` : name;
+    return { key: `plan:${plan.id}`, label, year: planYear(plan), planIds: [plan.id!], name,
+      order: plan.carrera?.especialidad?.orden ?? Infinity, version: rawVersion };
+  });
+  const repeatedLabels = new Map<string, number>();
+  for (const option of options) repeatedLabels.set(normalized(option.label), (repeatedLabels.get(normalized(option.label)) ?? 0) + 1);
+  return options.sort((a, b) => b.year - a.year || a.order - b.order || a.name.localeCompare(b.name, 'es') || b.version.localeCompare(a.version, 'es', { numeric: true }) || b.planIds[0] - a.planIds[0])
+    .map(option => ({ ...option, label: (repeatedLabels.get(normalized(option.label)) ?? 0) > 1 ? `${option.label} (#${option.planIds[0]})` : option.label }));
 }

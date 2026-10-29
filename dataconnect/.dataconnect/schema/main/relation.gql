@@ -15713,6 +15713,40 @@ extend type Plan {
     having: Modulo_Having
   ): [Modulo!]! @fdc_generated(from: "Modulo.plan", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `Plan` objects in a one-to-many relationship (where `Plan`.`planAnterior` is this object).
+  """
+  planes_on_planAnterior(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Plan_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Plan_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Plan_Having
+  ): [Plan!]! @fdc_generated(from: "Plan.planAnterior", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `PlanModulo` objects in a one-to-many relationship (where `PlanModulo`.`plan` is this object).
   """
   planModulos_on_plan(
@@ -15746,6 +15780,40 @@ extend type Plan {
     """
     having: PlanModulo_Having
   ): [PlanModulo!]! @fdc_generated(from: "PlanModulo.plan", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `PlanSemestre` objects in a one-to-many relationship (where `PlanSemestre`.`plan` is this object).
+  """
+  planSemestres_on_plan(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PlanSemestre_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PlanSemestre_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PlanSemestre_Having
+  ): [PlanSemestre!]! @fdc_generated(from: "PlanSemestre.plan", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
@@ -15854,6 +15922,15 @@ extend type Plan {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Plan` table where the `planAnteriorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  planAnteriorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Plan.planAnteriorId", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Plan` table where the `planEstudio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   planEstudio_count(
@@ -15944,6 +16021,15 @@ extend type Plan {
     distinct: Boolean = false
   ): Int @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_SUM)
   """
+  ✨ Sum the `planAnteriorId` field in the `Plan` table.
+  """
+  planAnteriorId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Plan.planAnteriorId", purpose: QUERY_SUM)
+  """
   ✨ Sum the `versionId` field in the `Plan` table.
   """
   versionId_sum(
@@ -15998,6 +16084,15 @@ extend type Plan {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_AVG)
   """
+  ✨ Average the `planAnteriorId` field in the `Plan` table.
+  """
+  planAnteriorId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Plan.planAnteriorId", purpose: QUERY_AVG)
+  """
   ✨ Average the `versionId` field in the `Plan` table.
   """
   versionId_avg(
@@ -16027,6 +16122,10 @@ extend type Plan {
   """
   periodoVigenciaId_min: Int @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `planAnteriorId` field in the `Plan` table.
+  """
+  planAnteriorId_min: Int @fdc_generated(from: "Plan.planAnteriorId", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `versionId` field in the `Plan` table.
   """
   versionId_min: Int @fdc_generated(from: "Plan.versionId", purpose: QUERY_MIN)
@@ -16050,6 +16149,10 @@ extend type Plan {
   ✨ Maximum of the `periodoVigenciaId` field in the `Plan` table.
   """
   periodoVigenciaId_max: Int @fdc_generated(from: "Plan.periodoVigenciaId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `planAnteriorId` field in the `Plan` table.
+  """
+  planAnteriorId_max: Int @fdc_generated(from: "Plan.planAnteriorId", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `versionId` field in the `Plan` table.
   """
@@ -16212,6 +16315,194 @@ extend type PlanModulo {
   A generated field that is used for caching results in SDKs.
   """
   _id: ID! @fdc_generated(from: "PlanModulo.id", purpose: ENTITY_ID)
+}
+extend type PlanSemestre {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "PlanSemestre", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `PlanSemestre` table.
+  """
+  _count: Int! @fdc_generated(from: "PlanSemestre.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlanSemestre` table where the `actualizadoEn` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  actualizadoEn_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlanSemestre.actualizadoEn", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlanSemestre` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlanSemestre.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlanSemestre` table where the `planId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  planId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlanSemestre.planId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlanSemestre` table where the `revision` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  revision_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlanSemestre.revision", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlanSemestre` table where the `seleccion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  seleccion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlanSemestre.seleccion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlanSemestre` table where the `semestreId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  semestreId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlanSemestre.semestreId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `PlanSemestre` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PlanSemestre.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `planId` field in the `PlanSemestre` table.
+  """
+  planId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PlanSemestre.planId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `revision` field in the `PlanSemestre` table.
+  """
+  revision_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PlanSemestre.revision", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `semestreId` field in the `PlanSemestre` table.
+  """
+  semestreId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "PlanSemestre.semestreId", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `PlanSemestre` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PlanSemestre.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `planId` field in the `PlanSemestre` table.
+  """
+  planId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PlanSemestre.planId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `revision` field in the `PlanSemestre` table.
+  """
+  revision_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PlanSemestre.revision", purpose: QUERY_AVG)
+  """
+  ✨ Average the `semestreId` field in the `PlanSemestre` table.
+  """
+  semestreId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PlanSemestre.semestreId", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `actualizadoEn` field in the `PlanSemestre` table.
+  """
+  actualizadoEn_min: Timestamp @fdc_generated(from: "PlanSemestre.actualizadoEn", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `id` field in the `PlanSemestre` table.
+  """
+  id_min: Int @fdc_generated(from: "PlanSemestre.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `planId` field in the `PlanSemestre` table.
+  """
+  planId_min: Int @fdc_generated(from: "PlanSemestre.planId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `revision` field in the `PlanSemestre` table.
+  """
+  revision_min: Int @fdc_generated(from: "PlanSemestre.revision", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `seleccion` field in the `PlanSemestre` table.
+  """
+  seleccion_min: Any @fdc_generated(from: "PlanSemestre.seleccion", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `semestreId` field in the `PlanSemestre` table.
+  """
+  semestreId_min: Int @fdc_generated(from: "PlanSemestre.semestreId", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `actualizadoEn` field in the `PlanSemestre` table.
+  """
+  actualizadoEn_max: Timestamp @fdc_generated(from: "PlanSemestre.actualizadoEn", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `id` field in the `PlanSemestre` table.
+  """
+  id_max: Int @fdc_generated(from: "PlanSemestre.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `planId` field in the `PlanSemestre` table.
+  """
+  planId_max: Int @fdc_generated(from: "PlanSemestre.planId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `revision` field in the `PlanSemestre` table.
+  """
+  revision_max: Int @fdc_generated(from: "PlanSemestre.revision", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `seleccion` field in the `PlanSemestre` table.
+  """
+  seleccion_max: Any @fdc_generated(from: "PlanSemestre.seleccion", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `semestreId` field in the `PlanSemestre` table.
+  """
+  semestreId_max: Int @fdc_generated(from: "PlanSemestre.semestreId", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "PlanSemestre.id", purpose: ENTITY_ID)
 }
 extend type Post {
   """
@@ -18330,6 +18621,40 @@ extend type Semestre {
     """
     having: Plan_Having
   ): [Plan!]! @fdc_generated(from: "Plan.version", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `PlanSemestre` objects in a one-to-many relationship (where `PlanSemestre`.`semestre` is this object).
+  """
+  planSemestres_on_semestre(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PlanSemestre_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PlanSemestre_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PlanSemestre_Having
+  ): [PlanSemestre!]! @fdc_generated(from: "PlanSemestre.semestre", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """

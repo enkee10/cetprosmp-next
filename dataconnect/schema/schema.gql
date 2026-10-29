@@ -169,6 +169,21 @@ type Plan @table(name: "planes", singular: "plan", plural: "planes") {
 
   version: Semestre @ref(fields: "versionId", references: "id")
   versionId: Int @col(name: "version_id")
+
+  planAnterior: Plan @ref(fields: "planAnteriorId", references: "id")
+  planAnteriorId: Int @col(name: "plan_anterior_id")
+}
+
+# A complete selection of IDs, never a copy of the curriculum text.
+type PlanSemestre @table(name: "plan_semestres", singular: "planSemestre", plural: "planSemestres") @unique(fields: ["plan", "semestre"]) @index(fields: ["planId"]) {
+  id: Int! @col(dataType: "serial")
+  plan: Plan! @ref(fields: "planId", references: "id")
+  planId: Int! @col(name: "plan_id")
+  semestre: Semestre! @ref(fields: "semestreId", references: "id")
+  semestreId: Int! @col(name: "semestre_id")
+  seleccion: Any! @default(value: {competenciaIds: [], unidadIds: [], capacidadIds: [], indicadorIds: []})
+  revision: Int! @default(value: 0)
+  actualizadoEn: Timestamp! @col(name: "actualizado_en") @default(expr: "request.time")
 }
 
 type Modulo @table(name: "modulos") @index(fields: ["carreraId"]) {

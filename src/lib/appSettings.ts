@@ -2,6 +2,7 @@ export type SemestreSummary = { id: number; titulo?: string | null; inicio?: str
 
 export type AppSettings = {
   general: {
+    poderOcultarProgramacionOpcionesOcupacionales: boolean;
     usarAvataresEnCertificadosTitulos: boolean;
     formularioMatriculaAceptaRespuestas: boolean;
     activarReconocimientoDni: boolean;
@@ -31,6 +32,7 @@ export type AppSettings = {
 
 export const defaultAppSettings: AppSettings = {
   general: {
+    poderOcultarProgramacionOpcionesOcupacionales: false,
     usarAvataresEnCertificadosTitulos: false,
     formularioMatriculaAceptaRespuestas: false,
     activarReconocimientoDni: true,
@@ -60,6 +62,7 @@ export const defaultAppSettings: AppSettings = {
 
 export const normalizeSettings = (value: Partial<AppSettings> | undefined | null): AppSettings => ({
   general: {
+    poderOcultarProgramacionOpcionesOcupacionales: value?.general?.poderOcultarProgramacionOpcionesOcupacionales === true,
     semestres: Array.isArray(value?.general?.semestres)
       ? value.general.semestres.filter((item) => Number.isInteger(item.id) && item.id > 0)
         .map(({ id, titulo, inicio, fin }) => ({ id, titulo, inicio, fin }))

@@ -17,6 +17,8 @@ import {
   toNumberOrNull,
 } from "../core/userMappers.js";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { academicPeriodData, listCurricularSemesters } from "../planes/periodSelection.js";
+import { modulesForPlans, usedSemesterPlanIds } from "./semesterPlans.js";
 import { attachUnidadToModulo, syncUnidadCompetencias, parseAcademicIds, validateUnidadCompetencias, reconcileModuloUnits, reconcileRelationModules } from "../competencias/service.js";
 import { projectUnidadRelations } from "../competencias/model.js";
 import { getRequesterRoleId, requireAuthenticated, requirePermission } from "../core/permissions.js";
@@ -228,12 +230,12 @@ const GET_ACTIVIDAD_QUERY = `
 `;
 
 const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
-  query ListEstructuraAcademicaManual {
+  query ListEstructuraAcademicaManual($semestreId: Int!) {
+    grupoModulos(where:{grupo:{semestreId:{eq:$semestreId}}},limit:50000){moduloId}
     planes(limit: 5000) {
-      id planEstudio tituloComercial anio
-      version { titulo }
+      id planEstudio tituloComercial anio versionId version { id titulo }
       periodoVigencia { titulo }
-      carrera { id nombre tituloComercial
+      carrera { id nombre tituloComercial tipoCarrera { nombre }
         especialidad { id titulo tituloComercial orden }
         actEconomica { familia { id titulo } }
       }
@@ -336,10 +338,9 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
 const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
   query ListEstructuraAcademicaDocente($uid: String!) {
     planes(limit: 5000) {
-      id planEstudio tituloComercial anio
-      version { titulo }
+      id planEstudio tituloComercial anio versionId version { id titulo }
       periodoVigencia { titulo }
-      carrera { id nombre tituloComercial
+      carrera { id nombre tituloComercial tipoCarrera { nombre }
         especialidad { id titulo tituloComercial orden }
         actEconomica { familia { id titulo } }
       }
@@ -552,6 +553,7 @@ const LIST_GRUPO_MODULO_UNIDAD_SYNC_QUERY = `
 `;
 
 interface EstructuraAcademicaQueryResponse {
+  grupoModulos?: Array<{ moduloId: number }>;
   planes?: DataConnectPlan[];
   modulos: EstructuraModulo[];
   planModulos: DataConnectPlanModulo[];
@@ -1037,24 +1039,33 @@ function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
   });
 }
 
-export const listEstructuraAcademica = https.onCall(async (_data, context) => {
+export const listEstructuraAcademica = https.onCall(async (data, context) => {
   await requirePermission(context, "estructura-academica", "view");
   if (isDocenteNoSuperUser(context)) {
     throw new https.HttpsError("permission-denied", "Los docentes deben usar la vista filtrada de estructura academica.");
   }
 
   try {
+    const [period, semestres] = await Promise.all([academicPeriodData([], data?.semestreId), listCurricularSemesters()]);
     const response = await dataConnect.executeGraphql<
       EstructuraAcademicaQueryResponse,
-      Record<string, never>
-    >(LIST_ESTRUCTURA_ACADEMICA_QUERY);
+      { semestreId: number }
+    >(LIST_ESTRUCTURA_ACADEMICA_QUERY, { variables: { semestreId: period.semestreId! } });
+    if (response.data.grupoModulos?.length === 50000) throw new https.HttpsError("resource-exhausted", "Demasiados grupos para consultar los planes del semestre.");
+    const usedPlans = usedSemesterPlanIds(response.data.modulos, response.data.planModulos, response.data.grupoModulos ?? []);
+    const planes = (response.data.planes ?? []).filter(plan => usedPlans.has(plan.id));
+    const curriculum = { ...response.data, modulos: modulesForPlans(response.data.modulos, response.data.planModulos, usedPlans),
+      planModulos: response.data.planModulos.filter(relation => usedPlans.has(relation.planId)) };
 
     return {
-      modulos: buildEstructuraAcademica(response.data),
-      planes: response.data.planes ?? [],
+      modulos: buildEstructuraAcademica(curriculum),
+      planes,
       materiales: await listMaterialCatalog(),
+      ...await academicPeriodData(planes, period.semestreId),
+      semestres,
     };
   } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
     console.error("Error in listEstructuraAcademica:", error);
     throw new https.HttpsError("internal", "An unexpected error occurred while listing academic structure.");
   }
@@ -1064,13 +1075,13 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
   requireDocenteEstructuraAcademica(context);
 
   const uid = context.auth?.uid;
-  const requestedSemestreTitulo = String(data?.semestreTitulo ?? "").trim();
+  let requestedSemestreTitulo = String(data?.semestreTitulo ?? "").trim();
   if (!uid) {
     throw new https.HttpsError("unauthenticated", "Debes iniciar sesion.");
   }
 
   try {
-    const [response, semestreConsultaIds] = await Promise.all([
+    const [response, semestreConsultaIds, curricularSemestres] = await Promise.all([
       dataConnect.executeGraphql<{
       users: Array<{ id: number }>;
       personals: Array<{ id: number; userId?: number | null }>;
@@ -1087,16 +1098,22 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
       { variables: { uid } },
     ),
       getConfiguredSemestreConsultaIds(),
+      listCurricularSemesters(),
     ]);
     const allowedSemestreIds = semestreConsultaIds.length > 0 ? new Set(semestreConsultaIds) : null;
     const semestres = (response.data.semestres ?? []).filter((semestre) =>
-      !allowedSemestreIds || allowedSemestreIds.has(semestre.id),
+      curricularSemestres.some(item => item.id === semestre.id) && (!allowedSemestreIds || allowedSemestreIds.has(semestre.id)),
     );
     const grupoModulos = (response.data.grupoModulos ?? []).filter((item) => {
       const semestreId = item.grupo?.semestre?.id;
       return !allowedSemestreIds || allowedSemestreIds.has(Number(semestreId));
     });
 
+    if (data?.semestreId) {
+      const requested = semestres.find(item => item.id === Number(data.semestreId));
+      if (!requested) throw new https.HttpsError("permission-denied", "No tienes acceso a ese semestre.");
+      requestedSemestreTitulo = requested.titulo ?? "";
+    }
     const docenteSemestreSelection = requestedSemestreTitulo
       ? null
       : await getDocenteMenuSemestreSelection(semestres);
@@ -1140,6 +1157,8 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
     return {
       modulos: buildEstructuraAcademica(estructuraResponse),
       planes: (response.data.planes ?? []).filter((plan) => allowedPlanIds.has(plan.id)),
+      ...await academicPeriodData((response.data.planes ?? []).filter(plan => allowedPlanIds.has(plan.id)), semestres.find(item => item.titulo === semestreTitulo)?.id),
+      semestres: curricularSemestres.filter(item => semestres.some(allowed => allowed.id === item.id)),
       semestreTitulo,
       title,
     };

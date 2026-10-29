@@ -1,4 +1,5 @@
 import type { CurricularPlan } from './curricularFilters';
+import type { PeriodNode } from './curricularSelection';
 
 export interface SesionDetalle {
   id: number;
@@ -13,18 +14,18 @@ export interface SesionDetalle {
   materiales: Array<{ id: number; orden: number; texto: string }>;
 }
 export interface AprendizajeDetalle { id: number; descripcion: string | null; indicadorCapacidadId?: number; orden?: number | null; actividades: SesionDetalle[] }
-export interface IndicadorDetalle {
+export interface IndicadorDetalle extends PeriodNode {
   id: number; descripcion: string | null; sigla: string | null; orden: number | null;
   capacidadTerminalId: number | null; aprendizajes?: AprendizajeDetalle[];
 }
-export interface CapacidadDetalle {
+export interface CapacidadDetalle extends PeriodNode {
   id: number; descripcion: string | null; sigla: string | null; orden: number | null;
   unidadDidacticaId: number | null;
   competencias?: Array<{ id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; moduloId: number }>;
   indicadoresCapacidad: IndicadorDetalle[];
 }
-export interface CompetenciaDetalle { id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; orden?: number | null }
-export interface UnidadDidacticaDetalle {
+export interface CompetenciaDetalle extends PeriodNode { id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; orden?: number | null }
+export interface UnidadDidacticaDetalle extends PeriodNode {
   id: number; relacionId: number; competenciaId: number;
   competencia: CompetenciaDetalle & { moduloId: number };
   orden: number | null; nombre: string | null; duracion: number | null; creditos: number | null; sigla: string | null;

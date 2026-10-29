@@ -531,6 +531,15 @@ extend type Mutation {
     data: PlanModulo_Data!
   ): PlanModulo_KeyOutput! @fdc_generated(from: "PlanModulo", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `PlanSemestre` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  planSemestre_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: PlanSemestre_Data!
+  ): PlanSemestre_KeyOutput! @fdc_generated(from: "PlanSemestre", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Post` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   post_insert(
@@ -1232,6 +1241,15 @@ extend type Mutation {
     """
     data: [PlanModulo_Data!]!
   ): [PlanModulo_KeyOutput!]! @fdc_generated(from: "PlanModulo", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `PlanSemestre` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  planSemestre_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [PlanSemestre_Data!]!
+  ): [PlanSemestre_KeyOutput!]! @fdc_generated(from: "PlanSemestre", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Post` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1935,6 +1953,15 @@ extend type Mutation {
     data: PlanModulo_Data!
   ): PlanModulo_KeyOutput! @fdc_generated(from: "PlanModulo", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `PlanSemestre` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PlanSemestre`.
+  """
+  planSemestre_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: PlanSemestre_Data!
+  ): PlanSemestre_KeyOutput! @fdc_generated(from: "PlanSemestre", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Post` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Post`.
   """
   post_upsert(
@@ -2636,6 +2663,15 @@ extend type Mutation {
     """
     data: [PlanModulo_Data!]!
   ): [PlanModulo_KeyOutput!]! @fdc_generated(from: "PlanModulo", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `PlanSemestre` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PlanSemestre`.
+  """
+  planSemestre_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [PlanSemestre_Data!]!
+  ): [PlanSemestre_KeyOutput!]! @fdc_generated(from: "PlanSemestre", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Post` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Post`.
   """
@@ -4489,6 +4525,35 @@ extend type Mutation {
     data: PlanModulo_Data!
   ): PlanModulo_KeyOutput @fdc_generated(from: "PlanModulo", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `PlanSemestre` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `PlanSemestre` or `null` if not found.
+  """
+  planSemestre_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: PlanSemestre_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PlanSemestre_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: PlanSemestre_Data!
+  ): PlanSemestre_KeyOutput @fdc_generated(from: "PlanSemestre", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Post` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Post` or `null` if not found.
   """
   post_update(
@@ -6160,6 +6225,25 @@ extend type Mutation {
     """
     data: PlanModulo_Data!
   ): Int! @fdc_generated(from: "PlanModulo", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `PlanSemestre` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  planSemestre_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: PlanSemestre_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: PlanSemestre_Data!
+  ): Int! @fdc_generated(from: "PlanSemestre", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Post` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -7908,6 +7992,30 @@ extend type Mutation {
     first: PlanModulo_FirstRow
   ): PlanModulo_KeyOutput @fdc_generated(from: "PlanModulo", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `PlanSemestre` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  planSemestre_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: PlanSemestre_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PlanSemestre_FirstRow
+  ): PlanSemestre_KeyOutput @fdc_generated(from: "PlanSemestre", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Post` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   post_delete(
@@ -9189,6 +9297,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "PlanModulo", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `PlanSemestre` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  planSemestre_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: PlanSemestre_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "PlanSemestre", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Post` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

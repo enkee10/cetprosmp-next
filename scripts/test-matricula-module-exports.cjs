@@ -54,6 +54,7 @@ async function testSheets() {
     module, exports: module.exports, Map, Set,
     buildMatriculaModuloRows: helper.buildMatriculaModuloRows,
     https: { HttpsError }, isSuperUserContext: () => !docente, getRequesterRoleId: () => docente ? 4 : 1,
+    isDocenteRole: role => [4, 10].includes(Number(role)),
     LIST_MATRICULAS_BY_IDS_FOR_DOCENTE_SHEET_QUERY: 'matriculas', LIST_GENERAL_SHEET_MODULE_ROWS_QUERY: 'modulos',
     MATRICULAS_GENERAL_LIST_SHEETS_FILE_NAME: 'Lista', DOCENTE_MATRICULADOS_SHEETS_FOLDER_ID: 'folder',
     DOCENTE_MATRICULADOS_SHEETS_TAB_NAME: 'Matriculados',
@@ -103,7 +104,7 @@ async function testSheets() {
 async function testAvanza() {
   const registration = loadModule('functions/src/modules/matriculas/avanzaRegistration.ts');
   const data = { datoGenerals: [{ codigoModular: '001' }], carreras: [{ id: 1, nombre: 'Manualidades' }],
-    planes: [{ id: 1, carreraId: 1, planEstudio: '2026', version: { titulo: '2026-2' }, periodoVigencia: null, anio: 2026 }],
+    planes: [{ id: 1, carreraId: 1, planEstudio: '2026', periodoVigencia: { titulo: '2026-2' }, anio: 2026 }],
     grupoModulos: grupos, modulosEstudiantes: links };
   const bucket = {
     getFiles: async () => [[{ name: 'AVANZA/AVANZA-Plantillas-Registro-2026/PE-Manualidades.xlsx', getMetadata: async () => [{ generation: '1' }] }]],

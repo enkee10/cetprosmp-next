@@ -2,19 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { DragEvent, ReactNode } from 'react';
+import AcademicListItem from './AcademicListItem';
+import { AcademicPreviewText, AcademicTextPreviewProvider } from './AcademicTextPreview';
 import SesionItemList, { type SesionListItem } from './SesionItemList';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
   Box,
-  Button,
   Chip,
   CircularProgress,
   FormControl,
   IconButton,
   InputLabel,
   List,
-  ListItemButton,
-  ListItemText,
   MenuItem,
   Select,
   Stack,
@@ -27,17 +26,20 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { useAppSettings } from '@/hooks/useAppSettings';
+import { curricularItemCode } from '@/lib/curricularCodes';
+import { canHideCurricularPlan, selectionColumns, withPeriodSelection, type PlanSelection, type SelectionSemester, type SelectionEntity, type PeriodNode } from '@/lib/curricularSelection';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { isDocenteRole, isSuperUserEmail, isSuperUserRole, isSuperUserTitle } from '@/lib/intranetPermissions';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
-import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
 import {
-  curricularCareerOptions,
   curricularPlanCatalog,
-  curricularPlanOptions,
+  curricularStudyPlanOptions,
   curricularTitle,
   filterCurricularModules,
   type CurricularPlan,
@@ -252,6 +254,8 @@ function EditableValue({
   readOnly = false,
   details,
   properties,
+  actions,
+  prefix,
 }: {
   value: EditableCellValue | undefined;
   target?: EditableCellTarget;
@@ -261,6 +265,8 @@ function EditableValue({
   readOnly?: boolean;
   details?: ReactNode;
   properties?: ReactNode;
+  actions?: ReactNode;
+  prefix?: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -349,35 +355,18 @@ function EditableValue({
           }}
         />
       ) : (
-        <Typography
-          component="span"
+        <AcademicPreviewText
+          text={`${prefix ? `${prefix} ` : ''}${displayText(value)}`}
+          lines={lines}
           variant={variant}
-          onDoubleClick={(event) => {
-            if (!activeTarget) return;
-            event.preventDefault();
-            event.stopPropagation();
-            beginEditing();
-          }}
-          title={activeTarget ? 'Doble clic para editar' : undefined}
-          sx={{
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            WebkitLineClamp: lines,
-            overflow: 'hidden',
-            wordBreak: 'break-word',
-            lineHeight: 1.25,
-            cursor: activeTarget ? 'text' : 'inherit',
-            borderBottom: activeTarget ? '1px dotted transparent' : undefined,
-            '&:hover': activeTarget ? { borderBottomColor: 'text.secondary' } : undefined,
-          }}
-        >
-          {displayText(value)}
-        </Typography>
+          onEdit={activeTarget ? beginEditing : undefined}
+        />
       )}
       {details}
-      {(properties || (activeTarget && editing)) && (
+      {(properties || actions || (activeTarget && editing)) && (
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5, mt: 0.65 }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>{properties}</Box>
+          {!editing && actions}
           {activeTarget && editing && (
             <Stack direction="row" sx={{ flexShrink: 0 }}
               onMouseDown={(event) => { event.preventDefault(); event.stopPropagation(); }}
@@ -585,9 +574,8 @@ function Panel({
             '&::-webkit-scrollbar-track': { bgcolor: 'transparent' },
             '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: -2 },
             '& > .MuiList-root': { display: 'flex', flexWrap: 'nowrap', alignItems: 'stretch', gap: 1, p: 1, width: 'max-content', minWidth: '100%', boxSizing: 'border-box' },
-            '& > .MuiList-root > .MuiListItemButton-root, & > .MuiList-root > .MuiListItem-root': { flex: '0 0 auto', width: cardWidth, minWidth: 0, border: '1px solid', borderColor: 'divider', borderRadius: 1 },
+            '& > .MuiList-root > .MuiListItemButton-root': { flex: '0 0 auto', width: cardWidth, minWidth: 0, border: '1px solid', borderColor: 'divider', borderRadius: 1 },
             '& > .MuiList-root > [data-empleabilidad="true"]': { borderWidth: 2, borderColor: 'text.secondary' },
-            '& .MuiListItemText-root': { minWidth: 0, my: 0, alignSelf: 'flex-start' },
           }}
         >
           {children}
@@ -617,6 +605,12 @@ export default function EstructuraAcademicaMasterDetail({
   errorMessage?: string;
 }) {
   const { user } = useAuth();
+  const { settings, loading: loadingSettings } = useAppSettings();
+  const [semesterOverride, setSemesterOverride] = useState<number | null>(null);
+  const selectedSemesterId = semesterOverride ?? settings.general.semestreActualId;
+  const [semesters, setSemesters] = useState<SelectionSemester[]>([]);
+  const [selections, setSelections] = useState<PlanSelection[]>([]);
+  const [showHidden, setShowHidden] = useState<Record<SelectionEntity, boolean>>({ competencia: false, unidadDidactica: false, capacidadTerminal: false, indicadorCapacidad: false });
   const showToolbar = Boolean(user && user.profileResolved !== false && (
     (Number(user.level) > 200 && !isDocenteRole(user.role))
     || Number(user.level) >= 600
@@ -631,8 +625,7 @@ export default function EstructuraAcademicaMasterDetail({
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPlanKeys, setSelectedPlanKeys] = useState<string[]>(['all']);
-  const [selectedCareerKey, setSelectedCareerKey] = useState('all');
+  const [selectedPlanKey, setSelectedPlanKey] = useState('all');
   const [selectedModuloId, setSelectedModuloId] = useState<number | null>(null);
   const [selectedCompetenciaId, setSelectedCompetenciaId] = useState<number | null>(null);
   const [selectedUnidadId, setSelectedUnidadId] = useState<number | null>(null);
@@ -641,7 +634,6 @@ export default function EstructuraAcademicaMasterDetail({
   const [selectedSesionId, setSelectedSesionId] = useState<number | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [moveTarget, setMoveTarget] = useState<AcademicDrag | null>(null);
-  const [selectedAprendizajeId, setSelectedAprendizajeId] = useState<number | null>(null);
   const [movePending, setMovePending] = useState(false);
   const movePendingRef = useRef(false);
   const dragPreviewRef = useRef<HTMLElement | null>(null);
@@ -671,18 +663,24 @@ export default function EstructuraAcademicaMasterDetail({
       if (auth.currentUser) {
         await auth.currentUser.getIdToken(true);
       }
-      const listEstructuraAcademica = httpsCallable<undefined, {
+      const listEstructuraAcademica = httpsCallable<{ semestreId?: number | null }, {
         modulos?: ModuloDetalle[];
         planes?: CurricularPlan[];
         materiales?: Array<{ id: number; nombre: string }>;
         title?: string | null;
+        semestreId?: number;
+        semestres?: SelectionSemester[];
+        selecciones?: PlanSelection[];
       }>(
         functions,
         callableName,
       );
-      const result = await listEstructuraAcademica();
+      const result = await listEstructuraAcademica({ semestreId: selectedSemesterId });
       setModulos(result.data.modulos || []);
       setPlanes(result.data.planes || []);
+      setSemesters(result.data.semestres || []);
+      setSelections(result.data.selecciones || []);
+      if (result.data.semestreId && result.data.semestreId !== selectedSemesterId) setSemesterOverride(result.data.semestreId);
       setCatalogMaterials(result.data.materiales || []);
       setResolvedTitle(curricularTitle(result.data.title || title));
       setError(null);
@@ -692,7 +690,7 @@ export default function EstructuraAcademicaMasterDetail({
     } finally {
       setLoading(false);
     }
-  }, [auth, callableName, errorMessage, functions, title]);
+  }, [auth, callableName, errorMessage, functions, title, selectedSemesterId]);
 
   const saveEditableCell = useCallback(async (target: EditableCellTarget, value: EditableCellValue) => {
     if (!allowEdit) {
@@ -723,26 +721,24 @@ export default function EstructuraAcademicaMasterDetail({
     setResolvedTitle(curricularTitle(title));
   }, [title]);
 
+  const autoFetchRef = useRef<typeof fetchEstructura | null>(null);
   useEffect(() => {
+    if (loadingSettings || autoFetchRef.current === fetchEstructura) return;
+    autoFetchRef.current = fetchEstructura;
     void fetchEstructura();
-  }, [fetchEstructura]);
+  }, [fetchEstructura, loadingSettings]);
 
   const planCatalog = useMemo(() => curricularPlanCatalog(planes, modulos), [planes, modulos]);
-  const planOptions = useMemo(() => curricularPlanOptions(planCatalog), [planCatalog]);
-  const careerOptions = useMemo(() => curricularCareerOptions(planCatalog, selectedPlanKeys), [planCatalog, selectedPlanKeys]);
-  const selectedCareer = careerOptions.find(option => option.key === selectedCareerKey) ?? null;
-  const filteredModulos = useMemo(() => filterCurricularModules(modulos, planCatalog, selectedPlanKeys, selectedCareer),
-    [modulos, planCatalog, selectedPlanKeys, selectedCareer]);
+  const planOptions = useMemo(() => curricularStudyPlanOptions(planCatalog), [planCatalog]);
+  const selectedPlan = planOptions.find(option => option.key === selectedPlanKey) ?? null;
+  const occupationalHiding = settings.general.poderOcultarProgramacionOpcionesOcupacionales;
+  const filteredModulos = useMemo(() => filterCurricularModules(modulos, planCatalog, ['all'], selectedPlan)
+    .map(module => withPeriodSelection(module, canHideCurricularPlan(module.plan, occupationalHiding) ? selections.find(s => s.planId === module.planId) : undefined)),
+    [modulos, planCatalog, selectedPlan, selections, occupationalHiding]);
 
   useEffect(() => {
-    if (loading || selectedPlanKeys.includes('all')) return;
-    const available = selectedPlanKeys.filter(key => planOptions.some(option => option.key === key));
-    if (available.length !== selectedPlanKeys.length) setSelectedPlanKeys(available.length ? available : ['all']);
-  }, [loading, planOptions, selectedPlanKeys]);
-
-  useEffect(() => {
-    if (selectedCareerKey !== 'all' && !selectedCareer) setSelectedCareerKey('all');
-  }, [selectedCareer, selectedCareerKey]);
+    if (!loading && selectedPlanKey !== 'all' && !selectedPlan) setSelectedPlanKey('all');
+  }, [loading, selectedPlan, selectedPlanKey]);
 
   const selectedModulo = useMemo(
     () => filteredModulos.find((modulo) => modulo.id === selectedModuloId) ?? filteredModulos[0] ?? null,
@@ -750,40 +746,67 @@ export default function EstructuraAcademicaMasterDetail({
   );
 
   const todasUnidades = useMemo(() => selectedModulo?.unidadesDidacticas ?? [], [selectedModulo]);
-  const competencias = useMemo(() => (selectedModulo?.competencias ?? []).slice().sort((a, b) =>
+  const competencias = useMemo(() => (selectedModulo?.competencias ?? []).filter(item => showHidden.competencia || item.periodActive !== false).sort((a, b) =>
     (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id,
-  ), [selectedModulo]);
+  ), [selectedModulo, showHidden.competencia]);
   const selectedCompetencia = competencias.find(competencia => competencia.id === selectedCompetenciaId) ?? competencias[0] ?? null;
-  const unidades = useMemo(() => todasUnidades.filter(unidad => unidad.competenciaId === selectedCompetencia?.id),
-    [todasUnidades, selectedCompetencia?.id]);
+  const unidades = useMemo(() => todasUnidades.filter(unidad => unidad.competenciaId === selectedCompetencia?.id && (showHidden.unidadDidactica || unidad.periodActive !== false)),
+    [todasUnidades, selectedCompetencia?.id, showHidden.unidadDidactica]);
   useEffect(() => { setSelectedCompetenciaId(null); }, [selectedModulo?.id]);
   const selectedUnidad = useMemo(
     () => unidades.find((unidad) => unidad.id === selectedUnidadId) ?? unidades[0] ?? null,
     [selectedUnidadId, unidades],
   );
-  const capacidades = useMemo(() => selectedUnidad?.capacidadesTerminales ?? [], [selectedUnidad]);
+  const capacidades = useMemo(() => (selectedUnidad?.capacidadesTerminales ?? []).filter(item => showHidden.capacidadTerminal || item.periodActive !== false), [selectedUnidad, showHidden.capacidadTerminal]);
   const selectedCapacidad = useMemo(
     () => capacidades.find((capacidad) => capacidad.id === selectedCapacidadId) ?? capacidades[0] ?? null,
     [capacidades, selectedCapacidadId],
   );
-  const indicadores = useMemo(() => selectedCapacidad?.indicadoresCapacidad ?? [], [selectedCapacidad]);
+  const indicadores = useMemo(() => (selectedCapacidad?.indicadoresCapacidad ?? []).filter(item => showHidden.indicadorCapacidad || item.periodActive !== false), [selectedCapacidad, showHidden.indicadorCapacidad]);
   const selectedIndicador = useMemo(
     () => indicadores.find((indicador) => indicador.id === selectedIndicadorId) ?? indicadores[0] ?? null,
     [indicadores, selectedIndicadorId],
   );
-  const aprendizajes = useMemo(() => (selectedIndicador?.aprendizajes ?? []).slice().sort((a, b) => (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id), [selectedIndicador]);
-  const selectedAprendizaje = aprendizajes.find(item => item.id === selectedAprendizajeId) ?? aprendizajes[0] ?? null;
-  const sesiones = useMemo(() => (selectedAprendizaje ? [selectedAprendizaje] : []).flatMap(aprendizaje =>
-    (aprendizaje.actividades ?? []).map(actividad => ({ ...actividad, aprendizajeId: aprendizaje.id, aprendizaje: aprendizaje.descripcion })),
-  ).sort((a, b) => (a.orden ?? a.numeroSesion ?? a.id) - (b.orden ?? b.numeroSesion ?? b.id) || a.id - b.id), [selectedAprendizaje]);
-  useEffect(() => { setSelectedAprendizajeId(null); }, [selectedIndicador?.id]);
+  const aprendizajes = useMemo(() => (selectedIndicador?.periodActive === false ? [] : selectedIndicador?.aprendizajes ?? []).slice().sort((a, b) => (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id), [selectedIndicador]);
+  const sesiones = useMemo(() => aprendizajes.flatMap(aprendizaje =>
+    (aprendizaje.actividades ?? []).map(actividad => ({ ...actividad, aprendizajeId: aprendizaje.id })),
+  ).sort((a, b) => (a.orden ?? a.numeroSesion ?? a.id) - (b.orden ?? b.numeroSesion ?? b.id) || a.id - b.id), [aprendizajes]);
 
   const selectedSesion = sesiones.find(item => item.id === selectedSesionId) ?? sesiones[0] ?? null;
-  useEffect(() => {
-    if (selectedSesionId == null) return;
-    const learning = aprendizajes.find(item => item.actividades.some(activity => activity.id === selectedSesionId));
-    if (learning) setSelectedAprendizajeId(learning.id);
-  }, [aprendizajes, selectedSesionId]);
+  const selectedAprendizaje = aprendizajes.find(item => item.id === selectedSesion?.aprendizajeId) ?? aprendizajes[0] ?? null;
+  const visibilityAllowed = Boolean(selectedModulo && canHideCurricularPlan(selectedModulo.plan, occupationalHiding));
+  const periodSelection = visibilityAllowed ? selections.find(item => item.planId === selectedModulo?.planId) : undefined;
+  const periodArchived = semesters.find(item => item.id === selectedSemesterId)?.archivado;
+  const changeVisibility = async (entity: SelectionEntity, id: number, active: boolean) => {
+    if (!allowEdit || !periodSelection || actionLoading || periodArchived) return;
+    setActionLoading(true);
+    try {
+      const call = httpsCallable<Record<string, unknown>, { selection: PlanSelection }>(functions, 'setPlanSemesterVisibility');
+      const result = await call({ entity, id, active, planId: periodSelection.planId, semestreId: selectedSemesterId, revision: periodSelection.revision });
+      setSelections(current => current.map(item => item.planId === result.data.selection.planId ? result.data.selection : item));
+      setError(null);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'No se pudo guardar la selección del semestre.');
+    } finally { setActionLoading(false); }
+  };
+  const visibilityButton = (entity: SelectionEntity, item: PeriodNode & { id: number }, parentActive = true) => {
+    if (!visibilityAllowed) return null;
+    const selected = item.periodSelected !== false;
+    const label = !parentActive ? 'Activa primero el elemento superior' : `${selected ? 'Ocultar' : 'Incluir'} en este semestre`;
+    return <IconButton size="small" aria-label={label} title={label} disabled={!allowEdit || !periodSelection || actionLoading || movePending || periodArchived === true || !parentActive}
+      onDoubleClick={event => event.stopPropagation()}
+      onClick={event => { event.stopPropagation(); void changeVisibility(entity, item.id, !selected); }}>
+      {selected ? <VisibilityIcon fontSize="small" /> : <VisibilityOffIcon fontSize="small" />}
+    </IconButton>;
+  };
+  const hiddenToggle = (entity: SelectionEntity) => {
+    if (!visibilityAllowed) return null;
+    const label = showHidden[entity] ? 'Mostrar solo activos' : 'Mostrar activos y ocultos';
+    return <IconButton size="small" aria-label={label} title={label} color={showHidden[entity] ? 'primary' : 'default'} aria-pressed={showHidden[entity]}
+      onClick={() => setShowHidden(current => ({ ...current, [entity]: !current[entity] }))}>
+      {showHidden[entity] ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+    </IconButton>;
+  };
   const materialOptions = useMemo(() => catalogMaterials.map(item => ({ id: item.id, orden: 0, texto: item.nombre })), [catalogMaterials]);
   const saveSesionItem = useCallback(async (actividadId: number, kind: 'contenido' | 'material', action: 'add' | 'remove' | 'reorder', data: { texto?: string; materialId?: number; itemId?: number; items?: Array<{ id: number; orden: number }> }) => {
     if (!allowEdit) throw new Error('No tienes permiso para editar.');
@@ -817,6 +840,7 @@ export default function EstructuraAcademicaMasterDetail({
           ? { entity: 'competenciaUnidadDidactica', id: assignment!.id }
           : { entity: payload.entity as AcademicDrag['entity'], id: result.data.id };
         setModulos(current => applyAcademicCreation(current, created));
+        if (Object.prototype.hasOwnProperty.call(selectionColumns, created.entity)) setShowHidden(current => ({ ...current, [created.entity]: true }));
         if (payload.entity === 'modulo') setSelectedModuloId(result.data.id);
         if (payload.entity === 'competencia') setSelectedCompetenciaId(result.data.id);
         if (payload.entity === 'unidadDidactica') {
@@ -825,8 +849,12 @@ export default function EstructuraAcademicaMasterDetail({
         }
         if (payload.entity === 'capacidadTerminal') setSelectedCapacidadId(result.data.id);
         if (payload.entity === 'indicadorCapacidad') setSelectedIndicadorId(result.data.id);
-        if (payload.entity === 'aprendizaje') setSelectedAprendizajeId(result.data.id);
         if (payload.entity === 'actividad') setSelectedSesionId(result.data.id);
+        if (allowEdit && periodSelection && !periodArchived && Object.prototype.hasOwnProperty.call(selectionColumns, created.entity)) {
+          const activate = httpsCallable<Record<string, unknown>, { selection: PlanSelection }>(functions, 'setPlanSemesterVisibility');
+          const activation = await activate({ entity: created.entity, id: created.id, active: true, planId: periodSelection.planId, semestreId: selectedSemesterId, revision: periodSelection.revision });
+          setSelections(current => current.map(item => item.planId === periodSelection.planId ? activation.data.selection : item));
+        }
       } else setModulos(current => applyAcademicRemoval(current, payload as AcademicRemoval, result.data, planCatalog));
       setError(null);
     } catch (err) {
@@ -835,7 +863,7 @@ export default function EstructuraAcademicaMasterDetail({
     } finally {
       setActionLoading(false);
     }
-  }, [auth, functions, planCatalog]);
+  }, [auth, functions, planCatalog, periodSelection, periodArchived, selectedSemesterId, allowEdit]);
 
   const beginDrag = useCallback((event: DragEvent<HTMLElement>, nextDragState: DragState) => {
     event.stopPropagation();
@@ -921,7 +949,6 @@ export default function EstructuraAcademicaMasterDetail({
           if (target.entity === 'competenciaUnidadDidactica') setSelectedUnidadId(locations.get(key)?.unitId ?? null);
           if (target.entity === 'capacidadTerminal') setSelectedCapacidadId(target.id);
           if (target.entity === 'indicadorCapacidad') setSelectedIndicadorId(target.id);
-          if (target.entity === 'aprendizaje') setSelectedAprendizajeId(target.id);
         }, 650);
       }
     },
@@ -1213,54 +1240,43 @@ export default function EstructuraAcademicaMasterDetail({
   }, [selectedIndicador?.id, selectedIndicadorId]);
 
   return (
+    <AcademicTextPreviewProvider>
     <IntranetListLayout
       message={error}
       messageSeverity="error"
       title={resolvedTitle}
       showToolbar={showToolbar}
-      commands={showToolbar ? (
+      commands={(
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25} alignItems={{ sm: 'center' }}>
-          <MultiSelectWithActions
-            label="Plan de Estudios"
-            displayEmpty
-            value={selectedPlanKeys.includes('all') ? [] : selectedPlanKeys}
-            sx={{ minWidth: { xs: '100%', sm: 220 }, maxWidth: { sm: 400 } }}
-            fullWidth={false}
-            options={planOptions.map(option => ({ value: option.key, label: option.label }))}
-            allOption={{ value: 'all', label: 'Todos', isSelected: keys => keys.length === 0, getValue: () => [] }}
-            renderValue={keys => keys.length === 0 ? 'Todos' : keys.map(key => planOptions.find(option => option.key === key)?.label).filter(Boolean).join(', ')}
-            onChange={keys => {
-              const selected = keys.length ? keys : ['all'];
-              if (selected.length === selectedPlanKeys.length && selected.every(key => selectedPlanKeys.includes(key))) return;
-              setSelectedPlanKeys(selected);
-              setSelectedCareerKey('all');
-              setSelectedModuloId(null);
-              setSelectedCompetenciaId(null);
-              setSelectedUnidadId(null);
-              setSelectedCapacidadId(null);
-              setSelectedIndicadorId(null);
-            }}
-            disabled={loading}
-          />
+          <FormControl size="small" sx={{ width: '100px', minWidth: '100px' }}>
+            <InputLabel id="curricular-semester-label">Semestre</InputLabel>
+            <Select labelId="curricular-semester-label" label="Semestre" value={semesters.some(item => item.id === selectedSemesterId) ? selectedSemesterId : ''}
+              MenuProps={{ disableScrollLock: true }}
+              disabled={loading || actionLoading || movePending} onChange={event => { setSemesterOverride(Number(event.target.value)); setSelectedPlanKey('all'); }}>
+              {semesters.map(item => <MenuItem key={item.id} value={item.id}>{item.titulo || `Semestre ${item.id}`}{item.archivado ? ' (archivado)' : ''}</MenuItem>)}
+            </Select>
+          </FormControl>
           <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 300 } }}>
-            <InputLabel id="curricular-career-label">Carrera</InputLabel>
-            <Select labelId="curricular-career-label" label="Carrera" value={selectedCareer?.key ?? 'all'} disabled={loading}
+            <InputLabel id="curricular-plan-label">Plan de Estudios</InputLabel>
+            <Select labelId="curricular-plan-label" label="Plan de Estudios" value={selectedPlan?.key ?? 'all'} disabled={loading || actionLoading || movePending}
+              MenuProps={{ disableScrollLock: true }}
               onChange={event => {
-                setSelectedCareerKey(event.target.value);
+                setSelectedPlanKey(event.target.value);
                 setSelectedModuloId(null);
                 setSelectedCompetenciaId(null);
                 setSelectedUnidadId(null);
                 setSelectedCapacidadId(null);
                 setSelectedIndicadorId(null);
               }}>
-              <MenuItem value="all">Todas</MenuItem>
-              {careerOptions.map(option => <MenuItem key={option.key} value={option.key}>{option.semester} {option.label}</MenuItem>)}
+              <MenuItem value="all">Todos</MenuItem>
+              {planOptions.map(option => <MenuItem key={option.key} value={option.key}>{option.label}</MenuItem>)}
             </Select>
           </FormControl>
-          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => void fetchEstructura()} disabled={loading || actionLoading}>Actualizar</Button>
+          {showToolbar && <IconButton color="primary" aria-label="Actualizar" title="Actualizar" onClick={() => void fetchEstructura()} disabled={loading || actionLoading}><RefreshIcon /></IconButton>}
         </Stack>
-      ) : undefined}
+      )}
     >
+      {periodArchived && visibilityAllowed && <Typography variant="caption" color="text.secondary" sx={{ px: 2 }}>Semestre archivado: selección de elementos en modo consulta.</Typography>}
       {loading ? (
         <Box sx={{ minHeight: 360, display: 'grid', placeItems: 'center' }}>
           <CircularProgress size={28} />
@@ -1306,7 +1322,7 @@ export default function EstructuraAcademicaMasterDetail({
               {filteredModulos.map((modulo) => {
                 const unidadCount = modulo.unidadesDidacticas.length;
                 return (
-                  <ListItemButton
+                  <AcademicListItem
                     key={modulo.id}
                     {...extraDragProps('modulo', modulo.id, allowEdit && !actionLoading)}
                     selected={selectedModulo?.id === modulo.id}
@@ -1316,49 +1332,47 @@ export default function EstructuraAcademicaMasterDetail({
                       setSelectedCapacidadId(null);
                       setSelectedIndicadorId(null);
                     }}
-                    sx={{ alignItems: 'flex-start', py: 0.9, minHeight: 72, ...dropIndicatorSx('modulo', modulo.id) }}
+                    sx={{ minHeight: 72, ...dropIndicatorSx('modulo', modulo.id) }}
+                    dragHandle={
+                      <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'modulo', id: modulo.id })} />
+                    }
                   >
-                    <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'modulo', id: modulo.id })} />
-                    <ListItemText
-                      primaryTypographyProps={{ component: 'div' }}
-                      secondaryTypographyProps={{ component: 'div' }}
-                      primary={
-                        <EditableValue
-                          value={moduloName(modulo)}
-                          target={{ entity: 'modulo', id: modulo.id, field: 'titulo', valueType: 'text' }}
-                          lines={2}
-                          variant="body2"
-                          onSave={saveEditableCell}
-                          readOnly={!allowEdit || movePending}
-                          details={
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.65, wordBreak: 'break-word' }}>
-                              {[planName(modulo), carreraName(modulo)].filter(Boolean).join(' / ') || `Plan ${modulo.planId ?? '-'}`}
-                            </Typography>
-                          }
-                          properties={
-                            <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
-                              <EditableMetricChip value={modulo.horas} target={{ entity: 'modulo', id: modulo.id, field: 'horas', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit || movePending} />
-                              <EditableMetricChip value={modulo.creditos} target={{ entity: 'modulo', id: modulo.id, field: 'creditos', valueType: 'number' }} prefix="Cr " onSave={saveEditableCell} readOnly={!allowEdit || movePending} />
-                              <Chip size="small" label={`UD ${unidadCount}`} />
-                            </Stack>
-                          }
-                        />
+                    <EditableValue
+                      value={moduloName(modulo)}
+                      prefix={curricularItemCode('M', filteredModulos.filter(item => item.planId === modulo.planId), modulo.id)}
+                      target={{ entity: 'modulo', id: modulo.id, field: 'titulo', valueType: 'text' }}
+                      lines={2}
+                      variant="body2"
+                      onSave={saveEditableCell}
+                      readOnly={!allowEdit || movePending}
+                      details={
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.65, wordBreak: 'break-word' }}>
+                          {[planName(modulo), carreraName(modulo)].filter(Boolean).join(' / ') || `Plan ${modulo.planId ?? '-'}`}
+                        </Typography>
+                      }
+                      properties={
+                        <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
+                          <EditableMetricChip value={modulo.horas} target={{ entity: 'modulo', id: modulo.id, field: 'horas', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit || movePending} />
+                          <EditableMetricChip value={modulo.creditos} target={{ entity: 'modulo', id: modulo.id, field: 'creditos', valueType: 'number' }} prefix="Cr " onSave={saveEditableCell} readOnly={!allowEdit || movePending} />
+                          <Chip size="small" label={`UD ${unidadCount}`} />
+                        </Stack>
                       }
                     />
-                  </ListItemButton>
+                  </AcademicListItem>
                 );
               })}
             </List>
           </Panel>
 
           <Panel title="Competencias" count={competencias.length} actions={<>
+            {hiddenToggle('competencia')}
             {allowCreate && <IconButton size="small" title="Crear competencia" disabled={actionLoading || !selectedModulo} onClick={handleCreateCompetencia}><AddIcon fontSize="small" /></IconButton>}
             {allowDelete && <IconButton size="small" title="Eliminar competencia" color="error" disabled={actionLoading || !selectedCompetencia} onClick={handleDeleteCompetencia}><DeleteOutlineIcon fontSize="small" /></IconButton>}
           </>}>
             {competencias.length === 0 ? <EmptyState label="Sin competencias." /> : (
               <List dense disablePadding>
                 {competencias.map(competencia => (
-                  <ListItemButton
+                  <AcademicListItem
                     key={competencia.id}
                     {...extraDragProps('competencia', competencia.id, allowEdit && !actionLoading)}
                     data-empleabilidad={competencia.tipo === 'EMPLEABILIDAD' ? 'true' : undefined}
@@ -1369,16 +1383,16 @@ export default function EstructuraAcademicaMasterDetail({
                       setSelectedCapacidadId(null);
                       setSelectedIndicadorId(null);
                     }}
-                    sx={{ alignItems: 'flex-start', py: 1, ...dropIndicatorSx('competencia', competencia.id) }}
+                    sx={{ opacity: competencia.periodActive === false ? 0.4 : 1, ...dropIndicatorSx('competencia', competencia.id) }}
+                    dragHandle={
+                      <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'competencia', id: competencia.id })} />
+                    }
                   >
-                    <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'competencia', id: competencia.id })} />
-                    <ListItemText
-                      primaryTypographyProps={{ component: 'div' }}
-                      secondaryTypographyProps={{ component: 'div' }}
-                      primary={<EditableValue value={competencia.nombre || 'Sin nombre'} target={{ entity: 'competencia', id: competencia.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending}
-                        properties={<EditableCompetenciaTipo id={competencia.id} tipo={competencia.tipo} readOnly={!allowEdit || movePending} onSave={saveEditableCell} />} />}
-                    />
-                  </ListItemButton>
+                    <EditableValue value={competencia.nombre || 'Sin nombre'} target={{ entity: 'competencia', id: competencia.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending}
+                      prefix={curricularItemCode('UC', selectedModulo?.competencias ?? [], competencia.id)}
+                      actions={visibilityButton('competencia', competencia)}
+                      properties={<EditableCompetenciaTipo id={competencia.id} tipo={competencia.tipo} readOnly={!allowEdit || movePending} onSave={saveEditableCell} />} />
+                  </AcademicListItem>
                 ))}
               </List>
             )}
@@ -1387,8 +1401,9 @@ export default function EstructuraAcademicaMasterDetail({
           <Panel
             title="Unidades"
             count={unidades.length}
-            actions={allowCreate || allowEdit || allowDelete ? (
+            actions={(
               <>
+                {hiddenToggle('unidadDidactica')}
                 {allowCreate ? (
                   <IconButton size="small" title="Crear unidad" disabled={actionLoading || !selectedModulo?.id} onClick={handleCreateUnidad}>
                     <AddIcon fontSize="small" />
@@ -1400,7 +1415,7 @@ export default function EstructuraAcademicaMasterDetail({
                   </IconButton>
                 ) : null}
               </>
-            ) : undefined}
+            )}
 
           >
             {unidades.length === 0 ? (
@@ -1412,7 +1427,7 @@ export default function EstructuraAcademicaMasterDetail({
                   const canDragUnidad = allowEdit && !actionLoading;
 
                   return (
-                    <ListItemButton
+                    <AcademicListItem
                       key={`${unidad.relacionId}-${unidad.id}`}
                       {...rowDragProps({ entity: 'competenciaUnidadDidactica', id: unidad.relacionId }, {
  onDragOver: event => updateDropIndicator(event, 'competenciaUnidadDidactica', unidad.relacionId, allowEdit && !actionLoading),
@@ -1424,57 +1439,47 @@ export default function EstructuraAcademicaMasterDetail({
                         setSelectedCapacidadId(null);
                         setSelectedIndicadorId(null);
                       }}
-                      sx={{
-                        alignItems: 'flex-start',
-                        px: 1,
-                        py: 0.9,
-                        minHeight: 68,
-                        ...dropIndicatorSx('competenciaUnidadDidactica', unidad.relacionId),
-                      }}
+                      sx={{ minHeight: 68, opacity: unidad.periodActive === false ? 0.4 : 1, ...dropIndicatorSx('competenciaUnidadDidactica', unidad.relacionId) }}
+                      dragHandle={
+                        <DragHandle
+                          enabled={canDragUnidad}
+                          onDragStart={(event) => beginDrag(event, {
+                            entity: 'competenciaUnidadDidactica',
+                            id: unidad.relacionId,
+                          })}
+                        />
+                      }
                     >
-                      <ListItemText
-                        primaryTypographyProps={{ component: 'div' }}
-                        secondaryTypographyProps={{ component: 'div' }}
-                        primary={
-                          <Stack direction="row" spacing={0.5} alignItems="flex-start">
-                            <DragHandle
-                              enabled={canDragUnidad}
-                              onDragStart={(event) => beginDrag(event, {
-                                entity: 'competenciaUnidadDidactica',
-                                id: unidad.relacionId,
-                              })}
-                            />
-                            <EditableValue
-                              value={unidad.nombre || `Unidad ${unidad.id}`}
-                              target={{ entity: 'unidadDidactica', id: unidad.id, field: 'nombre', valueType: 'text' }}
-                              lines={2}
-                              variant="body2"
+                      <EditableValue
+                        value={unidad.nombre || `Unidad ${unidad.id}`}
+                        prefix={curricularItemCode('UD', todasUnidades.filter(item => item.competenciaId === unidad.competenciaId), unidad.id)}
+                        actions={visibilityButton('unidadDidactica', unidad, selectedCompetencia?.periodActive !== false)}
+                        target={{ entity: 'unidadDidactica', id: unidad.id, field: 'nombre', valueType: 'text' }}
+                        lines={2}
+                        variant="body2"
+                        onSave={saveEditableCell}
+                        readOnly={unidadReadOnly}
+                        properties={
+                          <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
+                            <EditableMetricChip
+                              value={unidad.duracion}
+                              target={{ entity: 'unidadDidactica', id: unidad.id, field: 'duracion', valueType: 'number' }}
+                              suffix=" hr"
                               onSave={saveEditableCell}
                               readOnly={unidadReadOnly}
-                              properties={
-                                <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
-                                  <EditableMetricChip
-                                    value={unidad.duracion}
-                                    target={{ entity: 'unidadDidactica', id: unidad.id, field: 'duracion', valueType: 'number' }}
-                                    suffix=" hr"
-                                    onSave={saveEditableCell}
-                                    readOnly={unidadReadOnly}
-                                  />
-                                  <EditableMetricChip
-                                    value={unidad.creditos}
-                                    target={{ entity: 'unidadDidactica', id: unidad.id, field: 'creditos', valueType: 'number' }}
-                                    prefix="Cr "
-                                    onSave={saveEditableCell}
-                                    readOnly={unidadReadOnly}
-                                  />
-                                  <Chip size="small" label={`CAP ${unidad.capacidadesTerminales.length}`} />
-                                </Stack>
-                              }
                             />
+                            <EditableMetricChip
+                              value={unidad.creditos}
+                              target={{ entity: 'unidadDidactica', id: unidad.id, field: 'creditos', valueType: 'number' }}
+                              prefix="Cr "
+                              onSave={saveEditableCell}
+                              readOnly={unidadReadOnly}
+                            />
+                            <Chip size="small" label={`CAP ${unidad.capacidadesTerminales.length}`} />
                           </Stack>
                         }
                       />
-                    </ListItemButton>
+                    </AcademicListItem>
                   );
                 })}
               </List>
@@ -1484,8 +1489,9 @@ export default function EstructuraAcademicaMasterDetail({
           <Panel
             title="Capacidades"
             count={capacidades.length}
-            actions={allowCreate || allowDelete ? (
+            actions={(
               <>
+                {hiddenToggle('capacidadTerminal')}
                 {allowCreate ? (
                   <IconButton size="small" title="Crear capacidad" disabled={actionLoading || !selectedUnidad?.id} onClick={handleCreateCapacidad}>
                     <AddIcon fontSize="small" />
@@ -1497,7 +1503,7 @@ export default function EstructuraAcademicaMasterDetail({
                   </IconButton>
                 ) : null}
               </>
-            ) : undefined}
+            )}
 
           >
             {capacidades.length === 0 ? (
@@ -1507,7 +1513,7 @@ export default function EstructuraAcademicaMasterDetail({
                 {capacidades.map((capacidad) => {
                   const canDragCapacidad = allowEdit && !actionLoading;
                   return (
-                  <ListItemButton
+                  <AcademicListItem
                     key={capacidad.id}
                     {...rowDragProps({ entity: 'capacidadTerminal', id: capacidad.id }, {
  onDragOver: event => updateDropIndicator(event, 'capacidadTerminal', capacidad.id, allowEdit && !actionLoading),
@@ -1518,50 +1524,40 @@ export default function EstructuraAcademicaMasterDetail({
                       setSelectedCapacidadId(capacidad.id);
                       setSelectedIndicadorId(null);
                     }}
-                    sx={{
-                      alignItems: 'flex-start',
-                      px: 1,
-                      py: 0.95,
-                      minHeight: 78,
-                      ...dropIndicatorSx('capacidadTerminal', capacidad.id),
-                    }}
+                    sx={{ minHeight: 78, opacity: capacidad.periodActive === false ? 0.4 : 1, ...dropIndicatorSx('capacidadTerminal', capacidad.id) }}
+                    dragHandle={
+                      <DragHandle
+                        enabled={canDragCapacidad}
+                        onDragStart={(event) => beginDrag(event, {
+                          entity: 'capacidadTerminal',
+                          id: capacidad.id,
+                        })}
+                      />
+                    }
                   >
-                    <ListItemText
-                      primaryTypographyProps={{ component: 'div' }}
-                      secondaryTypographyProps={{ component: 'div' }}
-                      primary={
-                        <Stack direction="row" spacing={0.5} alignItems="flex-start">
-                          <DragHandle
-                            enabled={canDragCapacidad}
-                            onDragStart={(event) => beginDrag(event, {
-                              entity: 'capacidadTerminal',
-                              id: capacidad.id,
-                            })}
-                          />
-                          <EditableValue
-                            value={capacidad.descripcion || `Capacidad ${capacidad.id}`}
-                            target={{
-                              entity: 'capacidadTerminal',
-                              id: capacidad.id,
-                              field: 'descripcion',
-                              valueType: 'text',
-                            }}
-                            lines={4}
-                            variant="body2"
-                            onSave={saveEditableCell}
-                            readOnly={!allowEdit || movePending}
-                            properties={
-                              <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
-                                {selectedUnidad?.competencia && <Chip size="small"
-                                  label={selectedUnidad.competencia.tipo === 'TECNICA' ? 'Técnica' : 'Para la empleabilidad'} title={selectedUnidad.competencia.nombre} />}
-                                <Chip size="small" label={`IND ${capacidad.indicadoresCapacidad.length}`} />
-                              </Stack>
-                            }
-                          />
+                    <EditableValue
+                      value={capacidad.descripcion || `Capacidad ${capacidad.id}`}
+                      prefix={`${curricularItemCode('UC', selectedModulo?.competencias ?? [], selectedUnidad!.competenciaId)} ${curricularItemCode('C', selectedUnidad?.capacidadesTerminales ?? [], capacidad.id)}`}
+                      actions={visibilityButton('capacidadTerminal', capacidad, selectedUnidad?.periodActive !== false)}
+                      target={{
+                        entity: 'capacidadTerminal',
+                        id: capacidad.id,
+                        field: 'descripcion',
+                        valueType: 'text',
+                      }}
+                      lines={4}
+                      variant="body2"
+                      onSave={saveEditableCell}
+                      readOnly={!allowEdit || movePending}
+                      properties={
+                        <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
+                          {selectedUnidad?.competencia && <Chip size="small"
+                            label={selectedUnidad.competencia.tipo === 'TECNICA' ? 'Técnica' : 'Para la empleabilidad'} title={selectedUnidad.competencia.nombre} />}
+                          <Chip size="small" label={`IND ${capacidad.indicadoresCapacidad.length}`} />
                         </Stack>
                       }
                     />
-                  </ListItemButton>
+                  </AcademicListItem>
                 );
                 })}
               </List>
@@ -1571,8 +1567,9 @@ export default function EstructuraAcademicaMasterDetail({
           <Panel
             title="Indicadores"
             count={indicadores.length}
-            actions={allowCreate || allowDelete ? (
+            actions={(
               <>
+                {hiddenToggle('indicadorCapacidad')}
                 {allowCreate ? (
                   <IconButton size="small" title="Crear indicador" disabled={actionLoading || !selectedCapacidad?.id} onClick={handleCreateIndicador}>
                     <AddIcon fontSize="small" />
@@ -1584,7 +1581,7 @@ export default function EstructuraAcademicaMasterDetail({
                   </IconButton>
                 ) : null}
               </>
-            ) : undefined}
+            )}
 
           >
             {indicadores.length === 0 ? (
@@ -1594,7 +1591,7 @@ export default function EstructuraAcademicaMasterDetail({
                 {indicadores.map((indicador) => {
                   const canDragIndicador = allowEdit && !actionLoading;
                   return (
-                  <ListItemButton
+                  <AcademicListItem
                     key={indicador.id}
                     {...rowDragProps({ entity: 'indicadorCapacidad', id: indicador.id }, {
  onDragOver: event => updateDropIndicator(event, 'indicadorCapacidad', indicador.id, allowEdit && !actionLoading),
@@ -1602,64 +1599,35 @@ export default function EstructuraAcademicaMasterDetail({
  })}
                     selected={selectedIndicador?.id === indicador.id}
                     onClick={() => setSelectedIndicadorId(indicador.id)}
-                    sx={{
-                      alignItems: 'flex-start',
-                      px: 1,
-                      py: 0.95,
-                      minHeight: 72,
-                      ...dropIndicatorSx('indicadorCapacidad', indicador.id),
-                    }}
+                    sx={{ minHeight: 72, opacity: indicador.periodActive === false ? 0.4 : 1, ...dropIndicatorSx('indicadorCapacidad', indicador.id) }}
+                    dragHandle={
+                      <DragHandle
+                        enabled={canDragIndicador}
+                        onDragStart={(event) => beginDrag(event, {
+                          entity: 'indicadorCapacidad',
+                          id: indicador.id,
+                        })}
+                      />
+                    }
                   >
-                    <ListItemText
-                      primaryTypographyProps={{ component: 'div' }}
-                      secondaryTypographyProps={{ component: 'div' }}
-                      primary={
-                        <Stack direction="row" spacing={0.5} alignItems="flex-start">
-                          <DragHandle
-                            enabled={canDragIndicador}
-                            onDragStart={(event) => beginDrag(event, {
-                              entity: 'indicadorCapacidad',
-                              id: indicador.id,
-                            })}
-                          />
-                          <EditableValue
-                            value={indicador.descripcion || `Indicador ${indicador.id}`}
-                            target={{
-                              entity: 'indicadorCapacidad',
-                              id: indicador.id,
-                              field: 'descripcion',
-                              valueType: 'text',
-                            }}
-                            lines={4}
-                            variant="body2"
-                            onSave={saveEditableCell}
-                            readOnly={!allowEdit || movePending}
-                          />
-                        </Stack>
-                      }
+                    <EditableValue
+                      value={indicador.descripcion || `Indicador ${indicador.id}`}
+                      prefix={`${curricularItemCode('C', selectedUnidad?.capacidadesTerminales ?? [], selectedCapacidad!.id)} ${curricularItemCode('I', selectedCapacidad?.indicadoresCapacidad ?? [], indicador.id)}`}
+                      actions={visibilityButton('indicadorCapacidad', indicador, selectedCapacidad?.periodActive !== false)}
+                      target={{
+                        entity: 'indicadorCapacidad',
+                        id: indicador.id,
+                        field: 'descripcion',
+                        valueType: 'text',
+                      }}
+                      lines={4}
+                      variant="body2"
+                      onSave={saveEditableCell}
+                      readOnly={!allowEdit || movePending}
                     />
-                  </ListItemButton>
+                  </AcademicListItem>
                 );
                 })}
-              </List>
-            )}
-          </Panel>
-
-          <Panel title="Aprendizajes" count={aprendizajes.length} actions={allowCreate && <IconButton size="small" title="Crear aprendizaje" disabled={actionLoading || !selectedIndicador}
-            onClick={() => selectedIndicador && void runStructureAction('createEstructuraAcademicaItem', { entity: 'aprendizaje', indicadorCapacidadId: selectedIndicador.id })}><AddIcon fontSize="small" /></IconButton>}>
-            {aprendizajes.length === 0 ? <EmptyState label="Sin aprendizajes." /> : (
-              <List dense disablePadding>
-                {aprendizajes.map(aprendizaje => <ListItemButton key={aprendizaje.id} component="div"
-                  selected={selectedAprendizaje?.id === aprendizaje.id}
-                  onClick={() => { setSelectedAprendizajeId(aprendizaje.id); setSelectedSesionId(null); }}
-                  {...extraDragProps('aprendizaje', aprendizaje.id, allowEdit && !actionLoading)}
-                  sx={{ alignItems: 'flex-start', py: 1, ...dropIndicatorSx('aprendizaje', aprendizaje.id) }}>
-                  <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'aprendizaje', id: aprendizaje.id })} />
-                  <EditableValue value={aprendizaje.descripcion || 'Sin descripción.'}
-                    target={{ entity: 'aprendizaje', id: aprendizaje.id, field: 'descripcion', valueType: 'text' }}
-                    lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending}
-                    properties={<Chip size="small" label={`Sesiones ${aprendizaje.actividades.length}`} />} />
-                </ListItemButton>)}
               </List>
             )}
           </Panel>
@@ -1668,26 +1636,29 @@ export default function EstructuraAcademicaMasterDetail({
             {allowCreate && <IconButton size="small" title="Crear sesión" disabled={actionLoading || !selectedIndicador} onClick={handleCreateSesion}><AddIcon fontSize="small" /></IconButton>}
             {allowDelete && <IconButton size="small" title="Eliminar sesión" color="error" disabled={actionLoading || !selectedSesion} onClick={handleDeleteSesion}><DeleteOutlineIcon fontSize="small" /></IconButton>}
           </>}>
-            {sesiones.length === 0 ? <EmptyState label="Sin sesiones para este aprendizaje." /> : (
+            {sesiones.length === 0 ? <EmptyState label="Sin sesiones para este indicador." /> : (
               <List dense disablePadding>
                 {sesiones.map(sesion => (
-                  <ListItemButton key={sesion.id} component="div" selected={selectedSesion?.id === sesion.id} onClick={() => setSelectedSesionId(sesion.id)} {...extraDragProps('actividad', sesion.id, allowEdit && !actionLoading)} sx={{ display: 'block', py: 1.25, ...dropIndicatorSx('actividad', sesion.id) }}>
+                  <AcademicListItem
+                    key={sesion.id}
+                    selected={selectedSesion?.id === sesion.id}
+                    onClick={() => setSelectedSesionId(sesion.id)}
+                    {...extraDragProps('actividad', sesion.id, allowEdit && !actionLoading)}
+                    sx={{ ...dropIndicatorSx('actividad', sesion.id) }}
+                    dragHandle={
+                      <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'actividad', id: sesion.id })} />
+                    }
+                  >
                     <Stack spacing={1.25}>
-                      <Stack direction="row" alignItems="flex-start" spacing={0.5}>
-                        <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'actividad', id: sesion.id })} />
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography variant="caption" color="text.secondary">Aprendizaje</Typography>
-                          <EditableValue value={sesion.aprendizaje || 'Sin descripción.'} target={{ entity: 'aprendizaje', id: sesion.aprendizajeId, field: 'descripcion', valueType: 'text' }} lines={6} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending} />
-                        </Box>
-                      </Stack>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">Nombre de sesión</Typography>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.25 }}>Nombre de sesión</Typography>
                         <EditableValue value={sesion.nombre || 'Sin nombre.'} target={{ entity: 'actividad', id: sesion.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending}
+                          prefix={curricularItemCode('S', sesiones, sesion.id)}
                           properties={<EditableMetricChip value={sesion.duracion ?? null} target={{ entity: 'actividad', id: sesion.id, field: 'duracion', valueType: 'number' }} suffix=" hr" onSave={saveEditableCell} readOnly={!allowEdit || movePending} />} />
                       </Box>
                       {(['contenido', 'material'] as const).map(kind => <SesionItemList key={kind} kind={kind} items={kind === 'contenido' ? sesion.contenidos : sesion.materiales} options={kind === 'material' ? materialOptions : []} canEdit={allowEdit} disabled={actionLoading} renderText={item => kind === 'material' ? <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{item.texto}</Typography> : <EditableValue value={item.texto} target={{ entity: 'actividadContenido', id: item.id, field: 'texto', valueType: 'text' }} lines={6} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending} />} onAdd={data => saveSesionItem(sesion.id, kind, 'add', data)} onRemove={itemId => saveSesionItem(sesion.id, kind, 'remove', { itemId })} onReorder={items => saveSesionItem(sesion.id, kind, 'reorder', { items })} />)}
                     </Stack>
-                  </ListItemButton>
+                  </AcademicListItem>
                 ))}
               </List>
             )}
@@ -1695,5 +1666,6 @@ export default function EstructuraAcademicaMasterDetail({
         </Box>
       )}
     </IntranetListLayout>
+    </AcademicTextPreviewProvider>
   );
 }

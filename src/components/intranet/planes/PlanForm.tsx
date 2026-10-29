@@ -362,7 +362,7 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
           versionId?: number | null;
         },
         { id: number | null }
-      >(functions, 'createOrUpdatePlan');
+      >(functions, 'createOrUpdatePlan', { timeout: 300000 });
 
       const planResult = await createOrUpdatePlan({
         id: planId ? Number(planId) : undefined,
@@ -609,8 +609,9 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
           </FormControl>
 
           <FormControl fullWidth sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}>
-            <InputLabel>periodo_vigencia</InputLabel>
+            <InputLabel id="plan-effective-period-label">periodo_vigencia</InputLabel>
             <Select
+              labelId="plan-effective-period-label"
               label="periodo_vigencia"
               value={periodoVigenciaId}
               onChange={(event) => handlePeriodoVigenciaChange(String(event.target.value))}
@@ -638,10 +639,10 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
               sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}
             />
           ) : null}
-
           <FormControl fullWidth sx={{ gridColumn: { xs: 'auto', md: 'span 4' } }}>
-            <InputLabel>Version</InputLabel>
+            <InputLabel id="plan-version-label">Version</InputLabel>
             <Select
+              labelId="plan-version-label"
               label="Version"
               value={versionId}
               onChange={(event) => setVersionId(String(event.target.value))}
@@ -688,6 +689,7 @@ export function PlanForm({ planId, asModal = false, onSaved, onCancel }: PlanFor
         <Divider sx={{ my: 3 }} />
 
         <Box sx={{ mt: 2 }}>
+          {!planId && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Al crear el plan se copiará automáticamente todo el contenido del plan anterior de la misma carrera. Luego podrás actualizarlo en Programación Curricular.</Typography>}
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={1.5}

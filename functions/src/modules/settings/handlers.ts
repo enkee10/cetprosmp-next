@@ -7,6 +7,7 @@ import {
 import { dataConnect } from "../core/dataConnectCore.js";
 import { requireAuthenticated, requirePermission } from "../core/permissions.js";
 import { DataConnectAppSetting, DataConnectAppSettingInput } from "../core/types.js";
+import { HIDE_OCCUPATIONAL_CURRICULUM_KEY } from "../planes/visibilityPolicy.js";
 
 const USE_CROPPED_PHOTO_AS_STUDENT_AVATAR_KEY =
   "visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes";
@@ -49,6 +50,7 @@ const MATRICULA_FORM_SEMESTRE_ID_KEY =
 
 const DEFAULT_SETTINGS = {
   general: {
+    poderOcultarProgramacionOpcionesOcupacionales: false,
     usarAvataresEnCertificadosTitulos: false,
     formularioMatriculaAceptaRespuestas: false,
     activarReconocimientoDni: true,
@@ -93,6 +95,12 @@ const normalizeHexColor = (value: unknown, fallback = "#ffffff") => {
 };
 
 const SETTING_DEFINITIONS: Record<string, SettingDefinition> = {
+  [HIDE_OCCUPATIONAL_CURRICULUM_KEY]: {
+    section: "general",
+    label: "Poder ocultar de la Programación para Opciones Ocupacionales",
+    valueType: "boolean",
+    defaultValue: false,
+  },
   [USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY]: {
     section: "general",
     label: "Usar avatares en certificados y titulos",
@@ -317,6 +325,7 @@ function buildSettingsResponse(items: DataConnectAppSetting[]) {
   };
 
   items.forEach((item) => {
+    if (item.settingKey === HIDE_OCCUPATIONAL_CURRICULUM_KEY) settings.general.poderOcultarProgramacionOpcionesOcupacionales = item.boolValue === true;
     if (item.settingKey === USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY) {
       settings.general.usarAvataresEnCertificadosTitulos = Boolean(item.boolValue);
     }
@@ -555,6 +564,7 @@ export const saveAppSettings = https.onCall(async (data, context) => {
     .map((id) => Number(id))
     .filter((id) => Number.isFinite(id) && id > 0);
   const usarListasSemestreAnteriorDocentes = false;
+  const poderOcultarProgramacionOpcionesOcupacionales = general?.poderOcultarProgramacionOpcionesOcupacionales === true;
   const usarRecorteFotografiaComoAvatarEstudiantes = Boolean(
     visualizaciones?.usarRecorteFotografiaComoAvatarEstudiantes,
   );
@@ -582,6 +592,7 @@ export const saveAppSettings = https.onCall(async (data, context) => {
       USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY,
       usarAvataresEnCertificadosTitulos,
     );
+    await upsertSetting(HIDE_OCCUPATIONAL_CURRICULUM_KEY, poderOcultarProgramacionOpcionesOcupacionales);
     await upsertSetting(
       MATRICULA_FORM_DNI_RECOGNITION_KEY,
       activarReconocimientoDni,
@@ -654,6 +665,7 @@ export const saveAppSettings = https.onCall(async (data, context) => {
     return {
       settings: {
         general: {
+          poderOcultarProgramacionOpcionesOcupacionales,
           usarAvataresEnCertificadosTitulos,
           activarReconocimientoDni,
           formularioMatriculaAceptaRespuestas: formularioMatriculaAceptaRespuestas,

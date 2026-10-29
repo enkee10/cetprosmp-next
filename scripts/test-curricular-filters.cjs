@@ -63,9 +63,19 @@ const semesterPlans = [
   { ...plans[1], id: 120, version: { titulo: '2026-2' }, periodoVigencia: { titulo: '2024-1' } },
 ];
 const semesterCareers = filters.curricularCareerOptions(semesterPlans, ['all']);
-assert.deepEqual(semesterCareers.map(item => item.semester), ['26-1', '26-2'], 'The prefix comes from the plan version, not its starting period');
-assert.equal(semesterCareers.length, 2, 'Career choices from different semesters must remain separate');
+assert.deepEqual(semesterCareers.map(item => item.semester), ['26-1', '26-2']);
+assert.equal(semesterCareers.length, 2);
 assert.deepEqual(semesterCareers.map(item => item.planIds), [[12], [120]]);
 assert.equal(filters.curricularCareerOptions([{ ...plans[1], periodoVigencia: { titulo: '2024-1' } }], ['all'])[0].semester, '24-1');
+const displayPlans = semesterPlans.map(plan => ({ ...plan, planEstudio: 'Plan 2026-1' }));
+const studyPlans = filters.curricularStudyPlanOptions(displayPlans);
+assert.deepEqual(studyPlans.map(item => item.label), ['26-1 Panificacion v.26-2', '26-1 Panificacion v.26-1']);
+assert.deepEqual(studyPlans.map(item => item.planIds), [[120], [12]], 'Each version is selectable independently');
+assert.equal(filters.curricularStudyPlanOptions([displayPlans[0]])[0].label, '26-1 Panificacion', 'Unique names have no suffix');
+assert.deepEqual(filters.curricularStudyPlanOptions([displayPlans[0], { ...displayPlans[1], planEstudio: 'Plan 2026-2' }]).map(item => item.label),
+  ['26-1 Panificacion', '26-2 Panificacion'], 'Distinct plan prefixes do not require a version suffix');
+const sameVersion = filters.curricularStudyPlanOptions([{ ...semesterPlans[0], version: null }, { ...semesterPlans[1], version: null }]);
+assert.equal(new Set(sameVersion.map(item => item.key)).size, 2);
+assert.equal(new Set(sameVersion.map(item => item.label)).size, 2, 'Legacy plans with missing versions remain distinguishable');
 console.log('Programacion Curricular: planes agrupados, multiseleccion, Todos, carreras y orden, planes sin modulos y contexto de modulos compartidos verificados.');
 module.exports = { plans, modules };

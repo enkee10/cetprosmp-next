@@ -4,6 +4,7 @@ import { matriculaPageNeedsSearch, selectMatriculaPage, type MatriculaGridReques
 import { getConfiguredCurrentSemestreId, loadCurrentDocenteModulos } from "../core/docenteSemester.js";
 import { createAvanzaExport, getAvanzaCurrentSemester, getAvanzaExportPeriod } from "./avanzaExport.js";
 import { projectUnidadRelations } from "../competencias/model.js";
+import { getPeriodVisibility } from "../planes/periodSelection.js";
 import { getFirestore } from "firebase-admin/firestore";
 import { firestore as functionsFirestore, https, runWith } from "firebase-functions/v1";
 import { randomUUID } from "crypto";
@@ -2713,6 +2714,9 @@ async function getMatriculaById(matriculaId: number): Promise<MatriculaRow | nul
     ) ?? modulosEstudiantes[0] ?? null;
   const grupoModuloId = programaModulo?.grupoModuloId ?? programaModulo?.grupoModulo?.id ?? null;
   const moduloId = programaModulo?.moduloId ?? programaModulo?.grupoModulo?.modulo?.id ?? null;
+  const semesterId = programaModulo?.grupoModulo?.grupo?.semestre?.id
+    ?? (grupoModuloId ? grupoModuloById.get(Number(grupoModuloId))?.grupo?.semestre?.id : null);
+  const visibility = moduloId && semesterId ? await getPeriodVisibility(Number(moduloId), semesterId) : null;
   const unidadesById = new Map((response.data.unidadesDidacticas ?? []).map((unidad) => [unidad.id, unidad]));
   const grupoModuloUnidadLinks = (response.data.grupoModuloUnidadesDidacticas ?? [])
     .filter((item) => grupoModuloId && Number(item.grupoModuloId) === Number(grupoModuloId));
@@ -2720,6 +2724,7 @@ async function getMatriculaById(matriculaId: number): Promise<MatriculaRow | nul
     .filter((item) => moduloId && Number(item.moduloId) === Number(moduloId));
   const unidadLinks = grupoModuloUnidadLinks.length > 0 ? grupoModuloUnidadLinks : moduloUnidadLinks;
   const fichaUnidadesDidacticas: MatriculaFichaUnidadDidactica[] = unidadLinks
+    .filter(item => !visibility || visibility.unidades.has(item.unidadDidacticaId))
     .flatMap((item) => {
       const unidad = unidadesById.get(item.unidadDidacticaId);
       return unidad ? [{ ...unidad, orden: item.orden ?? unidad.id }] : [];

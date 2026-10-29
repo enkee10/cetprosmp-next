@@ -1,4 +1,5 @@
 import { https } from "firebase-functions/v1";
+import { applyPeriodSelection } from "../planes/periodSelection.js";
 import { getConfiguredCurrentSemestreId, loadCurrentDocenteModulos } from "../core/docenteSemester.js";
 import { dataConnect } from "../core/dataConnectCore.js";
 import {
@@ -147,8 +148,8 @@ type RegistroAuxiliarGrupoModulo = {
   fin?: string | null;
   grupoId: number;
   moduloId: number;
-  grupo?: unknown | null;
-  modulo?: unknown | null;
+  grupo?: { semestreId?: number | null; [key: string]: unknown } | null;
+  modulo?: { plan?: { carrera?: { tipoCarrera?: { nombre?: string | null } | null } | null } | null; [key: string]: unknown } | null;
 };
 
 type RegistroAuxiliarDocenteModulo = {
@@ -293,7 +294,7 @@ const REGISTRO_AUXILIAR_DETAIL_QUERY = `
       id inicio fin
       actividad {
         id nombre numeroSesion duracion
-        aprendizaje { indicadorCapacidad { capacidadTerminal { unidadDidacticaId } } }
+        aprendizaje { indicadorCapacidad { id capacidadTerminal { unidadDidacticaId } } }
       }
     }
     practicasProgramadas: efsrtPppPracticas(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 1000) {
@@ -1482,6 +1483,7 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
       { variables: { grupoModuloId, grupoId, moduloId } },
     );
 
+    await applyPeriodSelection(response.data, moduloId, grupoModulo.grupo?.semestreId, usesOpcionOcupacionalRules(grupoModulo.modulo?.plan?.carrera?.tipoCarrera?.nombre));
     const unidadIds = buildUnidadIds(response.data);
     const unidadIdSet = new Set(unidadIds);
     const capacidadByUnidad = new Map<number, RegistroAuxiliarCapacidad[]>();
@@ -1927,6 +1929,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
           id
           grupoId
           moduloId
+          grupo { semestreId }
           modulo {
             creditosEfsrt
             plan {
@@ -2003,6 +2006,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
       { variables: { grupoModuloId, grupoId, moduloId } },
     );
 
+    await applyPeriodSelection(contextResponse.data, moduloId, grupoModulo.grupo?.semestreId);
     const unidadIds = buildUnidadIds(contextResponse.data);
     const unidadIdSet = new Set(unidadIds);
     const moduloCreditoEfsrt = grupoModulo.modulo?.creditosEfsrt ?? null;

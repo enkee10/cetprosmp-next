@@ -1,3 +1,4 @@
+export { setPlanSemesterVisibility } from "./modules/planes/periodSelection.js";
 export { listDocenteMenuModulos } from "./modules/core/docenteSemester.js";
 export { reassignEstructuraAcademicaItem } from "./modules/academico/curricularReassignment.js";
 export {

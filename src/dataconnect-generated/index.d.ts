@@ -439,6 +439,11 @@ export interface PlanModulo_Key {
   __typename?: 'PlanModulo_Key';
 }
 
+export interface PlanSemestre_Key {
+  id: number;
+  __typename?: 'PlanSemestre_Key';
+}
+
 export interface Plan_Key {
   id: number;
   __typename?: 'Plan_Key';

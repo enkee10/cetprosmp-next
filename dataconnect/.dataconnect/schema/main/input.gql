@@ -17,12 +17,6 @@ It has the same format as `Actividad_Key`, but is only used as mutation return v
 """
 scalar Actividad_KeyOutput
 """
-✨ `ActividadContenido_KeyOutput` returns the primary key fields of table type `ActividadContenido`.
-
-It has the same format as `ActividadContenido_Key`, but is only used as mutation return value.
-"""
-scalar ActividadContenido_KeyOutput
-"""
 ✨ `ActividadMaterial_KeyOutput` returns the primary key fields of table type `ActividadMaterial`.
 
 It has the same format as `ActividadMaterial_Key`, but is only used as mutation return value.
@@ -262,6 +256,12 @@ scalar IndicadorCapacidad_KeyOutput
 It has the same format as `IndicadorCapacidadEstudiante_Key`, but is only used as mutation return value.
 """
 scalar IndicadorCapacidadEstudiante_KeyOutput
+"""
+✨ `IndicadorContenido_KeyOutput` returns the primary key fields of table type `IndicadorContenido`.
+
+It has the same format as `IndicadorContenido_Key`, but is only used as mutation return value.
+"""
+scalar IndicadorContenido_KeyOutput
 """
 ✨ `Material_KeyOutput` returns the primary key fields of table type `Material`.
 
@@ -1153,10 +1153,6 @@ input Actividad_Data {
   """
   proposito_expr: String_Expr @fdc_forbiddenInVariables
   """
-  ✨ Generated from Field `Actividad`.`actividadContenidos_on_actividad` of type `[ActividadContenido!]!`
-  """
-  actividadContenidos_on_actividad: [ActividadContenido_Data!]
-  """
   ✨ Generated from Field `Actividad`.`actividadMateriales_on_actividad` of type `[ActividadMaterial!]!`
   """
   actividadMateriales_on_actividad: [ActividadMaterial_Data!]
@@ -1273,10 +1269,6 @@ input Actividad_Filter {
   ✨ Generated from Field `Actividad`.`proposito` of type `String`
   """
   proposito: String_Filter
-  """
-  ✨ Generated from Field `Actividad`.`actividadContenidos_on_actividad` of type `[ActividadContenido!]!`
-  """
-  actividadContenidos_on_actividad: ActividadContenido_ListFilter
   """
   ✨ Generated from Field `Actividad`.`actividadMateriales_on_actividad` of type `[ActividadMaterial!]!`
   """
@@ -1842,317 +1834,6 @@ input Actividad_Order {
   ✨ Generated from Field `Actividad`.`valorInstitucionalId_max` of type `Int`
   """
   valorInstitucionalId_max: OrderDirection
-}
-"""
-✨ Generated data input type for table 'ActividadContenido'. It includes all necessary fields for creating or upserting rows into table.
-"""
-input ActividadContenido_Data {
-  """
-  ✨ Generated from Field `ActividadContenido`.`id` of type `Int!`
-  """
-  id: Int
-  """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ActividadContenido`.`id` of type `Int!`)
-  """
-  id_expr: Int_Expr @fdc_forbiddenInVariables
-  """
-  ✨ `_update` server value variant of `id` (✨ Generated from Field `ActividadContenido`.`id` of type `Int!`)
-  """
-  id_update: [Int_Update!] @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId` of type `Int!`
-  """
-  actividadId: Int
-  """
-  ✨ `_expr` server value variant of `actividadId` (✨ Generated from Field `ActividadContenido`.`actividadId` of type `Int!`)
-  """
-  actividadId_expr: Int_Expr @fdc_forbiddenInVariables
-  """
-  ✨ `_update` server value variant of `actividadId` (✨ Generated from Field `ActividadContenido`.`actividadId` of type `Int!`)
-  """
-  actividadId_update: [Int_Update!] @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividad` of type `Actividad!`
-  """
-  actividad: Actividad_Key @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden` of type `Int!`
-  """
-  orden: Int
-  """
-  ✨ `_expr` server value variant of `orden` (✨ Generated from Field `ActividadContenido`.`orden` of type `Int!`)
-  """
-  orden_expr: Int_Expr @fdc_forbiddenInVariables
-  """
-  ✨ `_update` server value variant of `orden` (✨ Generated from Field `ActividadContenido`.`orden` of type `Int!`)
-  """
-  orden_update: [Int_Update!] @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `ActividadContenido`.`texto` of type `String!`
-  """
-  texto: String
-  """
-  ✨ `_expr` server value variant of `texto` (✨ Generated from Field `ActividadContenido`.`texto` of type `String!`)
-  """
-  texto_expr: String_Expr @fdc_forbiddenInVariables
-}
-"""
-✨ Generated filter input type for table 'ActividadContenido'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input ActividadContenido_Filter {
-  """
-  Apply multiple filter conditions using `AND` logic.
-  """
-  _and: [ActividadContenido_Filter!]
-  """
-  Negate the result of the provided filter condition.
-  """
-  _not: ActividadContenido_Filter
-  """
-  Apply multiple filter conditions using `OR` logic.
-  """
-  _or: [ActividadContenido_Filter!]
-  """
-  ✨ Generated from Field `ActividadContenido`.`id` of type `Int!`
-  """
-  id: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId` of type `Int!`
-  """
-  actividadId: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividad` of type `Actividad!`
-  """
-  actividad: Actividad_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden` of type `Int!`
-  """
-  orden: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`texto` of type `String!`
-  """
-  texto: String_Filter
-}
-"""
-✨ Generated first-row input type for table 'ActividadContenido'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
-"""
-input ActividadContenido_FirstRow {
-  """
-  Order the result by the specified fields.
-  """
-  orderBy: [ActividadContenido_Order!]
-  """
-  Filters rows based on the specified conditions.
-  """
-  where: ActividadContenido_Filter
-}
-"""
-✨ Generated having input type for table 'ActividadContenido'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input ActividadContenido_Having {
-  """
-  Apply multiple Having conditions using `AND` logic.
-  """
-  _and: [ActividadContenido_Having!]
-  """
-  Whether to apply DISTINCT to the aggregate function.
-  """
-  _distinct: Boolean
-  """
-  Negate the result of the provided Having condition.
-  """
-  _not: ActividadContenido_Having
-  """
-  Apply multiple Having conditions using `OR` logic.
-  """
-  _or: [ActividadContenido_Having!]
-  """
-  ✨ Generated from Field `ActividadContenido`.`_count` of type `Int!`
-  """
-  _count: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId_count` of type `Int!`
-  """
-  actividadId_count: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`id_count` of type `Int!`
-  """
-  id_count: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden_count` of type `Int!`
-  """
-  orden_count: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`texto_count` of type `Int!`
-  """
-  texto_count: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId_sum` of type `Int`
-  """
-  actividadId_sum: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`id_sum` of type `Int`
-  """
-  id_sum: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden_sum` of type `Int`
-  """
-  orden_sum: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId_avg` of type `Float`
-  """
-  actividadId_avg: Float_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`id_avg` of type `Float`
-  """
-  id_avg: Float_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden_avg` of type `Float`
-  """
-  orden_avg: Float_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId_min` of type `Int`
-  """
-  actividadId_min: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`id_min` of type `Int`
-  """
-  id_min: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden_min` of type `Int`
-  """
-  orden_min: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId_max` of type `Int`
-  """
-  actividadId_max: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`id_max` of type `Int`
-  """
-  id_max: Int_Filter
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden_max` of type `Int`
-  """
-  orden_max: Int_Filter
-}
-"""
-✨ Generated key input type for table 'ActividadContenido'. It represents the primary key fields used to uniquely identify a row in the table.
-"""
-input ActividadContenido_Key {
-  """
-  ✨ Generated from Field `ActividadContenido`.`id` of type `Int!`
-  """
-  id: Int
-  """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ActividadContenido`.`id` of type `Int!`)
-  """
-  id_expr: Int_Expr @fdc_forbiddenInVariables
-}
-"""
-✨ Generated list filter input type for table 'ActividadContenido'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
-"""
-input ActividadContenido_ListFilter {
-  """
-  The desired number of objects that match the condition (defaults to at least one).
-  """
-  count: Int_Filter = {gt:0}
-  """
-  Condition of the related objects to filter for.
-  """
-  exist: ActividadContenido_Filter
-}
-"""
-✨ Generated order input type for table 'ActividadContenido'. This input defines the sorting order of rows in query results based on one or more fields.
-"""
-input ActividadContenido_Order {
-  """
-  ✨ Generated from Field `ActividadContenido`.`id` of type `Int!`
-  """
-  id: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId` of type `Int!`
-  """
-  actividadId: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividad` of type `Actividad!`
-  """
-  actividad: Actividad_Order
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden` of type `Int!`
-  """
-  orden: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`texto` of type `String!`
-  """
-  texto: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`_count` of type `Int!`
-  """
-  _count: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId_count` of type `Int!`
-  """
-  actividadId_count: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`id_count` of type `Int!`
-  """
-  id_count: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden_count` of type `Int!`
-  """
-  orden_count: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`texto_count` of type `Int!`
-  """
-  texto_count: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId_sum` of type `Int`
-  """
-  actividadId_sum: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`id_sum` of type `Int`
-  """
-  id_sum: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden_sum` of type `Int`
-  """
-  orden_sum: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId_avg` of type `Float`
-  """
-  actividadId_avg: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`id_avg` of type `Float`
-  """
-  id_avg: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden_avg` of type `Float`
-  """
-  orden_avg: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId_min` of type `Int`
-  """
-  actividadId_min: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`id_min` of type `Int`
-  """
-  id_min: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden_min` of type `Int`
-  """
-  orden_min: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`actividadId_max` of type `Int`
-  """
-  actividadId_max: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`id_max` of type `Int`
-  """
-  id_max: OrderDirection
-  """
-  ✨ Generated from Field `ActividadContenido`.`orden_max` of type `Int`
-  """
-  orden_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'ActividadMaterial'. It includes all necessary fields for creating or upserting rows into table.
@@ -21584,6 +21265,10 @@ input IndicadorCapacidad_Data {
   ✨ Generated from Field `IndicadorCapacidad`.`indicadoresCapacidadEstudiantes_on_indicadorCapacidad` of type `[IndicadorCapacidadEstudiante!]!`
   """
   indicadoresCapacidadEstudiantes_on_indicadorCapacidad: [IndicadorCapacidadEstudiante_Data!]
+  """
+  ✨ Generated from Field `IndicadorCapacidad`.`indicadorContenidos_on_indicadorCapacidad` of type `[IndicadorContenido!]!`
+  """
+  indicadorContenidos_on_indicadorCapacidad: [IndicadorContenido_Data!]
 }
 """
 ✨ Generated filter input type for table 'IndicadorCapacidad'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -21637,6 +21322,10 @@ input IndicadorCapacidad_Filter {
   ✨ Generated from Field `IndicadorCapacidad`.`indicadoresCapacidadEstudiantes_on_indicadorCapacidad` of type `[IndicadorCapacidadEstudiante!]!`
   """
   indicadoresCapacidadEstudiantes_on_indicadorCapacidad: IndicadorCapacidadEstudiante_ListFilter
+  """
+  ✨ Generated from Field `IndicadorCapacidad`.`indicadorContenidos_on_indicadorCapacidad` of type `[IndicadorContenido!]!`
+  """
+  indicadorContenidos_on_indicadorCapacidad: IndicadorContenido_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'IndicadorCapacidad'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -22229,6 +21918,317 @@ input IndicadorCapacidadEstudiante_Order {
   ✨ Generated from Field `IndicadorCapacidadEstudiante`.`promedio_max` of type `Float`
   """
   promedio_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'IndicadorContenido'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input IndicadorContenido_Data {
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `IndicadorContenido`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `IndicadorContenido`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId` of type `Int!`
+  """
+  indicadorCapacidadId: Int
+  """
+  ✨ `_expr` server value variant of `indicadorCapacidadId` (✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId` of type `Int!`)
+  """
+  indicadorCapacidadId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `indicadorCapacidadId` (✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId` of type `Int!`)
+  """
+  indicadorCapacidadId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidad` of type `IndicadorCapacidad!`
+  """
+  indicadorCapacidad: IndicadorCapacidad_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden` of type `Int!`
+  """
+  orden: Int
+  """
+  ✨ `_expr` server value variant of `orden` (✨ Generated from Field `IndicadorContenido`.`orden` of type `Int!`)
+  """
+  orden_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `orden` (✨ Generated from Field `IndicadorContenido`.`orden` of type `Int!`)
+  """
+  orden_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `IndicadorContenido`.`texto` of type `String!`
+  """
+  texto: String
+  """
+  ✨ `_expr` server value variant of `texto` (✨ Generated from Field `IndicadorContenido`.`texto` of type `String!`)
+  """
+  texto_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'IndicadorContenido'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input IndicadorContenido_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [IndicadorContenido_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: IndicadorContenido_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [IndicadorContenido_Filter!]
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId` of type `Int!`
+  """
+  indicadorCapacidadId: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidad` of type `IndicadorCapacidad!`
+  """
+  indicadorCapacidad: IndicadorCapacidad_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden` of type `Int!`
+  """
+  orden: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`texto` of type `String!`
+  """
+  texto: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'IndicadorContenido'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input IndicadorContenido_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [IndicadorContenido_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: IndicadorContenido_Filter
+}
+"""
+✨ Generated having input type for table 'IndicadorContenido'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input IndicadorContenido_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [IndicadorContenido_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: IndicadorContenido_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [IndicadorContenido_Having!]
+  """
+  ✨ Generated from Field `IndicadorContenido`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId_count` of type `Int!`
+  """
+  indicadorCapacidadId_count: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden_count` of type `Int!`
+  """
+  orden_count: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`texto_count` of type `Int!`
+  """
+  texto_count: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId_sum` of type `Int`
+  """
+  indicadorCapacidadId_sum: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden_sum` of type `Int`
+  """
+  orden_sum: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId_avg` of type `Float`
+  """
+  indicadorCapacidadId_avg: Float_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden_avg` of type `Float`
+  """
+  orden_avg: Float_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId_min` of type `Int`
+  """
+  indicadorCapacidadId_min: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden_min` of type `Int`
+  """
+  orden_min: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId_max` of type `Int`
+  """
+  indicadorCapacidadId_max: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden_max` of type `Int`
+  """
+  orden_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'IndicadorContenido'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input IndicadorContenido_Key {
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `IndicadorContenido`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'IndicadorContenido'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input IndicadorContenido_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: IndicadorContenido_Filter
+}
+"""
+✨ Generated order input type for table 'IndicadorContenido'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input IndicadorContenido_Order {
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId` of type `Int!`
+  """
+  indicadorCapacidadId: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidad` of type `IndicadorCapacidad!`
+  """
+  indicadorCapacidad: IndicadorCapacidad_Order
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden` of type `Int!`
+  """
+  orden: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`texto` of type `String!`
+  """
+  texto: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId_count` of type `Int!`
+  """
+  indicadorCapacidadId_count: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden_count` of type `Int!`
+  """
+  orden_count: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`texto_count` of type `Int!`
+  """
+  texto_count: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId_sum` of type `Int`
+  """
+  indicadorCapacidadId_sum: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden_sum` of type `Int`
+  """
+  orden_sum: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId_avg` of type `Float`
+  """
+  indicadorCapacidadId_avg: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden_avg` of type `Float`
+  """
+  orden_avg: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId_min` of type `Int`
+  """
+  indicadorCapacidadId_min: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden_min` of type `Int`
+  """
+  orden_min: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId_max` of type `Int`
+  """
+  indicadorCapacidadId_max: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`orden_max` of type `Int`
+  """
+  orden_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'Material'. It includes all necessary fields for creating or upserting rows into table.

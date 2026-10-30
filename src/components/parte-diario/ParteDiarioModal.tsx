@@ -18,7 +18,7 @@ const requiredControls = [
   ['Unidad','unidad'], ['Actividad','actividad'], ['Asistentes','asistentes'],
   ['Uso de medios en clase','usoMedios'], ['Sílabo','silabo'], ['Ficha de Actividad','fichaActividad'],
   ['Instrumento de Evaluación','instrumentoEvaluacion'], ['Registro de Asistencia','registroAsistencia'],
-  ['Registro Auxiliar de Evaluación','registroAuxiliarEvaluacion'], ['Materiales','material'], ['Tareas','tareas'],
+  ['Registro Auxiliar de Evaluación','registroAuxiliarEvaluacion'], ['Recursos','material'], ['Tareas','tareas'],
 ] as const;
 
 export default function ParteDiarioModal({ row, fecha, onClose, onSaved, onDraftChange, observationInput, onObservationInputChange, reportRecordId,onDeleted,onDiscardDraft }: { row: ParteDiarioRow; fecha: string; onClose: () => void; onSaved: () => void; onDraftChange?: (draft: ParteDiarioRow) => void; observationInput?: ParteObservationInput; onObservationInputChange?: (value: ParteObservationInput) => void; reportRecordId?:number;onDeleted?:()=>void;onDiscardDraft?:()=>void }) {
@@ -92,7 +92,7 @@ export default function ParteDiarioModal({ row, fecha, onClose, onSaved, onDraft
           {documentSelect('instrumentoEvaluacion', 'Instrumento de Evaluación', INSTRUMENTO_OPTIONS)}
           {documentSelect('registroAsistencia', 'Reg. Asist.', REG_ASISTENCIA_OPTIONS)}
           {documentSelect('registroAuxiliarEvaluacion', 'Reg. Aux. Eva.', REG_AUX_EVALUACION_OPTIONS)}
-          {documentSelect('material', 'Materiales', MATERIAL_OPTIONS)}
+          {documentSelect('material', 'Recursos', MATERIAL_OPTIONS)}
           {documentSelect('tareas', 'Tareas', TAREAS_OPTIONS)}
         </Box>
         <Typography fontWeight={600}>Observaciones</Typography>

@@ -12,7 +12,7 @@ const PreviewContext = createContext<{
 } | null>(null);
 
 /** A single preview for the whole view, including text inside session cards. */
-export function AcademicTextPreviewProvider({ children }: { children: ReactNode }) {
+export function AcademicTextPreviewProvider({ children, enabled = true }: { children: ReactNode; enabled?: boolean }) {
   const [preview, setPreview] = useState<Preview | null>(null);
   const previewRef = useRef<Preview | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -26,7 +26,7 @@ export function AcademicTextPreviewProvider({ children }: { children: ReactNode 
   }, []);
   const request = useCallback((next: PreviewRequest, event?: Event) => {
     // The click that closes an existing preview must not immediately reopen it.
-    if (event && dismissedClickRef.current === event) return;
+    if (!enabled || (event && dismissedClickRef.current === event)) return;
     close();
     const open = () => {
       timerRef.current = null;
@@ -41,14 +41,16 @@ export function AcademicTextPreviewProvider({ children }: { children: ReactNode 
     // Allow a second click to enter the existing editor before covering the text.
     if (event) timerRef.current = setTimeout(open, 500);
     else open();
-  }, [close]);
+  }, [close, enabled]);
 
   useEffect(() => {
+    if (!enabled) { close(); return; }
     const cancelPending = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = null;
     };
     const dismiss = (event: MouseEvent) => {
+      if (event.target instanceof Node && paperRef.current?.contains(event.target)) return;
       if (previewRef.current) dismissedClickRef.current = event;
       close();
     };
@@ -72,13 +74,13 @@ export function AcademicTextPreviewProvider({ children }: { children: ReactNode 
       window.removeEventListener('resize', close);
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [close]);
-  const context = useMemo(() => ({ request, close }), [request, close]);
+  }, [close, enabled]);
+  const context = useMemo(() => enabled ? { request, close } : null, [request, close, enabled]);
 
   return (
     <PreviewContext.Provider value={context}>
       {children}
-      {preview && (
+      {enabled && preview && (
         <Popover
           open
           onClose={close}
@@ -120,19 +122,8 @@ export function AcademicPreviewText({ text, lines, variant, onEdit }: {
 }) {
   const preview = useContext(PreviewContext);
   const ref = useRef<HTMLSpanElement>(null);
-  const [truncated, setTruncated] = useState(false);
-  const isTruncated = () => Boolean(ref.current && (
-    ref.current.scrollHeight > ref.current.clientHeight + 1 || ref.current.scrollWidth > ref.current.clientWidth + 1
-  ));
-  useEffect(() => {
-    const update = () => setTruncated(isTruncated());
-    update();
-    const observer = new ResizeObserver(update);
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [text, lines, variant]);
   const show = (event?: Event) => {
-    if (!isTruncated() || !ref.current) return;
+    if (!ref.current) return;
     const anchor = ref.current.closest<HTMLElement>('[data-academic-card]');
     if (anchor) preview?.request({ text, anchor, variant }, event);
   };
@@ -141,12 +132,12 @@ export function AcademicPreviewText({ text, lines, variant, onEdit }: {
       ref={ref}
       component="span"
       variant={variant}
-      role={truncated ? 'button' : undefined}
-      tabIndex={truncated ? 0 : undefined}
-      aria-haspopup={truncated ? 'dialog' : undefined}
+      role={preview ? 'button' : undefined}
+      tabIndex={preview ? 0 : undefined}
+      aria-haspopup={preview ? 'dialog' : undefined}
       onClick={event => { if (event.detail === 1) show(event.nativeEvent); }}
       onKeyDown={event => {
-        if (truncated && (event.key === 'Enter' || event.key === ' ')) {
+        if (preview && (event.key === 'Enter' || event.key === ' ')) {
           event.preventDefault(); event.stopPropagation(); show();
         }
       }}
@@ -155,9 +146,9 @@ export function AcademicPreviewText({ text, lines, variant, onEdit }: {
         if (!onEdit) return;
         event.preventDefault(); event.stopPropagation(); onEdit();
       }}
-      title={truncated ? `Clic para ver el texto completo${onEdit ? '. Doble clic para editar' : ''}` : onEdit ? 'Doble clic para editar' : undefined}
+      title={preview ? `Clic para ver el texto completo${onEdit ? '. Doble clic para editar' : ''}` : onEdit ? 'Doble clic para editar' : undefined}
       sx={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: lines, overflow: 'hidden',
-        wordBreak: 'break-word', lineHeight: 1.25, cursor: truncated ? 'pointer' : onEdit ? 'text' : 'inherit',
+        wordBreak: 'break-word', lineHeight: 1.25, cursor: preview ? 'pointer' : onEdit ? 'text' : 'inherit',
         borderBottom: onEdit ? '1px dotted transparent' : undefined,
         '&:hover': onEdit ? { borderBottomColor: 'text.secondary' } : undefined }}
     >

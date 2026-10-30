@@ -72,30 +72,6 @@ extend type Query {
     first: Actividad_FirstRow
   ): Actividad @fdc_generated(from: "Actividad", purpose: QUERY_SINGLE)
   """
-  ✨ Look up a single `ActividadContenido` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
-  """
-  actividadContenido(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: ActividadContenido_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: ActividadContenido_FirstRow
-  ): ActividadContenido @fdc_generated(from: "ActividadContenido", purpose: QUERY_SINGLE)
-  """
   ✨ Look up a single `ActividadMaterial` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   actividadMaterial(
@@ -1056,6 +1032,30 @@ extend type Query {
     first: IndicadorCapacidadEstudiante_FirstRow
   ): IndicadorCapacidadEstudiante @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `IndicadorContenido` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  indicadorContenido(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: IndicadorContenido_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: IndicadorContenido_FirstRow
+  ): IndicadorContenido @fdc_generated(from: "IndicadorContenido", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Material` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   material(
@@ -1967,40 +1967,6 @@ extend type Query {
     """
     having: Actividad_Having
   ): [Actividad!]! @fdc_generated(from: "Actividad", purpose: QUERY_MULTIPLE)
-  """
-  ✨ List `ActividadContenido` objects in the table and return selected fields, optionally filtered by `where` conditions
-  """
-  actividadContenidos(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: ActividadContenido_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [ActividadContenido_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: ActividadContenido_Having
-  ): [ActividadContenido!]! @fdc_generated(from: "ActividadContenido", purpose: QUERY_MULTIPLE)
   """
   ✨ List `ActividadMaterial` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -3361,6 +3327,40 @@ extend type Query {
     """
     having: IndicadorCapacidadEstudiante_Having
   ): [IndicadorCapacidadEstudiante!]! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `IndicadorContenido` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  indicadorContenidos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: IndicadorContenido_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [IndicadorContenido_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: IndicadorContenido_Having
+  ): [IndicadorContenido!]! @fdc_generated(from: "IndicadorContenido", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Material` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

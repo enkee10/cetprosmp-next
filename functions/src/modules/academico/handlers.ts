@@ -214,7 +214,6 @@ const GET_ACTIVIDAD_QUERY = `
       moduloId
       numeroSesion
       orden
-      contenidos: actividadContenidos_on_actividad(orderBy:{orden:ASC},limit:200) { id orden texto }
       materiales: actividadMateriales_on_actividad(orderBy:{orden:ASC},limit:200) { id orden texto materialId material { nombre } }
       descripcion
       proposito
@@ -323,11 +322,11 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
       sigla
       orden
       capacidadTerminalId
+      contenidos: indicadorContenidos_on_indicadorCapacidad(orderBy: { orden: ASC }, limit: 1000) { id orden texto }
       aprendizajes: aprendizajes_on_indicadorCapacidad(orderBy: [{ orden: ASC }, { id: ASC }], limit: 1000) {
         id descripcion sigla orden indicadorCapacidadId
         actividades: actividads_on_aprendizaje(orderBy: [{ numeroSesion: ASC }, { orden: ASC }, { id: ASC }], limit: 5000) {
           id nombre numeroSesion orden moduloId aprendizajeId duracion fecha
-          contenidos: actividadContenidos_on_actividad(orderBy: { orden: ASC }, limit: 1000) { id orden texto }
           materiales: actividadMateriales_on_actividad(orderBy: { orden: ASC }, limit: 1000) { id orden texto materialId material { nombre } }
         }
       }
@@ -456,11 +455,11 @@ const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
       sigla
       orden
       capacidadTerminalId
+      contenidos: indicadorContenidos_on_indicadorCapacidad(orderBy: { orden: ASC }, limit: 1000) { id orden texto }
       aprendizajes: aprendizajes_on_indicadorCapacidad(orderBy: [{ orden: ASC }, { id: ASC }], limit: 1000) {
         id descripcion sigla orden indicadorCapacidadId
         actividades: actividads_on_aprendizaje(orderBy: [{ numeroSesion: ASC }, { orden: ASC }, { id: ASC }], limit: 5000) {
           id nombre numeroSesion orden moduloId aprendizajeId duracion fecha
-          contenidos: actividadContenidos_on_actividad(orderBy: { orden: ASC }, limit: 1000) { id orden texto }
           materiales: actividadMateriales_on_actividad(orderBy: { orden: ASC }, limit: 1000) { id orden texto materialId material { nombre } }
         }
       }
@@ -756,6 +755,7 @@ function buildCapacidadesForUnidad(
           sigla: indicador.sigla ?? null,
           orden: indicador.orden ?? null,
           capacidadTerminalId: indicador.capacidadTerminalId ?? null,
+          contenidos: indicador.contenidos ?? [],
           aprendizajes: (indicador.aprendizajes ?? []).map((aprendizaje) => ({
             ...aprendizaje,
             actividades: (aprendizaje.actividades ?? []).map(actividad => ({ ...actividad, materiales: (actividad.materiales ?? []).map(displayMaterialLink) })).filter((actividad) =>
@@ -800,14 +800,14 @@ function buildUnidadesForModulo(
     .filter(Boolean);
 }
 
-type EditableAcademicEntity = "modulo" | "unidadDidactica" | "competenciaUnidadDidactica" | "capacidadTerminal" | "indicadorCapacidad" | "competencia" | "actividad" | "aprendizaje" | "actividadContenido";
+type EditableAcademicEntity = "modulo" | "unidadDidactica" | "competenciaUnidadDidactica" | "capacidadTerminal" | "indicadorCapacidad" | "competencia" | "actividad" | "aprendizaje" | "indicadorContenido";
 type EditableAcademicValueType = "text" | "number" | "boolean";
 
 const editableAcademicFields: Record<EditableAcademicEntity, Record<string, EditableAcademicValueType>> = {
   competencia: { nombre: "text", tipo: "text" },
   actividad: { nombre: "text", duracion: "number" },
   aprendizaje: { descripcion: "text" },
-  actividadContenido: { texto: "text" },
+  indicadorContenido: { texto: "text" },
   modulo: {
     titulo: "text",
     tituloComercial: "text",
@@ -842,7 +842,7 @@ const editableAcademicFields: Record<EditableAcademicEntity, Record<string, Edit
 };
 
 const requiredAcademicTextFields = new Set([
-  "competencia.nombre", "actividad.nombre", "aprendizaje.descripcion", "actividadContenido.texto",
+  "competencia.nombre", "actividad.nombre", "aprendizaje.descripcion", "indicadorContenido.texto",
   "modulo.titulo",
   "unidadDidactica.nombre",
   "capacidadTerminal.descripcion",
@@ -897,7 +897,7 @@ export const updateEstructuraAcademicaCell = https.onCall(async (data, context) 
   const payload = { [field]: value };
 
   try {
-    if (["competencia", "actividad", "aprendizaje", "actividadContenido"].includes(entity)) return await updateCurricularExtraCell(entity, id, field, value);
+    if (["competencia", "actividad", "aprendizaje", "indicadorContenido"].includes(entity)) return await updateCurricularExtraCell(entity, id, field, value);
     if (entity === "modulo") {
       if (field === "horas" && (typeof value !== "number" || value <= 0)) throw new https.HttpsError("invalid-argument", "Las horas del modulo deben ser positivas.");
       const updated = await dataConnect.executeGraphql<
@@ -993,7 +993,7 @@ export const reorderEstructuraAcademicaItems = https.onCall(async (data, context
 
 interface EstructuraModulo extends DataConnectModulo {}
 
-function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
+export function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
   const unidadesById = new Map((response.unidadesDidacticas ?? []).map((unidad) => [unidad.id, unidad]));
   const planRelationsByModuloId = groupByNumber(response.planModulos ?? [], (relation) => relation.moduloId);
   const relationsByModuloId = groupByNumber(projectUnidadRelations(response.competenciaUnidadesDidacticas ?? []), (relation) => relation.moduloId);
@@ -1946,12 +1946,11 @@ export const createOrUpdateActividad = https.onCall(async (data, context) => {
 
   const actividadId = toNumberOrNull(data?.id);
   await requirePermission(context, "actividades", actividadId ? "edit" : "create");
-  const contenidos = parseActividadList(data?.contenidos, "contenidos");
   const materiales = parseActividadList(data?.materiales, "materiales");
 
   try {
-    if (contenidos !== undefined || materiales !== undefined) {
-      return { id: await saveActividadLists(payload, actividadId ?? null, contenidos, materiales) };
+    if (materiales !== undefined) {
+      return { id: await saveActividadLists(payload, actividadId ?? null, materiales) };
     }
     if (actividadId) {
       const updated = await dataConnect.executeGraphql<

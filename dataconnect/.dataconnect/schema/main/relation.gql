@@ -237,40 +237,6 @@ extend type ActEconomica {
 }
 extend type Actividad {
   """
-  ✨ List `ActividadContenido` objects in a one-to-many relationship (where `ActividadContenido`.`actividad` is this object).
-  """
-  actividadContenidos_on_actividad(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: ActividadContenido_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [ActividadContenido_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: ActividadContenido_Having
-  ): [ActividadContenido!]! @fdc_generated(from: "ActividadContenido.actividad", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
-  """
   ✨ List `ActividadMaterial` objects in a one-to-many relationship (where `ActividadMaterial`.`actividad` is this object).
   """
   actividadMateriales_on_actividad(
@@ -837,134 +803,6 @@ extend type Actividad {
   A generated field that is used for caching results in SDKs.
   """
   _id: ID! @fdc_generated(from: "Actividad.id", purpose: ENTITY_ID)
-}
-extend type ActividadContenido {
-  """
-  Implicit metadata field that cannot be written. It provides extra information about query results.
-  """
-  _metadata: _Metadata @fdc_generated(from: "ActividadContenido", purpose: METADATA_FIELD)
-  """
-  ✨ Count the number of rows in the `ActividadContenido` table.
-  """
-  _count: Int! @fdc_generated(from: "ActividadContenido.", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `ActividadContenido` table where the `actividadId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  actividadId_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "ActividadContenido.actividadId", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `ActividadContenido` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  id_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "ActividadContenido.id", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `ActividadContenido` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  orden_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "ActividadContenido.orden", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `ActividadContenido` table where the `texto` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  texto_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "ActividadContenido.texto", purpose: QUERY_COUNT)
-  """
-  ✨ Sum the `actividadId` field in the `ActividadContenido` table.
-  """
-  actividadId_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "ActividadContenido.actividadId", purpose: QUERY_SUM)
-  """
-  ✨ Sum the `id` field in the `ActividadContenido` table.
-  """
-  id_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "ActividadContenido.id", purpose: QUERY_SUM)
-  """
-  ✨ Sum the `orden` field in the `ActividadContenido` table.
-  """
-  orden_sum(
-    """
-    Set to true to sum the distinct values.
-    """
-    distinct: Boolean = false
-  ): Int @fdc_generated(from: "ActividadContenido.orden", purpose: QUERY_SUM)
-  """
-  ✨ Average the `actividadId` field in the `ActividadContenido` table.
-  """
-  actividadId_avg(
-    """
-    Set to true to average the distinct values.
-    """
-    distinct: Boolean = false
-  ): Float @fdc_generated(from: "ActividadContenido.actividadId", purpose: QUERY_AVG)
-  """
-  ✨ Average the `id` field in the `ActividadContenido` table.
-  """
-  id_avg(
-    """
-    Set to true to average the distinct values.
-    """
-    distinct: Boolean = false
-  ): Float @fdc_generated(from: "ActividadContenido.id", purpose: QUERY_AVG)
-  """
-  ✨ Average the `orden` field in the `ActividadContenido` table.
-  """
-  orden_avg(
-    """
-    Set to true to average the distinct values.
-    """
-    distinct: Boolean = false
-  ): Float @fdc_generated(from: "ActividadContenido.orden", purpose: QUERY_AVG)
-  """
-  ✨ Minimum of the `actividadId` field in the `ActividadContenido` table.
-  """
-  actividadId_min: Int @fdc_generated(from: "ActividadContenido.actividadId", purpose: QUERY_MIN)
-  """
-  ✨ Minimum of the `id` field in the `ActividadContenido` table.
-  """
-  id_min: Int @fdc_generated(from: "ActividadContenido.id", purpose: QUERY_MIN)
-  """
-  ✨ Minimum of the `orden` field in the `ActividadContenido` table.
-  """
-  orden_min: Int @fdc_generated(from: "ActividadContenido.orden", purpose: QUERY_MIN)
-  """
-  ✨ Maximum of the `actividadId` field in the `ActividadContenido` table.
-  """
-  actividadId_max: Int @fdc_generated(from: "ActividadContenido.actividadId", purpose: QUERY_MAX)
-  """
-  ✨ Maximum of the `id` field in the `ActividadContenido` table.
-  """
-  id_max: Int @fdc_generated(from: "ActividadContenido.id", purpose: QUERY_MAX)
-  """
-  ✨ Maximum of the `orden` field in the `ActividadContenido` table.
-  """
-  orden_max: Int @fdc_generated(from: "ActividadContenido.orden", purpose: QUERY_MAX)
-  """
-  A generated field that is used for caching results in SDKs.
-  """
-  _id: ID! @fdc_generated(from: "ActividadContenido.id", purpose: ENTITY_ID)
 }
 extend type ActividadMaterial {
   """
@@ -10891,6 +10729,40 @@ extend type IndicadorCapacidad {
     having: IndicadorCapacidadEstudiante_Having
   ): [IndicadorCapacidadEstudiante!]! @fdc_generated(from: "IndicadorCapacidadEstudiante.indicadorCapacidad", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `IndicadorContenido` objects in a one-to-many relationship (where `IndicadorContenido`.`indicadorCapacidad` is this object).
+  """
+  indicadorContenidos_on_indicadorCapacidad(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: IndicadorContenido_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [IndicadorContenido_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: IndicadorContenido_Having
+  ): [IndicadorContenido!]! @fdc_generated(from: "IndicadorContenido.indicadorCapacidad", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
   _metadata: _Metadata @fdc_generated(from: "IndicadorCapacidad", purpose: METADATA_FIELD)
@@ -11179,6 +11051,134 @@ extend type IndicadorCapacidadEstudiante {
   A generated field that is used for caching results in SDKs.
   """
   _id: ID! @fdc_generated(from: "IndicadorCapacidadEstudiante.id", purpose: ENTITY_ID)
+}
+extend type IndicadorContenido {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "IndicadorContenido", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `IndicadorContenido` table.
+  """
+  _count: Int! @fdc_generated(from: "IndicadorContenido.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `IndicadorContenido` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "IndicadorContenido.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `IndicadorContenido` table where the `indicadorCapacidadId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  indicadorCapacidadId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "IndicadorContenido.indicadorCapacidadId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `IndicadorContenido` table where the `orden` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  orden_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "IndicadorContenido.orden", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `IndicadorContenido` table where the `texto` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  texto_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "IndicadorContenido.texto", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `IndicadorContenido` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "IndicadorContenido.id", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `indicadorCapacidadId` field in the `IndicadorContenido` table.
+  """
+  indicadorCapacidadId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "IndicadorContenido.indicadorCapacidadId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `orden` field in the `IndicadorContenido` table.
+  """
+  orden_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "IndicadorContenido.orden", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `IndicadorContenido` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "IndicadorContenido.id", purpose: QUERY_AVG)
+  """
+  ✨ Average the `indicadorCapacidadId` field in the `IndicadorContenido` table.
+  """
+  indicadorCapacidadId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "IndicadorContenido.indicadorCapacidadId", purpose: QUERY_AVG)
+  """
+  ✨ Average the `orden` field in the `IndicadorContenido` table.
+  """
+  orden_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "IndicadorContenido.orden", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `IndicadorContenido` table.
+  """
+  id_min: Int @fdc_generated(from: "IndicadorContenido.id", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `indicadorCapacidadId` field in the `IndicadorContenido` table.
+  """
+  indicadorCapacidadId_min: Int @fdc_generated(from: "IndicadorContenido.indicadorCapacidadId", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `orden` field in the `IndicadorContenido` table.
+  """
+  orden_min: Int @fdc_generated(from: "IndicadorContenido.orden", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `IndicadorContenido` table.
+  """
+  id_max: Int @fdc_generated(from: "IndicadorContenido.id", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `indicadorCapacidadId` field in the `IndicadorContenido` table.
+  """
+  indicadorCapacidadId_max: Int @fdc_generated(from: "IndicadorContenido.indicadorCapacidadId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `orden` field in the `IndicadorContenido` table.
+  """
+  orden_max: Int @fdc_generated(from: "IndicadorContenido.orden", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "IndicadorContenido.id", purpose: ENTITY_ID)
 }
 extend type Material {
   """

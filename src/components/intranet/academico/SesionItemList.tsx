@@ -30,6 +30,9 @@ export default function SesionItemList({ kind, items, options, canEdit, disabled
   const inputRef = useRef<HTMLInputElement | null>(null);
   const focusAfterSave = useRef(false);
   const enabled = canEdit && !busy && !disabled;
+  const isResource = kind === 'material';
+  const singularLabel = isResource ? 'recurso' : 'contenido';
+  const sectionLabel = isResource ? 'Recursos' : 'Contenidos';
 
   useEffect(() => {
     if (!busy && focusAfterSave.current) {
@@ -59,21 +62,25 @@ export default function SesionItemList({ kind, items, options, canEdit, disabled
     });
   };
   const endDrag = () => { draggedId.current = null; setDropTarget(null); };
+  const afterPointer = (event: DragEvent<HTMLElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return isResource
+      ? event.clientX >= rect.left + rect.width / 2
+      : event.clientY >= rect.top + rect.height / 2;
+  };
   const dragOver = (event: DragEvent<HTMLElement>, id: number) => {
     if (!enabled || draggedId.current == null) return;
     event.preventDefault();
     event.stopPropagation();
     event.dataTransfer.dropEffect = 'move';
-    const rect = event.currentTarget.getBoundingClientRect();
-    setDropTarget({ id, after: event.clientY >= rect.top + rect.height / 2 });
+    setDropTarget({ id, after: afterPointer(event) });
   };
   const drop = (event: DragEvent<HTMLElement>, targetId: number) => {
     const sourceId = draggedId.current;
     if (!enabled || sourceId == null) return;
     event.preventDefault();
     event.stopPropagation();
-    const rect = event.currentTarget.getBoundingClientRect();
-    const after = event.clientY >= rect.top + rect.height / 2;
+    const after = afterPointer(event);
     endDrag();
     if (sourceId === targetId) return;
     const reordered = items.filter(item => item.id !== sourceId);
@@ -87,42 +94,57 @@ export default function SesionItemList({ kind, items, options, canEdit, disabled
 
   return (
     <Box onClick={event => event.stopPropagation()}>
-      <Typography variant="caption" color="text.secondary">{kind === 'contenido' ? 'Contenido' : 'Materiales'}</Typography>
+      <Typography variant="caption" color="text.secondary">{sectionLabel}</Typography>
       {error && <AutoDismissAlert severity="error">{error}</AutoDismissAlert>}
       {items.length ? (
-        <Box component="ul" aria-label={kind === 'contenido' ? 'Lista de contenidos' : 'Lista de materiales'} sx={{ m: 0, pl: 0, listStyle: 'none' }}>
+        <Box component="ul" aria-label={`Lista de ${sectionLabel.toLocaleLowerCase('es')}`} sx={{
+          m: 0, pl: 0, listStyle: 'none',
+          ...(isResource ? { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.5 } : {}),
+        }}>
           {items.map(item => (
             <Box component="li" key={item.id} data-item-id={item.id}
               onDragOver={event => dragOver(event, item.id)}
               onDragLeave={() => setDropTarget(current => current?.id === item.id ? null : current)}
               onDrop={event => drop(event, item.id)}
-              sx={{ position: 'relative', py: 0.25,
+              sx={{
+                position: 'relative',
+                py: isResource ? 0 : 0.25,
+                ...(isResource ? {
+                  display: 'inline-flex', maxWidth: '100%', border: 1, borderColor: 'divider', borderRadius: 1,
+                  bgcolor: 'background.paper', px: 0.25,
+                } : {}),
                 '&::after': dropTarget?.id === item.id ? {
-                  content: '""', position: 'absolute', left: 0, right: 0, height: 2,
-                  top: dropTarget.after ? undefined : 0, bottom: dropTarget.after ? 0 : undefined,
+                  content: '""', position: 'absolute',
+                  ...(isResource ? {
+                    top: 0, bottom: 0, width: 2,
+                    left: dropTarget.after ? undefined : -3, right: dropTarget.after ? -3 : undefined,
+                  } : {
+                    left: 0, right: 0, height: 2,
+                    top: dropTarget.after ? undefined : 0, bottom: dropTarget.after ? 0 : undefined,
+                  }),
                   bgcolor: 'primary.main', pointerEvents: 'none',
                 } : undefined,
               }}>
-              <Stack direction="row" alignItems="flex-start" spacing={0.5}>
-                {<Box component="span" title={`Arrastrar ${kind}`} draggable={enabled}
+              <Stack direction="row" alignItems="center" spacing={0.25} sx={{ minWidth: 0 }}>
+                {<Box component="span" title={`Arrastrar ${singularLabel}`} draggable={enabled}
                   onDragStart={event => { event.stopPropagation(); draggedId.current = item.id; event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', `${kind}:${item.id}`); }}
                   onDragEnd={event => { event.stopPropagation(); endDrag(); }}
                   sx={{ display: 'inline-flex', color: enabled ? 'text.secondary' : 'action.disabled', cursor: enabled ? 'grab' : 'default' }}>
                   <DragIndicatorIcon sx={{ fontSize: 18 }} />
                 </Box>}
-                <Box sx={{ flex: 1, minWidth: 0 }}>{renderText(item)}</Box>
-                {canEdit && <IconButton size="small" title={`Quitar ${kind}`} aria-label={`Quitar ${kind}`} disabled={!enabled} onClick={() => void run(() => onRemove(item.id))}><CloseIcon sx={{ fontSize: 16 }} /></IconButton>}
+                <Box sx={{ flex: isResource ? '0 1 auto' : 1, minWidth: 0 }}>{renderText(item)}</Box>
+                {canEdit && <IconButton size="small" title={`Quitar ${singularLabel}`} aria-label={`Quitar ${singularLabel}`} disabled={!enabled} onClick={() => void run(() => onRemove(item.id))}><CloseIcon sx={{ fontSize: 16 }} /></IconButton>}
               </Stack>
             </Box>
           ))}
         </Box>
-      ) : <Typography variant="body2" color="text.secondary">{kind === 'contenido' ? 'Sin contenido.' : 'Sin materiales.'}</Typography>}
+      ) : <Typography variant="body2" color="text.secondary">{isResource ? 'Sin recursos.' : 'Sin contenidos.'}</Typography>}
       {canEdit && <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.75 }}>
         {kind === 'contenido' ? (
-          <TextField fullWidth size="small" label="Nuevo contenido" value={texto} inputRef={inputRef} disabled={!enabled}
-            multiline maxRows={3} inputProps={{ maxLength: 10000 }} onChange={event => setTexto(event.target.value)}
+          <TextField fullWidth size="small" label="Nuevos contenidos (uno por línea)" value={texto} inputRef={inputRef} disabled={!enabled}
+            multiline minRows={2} maxRows={6} inputProps={{ maxLength: 50000 }} onChange={event => setTexto(event.target.value)}
             onKeyDown={event => {
-              if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.stopPropagation(); submit(); }
+              if (event.key === 'Enter' && (event.ctrlKey || event.metaKey) && !event.nativeEvent.isComposing) { event.preventDefault(); event.stopPropagation(); submit(); }
             }} />
         ) : (
           <Autocomplete freeSolo fullWidth size="small" options={options} value={null} inputValue={texto} disabled={!enabled}
@@ -131,10 +153,10 @@ export default function SesionItemList({ kind, items, options, canEdit, disabled
             onInputChange={(_, value, reason) => { if (reason === 'input' || reason === 'clear') setTexto(value); }}
             onChange={(_, value) => { if (value) submit(value); }}
             onKeyDown={event => { if (event.key === 'Enter') event.stopPropagation(); }}
-            noOptionsText="Escribe un material nuevo"
-            renderInput={params => <TextField {...params} label="Buscar o crear material" inputRef={inputRef} inputProps={{ ...params.inputProps, maxLength: 10000 }} />} />
+            noOptionsText="Escribe un recurso nuevo"
+            renderInput={params => <TextField {...params} label="Buscar o crear recurso" inputRef={inputRef} inputProps={{ ...params.inputProps, maxLength: 10000 }} />} />
         )}
-        <IconButton size="small" title={`Agregar ${kind}`} aria-label={`Agregar ${kind}`} disabled={!enabled || !texto.trim()} onClick={() => submit()}><AddIcon fontSize="small" /></IconButton>
+        <IconButton size="small" title={`Agregar ${singularLabel}`} aria-label={`Agregar ${singularLabel}`} disabled={!enabled || !texto.trim()} onClick={() => submit()}><AddIcon fontSize="small" /></IconButton>
       </Stack>}
     </Box>
   );

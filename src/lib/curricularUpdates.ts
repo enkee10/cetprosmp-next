@@ -92,15 +92,15 @@ export function applyAcademicCreation(modules: ModuloDetalle[], result: Academic
     unidad: unidad => entity === 'capacidadTerminal' && unidad.id === item.unidadDidacticaId && !unidad.capacidadesTerminales.some(row => row.id === id)
       ? { ...unidad, capacidadesTerminales: [...unidad.capacidadesTerminales, { ...item, competencias: [unidad.competencia], indicadoresCapacidad: [] } as unknown as CapacidadDetalle] } : unidad,
     capacidad: capacidad => entity === 'indicadorCapacidad' && capacidad.id === item.capacidadTerminalId && !capacidad.indicadoresCapacidad.some(row => row.id === id)
-      ? { ...capacidad, indicadoresCapacidad: [...capacidad.indicadoresCapacidad, { ...item, aprendizajes: [] } as unknown as IndicadorDetalle] } : capacidad,
+      ? { ...capacidad, indicadoresCapacidad: [...capacidad.indicadoresCapacidad, { ...item, contenidos: [], aprendizajes: [] } as unknown as IndicadorDetalle] } : capacidad,
     indicador: indicador => {
       const learning = entity === 'aprendizaje' ? item : entity === 'actividad' ? item.aprendizaje as Record<string, unknown> : null;
       if (!learning || learning.indicadorCapacidadId !== indicador.id || indicador.aprendizajes?.some(row => row.id === learning.id)) return indicador;
-      const activities = entity === 'actividad' ? [{ ...item, contenidos: [], materiales: [] } as unknown as SesionDetalle] : [];
+      const activities = entity === 'actividad' ? [{ ...item, materiales: [] } as unknown as SesionDetalle] : [];
       return { ...indicador, aprendizajes: [...(indicador.aprendizajes || []), { ...learning, actividades: activities } as unknown as AprendizajeDetalle] };
     },
     aprendizaje: aprendizaje => entity === 'actividad' && aprendizaje.id === item.aprendizajeId && !aprendizaje.actividades.some(row => row.id === id)
-      ? { ...aprendizaje, actividades: [...aprendizaje.actividades, { ...item, contenidos: [], materiales: [] } as unknown as SesionDetalle] } : aprendizaje,
+      ? { ...aprendizaje, actividades: [...aprendizaje.actividades, { ...item, materiales: [] } as unknown as SesionDetalle] } : aprendizaje,
   });
   return result.unitAssignments ? applyUnitAssignments(updated, result.unitAssignments) : updated;
 }

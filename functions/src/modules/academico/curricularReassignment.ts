@@ -41,11 +41,15 @@ export async function reassignCurricularItem(data: Record<string, unknown>, grap
   const entity = String(data.entity) as Entity;
   if (!Object.prototype.hasOwnProperty.call(configurations, entity)) throw new https.HttpsError("invalid-argument", "Componente academico invalido.");
   const id = positiveId(data.id), parentId = positiveId(data.parentId), previousParentId = positiveId(data.previousParentId);
-  if (parentId === previousParentId) throw new https.HttpsError("invalid-argument", "Elige otro elemento superior.");
+  const targetIndicatorId = entity === "actividad" && data.targetIndicatorId != null ? positiveId(data.targetIndicatorId) : null;
+  if (targetIndicatorId && targetIndicatorId !== parentId) throw new https.HttpsError("invalid-argument", "Indicador de destino invalido.");
+  if (!targetIndicatorId && parentId === previousParentId) throw new https.HttpsError("invalid-argument", "Elige otro elemento superior.");
   const config = configurations[entity];
+  const destinationEntity = targetIndicatorId ? "indicadorCapacidad" : config.parent;
+  const destinationSelect = targetIndicatorId ? "id capacidadTerminal { unidadDidacticaId }" : targetSelect[entity];
   const rows = await graph<{ source: Row | null; target: Row | null }>(`query CurricularMoveContext($id:Int!,$parentId:Int!) {
     source:${entity}(id:$id) { ${config.select} }
-    target:${config.parent}(id:$parentId) { ${targetSelect[entity]} }
+    target:${destinationEntity}(id:$parentId) { ${destinationSelect} }
   }`, { id, parentId });
   if (!rows.source || !rows.target) throw new https.HttpsError("not-found", "El componente o su destino ya no existe.");
   const { source, target } = rows;
@@ -70,11 +74,32 @@ export async function reassignCurricularItem(data: Record<string, unknown>, grap
   if (!context.programa && ((entity === "competencia" && source.tipo === "EMPLEABILIDAD") || (entity === "competenciaUnidadDidactica" && target.tipo === "EMPLEABILIDAD"))) {
     throw new https.HttpsError("failed-precondition", "El modulo de destino solo admite competencias Tecnicas.");
   }
-  const siblings = await graph<{ siblings: Array<{ id: number; orden?: number | null }> }>(`query CurricularMoveSiblings($parentId:Int!) {
-    siblings:${config.list}(where:{${config.fk}:{eq:$parentId}},limit:10001) { id orden }
-  }`, { parentId });
+  type Learning = { id: number; orden: number | null; descripcion: string | null; sigla: string | null; indicadorCapacidadId: number };
+  let targetLearning: Learning | undefined;
+  if (targetIndicatorId) {
+    const learningRows = await graph<{ aprendizajes: Learning[] }>(`query CurricularMoveTargetLearning($indicadorId:Int!) {
+      aprendizajes(where:{indicadorCapacidadId:{eq:$indicadorId}},limit:10001) { id orden descripcion sigla indicadorCapacidadId }
+    }`, { indicadorId: targetIndicatorId });
+    if (learningRows.aprendizajes.length > 10000) throw new https.HttpsError("resource-exhausted", "El indicador tiene demasiados aprendizajes.");
+    targetLearning = learningRows.aprendizajes.sort((a, b) => (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id).pop();
+  }
+  const destinationParentId = targetIndicatorId ? targetLearning?.id : parentId;
+  const siblings = destinationParentId == null ? { siblings: [] } : await graph<{ siblings: Array<{ id: number; orden?: number | null; numeroSesion?: number | null }> }>(`query CurricularMoveSiblings($parentId:Int!) {
+    siblings:${config.list}(where:{${config.fk}:{eq:$parentId}},limit:10001) { id orden${entity === "actividad" ? " numeroSesion" : ""} }
+  }`, { parentId: destinationParentId });
   if (siblings.siblings.length > 10000) throw new https.HttpsError("resource-exhausted", "El destino tiene demasiados elementos.");
-  const orden = Math.max(0, ...siblings.siblings.map(row => row.orden ?? row.id)) + 1;
+  let orden = Math.max(0, ...siblings.siblings.map(row => row.orden ?? row.numeroSesion ?? row.id)) + 1;
+  let orders: Array<{ id: number; orden: number }> | undefined;
+  if (data.targetSiblingId != null) {
+    if (entity !== "actividad" || targetIndicatorId || (data.position !== "before" && data.position !== "after")) throw new https.HttpsError("invalid-argument", "Posicion de destino invalida.");
+    const targetSiblingId = positiveId(data.targetSiblingId);
+    const ordered = [...siblings.siblings].sort((a, b) => (a.orden ?? a.numeroSesion ?? a.id) - (b.orden ?? b.numeroSesion ?? b.id) || a.id - b.id);
+    const targetIndex = ordered.findIndex(row => row.id === targetSiblingId);
+    if (targetIndex < 0) throw new https.HttpsError("failed-precondition", "La sesion de destino cambio de ubicacion.");
+    ordered.splice(targetIndex + (data.position === "after" ? 1 : 0), 0, { id });
+    orders = ordered.map((row, index) => ({ id: row.id, orden: index + 1 }));
+    orden = orders.find(row => row.id === id)!.orden;
+  }
   let activityFilter: string;
   if (entity === "competencia") activityFilter = `aprendizaje:{indicadorCapacidad:{capacidadTerminal:{unidadDidacticaId:{in:$unitIds}}}}`;
   else if (entity === "competenciaUnidadDidactica") activityFilter = `aprendizaje:{indicadorCapacidad:{capacidadTerminal:{unidadDidacticaId:{eq:${sourceUnit}}}}}`;
@@ -113,10 +138,20 @@ export async function reassignCurricularItem(data: Record<string, unknown>, grap
   const sourceCheck = snapshotCheck(source, "source"), targetCheck = snapshotCheck(target, "target");
   const checks = [
     `source:${entity}(id:$id) @check(expr:${sourceCheck},message:"El componente o sus superiores cambiaron.") { ${config.select} }`,
-    `target:${config.parent}(id:$parentId) @check(expr:${targetCheck},message:"El destino o sus superiores cambiaron.") { ${targetSelect[entity]} }`,
+    `target:${destinationEntity}(id:$parentId) @check(expr:${targetCheck},message:"El destino o sus superiores cambiaron.") { ${destinationSelect} }`,
     // The expected source FK remains explicit in the transactional guard.
     `location:${entity}(id:$id) @check(expr:"this != null && this.${config.fk} == vars.previousParentId",message:"El componente cambio de ubicacion.") { id ${config.fk} }`,
   ];
+  if (targetIndicatorId) {
+    if (targetLearning) {
+      definitions.push("$destinationLearningId:Int!"); variables.destinationLearningId = targetLearning.id;
+      checks.push('learning:aprendizaje(id:$destinationLearningId) @check(expr:"this != null && this.indicadorCapacidadId == vars.parentId",message:"El aprendizaje cambio de indicador.") { id indicadorCapacidadId }');
+    } else checks.push('empty:aprendizajes(where:{indicadorCapacidadId:{eq:$parentId}},limit:1) @check(expr:"this.size() == 0",message:"El indicador cambio. Actualiza la vista.") {id}');
+  }
+  if (orders) {
+    const expected = siblings.siblings;
+    checks.push(`siblings:actividads(where:{aprendizajeId:{eq:$parentId}},limit:10001) @check(expr:${JSON.stringify(`this.size() == ${expected.length} && ${expected.map(row => `this.exists(s, s.id == ${row.id} && s.orden == ${row.orden ?? "null"} && s.numeroSesion == ${row.numeroSesion ?? "null"})`).join(" && ")}`)},message:"Las sesiones de destino cambiaron.") {id orden numeroSesion}`);
+  }
   if (entity !== "competencia" && entity !== "competenciaUnidadDidactica") {
     const targetUnit = entity === "capacidadTerminal" ? parentId : unitAt(target)!;
     const expectations = [...new Map([[sourceUnit!, sourceModuleId], [targetUnit, targetModuleId]]).entries()];
@@ -130,11 +165,21 @@ export async function reassignCurricularItem(data: Record<string, unknown>, grap
     checks.push(`sessions:actividads(where:{${activityFilter}},limit:10001) @check(expr:"this.size() == ${activities.activities.length} && this.all(s, s.id in vars.activityIds && (s.moduloId == null || s.moduloId == vars.sourceModuleId))",message:"Las sesiones del componente cambiaron.") { id moduloId }`);
     if (entity === "competencia") checks.push(`units:competenciaUnidadesDidacticas(where:{competenciaId:{eq:$id}},limit:10001) @check(expr:"this.size() == ${unitIds.length} && this.all(u, u.unidadDidacticaId in vars.unitIds)",message:"Las unidades de la competencia cambiaron.") { unidadDidacticaId }`);
   }
-  const fields = [`saved:${entity}_update(id:$id,data:{${config.fk}:$parentId${orden == null ? "" : `,orden:${orden}`}${entity === "actividad" ? `,moduloId:${targetModuleId}` : ""}}) @check(expr:"this != null",message:"El componente ya no existe.")`];
+  const fields = targetIndicatorId && !targetLearning
+    ? ['createdLearning:aprendizaje_insert(data:{descripcion:"Aprendizaje",indicadorCapacidadId:$parentId,orden:1})'] : [];
+  const parentAssignment = !targetIndicatorId ? `${config.fk}:$parentId`
+    : targetLearning ? `${config.fk}:$destinationLearningId` : `${config.fk}_expr:"response.createdLearning.id"`;
+  fields.push(`saved:${entity}_update(id:$id,data:{${parentAssignment},orden:${orden}${entity === "actividad" ? `,moduloId:${targetModuleId}` : ""}}) @check(expr:"this != null",message:"El componente ya no existe.")`);
+  if (orders) for (const row of orders) if (row.id !== id) fields.push(`order${row.id}:actividad_update(id_expr:"response.saved != null ? ${row.id} : 0",data:{orden:${row.orden}}) @check(expr:"this != null",message:"Una sesion cambio.")`);
   // Explicit response dependencies make the owner write precede the descendant writes.
   for (const activity of activities.activities) if (entity !== "actividad") fields.push(`session${activity.id}:actividad_update(id_expr:"response.saved != null ? ${activity.id} : 0",data:{moduloId:${targetModuleId}}) @check(expr:"this != null",message:"Una sesion ya no existe.")`);
-  await graph(`mutation ReassignCurricularItem(${definitions.join(",")}) @transaction { query { ${checks.join("\n")} } ${fields.join("\n")} }`, variables);
-  return { entity, id, parentId, previousParentId, orden, moduleId: targetModuleId, previousModuleId: sourceModuleId };
+  const saved = await graph<{ createdLearning?: { id: number } }>(`mutation ReassignCurricularItem(${definitions.join(",")}) @transaction { query { ${checks.join("\n")} } ${fields.join("\n")} }`, variables);
+  const actualParentId = destinationParentId ?? saved.createdLearning?.id;
+  if (!actualParentId) throw new https.HttpsError("internal", "No se obtuvo el aprendizaje de destino.");
+  return { entity, id, parentId: actualParentId, previousParentId, orden, moduleId: targetModuleId, previousModuleId: sourceModuleId,
+    ...(orders ? { orders } : {}),
+    ...(targetIndicatorId ? { learning: { id: actualParentId, descripcion: targetLearning?.descripcion ?? "Aprendizaje", sigla: targetLearning?.sigla ?? null, orden: targetLearning?.orden ?? 1, indicadorCapacidadId: targetIndicatorId, actividades: [] } } : {}),
+  };
 }
 
 export const reassignEstructuraAcademicaItem = https.onCall(async (data, context) => {

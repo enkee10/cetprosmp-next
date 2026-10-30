@@ -119,7 +119,7 @@ export const menuSections: IntranetMenuSection[] = [
       { id: 'editor-documentos', title: 'Editor de Documentos', path: '/intranet/editor-documentos', icon: <EditNoteIcon /> },
       { id: 'turnos', title: 'Turnos', path: '/intranet/turnos', icon: <ScheduleIcon /> },
       { id: 'horarios', title: 'Horarios', path: '/intranet/horarios', icon: <ScheduleIcon /> },
-      { id: 'materiales', title: 'Materiales', path: '/intranet/materiales', icon: <CategoryIcon /> },
+      { id: 'materiales', title: 'Recursos', path: '/intranet/materiales', icon: <CategoryIcon /> },
       { id: 'eventos', title: 'Eventos', path: '/intranet/eventos', icon: <EventNoteIcon /> },
     ],
   },

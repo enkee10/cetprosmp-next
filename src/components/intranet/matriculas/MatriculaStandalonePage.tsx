@@ -54,6 +54,9 @@ const normalizeStandaloneSettings = (value: Partial<AppSettings> | undefined | n
     : defaultAppSettings.formularioMatricula.siguienteFondoColor;
 
   return {
+    programacionCurricular: {
+      mostrarContenidoEnCuadroEmergente: value?.programacionCurricular?.mostrarContenidoEnCuadroEmergente !== false,
+    },
     general: {
       ...defaultAppSettings.general,
       ...value?.general,

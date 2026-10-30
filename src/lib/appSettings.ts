@@ -1,6 +1,9 @@
 export type SemestreSummary = { id: number; titulo?: string | null; inicio?: string | null; fin?: string | null };
 
 export type AppSettings = {
+  programacionCurricular: {
+    mostrarContenidoEnCuadroEmergente: boolean;
+  };
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: boolean;
     usarAvataresEnCertificadosTitulos: boolean;
@@ -31,6 +34,9 @@ export type AppSettings = {
 };
 
 export const defaultAppSettings: AppSettings = {
+  programacionCurricular: {
+    mostrarContenidoEnCuadroEmergente: true,
+  },
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: false,
     usarAvataresEnCertificadosTitulos: false,
@@ -61,6 +67,9 @@ export const defaultAppSettings: AppSettings = {
 };
 
 export const normalizeSettings = (value: Partial<AppSettings> | undefined | null): AppSettings => ({
+  programacionCurricular: {
+    mostrarContenidoEnCuadroEmergente: value?.programacionCurricular?.mostrarContenidoEnCuadroEmergente !== false,
+  },
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: value?.general?.poderOcultarProgramacionOpcionesOcupacionales === true,
     semestres: Array.isArray(value?.general?.semestres)

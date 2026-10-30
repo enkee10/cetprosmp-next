@@ -59,9 +59,9 @@ export async function createPlanWithPreviousCurriculum(input: DataConnectPlanInp
     addRows("r", "competenciaUnidadDidactica", graph.relaciones, "orden", row => ({ competenciaId_expr: expr("c", row.competenciaId), unidadDidacticaId_expr: expr("u", row.unidadDidacticaId) }));
     addRows("cap", "capacidadTerminal", graph.capacidades, "descripcion sigla orden", row => ({ unidadDidacticaId_expr: expr("u", row.unidadDidacticaId) }));
     addRows("i", "indicadorCapacidad", graph.indicadores, "descripcion sigla orden", row => ({ capacidadTerminalId_expr: expr("cap", row.capacidadTerminalId) }));
+    addRows("ct", "indicadorContenido", graph.contenidos, "texto orden", row => ({ indicadorCapacidadId_expr: expr("i", row.indicadorCapacidadId) }));
     addRows("a", "aprendizaje", graph.aprendizajes, "descripcion sigla orden", row => ({ indicadorCapacidadId_expr: expr("i", row.indicadorCapacidadId) }));
     addRows("s", "actividad", graph.actividades, ACTIVITY_FIELDS, row => ({ aprendizajeId_expr: expr("a", row.aprendizajeId), ...(row.moduloId == null ? {} : { moduloId_expr: expr("m", row.moduloId) }) }));
-    addRows("ct", "actividadContenido", graph.contenidos, "texto orden", row => ({ actividadId_expr: expr("s", row.actividadId) }));
     addRows("mt", "actividadMaterial", graph.materiales, "texto orden materialId", row => ({ actividadId_expr: expr("s", row.actividadId) }));
     if (firstSemesterId && (await plansAllowingPeriodSelection([previous.id])).has(previous.id)) {
       const source: Pick<PlanSelection, "competenciaIds" | "unidadIds" | "capacidadIds" | "indicadorIds"> = await ensurePlanSelection(previous.id, firstSemesterId);

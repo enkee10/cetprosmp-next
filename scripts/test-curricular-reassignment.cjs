@@ -18,9 +18,9 @@ const makeModule = id => {
   return { id, titulo: `Modulo ${id}`, planId: id, plan: null, competencias: [comp],
     unidadesDidacticas: [{ id: id * 100 + 1, relacionId: id * 100 + 2, competenciaId: comp.id, competencia: { ...comp, moduloId: id }, nombre: `Unidad ${id}`, orden: 1, duracion: 40, creditos: 2,
       capacidadesTerminales: [{ id: id * 1000 + 1, unidadDidacticaId: id * 100 + 1, descripcion: 'C1', orden: 1, competencias: [{ ...comp, moduloId: id }],
-        indicadoresCapacidad: [{ id: id * 10000 + 1, capacidadTerminalId: id * 1000 + 1, descripcion: 'I1', orden: 1,
+        indicadoresCapacidad: [{ id: id * 10000 + 1, capacidadTerminalId: id * 1000 + 1, descripcion: 'I1', orden: 1, contenidos: [{ id: id * 10000000 + 1, texto: 'Contenido', orden: 1 }],
           aprendizajes: [{ id: id * 100000 + 1, orden: 1, indicadorCapacidadId: id * 10000 + 1, descripcion: 'Aprendizaje', actividades: [{ id: id * 1000000 + 1, aprendizajeId: id * 100000 + 1, moduloId: id, nombre: 'Sesion', orden: 1, duracion: 2,
-            contenidos: [{ id: id * 10000000 + 1, texto: 'Contenido', orden: 1 }], materiales: [{ id: id * 10000000 + 2, texto: 'Material', orden: 1 }] }] }] }] }] }] };
+            materiales: [{ id: id * 10000000 + 2, texto: 'Material', orden: 1 }] }] }] }] }] }] };
 };
 const cases = [
   ['competencia', 21, 'modulo', 1, 2, 1],
@@ -43,7 +43,8 @@ for (const [entity, id, parentEntity, targetId, previousParentId, parentId] of c
   assert.equal(next[2], original[2], 'Unrelated module must keep the same reference');
   assert.deepEqual(original, snapshot, 'Original state must not be mutated');
   const session = next[0].unidadesDidacticas.flatMap(u => u.capacidadesTerminales).flatMap(c => c.indicadoresCapacidad).flatMap(i => i.aprendizajes).flatMap(a => a.actividades).find(a => a.id === 2000001);
-  assert(session); assert.equal(session.contenidos[0].texto, 'Contenido'); assert.equal(session.materiales[0].texto, 'Material');
+  const content = next.flatMap(m => m.unidadesDidacticas).flatMap(u => u.capacidadesTerminales).flatMap(c => c.indicadoresCapacidad).flatMap(i => i.contenidos).find(item => item.id === 20000001);
+  assert(session); assert.equal(content.texto, 'Contenido'); assert.equal(session.materiales[0].texto, 'Material');
   assert.equal(session.moduloId, 1, 'Session module must match its new branch immediately');
   const restored = tree.applyAcademicReassignment(next, { ...move, parentId: previousParentId, previousParentId: parentId, orden: 1 });
   assert.deepEqual(restored, original, `${entity}: rollback must restore content and relationships`);

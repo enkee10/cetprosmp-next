@@ -75,6 +75,9 @@ const normalizeDraftSettings = (value: Partial<AppSettings> | null | undefined):
     : [];
 
   return {
+    programacionCurricular: {
+      mostrarContenidoEnCuadroEmergente: value?.programacionCurricular?.mostrarContenidoEnCuadroEmergente !== false,
+    },
     general: {
       ...defaultAppSettings.general,
       ...value?.general,
@@ -395,6 +398,25 @@ export default function SettingsPage() {
                 .join(', ')
             }
             MenuProps={selectMenuProps}
+          />
+
+          <Box>
+            <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+              Programación curricular
+            </Typography>
+            <Divider />
+          </Box>
+
+          <FormControlLabel
+            label="Mostrar contenido en cuadro emergente al hacer clic"
+            control={<Switch
+              checked={safeDraft.programacionCurricular.mostrarContenidoEnCuadroEmergente}
+              disabled={loading || saving || !canEditSettings}
+              onChange={(_, checked) => setDraft(current => ({
+                ...normalizeDraftSettings(current),
+                programacionCurricular: { mostrarContenidoEnCuadroEmergente: checked },
+              }))}
+            />}
           />
 
           <Box>

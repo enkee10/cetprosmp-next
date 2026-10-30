@@ -51,15 +51,13 @@ export async function readCurriculumGraph(planId: number, includeSessions = fals
   const indicadores = capacidades.length ? await rows("indicadoresCapacidad", "descripcion sigla orden capacidadTerminalId", by("capacidadTerminalId", ids(capacidades))) : [];
   const graph = { ...empty, modulos, competencias, relaciones, unidades, capacidades, indicadores };
   if (!includeSessions || !indicadores.length) return graph;
+  graph.contenidos = await rows("indicadorContenidos", "texto orden indicadorCapacidadId", by("indicadorCapacidadId", ids(indicadores)));
   graph.aprendizajes = await rows("aprendizajes", "orden descripcion sigla indicadorCapacidadId", by("indicadorCapacidadId", ids(indicadores)));
   if (!graph.aprendizajes.length) return graph;
   graph.actividades = (await rows("actividads", `${ACTIVITY_FIELDS} moduloId aprendizajeId`, by("aprendizajeId", ids(graph.aprendizajes))))
     .filter(item => item.moduloId == null || moduleIds.includes(Number(item.moduloId)));
   if (graph.actividades.length) {
-    [graph.contenidos, graph.materiales] = await Promise.all([
-      rows("actividadContenidos", "texto orden actividadId", by("actividadId", ids(graph.actividades))),
-      rows("actividadMateriales", "texto orden actividadId materialId", by("actividadId", ids(graph.actividades))),
-    ]);
+    graph.materiales = await rows("actividadMateriales", "texto orden actividadId materialId", by("actividadId", ids(graph.actividades)));
   }
   return graph;
 }

@@ -133,7 +133,6 @@ const GET_GRUPO_MODULO_QUERY = `
         id segmento inicio fin eventoId actividadId
         actividad {
           id nombre moduloId numeroSesion orden duracion aprendizajeId
-          contenidos: actividadContenidos_on_actividad(orderBy:{orden:ASC},limit:200) { id orden texto }
           materiales: actividadMateriales_on_actividad(orderBy:{orden:ASC},limit:200) { id orden texto }
         }
       }

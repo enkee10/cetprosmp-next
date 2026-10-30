@@ -18,7 +18,7 @@ export function parseActividadList(value: unknown, field: string): string[] | un
 }
 
 export async function saveActividadLists(
-  data: DataConnectActividadInput, id: number | null, contenidos?: string[], materiales?: string[],
+  data: DataConnectActividadInput, id: number | null, materiales?: string[],
 ): Promise<number> {
   const materialRows = materiales ? await Promise.all(materiales.map(getOrCreateMaterial)) : [];
   const variables: Record<string, unknown> = { data };
@@ -27,18 +27,13 @@ export async function saveActividadLists(
   const fields = [id
     ? 'saved:actividad_update(id:$id,data:$data) @check(expr:"this != null",message:"Actividad inexistente")'
     : 'saved:actividad_insert(data:$data)'];
-  for (const [name, items, singular] of [
-    ["contenidos", contenidos, "actividadContenido"],
-    ["materiales", materiales, "actividadMaterial"],
-  ] as const) {
-    if (items === undefined) continue;
-    if (id) fields.push(`clear_${name}:${singular}_deleteMany(where:{actividadId:{eq:$id}})`);
-    items.forEach((texto, index) => {
-      const variable = `${name}${index}`;
+  if (materiales !== undefined) {
+    if (id) fields.push('clear_materiales:actividadMaterial_deleteMany(where:{actividadId:{eq:$id}})');
+    materiales.forEach((texto, index) => {
+      const variable = `materiales${index}`;
       definitions.push(`$${variable}:String!`);
       variables[variable] = texto;
-      const material = name === "materiales" ? `,materialId:${materialRows[index].id}` : "";
-      fields.push(`${variable}:${singular}_insert(data:{actividadId_expr:"response.saved.id",orden:${index + 1},texto:$${variable}${material}})`);
+      fields.push(`${variable}:actividadMaterial_insert(data:{actividadId_expr:"response.saved.id",orden:${index + 1},texto:$${variable},materialId:${materialRows[index].id}})`);
     });
   }
   const response = await dataConnect.executeGraphql<{ saved: unknown }, Record<string, unknown>>(

@@ -321,12 +321,12 @@ type Actividad @table(name: "actividades") {
   valorInstitucionalId: Int @col(name: "valor_institucional_id")
 }
 
-type ActividadContenido @table(name: "actividad_contenidos", singular: "actividadContenido", plural: "actividadContenidos") @unique(fields: ["actividad", "orden"]) {
+type IndicadorContenido @table(name: "indicador_contenidos", singular: "indicadorContenido", plural: "indicadorContenidos") @unique(fields: ["indicadorCapacidad", "orden"]) {
   id: Int! @col(dataType: "serial")
   orden: Int!
   texto: String! @col(dataType: "text")
-  actividad: Actividad! @ref(fields: "actividadId", references: "id")
-  actividadId: Int! @col(name: "actividad_id")
+  indicadorCapacidad: IndicadorCapacidad! @ref(fields: "indicadorCapacidadId", references: "id")
+  indicadorCapacidadId: Int! @col(name: "indicador_capacidad_id")
 }
 
 type Material @table(name: "materiales", singular: "material", plural: "materiales") {

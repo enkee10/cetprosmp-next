@@ -846,6 +846,7 @@ export interface DataConnectIndicadorCapacidad {
   sigla?: string | null;
   orden?: number | null;
   capacidadTerminalId?: number | null;
+  contenidos?: Array<{ id: number; orden: number; texto: string }>;
   aprendizajes?: DataConnectAprendizaje[];
 }
 
@@ -876,7 +877,6 @@ export interface DataConnectActividad {
   moduloId?: number | null;
   numeroSesion?: number | null;
   orden?: number | null;
-  contenidos?: Array<{ id: number; orden: number; texto: string }>;
   materiales?: Array<{ id: number; orden: number; texto: string; materialId?: number | null; material?: { nombre: string } | null }>;
   nombre?: string | null;
   descripcion?: string | null;

@@ -18,11 +18,6 @@ export interface ActEconomica_Key {
   __typename?: 'ActEconomica_Key';
 }
 
-export interface ActividadContenido_Key {
-  id: number;
-  __typename?: 'ActividadContenido_Key';
-}
-
 export interface ActividadMaterial_Key {
   id: number;
   __typename?: 'ActividadMaterial_Key';
@@ -298,6 +293,11 @@ export interface IndicadorCapacidadEstudiante_Key {
 export interface IndicadorCapacidad_Key {
   id: number;
   __typename?: 'IndicadorCapacidad_Key';
+}
+
+export interface IndicadorContenido_Key {
+  id: number;
+  __typename?: 'IndicadorContenido_Key';
 }
 
 export interface ListActEconomicasData {

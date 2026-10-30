@@ -27,15 +27,6 @@ extend type Mutation {
     data: Actividad_Data!
   ): Actividad_KeyOutput! @fdc_generated(from: "Actividad", purpose: INSERT_SINGLE)
   """
-  ✨ Insert a single `ActividadContenido` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  actividadContenido_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: ActividadContenido_Data!
-  ): ActividadContenido_KeyOutput! @fdc_generated(from: "ActividadContenido", purpose: INSERT_SINGLE)
-  """
   ✨ Insert a single `ActividadMaterial` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   actividadMaterial_insert(
@@ -396,6 +387,15 @@ extend type Mutation {
     data: IndicadorCapacidadEstudiante_Data!
   ): IndicadorCapacidadEstudiante_KeyOutput! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `IndicadorContenido` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  indicadorContenido_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: IndicadorContenido_Data!
+  ): IndicadorContenido_KeyOutput! @fdc_generated(from: "IndicadorContenido", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Material` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   material_insert(
@@ -737,15 +737,6 @@ extend type Mutation {
     """
     data: [Actividad_Data!]!
   ): [Actividad_KeyOutput!]! @fdc_generated(from: "Actividad", purpose: INSERT_MULTIPLE)
-  """
-  ✨ Insert `ActividadContenido` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  actividadContenido_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [ActividadContenido_Data!]!
-  ): [ActividadContenido_KeyOutput!]! @fdc_generated(from: "ActividadContenido", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `ActividadMaterial` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1107,6 +1098,15 @@ extend type Mutation {
     data: [IndicadorCapacidadEstudiante_Data!]!
   ): [IndicadorCapacidadEstudiante_KeyOutput!]! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `IndicadorContenido` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  indicadorContenido_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [IndicadorContenido_Data!]!
+  ): [IndicadorContenido_KeyOutput!]! @fdc_generated(from: "IndicadorContenido", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Material` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   material_insertMany(
@@ -1448,15 +1448,6 @@ extend type Mutation {
     """
     data: Actividad_Data!
   ): Actividad_KeyOutput! @fdc_generated(from: "Actividad", purpose: UPSERT_SINGLE)
-  """
-  ✨ Insert or update a single `ActividadContenido` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActividadContenido`.
-  """
-  actividadContenido_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: ActividadContenido_Data!
-  ): ActividadContenido_KeyOutput! @fdc_generated(from: "ActividadContenido", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `ActividadMaterial` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActividadMaterial`.
   """
@@ -1818,6 +1809,15 @@ extend type Mutation {
     data: IndicadorCapacidadEstudiante_Data!
   ): IndicadorCapacidadEstudiante_KeyOutput! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `IndicadorContenido` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `IndicadorContenido`.
+  """
+  indicadorContenido_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: IndicadorContenido_Data!
+  ): IndicadorContenido_KeyOutput! @fdc_generated(from: "IndicadorContenido", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Material` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Material`.
   """
   material_upsert(
@@ -2159,15 +2159,6 @@ extend type Mutation {
     """
     data: [Actividad_Data!]!
   ): [Actividad_KeyOutput!]! @fdc_generated(from: "Actividad", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Insert or update `ActividadContenido` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActividadContenido`.
-  """
-  actividadContenido_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [ActividadContenido_Data!]!
-  ): [ActividadContenido_KeyOutput!]! @fdc_generated(from: "ActividadContenido", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `ActividadMaterial` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActividadMaterial`.
   """
@@ -2528,6 +2519,15 @@ extend type Mutation {
     """
     data: [IndicadorCapacidadEstudiante_Data!]!
   ): [IndicadorCapacidadEstudiante_KeyOutput!]! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `IndicadorContenido` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `IndicadorContenido`.
+  """
+  indicadorContenido_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [IndicadorContenido_Data!]!
+  ): [IndicadorContenido_KeyOutput!]! @fdc_generated(from: "IndicadorContenido", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Material` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Material`.
   """
@@ -2930,35 +2930,6 @@ extend type Mutation {
     """
     data: Actividad_Data!
   ): Actividad_KeyOutput @fdc_generated(from: "Actividad", purpose: UPDATE_SINGLE)
-  """
-  ✨ Update a single `ActividadContenido` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ActividadContenido` or `null` if not found.
-  """
-  actividadContenido_update(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: ActividadContenido_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: ActividadContenido_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: ActividadContenido_Data!
-  ): ActividadContenido_KeyOutput @fdc_generated(from: "ActividadContenido", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `ActividadMaterial` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ActividadMaterial` or `null` if not found.
   """
@@ -4120,6 +4091,35 @@ extend type Mutation {
     data: IndicadorCapacidadEstudiante_Data!
   ): IndicadorCapacidadEstudiante_KeyOutput @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `IndicadorContenido` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `IndicadorContenido` or `null` if not found.
+  """
+  indicadorContenido_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: IndicadorContenido_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: IndicadorContenido_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: IndicadorContenido_Data!
+  ): IndicadorContenido_KeyOutput @fdc_generated(from: "IndicadorContenido", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Material` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Material` or `null` if not found.
   """
   material_update(
@@ -5162,25 +5162,6 @@ extend type Mutation {
     data: Actividad_Data!
   ): Int! @fdc_generated(from: "Actividad", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Update `ActividadContenido` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  actividadContenido_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: ActividadContenido_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: ActividadContenido_Data!
-  ): Int! @fdc_generated(from: "ActividadContenido", purpose: UPDATE_MULTIPLE)
-  """
   ✨ Update `ActividadMaterial` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   actividadMaterial_updateMany(
@@ -5941,6 +5922,25 @@ extend type Mutation {
     data: IndicadorCapacidadEstudiante_Data!
   ): Int! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `IndicadorContenido` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  indicadorContenido_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: IndicadorContenido_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: IndicadorContenido_Data!
+  ): Int! @fdc_generated(from: "IndicadorContenido", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Material` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   material_updateMany(
@@ -6677,30 +6677,6 @@ extend type Mutation {
     """
     first: Actividad_FirstRow
   ): Actividad_KeyOutput @fdc_generated(from: "Actividad", purpose: DELETE_SINGLE)
-  """
-  ✨ Delete a single `ActividadContenido` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  actividadContenido_delete(
-    """
-    The unique ID of the object.
-    """
-    id: Int
-
-    """
-    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
-    """
-    id_expr: Int_Expr
-
-    """
-    The key used to identify the object.
-    """
-    key: ActividadContenido_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: ActividadContenido_FirstRow
-  ): ActividadContenido_KeyOutput @fdc_generated(from: "ActividadContenido", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `ActividadMaterial` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -7662,6 +7638,30 @@ extend type Mutation {
     first: IndicadorCapacidadEstudiante_FirstRow
   ): IndicadorCapacidadEstudiante_KeyOutput @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `IndicadorContenido` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  indicadorContenido_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: IndicadorContenido_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: IndicadorContenido_FirstRow
+  ): IndicadorContenido_KeyOutput @fdc_generated(from: "IndicadorContenido", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Material` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   material_delete(
@@ -8514,20 +8514,6 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "Actividad", purpose: DELETE_MULTIPLE)
   """
-  ✨ Delete `ActividadContenido` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  actividadContenido_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: ActividadContenido_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "ActividadContenido", purpose: DELETE_MULTIPLE)
-  """
   ✨ Delete `ActividadMaterial` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   actividadMaterial_deleteMany(
@@ -9087,6 +9073,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "IndicadorCapacidadEstudiante", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `IndicadorContenido` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  indicadorContenido_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: IndicadorContenido_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "IndicadorContenido", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Material` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

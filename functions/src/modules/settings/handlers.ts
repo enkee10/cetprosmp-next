@@ -47,8 +47,13 @@ const LEGACY_MATRICULA_FORM_ACCEPTS_RESPONSES_KEY =
   "general.formularioMatriculaAceptaRespuestas";
 const MATRICULA_FORM_SEMESTRE_ID_KEY =
   "formularioMatricula.semestreId";
+const CURRICULAR_CONTENT_PREVIEW_KEY =
+  "programacionCurricular.mostrarContenidoEnCuadroEmergente";
 
 const DEFAULT_SETTINGS = {
+  programacionCurricular: {
+    mostrarContenidoEnCuadroEmergente: true,
+  },
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: false,
     usarAvataresEnCertificadosTitulos: false,
@@ -95,6 +100,12 @@ const normalizeHexColor = (value: unknown, fallback = "#ffffff") => {
 };
 
 const SETTING_DEFINITIONS: Record<string, SettingDefinition> = {
+  [CURRICULAR_CONTENT_PREVIEW_KEY]: {
+    section: "programacionCurricular",
+    label: "Mostrar contenido en cuadro emergente al hacer clic",
+    valueType: "boolean",
+    defaultValue: true,
+  },
   [HIDE_OCCUPATIONAL_CURRICULUM_KEY]: {
     section: "general",
     label: "Poder ocultar de la Programación para Opciones Ocupacionales",
@@ -313,6 +324,9 @@ function buildSettingsResponse(items: DataConnectAppSetting[]) {
     (item) => item.settingKey === MATRICULA_FORM_DNI_RECOGNITION_KEY,
   );
   const settings = {
+    programacionCurricular: {
+      ...DEFAULT_SETTINGS.programacionCurricular,
+    },
     general: {
       ...DEFAULT_SETTINGS.general,
     },
@@ -325,6 +339,7 @@ function buildSettingsResponse(items: DataConnectAppSetting[]) {
   };
 
   items.forEach((item) => {
+    if (item.settingKey === CURRICULAR_CONTENT_PREVIEW_KEY) settings.programacionCurricular.mostrarContenidoEnCuadroEmergente = item.boolValue !== false;
     if (item.settingKey === HIDE_OCCUPATIONAL_CURRICULUM_KEY) settings.general.poderOcultarProgramacionOpcionesOcupacionales = item.boolValue === true;
     if (item.settingKey === USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY) {
       settings.general.usarAvataresEnCertificadosTitulos = Boolean(item.boolValue);
@@ -533,6 +548,8 @@ export const getAppSettings = https.onCall(async (_data, context) => {
 export const saveAppSettings = https.onCall(async (data, context) => {
   await requirePermission(context, "settings", "edit");
 
+  const programacionCurricular = data?.programacionCurricular as Record<string, unknown> | undefined;
+  const mostrarContenidoEnCuadroEmergente = programacionCurricular?.mostrarContenidoEnCuadroEmergente !== false;
   const general = data?.general as Record<string, unknown> | undefined;
   const formularioMatricula = data?.formularioMatricula as Record<string, unknown> | undefined;
   const visualizaciones = data?.visualizaciones as Record<string, unknown> | undefined;
@@ -588,6 +605,7 @@ export const saveAppSettings = https.onCall(async (data, context) => {
     : semestresConsultaIds;
 
   try {
+    await upsertSetting(CURRICULAR_CONTENT_PREVIEW_KEY, mostrarContenidoEnCuadroEmergente);
     await upsertSetting(
       USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY,
       usarAvataresEnCertificadosTitulos,
@@ -664,6 +682,9 @@ export const saveAppSettings = https.onCall(async (data, context) => {
 
     return {
       settings: {
+        programacionCurricular: {
+          mostrarContenidoEnCuadroEmergente,
+        },
         general: {
           poderOcultarProgramacionOpcionesOcupacionales,
           usarAvataresEnCertificadosTitulos,

@@ -15,6 +15,7 @@ const dc = { executeGraphql: async (source, args = {}) => { operations.push({ so
 const https = { HttpsError, onCall: fn => fn };
 const permissions = { requirePermission: async () => {} };
 const mappers = load('functions/src/modules/core/userMappers.ts');
+const competenceModel = load('functions/src/modules/competencias/model.ts');
 const creation = load('functions/src/modules/academico/curricularCreation.ts', { 'firebase-functions/v1': { https }, '../core/dataConnectCore.js': { dataConnect: dc } });
 const context = { modulo: { id: 1 }, programa: false, competencias: [{ id: 10, orden: null }], relations: [], unidadIds: [] };
 const services = { getModuloCompetenciaContext: async () => context, attachUnidadToModulo: async (...args) => {
@@ -23,13 +24,29 @@ const services = { getModuloCompetenciaContext: async () => context, attachUnida
 const common = { 'firebase-functions/v1': { https }, '../core/dataConnectCore.js': { dataConnect: dc }, '../core/permissions.js': permissions,
   '../../dataconnectOperations.js': load('functions/src/dataconnectOperations.ts'),
   '../core/userMappers.js': mappers, './curricularCreation.js': creation, '../competencias/service.js': services,
-  '../competencias/model.js': { expectedCompetenciaType: () => 'TECNICA' }, '../materiales/handlers.js': {} };
+  '../competencias/model.js': competenceModel, '../materiales/handlers.js': {},
+  './contentSimilarity.js': load('functions/src/modules/academico/contentSimilarity.ts') };
 const editing = load('functions/src/modules/academico/curricularEditing.ts', common);
 const handlers = load('functions/src/modules/academico/handlers.ts', { ...common, './curricularEditing.js': editing }, () => ({}));
 const updates = load('src/lib/curricularUpdates.ts');
+const builtStructure = handlers.buildEstructuraAcademica({
+  modulos: [{ id: 1, planId: 5, competencias: [] }],
+  planModulos: [],
+  competenciaUnidadesDidacticas: [{ id: 21, orden: 1, competenciaId: 10, unidadDidacticaId: 20,
+    competencia: { id: 10, moduloId: 1, nombre: 'UC1', tipo: 'TECNICA' } }],
+  unidadesDidacticas: [{ id: 20, nombre: 'Unidad' }],
+  capacidadesTerminales: [{ id: 30, unidadDidacticaId: 20, orden: 1 }],
+  indicadoresCapacidad: [
+    { id: 40, capacidadTerminalId: 30, orden: 1, contenidos: [{ id: 70, orden: 1, texto: 'Contenido migrado' }], aprendizajes: [] },
+    { id: 41, capacidadTerminalId: 30, orden: 2, aprendizajes: [] },
+  ],
+});
+const builtIndicators = builtStructure[0].unidadesDidacticas[0].capacidadesTerminales[0].indicadoresCapacidad;
+assert.deepEqual(builtIndicators[0].contenidos, [{ id: 70, orden: 1, texto: 'Contenido migrado' }], 'The structure response must preserve indicator contents');
+assert.deepEqual(builtIndicators[1].contenidos, [], 'Indicators without contents must expose an empty array');
 const unit = { id: 20, relacionId: 21, competenciaId: 10, competencia: { id: 10, moduloId: 1, nombre: 'UC1', tipo: 'TECNICA' }, orden: null,
-  capacidadesTerminales: [{ id: 30, unidadDidacticaId: 20, orden: null, indicadoresCapacidad: [{ id: 40, capacidadTerminalId: 30, orden: null,
-    aprendizajes: [{ id: 50, descripcion: 'Existente', orden: null, indicadorCapacidadId: 40, actividades: [{ id: 60, aprendizajeId: 50, moduloId: 1, orden: null, contenidos: [], materiales: [] }] }] }] }] };
+  capacidadesTerminales: [{ id: 30, unidadDidacticaId: 20, orden: null, indicadoresCapacidad: [{ id: 40, capacidadTerminalId: 30, orden: null, contenidos: [],
+    aprendizajes: [{ id: 50, descripcion: 'Existente', orden: null, indicadorCapacidadId: 40, actividades: [{ id: 60, aprendizajeId: 50, moduloId: 1, orden: null, materiales: [] }] }] }] }] };
 const base = [{ id: 1, planId: 5, orden: null, plan: { id: 5 }, planModulos: [{ id: 2, planId: 5, orden: null }], competencias: [{ id: 10, orden: null, tipo: 'TECNICA' }], unidadesDidacticas: [unit] },
   { id: 2, planId: 5, orden: 2, competencias: [], unidadesDidacticas: [] }];
 const cases = [
@@ -90,6 +107,18 @@ const cases = [
   };
   await editing.reorderCurricularExtra('competencia', [{ id: 100, orden: 1 }, { id: 50, orden: 2 }], { moduloId: 1 });
   assert(!operations.at(-1).source.includes('tipo:'), 'Reordering must preserve Technical/Employability types');
+  responseFor = query => {
+    if (query.startsWith('query CurricularSesiones')) return { actividads: [
+      { id: 50, moduloId: 1, aprendizaje: { id: 5 } },
+      { id: 60, moduloId: 1, aprendizaje: { id: 5 } },
+      { id: 100, moduloId: 1, aprendizaje: { id: 10 } },
+    ] };
+    if (query.startsWith('mutation CurricularSaveOrder')) return {};
+    throw Error(query);
+  };
+  await editing.reorderCurricularExtra('actividad', [{ id: 60, orden: 1 }, { id: 50, orden: 2 }], { moduloId: 1, indicadorCapacidadId: 40 });
+  assert.match(operations.at(-1).source, /actividad_update\(id:60,data:\{orden:1\}\)/);
+  await assert.rejects(editing.reorderCurricularExtra('actividad', [{ id: 100, orden: 1 }, { id: 50, orden: 2 }], { moduloId: 1, indicadorCapacidadId: 40 }), { code: 'failed-precondition' });
   responseFor = query => {
     if (query.startsWith('mutation CurricularSaveChildOrder')) return {};
     throw Error(query);

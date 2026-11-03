@@ -77,6 +77,8 @@ const normalizeDraftSettings = (value: Partial<AppSettings> | null | undefined):
   return {
     programacionCurricular: {
       mostrarContenidoEnCuadroEmergente: value?.programacionCurricular?.mostrarContenidoEnCuadroEmergente !== false,
+      mostrarRecursosEnSesiones: value?.programacionCurricular?.mostrarRecursosEnSesiones === true,
+      usarOtroColorCompetenciasEmpleabilidad: value?.programacionCurricular?.usarOtroColorCompetenciasEmpleabilidad !== false,
     },
     general: {
       ...defaultAppSettings.general,
@@ -414,7 +416,31 @@ export default function SettingsPage() {
               disabled={loading || saving || !canEditSettings}
               onChange={(_, checked) => setDraft(current => ({
                 ...normalizeDraftSettings(current),
-                programacionCurricular: { mostrarContenidoEnCuadroEmergente: checked },
+                programacionCurricular: { ...normalizeDraftSettings(current).programacionCurricular, mostrarContenidoEnCuadroEmergente: checked },
+              }))}
+            />}
+          />
+
+          <FormControlLabel
+            label="Usar otro color para competencias de empleabilidad"
+            control={<Switch
+              checked={safeDraft.programacionCurricular.usarOtroColorCompetenciasEmpleabilidad}
+              disabled={loading || saving || !canEditSettings}
+              onChange={(_, checked) => setDraft(current => ({
+                ...normalizeDraftSettings(current),
+                programacionCurricular: { ...normalizeDraftSettings(current).programacionCurricular, usarOtroColorCompetenciasEmpleabilidad: checked },
+              }))}
+            />}
+          />
+
+          <FormControlLabel
+            label="Mostrar recursos en sesiones"
+            control={<Switch
+              checked={safeDraft.programacionCurricular.mostrarRecursosEnSesiones}
+              disabled={loading || saving || !canEditSettings}
+              onChange={(_, checked) => setDraft(current => ({
+                ...normalizeDraftSettings(current),
+                programacionCurricular: { ...normalizeDraftSettings(current).programacionCurricular, mostrarRecursosEnSesiones: checked },
               }))}
             />}
           />

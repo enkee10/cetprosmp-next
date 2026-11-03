@@ -114,11 +114,13 @@ export function AcademicTextPreviewProvider({ children, enabled = true }: { chil
   );
 }
 
-export function AcademicPreviewText({ text, lines, variant, onEdit }: {
+export function AcademicPreviewText({ text, lines, variant, onEdit, fullText = false, inline = false }: {
   text: string;
   lines: number;
   variant: 'caption' | 'body2';
   onEdit?: () => void;
+  fullText?: boolean;
+  inline?: boolean;
 }) {
   const preview = useContext(PreviewContext);
   const ref = useRef<HTMLSpanElement>(null);
@@ -147,7 +149,9 @@ export function AcademicPreviewText({ text, lines, variant, onEdit }: {
         event.preventDefault(); event.stopPropagation(); onEdit();
       }}
       title={preview ? `Clic para ver el texto completo${onEdit ? '. Doble clic para editar' : ''}` : onEdit ? 'Doble clic para editar' : undefined}
-      sx={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: lines, overflow: 'hidden',
+      sx={{ ...(fullText
+        ? { display: inline ? 'inline' : 'block', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }
+        : { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: lines, overflow: 'hidden' }),
         wordBreak: 'break-word', lineHeight: 1.25, cursor: preview ? 'pointer' : onEdit ? 'text' : 'inherit',
         borderBottom: onEdit ? '1px dotted transparent' : undefined,
         '&:hover': onEdit ? { borderBottomColor: 'text.secondary' } : undefined }}

@@ -43,14 +43,27 @@ export function curricularItemCode(
   return index < 0 ? '' : `${prefix}${index + 1}`;
 }
 
-/** Each competency type has its own sequence across the module, including hidden items. */
-export function curricularCompetencyCodes(competencias: ReadonlyArray<CompetenciaDetalle>) {
+export type CurricularCodeModule = Pick<ModuloDetalle, 'id' | 'orden' | 'planId'> & {
+  competencias: ReadonlyArray<Pick<CompetenciaDetalle, 'id' | 'tipo' | 'orden'>>;
+  planModulos?: ReadonlyArray<{ planId: number; orden?: number | null }>;
+};
+
+/** Each type spans the complete plan in module/competency order, including hidden items. */
+export function curricularCompetencyCodes(modulos: ReadonlyArray<CurricularCodeModule>, planId: number | null) {
   const codes = new Map<number, string>();
   const counts = new Map<CompetenciaDetalle['tipo'], number>();
-  for (const competencia of orderedCurricularItems(competencias)) {
-    const position = (counts.get(competencia.tipo) ?? 0) + 1;
-    counts.set(competencia.tipo, position);
-    codes.set(competencia.id, `${competencia.tipo === 'TECNICA' ? 'UC' : 'CE'}${position}`);
+  const modules = modulos.flatMap(modulo => {
+    const relation = modulo.planModulos?.find(item => item.planId === planId);
+    return relation || modulo.planId === planId
+      ? [{ ...modulo, orden: relation?.orden ?? modulo.orden }]
+      : [];
+  });
+  for (const modulo of orderedCurricularItems(modules)) {
+    for (const competencia of orderedCurricularItems(modulo.competencias)) {
+      const position = (counts.get(competencia.tipo) ?? 0) + 1;
+      counts.set(competencia.tipo, position);
+      codes.set(competencia.id, `${competencia.tipo === 'TECNICA' ? 'UC' : 'CE'}${position}`);
+    }
   }
   return codes;
 }

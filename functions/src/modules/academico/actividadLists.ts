@@ -22,7 +22,7 @@ export async function saveActividadLists(
 ): Promise<number> {
   const materialRows = materiales ? await Promise.all(materiales.map(getOrCreateMaterial)) : [];
   const variables: Record<string, unknown> = { data };
-  const definitions = ['$data:Actividad_Data! @allow(fields:"nombre descripcion proposito ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId moduloId numeroSesion orden")'];
+  const definitions = ['$data:Actividad_Data! @allow(fields:"nombre descripcion proposito temas ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId moduloId numeroSesion orden")'];
   if (id) { definitions.push('$id:Int!'); variables.id = id; }
   const fields = [id
     ? 'saved:actividad_update(id:$id,data:$data) @check(expr:"this != null",message:"Actividad inexistente")'

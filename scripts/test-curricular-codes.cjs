@@ -1,14 +1,15 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const ts = require('typescript');
-function load(file) {
+function load(file, imports = {}) {
   const mod = { exports: {} };
-  new Function('module', 'exports', ts.transpileModule(fs.readFileSync(file, 'utf8'), {
+  new Function('module', 'exports', 'require', ts.transpileModule(fs.readFileSync(file, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-  }).outputText)(mod, mod.exports);
+  }).outputText)(mod, mod.exports, name => imports[name] ?? {});
   return mod.exports;
 }
-const { curricularItemCode: code, curricularCompetencyCodes: competencyCodes, curricularDescendantCodes: descendantCodes } = load('src/lib/curricularCodes.ts');
+const { curricularItemCode: code, curricularCompetencyCodes: planCompetencyCodes, curricularDescendantCodes: descendantCodes } = load('src/lib/curricularCodes.ts');
+const competencyCodes = competencias => planCompetencyCodes([{ id: 1, planId: 1, competencias }], 1);
 const { applyAcademicOrder } = load('src/lib/curricularUpdates.ts');
 const { filterCurricularModules } = load('src/lib/curricularFilters.ts');
 const comp = { id: 10, nombre: 'Primera competencia', orden: 1 };
@@ -47,12 +48,37 @@ assert.deepEqual([11, 13].map(id => typedCodes.get(id)), ['CE1', 'CE2'], 'Employ
 assert.equal(typedCodes.get(12), 'UC2', 'The only selected technical competency keeps UC2 when UC1 is hidden');
 assert.equal(typedCodes.get(13), 'CE2', 'A hidden employability competency retains CE2 in its own type sequence');
 assert.deepEqual(competencyCodes(mixedCompetencies.map(c => ({ ...c, periodActive: !c.periodActive }))), typedCodes, 'Visibility must never change competency prefixes or numbering');
-assert.equal(competencyCodes([{ id: 20, nombre: 'Otra técnica', tipo: 'TECNICA', orden: 8 }]).get(20), 'UC1', 'Another module starts its own type sequence at one');
+assert.equal(competencyCodes([{ id: 20, nombre: 'Otra técnica', tipo: 'TECNICA', orden: 8 }]).get(20), 'UC1', 'A plan without preceding competencies starts at one');
 const reorderedCompetencies = applyAcademicOrder([{ competencias: mixedCompetencies, unidadesDidacticas: [] }], 'competencia', [{ id: 14, orden: 5 }]);
 assert.equal(competencyCodes(reorderedCompetencies[0].competencias).get(14), 'UC1', 'Technical codes follow a reordered technical competency');
 assert.equal(competencyCodes(reorderedCompetencies[0].competencias).get(11), 'CE1', 'Reordering technical competencies does not change the employability sequence');
 assert.deepEqual(mixedCompetencies, competencySnapshot, 'Computing competency codes preserves source content and orders');
 assert.deepEqual(competencyCodes([]), new Map());
+
+const planModules = [
+  { id: 2, planId: 1, orden: 20, competencias: [
+    { id: 23, tipo: 'TECNICA', orden: 3 }, { id: 22, tipo: 'EMPLEABILIDAD', orden: 2 },
+    { id: 21, tipo: 'TECNICA', orden: 1 },
+  ] },
+  { id: 3, planId: 2, orden: 1, competencias: [{ id: 31, tipo: 'TECNICA', orden: 1 }] },
+  { id: 1, planId: 1, orden: 10, competencias: mixedCompetencies },
+];
+const planSnapshot = structuredClone(planModules);
+const continuous = planCompetencyCodes(planModules, 1);
+assert.deepEqual([10, 12, 14, 21, 23].map(id => continuous.get(id)), ['UC1', 'UC2', 'UC3', 'UC4', 'UC5'], 'UC continues across modules in module order before local competency order');
+assert.deepEqual([11, 13, 22].map(id => continuous.get(id)), ['CE1', 'CE2', 'CE3'], 'CE also continues across modules in its own sequence');
+assert.equal(continuous.has(31), false, 'Another plan must not change the selected plan numbering');
+assert.equal(planCompetencyCodes(planModules, 2).get(31), 'UC1', 'A different plan has its own sequence');
+const movedModules = planModules.map(module => module.id === 2 ? { ...module, orden: 5 } : module);
+assert.equal(planCompetencyCodes(movedModules, 1).get(21), 'UC1');
+assert.equal(planCompetencyCodes(movedModules, 1).get(10), 'UC3', 'Moving a module recomputes the sequence across all its following modules');
+const sharedPlans = planModules.map(module => ({ ...module, planModulos: module.id === 1 ? [
+  { planId: 1, orden: 1 }, { planId: 2, orden: 2 },
+] : module.id === 2 ? [{ planId: 1, orden: 2 }, { planId: 2, orden: 1 }] : [] }));
+assert.equal(planCompetencyCodes(sharedPlans, 1).get(21), 'UC4');
+assert.equal(planCompetencyCodes(sharedPlans, 2).get(10), 'UC4', 'Shared modules use the selected plan relation order, including its other modules');
+assert.equal(planCompetencyCodes([{ id: 0, planId: 1, orden: 0, competencias: [] }, ...planModules], 1).get(21), 'UC4', 'An empty module consumes no competency numbers');
+assert.deepEqual(planModules, planSnapshot, 'Plan coding never changes stored orders or content');
 
 const indicator = (id, activities = [], orden = 1) => ({ id, orden, aprendizajes: [{ id: id + 1000, actividades: activities }] });
 const capacity = (id, indicators, orden = 1) => ({ id, orden, indicadoresCapacidad: indicators });
@@ -133,3 +159,41 @@ assert.equal(code('M', onlySecond, 2), 'M2', 'A teacher keeps M2 after career-le
 const anotherEdition = filterCurricularModules(scoped.filter(row => row.id === 2), catalog, ['all'], { planIds: [3] });
 assert.equal(code('M', anotherEdition, 2), 'M1', 'A shared module has its own position in each edition');
 console.log('Códigos curriculares: orden, relación con los padres, ocultos y textos conservados verificados.');
+
+// A teacher sees M2 but needs the preceding competencies of M1, without gaining other plans.
+const semestre = { id: 1, titulo: '2026-2' };
+const visibleModule = { ...planModules[0], titulo: 'M2', competencias: planModules[0].competencias.map(comp => ({ ...comp, nombre: 'Competencia' })) };
+let teacherQuery;
+const teacherHandlers = load('functions/src/modules/academico/handlers.ts', {
+  'firebase-functions/v1': { https: { onCall: handler => handler, HttpsError: Error } },
+  '../core/authCore.js': { isDocenteRole: () => true },
+  '../core/permissions.js': { requireAuthenticated() {}, getRequesterRoleId: () => 4 },
+  '../core/dataConnectCore.js': { dataConnect: { executeGraphql: async query => {
+    teacherQuery = query;
+    return { data: {
+      users: [{ id: 50 }], personals: [{ id: 60, userId: 50 }], semestres: [semestre],
+      planes: [{ id: 1 }, { id: 2 }], planModulos: [],
+      grupoModulos: [{ id: 70, moduloId: 2, grupo: { personalId: 60, semestre }, modulo: visibleModule }],
+      competencyCodeModules: planModules,
+      competenciaUnidadesDidacticas: [], unidadesDidacticas: [], capacidadesTerminales: [], indicadoresCapacidad: [],
+    } };
+  } } },
+  '../settings/handlers.js': { getConfiguredSemestreConsultaIds: async () => [] },
+  '../planes/periodSelection.js': { listCurricularSemesters: async () => [semestre], academicPeriodData: async () => ({}) },
+  '../competencias/model.js': { projectUnidadRelations: rows => rows },
+  './semesterPlans.js': load('functions/src/modules/academico/semesterPlans.ts'),
+});
+(async () => {
+  const result = await teacherHandlers.listEstructuraAcademicaDocente({ semestreId: 1 }, { auth: { uid: 'teacher' } });
+  assert(teacherQuery.includes('competencyCodeModules: modulos'), 'The teacher query must include the complete numbering context');
+  assert.deepEqual(result.modulos.map(module => module.id), [2], 'The visible tree must remain restricted to the assigned module');
+  assert.deepEqual(result.competencyCodeModules.map(module => module.id).sort(), [1, 2], 'Numbering context excludes unauthorized plans');
+  const loadedIds = new Set(result.modulos.map(module => module.id));
+  const previousModules = result.competencyCodeModules.filter(module => !loadedIds.has(module.id));
+  assert.equal(planCompetencyCodes([...previousModules, ...result.modulos], 1).get(21), 'UC4', 'A teacher assigned only M2 keeps the full plan competency codes');
+  const updatedVisible = result.modulos.map(module => ({ ...module, competencias: [
+    { id: 24, tipo: 'TECNICA', orden: 0 }, ...module.competencias,
+  ] }));
+  assert.equal(planCompetencyCodes([...previousModules, ...updatedVisible], 1).get(21), 'UC5', 'Local edits replace visible metadata instead of duplicating or preserving stale competencies');
+  console.log('Competencias entre módulos: contexto docente, acceso por plan y actualización local verificados.');
+})().catch(error => { console.error(error); process.exitCode = 1; });

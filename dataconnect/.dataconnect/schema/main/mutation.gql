@@ -657,6 +657,15 @@ extend type Mutation {
     data: TipoCarrera_Data!
   ): TipoCarrera_KeyOutput! @fdc_generated(from: "TipoCarrera", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Transversal` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  transversal_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Transversal_Data!
+  ): Transversal_KeyOutput! @fdc_generated(from: "Transversal", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Turno` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   turno_insert(
@@ -692,6 +701,15 @@ extend type Mutation {
     """
     data: User_Data!
   ): User_KeyOutput! @fdc_generated(from: "User", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Valor` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  valor_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Valor_Data!
+  ): Valor_KeyOutput! @fdc_generated(from: "Valor", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `ValorInstitucional` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1368,6 +1386,15 @@ extend type Mutation {
     data: [TipoCarrera_Data!]!
   ): [TipoCarrera_KeyOutput!]! @fdc_generated(from: "TipoCarrera", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `Transversal` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  transversal_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Transversal_Data!]!
+  ): [Transversal_KeyOutput!]! @fdc_generated(from: "Transversal", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Turno` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   turno_insertMany(
@@ -1403,6 +1430,15 @@ extend type Mutation {
     """
     data: [User_Data!]!
   ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Valor` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  valor_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Valor_Data!]!
+  ): [Valor_KeyOutput!]! @fdc_generated(from: "Valor", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `ValorInstitucional` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -2079,6 +2115,15 @@ extend type Mutation {
     data: TipoCarrera_Data!
   ): TipoCarrera_KeyOutput! @fdc_generated(from: "TipoCarrera", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Transversal` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Transversal`.
+  """
+  transversal_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Transversal_Data!
+  ): Transversal_KeyOutput! @fdc_generated(from: "Transversal", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Turno` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Turno`.
   """
   turno_upsert(
@@ -2114,6 +2159,15 @@ extend type Mutation {
     """
     data: User_Data!
   ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Valor` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Valor`.
+  """
+  valor_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Valor_Data!
+  ): Valor_KeyOutput! @fdc_generated(from: "Valor", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `ValorInstitucional` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ValorInstitucional`.
   """
@@ -2790,6 +2844,15 @@ extend type Mutation {
     data: [TipoCarrera_Data!]!
   ): [TipoCarrera_KeyOutput!]! @fdc_generated(from: "TipoCarrera", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `Transversal` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Transversal`.
+  """
+  transversal_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Transversal_Data!]!
+  ): [Transversal_KeyOutput!]! @fdc_generated(from: "Transversal", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Turno` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Turno`.
   """
   turno_upsertMany(
@@ -2825,6 +2888,15 @@ extend type Mutation {
     """
     data: [User_Data!]!
   ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Valor` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Valor`.
+  """
+  valor_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Valor_Data!]!
+  ): [Valor_KeyOutput!]! @fdc_generated(from: "Valor", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `ValorInstitucional` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ValorInstitucional`.
   """
@@ -4931,6 +5003,35 @@ extend type Mutation {
     data: TipoCarrera_Data!
   ): TipoCarrera_KeyOutput @fdc_generated(from: "TipoCarrera", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `Transversal` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Transversal` or `null` if not found.
+  """
+  transversal_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Transversal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Transversal_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Transversal_Data!
+  ): Transversal_KeyOutput @fdc_generated(from: "Transversal", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Turno` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Turno` or `null` if not found.
   """
   turno_update(
@@ -5046,6 +5147,35 @@ extend type Mutation {
     """
     data: User_Data!
   ): User_KeyOutput @fdc_generated(from: "User", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Valor` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Valor` or `null` if not found.
+  """
+  valor_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Valor_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Valor_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Valor_Data!
+  ): Valor_KeyOutput @fdc_generated(from: "Valor", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `ValorInstitucional` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ValorInstitucional` or `null` if not found.
   """
@@ -6492,6 +6622,25 @@ extend type Mutation {
     data: TipoCarrera_Data!
   ): Int! @fdc_generated(from: "TipoCarrera", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Transversal` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  transversal_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Transversal_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Transversal_Data!
+  ): Int! @fdc_generated(from: "Transversal", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Turno` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   turno_updateMany(
@@ -6567,6 +6716,25 @@ extend type Mutation {
     """
     data: User_Data!
   ): Int! @fdc_generated(from: "User", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Valor` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  valor_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Valor_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Valor_Data!
+  ): Int! @fdc_generated(from: "Valor", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `ValorInstitucional` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -8328,6 +8496,30 @@ extend type Mutation {
     first: TipoCarrera_FirstRow
   ): TipoCarrera_KeyOutput @fdc_generated(from: "TipoCarrera", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `Transversal` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  transversal_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Transversal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Transversal_FirstRow
+  ): Transversal_KeyOutput @fdc_generated(from: "Transversal", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Turno` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   turno_delete(
@@ -8423,6 +8615,30 @@ extend type Mutation {
     """
     first: User_FirstRow
   ): User_KeyOutput @fdc_generated(from: "User", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Valor` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  valor_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Valor_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Valor_FirstRow
+  ): Valor_KeyOutput @fdc_generated(from: "Valor", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `ValorInstitucional` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -9494,6 +9710,20 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "TipoCarrera", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `Transversal` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  transversal_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Transversal_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Transversal", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Turno` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   turno_deleteMany(
@@ -9549,6 +9779,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "User", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Valor` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  valor_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Valor_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Valor", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `ValorInstitucional` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

@@ -6,6 +6,7 @@ const fields = [
   { name: 'nombre', label: 'Nombre', required: true },
   { name: 'descripcion', label: 'Descripcion', type: 'textarea' as const },
   { name: 'proposito', label: 'Proposito', type: 'textarea' as const },
+  { name: 'temas', label: 'Temas', type: 'textarea' as const },
   { name: 'ambiente', label: 'Ambiente' },
   { name: 'duracion', label: 'Horas pedagogicas', type: 'number' as const },
   { name: 'moduloId', label: 'Modulo', type: 'select' as const, optionsCallableName: 'listModulos', optionsRowsKey: 'modulos', optionLabelField: 'titulo', optionValueType: 'number' as const },
@@ -29,6 +30,7 @@ const columns = [
   { field: 'valorInstitucionalId', headerName: 'Valor ID', flex: 0.65, minWidth: 95 },
   { field: 'descripcion', headerName: 'Descripcion', flex: 1.5, minWidth: 240, hidden: true },
   { field: 'proposito', headerName: 'Proposito', flex: 1.5, minWidth: 240, hidden: true },
+  { field: 'temas', headerName: 'Temas', flex: 1.5, minWidth: 240, hidden: true },
   { field: 'bibliografia', headerName: 'Bibliografia', flex: 1.5, minWidth: 240, hidden: true },
 ];
 

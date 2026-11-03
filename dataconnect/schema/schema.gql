@@ -284,6 +284,18 @@ type Aprendizaje @table(name: "aprendizajes") {
   indicadorCapacidadId: Int! @col(name: "indicador_capacidad_id")
 }
 
+type Transversal @table(name: "transversales", singular: "transversal", plural: "transversales") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+  descripcion: String
+}
+
+type Valor @table(name: "valores", singular: "valor", plural: "valores") {
+  id: Int! @col(dataType: "serial")
+  nombre: String
+  descripcion: String
+}
+
 type EjeTransversal @table(name: "ejes_transversales", singular: "ejeTransversal", plural: "ejesTransversales") {
   id: Int! @col(dataType: "serial")
   nombre: String
@@ -306,6 +318,7 @@ type Actividad @table(name: "actividades") {
   moduloId: Int @col(name: "modulo_id")
   descripcion: String
   proposito: String
+  temas: String @col(dataType: "text")
   ambiente: String
   duracion: Int
   fecha: Timestamp
@@ -321,12 +334,14 @@ type Actividad @table(name: "actividades") {
   valorInstitucionalId: Int @col(name: "valor_institucional_id")
 }
 
-type IndicadorContenido @table(name: "indicador_contenidos", singular: "indicadorContenido", plural: "indicadorContenidos") @unique(fields: ["indicadorCapacidad", "orden"]) {
+type IndicadorContenido @table(name: "indicador_contenidos", singular: "indicadorContenido", plural: "indicadorContenidos") @unique(fields: ["indicadorCapacidad", "orden"]) @index(fields: ["indicadorCapacidadId", "contenidoPadreId", "orden"]) {
   id: Int! @col(dataType: "serial")
   orden: Int!
   texto: String! @col(dataType: "text")
   indicadorCapacidad: IndicadorCapacidad! @ref(fields: "indicadorCapacidadId", references: "id")
   indicadorCapacidadId: Int! @col(name: "indicador_capacidad_id")
+  contenidoPadre: IndicadorContenido @ref(fields: "contenidoPadreId", references: "id")
+  contenidoPadreId: Int @col(name: "contenido_padre_id")
 }
 
 type Material @table(name: "materiales", singular: "material", plural: "materiales") {

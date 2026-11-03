@@ -49,10 +49,16 @@ const MATRICULA_FORM_SEMESTRE_ID_KEY =
   "formularioMatricula.semestreId";
 const CURRICULAR_CONTENT_PREVIEW_KEY =
   "programacionCurricular.mostrarContenidoEnCuadroEmergente";
+const CURRICULAR_EMPLOYABILITY_COLOR_KEY =
+  "programacionCurricular.usarOtroColorCompetenciasEmpleabilidad";
+const CURRICULAR_SESSION_RESOURCES_KEY =
+  "programacionCurricular.mostrarRecursosEnSesiones";
 
 const DEFAULT_SETTINGS = {
   programacionCurricular: {
+    mostrarRecursosEnSesiones: false,
     mostrarContenidoEnCuadroEmergente: true,
+    usarOtroColorCompetenciasEmpleabilidad: true,
   },
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: false,
@@ -100,6 +106,18 @@ const normalizeHexColor = (value: unknown, fallback = "#ffffff") => {
 };
 
 const SETTING_DEFINITIONS: Record<string, SettingDefinition> = {
+  [CURRICULAR_SESSION_RESOURCES_KEY]: {
+    section: "programacionCurricular",
+    label: "Mostrar recursos en sesiones",
+    valueType: "boolean",
+    defaultValue: false,
+  },
+  [CURRICULAR_EMPLOYABILITY_COLOR_KEY]: {
+    section: "programacionCurricular",
+    label: "Usar otro color para competencias de empleabilidad",
+    valueType: "boolean",
+    defaultValue: true,
+  },
   [CURRICULAR_CONTENT_PREVIEW_KEY]: {
     section: "programacionCurricular",
     label: "Mostrar contenido en cuadro emergente al hacer clic",
@@ -340,6 +358,8 @@ function buildSettingsResponse(items: DataConnectAppSetting[]) {
 
   items.forEach((item) => {
     if (item.settingKey === CURRICULAR_CONTENT_PREVIEW_KEY) settings.programacionCurricular.mostrarContenidoEnCuadroEmergente = item.boolValue !== false;
+    if (item.settingKey === CURRICULAR_EMPLOYABILITY_COLOR_KEY) settings.programacionCurricular.usarOtroColorCompetenciasEmpleabilidad = item.boolValue !== false;
+    if (item.settingKey === CURRICULAR_SESSION_RESOURCES_KEY) settings.programacionCurricular.mostrarRecursosEnSesiones = item.boolValue === true;
     if (item.settingKey === HIDE_OCCUPATIONAL_CURRICULUM_KEY) settings.general.poderOcultarProgramacionOpcionesOcupacionales = item.boolValue === true;
     if (item.settingKey === USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY) {
       settings.general.usarAvataresEnCertificadosTitulos = Boolean(item.boolValue);
@@ -550,6 +570,8 @@ export const saveAppSettings = https.onCall(async (data, context) => {
 
   const programacionCurricular = data?.programacionCurricular as Record<string, unknown> | undefined;
   const mostrarContenidoEnCuadroEmergente = programacionCurricular?.mostrarContenidoEnCuadroEmergente !== false;
+  const usarOtroColorCompetenciasEmpleabilidad = programacionCurricular?.usarOtroColorCompetenciasEmpleabilidad !== false;
+  const mostrarRecursosEnSesiones = programacionCurricular?.mostrarRecursosEnSesiones === true;
   const general = data?.general as Record<string, unknown> | undefined;
   const formularioMatricula = data?.formularioMatricula as Record<string, unknown> | undefined;
   const visualizaciones = data?.visualizaciones as Record<string, unknown> | undefined;
@@ -606,6 +628,8 @@ export const saveAppSettings = https.onCall(async (data, context) => {
 
   try {
     await upsertSetting(CURRICULAR_CONTENT_PREVIEW_KEY, mostrarContenidoEnCuadroEmergente);
+    await upsertSetting(CURRICULAR_EMPLOYABILITY_COLOR_KEY, usarOtroColorCompetenciasEmpleabilidad);
+    await upsertSetting(CURRICULAR_SESSION_RESOURCES_KEY, mostrarRecursosEnSesiones);
     await upsertSetting(
       USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY,
       usarAvataresEnCertificadosTitulos,
@@ -684,6 +708,8 @@ export const saveAppSettings = https.onCall(async (data, context) => {
       settings: {
         programacionCurricular: {
           mostrarContenidoEnCuadroEmergente,
+          usarOtroColorCompetenciasEmpleabilidad,
+          mostrarRecursosEnSesiones,
         },
         general: {
           poderOcultarProgramacionOpcionesOcupacionales,

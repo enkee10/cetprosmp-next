@@ -1,4 +1,5 @@
 import { https } from "firebase-functions/v1";
+import { curricularUnitIdsInOrder as buildUnidadIds, type CurricularUnitRelation } from "../academico/curricularUnitOrder.js";
 import { applyPeriodSelection } from "../planes/periodSelection.js";
 import { getConfiguredCurrentSemestreId, loadCurrentDocenteModulos } from "../core/docenteSemester.js";
 import { dataConnect } from "../core/dataConnectCore.js";
@@ -315,7 +316,7 @@ const REGISTRO_AUXILIAR_DETAIL_QUERY = `
       unidadDidacticaId
 
       competenciaId
-      competencia { id nombre tipo moduloId }
+      competencia { id nombre tipo moduloId orden }
 }
     unidadesDidacticas(limit: 50000) {
       id
@@ -1289,24 +1290,6 @@ async function upsertEfsrtPppPromedio(grupoModuloId: number, moduloEstudianteId:
   return getIdFromKeyOutput(inserted.data.efsrtPppEstudiante_insert);
 }
 
-function buildUnidadIds(response: {
-  grupoModuloUnidadesDidacticas?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-  competenciaUnidadesDidacticas?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-}) {
-  const moduleUnits = response.competenciaUnidadesDidacticas ?? [];
-  const source = moduleUnits.length > 0 ? moduleUnits : response.grupoModuloUnidadesDidacticas ?? [];
-  const unitsById = new Map<number, { orden?: number | null; unidadDidacticaId: number }>();
-  for (const item of source) {
-    unitsById.set(item.unidadDidacticaId, item);
-  }
-  return Array.from(unitsById.values())
-    .sort((a, b) => (
-      (a.orden ?? a.unidadDidacticaId) - (b.orden ?? b.unidadDidacticaId)
-      || a.unidadDidacticaId - b.unidadDidacticaId
-    ))
-    .map((item) => item.unidadDidacticaId);
-}
-
 function getAcademicOrder(item: { id: number; orden?: number | null }) {
   return item.orden ?? item.id;
 }
@@ -1468,7 +1451,7 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
       practicasProgramadas: Array<{ id: number; numero: number; titulo?: string | null; fecha?: string | null }>;
       jornadasProgramadas: Array<{ fecha: string; tipo: string; inicio: string; fin: string; horas: number }>;
       grupoModuloUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-      competenciaUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
+      competenciaUnidadesDidacticas: CurricularUnitRelation[];
       unidadesDidacticas: RegistroAuxiliarUnidad[];
       capacidadesTerminales: RegistroAuxiliarCapacidad[];
       indicadoresCapacidad: RegistroAuxiliarIndicador[];
@@ -1953,7 +1936,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
 
     const contextResponse = await dataConnect.executeGraphql<{
       grupoModuloUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-      competenciaUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
+      competenciaUnidadesDidacticas: CurricularUnitRelation[];
       unidadesDidacticas: Array<Pick<RegistroAuxiliarUnidad, "id" | "creditos">>;
       capacidadesTerminales: RegistroAuxiliarCapacidad[];
       indicadoresCapacidad: RegistroAuxiliarIndicador[];
@@ -1971,7 +1954,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
             unidadDidacticaId
 
       competenciaId
-      competencia { id nombre tipo moduloId }
+      competencia { id nombre tipo moduloId orden }
 }
           unidadesDidacticas(limit: 50000) {
             id

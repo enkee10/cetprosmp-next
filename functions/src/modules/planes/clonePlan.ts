@@ -60,6 +60,10 @@ export async function createPlanWithPreviousCurriculum(input: DataConnectPlanInp
     addRows("cap", "capacidadTerminal", graph.capacidades, "descripcion sigla orden", row => ({ unidadDidacticaId_expr: expr("u", row.unidadDidacticaId) }));
     addRows("i", "indicadorCapacidad", graph.indicadores, "descripcion sigla orden", row => ({ capacidadTerminalId_expr: expr("cap", row.capacidadTerminalId) }));
     addRows("ct", "indicadorContenido", graph.contenidos, "texto orden", row => ({ indicadorCapacidadId_expr: expr("i", row.indicadorCapacidadId) }));
+    // Link the copied rows only after every copied parent has its new ID.
+    graph.contenidos.forEach((row, index) => {
+      if (row.contenidoPadreId != null) statements.push(`ctp${index}:indicadorContenido_update(id_expr:${JSON.stringify(expr("ct", row.id))},data:{contenidoPadreId_expr:${JSON.stringify(expr("ct", row.contenidoPadreId))}})`);
+    });
     addRows("a", "aprendizaje", graph.aprendizajes, "descripcion sigla orden", row => ({ indicadorCapacidadId_expr: expr("i", row.indicadorCapacidadId) }));
     addRows("s", "actividad", graph.actividades, ACTIVITY_FIELDS, row => ({ aprendizajeId_expr: expr("a", row.aprendizajeId), ...(row.moduloId == null ? {} : { moduloId_expr: expr("m", row.moduloId) }) }));
     addRows("mt", "actividadMaterial", graph.materiales, "texto orden materialId", row => ({ actividadId_expr: expr("s", row.actividadId) }));

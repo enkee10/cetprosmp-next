@@ -10,6 +10,7 @@ import sharp from "sharp";
 import { getStorage } from "firebase-admin/storage";
 import { https, runWith } from "firebase-functions/v1";
 import { dataConnect } from "../core/dataConnectCore.js";
+import { curricularUnitIdsInOrder as buildUnidadIds } from "../academico/curricularUnitOrder.js";
 import { applyPeriodSelection } from "../planes/periodSelection.js";
 import { getDatosGeneralesGlobales } from "../datos-generales/service.js";
 import { requirePermission } from "../core/permissions.js";
@@ -129,7 +130,7 @@ type ReporteUnidad = {
   sigla?: string | null;
   duracion?: number | null;
   creditos?: number | null;
-  competencia?: { id: number; nombre: string; tipo: string } | null;
+  competencia?: { id: number; nombre: string; tipo: string; orden?: number | null } | null;
 };
 
 type ReporteCapacidad = {
@@ -485,7 +486,7 @@ const REPORTE_DETALLE_QUERY = `
       unidadDidacticaId
 
       competenciaId
-      competencia { id nombre tipo moduloId }
+      competencia { id nombre tipo moduloId orden }
 }
     unidadesDidacticas(limit: 50000) {
       id
@@ -1216,24 +1217,6 @@ function getCondition(promedio: number | null | undefined) {
 
 function hasFiniteGrade(values: Array<number | null | undefined>) {
   return values.some((value) => typeof value === "number" && Number.isFinite(value));
-}
-
-function buildUnidadIds(response: {
-  grupoModuloUnidadesDidacticas?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-  competenciaUnidadesDidacticas?: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-}) {
-  const moduleUnits = response.competenciaUnidadesDidacticas ?? [];
-  const source = moduleUnits.length > 0 ? moduleUnits : response.grupoModuloUnidadesDidacticas ?? [];
-  const unitsById = new Map<number, { orden?: number | null; unidadDidacticaId: number }>();
-  for (const item of source) {
-    unitsById.set(item.unidadDidacticaId, item);
-  }
-  return Array.from(unitsById.values())
-    .sort((a, b) => (
-      (a.orden ?? a.unidadDidacticaId) - (b.orden ?? b.unidadDidacticaId)
-      || a.unidadDidacticaId - b.unidadDidacticaId
-    ))
-    .map((item) => item.unidadDidacticaId);
 }
 
 function getAcademicOrder(item: { id: number; orden?: number | null }) {

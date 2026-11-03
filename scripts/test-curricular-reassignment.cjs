@@ -51,6 +51,20 @@ for (const [entity, id, parentEntity, targetId, previousParentId, parentId] of c
   assert.equal(tree.applyAcademicReassignment(original, { ...move, parentId: 9999999 }), original, 'Invalid destination must not remove the source');
 }
 const modules = [makeModule(1), makeModule(2)];
+const hierarchy = ['modulo', ...cases.map(row => row[0])];
+const destinationIds = [1, 11, 102, 1001, 10001, 100001];
+for (let sourceLevel = 2; sourceLevel < hierarchy.length; sourceLevel++) {
+  const [entity, id] = cases[sourceLevel - 1];
+  for (let targetLevel = 0; targetLevel < sourceLevel - 1; targetLevel++) {
+    const target = { entity: hierarchy[targetLevel], id: destinationIds[targetLevel] };
+    const move = tree.reassignmentFor(modules, { entity, id }, target);
+    assert.deepEqual(move.targetAncestor, target, `${entity} can reach ${target.entity}`);
+    assert.equal(tree.applyAcademicReassignment(modules, move), modules, 'Wait for real destination IDs before moving locally');
+  }
+}
+const emptyModule = { ...makeModule(3), competencias: [], unidadesDidacticas: [] };
+assert(tree.reassignmentFor([...modules, emptyModule], { entity: 'actividad', id: 2000001 }, { entity: 'modulo', id: 3 }));
+assert.equal(tree.reassignmentFor(modules, { entity: 'actividad', id: 1000001 }, { entity: 'modulo', id: 1 }), null, 'Dropping on the current first route is a no-op');
 assert.equal(tree.reassignmentFor(modules, { entity: 'competencia', id: 11 }, { entity: 'modulo', id: 1 }), null);
 assert.equal(tree.reassignmentFor(modules, { entity: 'competencia', id: 11 }, { entity: 'capacidadTerminal', id: 2001 }), null);
 modules[0].competencias[0].tipo = 'EMPLEABILIDAD';
@@ -62,6 +76,7 @@ class HttpsError extends Error { constructor(code, message) { super(message); th
 let permissionCalls = 0;
 let rejectPermission = false;
 const server = load('functions/src/modules/academico/curricularReassignment.ts', {
+  './curricularAncestorDestination.js': load('functions/src/modules/academico/curricularAncestorDestination.ts', { 'firebase-functions/v1': { https: { HttpsError } } }),
   'firebase-functions/v1': { https: { HttpsError, onCall: fn => fn } },
   '../core/dataConnectCore.js': { dataConnect: { executeGraphql: () => { throw Error('No remote access permitted in tests'); } } },
   '../core/permissions.js': { requirePermission: async (_context, entity, action) => { permissionCalls++; assert.equal(entity, 'estructura-academica'); assert.equal(action, 'edit'); if (rejectPermission) throw new HttpsError('permission-denied', 'Denied'); } },

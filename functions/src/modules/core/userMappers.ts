@@ -557,6 +557,7 @@ export function buildActividadDataFromInput(input: Record<string, unknown>): Dat
     nombre: asNullableString(input.nombre),
     descripcion: asNullableString(input.descripcion),
     proposito: asNullableString(input.proposito),
+    temas: asNullableString(input.temas),
     ambiente: asNullableString(input.ambiente),
     duracion: toNumberOrNull(input.duracion),
     fecha: asNullableTimestamp(input.fecha),

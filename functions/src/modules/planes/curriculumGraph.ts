@@ -4,7 +4,7 @@ export type CurriculumRow = { id: number; [field: string]: unknown };
 export const PLAN_FIELDS = "duracion creditos tituloComercial slug descripcion2 imagenPortadaUrl planEstudio periodoCaducidad resolucionTipo nro anio genera carreraId periodoVigenciaId versionId";
 export const MODULE_FIELDS = "titulo tituloComercial orden descripcion descripcion2 horas creditos duracionEfsrt creditosEfsrt metas activo slug comun carreraId";
 export const UNIT_FIELDS = "nombre duracion creditos horasTeoricas horasPracticas creditosTeoricos creditosPracticos sigla";
-export const ACTIVITY_FIELDS = "nombre numeroSesion orden descripcion proposito ambiente duracion fecha bibliografia ejeTransversalId valorInstitucionalId";
+export const ACTIVITY_FIELDS = "nombre numeroSesion orden descripcion proposito temas ambiente duracion fecha bibliografia ejeTransversalId valorInstitucionalId";
 export interface CurriculumGraph {
   modulos: CurriculumRow[];
   planModulos: CurriculumRow[];
@@ -51,7 +51,7 @@ export async function readCurriculumGraph(planId: number, includeSessions = fals
   const indicadores = capacidades.length ? await rows("indicadoresCapacidad", "descripcion sigla orden capacidadTerminalId", by("capacidadTerminalId", ids(capacidades))) : [];
   const graph = { ...empty, modulos, competencias, relaciones, unidades, capacidades, indicadores };
   if (!includeSessions || !indicadores.length) return graph;
-  graph.contenidos = await rows("indicadorContenidos", "texto orden indicadorCapacidadId", by("indicadorCapacidadId", ids(indicadores)));
+  graph.contenidos = await rows("indicadorContenidos", "texto orden indicadorCapacidadId contenidoPadreId", by("indicadorCapacidadId", ids(indicadores)));
   graph.aprendizajes = await rows("aprendizajes", "orden descripcion sigla indicadorCapacidadId", by("indicadorCapacidadId", ids(indicadores)));
   if (!graph.aprendizajes.length) return graph;
   graph.actividades = (await rows("actividads", `${ACTIVITY_FIELDS} moduloId aprendizajeId`, by("aprendizajeId", ids(graph.aprendizajes))))

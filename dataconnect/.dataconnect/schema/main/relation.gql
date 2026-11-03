@@ -575,6 +575,15 @@ extend type Actividad {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Actividad.proposito", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Actividad` table where the `temas` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  temas_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Actividad.temas", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Actividad` table where the `valorInstitucionalId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   valorInstitucionalId_count(
@@ -11054,6 +11063,40 @@ extend type IndicadorCapacidadEstudiante {
 }
 extend type IndicadorContenido {
   """
+  ✨ List `IndicadorContenido` objects in a one-to-many relationship (where `IndicadorContenido`.`contenidoPadre` is this object).
+  """
+  indicadorContenidos_on_contenidoPadre(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: IndicadorContenido_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [IndicadorContenido_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: IndicadorContenido_Having
+  ): [IndicadorContenido!]! @fdc_generated(from: "IndicadorContenido.contenidoPadre", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
   _metadata: _Metadata @fdc_generated(from: "IndicadorContenido", purpose: METADATA_FIELD)
@@ -11061,6 +11104,15 @@ extend type IndicadorContenido {
   ✨ Count the number of rows in the `IndicadorContenido` table.
   """
   _count: Int! @fdc_generated(from: "IndicadorContenido.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `IndicadorContenido` table where the `contenidoPadreId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  contenidoPadreId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "IndicadorContenido.contenidoPadreId", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `IndicadorContenido` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -11098,6 +11150,15 @@ extend type IndicadorContenido {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "IndicadorContenido.texto", purpose: QUERY_COUNT)
   """
+  ✨ Sum the `contenidoPadreId` field in the `IndicadorContenido` table.
+  """
+  contenidoPadreId_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "IndicadorContenido.contenidoPadreId", purpose: QUERY_SUM)
+  """
   ✨ Sum the `id` field in the `IndicadorContenido` table.
   """
   id_sum(
@@ -11124,6 +11185,15 @@ extend type IndicadorContenido {
     """
     distinct: Boolean = false
   ): Int @fdc_generated(from: "IndicadorContenido.orden", purpose: QUERY_SUM)
+  """
+  ✨ Average the `contenidoPadreId` field in the `IndicadorContenido` table.
+  """
+  contenidoPadreId_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "IndicadorContenido.contenidoPadreId", purpose: QUERY_AVG)
   """
   ✨ Average the `id` field in the `IndicadorContenido` table.
   """
@@ -11152,6 +11222,10 @@ extend type IndicadorContenido {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "IndicadorContenido.orden", purpose: QUERY_AVG)
   """
+  ✨ Minimum of the `contenidoPadreId` field in the `IndicadorContenido` table.
+  """
+  contenidoPadreId_min: Int @fdc_generated(from: "IndicadorContenido.contenidoPadreId", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `id` field in the `IndicadorContenido` table.
   """
   id_min: Int @fdc_generated(from: "IndicadorContenido.id", purpose: QUERY_MIN)
@@ -11163,6 +11237,10 @@ extend type IndicadorContenido {
   ✨ Minimum of the `orden` field in the `IndicadorContenido` table.
   """
   orden_min: Int @fdc_generated(from: "IndicadorContenido.orden", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `contenidoPadreId` field in the `IndicadorContenido` table.
+  """
+  contenidoPadreId_max: Int @fdc_generated(from: "IndicadorContenido.contenidoPadreId", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `id` field in the `IndicadorContenido` table.
   """
@@ -19182,6 +19260,73 @@ extend type TipoCarrera {
   """
   _id: ID! @fdc_generated(from: "TipoCarrera.id", purpose: ENTITY_ID)
 }
+extend type Transversal {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Transversal", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Transversal` table.
+  """
+  _count: Int! @fdc_generated(from: "Transversal.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Transversal` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transversal.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Transversal` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transversal.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Transversal` table where the `nombre` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nombre_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transversal.nombre", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Transversal` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Transversal.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Transversal` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Transversal.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `Transversal` table.
+  """
+  id_min: Int @fdc_generated(from: "Transversal.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `Transversal` table.
+  """
+  id_max: Int @fdc_generated(from: "Transversal.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Transversal.id", purpose: ENTITY_ID)
+}
 extend type Turno {
   """
   ✨ List `EventoRecurrencia` objects in a one-to-many relationship (where `EventoRecurrencia`.`turno` is this object).
@@ -20751,6 +20896,73 @@ extend type User {
   A generated field that is used for caching results in SDKs.
   """
   _id: ID! @fdc_generated(from: "User.id", purpose: ENTITY_ID)
+}
+extend type Valor {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Valor", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Valor` table.
+  """
+  _count: Int! @fdc_generated(from: "Valor.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Valor` table where the `descripcion` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  descripcion_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Valor.descripcion", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Valor` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Valor.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Valor` table where the `nombre` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  nombre_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Valor.nombre", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `id` field in the `Valor` table.
+  """
+  id_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Valor.id", purpose: QUERY_SUM)
+  """
+  ✨ Average the `id` field in the `Valor` table.
+  """
+  id_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Valor.id", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `id` field in the `Valor` table.
+  """
+  id_min: Int @fdc_generated(from: "Valor.id", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `id` field in the `Valor` table.
+  """
+  id_max: Int @fdc_generated(from: "Valor.id", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Valor.id", purpose: ENTITY_ID)
 }
 extend type ValorInstitucional {
   """

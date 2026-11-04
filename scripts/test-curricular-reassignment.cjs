@@ -51,6 +51,20 @@ for (const [entity, id, parentEntity, targetId, previousParentId, parentId] of c
   assert.equal(tree.applyAcademicReassignment(original, { ...move, parentId: 9999999 }), original, 'Invalid destination must not remove the source');
 }
 const modules = [makeModule(1), makeModule(2)];
+const hierarchy = ['modulo', ...cases.map(row => row[0])];
+const destinationIds = [1, 11, 102, 1001, 10001, 100001];
+for (let sourceLevel = 2; sourceLevel < hierarchy.length; sourceLevel++) {
+  const [entity, id] = cases[sourceLevel - 1];
+  for (let targetLevel = 0; targetLevel < sourceLevel - 1; targetLevel++) {
+    const target = { entity: hierarchy[targetLevel], id: destinationIds[targetLevel] };
+    const move = tree.reassignmentFor(modules, { entity, id }, target);
+    assert.deepEqual(move.targetAncestor, target, `${entity} can reach ${target.entity}`);
+    assert.equal(tree.applyAcademicReassignment(modules, move), modules, 'Wait for real destination IDs before moving locally');
+  }
+}
+const emptyModule = { ...makeModule(3), competencias: [], unidadesDidacticas: [] };
+assert(tree.reassignmentFor([...modules, emptyModule], { entity: 'actividad', id: 2000001 }, { entity: 'modulo', id: 3 }));
+assert.equal(tree.reassignmentFor(modules, { entity: 'actividad', id: 1000001 }, { entity: 'modulo', id: 1 }), null, 'Dropping on the current first route is a no-op');
 assert.equal(tree.reassignmentFor(modules, { entity: 'competencia', id: 11 }, { entity: 'modulo', id: 1 }), null);
 assert.equal(tree.reassignmentFor(modules, { entity: 'competencia', id: 11 }, { entity: 'capacidadTerminal', id: 2001 }), null);
 modules[0].competencias[0].tipo = 'EMPLEABILIDAD';
@@ -62,6 +76,7 @@ class HttpsError extends Error { constructor(code, message) { super(message); th
 let permissionCalls = 0;
 let rejectPermission = false;
 const server = load('functions/src/modules/academico/curricularReassignment.ts', {
+  './curricularAncestorDestination.js': load('functions/src/modules/academico/curricularAncestorDestination.ts', { '../competencias/model.js': load('functions/src/modules/competencias/model.ts'), 'firebase-functions/v1': { https: { HttpsError } } }),
   'firebase-functions/v1': { https: { HttpsError, onCall: fn => fn } },
   '../core/dataConnectCore.js': { dataConnect: { executeGraphql: () => { throw Error('No remote access permitted in tests'); } } },
   '../core/permissions.js': { requirePermission: async (_context, entity, action) => { permissionCalls++; assert.equal(entity, 'estructura-academica'); assert.equal(action, 'edit'); if (rejectPermission) throw new HttpsError('permission-denied', 'Denied'); } },
@@ -123,6 +138,23 @@ function serverFixture(entity, { missing = false, stale = false, mixedType = fal
   await assert.rejects(server.reassignCurricularItem(mixed.request, mixed.graph, mixed.context), { code: 'failed-precondition' });
   const failed = serverFixture('aprendizaje', { failSave: true });
   await assert.rejects(server.reassignCurricularItem(failed.request, failed.graph, failed.context), { code: 'failed-precondition' });
+  const continued = serverFixture('competenciaUnidadDidactica');
+  const continuedGraph = async (query, variables) => {
+    if (query.startsWith('query CurricularAncestorModule')) return { module: { id: 2, orden: 1 } };
+    if (query.startsWith('query CurricularAncestorChildren')) return { items: [{ id: 21, moduloId: 2, tipo: 'TECNICA', orden: 1 }] };
+    const result = await continued.graph(query, variables);
+    if (result.sourceOwner) {
+      result.sourceOwner.competenciaContinuacion = { planModulo: { moduloId: 3 } };
+      result.target = { id: 2, orden: 1 };
+    }
+    if (result.activities) result.activities.forEach(row => { row.moduloId = 3; });
+    return result;
+  };
+  const continuedMove = await server.reassignCurricularItem({ ...continued.request, parentId: 2, targetAncestor: { entity: 'modulo', id: 2 } }, continuedGraph, continued.context);
+  assert.equal(continuedMove.previousModuleId, 3, 'Ancestor moves must use the continuation module as the source');
+  assert.equal(continuedMove.moduleId, 2);
+  assert.equal(continuedMove.parentId, 21, 'The ancestor route chooses the destination competency');
+  assert.match(continued.calls.find(call => call.source.startsWith('mutation')).source, /competenciaContinuacionId:null/, 'Moving a continued unit to an ancestor clears its old continuation');
   const within = serverFixture('indicadorCapacidad', { sameModule: true });
   await server.reassignCurricularItem(within.request, within.graph, within.context);
   assert(!within.calls.some(call => call.source.startsWith('query CurricularMoveActivities')), 'Avoid unnecessary session updates inside one module');

@@ -26,6 +26,7 @@ const common = { 'firebase-functions/v1': { https }, '../core/dataConnectCore.js
   '../core/userMappers.js': mappers, './curricularCreation.js': creation, '../competencias/service.js': services,
   '../competencias/model.js': competenceModel, '../materiales/handlers.js': {},
   './contentSimilarity.js': load('functions/src/modules/academico/contentSimilarity.ts') };
+common['./contentTree.js'] = load('functions/src/modules/academico/contentTree.ts');
 const editing = load('functions/src/modules/academico/curricularEditing.ts', common);
 const handlers = load('functions/src/modules/academico/handlers.ts', { ...common, './curricularEditing.js': editing }, () => ({}));
 const updates = load('src/lib/curricularUpdates.ts');

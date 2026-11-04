@@ -16,6 +16,7 @@ const { applyAcademicOrder, applyAcademicCreation } = load('src/lib/curricularUp
 const codes = load('src/lib/curricularCodes.ts');
 const competenceModel = load('functions/src/modules/competencias/model.ts');
 const server = load('functions/src/modules/academico/curricularReassignment.ts', {
+  './curricularAncestorDestination.js': load('functions/src/modules/academico/curricularAncestorDestination.ts', { '../competencias/model.js': load('functions/src/modules/competencias/model.ts'), 'firebase-functions/v1': { https: { HttpsError: class extends Error {} } } }),
   'firebase-functions/v1': { https: { onCall: fn => fn, HttpsError: class extends Error {} } },
   '../core/dataConnectCore.js': {}, '../core/permissions.js': {}, '../competencias/service.js': {}, '../competencias/model.js': competenceModel,
 });
@@ -243,8 +244,10 @@ if (require.main === module) (async () => {
       initial = f.hydrate();
     }
     const source = initial[0].unidadesDidacticas[0].capacidadesTerminales[0].indicadoresCapacidad[0].aprendizajes[0].actividades[0];
-    const request = tree.reassignmentFor(initial, { entity: 'actividad', id: source.id }, { entity: 'indicadorCapacidad', id: indicators[1].id });
-    assert(request, 'Sessions can be dropped on the displayed indicator parent');
+    const drop = tree.reassignmentFor(initial, { entity: 'actividad', id: source.id }, { entity: 'indicadorCapacidad', id: indicators[1].id });
+    assert(drop?.targetAncestor, 'Indicator drops use the same ancestor routing as higher levels');
+    // The former request shape remains supported for already-open clients.
+    const request = { entity: 'actividad', id: source.id, previousParentId: source.aprendizajeId, parentId: indicators[1].id, targetIndicatorId: indicators[1].id };
     const result = await f.persistMove(request);
     const withLearning = result.learning ? applyAcademicCreation(initial, { entity: 'aprendizaje', id: result.learning.id, item: result.learning }) : initial;
     const confirmed = tree.applyAcademicReassignment(withLearning, result);

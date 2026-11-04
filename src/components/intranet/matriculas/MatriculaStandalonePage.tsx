@@ -55,7 +55,9 @@ const normalizeStandaloneSettings = (value: Partial<AppSettings> | undefined | n
 
   return {
     programacionCurricular: {
+      mostrarRecursosEnSesiones: value?.programacionCurricular?.mostrarRecursosEnSesiones === true,
       mostrarContenidoEnCuadroEmergente: value?.programacionCurricular?.mostrarContenidoEnCuadroEmergente !== false,
+      usarOtroColorCompetenciasEmpleabilidad: value?.programacionCurricular?.usarOtroColorCompetenciasEmpleabilidad !== false,
     },
     general: {
       ...defaultAppSettings.general,

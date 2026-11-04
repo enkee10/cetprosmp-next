@@ -7,8 +7,9 @@ import { expectedCompetenciaType } from "../competencias/model.js";
 import { getModuloCompetenciaContext } from "../competencias/service.js";
 import { nextCurricularChildOrder, nextCurricularOrder, readCurricularCreatedItem } from "./curricularCreation.js";
 import { indicatorContentsAreSimilar, splitIndicatorContents } from "./contentSimilarity.js";
+import { contentSubtreeIds, moveContentBranch, type IndicatorContentItem } from "./contentTree.js";
 
-type Item = { id: number; orden: number; texto: string; materialId?: number | null; material?: { nombre: string } | null };
+type Item = IndicatorContentItem & { materialId?: number | null; material?: { nombre: string } | null };
 type Competencia = { id: number; moduloId: number; nombre: string; tipo: "TECNICA" | "EMPLEABILIDAD"; orden?: number | null };
 type Sesion = { id: number; orden?: number | null; numeroSesion?: number | null; moduloId?: number | null; aprendizaje: { id: number; indicadorCapacidadId: number } };
 const nextOrder = nextCurricularOrder;
@@ -57,8 +58,8 @@ export async function updateCurricularExtraCell(entity: string, id: number, fiel
   const allowed = { actividad: "nombre", aprendizaje: "descripcion", indicadorContenido: "texto" }[entity];
   if (entity === "actividad" && field === "duracion") {
     if (!Number.isInteger(value) || Number(value) <= 0) throw new https.HttpsError("invalid-argument", "Las horas deben ser un entero positivo.");
-  } else if (field !== allowed) throw new https.HttpsError("invalid-argument", "Campo invalido.");
-  await dataConnect.executeGraphql(`mutation CurricularEditText($id:Int!,$data:${singular[0].toUpperCase() + singular.slice(1)}_Data! @allow(fields:"${entity === "actividad" ? "nombre duracion" : allowed}")) @transaction {
+  } else if (field !== allowed && !(entity === "actividad" && field === "proposito")) throw new https.HttpsError("invalid-argument", "Campo invalido.");
+  await dataConnect.executeGraphql(`mutation CurricularEditText($id:Int!,$data:${singular[0].toUpperCase() + singular.slice(1)}_Data! @allow(fields:"${entity === "actividad" ? "nombre proposito duracion" : allowed}")) @transaction {
     ${singular}_update(id:$id,data:$data) @check(expr:"this != null",message:"El elemento ya no existe.")
   }`, { variables: { id, data: { [field]: value } } });
   return { id };
@@ -226,24 +227,38 @@ export const saveEstructuraAcademicaSesionItem = https.onCall(async (data, conte
     }`, { variables: { actividadId, ids: [...ids] } });
   } else if (data?.action === "add") {
     if (current.data.items.length >= 200) throw new https.HttpsError("failed-precondition", "Se permiten hasta 200 elementos por lista.");
-    let texto = String(data?.texto ?? "").trim();
-    if (data?.sourceId != null) {
-      const id = positive(data.sourceId, "Elemento existente");
-      const source = await dataConnect.executeGraphql<{ item: { texto: string } | null }, { id: number }>(`query CurricularExistingSessionItem($id:Int!) { item:${singular}(id:$id) { texto } }`, { variables: { id } });
-      if (!source.data.item) throw new https.HttpsError("not-found", "El elemento existente ya no existe.");
-      texto = source.data.item.texto;
-    }
-    let material;
-    if (data.materialId != null) material = await getMaterialRow(positive(data.materialId, "Recurso"));
+    const materials: Array<{ id: number; nombre: string }> = [];
+    if (data.materialId != null) materials.push(await getMaterialRow(positive(data.materialId, "Recurso")));
     else if (data.sourceId != null) {
       const source = await dataConnect.executeGraphql<{ item: Item | null }, { id: number }>(
         'query LegacySourceMaterial($id:Int!) { item:actividadMaterial(id:$id) { id orden texto materialId } }', { variables: { id: positive(data.sourceId, "Recurso") } },
       );
       if (!source.data.item) throw new https.HttpsError("not-found", "El recurso ya no existe.");
-      material = await preserveLegacyMaterial(source.data.item);
-    } else material = await getOrCreateMaterial(texto);
-    await dataConnect.executeGraphql('mutation AttachSessionMaterial($actividadId:Int!,$materialId:Int!,$texto:String!,$orden:Int!) { actividadMaterial_insert(data:{actividadId:$actividadId,materialId:$materialId,texto:$texto,orden:$orden}) }',
-      { variables: { actividadId, materialId: material.id, texto: material.nombre, orden: Math.max(0, ...current.data.items.map(item => item.orden)) + 1 } });
+      materials.push(await preserveLegacyMaterial(source.data.item));
+    } else {
+      const text = String(data?.texto ?? "");
+      const names = text.split(/[\r\n,;]+/).map(name => name.trim()).filter(Boolean);
+      if (!names.length || text.length > 50000 || names.length > 200 || names.some(name => name.length > 10000)) {
+        throw new https.HttpsError("invalid-argument", "Escribe hasta 200 recursos de 10000 caracteres, separados por líneas, comas o punto y coma.");
+      }
+      if (current.data.items.length + names.length > 200) throw new https.HttpsError("failed-precondition", "Se permiten hasta 200 elementos por lista.");
+      for (let start = 0; start < names.length; start += 10) {
+        materials.push(...await Promise.all(names.slice(start, start + 10).map(getOrCreateMaterial)));
+      }
+    }
+    if (current.data.items.length + materials.length > 200) throw new https.HttpsError("failed-precondition", "Se permiten hasta 200 elementos por lista.");
+    const variables: Record<string, unknown> = { actividadId };
+    const definitions = ['$actividadId:Int!'];
+    const start = Math.max(0, ...current.data.items.map(item => item.orden));
+    const fields = materials.map((material, index) => {
+      definitions.push(`$materialId${index}:Int!`, `$texto${index}:String!`);
+      variables[`materialId${index}`] = material.id; variables[`texto${index}`] = material.nombre;
+      return `m${index}:actividadMaterial_insert(data:{actividadId:$actividadId,materialId:$materialId${index},texto:$texto${index},orden:${start + index + 1}})`;
+    });
+    await dataConnect.executeGraphql(`mutation AttachSessionMaterials(${definitions.join(",")}) @transaction {
+      query { items:actividadMateriales(where:{actividadId:{eq:$actividadId}},limit:1000) @check(expr:"this.size() == ${current.data.items.length}",message:"La lista de recursos cambió. Intenta nuevamente.") { id } }
+      ${fields.join("\n")}
+    }`, { variables });
   } else throw new https.HttpsError("invalid-argument", "Accion invalida.");
   const saved = await dataConnect.executeGraphql<{ items: Item[] }, { actividadId: number }>(`query CurricularSavedSessionItems($actividadId:Int!) { items:${list}(where:{actividadId:{eq:$actividadId}},orderBy:{orden:ASC},limit:1000) { ${selection} } }`, { variables: { actividadId } });
   return { actividadId, kind: data.kind, items: data.kind === "material" ? saved.data.items.map(displayMaterialLink) : saved.data.items };
@@ -252,55 +267,105 @@ export const saveEstructuraAcademicaSesionItem = https.onCall(async (data, conte
 export const saveEstructuraAcademicaIndicadorContenido = https.onCall(async (data, context) => {
   await requirePermission(context, "estructura-academica", "edit");
   const indicadorCapacidadId = positive(data?.indicadorCapacidadId, "Indicador");
-  const read = () => dataConnect.executeGraphql<{ indicador: { id: number } | null; items: Item[] }, { indicadorCapacidadId: number }>(`query CurricularIndicatorContents($indicadorCapacidadId:Int!) {
-    indicador:indicadorCapacidad(id:$indicadorCapacidadId) { id }
-    items:indicadorContenidos(where:{indicadorCapacidadId:{eq:$indicadorCapacidadId}},orderBy:{orden:ASC},limit:1000) { id orden texto }
+  const read = () => dataConnect.executeGraphql<{ indicador: { id: number; orden: number | null } | null; items: Item[] }, { indicadorCapacidadId: number }>(`query CurricularIndicatorContents($indicadorCapacidadId:Int!) {
+    indicador:indicadorCapacidad(id:$indicadorCapacidadId) { id orden }
+    items:indicadorContenidos(where:{indicadorCapacidadId:{eq:$indicadorCapacidadId}},orderBy:{orden:ASC},limit:1000) { id orden texto contenidoPadreId }
   }`, { variables: { indicadorCapacidadId } });
   const current = await read();
   if (!current.data.indicador) throw new https.HttpsError("not-found", "El indicador ya no existe.");
+  if (current.data.items.length === 1000) throw new https.HttpsError("resource-exhausted", "Demasiados contenidos para administrar la jerarquía.");
+  const mutate = (name: string, fields: string, definitions: string[] = [], variables: Record<string, unknown> = {}) => {
+    const originalOrder = current.data.indicador!.orden ?? null;
+    const ids = current.data.items.map(item => item.id);
+    const orderMap = `{${current.data.items.map(item => `${item.id}:${item.orden}`).join(",")}}`;
+    const parentMap = `{${current.data.items.map(item => `${item.id}:${item.contenidoPadreId ?? "null"}`).join(",")}}`;
+    const snapshot = `this.size() == ${ids.length}` + (ids.length
+      ? ` && this.all(row, row.id in [${ids.join(",")}] && row.orden == ${orderMap}[row.id] && row.contenidoPadreId == ${parentMap}[row.id])` : "");
+    // Serialize tree changes on their indicator. Compare its order to avoid undoing a concurrent reorder.
+    return dataConnect.executeGraphql(`mutation ${name}($indicadorCapacidadId:Int!${definitions.length ? "," + definitions.join(",") : ""}) @transaction {
+      lock:indicadorCapacidad_update(first:{where:{id:{eq:$indicadorCapacidadId},orden:{${originalOrder == null ? "isNull:true" : `eq:${originalOrder}`}}}},data:{orden:${originalOrder ?? "null"}}) @check(expr:"this != null",message:"El indicador cambió. Actualiza la vista.")
+      query { items:indicadorContenidos(where:{indicadorCapacidadId:{eq_expr:"response.lock.id"}},limit:1000) @check(expr:${JSON.stringify(snapshot)},message:"Los contenidos cambiaron. Intenta nuevamente.") { id orden contenidoPadreId } }
+      ${fields}
+    }`, { variables: { indicadorCapacidadId, ...variables } });
+  };
   if (data?.action === "remove") {
     const id = positive(data?.itemId, "Contenido");
     if (!current.data.items.some(item => item.id === id)) throw new https.HttpsError("failed-precondition", "El contenido no pertenece a este indicador.");
-    await dataConnect.executeGraphql('mutation RemoveIndicatorContent($id:Int!) { indicadorContenido_delete(id:$id) }', { variables: { id } });
-  } else if (data?.action === "reorder") {
-    if (!Array.isArray(data.items) || data.items.length !== current.data.items.length) throw new https.HttpsError("invalid-argument", "Orden de contenidos invalido.");
-    const items = data.items.map((item: { id?: unknown; orden?: unknown }, index: number) => ({ id: positive(item.id, "Contenido"), orden: index + 1 }));
-    const ids = new Set(items.map((item: Item) => item.id));
+    const ids = contentSubtreeIds(current.data.items, id);
+    if (ids.length > 1 && data?.includeDescendants !== true) {
+      throw new https.HttpsError("failed-precondition", `Este contenido tiene ${ids.length - 1} subcontenidos. Confirma su eliminación.`, { descendants: ids.length - 1 });
+    }
+    await mutate('RemoveIndicatorContent', `indicadorContenido_deleteMany(where:{indicadorCapacidadId:{eq_expr:"response.lock.id"},id:{in:$ids}}) @check(expr:"this == ${ids.length}",message:"La lista de contenidos cambió.")`, ['$ids:[Int!]!'], { ids });
+  } else if (data?.action === "reorder" || data?.action === "move") {
+    let items: Array<{ id: number; orden: number; contenidoPadreId?: number | null }>;
+    let movedId: number | undefined;
+    if (data.action === "move") {
+      movedId = positive(data.itemId, "Contenido");
+      const targetId = data.targetId === null ? null : positive(data.targetId, "Destino");
+      if (!["before", "after", "inside"].includes(data.position) || (targetId == null && data.position !== "inside")) {
+        throw new https.HttpsError("invalid-argument", "Posición de destino inválida.");
+      }
+      if (!current.data.items.some(item => item.id === movedId) || (targetId != null && !current.data.items.some(item => item.id === targetId))) {
+        throw new https.HttpsError("failed-precondition", "El contenido y el destino deben pertenecer a este indicador.");
+      }
+      if (targetId != null && contentSubtreeIds(current.data.items, movedId).includes(targetId)) {
+        throw new https.HttpsError("failed-precondition", "No puedes mover un contenido dentro de sí mismo ni de sus descendientes.");
+      }
+      items = moveContentBranch(current.data.items, { itemId: movedId, targetId, position: data.position });
+      if (!items.length) return { indicadorCapacidadId, items: current.data.items };
+    } else {
+      if (!Array.isArray(data.items) || data.items.length !== current.data.items.length) throw new https.HttpsError("invalid-argument", "Orden de contenidos invalido.");
+      items = data.items.map((item: { id?: unknown; orden?: unknown }, index: number) => ({ id: positive(item.id, "Contenido"), orden: index + 1 }));
+    }
+    const ids = new Set(items.map(item => item.id));
     if (ids.size !== items.length || current.data.items.some(item => !ids.has(item.id))) throw new https.HttpsError("failed-precondition", "La lista de contenidos cambio. Actualiza e intenta nuevamente.");
-    const occupied = new Set([...current.data.items.map(item => item.orden), ...items.map((item: Item) => item.orden)]);
+    const occupied = new Set([...current.data.items.map(item => item.orden), ...items.map(item => item.orden)]);
     let candidate = 1;
-    const temporary = items.map((item: Item, index: number) => {
+    const temporary = items.map((item, index: number) => {
       while (occupied.has(candidate)) candidate += 1;
       const order = candidate; occupied.add(order);
       const selector = index === 0 ? `id:${item.id}` : `id_expr:"response.hold${items[index - 1].id} != null ? ${item.id} : 0"`;
       return `hold${item.id}:indicadorContenido_update(${selector},data:{orden:${order}}) @check(expr:"this != null",message:"El contenido ya no existe.")`;
     });
-    const finalPositions = items.map((item: Item, index: number) => {
+    const finalPositions = items.map((item, index: number) => {
       const previous = index === 0 ? `hold${items[items.length - 1].id}` : `c${items[index - 1].id}`;
-      return `c${item.id}:indicadorContenido_update(id_expr:"response.${previous} != null ? ${item.id} : 0",data:{orden:${item.orden}})`;
+      return `c${item.id}:indicadorContenido_update(id_expr:"response.${previous} != null ? ${item.id} : 0",data:{orden:${item.orden}${item.id === movedId ? `,contenidoPadreId:${item.contenidoPadreId ?? "null"}` : ""}})`;
     });
-    await dataConnect.executeGraphql(`mutation ReorderIndicatorContents($indicadorCapacidadId:Int!) @transaction {
-      query { items:indicadorContenidos(where:{indicadorCapacidadId:{eq:$indicadorCapacidadId}},limit:1000) @check(expr:"this.size() == ${items.length}",message:"La lista de contenidos cambio.") { id } }
-      ${temporary.join("\n")} ${finalPositions.join("\n")}
-    }`, { variables: { indicadorCapacidadId } });
+    if (items.length) await mutate(data.action === "move" ? 'MoveIndicatorContent' : 'ReorderIndicatorContents', `${temporary.join("\n")} ${finalPositions.join("\n")}`);
   } else if (data?.action === "add") {
+    const contenidoPadreId = data?.contenidoPadreId == null ? null : positive(data.contenidoPadreId, "Contenido padre");
+    if (contenidoPadreId != null && !current.data.items.some(item => item.id === contenidoPadreId)) {
+      throw new https.HttpsError("failed-precondition", "El contenido padre no pertenece a este indicador.");
+    }
+    const despuesDeId = data.despuesDeId == null ? null : positive(data.despuesDeId, "Contenido anterior");
+    const previous = current.data.items.find(item => item.id === despuesDeId);
+    if (despuesDeId != null && (!previous || (previous.contenidoPadreId ?? null) !== contenidoPadreId)) {
+      throw new https.HttpsError("failed-precondition", "El contenido anterior debe pertenecer al mismo nivel e indicador.");
+    }
     const lines = splitIndicatorContents(data?.texto);
     if (!lines.length) throw new https.HttpsError("invalid-argument", "Escribe al menos un contenido.");
     if (lines.length > 200 || lines.some(line => line.length > 10000)) throw new https.HttpsError("invalid-argument", "Se permiten hasta 200 contenidos de 10000 caracteres.");
     const accepted: string[] = [];
+    const siblingTexts = current.data.items.filter(item => (item.contenidoPadreId ?? null) === contenidoPadreId).map(item => item.texto);
     for (const line of lines) {
-      if (![...current.data.items.map(item => item.texto), ...accepted].some(saved => indicatorContentsAreSimilar(saved, line))) accepted.push(line);
+      if (![...siblingTexts, ...accepted].some(saved => indicatorContentsAreSimilar(saved, line))) accepted.push(line);
     }
     if (current.data.items.length + accepted.length > 200) throw new https.HttpsError("failed-precondition", "Se permiten hasta 200 contenidos por indicador.");
     if (accepted.length) {
-      const variables: Record<string, unknown> = { indicadorCapacidadId };
-      const definitions = ['$indicadorCapacidadId:Int!'];
-      const start = Math.max(0, ...current.data.items.map(item => item.orden));
+      const variables: Record<string, unknown> = { contenidoPadreId };
+      const definitions = ['$contenidoPadreId:Int'];
+      const start = previous?.orden ?? Math.max(0, ...current.data.items.map(item => item.orden));
+      const shifted = current.data.items.filter(item => item.orden > start).sort((a, b) => b.orden - a.orden);
+      const shifts = shifted.map((item, index) => {
+        const ready = index === 0 ? 'response.lock.id == vars.indicadorCapacidadId' : `response.shift${shifted[index - 1].id} != null`;
+        return `shift${item.id}:indicadorContenido_update(id_expr:"${ready} ? ${item.id} : 0",data:{orden:${item.orden + accepted.length}}) @check(expr:"this != null",message:"El contenido ya no existe.")`;
+      });
+      const indicator = shifted.length ? `response.shift${shifted[shifted.length - 1].id} != null ? response.lock.id : 0` : 'response.lock.id';
       const fields = accepted.map((texto, index) => {
         definitions.push(`$texto${index}:String!`); variables[`texto${index}`] = texto;
-        return `c${index}:indicadorContenido_insert(data:{indicadorCapacidadId:$indicadorCapacidadId,orden:${start + index + 1},texto:$texto${index}})`;
+        return `c${index}:indicadorContenido_insert(data:{indicadorCapacidadId_expr:"${indicator}",contenidoPadreId:$contenidoPadreId,orden:${start + index + 1},texto:$texto${index}})`;
       });
-      await dataConnect.executeGraphql(`mutation AddIndicatorContents(${definitions.join(",")}) @transaction { ${fields.join("\n")} }`, { variables });
+      await mutate('AddIndicatorContents', [...shifts, ...fields].join("\n"), definitions, variables);
     }
   } else throw new https.HttpsError("invalid-argument", "Accion invalida.");
   const saved = await read();

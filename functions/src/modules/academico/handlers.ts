@@ -1,4 +1,5 @@
 import { isDocenteRole } from "../core/authCore.js";
+import { countCurricularRemovalNotes } from "./curricularRemoval.js";
 import { displayMaterialLink, listMaterialCatalog } from "../materiales/handlers.js";
 import { updateCurricularExtraCell, createCurricularExtra, deleteCurricularExtra, reorderCurricularExtra } from "./curricularEditing.js";
 import { nextCurricularChildOrder, nextCurricularOrder, readCurricularCreatedItem, readCurricularUnitAssignments } from "./curricularCreation.js";
@@ -196,6 +197,7 @@ const LIST_ACTIVIDADES_QUERY = `
       orden
       descripcion
       proposito
+      temas
       ambiente
       duracion
       fecha
@@ -218,6 +220,7 @@ const GET_ACTIVIDAD_QUERY = `
       materiales: actividadMateriales_on_actividad(orderBy:{orden:ASC},limit:200) { id orden texto materialId material { nombre } }
       descripcion
       proposito
+      temas
       ambiente
       duracion
       fecha
@@ -330,11 +333,11 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
       sigla
       orden
       capacidadTerminalId
-      contenidos: indicadorContenidos_on_indicadorCapacidad(orderBy: { orden: ASC }, limit: 1000) { id orden texto }
+      contenidos: indicadorContenidos_on_indicadorCapacidad(orderBy: { orden: ASC }, limit: 1000) { id orden texto contenidoPadreId }
       aprendizajes: aprendizajes_on_indicadorCapacidad(orderBy: [{ orden: ASC }, { id: ASC }], limit: 1000) {
         id descripcion sigla orden indicadorCapacidadId
         actividades: actividads_on_aprendizaje(orderBy: [{ numeroSesion: ASC }, { orden: ASC }, { id: ASC }], limit: 5000) {
-          id nombre numeroSesion orden moduloId aprendizajeId duracion fecha
+          id nombre proposito numeroSesion orden moduloId aprendizajeId duracion fecha
           materiales: actividadMateriales_on_actividad(orderBy: { orden: ASC }, limit: 1000) { id orden texto materialId material { nombre } }
         }
       }
@@ -344,6 +347,10 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
 
 const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
   query ListEstructuraAcademicaDocente($uid: String!) {
+    competencyCodeModules: modulos(limit: 5000) {
+      id orden planId
+      competencias: competencias_on_modulo(limit: 1000) { id tipo orden }
+    }
     planes(limit: 5000) {
       id planEstudio tituloComercial anio versionId version { id titulo }
       periodoVigencia { titulo }
@@ -470,11 +477,11 @@ const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
       sigla
       orden
       capacidadTerminalId
-      contenidos: indicadorContenidos_on_indicadorCapacidad(orderBy: { orden: ASC }, limit: 1000) { id orden texto }
+      contenidos: indicadorContenidos_on_indicadorCapacidad(orderBy: { orden: ASC }, limit: 1000) { id orden texto contenidoPadreId }
       aprendizajes: aprendizajes_on_indicadorCapacidad(orderBy: [{ orden: ASC }, { id: ASC }], limit: 1000) {
         id descripcion sigla orden indicadorCapacidadId
         actividades: actividads_on_aprendizaje(orderBy: [{ numeroSesion: ASC }, { orden: ASC }, { id: ASC }], limit: 5000) {
-          id nombre numeroSesion orden moduloId aprendizajeId duracion fecha
+          id nombre proposito numeroSesion orden moduloId aprendizajeId duracion fecha
           materiales: actividadMateriales_on_actividad(orderBy: { orden: ASC }, limit: 1000) { id orden texto materialId material { nombre } }
         }
       }
@@ -827,7 +834,7 @@ type EditableAcademicValueType = "text" | "number" | "boolean";
 
 const editableAcademicFields: Record<EditableAcademicEntity, Record<string, EditableAcademicValueType>> = {
   competencia: { nombre: "text", tipo: "text" },
-  actividad: { nombre: "text", duracion: "number" },
+  actividad: { nombre: "text", proposito: "text", duracion: "number" },
   aprendizaje: { descripcion: "text" },
   indicadorContenido: { texto: "text" },
   modulo: {
@@ -1111,6 +1118,8 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
       dataConnect.executeGraphql<{
       users: Array<{ id: number }>;
       personals: Array<{ id: number; userId?: number | null }>;
+      competencyCodeModules: Array<{ id: number; orden: number | null; planId: number | null;
+        competencias: Array<{ id: number; tipo: "TECNICA" | "EMPLEABILIDAD"; orden: number | null }> }>;
       semestres: EstructuraAcademicaSemestreOption[];
       planes: DataConnectPlan[];
       grupoModulos: EstructuraAcademicaDocenteGrupoModulo[];
@@ -1181,9 +1190,18 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
       ...estructuraResponse.modulos.map((item) => item.planId).filter((id): id is number => id != null),
       ...estructuraResponse.planModulos.map((item) => item.planId),
     ]);
+    const codeModules = response.data.competencyCodeModules ?? [];
+    if (codeModules.length === 5000 || codeModules.some(module => module.competencias.length === 1000)) {
+      throw new https.HttpsError("resource-exhausted", "Demasiados elementos para calcular los códigos de competencias.");
+    }
+    const codeRelations = groupByNumber((response.data.planModulos ?? []).filter(relation => allowedPlanIds.has(relation.planId)), relation => relation.moduloId);
 
     return {
       modulos: buildEstructuraAcademica(estructuraResponse),
+      competencyCodeModules: modulesForPlans(codeModules, response.data.planModulos ?? [], allowedPlanIds).map(module => ({
+        ...module,
+        planModulos: (codeRelations.get(module.id) ?? []).map(({ planId, orden }) => ({ planId, orden })),
+      })),
       planes: (response.data.planes ?? []).filter((plan) => allowedPlanIds.has(plan.id)),
       ...await academicPeriodData((response.data.planes ?? []).filter(plan => allowedPlanIds.has(plan.id)), semestres.find(item => item.titulo === semestreTitulo)?.id),
       semestres: curricularSemestres.filter(item => semestres.some(allowed => allowed.id === item.id)),
@@ -1484,6 +1502,7 @@ export const detachEstructuraAcademicaItem = https.onCall(async (data, context) 
   const entity = parseEstructuraActionEntity(data?.entity);
 
   try {
+    if (data?.previewOnly === true) return await countCurricularRemovalNotes(entity, data);
     if (entity === "competencia" || entity === "actividad") return await deleteCurricularExtra(entity, data);
     if (entity === "modulo") {
       const relacionId = toNumber(data?.relacionId, -1);

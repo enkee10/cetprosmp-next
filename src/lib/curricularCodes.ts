@@ -45,36 +45,45 @@ export function curricularItemCode(
   return index < 0 ? '' : `${prefix}${index + 1}`;
 }
 
-/** Each competency type has its own sequence across the module, including hidden items. */
-export function curricularCompetencyCodes(competencias: ReadonlyArray<CompetenciaDetalle>) {
+export type CurricularCodeModule = Pick<ModuloDetalle, 'id' | 'orden' | 'planId'> & {
+  competencias: ReadonlyArray<Pick<CompetenciaDetalle, 'id' | 'tipo' | 'orden'> & Partial<Pick<CompetenciaDetalle, 'esContinuacion'>>>;
+  planModulos?: ReadonlyArray<{ planId: number; orden?: number | null }>;
+};
+
+/** Each type spans the complete plan in module/competency order, including hidden items. */
+export function curricularCompetencyCodes(modulos: ReadonlyArray<CurricularCodeModule>, planId: number | null) {
   const codes = new Map<number, string>();
   const counts = new Map<CompetenciaDetalle['tipo'], number>();
-  for (const competencia of orderedCurricularItems(competencias)) {
-    const position = (counts.get(competencia.tipo) ?? 0) + 1;
-    counts.set(competencia.tipo, position);
-    codes.set(competencia.id, `${competencia.tipo === 'TECNICA' ? 'UC' : 'CE'}${position}`);
-  }
-  return codes;
-}
-
-function modulePlanOrder(modulo: ModuloDetalle, planId?: number | null) {
-  return modulo.planModulos?.find(item => item.planId === planId)?.orden ?? modulo.orden ?? modulo.id;
-}
-
-/** A competency receives its code at its first appearance and keeps it in every continuation. */
-export function curricularPlanCompetencyCodes(modulos: ReadonlyArray<ModuloDetalle>, planId?: number | null) {
-  const codes = new Map<number, string>();
-  const counts = new Map<CompetenciaDetalle['tipo'], number>();
-  const orderedModules = [...modulos].sort((a, b) => modulePlanOrder(a, planId) - modulePlanOrder(b, planId) || a.id - b.id);
-  for (const modulo of orderedModules) {
-    for (const competencia of orderedCurricularItems(modulo.competencias.filter(item => !item.esContinuacion))) {
-      if (codes.has(competencia.id)) continue;
+  const modules = modulos.flatMap(modulo => {
+    const relation = modulo.planModulos?.find(item => item.planId === planId);
+    return relation || modulo.planId === planId
+      ? [{ ...modulo, orden: relation?.orden ?? modulo.orden }]
+      : [];
+  });
+  for (const modulo of orderedCurricularItems(modules)) {
+    for (const competencia of orderedCurricularItems(modulo.competencias)) {
+      if (competencia.esContinuacion || codes.has(competencia.id)) continue;
       const position = (counts.get(competencia.tipo) ?? 0) + 1;
       counts.set(competencia.tipo, position);
       codes.set(competencia.id, `${competencia.tipo === 'TECNICA' ? 'UC' : 'CE'}${position}`);
     }
   }
   return codes;
+}
+
+function modulesForPlan<T extends CurricularCodeModule>(modulos: ReadonlyArray<T>, planId?: number | null) {
+  return modulos.flatMap(modulo => {
+    const relation = modulo.planModulos?.find(item => item.planId === planId);
+    return planId == null || relation || modulo.planId === planId
+      ? [{ ...modulo, orden: relation?.orden ?? modulo.orden }]
+      : [];
+  });
+}
+
+/** A competency keeps its first-appearance code in every continuation of the selected plan. */
+export function curricularPlanCompetencyCodes(modulos: ReadonlyArray<CurricularCodeModule>, planId?: number | null) {
+  if (planId != null) return curricularCompetencyCodes(modulos, planId);
+  return curricularCompetencyCodes(modulesForPlan(modulos).map(modulo => ({ ...modulo, planId: null, planModulos: [] })), null);
 }
 
 /** Units span the module; capacities span their UC. Hidden branches keep their positions. */
@@ -109,7 +118,7 @@ export function curricularPlanDescendantCodes(modulos: ReadonlyArray<ModuloDetal
   const sesiones = new Map<number, string>();
   const capacityCounts = new Map<number, number>();
   let unitCount = 0;
-  const orderedModules = [...modulos].sort((a, b) => modulePlanOrder(a, planId) - modulePlanOrder(b, planId) || a.id - b.id);
+  const orderedModules = orderedCurricularItems(modulesForPlan(modulos, planId));
   for (const modulo of orderedModules) {
     for (const unidad of curricularUnitsInOrder(modulo)) {
       unidades.set(unidad.id, `UD${++unitCount}`);

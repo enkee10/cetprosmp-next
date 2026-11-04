@@ -519,6 +519,11 @@ export interface TipoCarrera_Key {
   __typename?: 'TipoCarrera_Key';
 }
 
+export interface Transversal_Key {
+  id: number;
+  __typename?: 'Transversal_Key';
+}
+
 export interface Turno_Key {
   id: number;
   __typename?: 'Turno_Key';
@@ -561,6 +566,11 @@ export interface User_Key {
 export interface ValorInstitucional_Key {
   id: number;
   __typename?: 'ValorInstitucional_Key';
+}
+
+export interface Valor_Key {
+  id: number;
+  __typename?: 'Valor_Key';
 }
 
 export interface VideoYoutube_Key {

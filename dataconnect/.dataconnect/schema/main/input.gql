@@ -449,6 +449,12 @@ It accepts a CEL expression.
 """
 scalar TipoCompetencia_Expr
 """
+✨ `Transversal_KeyOutput` returns the primary key fields of table type `Transversal`.
+
+It has the same format as `Transversal_Key`, but is only used as mutation return value.
+"""
+scalar Transversal_KeyOutput
+"""
 ✨ `Turno_KeyOutput` returns the primary key fields of table type `Turno`.
 
 It has the same format as `Turno_Key`, but is only used as mutation return value.
@@ -472,6 +478,12 @@ scalar UnidadDidacticaEstudiante_KeyOutput
 It has the same format as `User_Key`, but is only used as mutation return value.
 """
 scalar User_KeyOutput
+"""
+✨ `Valor_KeyOutput` returns the primary key fields of table type `Valor`.
+
+It has the same format as `Valor_Key`, but is only used as mutation return value.
+"""
+scalar Valor_KeyOutput
 """
 ✨ `ValorInstitucional_KeyOutput` returns the primary key fields of table type `ValorInstitucional`.
 
@@ -1159,6 +1171,14 @@ input Actividad_Data {
   """
   proposito_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Actividad`.`temas` of type `String`
+  """
+  temas: String
+  """
+  ✨ `_expr` server value variant of `temas` (✨ Generated from Field `Actividad`.`temas` of type `String`)
+  """
+  temas_expr: String_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Actividad`.`actividadMateriales_on_actividad` of type `[ActividadMaterial!]!`
   """
   actividadMateriales_on_actividad: [ActividadMaterial_Data!]
@@ -1275,6 +1295,10 @@ input Actividad_Filter {
   ✨ Generated from Field `Actividad`.`proposito` of type `String`
   """
   proposito: String_Filter
+  """
+  ✨ Generated from Field `Actividad`.`temas` of type `String`
+  """
+  temas: String_Filter
   """
   ✨ Generated from Field `Actividad`.`actividadMateriales_on_actividad` of type `[ActividadMaterial!]!`
   """
@@ -1393,6 +1417,10 @@ input Actividad_Having {
   ✨ Generated from Field `Actividad`.`proposito_count` of type `Int!`
   """
   proposito_count: Int_Filter
+  """
+  ✨ Generated from Field `Actividad`.`temas_count` of type `Int!`
+  """
+  temas_count: Int_Filter
   """
   ✨ Generated from Field `Actividad`.`valorInstitucionalId_count` of type `Int!`
   """
@@ -1641,6 +1669,10 @@ input Actividad_Order {
   """
   proposito: OrderDirection
   """
+  ✨ Generated from Field `Actividad`.`temas` of type `String`
+  """
+  temas: OrderDirection
+  """
   ✨ Generated from Field `Actividad`.`_count` of type `Int!`
   """
   _count: OrderDirection
@@ -1700,6 +1732,10 @@ input Actividad_Order {
   ✨ Generated from Field `Actividad`.`proposito_count` of type `Int!`
   """
   proposito_count: OrderDirection
+  """
+  ✨ Generated from Field `Actividad`.`temas_count` of type `Int!`
+  """
+  temas_count: OrderDirection
   """
   ✨ Generated from Field `Actividad`.`valorInstitucionalId_count` of type `Int!`
   """
@@ -37709,6 +37745,209 @@ input TipoCompetencia_ListFilter {
   exist: TipoCompetencia_Filter
 }
 """
+✨ Generated data input type for table 'Transversal'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Transversal_Data {
+  """
+  ✨ Generated from Field `Transversal`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Transversal`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `Transversal`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Transversal`.`descripcion` of type `String`
+  """
+  descripcion: String
+  """
+  ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Transversal`.`descripcion` of type `String`)
+  """
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Transversal`.`nombre` of type `String`
+  """
+  nombre: String
+  """
+  ✨ `_expr` server value variant of `nombre` (✨ Generated from Field `Transversal`.`nombre` of type `String`)
+  """
+  nombre_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'Transversal'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Transversal_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Transversal_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Transversal_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Transversal_Filter!]
+  """
+  ✨ Generated from Field `Transversal`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `Transversal`.`descripcion` of type `String`
+  """
+  descripcion: String_Filter
+  """
+  ✨ Generated from Field `Transversal`.`nombre` of type `String`
+  """
+  nombre: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'Transversal'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Transversal_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Transversal_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Transversal_Filter
+}
+"""
+✨ Generated having input type for table 'Transversal'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Transversal_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Transversal_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Transversal_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Transversal_Having!]
+  """
+  ✨ Generated from Field `Transversal`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Transversal`.`descripcion_count` of type `Int!`
+  """
+  descripcion_count: Int_Filter
+  """
+  ✨ Generated from Field `Transversal`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Transversal`.`nombre_count` of type `Int!`
+  """
+  nombre_count: Int_Filter
+  """
+  ✨ Generated from Field `Transversal`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `Transversal`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `Transversal`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `Transversal`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'Transversal'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Transversal_Key {
+  """
+  ✨ Generated from Field `Transversal`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Transversal`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'Transversal'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Transversal_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Transversal_Filter
+}
+"""
+✨ Generated order input type for table 'Transversal'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Transversal_Order {
+  """
+  ✨ Generated from Field `Transversal`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Transversal`.`descripcion` of type `String`
+  """
+  descripcion: OrderDirection
+  """
+  ✨ Generated from Field `Transversal`.`nombre` of type `String`
+  """
+  nombre: OrderDirection
+  """
+  ✨ Generated from Field `Transversal`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Transversal`.`descripcion_count` of type `Int!`
+  """
+  descripcion_count: OrderDirection
+  """
+  ✨ Generated from Field `Transversal`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Transversal`.`nombre_count` of type `Int!`
+  """
+  nombre_count: OrderDirection
+  """
+  ✨ Generated from Field `Transversal`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `Transversal`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `Transversal`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `Transversal`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+}
+"""
 ✨ Generated data input type for table 'Turno'. It includes all necessary fields for creating or upserting rows into table.
 """
 input Turno_Data {
@@ -40303,6 +40542,209 @@ input User_Order {
   ✨ Generated from Field `User`.`rolId_max` of type `Int`
   """
   rolId_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Valor'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Valor_Data {
+  """
+  ✨ Generated from Field `Valor`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Valor`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `Valor`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Valor`.`descripcion` of type `String`
+  """
+  descripcion: String
+  """
+  ✨ `_expr` server value variant of `descripcion` (✨ Generated from Field `Valor`.`descripcion` of type `String`)
+  """
+  descripcion_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Valor`.`nombre` of type `String`
+  """
+  nombre: String
+  """
+  ✨ `_expr` server value variant of `nombre` (✨ Generated from Field `Valor`.`nombre` of type `String`)
+  """
+  nombre_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'Valor'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Valor_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Valor_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Valor_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Valor_Filter!]
+  """
+  ✨ Generated from Field `Valor`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `Valor`.`descripcion` of type `String`
+  """
+  descripcion: String_Filter
+  """
+  ✨ Generated from Field `Valor`.`nombre` of type `String`
+  """
+  nombre: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'Valor'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Valor_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Valor_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Valor_Filter
+}
+"""
+✨ Generated having input type for table 'Valor'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Valor_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Valor_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Valor_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Valor_Having!]
+  """
+  ✨ Generated from Field `Valor`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Valor`.`descripcion_count` of type `Int!`
+  """
+  descripcion_count: Int_Filter
+  """
+  ✨ Generated from Field `Valor`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Valor`.`nombre_count` of type `Int!`
+  """
+  nombre_count: Int_Filter
+  """
+  ✨ Generated from Field `Valor`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `Valor`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `Valor`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `Valor`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'Valor'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Valor_Key {
+  """
+  ✨ Generated from Field `Valor`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Valor`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'Valor'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Valor_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Valor_Filter
+}
+"""
+✨ Generated order input type for table 'Valor'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Valor_Order {
+  """
+  ✨ Generated from Field `Valor`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Valor`.`descripcion` of type `String`
+  """
+  descripcion: OrderDirection
+  """
+  ✨ Generated from Field `Valor`.`nombre` of type `String`
+  """
+  nombre: OrderDirection
+  """
+  ✨ Generated from Field `Valor`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Valor`.`descripcion_count` of type `Int!`
+  """
+  descripcion_count: OrderDirection
+  """
+  ✨ Generated from Field `Valor`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Valor`.`nombre_count` of type `Int!`
+  """
+  nombre_count: OrderDirection
+  """
+  ✨ Generated from Field `Valor`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `Valor`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `Valor`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `Valor`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'ValorInstitucional'. It includes all necessary fields for creating or upserting rows into table.

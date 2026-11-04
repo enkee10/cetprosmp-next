@@ -44,7 +44,7 @@ export async function readCurricularCreatedItem(entity: string, id: number | nul
     capacidadTerminal: "id descripcion sigla orden unidadDidacticaId",
     indicadorCapacidad: "id descripcion sigla orden capacidadTerminalId",
     aprendizaje: "id descripcion sigla orden indicadorCapacidadId",
-    actividad: "id nombre numeroSesion duracion fecha orden moduloId aprendizajeId aprendizaje { id descripcion sigla orden indicadorCapacidadId }",
+    actividad: "id nombre proposito numeroSesion duracion fecha orden moduloId aprendizajeId aprendizaje { id descripcion sigla orden indicadorCapacidadId }",
   };
   const response = await dataConnect.executeGraphql<{ item: Record<string, unknown> | null }, { id: number }>(
     `query CurricularCreatedItem($id:Int!) { item:${entity}(id:$id) { ${selections[entity]} } }`, { variables: { id } });

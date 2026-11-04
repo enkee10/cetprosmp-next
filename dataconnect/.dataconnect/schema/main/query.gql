@@ -1746,6 +1746,30 @@ extend type Query {
     first: TipoCarrera_FirstRow
   ): TipoCarrera @fdc_generated(from: "TipoCarrera", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `Transversal` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  transversal(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Transversal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Transversal_FirstRow
+  ): Transversal @fdc_generated(from: "Transversal", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Turno` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   turno(
@@ -1841,6 +1865,30 @@ extend type Query {
     """
     first: User_FirstRow
   ): User @fdc_generated(from: "User", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Valor` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  valor(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Valor_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Valor_FirstRow
+  ): Valor @fdc_generated(from: "Valor", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `ValorInstitucional` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -4406,6 +4454,40 @@ extend type Query {
     having: TipoCarrera_Having
   ): [TipoCarrera!]! @fdc_generated(from: "TipoCarrera", purpose: QUERY_MULTIPLE)
   """
+  ✨ List `Transversal` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  transversales(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Transversal_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Transversal_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Transversal_Having
+  ): [Transversal!]! @fdc_generated(from: "Transversal", purpose: QUERY_MULTIPLE)
+  """
   ✨ List `Turno` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   turnos(
@@ -4541,6 +4623,40 @@ extend type Query {
     """
     having: User_Having
   ): [User!]! @fdc_generated(from: "User", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Valor` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  valores(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Valor_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Valor_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Valor_Having
+  ): [Valor!]! @fdc_generated(from: "Valor", purpose: QUERY_MULTIPLE)
   """
   ✨ List `ValorInstitucional` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

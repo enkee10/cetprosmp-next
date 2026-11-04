@@ -2,7 +2,9 @@ export type SemestreSummary = { id: number; titulo?: string | null; inicio?: str
 
 export type AppSettings = {
   programacionCurricular: {
+    mostrarRecursosEnSesiones: boolean;
     mostrarContenidoEnCuadroEmergente: boolean;
+    usarOtroColorCompetenciasEmpleabilidad: boolean;
   };
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: boolean;
@@ -35,7 +37,9 @@ export type AppSettings = {
 
 export const defaultAppSettings: AppSettings = {
   programacionCurricular: {
+    mostrarRecursosEnSesiones: false,
     mostrarContenidoEnCuadroEmergente: true,
+    usarOtroColorCompetenciasEmpleabilidad: true,
   },
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: false,
@@ -68,7 +72,9 @@ export const defaultAppSettings: AppSettings = {
 
 export const normalizeSettings = (value: Partial<AppSettings> | undefined | null): AppSettings => ({
   programacionCurricular: {
+    mostrarRecursosEnSesiones: value?.programacionCurricular?.mostrarRecursosEnSesiones === true,
     mostrarContenidoEnCuadroEmergente: value?.programacionCurricular?.mostrarContenidoEnCuadroEmergente !== false,
+    usarOtroColorCompetenciasEmpleabilidad: value?.programacionCurricular?.usarOtroColorCompetenciasEmpleabilidad !== false,
   },
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: value?.general?.poderOcultarProgramacionOpcionesOcupacionales === true,

@@ -569,13 +569,13 @@ export const DELETE_APRENDIZAJE_MUTATION = `
 `;
 
 export const INSERT_ACTIVIDAD_MUTATION = `
-  mutation InsertActividad($data: Actividad_Data! @allow(fields: "nombre descripcion proposito ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId moduloId numeroSesion orden")) {
+  mutation InsertActividad($data: Actividad_Data! @allow(fields: "nombre descripcion proposito temas ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId moduloId numeroSesion orden")) {
     actividad_insert(data: $data)
   }
 `;
 
 export const UPDATE_ACTIVIDAD_MUTATION = `
-  mutation UpdateActividad($id: Int!, $data: Actividad_Data! @allow(fields: "nombre descripcion proposito ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId moduloId numeroSesion orden")) {
+  mutation UpdateActividad($id: Int!, $data: Actividad_Data! @allow(fields: "nombre descripcion proposito temas ambiente duracion fecha bibliografia aprendizajeId ejeTransversalId valorInstitucionalId moduloId numeroSesion orden")) {
     actividad_update(id: $id, data: $data)
   }
 `;

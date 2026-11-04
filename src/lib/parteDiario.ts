@@ -50,12 +50,10 @@ export interface ParteDiarioData { fecha: string; laborable: boolean; mensaje: s
 export interface ParteActividad { id: number; nombre: string | null; numeroSesion?: number | null; fechas?: string[] }
 export interface ParteUnidad { id: number; nombre: string | null; actividades: ParteActividad[] }
 export const unitLabel = (name: string | null) => (name || '').toLocaleUpperCase('es');
-export const numberedUnitLabel = (unit: ParteUnidad, index: number) => `UD${index + 1}: ${unitLabel(unit.nombre)}`;
+export const numberedUnitLabel = (unit: ParteUnidad, _index: number) => unitLabel(unit.nombre);
 export function selectedParteUnitLabel(row: ParteDiarioRow, units?: ParteUnidad[]): string {
   if (row.tipoUnidad !== 'curricular') return row.tipoUnidad.toUpperCase();
-  const ordered = units?.length ? units : row.unidadesOrdenadas || [];
-  const index = ordered.findIndex(unit => unit.id === row.unidadDidacticaId);
-  return index < 0 ? unitLabel(row.unidad) : `UD${index + 1}: ${unitLabel(row.unidad)}`;
+  return unitLabel(row.unidad);
 }
 export function isProgrammedParteUnit(row: ParteDiarioRow, value: string, units: ParteUnidad[]): boolean {
   if (row.actividadesDelDia?.length) return row.actividadesDelDia.some(activity => value === `u:${activity.unidadId}`);

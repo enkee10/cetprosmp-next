@@ -68,6 +68,7 @@ type SemestreOption = {
 
 type Indicador = {
   id: number;
+  codigo?: string | null;
   descripcion?: string | null;
   sigla?: string | null;
   capacidadTerminalId?: number | null;
@@ -75,6 +76,8 @@ type Indicador = {
 
 type Capacidad = {
   id: number;
+  codigo?: string | null;
+  competenciaCodigo?: string | null;
   descripcion?: string | null;
   sigla?: string | null;
   unidadDidacticaId?: number | null;
@@ -450,12 +453,18 @@ const buildEfsrtPppMap = (registro: RegistroAuxiliar | null) => {
   return next;
 };
 
+const curricularLabel = (...parts: Array<string | null | undefined>) =>
+  parts.map(part => part?.trim()).filter((part): part is string => Boolean(part)).join(' ');
+
+const unitLabel = (unidad: Unidad | null | undefined) =>
+  (unidad?.nombre || unidad?.sigla || '').trim().toLocaleUpperCase('es-PE');
+
 const buildPrintColumns = (registro: RegistroAuxiliar | null, showEfsrtPpp: boolean, isProgramaEstudio: boolean) => {
   const columns: PrintColumn[] = [];
   for (const unidad of registro?.estructura || []) {
     for (const capacidad of unidad.capacidadesTerminales || []) {
       for (const indicador of capacidad.indicadoresCapacidad || []) {
-        const label = indicador.descripcion || indicador.sigla || '';
+        const label = curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla);
         const layout = estimateIndicatorLayout(label);
         columns.push({
           key: `indicator-${indicador.id}`,
@@ -502,9 +511,11 @@ const getMinimumColumnWidthMm = (column: PrintColumn) => {
 
 const getColumnContentWeight = (column: PrintColumn) => {
   const text = [
-    column.unidad?.sigla,
-    column.unidad?.nombre,
+    unitLabel(column.unidad),
+    column.capacidad?.competenciaCodigo,
+    column.capacidad?.codigo,
     column.capacidad?.descripcion,
+    column.indicador?.codigo,
     column.indicador?.descripcion,
     column.indicador?.sigla,
     column.type,
@@ -880,7 +891,7 @@ export default function RegistroAuxiliarPrintPage() {
 
     const nextWidths: Record<string, number> = {};
     for (const column of indicatorColumns) {
-      measureBox.textContent = column.indicador?.descripcion || column.indicador?.sigla || '';
+      measureBox.textContent = curricularLabel(column.capacidad?.codigo, column.indicador?.codigo, column.indicador?.descripcion || column.indicador?.sigla);
       const measuredHeightPx = Math.max(measureBox.scrollHeight, measureBox.getBoundingClientRect().height);
       nextWidths[column.key] = clampNumber((measuredHeightPx + 10) * PX_TO_MM + 1.2, 7.5, 30);
     }
@@ -1082,7 +1093,7 @@ export default function RegistroAuxiliarPrintPage() {
 
     const nextExtraWidths: Record<string, number> = {};
     for (const group of capacidadGroups) {
-      const text = group.items[0].capacidad?.descripcion || '';
+      const text = curricularLabel(group.items[0].capacidad?.competenciaCodigo, group.items[0].capacidad?.codigo, group.items[0].capacidad?.descripcion);
       if (!text.trim()) continue;
 
       const indicatorColumns = group.items.filter((column) => column.type === 'indicador');
@@ -1097,7 +1108,7 @@ export default function RegistroAuxiliarPrintPage() {
       if (extraGroupWidthMm <= 0.05) continue;
 
       const weights = indicatorColumns.map((column) => {
-        const label = column.indicador?.descripcion || column.indicador?.sigla || '';
+        const label = curricularLabel(column.capacidad?.codigo, column.indicador?.codigo, column.indicador?.descripcion || column.indicador?.sigla);
         const metrics = getHeaderTextMetrics(label);
         return Math.max(1, metrics.length + metrics.maxWordLength * 0.5);
       });
@@ -1245,7 +1256,7 @@ export default function RegistroAuxiliarPrintPage() {
           </th>
           {unitGroups.map((group) => (
             <th key={`unit-${group.key}`} colSpan={group.items.length} className="unit-header" style={{ height: UNIT_HEADER_HEIGHT_PX }}>
-              {group.items[0].unidad?.sigla || group.items[0].unidad?.nombre || ''}
+              {unitLabel(group.items[0].unidad)}
             </th>
           ))}
           {standAloneColumns.map((column) => (
@@ -1267,7 +1278,7 @@ export default function RegistroAuxiliarPrintPage() {
               className="capacity-header"
               style={{ height: capacityHeaderHeightPx ?? undefined }}
             >
-              <span className="capacity-header-content">{group.items[0].capacidad?.descripcion || ''}</span>
+              <span className="capacity-header-content">{curricularLabel(group.items[0].capacidad?.competenciaCodigo, group.items[0].capacidad?.codigo, group.items[0].capacidad?.descripcion)}</span>
             </th>
           ))}
         </tr>
@@ -1284,7 +1295,7 @@ export default function RegistroAuxiliarPrintPage() {
               {column.type === 'capacidad' ? (
                 <span>{isProgramaEstudio ? 'PROMEDIO' : 'LOGRO'}</span>
               ) : (
-                <span>{column.indicador?.descripcion || column.indicador?.sigla || ''}</span>
+                <span>{curricularLabel(column.capacidad?.codigo, column.indicador?.codigo, column.indicador?.descripcion || column.indicador?.sigla)}</span>
               )}
             </th>
           ))}

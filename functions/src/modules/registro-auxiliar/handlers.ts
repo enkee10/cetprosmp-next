@@ -32,6 +32,8 @@ import { getRequesterRoleId, isSuperUserContext, PermissionAction, requirePermis
 import {
   getConfiguredSemestreConsultaIds,
 } from "../settings/handlers.js";
+import { readCurriculumGraph } from "../planes/curriculumGraph.js";
+import { buildCurriculumDescendantCodes } from "../planes/curriculumCodes.js";
 
 type RegistroAuxiliarNotaInput = {
   matriculaId?: unknown;
@@ -87,6 +89,7 @@ type RegistroAuxiliarRow = {
 
 type RegistroAuxiliarIndicador = {
   id: number;
+  codigo?: string | null;
   descripcion?: string | null;
   sigla?: string | null;
   orden?: number | null;
@@ -95,6 +98,8 @@ type RegistroAuxiliarIndicador = {
 
 type RegistroAuxiliarCapacidad = {
   id: number;
+  codigo?: string | null;
+  competenciaCodigo?: string | null;
   descripcion?: string | null;
   sigla?: string | null;
   orden?: number | null;
@@ -149,7 +154,7 @@ type RegistroAuxiliarGrupoModulo = {
   grupoId: number;
   moduloId: number;
   grupo?: { semestreId?: number | null; [key: string]: unknown } | null;
-  modulo?: { plan?: { carrera?: { tipoCarrera?: { nombre?: string | null } | null } | null } | null; [key: string]: unknown } | null;
+  modulo?: { plan?: { id?: number | null; carrera?: { tipoCarrera?: { nombre?: string | null } | null } | null } | null; [key: string]: unknown } | null;
 };
 
 type RegistroAuxiliarDocenteModulo = {
@@ -268,6 +273,7 @@ const REGISTRO_AUXILIAR_CONTEXT_QUERY = `
         creditos
         creditosEfsrt
         plan {
+          id
           planEstudio
           carrera {
             nombre
@@ -309,14 +315,17 @@ const REGISTRO_AUXILIAR_DETAIL_QUERY = `
       grupoModuloId
       unidadDidacticaId
     }
-    competenciaUnidadesDidacticas(where: { competencia: { moduloId: { eq: $moduloId } } }, limit: 500) {
+    competenciaUnidadesDidacticas(where: { _or: [
+      { competencia: { moduloId: { eq: $moduloId } }, competenciaContinuacionId: { isNull: true } },
+      { competenciaContinuacion: { planModulo: { moduloId: { eq: $moduloId } } } }
+    ] }, limit: 500) {
       id
       orden
       unidadDidacticaId
-
       competenciaId
+      competenciaContinuacionId
       competencia { id nombre tipo moduloId }
-}
+    }
     unidadesDidacticas(limit: 50000) {
       id
       nombre
@@ -1468,7 +1477,7 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
       practicasProgramadas: Array<{ id: number; numero: number; titulo?: string | null; fecha?: string | null }>;
       jornadasProgramadas: Array<{ fecha: string; tipo: string; inicio: string; fin: string; horas: number }>;
       grupoModuloUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-      competenciaUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
+      competenciaUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number; competenciaId: number }>;
       unidadesDidacticas: RegistroAuxiliarUnidad[];
       capacidadesTerminales: RegistroAuxiliarCapacidad[];
       indicadoresCapacidad: RegistroAuxiliarIndicador[];
@@ -1533,6 +1542,13 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
         }] : [];
       }),
     ].sort((a, b) => Date.parse(a.inicio) - Date.parse(b.inicio) || (a.numero ?? 0) - (b.numero ?? 0));
+    const planId = grupoModulo.modulo?.plan?.id;
+    const curricularCodes = planId
+      ? buildCurriculumDescendantCodes(await readCurriculumGraph(planId))
+      : { competencias: new Map<number, string>(), unidades: new Map<number, string>(), capacidades: new Map<number, string>(), indicadores: new Map<number, string>() };
+    const competenciaIdByUnidad = new Map(
+      (response.data.competenciaUnidadesDidacticas ?? []).map((item) => [item.unidadDidacticaId, item.competenciaId]),
+    );
     const estructura = unidadIds
       .map((unidadId) => unidadById.get(unidadId))
       .filter((unidad): unidad is RegistroAuxiliarUnidad => Boolean(unidad))
@@ -1543,9 +1559,15 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
           .sort((a, b) => getAcademicOrder(a) - getAcademicOrder(b) || a.id - b.id)
           .map((capacidad) => ({
             ...capacidad,
+            codigo: curricularCodes.capacidades.get(capacidad.id) ?? null,
+            competenciaCodigo: curricularCodes.competencias.get(competenciaIdByUnidad.get(unidad.id) ?? -1) ?? null,
             indicadoresCapacidad: (indicadorByCapacidad.get(capacidad.id) ?? [])
               .slice()
-              .sort((a, b) => getAcademicOrder(a) - getAcademicOrder(b) || a.id - b.id),
+              .sort((a, b) => getAcademicOrder(a) - getAcademicOrder(b) || a.id - b.id)
+              .map((indicador) => ({
+                ...indicador,
+                codigo: curricularCodes.indicadores.get(indicador.id) ?? null,
+              })),
           })),
       }));
 
@@ -1966,13 +1988,16 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
             orden
             unidadDidacticaId
           }
-          competenciaUnidadesDidacticas(where: { competencia: { moduloId: { eq: $moduloId } } }, limit: 500) {
+          competenciaUnidadesDidacticas(where: { _or: [
+            { competencia: { moduloId: { eq: $moduloId } }, competenciaContinuacionId: { isNull: true } },
+            { competenciaContinuacion: { planModulo: { moduloId: { eq: $moduloId } } } }
+          ] }, limit: 500) {
             orden
             unidadDidacticaId
-
-      competenciaId
-      competencia { id nombre tipo moduloId }
-}
+            competenciaId
+            competenciaContinuacionId
+            competencia { id nombre tipo moduloId }
+          }
           unidadesDidacticas(limit: 50000) {
             id
             creditos

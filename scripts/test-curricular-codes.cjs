@@ -8,7 +8,8 @@ function load(file) {
   }).outputText)(mod, mod.exports);
   return mod.exports;
 }
-const { curricularItemCode: code, curricularCompetencyCodes: competencyCodes, curricularDescendantCodes: descendantCodes } = load('src/lib/curricularCodes.ts');
+const { curricularItemCode: code, curricularCompetencyCodes: competencyCodes, curricularDescendantCodes: descendantCodes,
+  curricularPlanCompetencyCodes: planCompetencyCodes, curricularPlanDescendantCodes: planDescendantCodes } = load('src/lib/curricularCodes.ts');
 const { applyAcademicOrder } = load('src/lib/curricularUpdates.ts');
 const { filterCurricularModules } = load('src/lib/curricularFilters.ts');
 const comp = { id: 10, nombre: 'Primera competencia', orden: 1 };
@@ -100,6 +101,27 @@ assert.equal(descendantCodes(reorderedUnits).capacidades.get(304), 'C1', 'Reorde
 assert.equal(descendantCodes(reorderedUnits).indicadores.get(405), 'I1', 'Indicator codes follow their reordered unit');
 assert.deepEqual(fullModule, fullSnapshot, 'Computing codes does not change stored orders or content');
 assert.deepEqual(descendantCodes(null), { unidades: new Map(), capacidades: new Map(), indicadores: new Map(), sesiones: new Map() });
+
+const continuedPlan = [
+  { id: 1, planId: 7, orden: 1, planModulos: [{ planId: 7, orden: 1 }], competencias: [
+    { id: 100, nombre: 'Primera', tipo: 'TECNICA', orden: 1 },
+    { id: 200, nombre: 'Segunda', tipo: 'TECNICA', orden: 2 },
+  ], unidadesDidacticas: [unit(1000, 200, 1, [capacity(2000, [indicator(3000)])])] },
+  { id: 2, planId: 7, orden: 2, planModulos: [{ planId: 7, orden: 2 }], competencias: [
+    { id: 200, nombre: 'Segunda', tipo: 'TECNICA', orden: 2, esContinuacion: true, continuacionId: 9 },
+    { id: 300, nombre: 'Tercera', tipo: 'TECNICA', orden: 1 },
+  ], unidadesDidacticas: [
+    unit(1001, 200, 1, [capacity(2001, [indicator(3001)])]),
+    unit(1002, 300, 1, [capacity(2002, [indicator(3002)])]),
+  ] },
+];
+const continuedCompetencyCodes = planCompetencyCodes(continuedPlan, 7);
+assert.deepEqual([100, 200, 300].map(id => continuedCompetencyCodes.get(id)), ['UC1', 'UC2', 'UC3'], 'A continuation keeps its first-appearance code and new competencies follow it');
+const continuedDescendantCodes = planDescendantCodes(continuedPlan, 7);
+assert.deepEqual([1000, 1001, 1002].map(id => continuedDescendantCodes.unidades.get(id)), ['UD1', 'UD2', 'UD3'], 'Units continue across plan modules');
+assert.deepEqual([2000, 2001].map(id => continuedDescendantCodes.capacidades.get(id)), ['C1', 'C2'], 'Capabilities continue inside the logical competency');
+const reorderedOrigin = applyAcademicOrder(continuedPlan, 'competencia', [{ id: 100, orden: 2 }, { id: 200, orden: 1 }]);
+assert.deepEqual([200, 100, 300].map(id => planCompetencyCodes(reorderedOrigin, 7).get(id)), ['UC1', 'UC2', 'UC3'], 'Reordering the origin updates the continuation code and all following codes');
 
 const plans = [{ id: 10, planEstudio: '2026-1' }, { id: 20, planEstudio: '2026-2' }];
 const sharedModule = { id: 99, planId: 10, orden: 1, planModulos: [

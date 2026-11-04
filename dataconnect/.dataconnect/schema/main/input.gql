@@ -101,6 +101,12 @@ It has the same format as `Competencia_Key`, but is only used as mutation return
 """
 scalar Competencia_KeyOutput
 """
+✨ `CompetenciaContinuacion_KeyOutput` returns the primary key fields of table type `CompetenciaContinuacion`.
+
+It has the same format as `CompetenciaContinuacion_Key`, but is only used as mutation return value.
+"""
+scalar CompetenciaContinuacion_KeyOutput
+"""
 ✨ `CompetenciaUnidadDidactica_KeyOutput` returns the primary key fields of table type `CompetenciaUnidadDidactica`.
 
 It has the same format as `CompetenciaUnidadDidactica_Key`, but is only used as mutation return value.
@@ -8427,6 +8433,10 @@ input Competencia_Data {
   """
   tipo_expr: TipoCompetencia_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Competencia`.`competenciaContinuaciones_on_competencia` of type `[CompetenciaContinuacion!]!`
+  """
+  competenciaContinuaciones_on_competencia: [CompetenciaContinuacion_Data!]
+  """
   ✨ Generated from Field `Competencia`.`competenciaUnidadesDidacticas_on_competencia` of type `[CompetenciaUnidadDidactica!]!`
   """
   competenciaUnidadesDidacticas_on_competencia: [CompetenciaUnidadDidactica_Data!]
@@ -8471,6 +8481,10 @@ input Competencia_Filter {
   ✨ Generated from Field `Competencia`.`tipo` of type `TipoCompetencia!`
   """
   tipo: TipoCompetencia_Filter
+  """
+  ✨ Generated from Field `Competencia`.`competenciaContinuaciones_on_competencia` of type `[CompetenciaContinuacion!]!`
+  """
+  competenciaContinuaciones_on_competencia: CompetenciaContinuacion_ListFilter
   """
   ✨ Generated from Field `Competencia`.`competenciaUnidadesDidacticas_on_competencia` of type `[CompetenciaUnidadDidactica!]!`
   """
@@ -8710,6 +8724,313 @@ input Competencia_Order {
   orden_max: OrderDirection
 }
 """
+✨ Generated data input type for table 'CompetenciaContinuacion'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input CompetenciaContinuacion_Data {
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `CompetenciaContinuacion`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `id` (✨ Generated from Field `CompetenciaContinuacion`.`id` of type `Int!`)
+  """
+  id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId` of type `Int!`
+  """
+  competenciaId: Int
+  """
+  ✨ `_expr` server value variant of `competenciaId` (✨ Generated from Field `CompetenciaContinuacion`.`competenciaId` of type `Int!`)
+  """
+  competenciaId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `competenciaId` (✨ Generated from Field `CompetenciaContinuacion`.`competenciaId` of type `Int!`)
+  """
+  competenciaId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId` of type `Int!`
+  """
+  planModuloId: Int
+  """
+  ✨ `_expr` server value variant of `planModuloId` (✨ Generated from Field `CompetenciaContinuacion`.`planModuloId` of type `Int!`)
+  """
+  planModuloId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `planModuloId` (✨ Generated from Field `CompetenciaContinuacion`.`planModuloId` of type `Int!`)
+  """
+  planModuloId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competencia` of type `Competencia!`
+  """
+  competencia: Competencia_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModulo` of type `PlanModulo!`
+  """
+  planModulo: PlanModulo_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaUnidadesDidacticas_on_competenciaContinuacion` of type `[CompetenciaUnidadDidactica!]!`
+  """
+  competenciaUnidadesDidacticas_on_competenciaContinuacion: [CompetenciaUnidadDidactica_Data!]
+}
+"""
+✨ Generated filter input type for table 'CompetenciaContinuacion'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input CompetenciaContinuacion_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [CompetenciaContinuacion_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: CompetenciaContinuacion_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [CompetenciaContinuacion_Filter!]
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id` of type `Int!`
+  """
+  id: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId` of type `Int!`
+  """
+  competenciaId: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId` of type `Int!`
+  """
+  planModuloId: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competencia` of type `Competencia!`
+  """
+  competencia: Competencia_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModulo` of type `PlanModulo!`
+  """
+  planModulo: PlanModulo_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaUnidadesDidacticas_on_competenciaContinuacion` of type `[CompetenciaUnidadDidactica!]!`
+  """
+  competenciaUnidadesDidacticas_on_competenciaContinuacion: CompetenciaUnidadDidactica_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'CompetenciaContinuacion'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input CompetenciaContinuacion_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [CompetenciaContinuacion_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: CompetenciaContinuacion_Filter
+}
+"""
+✨ Generated having input type for table 'CompetenciaContinuacion'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input CompetenciaContinuacion_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [CompetenciaContinuacion_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: CompetenciaContinuacion_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [CompetenciaContinuacion_Having!]
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId_count` of type `Int!`
+  """
+  competenciaId_count: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId_count` of type `Int!`
+  """
+  planModuloId_count: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId_sum` of type `Int`
+  """
+  competenciaId_sum: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id_sum` of type `Int`
+  """
+  id_sum: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId_sum` of type `Int`
+  """
+  planModuloId_sum: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId_avg` of type `Float`
+  """
+  competenciaId_avg: Float_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id_avg` of type `Float`
+  """
+  id_avg: Float_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId_avg` of type `Float`
+  """
+  planModuloId_avg: Float_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId_min` of type `Int`
+  """
+  competenciaId_min: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id_min` of type `Int`
+  """
+  id_min: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId_min` of type `Int`
+  """
+  planModuloId_min: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId_max` of type `Int`
+  """
+  competenciaId_max: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id_max` of type `Int`
+  """
+  id_max: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId_max` of type `Int`
+  """
+  planModuloId_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'CompetenciaContinuacion'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input CompetenciaContinuacion_Key {
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id` of type `Int!`
+  """
+  id: Int
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `CompetenciaContinuacion`.`id` of type `Int!`)
+  """
+  id_expr: Int_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'CompetenciaContinuacion'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input CompetenciaContinuacion_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: CompetenciaContinuacion_Filter
+}
+"""
+✨ Generated order input type for table 'CompetenciaContinuacion'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input CompetenciaContinuacion_Order {
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id` of type `Int!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId` of type `Int!`
+  """
+  competenciaId: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId` of type `Int!`
+  """
+  planModuloId: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competencia` of type `Competencia!`
+  """
+  competencia: Competencia_Order
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModulo` of type `PlanModulo!`
+  """
+  planModulo: PlanModulo_Order
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId_count` of type `Int!`
+  """
+  competenciaId_count: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId_count` of type `Int!`
+  """
+  planModuloId_count: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId_sum` of type `Int`
+  """
+  competenciaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id_sum` of type `Int`
+  """
+  id_sum: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId_sum` of type `Int`
+  """
+  planModuloId_sum: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId_avg` of type `Float`
+  """
+  competenciaId_avg: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id_avg` of type `Float`
+  """
+  id_avg: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId_avg` of type `Float`
+  """
+  planModuloId_avg: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId_min` of type `Int`
+  """
+  competenciaId_min: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id_min` of type `Int`
+  """
+  id_min: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId_min` of type `Int`
+  """
+  planModuloId_min: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`competenciaId_max` of type `Int`
+  """
+  competenciaId_max: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`id_max` of type `Int`
+  """
+  id_max: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaContinuacion`.`planModuloId_max` of type `Int`
+  """
+  planModuloId_max: OrderDirection
+}
+"""
 ✨ Generated data input type for table 'CompetenciaUnidadDidactica'. It includes all necessary fields for creating or upserting rows into table.
 """
 input CompetenciaUnidadDidactica_Data {
@@ -8725,6 +9046,18 @@ input CompetenciaUnidadDidactica_Data {
   ✨ `_update` server value variant of `id` (✨ Generated from Field `CompetenciaUnidadDidactica`.`id` of type `Int!`)
   """
   id_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId` of type `Int`
+  """
+  competenciaContinuacionId: Int
+  """
+  ✨ `_expr` server value variant of `competenciaContinuacionId` (✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId` of type `Int`)
+  """
+  competenciaContinuacionId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `competenciaContinuacionId` (✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId` of type `Int`)
+  """
+  competenciaContinuacionId_update: [Int_Update!] @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId` of type `Int!`
   """
@@ -8753,6 +9086,10 @@ input CompetenciaUnidadDidactica_Data {
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competencia` of type `Competencia!`
   """
   competencia: Competencia_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacion` of type `CompetenciaContinuacion`
+  """
+  competenciaContinuacion: CompetenciaContinuacion_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`unidadDidactica` of type `UnidadDidactica!`
   """
@@ -8791,6 +9128,10 @@ input CompetenciaUnidadDidactica_Filter {
   """
   id: Int_Filter
   """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId` of type `Int`
+  """
+  competenciaContinuacionId: Int_Filter
+  """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId` of type `Int!`
   """
   competenciaId: Int_Filter
@@ -8802,6 +9143,10 @@ input CompetenciaUnidadDidactica_Filter {
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competencia` of type `Competencia!`
   """
   competencia: Competencia_Filter
+  """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacion` of type `CompetenciaContinuacion`
+  """
+  competenciaContinuacion: CompetenciaContinuacion_Filter
   """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`unidadDidactica` of type `UnidadDidactica!`
   """
@@ -8849,6 +9194,10 @@ input CompetenciaUnidadDidactica_Having {
   """
   _count: Int_Filter
   """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId_count` of type `Int!`
+  """
+  competenciaContinuacionId_count: Int_Filter
+  """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId_count` of type `Int!`
   """
   competenciaId_count: Int_Filter
@@ -8864,6 +9213,10 @@ input CompetenciaUnidadDidactica_Having {
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`unidadDidacticaId_count` of type `Int!`
   """
   unidadDidacticaId_count: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId_sum` of type `Int`
+  """
+  competenciaContinuacionId_sum: Int_Filter
   """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId_sum` of type `Int`
   """
@@ -8881,6 +9234,10 @@ input CompetenciaUnidadDidactica_Having {
   """
   unidadDidacticaId_sum: Int_Filter
   """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId_avg` of type `Float`
+  """
+  competenciaContinuacionId_avg: Float_Filter
+  """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId_avg` of type `Float`
   """
   competenciaId_avg: Float_Filter
@@ -8897,6 +9254,10 @@ input CompetenciaUnidadDidactica_Having {
   """
   unidadDidacticaId_avg: Float_Filter
   """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId_min` of type `Int`
+  """
+  competenciaContinuacionId_min: Int_Filter
+  """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId_min` of type `Int`
   """
   competenciaId_min: Int_Filter
@@ -8912,6 +9273,10 @@ input CompetenciaUnidadDidactica_Having {
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`unidadDidacticaId_min` of type `Int`
   """
   unidadDidacticaId_min: Int_Filter
+  """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId_max` of type `Int`
+  """
+  competenciaContinuacionId_max: Int_Filter
   """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId_max` of type `Int`
   """
@@ -8964,6 +9329,10 @@ input CompetenciaUnidadDidactica_Order {
   """
   id: OrderDirection
   """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId` of type `Int`
+  """
+  competenciaContinuacionId: OrderDirection
+  """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId` of type `Int!`
   """
   competenciaId: OrderDirection
@@ -8976,6 +9345,10 @@ input CompetenciaUnidadDidactica_Order {
   """
   competencia: Competencia_Order
   """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacion` of type `CompetenciaContinuacion`
+  """
+  competenciaContinuacion: CompetenciaContinuacion_Order
+  """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`unidadDidactica` of type `UnidadDidactica!`
   """
   unidadDidactica: UnidadDidactica_Order
@@ -8987,6 +9360,10 @@ input CompetenciaUnidadDidactica_Order {
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`_count` of type `Int!`
   """
   _count: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId_count` of type `Int!`
+  """
+  competenciaContinuacionId_count: OrderDirection
   """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId_count` of type `Int!`
   """
@@ -9004,6 +9381,10 @@ input CompetenciaUnidadDidactica_Order {
   """
   unidadDidacticaId_count: OrderDirection
   """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId_sum` of type `Int`
+  """
+  competenciaContinuacionId_sum: OrderDirection
+  """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId_sum` of type `Int`
   """
   competenciaId_sum: OrderDirection
@@ -9019,6 +9400,10 @@ input CompetenciaUnidadDidactica_Order {
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`unidadDidacticaId_sum` of type `Int`
   """
   unidadDidacticaId_sum: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId_avg` of type `Float`
+  """
+  competenciaContinuacionId_avg: OrderDirection
   """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId_avg` of type `Float`
   """
@@ -9036,6 +9421,10 @@ input CompetenciaUnidadDidactica_Order {
   """
   unidadDidacticaId_avg: OrderDirection
   """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId_min` of type `Int`
+  """
+  competenciaContinuacionId_min: OrderDirection
+  """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId_min` of type `Int`
   """
   competenciaId_min: OrderDirection
@@ -9051,6 +9440,10 @@ input CompetenciaUnidadDidactica_Order {
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`unidadDidacticaId_min` of type `Int`
   """
   unidadDidacticaId_min: OrderDirection
+  """
+  ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaContinuacionId_max` of type `Int`
+  """
+  competenciaContinuacionId_max: OrderDirection
   """
   ✨ Generated from Field `CompetenciaUnidadDidactica`.`competenciaId_max` of type `Int`
   """
@@ -21936,6 +22329,18 @@ input IndicadorContenido_Data {
   """
   id_update: [Int_Update!] @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId` of type `Int`
+  """
+  contenidoPadreId: Int
+  """
+  ✨ `_expr` server value variant of `contenidoPadreId` (✨ Generated from Field `IndicadorContenido`.`contenidoPadreId` of type `Int`)
+  """
+  contenidoPadreId_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `contenidoPadreId` (✨ Generated from Field `IndicadorContenido`.`contenidoPadreId` of type `Int`)
+  """
+  contenidoPadreId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId` of type `Int!`
   """
   indicadorCapacidadId: Int
@@ -21947,6 +22352,10 @@ input IndicadorContenido_Data {
   ✨ `_update` server value variant of `indicadorCapacidadId` (✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId` of type `Int!`)
   """
   indicadorCapacidadId_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadre` of type `IndicadorContenido`
+  """
+  contenidoPadre: IndicadorContenido_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidad` of type `IndicadorCapacidad!`
   """
@@ -21971,6 +22380,10 @@ input IndicadorContenido_Data {
   ✨ `_expr` server value variant of `texto` (✨ Generated from Field `IndicadorContenido`.`texto` of type `String!`)
   """
   texto_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorContenidos_on_contenidoPadre` of type `[IndicadorContenido!]!`
+  """
+  indicadorContenidos_on_contenidoPadre: [IndicadorContenido_Data!]
 }
 """
 ✨ Generated filter input type for table 'IndicadorContenido'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -21993,9 +22406,17 @@ input IndicadorContenido_Filter {
   """
   id: Int_Filter
   """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId` of type `Int`
+  """
+  contenidoPadreId: Int_Filter
+  """
   ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId` of type `Int!`
   """
   indicadorCapacidadId: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadre` of type `IndicadorContenido`
+  """
+  contenidoPadre: IndicadorContenido_Filter
   """
   ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidad` of type `IndicadorCapacidad!`
   """
@@ -22008,6 +22429,10 @@ input IndicadorContenido_Filter {
   ✨ Generated from Field `IndicadorContenido`.`texto` of type `String!`
   """
   texto: String_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`indicadorContenidos_on_contenidoPadre` of type `[IndicadorContenido!]!`
+  """
+  indicadorContenidos_on_contenidoPadre: IndicadorContenido_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'IndicadorContenido'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -22047,6 +22472,10 @@ input IndicadorContenido_Having {
   """
   _count: Int_Filter
   """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId_count` of type `Int!`
+  """
+  contenidoPadreId_count: Int_Filter
+  """
   ✨ Generated from Field `IndicadorContenido`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
@@ -22063,6 +22492,10 @@ input IndicadorContenido_Having {
   """
   texto_count: Int_Filter
   """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId_sum` of type `Int`
+  """
+  contenidoPadreId_sum: Int_Filter
+  """
   ✨ Generated from Field `IndicadorContenido`.`id_sum` of type `Int`
   """
   id_sum: Int_Filter
@@ -22074,6 +22507,10 @@ input IndicadorContenido_Having {
   ✨ Generated from Field `IndicadorContenido`.`orden_sum` of type `Int`
   """
   orden_sum: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId_avg` of type `Float`
+  """
+  contenidoPadreId_avg: Float_Filter
   """
   ✨ Generated from Field `IndicadorContenido`.`id_avg` of type `Float`
   """
@@ -22087,6 +22524,10 @@ input IndicadorContenido_Having {
   """
   orden_avg: Float_Filter
   """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId_min` of type `Int`
+  """
+  contenidoPadreId_min: Int_Filter
+  """
   ✨ Generated from Field `IndicadorContenido`.`id_min` of type `Int`
   """
   id_min: Int_Filter
@@ -22098,6 +22539,10 @@ input IndicadorContenido_Having {
   ✨ Generated from Field `IndicadorContenido`.`orden_min` of type `Int`
   """
   orden_min: Int_Filter
+  """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId_max` of type `Int`
+  """
+  contenidoPadreId_max: Int_Filter
   """
   ✨ Generated from Field `IndicadorContenido`.`id_max` of type `Int`
   """
@@ -22146,9 +22591,17 @@ input IndicadorContenido_Order {
   """
   id: OrderDirection
   """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId` of type `Int`
+  """
+  contenidoPadreId: OrderDirection
+  """
   ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidadId` of type `Int!`
   """
   indicadorCapacidadId: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadre` of type `IndicadorContenido`
+  """
+  contenidoPadre: IndicadorContenido_Order
   """
   ✨ Generated from Field `IndicadorContenido`.`indicadorCapacidad` of type `IndicadorCapacidad!`
   """
@@ -22166,6 +22619,10 @@ input IndicadorContenido_Order {
   """
   _count: OrderDirection
   """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId_count` of type `Int!`
+  """
+  contenidoPadreId_count: OrderDirection
+  """
   ✨ Generated from Field `IndicadorContenido`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
@@ -22182,6 +22639,10 @@ input IndicadorContenido_Order {
   """
   texto_count: OrderDirection
   """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId_sum` of type `Int`
+  """
+  contenidoPadreId_sum: OrderDirection
+  """
   ✨ Generated from Field `IndicadorContenido`.`id_sum` of type `Int`
   """
   id_sum: OrderDirection
@@ -22193,6 +22654,10 @@ input IndicadorContenido_Order {
   ✨ Generated from Field `IndicadorContenido`.`orden_sum` of type `Int`
   """
   orden_sum: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId_avg` of type `Float`
+  """
+  contenidoPadreId_avg: OrderDirection
   """
   ✨ Generated from Field `IndicadorContenido`.`id_avg` of type `Float`
   """
@@ -22206,6 +22671,10 @@ input IndicadorContenido_Order {
   """
   orden_avg: OrderDirection
   """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId_min` of type `Int`
+  """
+  contenidoPadreId_min: OrderDirection
+  """
   ✨ Generated from Field `IndicadorContenido`.`id_min` of type `Int`
   """
   id_min: OrderDirection
@@ -22217,6 +22686,10 @@ input IndicadorContenido_Order {
   ✨ Generated from Field `IndicadorContenido`.`orden_min` of type `Int`
   """
   orden_min: OrderDirection
+  """
+  ✨ Generated from Field `IndicadorContenido`.`contenidoPadreId_max` of type `Int`
+  """
+  contenidoPadreId_max: OrderDirection
   """
   ✨ Generated from Field `IndicadorContenido`.`id_max` of type `Int`
   """
@@ -30888,6 +31361,10 @@ input PlanModulo_Data {
   ✨ `_update` server value variant of `orden` (✨ Generated from Field `PlanModulo`.`orden` of type `Int`)
   """
   orden_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `PlanModulo`.`competenciaContinuaciones_on_planModulo` of type `[CompetenciaContinuacion!]!`
+  """
+  competenciaContinuaciones_on_planModulo: [CompetenciaContinuacion_Data!]
 }
 """
 ✨ Generated filter input type for table 'PlanModulo'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -30929,6 +31406,10 @@ input PlanModulo_Filter {
   ✨ Generated from Field `PlanModulo`.`orden` of type `Int`
   """
   orden: Int_Filter
+  """
+  ✨ Generated from Field `PlanModulo`.`competenciaContinuaciones_on_planModulo` of type `[CompetenciaContinuacion!]!`
+  """
+  competenciaContinuaciones_on_planModulo: CompetenciaContinuacion_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'PlanModulo'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.

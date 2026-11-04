@@ -547,7 +547,7 @@ export const listGrupoConfiguracionOpciones = https.onCall(async (_data, context
     competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
   }, Record<string, never>>(`query GrupoModuloOpciones {
     modulos(limit:1000){id titulo tituloComercial orden plan{carrera{especialidad{orden}}}}
-    competenciaUnidadesDidacticas(limit:5000){id orden competenciaId unidadDidacticaId competencia{id nombre tipo moduloId} unidadDidactica{id nombre duracion creditos sigla}}
+    competenciaUnidadesDidacticas(limit:5000){id orden competenciaId competenciaContinuacionId unidadDidacticaId competencia{id nombre tipo moduloId} competenciaContinuacion{planModulo{moduloId}} unidadDidactica{id nombre duracion creditos sigla}}
   }`);
   const relations = projectUnidadRelations(data.competenciaUnidadesDidacticas);
   const unitsByModulo = new Map<number, Map<number, {orden:number; unidad:unknown}>>();

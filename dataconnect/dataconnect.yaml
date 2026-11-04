@@ -1,11 +1,11 @@
 specVersion: "v1"
 serviceId: "cetprosmp-2026-service"
 location: "us-central1"
-schemaValidation: "COMPATIBLE" # COMPATIBLE mode makes Postgres schema compatible with Data Connect.
 schema:
   source: "./schema"
   datasource:
     postgresql:
+      schemaValidation: "COMPATIBLE" # Preserve legacy SQL objects that are outside this Data Connect schema.
       database: "cetprosmp-db"
       cloudSql:
         instanceId: "cetprosmp-2026-instance"

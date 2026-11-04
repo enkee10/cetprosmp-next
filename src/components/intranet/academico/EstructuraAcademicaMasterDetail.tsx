@@ -8,8 +8,13 @@ import SesionItemList, { type SesionListItem } from './SesionItemList';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
   Box,
+  Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   IconButton,
   InputLabel,
@@ -24,13 +29,15 @@ import { alpha, type Theme } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import LockIcon from '@mui/icons-material/Lock';
+import ReplayIcon from '@mui/icons-material/Replay';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useAppSettings } from '@/hooks/useAppSettings';
-import { curricularCompetencyCodes, curricularDescendantCodes, curricularItemCode, curricularSessionsInOrder, curricularUnitsInOrder, orderedCurricularItems } from '@/lib/curricularCodes';
+import { curricularItemCode, curricularPlanCompetencyCodes, curricularPlanDescendantCodes, curricularSessionsInOrder, curricularUnitsInOrder, orderedCurricularItems } from '@/lib/curricularCodes';
 import { canHideCurricularPlan, selectionColumns, withPeriodSelection, type PlanSelection, type SelectionSemester, type SelectionEntity, type PeriodNode } from '@/lib/curricularSelection';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -81,6 +88,9 @@ function displayText(value: string | number | boolean | null | undefined) {
   return String(value);
 }
 
+const curricularPrefix = (...codes: Array<string | null | undefined>) =>
+  codes.map(code => code?.trim()).filter((code): code is string => Boolean(code)).join(' ');
+
 function draftFromValue(value: EditableCellValue | undefined) {
   if (value === null || value === undefined) return '';
   return String(value);
@@ -130,28 +140,31 @@ function getDropPosition(event: DragEvent<HTMLElement>): DropPosition {
 
 function DragHandle({
   enabled,
+  locked = false,
   onDragStart,
 }: {
   enabled: boolean;
+  locked?: boolean;
   onDragStart: (event: DragEvent<HTMLElement>) => void;
 }) {
   return (
     <Box
       component="span"
       aria-hidden
-      draggable={enabled}
-      onDragStart={enabled ? onDragStart : undefined}
+      draggable={enabled && !locked}
+      onDragStart={enabled && !locked ? onDragStart : undefined}
       sx={{
         width: 18,
         minWidth: 18,
         mt: 0.1,
         display: 'inline-flex',
         justifyContent: 'center',
-        color: enabled ? 'text.secondary' : 'action.disabled',
-        cursor: enabled ? 'grab' : 'default',
+        color: enabled && !locked ? 'text.secondary' : 'action.disabled',
+        cursor: enabled && !locked ? 'grab' : 'default',
       }}
+      title={locked ? 'Continuacion bloqueada: su orden depende del modulo anterior' : undefined}
     >
-      <DragIndicatorIcon fontSize="small" />
+      {locked ? <LockIcon fontSize="small" /> : <DragIndicatorIcon fontSize="small" />}
     </Box>
   );
 }
@@ -622,10 +635,14 @@ export default function EstructuraAcademicaMasterDetail({
   const [selectedCapacidadId, setSelectedCapacidadId] = useState<number | null>(null);
   const [selectedIndicadorId, setSelectedIndicadorId] = useState<number | null>(null);
   const [selectedSesionId, setSelectedSesionId] = useState<number | null>(null);
+  const [continuationDialogOpen, setContinuationDialogOpen] = useState(false);
+  const [continuationCompetenciaId, setContinuationCompetenciaId] = useState<number | ''>('');
+  const [continuationMenuWidth, setContinuationMenuWidth] = useState<number | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [moveTarget, setMoveTarget] = useState<AcademicDrag | null>(null);
   const [movePending, setMovePending] = useState(false);
   const movePendingRef = useRef(false);
+  const continuationSelectRef = useRef<HTMLDivElement | null>(null);
   const dragPreviewRef = useRef<HTMLElement | null>(null);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hoverKeyRef = useRef<string | null>(null);
@@ -723,7 +740,11 @@ export default function EstructuraAcademicaMasterDetail({
   const selectedPlan = planOptions.find(option => option.key === selectedPlanKey) ?? null;
   const occupationalHiding = settings.general.poderOcultarProgramacionOpcionesOcupacionales;
   const filteredModulos = useMemo(() => filterCurricularModules(modulos, planCatalog, ['all'], selectedPlan)
-    .map(module => withPeriodSelection(module, canHideCurricularPlan(module.plan, occupationalHiding) ? selections.find(s => s.planId === module.planId) : undefined)),
+    .map(module => withPeriodSelection({ ...module,
+      competencias: module.competencias.filter(item => !item.esContinuacion || item.continuacionPlanId === module.planId),
+      unidadesDidacticas: module.unidadesDidacticas.filter(item => !item.competenciaContinuacionId || item.competenciaContinuacionPlanId === module.planId),
+    },
+      canHideCurricularPlan(module.plan, occupationalHiding) ? selections.find(s => s.planId === module.planId) : undefined)),
     [modulos, planCatalog, selectedPlan, selections, occupationalHiding]);
 
   useEffect(() => {
@@ -735,12 +756,30 @@ export default function EstructuraAcademicaMasterDetail({
     [filteredModulos, selectedModuloId],
   );
 
-  const todasUnidades = useMemo(() => curricularUnitsInOrder(selectedModulo), [selectedModulo]);
-  const descendantCodes = useMemo(() => curricularDescendantCodes(selectedModulo), [selectedModulo]);
-  const competencyCodes = useMemo(() => curricularCompetencyCodes(selectedModulo?.competencias ?? []), [selectedModulo]);
-  const competencias = useMemo(() => (selectedModulo?.competencias ?? []).filter(item => showHidden.competencia || item.periodActive !== false).sort((a, b) =>
+  const selectedPlanModules = useMemo(() => {
+    if (!selectedModulo?.planId) return [];
+    return filteredModulos.filter(item => item.planId === selectedModulo.planId).sort((a, b) => {
+      const orderA = a.planModulos?.find(item => item.planId === selectedModulo.planId)?.orden ?? a.orden ?? a.id;
+      const orderB = b.planModulos?.find(item => item.planId === selectedModulo.planId)?.orden ?? b.orden ?? b.id;
+      return orderA - orderB || a.id - b.id;
+    });
+  }, [filteredModulos, selectedModulo?.planId]);
+  const selectedModuleIndex = selectedPlanModules.findIndex(item => item.id === selectedModulo?.id);
+  const previousModulo = selectedModuleIndex > 0 ? selectedPlanModules[selectedModuleIndex - 1] : null;
+  const sortCompetencias = useCallback(<T extends { id: number; tipo: 'TECNICA' | 'EMPLEABILIDAD'; orden?: number | null; esContinuacion?: boolean },>(items: T[]) => items.slice().sort((a, b) =>
+    Number(a.tipo === 'EMPLEABILIDAD') - Number(b.tipo === 'EMPLEABILIDAD') ||
+    Number(Boolean(b.esContinuacion)) - Number(Boolean(a.esContinuacion)) ||
     (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id,
-  ), [selectedModulo, showHidden.competencia]);
+  ), []);
+  const continuationOptions = useMemo(() => {
+    const currentIds = new Set((selectedModulo?.competencias ?? []).map(item => item.id));
+    return sortCompetencias(previousModulo?.competencias ?? []).filter(item => !currentIds.has(item.id));
+  }, [previousModulo, selectedModulo?.competencias, sortCompetencias]);
+  const todasUnidades = useMemo(() => curricularUnitsInOrder(selectedModulo), [selectedModulo]);
+  const descendantCodes = useMemo(() => curricularPlanDescendantCodes(selectedPlanModules, selectedModulo?.planId), [selectedPlanModules, selectedModulo?.planId]);
+  const competencyCodes = useMemo(() => curricularPlanCompetencyCodes(selectedPlanModules, selectedModulo?.planId), [selectedPlanModules, selectedModulo?.planId]);
+  const competencias = useMemo(() => sortCompetencias((selectedModulo?.competencias ?? []).filter(item => showHidden.competencia || item.periodActive !== false)),
+    [selectedModulo, showHidden.competencia, sortCompetencias]);
   const selectedCompetencia = competencias.find(competencia => competencia.id === selectedCompetenciaId) ?? competencias[0] ?? null;
   const unidades = useMemo(() => todasUnidades.filter(unidad => unidad.competenciaId === selectedCompetencia?.id && (showHidden.unidadDidactica || unidad.periodActive !== false)),
     [todasUnidades, selectedCompetencia?.id, showHidden.unidadDidactica]);
@@ -1113,8 +1152,50 @@ export default function EstructuraAcademicaMasterDetail({
   const handleCreateCompetencia = () => {
     if (selectedModulo) void runStructureAction('createEstructuraAcademicaItem', { entity: 'competencia', moduloId: selectedModulo.id, tipo: selectedCompetencia?.tipo ?? 'TECNICA' });
   };
-  const handleDeleteCompetencia = () => {
-    if (selectedCompetencia && window.confirm('¿Eliminar esta competencia?')) void runStructureAction('detachEstructuraAcademicaItem', { entity: 'competencia', competenciaId: selectedCompetencia.id });
+  const openContinuationDialog = () => {
+    if (!continuationOptions.length) return;
+    setContinuationCompetenciaId(continuationOptions.filter(item => item.tipo === 'TECNICA').at(-1)?.id
+      ?? continuationOptions.at(-1)?.id
+      ?? '');
+    setContinuationDialogOpen(true);
+  };
+  const confirmContinuation = async () => {
+    if (!selectedModulo?.planModuloId || !continuationCompetenciaId || actionLoading) return;
+    setActionLoading(true);
+    try {
+      if (auth.currentUser) await auth.currentUser.getIdToken(true);
+      const callable = httpsCallable<{ planModuloId: number; competenciaId: number }, { id: number }>(functions, 'continueEstructuraAcademicaCompetencia');
+      await callable({ planModuloId: selectedModulo.planModuloId, competenciaId: Number(continuationCompetenciaId) });
+      setContinuationDialogOpen(false);
+      setSelectedCompetenciaId(Number(continuationCompetenciaId));
+      await fetchEstructura();
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo continuar la competencia.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+  const handleDeleteCompetencia = async () => {
+    if (!selectedCompetencia) return;
+    if (selectedCompetencia.esContinuacion) {
+      if (!selectedCompetencia.continuacionId || !window.confirm('Se eliminará esta continuación y todo lo creado dentro de ella en el módulo actual. ¿Deseas continuar?')) return;
+      setActionLoading(true);
+      try {
+        if (auth.currentUser) await auth.currentUser.getIdToken(true);
+        const callable = httpsCallable<{ continuacionId: number }, { id: number }>(functions, 'deleteEstructuraAcademicaCompetenciaContinuacion');
+        await callable({ continuacionId: selectedCompetencia.continuacionId });
+        setSelectedCompetenciaId(null);
+        await fetchEstructura();
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'No se pudo eliminar la continuación.');
+      } finally {
+        setActionLoading(false);
+      }
+      return;
+    }
+    if (window.confirm('¿Eliminar esta competencia?')) void runStructureAction('detachEstructuraAcademicaItem', { entity: 'competencia', competenciaId: selectedCompetencia.id });
   };
   const handleCreateSesion = () => {
     if (selectedModulo && selectedIndicador) void runStructureAction('createEstructuraAcademicaItem', { entity: 'actividad', moduloId: selectedModulo.id, indicadorCapacidadId: selectedIndicador.id, aprendizajeId: selectedAprendizaje?.id });
@@ -1221,6 +1302,7 @@ export default function EstructuraAcademicaMasterDetail({
 
   return (
     <AcademicTextPreviewProvider enabled={settings.programacionCurricular.mostrarContenidoEnCuadroEmergente}>
+    <>
     <IntranetListLayout
       message={error}
       messageSeverity="error"
@@ -1347,14 +1429,18 @@ export default function EstructuraAcademicaMasterDetail({
           <Panel title="Competencias" count={competencias.length} actions={<>
             {hiddenToggle('competencia')}
             {allowCreate && <IconButton size="small" title="Crear competencia" disabled={actionLoading || !selectedModulo} onClick={handleCreateCompetencia}><AddIcon fontSize="small" /></IconButton>}
+            {allowCreate && previousModulo && <IconButton size="small" title="Continuar competencia del módulo anterior" disabled={actionLoading || continuationOptions.length === 0} onClick={openContinuationDialog}><ReplayIcon fontSize="small" /></IconButton>}
             {allowDelete && <IconButton size="small" title="Eliminar competencia" color="error" disabled={actionLoading || !selectedCompetencia} onClick={handleDeleteCompetencia}><DeleteOutlineIcon fontSize="small" /></IconButton>}
           </>}>
             {competencias.length === 0 ? <EmptyState label="Sin competencias." /> : (
               <List dense disablePadding>
                 {competencias.map(competencia => (
                   <AcademicListItem
-                    key={competencia.id}
-                    {...extraDragProps('competencia', competencia.id, allowEdit && !actionLoading)}
+                    key={`${competencia.continuacionId ?? 'original'}-${competencia.id}`}
+                    {...(competencia.esContinuacion ? {
+                      'data-academic-entity': 'competencia',
+                      'data-academic-id': competencia.id,
+                    } : extraDragProps('competencia', competencia.id, allowEdit && !actionLoading))}
                     data-empleabilidad={competencia.tipo === 'EMPLEABILIDAD' ? 'true' : undefined}
                     selected={selectedCompetencia?.id === competencia.id}
                     onClick={() => {
@@ -1363,9 +1449,9 @@ export default function EstructuraAcademicaMasterDetail({
                       setSelectedCapacidadId(null);
                       setSelectedIndicadorId(null);
                     }}
-                    sx={{ opacity: competencia.periodActive === false ? 0.4 : 1, ...dropIndicatorSx('competencia', competencia.id) }}
+                    sx={{ opacity: competencia.periodActive === false ? 0.4 : 1, ...(competencia.esContinuacion ? {} : dropIndicatorSx('competencia', competencia.id)) }}
                     dragHandle={
-                      <DragHandle enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'competencia', id: competencia.id })} />
+                      <DragHandle locked={competencia.esContinuacion} enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'competencia', id: competencia.id })} />
                     }
                   >
                     <EditableValue value={competencia.nombre || 'Sin nombre'} target={{ entity: 'competencia', id: competencia.id, field: 'nombre', valueType: 'text' }} lines={4} variant="body2" onSave={saveEditableCell} readOnly={!allowEdit || movePending}
@@ -1518,7 +1604,7 @@ export default function EstructuraAcademicaMasterDetail({
                   >
                     <EditableValue
                       value={capacidad.descripcion || `Capacidad ${capacidad.id}`}
-                      prefix={`${competencyCodes.get(selectedUnidad!.competenciaId) ?? ''} ${descendantCodes.capacidades.get(capacidad.id) ?? ''}`}
+                      prefix={curricularPrefix(competencyCodes.get(selectedUnidad!.competenciaId), descendantCodes.capacidades.get(capacidad.id))}
                       actions={visibilityButton('capacidadTerminal', capacidad, selectedUnidad?.periodActive !== false)}
                       target={{
                         entity: 'capacidadTerminal',
@@ -1594,7 +1680,7 @@ export default function EstructuraAcademicaMasterDetail({
                   >
                     <EditableValue
                       value={indicador.descripcion || `Indicador ${indicador.id}`}
-                      prefix={`${descendantCodes.capacidades.get(selectedCapacidad!.id) ?? ''} ${descendantCodes.indicadores.get(indicador.id) ?? ''}`}
+                      prefix={curricularPrefix(descendantCodes.capacidades.get(selectedCapacidad!.id), descendantCodes.indicadores.get(indicador.id))}
                       actions={visibilityButton('indicadorCapacidad', indicador, selectedCapacidad?.periodActive !== false)}
                       target={{
                         entity: 'indicadorCapacidad',
@@ -1657,6 +1743,99 @@ export default function EstructuraAcademicaMasterDetail({
         </Box>
       )}
     </IntranetListLayout>
+    <Dialog open={continuationDialogOpen} onClose={() => { if (!actionLoading) setContinuationDialogOpen(false); }} maxWidth="sm" fullWidth>
+      <Box component="form" onSubmit={event => { event.preventDefault(); void confirmContinuation(); }}>
+        <DialogTitle>Continuar competencia</DialogTitle>
+        <DialogContent>
+          <FormControl ref={continuationSelectRef} fullWidth size="small" sx={{ mt: 1 }}>
+            <InputLabel id="continuation-competency-label">Competencia del módulo anterior</InputLabel>
+            <Select
+              labelId="continuation-competency-label"
+              label="Competencia del módulo anterior"
+              value={continuationCompetenciaId}
+              autoFocus
+              autoWidth={false}
+              disabled={actionLoading}
+              onOpen={() => {
+                const width = continuationSelectRef.current?.getBoundingClientRect().width;
+                if (width) setContinuationMenuWidth(width);
+              }}
+              onChange={event => setContinuationCompetenciaId(Number(event.target.value))}
+              renderValue={selected => {
+                const item = continuationOptions.find(option => option.id === Number(selected));
+                return (
+                  <Typography variant="body2" sx={{
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: 3,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'normal',
+                    overflowWrap: 'anywhere',
+                  }}>
+                    {item ? curricularPrefix(competencyCodes.get(item.id), item.nombre || 'Sin nombre') : ''}
+                  </Typography>
+                );
+              }}
+              sx={{
+                '& .MuiSelect-select': {
+                  height: 'auto !important',
+                  minHeight: '1.4375em !important',
+                  whiteSpace: 'normal',
+                  overflow: 'visible',
+                  textOverflow: 'clip',
+                  py: 1,
+                },
+              }}
+              MenuProps={{
+                PaperProps: {
+                  style: continuationMenuWidth ? {
+                    width: continuationMenuWidth,
+                    minWidth: continuationMenuWidth,
+                    maxWidth: continuationMenuWidth,
+                  } : undefined,
+                  sx: {
+                    boxSizing: 'border-box',
+                    '& .MuiMenuItem-root': {
+                      width: '100%',
+                      minHeight: 'auto',
+                      alignItems: 'flex-start',
+                      whiteSpace: 'normal',
+                      py: 1,
+                    },
+                  },
+                },
+              }}
+            >
+              {continuationOptions.map(item => (
+                <MenuItem key={item.id} value={item.id}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      width: '100%',
+                      display: '-webkit-box',
+                      WebkitBoxOrient: 'vertical',
+                      WebkitLineClamp: 3,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'normal',
+                      overflowWrap: 'anywhere',
+                    }}
+                  >
+                    {curricularPrefix(competencyCodes.get(item.id), item.nombre || 'Sin nombre')}
+                  </Typography>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setContinuationDialogOpen(false)} disabled={actionLoading}>Cancelar</Button>
+          <Button type="submit" variant="contained" disabled={actionLoading || !continuationCompetenciaId}>Aceptar</Button>
+        </DialogActions>
+      </Box>
+    </Dialog>
+    </>
     </AcademicTextPreviewProvider>
   );
 }

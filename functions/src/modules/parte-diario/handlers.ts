@@ -5,6 +5,7 @@ import { normalizeCompromisos, readCompromisos } from "./commitmentModel.js";
 import { google } from "googleapis";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { createPeriodVisibilityReader, getPeriodVisibility } from "../planes/periodSelection.js";
+import { projectUnidadRelations } from "../competencias/model.js";
 import { requirePermission,hasPermission } from "../core/permissions.js";
 import { loadAgenda } from "../calendarios/agenda.js";
 import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
@@ -39,8 +40,8 @@ export const JORNADAS_QUERY = `query ParteDiarioJornadas($fecha:Date!){grupoModu
 export const SAVED_DAY_QUERY = `query ParteDiarioSaved($fecha:Date!){parteDiarioRegistros(where:{fecha:{eq:$fecha}},limit:1000){${SAVED_FIELDS} grupoModulo{${GROUP_FIELDS}}}}`;
 export const DAY_UNITS_QUERY = `query ParteDiarioUnits($ids:[Int!]!){unidadesDidacticas(where:{id:{in:$ids}},limit:1000){id nombre}}`;
 export const ENROLLMENTS_QUERY = `query ParteDiarioEnrolled($ids:[Int!]!,$grupoIds:[Int!]!){modulosEstudiantes(where:{_or:[{grupoModuloId:{in:$ids}},{grupoModuloId:{isNull:true},grupoId:{in:$grupoIds}}]},limit:10000){id grupoModuloId grupoId moduloId matriculaId matricula{archivado fecha userId users:matriculaUsers_on_matricula{userId}}}}`;
-export const OPTIONS_QUERY = `query ParteDiarioChoices($moduloId:Int!){competenciaUnidadesDidacticas(where:{competencia:{moduloId:{eq:$moduloId}}},limit:1000,orderBy:[{orden:ASC},{id:ASC}]){orden unidadDidacticaId unidadDidactica{id nombre}} actividads(where:{_or:[{moduloId:{eq:$moduloId}},{moduloId:{isNull:true}}]},limit:10000,orderBy:[{orden:ASC},{id:ASC}]){id nombre numeroSesion orden aprendizaje{indicadorCapacidad{id capacidadTerminal{unidadDidacticaId}}}}}`;
-export const ORDERED_UNITS_QUERY = `query ParteOrderedUnits($ids:[Int!]!){competenciaUnidadesDidacticas(where:{competencia:{moduloId:{in:$ids}}},limit:10000,orderBy:[{orden:ASC},{id:ASC}]){competencia{moduloId} unidadDidactica{id nombre}}}`;
+export const OPTIONS_QUERY = `query ParteDiarioChoices($moduloId:Int!){competenciaUnidadesDidacticas(where:{_or:[{competencia:{moduloId:{eq:$moduloId}},competenciaContinuacionId:{isNull:true}},{competenciaContinuacion:{planModulo:{moduloId:{eq:$moduloId}}}}]},limit:1000,orderBy:[{orden:ASC},{id:ASC}]){orden unidadDidacticaId unidadDidactica{id nombre}} actividads(where:{_or:[{moduloId:{eq:$moduloId}},{moduloId:{isNull:true}}]},limit:10000,orderBy:[{orden:ASC},{id:ASC}]){id nombre numeroSesion orden aprendizaje{indicadorCapacidad{id capacidadTerminal{unidadDidacticaId}}}}}`;
+export const ORDERED_UNITS_QUERY = `query ParteOrderedUnits($ids:[Int!]!){competenciaUnidadesDidacticas(where:{_or:[{competencia:{moduloId:{in:$ids}},competenciaContinuacionId:{isNull:true}},{competenciaContinuacion:{planModulo:{moduloId:{in:$ids}}}}]},limit:10000,orderBy:[{orden:ASC},{id:ASC}]){competencia{moduloId} competenciaContinuacion{planModulo{moduloId}} unidadDidactica{id nombre}}}`;
 export const ACTIVITY_DATES_QUERY = `query ParteActivityDates($id:Int!){grupoModuloActividades(where:{grupoModuloId:{eq:$id}},limit:10000,orderBy:{inicio:ASC}){actividadId inicio evento{estado}}}`;
 export function teacherNames(teacher: Teacher) {
  const u = teacher.user, surnames = [u?.apellidoPaterno, u?.apellidoMaterno].filter(Boolean).join(" ") || u?.apellidos || "";
@@ -113,10 +114,10 @@ export async function loadParteDiario(fecha = todayInLima()) {
  });
  const filas = consolidateDailyRows(candidates.filter(c => !c.coordinator)).sort((a, b) => a.turnoOrden - b.turnoOrden || a.apellidoPaterno.localeCompare(b.apellidoPaterno, "es", { sensitivity: "base" }) || a.docenteNombre.localeCompare(b.docenteNombre, "es") || a.grupoModuloId - b.grupoModuloId || (a.actividadProgramadaId ?? 0) - (b.actividadProgramadaId ?? 0));
  const moduleIds = [...new Set(filas.map(row => row.moduloId))];
- const orderedUnits = moduleIds.length ? (await graph<{competenciaUnidadesDidacticas:{competencia:{moduloId:number};unidadDidactica:{id:number;nombre:string|null}}[]}>(ORDERED_UNITS_QUERY,{ids:moduleIds})).competenciaUnidadesDidacticas : [];
+ const orderedUnits = moduleIds.length ? projectUnidadRelations((await graph<{competenciaUnidadesDidacticas:{competencia:{moduloId:number};competenciaContinuacion?:{planModulo?:{moduloId:number}|null}|null;unidadDidactica:{id:number;nombre:string|null}}[]}>(ORDERED_UNITS_QUERY,{ids:moduleIds})).competenciaUnidadesDidacticas) : [];
  if (orderedUnits.length === 10000) throw new https.HttpsError('resource-exhausted','Demasiadas unidades para el parte diario.');
  const byModule = new Map<number, Map<number, {id:number;nombre:string|null}>>();
- for (const link of orderedUnits) { const list = byModule.get(link.competencia.moduloId) ?? new Map(); list.set(link.unidadDidactica.id,link.unidadDidactica); byModule.set(link.competencia.moduloId,list); }
+ for (const link of orderedUnits) { const list = byModule.get(link.moduloId) ?? new Map(); list.set(link.unidadDidactica.id,link.unidadDidactica); byModule.set(link.moduloId,list); }
  return { fecha, laborable: true, mensaje: null, filas: filas.filter(r => r.tipoUnidad !== 'curricular' || !r.unidadDidacticaId || !visibility.get(r.grupoModuloId) || visibility.get(r.grupoModuloId)!.unidades.has(r.unidadDidacticaId)).map((r, i) => ({ ...r, orden: i + 1, unidadesOrdenadas:[...(byModule.get(r.moduloId)?.values() || [])].filter(u => !visibility.get(r.grupoModuloId) || visibility.get(r.grupoModuloId)!.unidades.has(u.id)) })) };
 }
 export async function parteChoices(moduloId: number, grupoModuloId?: number) {

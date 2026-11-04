@@ -408,6 +408,30 @@ extend type Query {
     first: Competencia_FirstRow
   ): Competencia @fdc_generated(from: "Competencia", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `CompetenciaContinuacion` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  competenciaContinuacion(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CompetenciaContinuacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CompetenciaContinuacion_FirstRow
+  ): CompetenciaContinuacion @fdc_generated(from: "CompetenciaContinuacion", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `CompetenciaUnidadDidactica` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   competenciaUnidadDidactica(
@@ -2443,6 +2467,40 @@ extend type Query {
     """
     having: Competencia_Having
   ): [Competencia!]! @fdc_generated(from: "Competencia", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `CompetenciaContinuacion` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  competenciaContinuaciones(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: CompetenciaContinuacion_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [CompetenciaContinuacion_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: CompetenciaContinuacion_Having
+  ): [CompetenciaContinuacion!]! @fdc_generated(from: "CompetenciaContinuacion", purpose: QUERY_MULTIPLE)
   """
   ✨ List `CompetenciaUnidadDidactica` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

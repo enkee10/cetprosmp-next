@@ -2,7 +2,7 @@ import { https } from "firebase-functions/v1";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { requirePermission } from "../core/permissions.js";
 import { toNumberOrNull, getIdFromKeyOutput } from "../core/userMappers.js";
-import { expectedCompetenciaType, isProgramaEstudio, orderedUnidadRelations, TipoCompetencia } from "./model.js";
+import { expectedCompetenciaType, isProgramaEstudio, orderedUnidadRelations, projectUnidadRelations, TipoCompetencia } from "./model.js";
 import { CompetenciaRow, CompetenciaUnidadRow, getModuloCompetenciaContext, parseAcademicIds, reconcileModuloUnits } from "./service.js";
 
 const fields = `id nombre tipo moduloId`;
@@ -51,10 +51,13 @@ export const createOrUpdateCompetencia = https.onCall(async (data, context) => {
   const moduleContext = await getModuloCompetenciaContext(moduloId);
   if (!moduleContext.programa && tipo !== "TECNICA") throw new https.HttpsError("invalid-argument", "Opcion ocupacional solo admite competencias tecnicas.");
   const old = id ? await dataConnect.executeGraphql<{
+    competencia: CompetenciaRow | null;
     competenciaUnidadesDidacticas: CompetenciaUnidadRow[];
   }, { id: number }>(`query ExistingCompetenciaUnits($id:Int!) {
+    competencia(id:$id) { id nombre tipo moduloId orden }
     competenciaUnidadesDidacticas(where:{competenciaId:{eq:$id}},limit:10000) {
-      id competenciaId unidadDidacticaId orden competencia { id nombre tipo moduloId }
+      id competenciaId competenciaContinuacionId unidadDidacticaId orden competencia { id nombre tipo moduloId }
+      competenciaContinuacion { planModulo { moduloId } }
     }
   }`, { variables: { id } }) : null;
   const oldRelations = old?.data.competenciaUnidadesDidacticas ?? [];
@@ -64,6 +67,10 @@ export const createOrUpdateCompetencia = https.onCall(async (data, context) => {
       throw new https.HttpsError("invalid-argument", "La unidad seleccionada no corresponde al modulo o al tipo de competencia.");
     }
   }
+  const previous = old?.data.competencia;
+  const orden = previous && previous.moduloId === moduloId && previous.tipo === tipo
+    ? previous.orden
+    : Math.max(0, ...moduleContext.competencias.filter(item => item.id !== id && item.tipo === tipo).map(item => item.orden ?? item.id)) + 1;
   const changes = [
     ...(id ? [`query { competencia(id:$id) @check(expr:"this != null", message:"Competencia no encontrada") { id } }`] : []),
     `saved:competencia_${id ? "update(id:$id," : "insert("}data:$data)`,
@@ -74,10 +81,10 @@ export const createOrUpdateCompetencia = https.onCall(async (data, context) => {
     }),
   ];
   const response = await dataConnect.executeGraphql<{ saved: unknown }, Record<string, unknown>>(
-    `mutation SaveCompetencia(${id ? "$id:Int!," : ""}$data:Competencia_Data! @allow(fields:"nombre tipo moduloId")) @transaction { ${changes.join("\n")} }`,
-    { variables: { ...(id ? { id } : {}), data: { nombre, tipo, moduloId } } },
+    `mutation SaveCompetencia(${id ? "$id:Int!," : ""}$data:Competencia_Data! @allow(fields:"nombre tipo moduloId orden")) @transaction { ${changes.join("\n")} }`,
+    { variables: { ...(id ? { id } : {}), data: { nombre, tipo, moduloId, orden } } },
   );
-  for (const affected of new Set([moduloId, ...oldRelations.map(r => r.competencia.moduloId)])) await reconcileModuloUnits(affected);
+  for (const affected of new Set([moduloId, ...projectUnidadRelations(oldRelations).map(r => r.moduloId)])) await reconcileModuloUnits(affected);
   return { id: getIdFromKeyOutput(response.data.saved) };
 });
 
@@ -118,10 +125,11 @@ export const listCompetenciaFormularioOpciones = https.onCall(async (_data, cont
   }, Record<string, never>>(`query CompetenciaFormOptions {
     modulos(limit:10000) { id titulo horas plan { carrera { tipoCarrera { nombre } } } }
     planModulos(limit:50000) { moduloId plan { carrera { tipoCarrera { nombre } } } }
-    competenciaUnidadesDidacticas(limit:50000) { id orden competenciaId unidadDidacticaId competencia { id nombre tipo moduloId } }
+    competenciaUnidadesDidacticas(limit:50000) { id orden competenciaId competenciaContinuacionId unidadDidacticaId competencia { id nombre tipo moduloId } competenciaContinuacion { planModulo { moduloId } } }
     unidadesDidacticas(limit:50000) { id nombre }
   }`);
-  const { modulos, planModulos, competenciaUnidadesDidacticas, unidadesDidacticas } = response.data;
+  const { modulos, planModulos, unidadesDidacticas } = response.data;
+  const competenciaUnidadesDidacticas = projectUnidadRelations(response.data.competenciaUnidadesDidacticas);
   const tipos: Array<{ valor: string; etiqueta: string; moduloId: number }> = [];
   const unidades: Array<{ id: number; etiqueta: string; moduloId: number; tipo: TipoCompetencia }> = [];
   for (const modulo of modulos) {
@@ -130,7 +138,7 @@ export const listCompetenciaFormularioOpciones = https.onCall(async (_data, cont
     const programa = carreraTypes.length > 0 && carreraTypes.every(isProgramaEstudio);
     tipos.push({ valor: "TECNICA", etiqueta: "Técnica", moduloId: modulo.id });
     if (programa) tipos.push({ valor: "EMPLEABILIDAD", etiqueta: "Para la empleabilidad", moduloId: modulo.id });
-    const orderedIds = orderedUnidadRelations(competenciaUnidadesDidacticas.filter(r => r.competencia.moduloId === modulo.id)).map(r => r.unidadDidacticaId);
+    const orderedIds = orderedUnidadRelations(competenciaUnidadesDidacticas.filter(r => r.moduloId === modulo.id)).map(r => r.unidadDidacticaId);
     for (const id of orderedIds) {
       if (programa && (!modulo.horas || modulo.horas <= 0)) continue;
       unidades.push({ id, etiqueta: unidadesDidacticas.find(u => u.id === id)?.nombre || `Unidad ${id}`, moduloId: modulo.id,

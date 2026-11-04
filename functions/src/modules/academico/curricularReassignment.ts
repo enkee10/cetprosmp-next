@@ -2,6 +2,7 @@ import { https } from "firebase-functions/v1";
 import { dataConnect } from "../core/dataConnectCore.js";
 import { requirePermission } from "../core/permissions.js";
 import { getModuloCompetenciaContext } from "../competencias/service.js";
+import { effectiveModuloId } from "../competencias/model.js";
 
 type Entity = "competencia" | "competenciaUnidadDidactica" | "capacidadTerminal" | "indicadorCapacidad" | "aprendizaje" | "actividad";
 type Row = { id: number; orden?: number | null; moduloId?: number | null; tipo?: string; [key: string]: unknown };
@@ -47,9 +48,10 @@ export async function reassignCurricularItem(data: Record<string, unknown>, grap
   const config = configurations[entity];
   const destinationEntity = targetIndicatorId ? "indicadorCapacidad" : config.parent;
   const destinationSelect = targetIndicatorId ? "id capacidadTerminal { unidadDidacticaId }" : targetSelect[entity];
-  const rows = await graph<{ source: Row | null; target: Row | null }>(`query CurricularMoveContext($id:Int!,$parentId:Int!) {
+  const rows = await graph<{ source: Row | null; target: Row | null; sourceOwner?: { competencia: { moduloId: number }; competenciaContinuacion?: { planModulo?: { moduloId: number } | null } | null } | null }>(`query CurricularMoveContext($id:Int!,$parentId:Int!) {
     source:${entity}(id:$id) { ${config.select} }
     target:${destinationEntity}(id:$parentId) { ${destinationSelect} }
+    ${entity === "competenciaUnidadDidactica" ? "sourceOwner:competenciaUnidadDidactica(id:$id) { competencia { moduloId } competenciaContinuacion { planModulo { moduloId } } }" : ""}
   }`, { id, parentId });
   if (!rows.source || !rows.target) throw new https.HttpsError("not-found", "El componente o su destino ya no existe.");
   const { source, target } = rows;
@@ -58,16 +60,19 @@ export async function reassignCurricularItem(data: Record<string, unknown>, grap
   const sourceUnit = entity === "competenciaUnidadDidactica" ? Number(source.unidadDidacticaId) : unitAt(source);
   if (entity === "competencia") { sourceModuleId = Number(source.moduloId); targetModuleId = parentId; }
   else if (entity === "competenciaUnidadDidactica") {
-    sourceModuleId = Number((source.competencia as Row).moduloId); targetModuleId = Number(target.moduloId);
+    if (!rows.sourceOwner) throw new https.HttpsError("failed-precondition", "La unidad no tiene un modulo curricular efectivo.");
+    sourceModuleId = effectiveModuloId(rows.sourceOwner); targetModuleId = Number(target.moduloId);
     if ((source.competencia as Row).tipo !== target.tipo) throw new https.HttpsError("failed-precondition", "La unidad debe conservar su tipo de competencia: Tecnica o Empleabilidad.");
   } else {
     const targetUnit = entity === "capacidadTerminal" ? parentId : unitAt(target);
     if (!sourceUnit || !targetUnit) throw new https.HttpsError("failed-precondition", "El componente necesita una unidad didactica definida.");
-    const owners = await graph<{ owners: Array<{ unidadDidacticaId: number; competencia: { moduloId: number } }> }>(`query CurricularMoveOwners($ids:[Int!]!) {
-      owners:competenciaUnidadesDidacticas(where:{unidadDidacticaId:{in:$ids}},limit:3) { unidadDidacticaId competencia { moduloId } }
+    const owners = await graph<{ owners: Array<{ unidadDidacticaId: number; competencia: { moduloId: number }; competenciaContinuacion?: { planModulo?: { moduloId: number } | null } | null }> }>(`query CurricularMoveOwners($ids:[Int!]!) {
+      owners:competenciaUnidadesDidacticas(where:{unidadDidacticaId:{in:$ids}},limit:3) { unidadDidacticaId competencia { moduloId } competenciaContinuacion { planModulo { moduloId } } }
     }`, { ids: [...new Set([sourceUnit, targetUnit])] });
-    sourceModuleId = Number(owners.owners.find(row => row.unidadDidacticaId === sourceUnit)?.competencia.moduloId);
-    targetModuleId = Number(owners.owners.find(row => row.unidadDidacticaId === targetUnit)?.competencia.moduloId);
+    const sourceOwner = owners.owners.find(row => row.unidadDidacticaId === sourceUnit);
+    const targetOwner = owners.owners.find(row => row.unidadDidacticaId === targetUnit);
+    sourceModuleId = sourceOwner ? effectiveModuloId(sourceOwner) : 0;
+    targetModuleId = targetOwner ? effectiveModuloId(targetOwner) : 0;
     if (!sourceModuleId || !targetModuleId) throw new https.HttpsError("failed-precondition", "La unidad de origen o destino no pertenece a un modulo curricular.");
   }
   const context = await moduleContext(targetModuleId);
@@ -157,7 +162,7 @@ export async function reassignCurricularItem(data: Record<string, unknown>, grap
     const expectations = [...new Map([[sourceUnit!, sourceModuleId], [targetUnit, targetModuleId]]).entries()];
     definitions.push("$ownerUnitIds:[Int!]!"); variables.ownerUnitIds = expectations.map(([unit]) => unit);
     checks.push(`owners:competenciaUnidadesDidacticas(where:{unidadDidacticaId:{in:$ownerUnitIds}},limit:3)
-      @check(expr:"this.size() == ${expectations.length} && ${expectations.map(([unit, module]) => `this.exists(o, o.unidadDidacticaId == ${unit} && o.competencia.moduloId == ${module})`).join(" && ")}",message:"La unidad cambio de modulo.") { unidadDidacticaId competencia { moduloId } }`);
+      @check(expr:"this.size() == ${expectations.length} && ${expectations.map(([unit, module]) => `this.exists(o, o.unidadDidacticaId == ${unit} && (o.competenciaContinuacion == null ? o.competencia.moduloId : o.competenciaContinuacion.planModulo.moduloId) == ${module})`).join(" && ")}",message:"La unidad cambio de modulo.") { unidadDidacticaId competencia { moduloId } competenciaContinuacion { planModulo { moduloId } } }`);
   }
   if (changesModule) {
     if (entity === "competencia") { definitions.push("$unitIds:[Int!]!"); variables.unitIds = unitIds; }
@@ -167,7 +172,9 @@ export async function reassignCurricularItem(data: Record<string, unknown>, grap
   }
   const fields = targetIndicatorId && !targetLearning
     ? ['createdLearning:aprendizaje_insert(data:{descripcion:"Aprendizaje",indicadorCapacidadId:$parentId,orden:1})'] : [];
-  const parentAssignment = !targetIndicatorId ? `${config.fk}:$parentId`
+  const parentAssignment = !targetIndicatorId ? entity === "competenciaUnidadDidactica"
+    ? `${config.fk}:$parentId,competenciaContinuacionId:null`
+    : `${config.fk}:$parentId`
     : targetLearning ? `${config.fk}:$destinationLearningId` : `${config.fk}_expr:"response.createdLearning.id"`;
   fields.push(`saved:${entity}_update(id:$id,data:{${parentAssignment},orden:${orden}${entity === "actividad" ? `,moduloId:${targetModuleId}` : ""}}) @check(expr:"this != null",message:"El componente ya no existe.")`);
   if (orders) for (const row of orders) if (row.id !== id) fields.push(`order${row.id}:actividad_update(id_expr:"response.saved != null ? ${row.id} : 0",data:{orden:${row.orden}}) @check(expr:"this != null",message:"Una sesion cambio.")`);

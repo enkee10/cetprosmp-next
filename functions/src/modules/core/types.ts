@@ -812,6 +812,8 @@ export interface DataConnectUnidadDidacticaInput {
 export interface DataConnectCompetenciaUnidadDidactica {
   competenciaId: number;
   competencia: { id: number; nombre: string; tipo: "TECNICA" | "EMPLEABILIDAD"; moduloId: number };
+  competenciaContinuacionId?: number | null;
+  competenciaContinuacion?: DataConnectCompetenciaContinuacion | null;
   id: number;
   orden?: number | null;
   unidadDidacticaId: number;
@@ -823,6 +825,15 @@ export interface DataConnectCompetenciaUnidadDidacticaInput {
   orden?: number | null;
   unidadDidacticaId: number;
   competenciaId: number;
+  competenciaContinuacionId?: number | null;
+}
+
+export interface DataConnectCompetenciaContinuacion {
+  id: number;
+  competenciaId: number;
+  planModuloId: number;
+  competencia: { id: number; nombre: string; tipo: "TECNICA" | "EMPLEABILIDAD"; moduloId: number; orden?: number | null };
+  planModulo: { id: number; planId: number; moduloId: number; orden?: number | null };
 }
 
 export interface DataConnectCapacidadTerminal {

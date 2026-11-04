@@ -153,6 +153,15 @@ extend type Mutation {
     data: Competencia_Data!
   ): Competencia_KeyOutput! @fdc_generated(from: "Competencia", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `CompetenciaContinuacion` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  competenciaContinuacion_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: CompetenciaContinuacion_Data!
+  ): CompetenciaContinuacion_KeyOutput! @fdc_generated(from: "CompetenciaContinuacion", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `CompetenciaUnidadDidactica` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   competenciaUnidadDidactica_insert(
@@ -863,6 +872,15 @@ extend type Mutation {
     """
     data: [Competencia_Data!]!
   ): [Competencia_KeyOutput!]! @fdc_generated(from: "Competencia", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `CompetenciaContinuacion` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  competenciaContinuacion_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [CompetenciaContinuacion_Data!]!
+  ): [CompetenciaContinuacion_KeyOutput!]! @fdc_generated(from: "CompetenciaContinuacion", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `CompetenciaUnidadDidactica` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -1575,6 +1593,15 @@ extend type Mutation {
     data: Competencia_Data!
   ): Competencia_KeyOutput! @fdc_generated(from: "Competencia", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `CompetenciaContinuacion` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CompetenciaContinuacion`.
+  """
+  competenciaContinuacion_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: CompetenciaContinuacion_Data!
+  ): CompetenciaContinuacion_KeyOutput! @fdc_generated(from: "CompetenciaContinuacion", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `CompetenciaUnidadDidactica` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CompetenciaUnidadDidactica`.
   """
   competenciaUnidadDidactica_upsert(
@@ -2285,6 +2312,15 @@ extend type Mutation {
     """
     data: [Competencia_Data!]!
   ): [Competencia_KeyOutput!]! @fdc_generated(from: "Competencia", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `CompetenciaContinuacion` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CompetenciaContinuacion`.
+  """
+  competenciaContinuacion_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [CompetenciaContinuacion_Data!]!
+  ): [CompetenciaContinuacion_KeyOutput!]! @fdc_generated(from: "CompetenciaContinuacion", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `CompetenciaUnidadDidactica` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `CompetenciaUnidadDidactica`.
   """
@@ -3336,6 +3372,35 @@ extend type Mutation {
     """
     data: Competencia_Data!
   ): Competencia_KeyOutput @fdc_generated(from: "Competencia", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `CompetenciaContinuacion` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `CompetenciaContinuacion` or `null` if not found.
+  """
+  competenciaContinuacion_update(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CompetenciaContinuacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CompetenciaContinuacion_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: CompetenciaContinuacion_Data!
+  ): CompetenciaContinuacion_KeyOutput @fdc_generated(from: "CompetenciaContinuacion", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `CompetenciaUnidadDidactica` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `CompetenciaUnidadDidactica` or `null` if not found.
   """
@@ -5428,6 +5493,25 @@ extend type Mutation {
     data: Competencia_Data!
   ): Int! @fdc_generated(from: "Competencia", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `CompetenciaContinuacion` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  competenciaContinuacion_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: CompetenciaContinuacion_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: CompetenciaContinuacion_Data!
+  ): Int! @fdc_generated(from: "CompetenciaContinuacion", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `CompetenciaUnidadDidactica` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   competenciaUnidadDidactica_updateMany(
@@ -7013,6 +7097,30 @@ extend type Mutation {
     """
     first: Competencia_FirstRow
   ): Competencia_KeyOutput @fdc_generated(from: "Competencia", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `CompetenciaContinuacion` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  competenciaContinuacion_delete(
+    """
+    The unique ID of the object.
+    """
+    id: Int
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: Int_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: CompetenciaContinuacion_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: CompetenciaContinuacion_FirstRow
+  ): CompetenciaContinuacion_KeyOutput @fdc_generated(from: "CompetenciaContinuacion", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `CompetenciaUnidadDidactica` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -8709,6 +8817,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Competencia", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `CompetenciaContinuacion` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  competenciaContinuacion_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: CompetenciaContinuacion_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "CompetenciaContinuacion", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `CompetenciaUnidadDidactica` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

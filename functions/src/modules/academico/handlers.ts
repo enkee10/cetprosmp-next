@@ -20,7 +20,7 @@ import { dataConnect } from "../core/dataConnectCore.js";
 import { academicPeriodData, listCurricularSemesters } from "../planes/periodSelection.js";
 import { modulesForPlans, usedSemesterPlanIds } from "./semesterPlans.js";
 import { attachUnidadToModulo, syncUnidadCompetencias, parseAcademicIds, validateUnidadCompetencias, reconcileModuloUnits, reconcileRelationModules } from "../competencias/service.js";
-import { projectUnidadRelations } from "../competencias/model.js";
+import { effectiveModuloId, projectUnidadRelations } from "../competencias/model.js";
 import { getRequesterRoleId, requireAuthenticated, requirePermission } from "../core/permissions.js";
 import {
   getConfiguredSemestreConsultaIds,
@@ -47,6 +47,7 @@ import {
   DataConnectUnidadDidacticaInput,
   DataConnectCompetenciaUnidadDidactica,
   DataConnectCompetenciaUnidadDidacticaInput,
+  DataConnectCompetenciaContinuacion,
 } from "../core/types.js";
 import {
   DELETE_ACTIVIDAD_MUTATION,
@@ -293,6 +294,11 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
         }
       }
     }
+    competenciaContinuaciones(limit: 50000) {
+      id competenciaId planModuloId
+      competencia { id nombre tipo moduloId orden }
+      planModulo { id planId moduloId orden }
+    }
     competenciaUnidadesDidacticas(limit: 50000, orderBy: [{ orden: ASC }, { unidadDidacticaId: ASC }]) {
       id
       orden
@@ -301,6 +307,8 @@ const LIST_ESTRUCTURA_ACADEMICA_QUERY = `
 
       competenciaId
       competencia { id nombre tipo moduloId }
+      competenciaContinuacionId
+      competenciaContinuacion { id planModulo { id planId moduloId orden } }
 }
     unidadesDidacticas(limit: 50000, orderBy: [{ id: ASC }]) {
       id
@@ -426,6 +434,11 @@ const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
         }
       }
     }
+    competenciaContinuaciones(limit: 50000) {
+      id competenciaId planModuloId
+      competencia { id nombre tipo moduloId orden }
+      planModulo { id planId moduloId orden }
+    }
     competenciaUnidadesDidacticas(limit: 50000, orderBy: [{ orden: ASC }, { unidadDidacticaId: ASC }]) {
       id
       orden
@@ -434,6 +447,8 @@ const LIST_ESTRUCTURA_ACADEMICA_DOCENTE_QUERY = `
 
       competenciaId
       competencia { id nombre tipo moduloId }
+      competenciaContinuacionId
+      competenciaContinuacion { id planModulo { id planId moduloId orden } }
 }
     unidadesDidacticas(limit: 50000, orderBy: [{ id: ASC }]) {
       id
@@ -526,15 +541,18 @@ const DETACH_ESTRUCTURA_MODULO_MUTATION = `
 
 const LIST_UNIDAD_RELATIONS_BY_MODULO_QUERY = `
   query ListUnidadRelationsByModulo($moduloId: Int!) {
-    competenciaUnidadesDidacticas(where: { competencia: { moduloId: { eq: $moduloId } } }, limit: 1000) {
+    competenciaUnidadesDidacticas(where: { _or: [
+      { competencia: { moduloId: { eq: $moduloId } }, competenciaContinuacionId: { isNull: true } },
+      { competenciaContinuacion: { planModulo: { moduloId: { eq: $moduloId } } } }
+    ] }, limit: 1000) {
       id
       orden
-
       unidadDidacticaId
-
       competenciaId
+      competenciaContinuacionId
       competencia { id nombre tipo moduloId }
-}
+      competenciaContinuacion { planModulo { moduloId } }
+    }
   }
 `;
 
@@ -556,6 +574,7 @@ interface EstructuraAcademicaQueryResponse {
   planes?: DataConnectPlan[];
   modulos: EstructuraModulo[];
   planModulos: DataConnectPlanModulo[];
+  competenciaContinuaciones: DataConnectCompetenciaContinuacion[];
   competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
   unidadesDidacticas: DataConnectUnidadDidactica[];
   capacidadesTerminales: DataConnectCapacidadTerminal[];
@@ -777,12 +796,15 @@ function buildUnidadesForModulo(
     .map((relation) => {
       const unidad = unidadesById.get(relation.unidadDidacticaId);
       if (!unidad) return null;
+      const displayedCompetencia = { ...relation.competencia, moduloId };
 
       return {
         id: unidad.id,
         relacionId: relation.id,
         competenciaId: relation.competenciaId,
-        competencia: relation.competencia,
+        competenciaContinuacionId: relation.competenciaContinuacionId ?? null,
+        competenciaContinuacionPlanId: relation.competenciaContinuacion?.planModulo.planId ?? null,
+        competencia: displayedCompetencia,
         orden: relation.orden ?? null,
         nombre: unidad.nombre ?? null,
         duracion: unidad.duracion ?? null,
@@ -793,7 +815,7 @@ function buildUnidadesForModulo(
           capacidadesByUnidadId,
           indicadoresByCapacidadId,
           moduloId,
-          relation.competencia,
+          displayedCompetencia,
         ),
       }
     })
@@ -996,6 +1018,7 @@ interface EstructuraModulo extends DataConnectModulo {}
 export function buildEstructuraAcademica(response: EstructuraAcademicaQueryResponse) {
   const unidadesById = new Map((response.unidadesDidacticas ?? []).map((unidad) => [unidad.id, unidad]));
   const planRelationsByModuloId = groupByNumber(response.planModulos ?? [], (relation) => relation.moduloId);
+  const continuationsByModuloId = groupByNumber(response.competenciaContinuaciones ?? [], (relation) => relation.planModulo.moduloId);
   const relationsByModuloId = groupByNumber(projectUnidadRelations(response.competenciaUnidadesDidacticas ?? []), (relation) => relation.moduloId);
   const capacidadesByUnidadId = groupByNumber(
     response.capacidadesTerminales ?? [],
@@ -1010,13 +1033,16 @@ export function buildEstructuraAcademica(response: EstructuraAcademicaQueryRespo
     modulo.planId != null || (planRelationsByModuloId.get(modulo.id) ?? []).length > 0,
   ).map((modulo) => {
     const moduloWithPlan = attachPlanRelationsToModulo(modulo, planRelationsByModuloId);
+    const continuaciones = (continuationsByModuloId.get(modulo.id) ?? [])
+      .map(item => ({ ...item.competencia, esContinuacion: true, continuacionId: item.id, continuacionPlanId: item.planModulo.planId, moduloOrigenId: item.competencia.moduloId }));
+    const originales = (moduloWithPlan.competencias ?? []).map(item => ({ ...item, esContinuacion: false, continuacionId: null, moduloOrigenId: item.moduloId }));
     return {
       id: moduloWithPlan.id,
       titulo: moduloWithPlan.titulo ?? null,
       tituloComercial: moduloWithPlan.tituloComercial ?? null,
       orden: moduloWithPlan.orden ?? null,
       descripcion: moduloWithPlan.descripcion ?? null,
-      competencias: moduloWithPlan.competencias ?? [],
+      competencias: [...continuaciones, ...originales],
       horas: moduloWithPlan.horas ?? null,
       creditos: moduloWithPlan.creditos ?? null,
       metas: moduloWithPlan.metas ?? null,
@@ -1089,6 +1115,7 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
       planes: DataConnectPlan[];
       grupoModulos: EstructuraAcademicaDocenteGrupoModulo[];
       planModulos: DataConnectPlanModulo[];
+      competenciaContinuaciones: DataConnectCompetenciaContinuacion[];
       competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
       unidadesDidacticas: DataConnectUnidadDidactica[];
       capacidadesTerminales: DataConnectCapacidadTerminal[];
@@ -1142,6 +1169,7 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
     const estructuraResponse: EstructuraAcademicaQueryResponse = {
       modulos: Array.from(moduloById.values()),
       planModulos: (response.data.planModulos ?? []).filter((relation) => moduloIds.has(relation.moduloId)),
+      competenciaContinuaciones: (response.data.competenciaContinuaciones ?? []).filter((relation) => moduloIds.has(relation.planModulo.moduloId)),
       competenciaUnidadesDidacticas: projectUnidadRelations(response.data.competenciaUnidadesDidacticas ?? [])
         .filter((relation) => moduloIds.has(relation.moduloId)),
       unidadesDidacticas: response.data.unidadesDidacticas ?? [],
@@ -1376,6 +1404,80 @@ export const createEstructuraAcademicaItem = https.onCall(async (data, context) 
   }
 });
 
+export const continueEstructuraAcademicaCompetencia = https.onCall(async (data, context) => {
+  await requirePermission(context, "estructura-academica", "create");
+  const planModuloId = toNumber(data?.planModuloId, -1);
+  const competenciaId = toNumber(data?.competenciaId, -1);
+  if (planModuloId <= 0 || competenciaId <= 0) {
+    throw new https.HttpsError("invalid-argument", "El modulo y la competencia son obligatorios.");
+  }
+
+  const current = await dataConnect.executeGraphql<{
+    target: DataConnectPlanModulo | null;
+    competencia: { id: number; moduloId: number } | null;
+    planModulos: DataConnectPlanModulo[];
+    continuaciones: DataConnectCompetenciaContinuacion[];
+  }, { planModuloId: number; competenciaId: number }>(`query CurricularContinuationContext($planModuloId:Int!,$competenciaId:Int!) {
+    target:planModulo(id:$planModuloId) { id planId moduloId orden }
+    competencia(id:$competenciaId) { id moduloId }
+    planModulos(limit:10000) { id planId moduloId orden }
+    continuaciones:competenciaContinuaciones(limit:50000) {
+      id competenciaId planModuloId
+      competencia { id nombre tipo moduloId orden }
+      planModulo { id planId moduloId orden }
+    }
+  }`, { variables: { planModuloId, competenciaId } });
+  const target = current.data.target;
+  const competencia = current.data.competencia;
+  if (!target || !competencia) throw new https.HttpsError("not-found", "El modulo o la competencia ya no existe.");
+  const siblings = current.data.planModulos.filter(item => item.planId === target.planId)
+    .sort((a, b) => (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id);
+  const targetIndex = siblings.findIndex(item => item.id === target.id);
+  const previous = targetIndex > 0 ? siblings[targetIndex - 1] : null;
+  if (!previous) throw new https.HttpsError("failed-precondition", "El primer modulo no admite continuaciones.");
+  const existsInPrevious = competencia.moduloId === previous.moduloId || current.data.continuaciones.some(item =>
+    item.competenciaId === competenciaId && item.planModuloId === previous.id,
+  );
+  if (!existsInPrevious) throw new https.HttpsError("failed-precondition", "Solo se puede continuar una competencia del modulo inmediatamente anterior.");
+  if (competencia.moduloId === target.moduloId || current.data.continuaciones.some(item =>
+    item.competenciaId === competenciaId && item.planModuloId === target.id,
+  )) throw new https.HttpsError("already-exists", "La competencia ya se encuentra en este modulo.");
+
+  const inserted = await dataConnect.executeGraphql<{ competenciaContinuacion_insert: unknown }, { data: { competenciaId: number; planModuloId: number } }>(
+    `mutation ContinueCurricularCompetencia($data:CompetenciaContinuacion_Data! @allow(fields:"competenciaId planModuloId")) {
+      competenciaContinuacion_insert(data:$data)
+    }`,
+    { variables: { data: { competenciaId, planModuloId } } },
+  );
+  return { id: getIdFromKeyOutput(inserted.data.competenciaContinuacion_insert), competenciaId, planModuloId };
+});
+
+export const deleteEstructuraAcademicaCompetenciaContinuacion = https.onCall(async (data, context) => {
+  await requirePermission(context, "estructura-academica", "delete");
+  const id = toNumber(data?.continuacionId, -1);
+  if (id <= 0) throw new https.HttpsError("invalid-argument", "La continuacion es obligatoria.");
+  const current = await dataConnect.executeGraphql<{
+    competenciaContinuacion: DataConnectCompetenciaContinuacion | null;
+    unidades: Array<{ unidadDidacticaId: number }>;
+  }, { id: number }>(`query CurricularContinuationToDelete($id:Int!) {
+    competenciaContinuacion(id:$id) {
+      id competenciaId planModuloId
+      competencia { id nombre tipo moduloId orden }
+      planModulo { id planId moduloId orden }
+    }
+    unidades:competenciaUnidadesDidacticas(where:{competenciaContinuacionId:{eq:$id}},limit:10000) { unidadDidacticaId }
+  }`, { variables: { id } });
+  const continuation = current.data.competenciaContinuacion;
+  if (!continuation) throw new https.HttpsError("not-found", "La continuacion ya no existe.");
+  const unitIds = [...new Set(current.data.unidades.map(item => item.unidadDidacticaId))];
+  const deletes = unitIds.map((unitId, index) => `u${index}:unidadDidactica_delete(id:${unitId})`).join("\n");
+  await dataConnect.executeGraphql(`mutation DeleteCurricularContinuation @transaction {
+    ${deletes}
+    continuation:competenciaContinuacion_delete(id:${id}) @check(expr:"this != null",message:"La continuacion ya no existe.")
+  }`);
+  return { id, competenciaId: continuation.competenciaId, planModuloId: continuation.planModuloId, deletedUnits: unitIds.length };
+});
+
 export const detachEstructuraAcademicaItem = https.onCall(async (data, context) => {
   await requirePermission(context, "estructura-academica", "delete");
 
@@ -1421,14 +1523,14 @@ export const detachEstructuraAcademicaItem = https.onCall(async (data, context) 
     if (entity === "unidadDidactica") {
       const relacionId = toNumber(data?.relacionId, -1);
       if (relacionId <= 0) throw new https.HttpsError("invalid-argument", "relacionId is required.");
-      const previous = await dataConnect.executeGraphql<{ competenciaUnidadDidactica: { competencia: { moduloId: number } } | null }, { id: number }>(
-        `query DetachedUnidadModule($id:Int!) { competenciaUnidadDidactica(id:$id) { competencia { moduloId } } }`, { variables: { id: relacionId } });
+      const previous = await dataConnect.executeGraphql<{ competenciaUnidadDidactica: { competencia: { moduloId: number }; competenciaContinuacion?: { planModulo?: { moduloId: number } | null } | null } | null }, { id: number }>(
+        `query DetachedUnidadModule($id:Int!) { competenciaUnidadDidactica(id:$id) { competencia { moduloId } competenciaContinuacion { planModulo { moduloId } } } }`, { variables: { id: relacionId } });
       await dataConnect.executeGraphql<
         { competenciaUnidadDidactica_delete: unknown },
         { id: number }
       >(DELETE_COMPETENCIA_UNIDAD_RELATION_MUTATION, { variables: { id: relacionId } });
       if (previous.data.competenciaUnidadDidactica) {
-        const moduloId = previous.data.competenciaUnidadDidactica.competencia.moduloId;
+        const moduloId = effectiveModuloId(previous.data.competenciaUnidadDidactica);
         await reconcileModuloUnits(moduloId);
         return { id: relacionId, unitAssignments: await readCurricularUnitAssignments(moduloId) };
       }

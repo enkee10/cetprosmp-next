@@ -233,6 +233,16 @@ type Competencia @table(name: "competencias", singular: "competencia", plural: "
   moduloId: Int! @col(name: "modulo_id")
 }
 
+type CompetenciaContinuacion @table(name: "competencia_continuaciones", singular: "competenciaContinuacion", plural: "competenciaContinuaciones") @unique(fields: ["competencia", "planModulo"]) @index(fields: ["competenciaId"]) @index(fields: ["planModuloId"]) {
+  id: Int! @col(dataType: "serial")
+
+  competencia: Competencia! @ref(fields: "competenciaId", references: "id")
+  competenciaId: Int! @col(name: "competencia_id")
+
+  planModulo: PlanModulo! @ref(fields: "planModuloId", references: "id")
+  planModuloId: Int! @col(name: "plan_modulo_id")
+}
+
 type UnidadDidactica @table(name: "unidades_didacticas", singular: "unidadDidactica", plural: "unidadesDidacticas") {
   id: Int! @col(dataType: "serial")
   nombre: String
@@ -245,11 +255,13 @@ type UnidadDidactica @table(name: "unidades_didacticas", singular: "unidadDidact
   sigla: String
 }
 
-type CompetenciaUnidadDidactica @table(name: "competencia_unidades_didacticas", singular: "competenciaUnidadDidactica", plural: "competenciaUnidadesDidacticas") @unique(fields: ["competencia", "unidadDidactica"]) @index(fields: ["unidadDidacticaId"]) @index(fields: ["competenciaId"]) {
+type CompetenciaUnidadDidactica @table(name: "competencia_unidades_didacticas", singular: "competenciaUnidadDidactica", plural: "competenciaUnidadesDidacticas") @unique(fields: ["competencia", "unidadDidactica"]) @index(fields: ["unidadDidacticaId"]) @index(fields: ["competenciaId"]) @index(fields: ["competenciaContinuacionId"]) {
   id: Int! @col(dataType: "serial")
   orden: Int
   competencia: Competencia! @ref(fields: "competenciaId", references: "id")
   competenciaId: Int! @col(name: "competencia_id")
+  competenciaContinuacion: CompetenciaContinuacion @ref(fields: "competenciaContinuacionId", references: "id", constraintName: "cud_competencia_continuacion_fk")
+  competenciaContinuacionId: Int @col(name: "competencia_continuacion_id")
   unidadDidactica: UnidadDidactica! @ref(fields: "unidadDidacticaId", references: "id")
   unidadDidacticaId: Int! @col(name: "unidad_didactica_id") @unique(indexName: "competencia_unidades_didacticas_unidad_didactica_id_key")
 }
@@ -327,6 +339,8 @@ type IndicadorContenido @table(name: "indicador_contenidos", singular: "indicado
   texto: String! @col(dataType: "text")
   indicadorCapacidad: IndicadorCapacidad! @ref(fields: "indicadorCapacidadId", references: "id")
   indicadorCapacidadId: Int! @col(name: "indicador_capacidad_id")
+  contenidoPadre: IndicadorContenido @ref(fields: "contenidoPadreId", references: "id")
+  contenidoPadreId: Int @col(name: "contenido_padre_id")
 }
 
 type Material @table(name: "materiales", singular: "material", plural: "materiales") {

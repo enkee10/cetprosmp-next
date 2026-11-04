@@ -25,9 +25,14 @@ export interface CapacidadDetalle extends PeriodNode {
   competencias?: Array<{ id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; moduloId: number }>;
   indicadoresCapacidad: IndicadorDetalle[];
 }
-export interface CompetenciaDetalle extends PeriodNode { id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; orden?: number | null }
+export interface CompetenciaDetalle extends PeriodNode {
+  id: number; nombre: string; tipo: 'TECNICA' | 'EMPLEABILIDAD'; orden?: number | null;
+  esContinuacion?: boolean; continuacionId?: number | null; continuacionPlanId?: number | null; moduloOrigenId?: number | null;
+}
 export interface UnidadDidacticaDetalle extends PeriodNode {
   id: number; relacionId: number; competenciaId: number;
+  competenciaContinuacionId?: number | null;
+  competenciaContinuacionPlanId?: number | null;
   competencia: CompetenciaDetalle & { moduloId: number };
   orden: number | null; nombre: string | null; duracion: number | null; creditos: number | null; sigla: string | null;
   capacidadesTerminales: CapacidadDetalle[];
@@ -64,7 +69,7 @@ export function academicLocations(modules: ModuloDetalle[]) {
   const result = new Map<string, { parentId: number | null; module: ModuloDetalle; text: string; tipo?: CompetenciaDetalle['tipo']; unitId?: number; orden?: number | null; numeroSesion?: number | null }>();
   for (const modulo of modules) {
     result.set(`modulo:${modulo.id}`, { parentId: null, module: modulo, text: modulo.titulo || modulo.tituloComercial || `Módulo ${modulo.id}`, orden: modulo.orden });
-    for (const comp of modulo.competencias) result.set(`competencia:${comp.id}`, { parentId: modulo.id, module: modulo, text: comp.nombre, tipo: comp.tipo, orden: comp.orden });
+    for (const comp of modulo.competencias) if (!comp.esContinuacion) result.set(`competencia:${comp.id}`, { parentId: modulo.id, module: modulo, text: comp.nombre, tipo: comp.tipo, orden: comp.orden });
     for (const unit of modulo.unidadesDidacticas) {
       result.set(`competenciaUnidadDidactica:${unit.relacionId}`, { parentId: unit.competenciaId, module: modulo, text: unit.nombre || '', tipo: unit.competencia.tipo, unitId: unit.id, orden: unit.orden });
       for (const capacity of unit.capacidadesTerminales) {
@@ -99,7 +104,9 @@ export function academicReorderItems(
     const locations = academicLocations(modules);
     const source = locations.get(`${entity}:${sourceId}`), target = locations.get(`${entity}:${targetId}`);
     if (!source || !target || source.parentId !== target.parentId) return [];
+    if (entity === 'competencia' && source.tipo !== target.tipo) return [];
     siblings = [...locations].flatMap(([key, row]) => key.startsWith(`${entity}:`) && row.parentId === source.parentId
+      && (entity !== 'competencia' || row.tipo === source.tipo)
       ? [{ id: Number(key.slice(entity.length + 1)), orden: row.orden, numeroSesion: row.numeroSesion }] : []);
   }
   siblings.sort((a, b) => (a.orden ?? a.numeroSesion ?? a.id) - (b.orden ?? b.numeroSesion ?? b.id) || a.id - b.id);

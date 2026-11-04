@@ -91,6 +91,11 @@ export interface Certificado_Key {
   __typename?: 'Certificado_Key';
 }
 
+export interface CompetenciaContinuacion_Key {
+  id: number;
+  __typename?: 'CompetenciaContinuacion_Key';
+}
+
 export interface CompetenciaUnidadDidactica_Key {
   id: number;
   __typename?: 'CompetenciaUnidadDidactica_Key';

@@ -189,6 +189,8 @@ export {
   listEstructuraAcademicaDocente,
   getEstructuraAcademicaDocenteMenu,
   createEstructuraAcademicaItem,
+  continueEstructuraAcademicaCompetencia,
+  deleteEstructuraAcademicaCompetenciaContinuacion,
   detachEstructuraAcademicaItem,
   updateEstructuraAcademicaCell,
   reorderEstructuraAcademicaItems,

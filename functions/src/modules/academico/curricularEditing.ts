@@ -21,6 +21,7 @@ const positive = (value: unknown, label: string) => {
 const COMPETENCIA_QUERY = `query CurricularCompetencia($id:Int!) {
   competencia(id:$id) { id nombre tipo moduloId orden }
   competenciaUnidadesDidacticas(where:{competenciaId:{eq:$id}},limit:10000) { unidadDidacticaId }
+  competenciaContinuaciones(where:{competenciaId:{eq:$id}},limit:1) { id }
 }`;
 const SESIONES_QUERY = `query CurricularSesiones($indicadorId:Int!) {
   actividads(where:{aprendizaje:{indicadorCapacidadId:{eq:$indicadorId}}},limit:5000) {
@@ -34,7 +35,7 @@ const REORDER_MODULOS_QUERY = `query CurricularModuleOrder($ids:[Int!]!,$planId:
 
 export async function updateCurricularExtraCell(entity: string, id: number, field: string, value: unknown) {
   if (entity === "competencia") {
-    const current = await dataConnect.executeGraphql<{ competencia: Competencia | null; competenciaUnidadesDidacticas: Array<{ unidadDidacticaId: number }> }, { id: number }>(COMPETENCIA_QUERY, { variables: { id } });
+    const current = await dataConnect.executeGraphql<{ competencia: Competencia | null; competenciaUnidadesDidacticas: Array<{ unidadDidacticaId: number }>; competenciaContinuaciones: Array<{ id: number }> }, { id: number }>(COMPETENCIA_QUERY, { variables: { id } });
     if (!current.data.competencia) throw new https.HttpsError("not-found", "La competencia ya no existe.");
     if (field === "tipo") {
       if (value !== "TECNICA" && value !== "EMPLEABILIDAD") throw new https.HttpsError("invalid-argument", "Tipo de competencia invalido.");
@@ -42,6 +43,11 @@ export async function updateCurricularExtraCell(entity: string, id: number, fiel
       if ((!context.programa && value !== "TECNICA") || current.data.competenciaUnidadesDidacticas.some(item =>
         expectedCompetenciaType(context.programa, context.modulo.horas, context.unidadIds, item.unidadDidacticaId) !== value,
       )) throw new https.HttpsError("failed-precondition", "El tipo no corresponde a las unidades de esta competencia.");
+      const destination = context.competencias.filter(item => item.id !== id && item.tipo === value);
+      await dataConnect.executeGraphql(`mutation CurricularEditCompetenciaType($id:Int!,$tipo:TipoCompetencia!,$orden:Int!) {
+        competencia_update(id:$id,data:{tipo:$tipo,orden:$orden})
+      }`, { variables: { id, tipo: value, orden: nextOrder(destination) } });
+      return { id };
     }
     await dataConnect.executeGraphql(`mutation CurricularEditCompetencia($id:Int!,$data:Competencia_Data! @allow(fields:"nombre tipo")) { competencia_update(id:$id,data:$data) }`, { variables: { id, data: { [field]: value } } });
     return { id };
@@ -66,7 +72,7 @@ export async function createCurricularExtra(entity: string, data: Record<string,
     if (tipo !== "TECNICA" && tipo !== "EMPLEABILIDAD") throw new https.HttpsError("invalid-argument", "Tipo invalido.");
     if (!context.programa && tipo === "EMPLEABILIDAD") throw new https.HttpsError("failed-precondition", "Este modulo solo admite competencias tecnicas.");
     const result = await dataConnect.executeGraphql<{ competencia_insert: unknown }, Record<string, unknown>>(`mutation CurricularCreateCompetencia($data:Competencia_Data! @allow(fields:"nombre tipo moduloId orden")) { competencia_insert(data:$data) }`,
-      { variables: { data: { nombre: "Nueva competencia", tipo, moduloId, orden: nextOrder(context.competencias) } } });
+      { variables: { data: { nombre: "Nueva competencia", tipo, moduloId, orden: nextOrder(context.competencias.filter(item => item.tipo === tipo)) } } });
     return readCurricularCreatedItem(entity, getIdFromKeyOutput(result.data.competencia_insert));
   }
   if (entity === "aprendizaje") {
@@ -101,7 +107,8 @@ export async function createCurricularExtra(entity: string, data: Record<string,
 export async function deleteCurricularExtra(entity: string, data: Record<string, unknown>) {
   if (entity === "competencia") {
     const id = positive(data.competenciaId, "Competencia");
-    const current = await dataConnect.executeGraphql<{ competencia: Competencia | null; competenciaUnidadesDidacticas: Array<{ unidadDidacticaId: number }> }, { id: number }>(COMPETENCIA_QUERY, { variables: { id } });
+    const current = await dataConnect.executeGraphql<{ competencia: Competencia | null; competenciaUnidadesDidacticas: Array<{ unidadDidacticaId: number }>; competenciaContinuaciones: Array<{ id: number }> }, { id: number }>(COMPETENCIA_QUERY, { variables: { id } });
+    if (current.data.competenciaContinuaciones.length) throw new https.HttpsError("failed-precondition", "Primero elimina las continuaciones de esta competencia.");
     if (current.data.competenciaUnidadesDidacticas.length) throw new https.HttpsError("failed-precondition", "Primero quita las unidades de esta competencia.");
     await dataConnect.executeGraphql(`mutation CurricularDeleteCompetencia($id:Int!) @transaction {
       query { competenciaUnidadesDidacticas(where:{competenciaId:{eq:$id}},limit:1) @check(expr:"this.size() == 0",message:"La competencia tiene unidades asociadas.") { id } }
@@ -138,6 +145,7 @@ export async function reorderCurricularExtra(entity: string, items: Array<{ id: 
     const current = await dataConnect.executeGraphql<{ competencias: Competencia[] }, { moduloId: number }>(`query CurricularCompetenciaOrder($moduloId:Int!) { competencias(where:{moduloId:{eq:$moduloId}},limit:10000) { id tipo moduloId orden nombre } }`, { variables: { moduloId } });
     const ordered = items.slice().sort((a, b) => a.orden - b.orden).map(item => current.data.competencias.find(row => row.id === item.id));
     if (ordered.some(item => !item)) throw new https.HttpsError("failed-precondition", "La competencia no pertenece a este modulo.");
+    if (new Set(ordered.map(item => item!.tipo)).size !== 1) throw new https.HttpsError("failed-precondition", "Las competencias tecnicas y de empleabilidad se ordenan en bloques separados.");
     for (const item of items) fields.push(`c${item.id}:competencia_update(id:${item.id},data:{orden:${item.orden}})`);
   } else if (entity === "aprendizaje") {
     const indicadorId = positive(data.indicadorCapacidadId, "Indicador");

@@ -110,6 +110,8 @@ export {
   listEstructuraAcademicaDocente,
   getEstructuraAcademicaDocenteMenu,
   createEstructuraAcademicaItem,
+  continueEstructuraAcademicaCompetencia,
+  deleteEstructuraAcademicaCompetenciaContinuacion,
   saveEstructuraAcademicaIndicadorContenido,
   saveEstructuraAcademicaSesionItem,
   listMateriales,

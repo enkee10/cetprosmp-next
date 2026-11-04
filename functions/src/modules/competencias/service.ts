@@ -3,9 +3,11 @@ import { dataConnect } from "../core/dataConnectCore.js";
 import { getIdFromKeyOutput } from "../core/userMappers.js";
 import { expectedCompetenciaType, isProgramaEstudio, orderedUnidadRelations, TipoCompetencia, employabilityCodeForUnidad } from "./model.js";
 
-export interface CompetenciaRow { id: number; nombre: string; tipo: TipoCompetencia; moduloId: number; orden?: number | null }
+export interface CompetenciaRow { id: number; nombre: string; tipo: TipoCompetencia; moduloId: number; orden?: number | null; continuacionId?: number | null }
 export interface CompetenciaUnidadRow {
   id: number; orden?: number | null; competenciaId: number; unidadDidacticaId: number;
+  competenciaContinuacionId?: number | null;
+  competenciaContinuacion?: { id: number; planModulo: { moduloId: number } } | null;
   competencia: CompetenciaRow;
   unidadDidactica?: { id: number; nombre?: string | null };
 }
@@ -22,13 +24,22 @@ export async function getModuloCompetenciaContext(moduloId: number) {
     modulo: { id: number; titulo?: string; horas?: number | null; plan?: { carrera?: { tipoCarrera?: { nombre?: string } } } } | null;
     planModulos: Array<{ plan: { carrera?: { tipoCarrera?: { nombre?: string } } } }>;
     competencias: CompetenciaRow[];
-    competenciaUnidadesDidacticas: CompetenciaUnidadRow[];
+    competenciaContinuaciones: Array<{ id: number; competencia: CompetenciaRow }>;
+    relacionesOrigen: CompetenciaUnidadRow[];
+    relacionesContinuacion: CompetenciaUnidadRow[];
   }, { id: number }>(`query ModuloCompetenciaContext($id:Int!) {
     modulo(id:$id) { id titulo horas plan { carrera { tipoCarrera { nombre } } } }
     planModulos(where:{moduloId:{eq:$id}},limit:10000) { plan { carrera { tipoCarrera { nombre } } } }
     competencias(where:{moduloId:{eq:$id}},limit:10000) { id nombre tipo moduloId orden }
-    competenciaUnidadesDidacticas(where:{competencia:{moduloId:{eq:$id}}},limit:10000) {
-      id orden competenciaId unidadDidacticaId competencia { id nombre tipo moduloId } unidadDidactica { id nombre }
+    competenciaContinuaciones(where:{planModulo:{moduloId:{eq:$id}}},limit:10000) {
+      id competencia { id nombre tipo moduloId orden }
+    }
+    relacionesOrigen:competenciaUnidadesDidacticas(where:{competencia:{moduloId:{eq:$id}},competenciaContinuacionId:{isNull:true}},limit:10000) {
+      id orden competenciaId competenciaContinuacionId unidadDidacticaId competencia { id nombre tipo moduloId } unidadDidactica { id nombre }
+    }
+    relacionesContinuacion:competenciaUnidadesDidacticas(where:{competenciaContinuacion:{planModulo:{moduloId:{eq:$id}}}},limit:10000) {
+      id orden competenciaId competenciaContinuacionId unidadDidacticaId competencia { id nombre tipo moduloId }
+      competenciaContinuacion { id planModulo { moduloId } } unidadDidactica { id nombre }
     }
   }`, { variables: { id: moduloId } });
   const modulo = response.data.modulo;
@@ -39,11 +50,12 @@ export async function getModuloCompetenciaContext(moduloId: number) {
     throw new https.HttpsError("failed-precondition", "El modulo necesita un tipo de carrera definido y consistente.");
   }
   const programa = types.every(isProgramaEstudio);
-  const relations = orderedUnidadRelations(response.data.competenciaUnidadesDidacticas);
+  const continuadas = response.data.competenciaContinuaciones.map(row => ({ ...row.competencia, continuacionId: row.id }));
+  const relations = orderedUnidadRelations([...response.data.relacionesOrigen, ...response.data.relacionesContinuacion]);
   if (relations.length && programa && (!modulo.horas || modulo.horas <= 0)) {
     throw new https.HttpsError("failed-precondition", "Complete las horas del modulo para clasificar sus unidades.");
   }
-  return { modulo, programa, relations, competencias: response.data.competencias,
+  return { modulo, programa, relations, competencias: [...response.data.competencias, ...continuadas],
     unidadIds: relations.map(r => r.unidadDidacticaId) };
 }
 
@@ -82,17 +94,19 @@ export async function validateUnidadCompetencias(unidadId: number, value: unknow
 }
 
 async function chooseCompetencia(context: Awaited<ReturnType<typeof getModuloCompetenciaContext>>, tipo: TipoCompetencia, unidadNombre: string) {
-  const available = context.competencias.filter(c => c.tipo === tipo);
+  const available = context.competencias.filter(c => c.tipo === tipo)
+    .sort((a, b) => (a.orden ?? a.id) - (b.orden ?? b.id) || a.id - b.id);
   const code = tipo === "EMPLEABILIDAD" ? employabilityCodeForUnidad(unidadNombre) : null;
   const preferred = available.find(c => code && new RegExp(`^CE\\s*${code}\\b`, "i").test(c.nombre)) ?? available[0];
   if (preferred) return preferred;
-  const response = await dataConnect.executeGraphql<{ competencia_insert: unknown }, { data: { moduloId: number; nombre: string; tipo: TipoCompetencia } }>(
-    `mutation CreatePendingCompetencia($data:Competencia_Data! @allow(fields:"moduloId nombre tipo")) { competencia_insert(data:$data) }`,
-    { variables: { data: { moduloId: context.modulo.id, nombre: "", tipo } } },
+  const orden = Math.max(0, ...available.map(item => item.orden ?? item.id)) + 1;
+  const response = await dataConnect.executeGraphql<{ competencia_insert: unknown }, { data: { moduloId: number; nombre: string; tipo: TipoCompetencia; orden: number } }>(
+    `mutation CreatePendingCompetencia($data:Competencia_Data! @allow(fields:"moduloId nombre tipo orden")) { competencia_insert(data:$data) }`,
+    { variables: { data: { moduloId: context.modulo.id, nombre: "", tipo, orden } } },
   );
   const id = getIdFromKeyOutput(response.data.competencia_insert);
   if (!id) throw new Error("No se pudo crear la competencia pendiente.");
-  const created = { id, nombre: "", tipo, moduloId: context.modulo.id };
+  const created = { id, nombre: "", tipo, moduloId: context.modulo.id, orden };
   context.competencias.push(created);
   return created;
 }
@@ -101,6 +115,7 @@ export async function reconcileModuloUnits(moduloId: number) {
   const context = await getModuloCompetenciaContext(moduloId);
   const fields: string[] = [];
   for (const relation of context.relations) {
+    if (relation.competenciaContinuacionId) continue;
     const tipo = expectedCompetenciaType(context.programa, context.modulo.horas, context.unidadIds, relation.unidadDidacticaId);
     if (relation.competencia.tipo === tipo) continue;
     const competencia = await chooseCompetencia(context, tipo, relation.unidadDidactica?.nombre ?? "");
@@ -110,11 +125,11 @@ export async function reconcileModuloUnits(moduloId: number) {
 }
 
 export async function reconcileRelationModules(ids: number[]) {
-  const response = await dataConnect.executeGraphql<{ competenciaUnidadesDidacticas: Array<{ competencia: { moduloId: number } }> }, { ids: number[] }>(
-    `query AffectedUnidadModules($ids:[Int!]!) { competenciaUnidadesDidacticas(where:{id:{in:$ids}},limit:10000) { competencia { moduloId } } }`,
+  const response = await dataConnect.executeGraphql<{ competenciaUnidadesDidacticas: Array<{ competencia: { moduloId: number }; competenciaContinuacion?: { planModulo: { moduloId: number } } | null }> }, { ids: number[] }>(
+    `query AffectedUnidadModules($ids:[Int!]!) { competenciaUnidadesDidacticas(where:{id:{in:$ids}},limit:10000) { competencia { moduloId } competenciaContinuacion { planModulo { moduloId } } } }`,
     { variables: { ids } },
   );
-  for (const id of new Set(response.data.competenciaUnidadesDidacticas.map(r => r.competencia.moduloId))) await reconcileModuloUnits(id);
+  for (const id of new Set(response.data.competenciaUnidadesDidacticas.map(r => r.competenciaContinuacion?.planModulo.moduloId ?? r.competencia.moduloId))) await reconcileModuloUnits(id);
 }
 
 export async function attachUnidadToModulo(moduloId: number, unidadId: number, orden: number, selectedId?: number, options: { preserveSelectedCompetencia?: boolean } = {}) {
@@ -132,12 +147,13 @@ export async function attachUnidadToModulo(moduloId: number, unidadId: number, o
     : await chooseCompetencia(context, tipo, unidad.data.unidadDidactica.nombre ?? "");
   if (!competencia) throw new https.HttpsError("invalid-argument", "Seleccione una competencia compatible del modulo.");
   if (!context.programa && competencia.tipo !== "TECNICA") throw new https.HttpsError("invalid-argument", "El modulo solo admite competencias tecnicas.");
+  const continuacionId = "continuacionId" in competencia ? competencia.continuacionId : undefined;
   const fields = [`query {
     competenciaUnidadesDidacticas(where:{unidadDidacticaId:{eq:${unidadId}}},limit:1)
       @check(expr:"this.size() == 0", message:"La unidad ya pertenece a un modulo.") { id }
     grupoModuloUnidadesDidacticas(where:{unidadDidacticaId:{eq:${unidadId}},grupoModulo:{moduloId:{ne:${moduloId}}}},limit:1)
       @check(expr:"this.size() == 0", message:"La unidad ya pertenece a otro modulo.") { id }
-  }`, `saved:competenciaUnidadDidactica_insert(data:{competenciaId:${competencia.id},unidadDidacticaId:${unidadId},orden:${orden}})`];
+  }`, `saved:competenciaUnidadDidactica_insert(data:{competenciaId:${competencia.id},${continuacionId ? `competenciaContinuacionId:${continuacionId},` : ""}unidadDidacticaId:${unidadId},orden:${orden}})`];
   for (const relation of context.relations) {
     if (preserve) continue;
     const target = expectedCompetenciaType(context.programa, context.modulo.horas, orderedIds, relation.unidadDidacticaId);

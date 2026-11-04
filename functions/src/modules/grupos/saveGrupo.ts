@@ -41,7 +41,10 @@ export async function saveGrupoWithModulos(
     } & NonNullable<GrupoModuloNombreContext>, {moduloIds:number[]; personalId:number|null; turnoId:number|null; horarioId:number|null; semestreId:number|null}>(`
       query GrupoModuleCatalog($moduloIds:[Int!]!, $personalId:Int, $turnoId:Int, $horarioId:Int, $semestreId:Int) {
         modulos(where:{id:{in:$moduloIds}},limit:6){id titulo tituloComercial}
-        competenciaUnidadesDidacticas(where:{competencia:{moduloId:{in:$moduloIds}}},limit:500){id orden unidadDidacticaId competenciaId competencia{id nombre tipo moduloId} unidadDidactica{id nombre duracion creditos sigla}}
+        competenciaUnidadesDidacticas(where:{_or:[
+          {competencia:{moduloId:{in:$moduloIds}},competenciaContinuacionId:{isNull:true}},
+          {competenciaContinuacion:{planModulo:{moduloId:{in:$moduloIds}}}}
+        ]},limit:500){id orden unidadDidacticaId competenciaId competenciaContinuacionId competencia{id nombre tipo moduloId} competenciaContinuacion{planModulo{moduloId}} unidadDidactica{id nombre duracion creditos sigla}}
         personal(id:$personalId){displayName user{username apellidoPaterno}}
         turno(id:$turnoId){nombre}
         horario(id:$horarioId){nombre}

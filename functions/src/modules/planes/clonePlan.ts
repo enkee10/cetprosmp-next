@@ -53,10 +53,18 @@ export async function createPlanWithPreviousCurriculum(input: DataConnectPlanInp
   };
   if (graph) {
     addRows("m", "modulo", graph.modulos, MODULE_FIELDS, () => ({ planId_expr: "response.created.id", carreraId: input.carreraId ?? previous.carreraId }));
-    graph.modulos.forEach((row, index) => statements.push(`pm${index}:planModulo_insert(data:{planId_expr:"response.created.id",moduloId_expr:${JSON.stringify(expr("m", row.id))},orden:${graph.planModulos.find(item => item.moduloId === row.id)?.orden ?? row.orden ?? index + 1}})`));
+    const planModuleAliases = new Map<number, string>();
+    aliases.set("pm", planModuleAliases);
+    graph.modulos.forEach((row, index) => {
+      const sourceRelation = graph.planModulos.find(item => item.moduloId === row.id);
+      const alias = `pm${index}`;
+      statements.push(`${alias}:planModulo_insert(data:{planId_expr:"response.created.id",moduloId_expr:${JSON.stringify(expr("m", row.id))},orden:${sourceRelation?.orden ?? row.orden ?? index + 1}})`);
+      if (sourceRelation) planModuleAliases.set(sourceRelation.id, alias);
+    });
     addRows("c", "competencia", graph.competencias, "nombre tipo orden", row => ({ moduloId_expr: expr("m", row.moduloId) }));
+    addRows("cc", "competenciaContinuacion", graph.continuaciones, "", row => ({ competenciaId_expr: expr("c", row.competenciaId), planModuloId_expr: expr("pm", row.planModuloId) }));
     addRows("u", "unidadDidactica", graph.unidades, UNIT_FIELDS, () => ({}));
-    addRows("r", "competenciaUnidadDidactica", graph.relaciones, "orden", row => ({ competenciaId_expr: expr("c", row.competenciaId), unidadDidacticaId_expr: expr("u", row.unidadDidacticaId) }));
+    addRows("r", "competenciaUnidadDidactica", graph.relaciones, "orden", row => ({ competenciaId_expr: expr("c", row.competenciaId), ...(row.competenciaContinuacionId == null ? {} : { competenciaContinuacionId_expr: expr("cc", row.competenciaContinuacionId) }), unidadDidacticaId_expr: expr("u", row.unidadDidacticaId) }));
     addRows("cap", "capacidadTerminal", graph.capacidades, "descripcion sigla orden", row => ({ unidadDidacticaId_expr: expr("u", row.unidadDidacticaId) }));
     addRows("i", "indicadorCapacidad", graph.indicadores, "descripcion sigla orden", row => ({ capacidadTerminalId_expr: expr("cap", row.capacidadTerminalId) }));
     addRows("ct", "indicadorContenido", graph.contenidos, "texto orden", row => ({ indicadorCapacidadId_expr: expr("i", row.indicadorCapacidadId) }));

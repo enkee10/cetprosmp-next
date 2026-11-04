@@ -1255,6 +1255,7 @@ const GET_MATRICULA_QUERY = `
     competenciaUnidadesDidacticas(limit: 50000) {
       orden
       competencia { moduloId }
+      competenciaContinuacion { planModulo { moduloId } }
       unidadDidacticaId
     }
     unidadesDidacticas(limit: 50000) {
@@ -2671,7 +2672,7 @@ async function getMatriculaById(matriculaId: number): Promise<MatriculaRow | nul
     grupoModulos?: MatriculaFichaGrupoModulo[];
     modulos?: MatriculaFichaModulo[];
     grupoModuloUnidadesDidacticas?: Array<{ orden?: number | null; grupoModuloId?: number | null; unidadDidacticaId: number }>;
-    competenciaUnidadesDidacticas?: Array<{ orden?: number | null; competencia: { moduloId: number }; unidadDidacticaId: number }>;
+    competenciaUnidadesDidacticas?: Array<{ orden?: number | null; competencia: { moduloId: number }; competenciaContinuacion?: { planModulo?: { moduloId: number } | null } | null; unidadDidacticaId: number }>;
     unidadesDidacticas?: MatriculaFichaUnidadDidactica[];
     planModulos?: MatriculaFichaPlanModulo[];
     matriculaCambiosModulo?: MatriculaCambioModuloRow[];

@@ -90,6 +90,7 @@ type DatosGenerales = {
 
 type Indicador = {
   id: number;
+  codigo?: string | null;
   descripcion?: string | null;
   sigla?: string | null;
   capacidadTerminalId?: number | null;
@@ -97,6 +98,8 @@ type Indicador = {
 
 type Capacidad = {
   id: number;
+  codigo?: string | null;
+  competenciaCodigo?: string | null;
   descripcion?: string | null;
   sigla?: string | null;
   unidadDidacticaId?: number | null;
@@ -390,6 +393,12 @@ const buildIndicatorColumns = (estructura: Unidad[]) => {
   }
   return columns;
 };
+
+const curricularLabel = (...parts: Array<string | null | undefined>) =>
+  parts.map(part => part?.trim()).filter((part): part is string => Boolean(part)).join(' ');
+
+const unitLabel = (unidad: Unidad) =>
+  (unidad.nombre || unidad.sigla || '').trim().toLocaleUpperCase('es-PE');
 
 const getGrupoModuloLabel = (grupoModulo: GrupoModuloOption) => {
   const titulo = grupoModulo.modulo?.titulo?.trim();
@@ -1056,13 +1065,13 @@ export default function RegistroAuxiliarPage() {
 
     for (const unidad of visibleUnits) {
       const span = headerSpans.unidades.get(unidad.id);
-      if (span) headerRows[0][span.col] = unidad.sigla || unidad.nombre || '';
+      if (span) headerRows[0][span.col] = unitLabel(unidad);
       for (const capacidad of unidad.capacidadesTerminales || []) {
         const capacidadSpan = headerSpans.capacidades.get(capacidad.id);
-        if (capacidadSpan) headerRows[1][capacidadSpan.col] = capacidad.descripcion || '';
+        if (capacidadSpan) headerRows[1][capacidadSpan.col] = curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion);
         for (const indicador of capacidad.indicadoresCapacidad || []) {
           const indicatorCol = selectableColumnIndexByKey.get(`indicator-${indicador.id}`);
-          if (indicatorCol != null) headerRows[2][indicatorCol] = indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`;
+          if (indicatorCol != null) headerRows[2][indicatorCol] = curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`);
         }
         const promedioCol = selectableColumnIndexByKey.get(`capacidad-${capacidad.id}`);
         if (promedioCol != null) headerRows[2][promedioCol] = isProgramaEstudio ? 'PROMEDIO' : 'LOGRO';
@@ -1230,7 +1239,7 @@ export default function RegistroAuxiliarPage() {
     if (!registro) return;
     const header = [
       'Estudiante',
-      ...indicatorColumns.map((column) => column.indicador.sigla || `CE ${column.indicador.id}`),
+      ...indicatorColumns.map((column) => curricularLabel(column.capacidad.codigo, column.indicador.codigo, column.indicador.sigla || `CE ${column.indicador.id}`)),
       ...(showEfsrtPpp ? ['EFSRT/PPP'] : []),
       'Puntaje',
       isProgramaEstudio ? 'Promedio General' : 'Promedio',
@@ -1811,7 +1820,7 @@ export default function RegistroAuxiliarPage() {
                           {...selectableCellProps(TABLE_HEADER_ROW_START, span.col, 1, span.colSpan)}
                           sx={{ ...cellBaseSx, ...selectableCellSx(TABLE_HEADER_ROW_START, span.col, 1, span.colSpan), bgcolor: '#eef6ff', height: 30 }}
                         >
-                          {unidad.sigla || unidad.nombre}
+                          {unitLabel(unidad)}
                         </Box>
                       );
                     })}
@@ -1875,8 +1884,8 @@ export default function RegistroAuxiliarPage() {
                             {...selectableCellProps(TABLE_HEADER_ROW_START + 1, span.col, 1, span.colSpan)}
                             sx={{ ...cellBaseSx, ...selectableCellSx(TABLE_HEADER_ROW_START + 1, span.col, 1, span.colSpan), bgcolor: '#fff', height: 64, verticalAlign: 'middle', p: 0 }}
                           >
-                            <Box title={capacidad.descripcion || ''} sx={capacidadLabelSx}>
-                              {capacidad.descripcion}
+                            <Box title={curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion)} sx={capacidadLabelSx}>
+                              {curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion)}
                             </Box>
                           </Box>
                         );
@@ -1905,8 +1914,8 @@ export default function RegistroAuxiliarPage() {
                                 px: 0,
                               }}
                             >
-                              <Box title={indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`} sx={criterioLabelSx}>
-                                {indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`}
+                              <Box title={curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`)} sx={criterioLabelSx}>
+                                {curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`)}
                               </Box>
                             </Box>
                           );

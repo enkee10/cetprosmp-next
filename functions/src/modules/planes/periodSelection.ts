@@ -149,8 +149,17 @@ export function createPeriodVisibilityReader() {
   if (!selections.has(key)) selections.set(key, ensurePlanSelection(module.planId, semestreId));
   if (!graphs.has(module.planId)) graphs.set(module.planId, readCurriculumGraph(module.planId));
   const [selection, graph] = await Promise.all([selections.get(key)!, graphs.get(module.planId)!]);
-  const competencias = new Set(graph.competencias.filter(c => c.moduloId === moduloId && selection.competenciaIds.includes(c.id)).map(c => c.id));
-  const unidades = new Set(graph.relaciones.filter(r => competencias.has(Number(r.competenciaId)) && selection.unidadIds.includes(Number(r.unidadDidacticaId))).map(r => Number(r.unidadDidacticaId)));
+  const targetPlanModuleIds = new Set(graph.planModulos.filter(item => Number(item.moduloId) === moduloId).map(item => item.id));
+  const targetContinuations = graph.continuaciones.filter(item => targetPlanModuleIds.has(Number(item.planModuloId)));
+  const continuationIds = new Set(targetContinuations.map(item => item.id));
+  const directCompetencias = graph.competencias.filter(c => c.moduloId === moduloId);
+  const competencias = new Set([...directCompetencias, ...targetContinuations]
+    .filter(c => selection.competenciaIds.includes(Number(c.competenciaId ?? c.id)))
+    .map(c => Number(c.competenciaId ?? c.id)));
+  const directIds = new Set(directCompetencias.map(item => item.id));
+  const unidades = new Set(graph.relaciones.filter(r => competencias.has(Number(r.competenciaId))
+    && (r.competenciaContinuacionId == null ? directIds.has(Number(r.competenciaId)) : continuationIds.has(Number(r.competenciaContinuacionId)))
+    && selection.unidadIds.includes(Number(r.unidadDidacticaId))).map(r => Number(r.unidadDidacticaId)));
   const capacidades = new Set(graph.capacidades.filter(c => unidades.has(Number(c.unidadDidacticaId)) && selection.capacidadIds.includes(c.id)).map(c => c.id));
   const indicadores = new Set(graph.indicadores.filter(i => capacidades.has(Number(i.capacidadTerminalId)) && selection.indicadorIds.includes(i.id)).map(i => i.id));
   return { competencias, unidades, capacidades, indicadores };

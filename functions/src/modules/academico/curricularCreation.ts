@@ -16,12 +16,19 @@ export async function nextCurricularChildOrder(entity: "capacidadTerminal" | "in
 }
 
 export async function readCurricularUnitAssignments(moduloId: number) {
-  const response = await dataConnect.executeGraphql<{ unitAssignments: Array<{ id: number; orden: number | null; unidadDidacticaId: number; competenciaId: number; competencia: { id: number; nombre: string; tipo: string; moduloId: number; orden: number | null } }> }, { moduloId: number }>(`query CurricularUnitAssignments($moduloId:Int!) {
-    unitAssignments:competenciaUnidadesDidacticas(where:{competencia:{moduloId:{eq:$moduloId}}},limit:10000) {
-      id orden unidadDidacticaId competenciaId competencia { id nombre tipo moduloId orden }
+  type Assignment = { id: number; orden: number | null; unidadDidacticaId: number; competenciaId: number; competenciaContinuacionId?: number | null; competencia: { id: number; nombre: string; tipo: string; moduloId: number; orden: number | null }; competenciaContinuacion?: { planModulo: { moduloId: number } } | null };
+  const response = await dataConnect.executeGraphql<{ originals: Assignment[]; continuations: Assignment[] }, { moduloId: number }>(`query CurricularUnitAssignments($moduloId:Int!) {
+    originals:competenciaUnidadesDidacticas(where:{competencia:{moduloId:{eq:$moduloId}},competenciaContinuacionId:{isNull:true}},limit:10000) {
+      id orden unidadDidacticaId competenciaId competenciaContinuacionId competencia { id nombre tipo moduloId orden }
+    }
+    continuations:competenciaUnidadesDidacticas(where:{competenciaContinuacion:{planModulo:{moduloId:{eq:$moduloId}}}},limit:10000) {
+      id orden unidadDidacticaId competenciaId competenciaContinuacionId competencia { id nombre tipo moduloId orden }
+      competenciaContinuacion { planModulo { moduloId } }
     }
   }`, { variables: { moduloId } });
-  return response.data.unitAssignments;
+  return [...response.data.originals, ...response.data.continuations].map(item => ({ ...item,
+    competencia: { ...item.competencia, moduloId: item.competenciaContinuacion?.planModulo.moduloId ?? item.competencia.moduloId },
+  }));
 }
 
 /** Returns only the newly created item, with the real IDs needed for immediate dragging. */

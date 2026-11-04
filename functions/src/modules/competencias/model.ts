@@ -21,8 +21,21 @@ export function orderedUnidadRelations<T extends { id: number; unidadDidacticaId
   return relations.slice().sort((a,b) => (a.orden ?? a.id) - (b.orden ?? b.id) || a.unidadDidacticaId - b.unidadDidacticaId || a.id - b.id);
 }
 
-export function projectUnidadRelations<T extends { competencia: { moduloId: number } }>(relations: T[]) {
-  return relations.map(relation => ({ ...relation, moduloId: relation.competencia.moduloId }));
+export function effectiveModuloId(relation: {
+  competencia: { moduloId: number };
+  competenciaContinuacion?: { planModulo?: { moduloId: number } | null } | null;
+}) {
+  return relation.competenciaContinuacion?.planModulo?.moduloId ?? relation.competencia.moduloId;
+}
+
+export function projectUnidadRelations<T extends {
+  competencia: { moduloId: number };
+  competenciaContinuacion?: { planModulo?: { moduloId: number } | null } | null;
+}>(relations: T[]) {
+  return relations.map(relation => ({
+    ...relation,
+    moduloId: effectiveModuloId(relation),
+  }));
 }
 
 export function employabilityCodeForUnidad(nombre: string) {

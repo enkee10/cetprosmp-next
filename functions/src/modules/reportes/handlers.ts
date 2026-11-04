@@ -188,7 +188,7 @@ type ReporteEfsrt = {
 type ReporteDetalleData = {
   grupoModulo: ReporteGrupoModuloOption | null;
   grupoModuloUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number }>;
-  competenciaUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number; competencia: NonNullable<ReporteUnidad["competencia"]> }>;
+  competenciaUnidadesDidacticas: Array<{ orden?: number | null; unidadDidacticaId: number; competenciaId: number; competenciaContinuacionId?: number | null; competencia: NonNullable<ReporteUnidad["competencia"]> }>;
   unidadesDidacticas: ReporteUnidad[];
   capacidadesTerminales: ReporteCapacidad[];
   indicadoresCapacidad: Array<{ id: number; orden?: number | null; capacidadTerminalId?: number | null }>;
@@ -480,13 +480,16 @@ const REPORTE_DETALLE_QUERY = `
       orden
       unidadDidacticaId
     }
-    competenciaUnidadesDidacticas(where: { competencia: { moduloId: { eq: $moduloId } } }, limit: 500) {
+    competenciaUnidadesDidacticas(where: { _or: [
+      { competencia: { moduloId: { eq: $moduloId } }, competenciaContinuacionId: { isNull: true } },
+      { competenciaContinuacion: { planModulo: { moduloId: { eq: $moduloId } } } }
+    ] }, limit: 500) {
       orden
       unidadDidacticaId
-
       competenciaId
+      competenciaContinuacionId
       competencia { id nombre tipo moduloId }
-}
+    }
     unidadesDidacticas(limit: 50000) {
       id
       nombre
@@ -2848,10 +2851,10 @@ function fillProgramaActa(updates: SpreadsheetUpdate[], sheetName: string, data:
 
   units.forEach((unit, index) => {
     const column = unitColumns[index];
-    addCell(updates, sheetName, `${column}6`, cleanText(unit.sigla || unit.nombre || ""));
+    addCell(updates, sheetName, `${column}6`, cleanText(unit.nombre || unit.sigla || "").toLocaleUpperCase("es-PE"));
     addCell(updates, sheetName, `${column}12`, unit.creditos ?? "");
     addCell(updates, sheetName, `${column}13`, unit.duracion ?? "");
-    addCell(updates, sheetName, `${column}35`, cleanText(unit.sigla || unit.nombre || ""));
+    addCell(updates, sheetName, `${column}35`, cleanText(unit.nombre || unit.sigla || "").toLocaleUpperCase("es-PE"));
     addCell(updates, sheetName, `${column}41`, unit.creditos ?? "");
     addCell(updates, sheetName, `${column}42`, unit.duracion ?? "");
   });
@@ -3023,6 +3026,21 @@ type CertificateUnitTableRow = {
   nota: string | number;
 };
 
+function certificateTechnicalCompetencyText(data: ReporteDocumentoData) {
+  const names = data.unidades
+    .map(unit => unit.competencia)
+    .filter((competencia): competencia is NonNullable<ReporteUnidad["competencia"]> => competencia?.tipo === "TECNICA")
+    .map(competencia => cleanText(competencia.nombre))
+    .filter(Boolean);
+  const unique = [...new Set(names)];
+  if (unique.length) return unique.join("\n\n");
+  return (data.grupoModulo.modulo?.competencias ?? [])
+    .filter(competencia => competencia.tipo === "TECNICA")
+    .map(competencia => cleanText(competencia.nombre))
+    .filter(Boolean)
+    .join("\n\n");
+}
+
 function buildCertificateUnitRows(data: ReporteDocumentoData, student: ReporteEstudiante): CertificateUnitTableRow[] {
   const unitMap = unidadPromedioMap(data);
   const capacitiesByUnit = new Map<number, string[]>();
@@ -3034,10 +3052,10 @@ function buildCertificateUnitRows(data: ReporteDocumentoData, student: ReporteEs
     capacitiesByUnit.set(capacidad.unidadDidacticaId, current);
   }
 
-  const competencia = (data.grupoModulo.modulo?.competencias ?? []).filter(c => c.tipo === "TECNICA").map(c => cleanText(c.nombre)).join("\n\n");
+  const competencia = certificateTechnicalCompetencyText(data);
   return data.unidades.map((unit) => ({
     competencia: cleanText(unit.competencia?.nombre ?? competencia),
-    unidad: cleanText(unit.nombre || unit.sigla || ""),
+    unidad: cleanText(unit.nombre || unit.sigla || "").toLocaleUpperCase("es-PE"),
     creditos: unit.creditos ?? "",
     horas: unit.duracion ?? "",
     capacidades: (capacitiesByUnit.get(unit.id) ?? []).map((value) => `• ${value}`).join("\n\n"),
@@ -3085,8 +3103,8 @@ function buildCertificateTokens(
     "[HORAS MODULO]": data.grupoModulo.modulo?.horas ?? "",
     "[fecha actual larga]": getDocumentDateLong(data, "certificado"),
     "[director]": getPersonalName(data.semestre?.director),
-    "[UNIDAD DE COMPETENCIA]": (data.grupoModulo.modulo?.competencias ?? []).filter(c => c.tipo === "TECNICA").map(c => cleanText(c.nombre)).join("\n\n"),
-    "[UNIDAD DIDACTICA 1]": units.map((unit) => cleanText(unit.nombre || unit.sigla || "")).join("\n"),
+    "[UNIDAD DE COMPETENCIA]": certificateTechnicalCompetencyText(data),
+    "[UNIDAD DIDACTICA 1]": units.map((unit) => cleanText(unit.nombre || unit.sigla || "").toLocaleUpperCase("es-PE")).join("\n"),
     "[suma creditos]": sumaCreditos,
     "[suma horas]": sumaHoras,
     "[creditos unidad didactica]": creditos.join("\n"),

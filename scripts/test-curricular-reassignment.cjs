@@ -66,6 +66,7 @@ const server = load('functions/src/modules/academico/curricularReassignment.ts',
   '../core/dataConnectCore.js': { dataConnect: { executeGraphql: () => { throw Error('No remote access permitted in tests'); } } },
   '../core/permissions.js': { requirePermission: async (_context, entity, action) => { permissionCalls++; assert.equal(entity, 'estructura-academica'); assert.equal(action, 'edit'); if (rejectPermission) throw new HttpsError('permission-denied', 'Denied'); } },
   '../competencias/service.js': { getModuloCompetenciaContext: () => { throw Error('Use a local context'); } },
+  '../competencias/model.js': load('functions/src/modules/competencias/model.ts'),
 });
 function serverFixture(entity, { missing = false, stale = false, mixedType = false, otherSession = false, sameModule = false, failSave = false } = {}) {
   const dst = sameModule ? 1 : 2;
@@ -87,7 +88,8 @@ function serverFixture(entity, { missing = false, stale = false, mixedType = fal
   const graph = async (sourceQuery, variables) => {
     calls.push({ source: sourceQuery, variables });
     operations.push({ source: sourceQuery, variables });
-    if (sourceQuery.startsWith('query CurricularMoveContext')) return { source, target: missing ? null : target };
+    if (sourceQuery.startsWith('query CurricularMoveContext')) return { source, target: missing ? null : target,
+      ...(entity === 'competenciaUnidadDidactica' ? { sourceOwner: { competencia: { moduloId: 1 } } } : {}) };
     if (sourceQuery.startsWith('query CurricularMoveOwners')) return { owners: [{ unidadDidacticaId: 101, competencia: { moduloId: 1 } }, { unidadDidacticaId: 201, competencia: { moduloId: dst } }] };
     if (sourceQuery.startsWith('query CurricularMoveSiblings')) return { siblings: [{ id: 99, orden: 4 }] };
     if (sourceQuery.startsWith('query CurricularMoveUnits')) return { units: [{ unidadDidacticaId: 101 }] };

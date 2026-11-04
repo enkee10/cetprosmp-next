@@ -7,8 +7,8 @@ const filename = path.resolve(__dirname, '../functions/lib/modules/reportes/hand
 const loaded = new Module(filename, module);
 loaded.filename = filename;
 loaded.paths = Module._nodeModulePaths(path.dirname(filename));
-loaded._compile(fs.readFileSync(filename, 'utf8') + '\nexports.testHelpers = { buildCertificateUnitRows, applyCertificatePlanEstudiosUpdates };', filename);
-const { buildCertificateUnitRows, applyCertificatePlanEstudiosUpdates } = loaded.exports.testHelpers;
+loaded._compile(fs.readFileSync(filename, 'utf8') + '\nexports.testHelpers = { buildCertificateUnitRows, applyCertificatePlanEstudiosUpdates, certificateTechnicalCompetencyText };', filename);
+const { buildCertificateUnitRows, applyCertificatePlanEstudiosUpdates, certificateTechnicalCompetencyText } = loaded.exports.testHelpers;
 const XLSX = require('../tmp/oo-xlsx-reader/node_modules/xlsx');
 
 async function main() {
@@ -22,6 +22,14 @@ async function main() {
   assert.deepEqual(rows.map(r => r.competencia), ['Tecnica','Tecnica','Tecnica','Empleabilidad 4','Empleabilidad 5']);
   assert.ok(rows[3].capacidades.includes('Capacidad conservada'));
   assert.equal(Number(rows[3].nota), 18);
+  assert.equal(certificateTechnicalCompetencyText({
+    grupoModulo: { modulo: { competencias: [{ id: 1, nombre: 'Tecnica original', tipo: 'TECNICA' }] } },
+    unidades: [
+      { id: 1, competencia: { id: 1, nombre: 'Tecnica original', tipo: 'TECNICA' } },
+      { id: 2, competencia: { id: 2, nombre: 'Tecnica continuada', tipo: 'TECNICA' } },
+      { id: 3, competencia: { id: 2, nombre: 'Tecnica continuada', tipo: 'TECNICA' } },
+    ],
+  }), 'Tecnica original\n\nTecnica continuada');
   const sheet = XLSX.utils.aoa_to_sheet(Array.from({length:50}, () => Array(9).fill('')));
   sheet['!merges'] = [XLSX.utils.decode_range('A39:A42')];
   const book = XLSX.utils.book_new();

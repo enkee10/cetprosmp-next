@@ -14,9 +14,10 @@ function load(file, imports = {}) {
 const tree = load('src/lib/curricularReassignment.ts');
 const { applyAcademicOrder, applyAcademicCreation } = load('src/lib/curricularUpdates.ts');
 const codes = load('src/lib/curricularCodes.ts');
+const competenceModel = load('functions/src/modules/competencias/model.ts');
 const server = load('functions/src/modules/academico/curricularReassignment.ts', {
   'firebase-functions/v1': { https: { onCall: fn => fn, HttpsError: class extends Error {} } },
-  '../core/dataConnectCore.js': {}, '../core/permissions.js': {}, '../competencias/service.js': {},
+  '../core/dataConnectCore.js': {}, '../core/permissions.js': {}, '../competencias/service.js': {}, '../competencias/model.js': competenceModel,
 });
 const parent = { competencia: 'moduloId', competenciaUnidadDidactica: 'competenciaId', capacidadTerminal: 'unidadDidacticaId', indicadorCapacidad: 'capacidadTerminalId', aprendizaje: 'indicadorCapacidadId', actividad: 'aprendizajeId' };
 const sort = rows => [...rows].sort((a, b) => (a.orden ?? a.numeroSesion ?? a.id) - (b.orden ?? b.numeroSesion ?? b.id) || a.id - b.id);
@@ -110,7 +111,8 @@ function fixture() {
       operations.push({ source: query, variables: vars });
       if (query.startsWith('query CurricularMoveContext')) {
         const p = parentEntity[request.entity];
-        return { source: sourceRow(request.entity, request.id), target: request.targetIndicatorId ? targetRow('indicadorCapacidad', request.targetIndicatorId) : targetRow(p, request.parentId) };
+        return { source: sourceRow(request.entity, request.id), target: request.targetIndicatorId ? targetRow('indicadorCapacidad', request.targetIndicatorId) : targetRow(p, request.parentId),
+          ...(request.entity === 'competenciaUnidadDidactica' ? { sourceOwner: { competencia: { moduloId: owner(request.entity, request.id) } } } : {}) };
       }
       if (query.startsWith('query CurricularMoveTargetLearning')) {
         const aprendizajes = siblings('aprendizaje', vars.indicadorId);
@@ -207,6 +209,14 @@ if (require.main === module) (async () => {
   assert.notEqual(codes.curricularDescendantCodes(reverseParents[0]).unidades.get(unit.id), unitOrder.get(unit.id), 'Moving a parent moves the whole child branch in the sequence');
   const partialPlan = [{ ...modules[0], orden: 2 }, { ...modules[1], orden: 5 }];
   assert.deepEqual(tree.academicReorderItems(partialPlan, 'modulo', partialPlan[1].id, partialPlan[0].id, 'before', 1).map(r => r.orden), [2, 5], 'A teacher must not overwrite inaccessible module positions');
+  const blockedTypes = structuredClone(modules);
+  blockedTypes[0].competencias = [
+    { id: 1001, nombre: 'Tecnica 1', tipo: 'TECNICA', orden: 1 },
+    { id: 1002, nombre: 'Tecnica 2', tipo: 'TECNICA', orden: 2 },
+    { id: 1003, nombre: 'Empleabilidad', tipo: 'EMPLEABILIDAD', orden: 1 },
+  ];
+  assert.deepEqual(tree.academicReorderItems(blockedTypes, 'competencia', 1001, 1003, 'after'), [], 'Competency blocks cannot be mixed by dragging');
+  assert.deepEqual(tree.academicReorderItems(blockedTypes, 'competencia', 1002, 1001, 'before').map(row => row.id), [1002, 1001], 'Technical competencies reorder only inside their block');
   const learning = unit.capacidadesTerminales[0].indicadoresCapacidad[0].aprendizajes;
   learning[0].actividades.forEach(a => { a.orden += 100; });
   assert.equal(codes.curricularSessionsInOrder(learning)[0].aprendizajeId, learning[0].id, 'Learning position precedes session-local order in another learning');

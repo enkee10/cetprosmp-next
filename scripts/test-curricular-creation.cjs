@@ -17,7 +17,7 @@ const permissions = { requirePermission: async () => {} };
 const mappers = load('functions/src/modules/core/userMappers.ts');
 const competenceModel = load('functions/src/modules/competencias/model.ts');
 const creation = load('functions/src/modules/academico/curricularCreation.ts', { 'firebase-functions/v1': { https }, '../core/dataConnectCore.js': { dataConnect: dc } });
-const context = { modulo: { id: 1 }, programa: false, competencias: [{ id: 10, orden: null }], relations: [], unidadIds: [] };
+const context = { modulo: { id: 1 }, programa: false, competencias: [{ id: 10, orden: null, tipo: 'TECNICA' }], relations: [], unidadIds: [] };
 const services = { getModuloCompetenciaContext: async () => context, attachUnidadToModulo: async (...args) => {
   assert.equal(args[3], 10); assert.equal(args[4].preserveSelectedCompetencia, true);
 } };
@@ -68,7 +68,7 @@ const cases = [
       if (query.startsWith('query CurricularSesiones')) return { actividads: [{ id: 60, orden: null, moduloId: 1, aprendizaje: { id: 50, indicadorCapacidadId: 40 } }] };
       if (query.includes('query ListGrupoModuloUnidadSync')) return { grupoModulos: [], grupoModuloUnidadesDidacticas: [] };
       if (query.startsWith('query CurricularCreatedItem')) return { item };
-      if (query.startsWith('query CurricularUnitAssignments')) return { unitAssignments: [{ id: 101, orden: 22, unidadDidacticaId: 100, competenciaId: 10, competencia: { id: 10, nombre: 'UC1', tipo: 'TECNICA', moduloId: 1 } }] };
+      if (query.startsWith('query CurricularUnitAssignments')) return { originals: [{ id: 101, orden: 22, unidadDidacticaId: 100, competenciaId: 10, competencia: { id: 10, nombre: 'UC1', tipo: 'TECNICA', moduloId: 1 } }], continuations: [] };
       if (/^\s*mutation/.test(query)) {
         if (query.includes('CurricularCreateSesionInLearning')) return { sesion: { id: 100 } };
         return Object.fromEntries(['competencia_insert', 'modulo_insert', 'planModulo_insert', 'unidadDidactica_insert', 'capacidadTerminal_insert', 'indicadorCapacidad_insert', 'aprendizaje_insert'].map(key => [key, { id: key === 'planModulo_insert' ? 101 : 100 }]));
@@ -105,8 +105,35 @@ const cases = [
     if (query.startsWith('mutation CurricularSaveOrder')) return {};
     throw Error(query);
   };
+  await assert.rejects(
+    editing.reorderCurricularExtra('competencia', [{ id: 100, orden: 1 }, { id: 50, orden: 2 }], { moduloId: 1 }),
+    { code: 'failed-precondition' },
+  );
+  responseFor = query => {
+    if (query.startsWith('query CurricularCompetenciaOrder')) return { competencias: [{ id: 50, tipo: 'TECNICA' }, { id: 100, tipo: 'TECNICA' }] };
+    if (query.startsWith('mutation CurricularSaveOrder')) return {};
+    throw Error(query);
+  };
   await editing.reorderCurricularExtra('competencia', [{ id: 100, orden: 1 }, { id: 50, orden: 2 }], { moduloId: 1 });
-  assert(!operations.at(-1).source.includes('tipo:'), 'Reordering must preserve Technical/Employability types');
+  assert(!operations.at(-1).source.includes('tipo:'), 'Reordering within the Technical block must preserve types');
+  context.programa = true;
+  context.competencias = [
+    { id: 50, tipo: 'TECNICA', orden: 1 },
+    { id: 60, tipo: 'EMPLEABILIDAD', orden: 4 },
+  ];
+  responseFor = query => {
+    if (query.startsWith('query CurricularCompetencia')) return {
+      competencia: { id: 50, moduloId: 1, nombre: 'Tecnica', tipo: 'TECNICA', orden: 1 },
+      competenciaUnidadesDidacticas: [],
+      competenciaContinuaciones: [],
+    };
+    if (query.startsWith('mutation CurricularEditCompetenciaType')) return { competencia_update: { id: 50 } };
+    throw Error(query);
+  };
+  await editing.updateCurricularExtraCell('competencia', 50, 'tipo', 'EMPLEABILIDAD');
+  assert.equal(operations.at(-1).variables.orden, 5, 'Changing type appends the competency to the destination block');
+  context.programa = false;
+  context.competencias = [{ id: 10, orden: null, tipo: 'TECNICA' }];
   responseFor = query => {
     if (query.startsWith('query CurricularSesiones')) return { actividads: [
       { id: 50, moduloId: 1, aprendizaje: { id: 5 } },

@@ -9,6 +9,7 @@ export interface CurriculumGraph {
   modulos: CurriculumRow[];
   planModulos: CurriculumRow[];
   competencias: CurriculumRow[];
+  continuaciones: CurriculumRow[];
   relaciones: CurriculumRow[];
   unidades: CurriculumRow[];
   capacidades: CurriculumRow[];
@@ -36,20 +37,21 @@ export async function readCurriculumGraph(planId: number, includeSessions = fals
     rows("planModulos", "moduloId orden", `{planId:{eq:${planId}}}`),
   ]);
   const moduleIds = [...new Set([...ids(legacy), ...planModulos.map(item => Number(item.moduloId))])];
-  const empty: CurriculumGraph = { modulos: [], planModulos, competencias: [], relaciones: [], unidades: [], capacidades: [], indicadores: [], aprendizajes: [], actividades: [], contenidos: [], materiales: [] };
+  const empty: CurriculumGraph = { modulos: [], planModulos, competencias: [], continuaciones: [], relaciones: [], unidades: [], capacidades: [], indicadores: [], aprendizajes: [], actividades: [], contenidos: [], materiales: [] };
   if (!moduleIds.length) return empty;
   const [modulos, competencias] = await Promise.all([
     rows("modulos", MODULE_FIELDS, by("id", moduleIds)),
     rows("competencias", "nombre tipo orden moduloId", by("moduloId", moduleIds)),
   ]);
-  const relaciones = competencias.length ? await rows("competenciaUnidadesDidacticas", "competenciaId unidadDidacticaId orden", by("competenciaId", ids(competencias))) : [];
+  const continuaciones = planModulos.length ? await rows("competenciaContinuaciones", "competenciaId planModuloId", by("planModuloId", ids(planModulos))) : [];
+  const relaciones = competencias.length ? await rows("competenciaUnidadesDidacticas", "competenciaId competenciaContinuacionId unidadDidacticaId orden", by("competenciaId", ids(competencias))) : [];
   const unitIds = [...new Set(relaciones.map(item => Number(item.unidadDidacticaId)))];
   const [unidades, capacidades] = unitIds.length ? await Promise.all([
     rows("unidadesDidacticas", UNIT_FIELDS, by("id", unitIds)),
     rows("capacidadesTerminales", "descripcion sigla orden unidadDidacticaId", by("unidadDidacticaId", unitIds)),
   ]) : [[], []];
   const indicadores = capacidades.length ? await rows("indicadoresCapacidad", "descripcion sigla orden capacidadTerminalId", by("capacidadTerminalId", ids(capacidades))) : [];
-  const graph = { ...empty, modulos, competencias, relaciones, unidades, capacidades, indicadores };
+  const graph = { ...empty, modulos, competencias, continuaciones, relaciones, unidades, capacidades, indicadores };
   if (!includeSessions || !indicadores.length) return graph;
   graph.contenidos = await rows("indicadorContenidos", "texto orden indicadorCapacidadId", by("indicadorCapacidadId", ids(indicadores)));
   graph.aprendizajes = await rows("aprendizajes", "orden descripcion sigla indicadorCapacidadId", by("indicadorCapacidadId", ids(indicadores)));

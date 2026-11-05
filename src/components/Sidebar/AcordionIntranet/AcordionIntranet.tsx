@@ -246,6 +246,7 @@ function IntranetMenuItems({
                   color: active ? activeTextColor : textColor,
                   sx: {
                     whiteSpace: 'normal',
+                    overflowWrap: 'anywhere',
                     overflow: 'visible',
                     textOverflow: 'clip',
                     lineHeight: 1.25,

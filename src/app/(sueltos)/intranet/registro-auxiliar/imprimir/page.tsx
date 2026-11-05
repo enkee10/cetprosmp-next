@@ -401,7 +401,7 @@ const displayGrade = (value: number | null) => {
 
 const average = (values: Array<number | null>) => {
   const valid = values.filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
-  if (valid.length === 0) return null;
+  if (valid.length === 0 || valid.length !== values.length) return null;
   return Math.round(valid.reduce((sum, value) => sum + value, 0) / valid.length);
 };
 
@@ -418,7 +418,7 @@ const weightedAverage = (values: Array<{ value: number | null; weight: number | 
 
   for (const item of values) {
     rawValues.push(item.value);
-    if (typeof item.value !== 'number' || !Number.isFinite(item.value)) continue;
+    if (typeof item.value !== 'number' || !Number.isFinite(item.value)) return null;
     if (typeof item.weight !== 'number' || !Number.isFinite(item.weight) || item.weight <= 0) continue;
     weightedSum += item.value * item.weight;
     totalWeight += item.weight;
@@ -456,6 +456,18 @@ const buildEfsrtPppMap = (registro: RegistroAuxiliar | null) => {
 const curricularLabel = (...parts: Array<string | null | undefined>) =>
   parts.map(part => part?.trim()).filter((part): part is string => Boolean(part)).join(' ');
 
+const capacityCode = (capacidad: Capacidad | null | undefined, unidad: Unidad | null | undefined) =>
+  `${capacidad?.codigo?.replace(/:$/, '') || `C${Math.max(0, unidad?.capacidadesTerminales.findIndex(item => item.id === capacidad?.id) ?? 0) + 1}`}:`;
+
+const indicatorCode = (indicador: Indicador | null | undefined, capacidad: Capacidad | null | undefined) =>
+  `${indicador?.codigo?.replace(/:$/, '') || `I${Math.max(0, capacidad?.indicadoresCapacidad.findIndex(item => item.id === indicador?.id) ?? 0) + 1}`}:`;
+
+const capacityHeaderText = (capacidad: Capacidad | null | undefined, unidad: Unidad | null | undefined) =>
+  curricularLabel(capacityCode(capacidad, unidad), capacidad?.descripcion);
+
+const indicatorHeaderText = (indicador: Indicador | null | undefined, capacidad: Capacidad | null | undefined) =>
+  curricularLabel(indicatorCode(indicador, capacidad), indicador?.descripcion || indicador?.sigla);
+
 const unitLabel = (unidad: Unidad | null | undefined) =>
   (unidad?.nombre || unidad?.sigla || '').trim().toLocaleUpperCase('es-PE');
 
@@ -464,7 +476,7 @@ const buildPrintColumns = (registro: RegistroAuxiliar | null, showEfsrtPpp: bool
   for (const unidad of registro?.estructura || []) {
     for (const capacidad of unidad.capacidadesTerminales || []) {
       for (const indicador of capacidad.indicadoresCapacidad || []) {
-        const label = curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla);
+        const label = indicatorHeaderText(indicador, capacidad);
         const layout = estimateIndicatorLayout(label);
         columns.push({
           key: `indicator-${indicador.id}`,
@@ -879,7 +891,7 @@ export default function RegistroAuxiliarPrintPage() {
     measureBox.style.width = `${INDICATOR_TEXT_WIDTH_MM}mm`;
     measureBox.style.fontFamily = 'Arial, Helvetica, sans-serif';
     measureBox.style.fontSize = '6pt';
-    measureBox.style.fontWeight = '500';
+    measureBox.style.fontWeight = '400';
     measureBox.style.lineHeight = '1';
     measureBox.style.whiteSpace = 'normal';
     measureBox.style.overflowWrap = 'normal';
@@ -891,7 +903,7 @@ export default function RegistroAuxiliarPrintPage() {
 
     const nextWidths: Record<string, number> = {};
     for (const column of indicatorColumns) {
-      measureBox.textContent = curricularLabel(column.capacidad?.codigo, column.indicador?.codigo, column.indicador?.descripcion || column.indicador?.sigla);
+      measureBox.textContent = indicatorHeaderText(column.indicador, column.capacidad);
       const measuredHeightPx = Math.max(measureBox.scrollHeight, measureBox.getBoundingClientRect().height);
       nextWidths[column.key] = clampNumber((measuredHeightPx + 10) * PX_TO_MM + 1.2, 7.5, 30);
     }
@@ -1052,7 +1064,7 @@ export default function RegistroAuxiliarPrintPage() {
     measureBox.style.pointerEvents = 'none';
     measureBox.style.fontFamily = 'Arial, Helvetica, sans-serif';
     measureBox.style.fontSize = '6.7pt';
-    measureBox.style.fontWeight = '500';
+    measureBox.style.fontWeight = '400';
     measureBox.style.lineHeight = '1';
     measureBox.style.whiteSpace = 'normal';
     measureBox.style.overflowWrap = 'normal';
@@ -1093,7 +1105,7 @@ export default function RegistroAuxiliarPrintPage() {
 
     const nextExtraWidths: Record<string, number> = {};
     for (const group of capacidadGroups) {
-      const text = curricularLabel(group.items[0].capacidad?.competenciaCodigo, group.items[0].capacidad?.codigo, group.items[0].capacidad?.descripcion);
+      const text = capacityHeaderText(group.items[0].capacidad, group.items[0].unidad);
       if (!text.trim()) continue;
 
       const indicatorColumns = group.items.filter((column) => column.type === 'indicador');
@@ -1108,7 +1120,7 @@ export default function RegistroAuxiliarPrintPage() {
       if (extraGroupWidthMm <= 0.05) continue;
 
       const weights = indicatorColumns.map((column) => {
-        const label = curricularLabel(column.capacidad?.codigo, column.indicador?.codigo, column.indicador?.descripcion || column.indicador?.sigla);
+        const label = indicatorHeaderText(column.indicador, column.capacidad);
         const metrics = getHeaderTextMetrics(label);
         return Math.max(1, metrics.length + metrics.maxWordLength * 0.5);
       });
@@ -1278,7 +1290,7 @@ export default function RegistroAuxiliarPrintPage() {
               className="capacity-header"
               style={{ height: capacityHeaderHeightPx ?? undefined }}
             >
-              <span className="capacity-header-content">{curricularLabel(group.items[0].capacidad?.competenciaCodigo, group.items[0].capacidad?.codigo, group.items[0].capacidad?.descripcion)}</span>
+              <span className="capacity-header-content"><strong>{capacityCode(group.items[0].capacidad, group.items[0].unidad)}</strong>{' '}{group.items[0].capacidad?.descripcion}</span>
             </th>
           ))}
         </tr>
@@ -1295,7 +1307,7 @@ export default function RegistroAuxiliarPrintPage() {
               {column.type === 'capacidad' ? (
                 <span>{isProgramaEstudio ? 'PROMEDIO' : 'LOGRO'}</span>
               ) : (
-                <span>{curricularLabel(column.capacidad?.codigo, column.indicador?.codigo, column.indicador?.descripcion || column.indicador?.sigla)}</span>
+                <span><strong>{indicatorCode(column.indicador, column.capacidad)}</strong>{' '}{column.indicador?.descripcion || column.indicador?.sigla}</span>
               )}
             </th>
           ))}
@@ -1550,6 +1562,7 @@ export default function RegistroAuxiliarPrintPage() {
           },
           '.capacity-header-content': {
             display: 'block',
+            fontWeight: 400,
             maxHeight: capacityHeaderContentHeightPx === null ? undefined : `${capacityHeaderContentHeightPx}px`,
             overflow: capacityHeaderContentHeightPx === null ? 'visible' : 'hidden',
           },
@@ -1563,7 +1576,7 @@ export default function RegistroAuxiliarPrintPage() {
             textAlign: 'center',
             transform: 'translate(-50%, -50%) rotate(-90deg)',
             transformOrigin: 'center',
-            fontWeight: 500,
+            fontWeight: 400,
             fontSize: '6pt',
             lineHeight: 1,
           },
@@ -1590,6 +1603,7 @@ export default function RegistroAuxiliarPrintPage() {
           '.nro-cell, .grade-cell': { textAlign: 'center' },
           '.student-cell': { whiteSpace: 'nowrap', textOverflow: 'ellipsis' },
           '.grade-cell': { fontWeight: 700 },
+          '.capacity-header-content strong, .indicator-header strong': { fontWeight: 700 },
           '.print-page-number': {
             position: 'absolute',
             top: `${Math.max(1, cmToMm(printMargins.top) / 2 - 2)}mm`,

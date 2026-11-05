@@ -49,3 +49,15 @@ test('legacy averages without indicator grades survive an unchanged selection', 
   assert.equal(data.capacidadesTerminalesEstudiantes[0].promedio, 13);
   assert.equal(data.unidadesDidacticasEstudiantes[0].promedio, 12);
 });
+
+test('missing active grades clear capacity and unit averages while zero remains valid', () => {
+  const data = fixture();
+  data.indicadorCapacidadEstudiantes[1].promedio = null;
+  recalculateSelectionAverages(data, caps, indicators, false);
+  assert.equal(data.capacidadesTerminalesEstudiantes[0].promedio, null);
+  assert.equal(data.unidadesDidacticasEstudiantes[0].promedio, null);
+  data.indicadorCapacidadEstudiantes[1].promedio = 0;
+  recalculateSelectionAverages(data, caps, indicators, false);
+  assert.equal(data.capacidadesTerminalesEstudiantes[0].promedio, 9);
+  assert.equal(data.unidadesDidacticasEstudiantes[0].promedio, 10);
+});

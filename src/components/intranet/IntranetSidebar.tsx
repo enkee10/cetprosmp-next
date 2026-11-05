@@ -280,7 +280,7 @@ export default function IntranetSidebar() {
                           <ListItemIcon sx={{ minWidth: 34, color: 'inherit', '& svg': { fontSize: 20 } }}>
                             {item.icon}
                           </ListItemIcon>
-                          <ListItemText primary={item.title} primaryTypographyProps={{ fontSize: 13.5 }} />
+                          <ListItemText primary={item.title} primaryTypographyProps={{ fontSize: 13.5, sx: { whiteSpace: 'normal', overflowWrap: 'anywhere' } }} />
                         </ListItemButton>
                       )
                     ))

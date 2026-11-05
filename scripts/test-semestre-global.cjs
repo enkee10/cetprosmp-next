@@ -52,7 +52,7 @@ async function testMenu() {
   assert.equal(first, otherConsumer);
   const titles = Array.from(menuItems(first), (item) => item.title);
   assert.deepEqual(titles, ['Programación Curricular 26-2',
-    'Lista Carpintería (oct-dic) Lun, Mie, @Vie 26-2', 'Notas Carpintería (oct-dic) Lun, Mie, @Vie 26-2']);
+    'Lista Carpintería (oct-dic) [Noche] Lun, Mie, @Vie 26-2', 'Notas Carpintería (oct-dic) [Noche] Lun, Mie, @Vie 26-2']);
   await loadMenu(options); assert.equal(calls, 1, 'Menu navigation uses the session cache');
   semesterTitle = '2027-1';
   const changed = await loadMenu({ ...options, key: 'teacher-a|5' });
@@ -61,6 +61,8 @@ async function testMenu() {
   const onlyLists = await loadMenu({ ...options, key: 'teacher-a|5|list-only', canViewRegistroAuxiliar: false, canViewEstructuraAcademica: false });
   assert.equal(menuItems(onlyLists).length, 1);
   assert.equal(args[2].notas, false);
+  const globalSemester = await loadMenu({ ...options, key: 'teacher-a|global-title', semestreTitulo: '2028-2' });
+  assert.ok(Array.from(menuItems(globalSemester)).every(item => item.title.endsWith('28-2')), 'The global current semester title takes precedence over cached module semester labels');
 }
 
 (async () => {
@@ -159,11 +161,17 @@ async function testMenu() {
 
   assert.equal(docenteMenuModuloName({ id: 1, moduloId: 2,
     nombre: 'Carpintería (oct-dic) [Noche] Lun, Mie, @Vie (Richard Ramos)', docenteNombre: 'Richard Ramos' }),
-  'Carpintería (oct-dic) Lun, Mie, @Vie');
+  'Carpintería (oct-dic) [Noche] Lun, Mie, @Vie');
   assert.equal(docenteMenuModuloName({ id: 1, moduloId: 2, nombre: 'Grupo personalizado (oct-dic)' }), 'Grupo personalizado (oct-dic)');
   assert.equal(docenteMenuModuloName({ id: 1, moduloId: 2,
     nombre: 'Carpintería (oct-dic) [Noche] Lun, Mie, @Vie (Nombre anterior)', docenteNombre: 'Richard Ramos' }),
-  'Carpintería (oct-dic) Lun, Mie, @Vie');
+  'Carpintería (oct-dic) [Noche] Lun, Mie, @Vie (Nombre anterior)');
+  assert.equal(docenteMenuModuloName({ id: 1, moduloId: 2,
+    nombre: 'Confección [Noche] (nivel avanzado) (RICHARD RAMOS)', docenteNombre: 'Richard Ramos' }),
+  'Confección [Noche] (nivel avanzado)');
+  assert.equal(docenteMenuModuloName({ id: 1, moduloId: 2,
+    nombre: 'Confección [Noche] (nivel avanzado)', docenteNombre: 'Richard Ramos' }),
+  'Confección [Noche] (nivel avanzado)');
   assert.equal(docenteMenuPeriodo('2026-2'), '26-2');
   assert.equal(docenteMenuPeriodo('2027-1'), '27-1');
   await testMenu();

@@ -846,7 +846,7 @@ function usesOpcionOcupacionalRules(value: unknown) {
 
 function averageGrades(values: Array<number | null | undefined>) {
   const valid = values.filter((value): value is number => typeof value === "number" && Number.isFinite(value));
-  if (valid.length === 0) return null;
+  if (valid.length === 0 || valid.length !== values.length) return null;
   return Math.round(valid.reduce((sum, value) => sum + value, 0) / valid.length);
 }
 

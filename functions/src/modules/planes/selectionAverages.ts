@@ -1,7 +1,7 @@
 type Row = Record<string, unknown>;
 const average = (values: unknown[]) => {
   const numbers = values.filter((v): v is number => typeof v === "number" && Number.isFinite(v));
-  return numbers.length ? Math.round(numbers.reduce((a, b) => a + b, 0) / numbers.length) : null;
+  return numbers.length > 0 && numbers.length === values.length ? Math.round(numbers.reduce((a, b) => a + b, 0) / numbers.length) : null;
 };
 
 /** Recompute affected aggregates at read time, leaving original grades intact. */

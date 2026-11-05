@@ -13,14 +13,11 @@ export type DocenteMenuModulo = {
 export function docenteMenuModuloName(modulo: DocenteMenuModulo) {
   let name = String(modulo.nombre ?? '').trim();
   const teacher = String(modulo.docenteNombre ?? '').trim();
-  if (teacher && name.endsWith(`(${teacher})`)) {
+  if (teacher && name.toLocaleLowerCase('es-PE').endsWith(`(${teacher})`.toLocaleLowerCase('es-PE'))) {
     name = name.slice(0, -(teacher.length + 2)).trim();
-  } else if (name.includes(']') && name.lastIndexOf('(') > name.lastIndexOf(']')) {
-    // Older generated names can retain the teacher's former display name.
-    name = name.replace(/\s+\([^()]*\)\s*$/, '').trim();
   }
-  // Preserve the schedule and custom module suffixes, removing only the shift.
-  return name.replace(/\[[^\]]*\]/g, '').replace(/\s+/g, ' ').trim()
+  // Only the known teacher suffix is removed; schedule and custom text stay intact.
+  return name.replace(/\s+/g, ' ').trim()
     || modulo.modulo?.titulo || modulo.modulo?.tituloComercial || `Modulo ${modulo.moduloId}`;
 }
 

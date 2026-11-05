@@ -352,7 +352,7 @@ const roundPromedio = (value: number | null | undefined) => {
 
 const average = (values: Array<number | null>) => {
   const valid = values.filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
-  if (valid.length === 0) return null;
+  if (valid.length === 0 || valid.length !== values.length) return null;
   return Math.round(valid.reduce((sum, value) => sum + value, 0) / valid.length);
 };
 
@@ -369,7 +369,7 @@ const weightedAverage = (values: Array<{ value: number | null; weight: number | 
 
   for (const item of values) {
     rawValues.push(item.value);
-    if (typeof item.value !== 'number' || !Number.isFinite(item.value)) continue;
+    if (typeof item.value !== 'number' || !Number.isFinite(item.value)) return null;
     if (typeof item.weight !== 'number' || !Number.isFinite(item.weight) || item.weight <= 0) continue;
     weightedSum += item.value * item.weight;
     totalWeight += item.weight;
@@ -462,6 +462,7 @@ export default function RegistroAuxiliarPage() {
   const directGrupoModuloId = searchParams.get('grupoModuloId') || '';
   const isDirectRegistro = Boolean(directGrupoModuloId);
   const isDocente = isDocenteRole(user?.role) && Number(user?.level ?? 0) < 600;
+  const registroTitle = isDocente ? (getModuloName(registro) || PAGE_TITLE).toLocaleUpperCase('es-PE') : PAGE_TITLE;
   const canEditRegistro = can('registro-auxiliar', 'edit');
   const canEditModuloFechas = canEditRegistro;
   const canCreateRegistroMatriculas = can('registro-auxiliar', 'create');
@@ -1268,7 +1269,7 @@ export default function RegistroAuxiliarPage() {
     if (!registro) return;
     const header = [
       'Estudiante',
-      ...indicatorColumns.map((column) => curricularLabel(column.capacidad.codigo, column.indicador.codigo, column.indicador.sigla || `CE ${column.indicador.id}`)),
+      ...indicatorColumns.map((column) => curricularLabel(column.capacidad.codigo, column.indicador.codigo, column.indicador.descripcion || column.indicador.sigla || `CE ${column.indicador.id}`)),
       ...(showEfsrtPpp ? ['EFSRT/PPP'] : []),
       'Puntaje',
       isProgramaEstudio ? 'Promedio General' : 'Promedio',
@@ -1311,8 +1312,18 @@ export default function RegistroAuxiliarPage() {
         dni,
       });
       if (!result.data.estudiante?.id) throw new Error('No se pudo leer el estudiante matriculado.');
-      setRegistro(current => current && current.grupoModulo?.id === registro.grupoModulo?.id
-        ? { ...current, estudiantes: current.estudiantes.some(student => student.id === result.data.estudiante.id) ? current.estudiantes : [...current.estudiantes, result.data.estudiante] } : current);
+      setRegistro(current => {
+        if (!current || current.grupoModulo?.id !== registro.grupoModulo?.id
+          || current.estudiantes.some(student => student.id === result.data.estudiante.id)) return current;
+        const estudiantes = [...current.estudiantes, result.data.estudiante].sort((a, b) => {
+          const aUser = a.matricula?.user;
+          const bUser = b.matricula?.user;
+          const aName = `${aUser?.apellidoPaterno ?? ''} ${aUser?.apellidoMaterno ?? ''} ${aUser?.nombre ?? ''}`.trim();
+          const bName = `${bUser?.apellidoPaterno ?? ''} ${bUser?.apellidoMaterno ?? ''} ${bUser?.nombre ?? ''}`.trim();
+          return aName.localeCompare(bName, 'es', { numeric: true }) || a.matriculaId - b.matriculaId;
+        });
+        return { ...current, estudiantes };
+      });
       setMessage('Matricula creada y agregada al registro.');
       invalidateMatriculaLists();
       setEditingNewMatricula(false);
@@ -1330,7 +1341,7 @@ export default function RegistroAuxiliarPage() {
   };
 
   const handleRetireMatricula = async (student: Estudiante) => {
-    if (!registro?.grupoModulo?.id) return;
+    if (!registro?.grupoModulo?.id || retiringModuloEstudianteId !== null) return;
     const studentName = getStudentName(student);
     const confirmed = window.confirm(
       `¿Retirar a ${studentName} de este grupo-módulo? Sus inscripciones en los demás módulos se conservarán.`,
@@ -1471,20 +1482,25 @@ export default function RegistroAuxiliarPage() {
 
   return (
     <Box sx={{ overflowAnchor: 'none' }}>
-      <IntranetDocumentTitle title={PAGE_TITLE} />
+      <IntranetDocumentTitle title={registroTitle} />
       <Stack
-        direction={{ xs: 'column', lg: 'row' }}
+        direction="row"
         spacing={1}
-        alignItems={{ xs: 'stretch', lg: 'center' }}
-        justifyContent={isDirectRegistro || isDocente ? 'flex-end' : 'initial'}
-        sx={{ mb: 0.75 }}
+        useFlexGap
+        alignItems="center"
+        sx={{ flexWrap: 'wrap', mb: 0, rowGap: 0.5 }}
       >
+        <Box sx={{ flex: '1 1 180px', minWidth: 0 }}>
+          <Typography component="h1" variant="h6" sx={{ fontWeight: 800, fontSize: 18, lineHeight: 1.1, m: 0, overflowWrap: 'anywhere' }}>
+            {registroTitle}
+          </Typography>
+          {canEditRegistro && registro && !gradeSaveStatus.error && <Typography variant="caption" color="text.secondary" role="status" aria-live="polite" sx={{ display: 'block', m: 0, lineHeight: 1 }}>
+            {gradeSaveStatus.saving || gradeSaveStatus.pending > 0 ? 'Guardando…' : 'Listo'}
+          </Typography>}
+        </Box>
         {!isDirectRegistro && !isDocente && (
           <>
-            <Typography variant="h6" sx={{ fontWeight: 800, flex: 1, fontSize: 18, lineHeight: 1.15 }}>
-              {PAGE_TITLE}
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', lg: 'auto' }, minWidth: 0 }}>
+            <Stack direction="row" spacing={1} sx={{ flex: '1 1 300px', maxWidth: 628, minWidth: 0 }}>
               <FormControl size="small" sx={{ width: 100, minWidth: 100, flexShrink: 0 }} disabled={!semestreOptions.length}>
                 <InputLabel>Semestre</InputLabel>
                 <Select
@@ -1506,7 +1522,7 @@ export default function RegistroAuxiliarPage() {
                   ))}
                 </Select>
               </FormControl>
-              <FormControl size="small" sx={{ width: { xs: 0, lg: 520 }, flexGrow: { xs: 1, lg: 0 }, minWidth: 0 }} disabled={loadingOptions || !semestreId || !filteredGrupoModuloOptions.length}>
+              <FormControl size="small" sx={{ flex: 1, minWidth: 0 }} disabled={loadingOptions || !semestreId || !filteredGrupoModuloOptions.length}>
                 <InputLabel>Modulo</InputLabel>
                 <Select
                   label="Modulo"
@@ -1524,7 +1540,7 @@ export default function RegistroAuxiliarPage() {
             </Stack>
           </>
         )}
-        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+        <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="flex-end" sx={{ flexShrink: 0, ml: 'auto' }}>
           <Tooltip title="Copiar">
             <span>
               <IconButton color="primary" onClick={handleCopyNotas} disabled={!registro}>
@@ -1539,11 +1555,9 @@ export default function RegistroAuxiliarPage() {
               </IconButton>
             </span>
           </Tooltip>
-          {canEditRegistro && registro && <Stack direction="row" alignItems="center" spacing={0.75} role="status" title={gradeSaveStatus.error ?? undefined}>
-            {gradeSaveStatus.saving && <CircularProgress size={14} />}
-            <Typography variant="caption" color={gradeSaveStatus.error || !gradeSaveStatus.backedUp ? 'error' : 'text.secondary'}>
-              {!gradeSaveStatus.backedUp ? 'Respaldo local no disponible. ' : ''}
-              {gradeSaveStatus.pending ? `${gradeSaveStatus.saving ? 'Guardando' : 'Pendientes'}: ${gradeSaveStatus.pending}` : 'Guardado automático'}
+          {canEditRegistro && registro && (gradeSaveStatus.error || !gradeSaveStatus.backedUp) && <Stack direction="row" alignItems="center" spacing={0.75} role="alert">
+            <Typography variant="caption" color="error">
+              {gradeSaveStatus.error || 'Respaldo local no disponible.'}
             </Typography>
             {gradeSaveStatus.error && <Button size="small" onClick={flushGrades}>Reintentar</Button>}
           </Stack>}
@@ -1606,7 +1620,7 @@ export default function RegistroAuxiliarPage() {
                     py: 0.4,
                   }}
                 >
-                  REGISTRO AUXILIAR DE EVALUACION {registro.grupo?.semestre?.titulo || ''}
+                  {`REGISTRO AUXILIAR DE EVALUACION ${registro.grupo?.semestre?.titulo || ''}`.trim()}
                 </Box>
                 <Box
                   {...selectableCellProps(1, MODULE_INFO_LEFT_LABEL_COL)}
@@ -1877,7 +1891,7 @@ export default function RegistroAuxiliarPage() {
                             sx={{ ...cellBaseSx, ...selectableCellSx(TABLE_HEADER_ROW_START + 1, span.col, 1, span.colSpan), bgcolor: '#fff', height: 64, verticalAlign: 'middle', p: 0 }}
                           >
                             <Box title={curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion)} sx={capacidadLabelSx}>
-                              <strong>{`${capacidad.codigo?.replace(/:$/, '') || `C${(unidad.capacidadesTerminales.indexOf(capacidad) + 1)}`}:`}</strong>
+                              <span><strong>{`${capacidad.codigo?.replace(/:$/, '') || `C${(unidad.capacidadesTerminales.indexOf(capacidad) + 1)}`}:`}</strong>{' '}{capacidad.descripcion}</span>
                             </Box>
                           </Box>
                         );
@@ -1907,7 +1921,7 @@ export default function RegistroAuxiliarPage() {
                               }}
                             >
                               <Box title={curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`)} sx={criterioLabelSx}>
-                                <strong>{`${indicador.codigo?.replace(/:$/, '') || `I${capacidad.indicadoresCapacidad.indexOf(indicador) + 1}`}:`}</strong>
+                                <strong>{`${indicador.codigo?.replace(/:$/, '') || `I${capacidad.indicadoresCapacidad.indexOf(indicador) + 1}`}:`}</strong>{' '}{indicador.descripcion || indicador.sigla}
                               </Box>
                             </Box>
                           );
@@ -1939,8 +1953,9 @@ export default function RegistroAuxiliarPage() {
                 <Box component="tbody">
                   {registro.estudiantes.map((student, studentIndex) => {
                     const tableRowIndex = TABLE_HEADER_ROW_COUNT + studentIndex;
+                    const isRetiring = retiringModuloEstudianteId === student.id;
                     return (
-                    <Box component="tr" key={student.id} data-registro-student-id={student.id}>
+                    <Box component="tr" key={student.id} data-registro-student-id={student.id} aria-busy={isRetiring || undefined}>
                       <Box
                         component="td"
                         {...selectableCellProps(tableRowIndex, 0)}
@@ -1958,9 +1973,9 @@ export default function RegistroAuxiliarPage() {
                       <Box
                         component="td"
                         {...selectableCellProps(tableRowIndex, 2)}
-                        sx={{ ...cellBaseSx, ...selectableCellSx(tableRowIndex, 2), bgcolor: '#fff', fontWeight: focusedCell?.estudianteIndex === studentIndex ? 700 : 400 }}
+                        sx={{ ...cellBaseSx, ...selectableCellSx(tableRowIndex, 2), bgcolor: '#fff', fontWeight: focusedCell?.estudianteIndex === studentIndex ? 700 : 400, position: 'relative' }}
                       >
-                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ minWidth: 0 }}>
+                        <Stack direction="row" spacing={0.5} alignItems="center" inert={isRetiring || undefined} sx={{ minWidth: 0, opacity: isRetiring ? 0.35 : 1 }}>
                           {editingStudentNameId === student.id ? (
                             <Stack
                               direction={{ xs: 'column', md: 'row' }}
@@ -2057,7 +2072,8 @@ export default function RegistroAuxiliarPage() {
                                 <IconButton
                                   size="small"
                                   color="error"
-                                  disabled={retiringModuloEstudianteId === student.id}
+                                  disabled={retiringModuloEstudianteId !== null}
+                                  aria-label="Retirar de este grupo-módulo"
                                   onMouseDown={(event) => event.stopPropagation()}
                                   onClick={(event) => {
                                     event.stopPropagation();
@@ -2065,16 +2081,15 @@ export default function RegistroAuxiliarPage() {
                                   }}
                                   sx={{ width: 22, height: 22 }}
                                 >
-                                  {retiringModuloEstudianteId === student.id ? (
-                                    <CircularProgress size={13} color="inherit" />
-                                  ) : (
-                                    <PersonRemoveIcon sx={{ fontSize: 16 }} />
-                                  )}
+                                  <PersonRemoveIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
                               </span>
                             </Tooltip>
                           ) : null}
                         </Stack>
+                        {isRetiring && <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <CircularProgress size={20} aria-label="Retirando matrícula" />
+                        </Box>}
                       </Box>
                       {visibleUnits.flatMap((unidad) =>
                         unidad.capacidadesTerminales.flatMap((capacidad) => [

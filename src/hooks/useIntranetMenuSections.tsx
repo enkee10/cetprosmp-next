@@ -92,7 +92,7 @@ const buildDocenteRegistroItems = (
   semestreTitulo?: string | null,
 ): DocenteMenuItem[] =>
   modulos.map((modulo) => {
-    const semestreTitle = getSemestreTitle(modulo.grupo?.semestre, semestreTitulo);
+    const semestreTitle = getSemestreTitle(null, semestreTitulo || modulo.grupo?.semestre?.titulo);
     const periodo = formatPeriodoMenu(semestreTitle);
     const moduloName = docenteMenuModuloName(modulo);
     return {
@@ -103,7 +103,7 @@ const buildDocenteRegistroItems = (
       docenteMenuKind: 'notas',
       grupoModuloId: modulo.id,
       moduloName,
-      semestreKey: getSemestreKey(modulo.grupo?.semestre, semestreTitulo),
+      semestreKey: getSemestreKey(null, semestreTitle),
       semestreTitle,
       semestrePeriodo: periodo,
     };
@@ -114,7 +114,7 @@ const buildDocenteMatriculaItems = (
   semestreTitulo?: string | null,
 ): DocenteMenuItem[] =>
   modulos.map((modulo) => {
-    const semestreTitle = getSemestreTitle(modulo.grupo?.semestre, semestreTitulo);
+    const semestreTitle = getSemestreTitle(null, semestreTitulo || modulo.grupo?.semestre?.titulo);
     const periodo = formatPeriodoMenu(semestreTitle);
     const moduloName = docenteMenuModuloName(modulo);
     return {
@@ -125,7 +125,7 @@ const buildDocenteMatriculaItems = (
       docenteMenuKind: 'lista',
       grupoModuloId: modulo.id,
       moduloName,
-      semestreKey: getSemestreKey(modulo.grupo?.semestre, semestreTitulo),
+      semestreKey: getSemestreKey(null, semestreTitle),
       semestreTitle,
       semestrePeriodo: periodo,
     };
@@ -149,6 +149,7 @@ async function loadDocenteMenuData(params: {
   key: string;
   uid: string;
   semestreId: number;
+  semestreTitulo?: string | null;
   canViewRegistroAuxiliar: boolean;
   canViewMatriculas: boolean;
   canViewEstructuraAcademica: boolean;
@@ -176,7 +177,7 @@ async function loadDocenteMenuData(params: {
       estructura: params.canViewEstructuraAcademica,
     });
     const modulos = result.modulos || [];
-    const semestreTitulo = result.semestreTitulo;
+    const semestreTitulo = params.semestreTitulo || result.semestreTitulo;
     const registroItems = params.canViewRegistroAuxiliar ? buildDocenteRegistroItems(modulos, semestreTitulo) : [];
     const matriculaItems = params.canViewMatriculas ? buildDocenteMatriculaItems(modulos, semestreTitulo) : [];
     const estructuraItem = params.canViewEstructuraAcademica && modulos.length
@@ -278,6 +279,7 @@ function applyDocenteRegistrosMenu(params: {
 export function useIntranetMenuSections(sourceSections: IntranetMenuSection[] = menuSections) {
   const { user } = useAuth();
   const { settings, loading: loadingSettings } = useAppSettings();
+  const semestreActualTitulo = settings.general.semestres.find(item => item.id === settings.general.semestreActualId)?.titulo || '';
   const { can, filterSections, loading: loadingPermissions, permissions } = useIntranetPermissions();
   const isDocente = isDocenteRole(user?.role) && Number(user?.level ?? 0) < 600;
   const canViewRegistroAuxiliar = can('registro-auxiliar', 'view');
@@ -300,6 +302,7 @@ export function useIntranetMenuSections(sourceSections: IntranetMenuSection[] = 
     ? [
       user?.uid ?? '',
       String(settings.general.semestreActualId ?? ''),
+      semestreActualTitulo,
       permissionSignature,
       canViewRegistroAuxiliar ? 'registro' : '',
       canViewMatriculas ? 'matriculas' : '',
@@ -335,6 +338,7 @@ export function useIntranetMenuSections(sourceSections: IntranetMenuSection[] = 
           key: docenteMenuKey,
           uid: user?.uid ?? '',
           semestreId: Number(settings.general.semestreActualId),
+          semestreTitulo: semestreActualTitulo,
           canViewRegistroAuxiliar,
           canViewMatriculas,
           canViewEstructuraAcademica,
@@ -363,6 +367,7 @@ export function useIntranetMenuSections(sourceSections: IntranetMenuSection[] = 
     loadingPermissions,
     user?.uid,
     settings.general.semestreActualId,
+    semestreActualTitulo,
   ]);
 
   const sections = useMemo(() => {

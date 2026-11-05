@@ -22,7 +22,6 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
-import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { useSearchParams } from 'next/navigation';
 import { getAuth } from 'firebase/auth';
@@ -32,6 +31,8 @@ import IntranetDocumentTitle from '@/components/intranet/IntranetDocumentTitle';
 import { useAuth } from '@/context/AuthContext';
 import { useCurrentSemestreFilter } from '@/hooks/useCurrentSemestreFilter';
 import { useAppSettings } from '@/hooks/useAppSettings';
+import { useRegistroGradeQueue } from '@/hooks/useRegistroGradeQueue';
+import type { GradeChange } from '@/lib/registroGradeQueue';
 import { invalidateMatriculaLists } from '@/lib/matriculasListCache';
 import { app } from '@/lib/firebase';
 import { formatDateOnly, toDateOnlyInputValue } from '@/lib/dateOnly';
@@ -427,7 +428,6 @@ export default function RegistroAuxiliarPage() {
   const [focusedCell, setFocusedCell] = useState<CellPosition | null>(null);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [loadingRegistro, setLoadingRegistro] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [editingModuloFechas, setEditingModuloFechas] = useState(false);
   const [fechaInicioModulo, setFechaInicioModulo] = useState('');
   const [fechaFinModulo, setFechaFinModulo] = useState('');
@@ -454,6 +454,8 @@ export default function RegistroAuxiliarPage() {
   const selectionPointerRef = useRef<{ x: number; y: number } | null>(null);
   const autoScrollFrameRef = useRef<number | null>(null);
   const committingStudentNameRef = useRef(false);
+  const registroRequestRef = useRef(0);
+  const creatingMatriculaRef = useRef(false);
 
   const auth = getAuth(app);
   const functions = useMemo(() => getFunctions(app), []);
@@ -603,8 +605,10 @@ export default function RegistroAuxiliarPage() {
       ? selectedGrupoModuloId
       : String(filteredGrupoModuloOptions[0]?.id ?? '')
   );
+  const { queue: gradeQueue, status: gradeSaveStatus, enqueue: queueGrades, flush: flushGrades } = useRegistroGradeQueue(user?.uid, grupoModuloId, canEditRegistro);
 
   const fetchRegistro = useCallback(async () => {
+    const request = ++registroRequestRef.current;
     if (!grupoModuloId) {
       setRegistro(null);
       setNotas({});
@@ -614,12 +618,14 @@ export default function RegistroAuxiliarPage() {
     setLoadingRegistro(true);
     setError(null);
     setMessage(null);
+    const pendingBeforeLoad = gradeQueue?.values() ?? [];
     try {
       const getRegistroAuxiliar = httpsCallable<{ grupoModuloId: number }, RegistroAuxiliar>(
         functions,
         'getRegistroAuxiliar',
       );
       const result = await getRegistroAuxiliar({ grupoModuloId: Number(grupoModuloId) });
+      if (request !== registroRequestRef.current) return;
       setRegistro(result.data);
       setEditingModuloFechas(false);
       const nextNotas: Record<string, string> = {};
@@ -627,24 +633,29 @@ export default function RegistroAuxiliarPage() {
         if (!nota.indicadorCapacidadId || nota.promedio == null) continue;
         nextNotas[notaKey(nota.matriculaId, nota.indicadorCapacidadId)] = displayGrade(nota.promedio);
       }
-      setNotas(nextNotas);
       const nextEfsrtPppNotas: Record<string, string> = {};
       for (const promedio of result.data.promediosEfsrtPpp || []) {
         if (promedio.promedioFinal == null) continue;
         nextEfsrtPppNotas[efsrtPppKey(promedio.moduloEstudianteId)] = displayGrade(promedio.promedioFinal);
       }
+      for (const row of [...pendingBeforeLoad, ...(gradeQueue?.values() ?? [])]) {
+        if (row.kind === 'nota') nextNotas[notaKey(row.matriculaId, row.indicadorCapacidadId)] = row.value === null ? '' : displayGrade(row.value);
+        else nextEfsrtPppNotas[efsrtPppKey(row.moduloEstudianteId)] = row.value === null ? '' : displayGrade(row.value);
+      }
+      setNotas(nextNotas);
       setEfsrtPppNotas(nextEfsrtPppNotas);
       setEditingNewMatricula(false);
       setNewMatriculaDni('');
     } catch (err) {
+      if (request !== registroRequestRef.current) return;
       console.error('Error loading registro auxiliar', err);
       setRegistro(null);
       setEfsrtPppNotas({});
       setError('No se pudo cargar el registro auxiliar.');
     } finally {
-      setLoadingRegistro(false);
+      if (request === registroRequestRef.current) setLoadingRegistro(false);
     }
-  }, [functions, grupoModuloId]);
+  }, [functions, grupoModuloId, gradeQueue]);
 
   useEffect(() => {
     void fetchRegistro();
@@ -1186,11 +1197,14 @@ export default function RegistroAuxiliarPage() {
     const cleaned = value.replace(',', '.');
     if (cleaned !== '' && !/^\d{0,2}(\.\d{0,2})?$/.test(cleaned)) return;
     const numeric = parseNota(cleaned);
-    if (numeric != null && numeric > 20) return;
+    if (cleaned !== '' && Number(cleaned) > 20) return;
     setNotas((prev) => ({ ...prev, [notaKey(matriculaId, indicadorId)]: cleaned }));
+    if (cleaned === '' || Number.isFinite(Number(cleaned))) queueGrades([{ kind: 'nota', matriculaId, indicadorCapacidadId: indicadorId, value: numeric }]);
   };
 
   const formatNota = (matriculaId: number, indicadorId: number) => {
+    if (notas[notaKey(matriculaId, indicadorId)] === '.') queueGrades([{ kind: 'nota', matriculaId, indicadorCapacidadId: indicadorId, value: null }]);
+    flushGrades();
     setNotas((prev) => {
       const key = notaKey(matriculaId, indicadorId);
       const nota = parseNota(prev[key]);
@@ -1202,11 +1216,14 @@ export default function RegistroAuxiliarPage() {
     const cleaned = value.replace(',', '.');
     if (cleaned !== '' && !/^\d{0,2}(\.\d{0,2})?$/.test(cleaned)) return;
     const numeric = parseNota(cleaned);
-    if (numeric != null && numeric > 20) return;
+    if (cleaned !== '' && Number(cleaned) > 20) return;
     setEfsrtPppNotas((prev) => ({ ...prev, [efsrtPppKey(moduloEstudianteId)]: cleaned }));
+    if (cleaned === '' || Number.isFinite(Number(cleaned))) queueGrades([{ kind: 'efsrt', moduloEstudianteId, value: numeric }]);
   };
 
   const formatEfsrtPppNota = (moduloEstudianteId: number) => {
+    if (efsrtPppNotas[efsrtPppKey(moduloEstudianteId)] === '.') queueGrades([{ kind: 'efsrt', moduloEstudianteId, value: null }]);
+    flushGrades();
     setEfsrtPppNotas((prev) => {
       const key = efsrtPppKey(moduloEstudianteId);
       const nota = parseNota(prev[key]);
@@ -1218,21 +1235,33 @@ export default function RegistroAuxiliarPage() {
     const text = event.clipboardData.getData('text');
     if (!text.includes('\t') && !text.includes('\n')) return;
     event.preventDefault();
-    const rows = text.replace(/\r/g, '').split('\n').filter((row) => row.length > 0);
-    setNotas((prev) => {
-      const next = { ...prev };
+    const rows = text.replace(/\r/g, '').split('\n');
+    if (rows.at(-1) === '') rows.pop();
+    const next: Record<string, string> = {};
+    const nextEfsrt: Record<string, string> = {};
+    const changes: GradeChange[] = [];
       rows.forEach((row, rowOffset) => {
         const student = registro?.estudiantes[position.estudianteIndex + rowOffset];
         if (!student) return;
         row.split('\t').forEach((cell, columnOffset) => {
-          const indicator = visibleIndicatorColumns[position.indicadorIndex + columnOffset]?.indicador;
-          if (!indicator) return;
+          const index = position.indicadorIndex + columnOffset;
+          const indicator = visibleIndicatorColumns[index]?.indicador;
+          if (!indicator && !(showEfsrtPpp && index === visibleIndicatorColumns.length)) return;
           const nota = parseNota(cell);
-          next[notaKey(student.matriculaId, indicator.id)] = nota == null ? '' : displayGrade(nota);
+          const numeric = Number(cell.trim().replace(',', '.'));
+          if (cell.trim() !== '' && (!Number.isFinite(numeric) || numeric < 0 || numeric > 20)) return;
+          if (indicator) {
+            next[notaKey(student.matriculaId, indicator.id)] = nota == null ? '' : displayGrade(nota);
+            changes.push({ kind: 'nota', matriculaId: student.matriculaId, indicadorCapacidadId: indicator.id, value: nota });
+          } else {
+            nextEfsrt[efsrtPppKey(student.id)] = nota == null ? '' : displayGrade(nota);
+            changes.push({ kind: 'efsrt', moduloEstudianteId: student.id, value: nota });
+          }
         });
       });
-      return next;
-    });
+    setNotas(prev => ({ ...prev, ...next }));
+    setEfsrtPppNotas(prev => ({ ...prev, ...nextEfsrt }));
+    queueGrades(changes);
   };
 
   const handleCopyNotas = async () => {
@@ -1260,75 +1289,34 @@ export default function RegistroAuxiliarPage() {
     window.open(`/intranet/registro-auxiliar/imprimir?grupoModuloId=${encodeURIComponent(grupoModuloId)}`, '_blank', 'noopener,noreferrer');
   };
 
-  const handleSave = async () => {
-    if (!registro || !grupoModuloId) return;
-    setSaving(true);
-    setMessage(null);
-    setError(null);
-    try {
-      const saveRegistroAuxiliar = httpsCallable<
-        {
-          grupoModuloId: number;
-          notas: Array<{ matriculaId: number; indicadorCapacidadId: number; nota: number | null }>;
-          efsrtPppPromedios: Array<{ moduloEstudianteId: number; promedioFinal: number | null }>;
-        },
-        { saved: number; efsrtPppSaved?: number }
-      >(functions, 'saveRegistroAuxiliar');
-      const payload = registro.estudiantes.flatMap((student) =>
-        indicatorColumns.map((column) => ({
-          matriculaId: student.matriculaId,
-          indicadorCapacidadId: column.indicador.id,
-          nota: getNotaValue(student.matriculaId, column.indicador.id),
-        })),
-      );
-      const efsrtPppPayload = registro.estudiantes.map((student) => ({
-        moduloEstudianteId: student.id,
-        promedioFinal: parseNota(efsrtPppNotas[efsrtPppKey(student.id)]),
-      }));
-      const result = await saveRegistroAuxiliar({
-        grupoModuloId: Number(grupoModuloId),
-        notas: payload,
-        efsrtPppPromedios: showEfsrtPpp ? efsrtPppPayload : [],
-      });
-      setMessage(
-        showEfsrtPpp
-          ? `Registro guardado. Celdas procesadas: ${result.data.saved}. EFSRT/PPP: ${result.data.efsrtPppSaved ?? 0}.`
-          : `Registro guardado. Celdas procesadas: ${result.data.saved}.`,
-      );
-      await fetchRegistro();
-    } catch (err) {
-      console.error('Error saving registro auxiliar', err);
-      setError('No se pudo guardar el registro auxiliar.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleCreateMatricula = async () => {
     const dni = newMatriculaDni.replace(/\D/g, '');
-    if (!registro?.grupoModulo?.id || !dni) return;
+    if (!canCreateRegistroMatriculas || creatingMatriculaRef.current || !registro?.grupoModulo?.id || !dni) return;
     if (!/^\d{8}$/.test(dni)) {
       setError('Ingresa un DNI valido de 8 digitos.');
       return;
     }
 
+    creatingMatriculaRef.current = true;
     setCreatingMatricula(true);
     setError(null);
     setMessage(null);
     try {
       const createRegistroAuxiliarMatricula = httpsCallable<
         { grupoModuloId: number; dni: string },
-        { matriculaId: number; moduloEstudianteId: number; dni: string }
+        { matriculaId: number; moduloEstudianteId: number; dni: string; estudiante: Estudiante }
       >(functions, 'createRegistroAuxiliarMatricula');
-      await createRegistroAuxiliarMatricula({
+      const result = await createRegistroAuxiliarMatricula({
         grupoModuloId: registro.grupoModulo.id,
         dni,
       });
+      if (!result.data.estudiante?.id) throw new Error('No se pudo leer el estudiante matriculado.');
+      setRegistro(current => current && current.grupoModulo?.id === registro.grupoModulo?.id
+        ? { ...current, estudiantes: current.estudiantes.some(student => student.id === result.data.estudiante.id) ? current.estudiantes : [...current.estudiantes, result.data.estudiante] } : current);
       setMessage('Matricula creada y agregada al registro.');
       invalidateMatriculaLists();
       setEditingNewMatricula(false);
       setNewMatriculaDni('');
-      await fetchRegistro();
     } catch (err) {
       console.error('Error creating registro auxiliar matricula', err);
       const message = typeof err === 'object' && err !== null && 'message' in err
@@ -1336,6 +1324,7 @@ export default function RegistroAuxiliarPage() {
         : '';
       setError(message || 'No se pudo crear la matricula.');
     } finally {
+      creatingMatriculaRef.current = false;
       setCreatingMatricula(false);
     }
   };
@@ -1362,7 +1351,9 @@ export default function RegistroAuxiliarPage() {
       });
       invalidateMatriculaLists();
       setMessage('Estudiante retirado de este grupo-módulo.');
-      await fetchRegistro();
+      gradeQueue?.discardStudent(student.matriculaId, student.id);
+      setRegistro(current => current && current.grupoModulo?.id === registro.grupoModulo?.id
+        ? { ...current, estudiantes: current.estudiantes.filter(row => row.id !== student.id) } : current);
     } catch (err) {
       console.error('Error retiring registro auxiliar matricula', err);
       const message = typeof err === 'object' && err !== null && 'message' in err
@@ -1548,13 +1539,14 @@ export default function RegistroAuxiliarPage() {
               </IconButton>
             </span>
           </Tooltip>
-          <Tooltip title="Guardar">
-            <span>
-              <IconButton color="primary" onClick={handleSave} disabled={!registro || saving || !canEditRegistro}>
-                {saving ? <CircularProgress size={20} /> : <SaveIcon />}
-              </IconButton>
-            </span>
-          </Tooltip>
+          {canEditRegistro && registro && <Stack direction="row" alignItems="center" spacing={0.75} role="status" title={gradeSaveStatus.error ?? undefined}>
+            {gradeSaveStatus.saving && <CircularProgress size={14} />}
+            <Typography variant="caption" color={gradeSaveStatus.error || !gradeSaveStatus.backedUp ? 'error' : 'text.secondary'}>
+              {!gradeSaveStatus.backedUp ? 'Respaldo local no disponible. ' : ''}
+              {gradeSaveStatus.pending ? `${gradeSaveStatus.saving ? 'Guardando' : 'Pendientes'}: ${gradeSaveStatus.pending}` : 'Guardado automático'}
+            </Typography>
+            {gradeSaveStatus.error && <Button size="small" onClick={flushGrades}>Reintentar</Button>}
+          </Stack>}
         </Stack>
       </Stack>
 
@@ -1885,7 +1877,7 @@ export default function RegistroAuxiliarPage() {
                             sx={{ ...cellBaseSx, ...selectableCellSx(TABLE_HEADER_ROW_START + 1, span.col, 1, span.colSpan), bgcolor: '#fff', height: 64, verticalAlign: 'middle', p: 0 }}
                           >
                             <Box title={curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion)} sx={capacidadLabelSx}>
-                              {curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion)}
+                              <strong>{`${capacidad.codigo?.replace(/:$/, '') || `C${(unidad.capacidadesTerminales.indexOf(capacidad) + 1)}`}:`}</strong>
                             </Box>
                           </Box>
                         );
@@ -1915,7 +1907,7 @@ export default function RegistroAuxiliarPage() {
                               }}
                             >
                               <Box title={curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`)} sx={criterioLabelSx}>
-                                {curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`)}
+                                <strong>{`${indicador.codigo?.replace(/:$/, '') || `I${capacidad.indicadoresCapacidad.indexOf(indicador) + 1}`}:`}</strong>
                               </Box>
                             </Box>
                           );
@@ -1948,7 +1940,7 @@ export default function RegistroAuxiliarPage() {
                   {registro.estudiantes.map((student, studentIndex) => {
                     const tableRowIndex = TABLE_HEADER_ROW_COUNT + studentIndex;
                     return (
-                    <Box component="tr" key={student.id}>
+                    <Box component="tr" key={student.id} data-registro-student-id={student.id}>
                       <Box
                         component="td"
                         {...selectableCellProps(tableRowIndex, 0)}
@@ -2099,6 +2091,8 @@ export default function RegistroAuxiliarPage() {
                               >
                                 <Box
                                   component="input"
+                                  data-nota-key={key}
+                                  readOnly={!canEditRegistro}
                                   ref={(element: HTMLInputElement | null) => {
                                     editableCellRefs.current[editableCellKey(studentIndex, indicatorIndex)] = element;
                                   }}
@@ -2159,11 +2153,14 @@ export default function RegistroAuxiliarPage() {
                         >
                           <Box
                             component="input"
+                            data-efsrt-key={student.id}
+                            readOnly={!canEditRegistro}
                             ref={(element: HTMLInputElement | null) => {
                               editableCellRefs.current[editableCellKey(studentIndex, visibleIndicatorColumns.length)] = element;
                             }}
                             value={efsrtPppNotas[efsrtPppKey(student.id)] ?? ''}
                             onFocus={() => setFocusedCell({ estudianteIndex: studentIndex, indicadorIndex: visibleIndicatorColumns.length })}
+                            onPaste={event => handlePaste(event, { estudianteIndex: studentIndex, indicadorIndex: visibleIndicatorColumns.length })}
                             onKeyDown={(event) => handleEditableCellKeyDown(event, studentIndex, visibleIndicatorColumns.length)}
                             onBlur={() => formatEfsrtPppNota(student.id)}
                             onChange={(event) => updateEfsrtPppNota(student.id, event.target.value)}
@@ -2234,7 +2231,7 @@ export default function RegistroAuxiliarPage() {
                         minHeight: 30,
                       }}
                     >
-                      {canCreateRegistroMatriculas && editingNewMatricula ? (
+                      {creatingMatricula ? <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} role="status"><CircularProgress size={20} /><Typography variant="caption">Matriculando estudiante…</Typography></Stack> : canCreateRegistroMatriculas && editingNewMatricula ? (
                         <Stack
                           direction="row"
                           spacing={0.75}

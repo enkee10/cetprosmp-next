@@ -58,7 +58,8 @@ import {
   academicLabels, academicLocations, academicReorderItems, applyAcademicReassignment, reassignmentFor,
   type AcademicDrag, type Reassignment, type ModuloDetalle, type UnidadDidacticaDetalle, type CapacidadDetalle, type IndicadorDetalle,
 } from '@/lib/curricularReassignment';
-import { applyAcademicCreation, applyAcademicOrder, applyAcademicRemoval, type AcademicCreationResult, type AcademicRemoval, type AcademicRemovalResult } from '@/lib/curricularUpdates';
+import { applyAcademicContinuation, removeAcademicContinuation, applyAcademicCreation, applyAcademicOrder, applyAcademicRemoval, type AcademicCreationResult, type AcademicRemoval, type AcademicRemovalResult } from '@/lib/curricularUpdates';
+import { curricularRemovalIsProtected, markCurricularGradeUsage, withCurricularGradeProtection, type CurricularGradeUsage } from '@/lib/curricularGradeProtection';
 
 type EditableAcademicEntity = 'modulo' | 'competencia' | 'actividad' | 'aprendizaje' | 'indicadorContenido' | 'actividadMaterial' | 'unidadDidactica' | 'competenciaUnidadDidactica' | 'capacidadTerminal' | 'indicadorCapacidad';
 type EditableValueType = 'text' | 'number' | 'boolean';
@@ -563,18 +564,21 @@ function EmptyState({ label }: { label: string }) {
   );
 }
 
-function AcademicItems({ count, emptyLabel, creating, children }: {
+function AcademicItems({ count, emptyLabel, creating, creatingFirst = false, children }: {
   count: number;
   emptyLabel: string;
   creating: boolean;
+  creatingFirst?: boolean;
   children: ReactNode;
 }) {
   if (!count && !creating) return <EmptyState label={emptyLabel} />;
-  return <List dense disablePadding>
-    {children}
-    {creating && <AcademicListItem busy busyLabel="Creando elemento" data-academic-creation-pending="" dragHandle={null}>
+  const placeholder = creating && <AcademicListItem busy busyLabel="Creando elemento" data-academic-creation-pending="" dragHandle={null}>
       <Box sx={{ minHeight: 64 }} />
-    </AcademicListItem>}
+    </AcademicListItem>;
+  return <List dense disablePadding>
+    {creatingFirst && placeholder}
+    {children}
+    {!creatingFirst && placeholder}
   </List>;
 }
 
@@ -748,7 +752,8 @@ export default function EstructuraAcademicaMasterDetail({
   const locations = useMemo(() => academicLocations(modulos), [modulos]);
   const isCreating = (scope: Record<string, unknown>) => pendingStructureAction?.kind === 'create'
     && !pendingStructureAction.card && Object.entries(scope).every(([key, value]) => pendingStructureAction.payload[key] === value);
-  const isBusyCard = (entity: AcademicDrag['entity'], id: number) => pendingStructureAction?.card?.entity === entity && pendingStructureAction.card.id === id;
+  const isBusyCard = (entity: AcademicDrag['entity'], id: number, continuacionId?: number | null) => pendingStructureAction?.card?.entity === entity && pendingStructureAction.card.id === id
+    && (pendingStructureAction.card.continuacionId ?? null) === (continuacionId ?? null);
   useEffect(() => {
     if (pendingStructureAction?.kind === 'create' && !pendingStructureAction.card) {
       document.querySelector<HTMLElement>('[data-academic-creation-pending]')?.scrollIntoView({ block: 'nearest', inline: 'end', behavior: 'smooth' });
@@ -775,12 +780,13 @@ export default function EstructuraAcademicaMasterDetail({
         semestreId?: number;
         semestres?: SelectionSemester[];
         selecciones?: PlanSelection[];
+        gradeUsage?: CurricularGradeUsage;
       }>(
         functions,
         callableName,
       );
       const result = await listEstructuraAcademica({ semestreId: selectedSemesterId });
-      setModulos(result.data.modulos || []);
+      setModulos(markCurricularGradeUsage(result.data.modulos || [], result.data.gradeUsage));
       const loadedModuleIds = new Set((result.data.modulos ?? []).map(module => module.id));
       setCompetencyCodeModules((result.data.competencyCodeModules ?? []).filter(module => !loadedModuleIds.has(module.id)));
       setPlanes(result.data.planes || []);
@@ -838,7 +844,7 @@ export default function EstructuraAcademicaMasterDetail({
   const planOptions = useMemo(() => curricularStudyPlanOptions(planCatalog), [planCatalog]);
   const selectedPlan = planOptions.find(option => option.key === selectedPlanKey) ?? null;
   const occupationalHiding = settings.general.poderOcultarProgramacionOpcionesOcupacionales;
-  const filteredModulos = useMemo(() => filterCurricularModules(modulos, planCatalog, ['all'], selectedPlan)
+  const filteredModulos = useMemo(() => filterCurricularModules(withCurricularGradeProtection(modulos), planCatalog, ['all'], selectedPlan)
     .map(module => withPeriodSelection({ ...module,
       competencias: module.competencias.filter(item => !item.esContinuacion || item.continuacionPlanId === module.planId),
       unidadesDidacticas: module.unidadesDidacticas.filter(item => !item.competenciaContinuacionId || item.competenciaContinuacionPlanId === module.planId),
@@ -960,6 +966,7 @@ export default function EstructuraAcademicaMasterDetail({
     payload: Record<string, unknown>,
   ) => {
     if (structureActionRef.current) return;
+    if (callableName === 'detachEstructuraAcademicaItem' && curricularRemovalIsProtected(modulos, payload)) return;
     structureActionRef.current = true;
     setActionLoading(true);
     const creating = callableName === 'createEstructuraAcademicaItem';
@@ -978,22 +985,13 @@ export default function EstructuraAcademicaMasterDetail({
       id: Number(payload[removalFields[String(payload.entity)]]),
     } };
     if (creating) setPendingStructureAction({ kind: 'create', payload, card: null });
-    else if (!removalMessage) setPendingStructureAction(deletingAction);
     try {
+      if (!creating) {
+        if (removalMessage && !window.confirm(`${removalMessage}\n\n¿Deseas continuar?`)) return;
+        setPendingStructureAction(deletingAction);
+      }
       if (auth.currentUser) {
         await auth.currentUser.getIdToken(true);
-      }
-      if (callableName === 'detachEstructuraAcademicaItem' && removalMessage) {
-        const preview = httpsCallable<Record<string, unknown>, { notasAsociadas: number }>(functions, callableName);
-        const { data } = await preview({ ...payload, previewOnly: true });
-        if (!Number.isSafeInteger(data.notasAsociadas) || data.notasAsociadas < 0) {
-          throw new Error('No se pudo comprobar la cantidad de notas asociadas. Inténtalo nuevamente.');
-        }
-        const warning = data.notasAsociadas > 0
-          ? `\n\nAdvertencia: existen ${data.notasAsociadas} notas asociadas a este elemento y sus dependientes (incluidos los promedios guardados). Si continúas, estas notas podrían quedar huérfanas.`
-          : '';
-        if (!window.confirm(`${removalMessage}${warning}\n\n¿Deseas continuar?`)) return;
-        setPendingStructureAction(deletingAction);
       }
       const callable = httpsCallable<Record<string, unknown>, AcademicCreationResult | AcademicRemovalResult>(functions, callableName);
       const result = await callable(payload);
@@ -1031,7 +1029,7 @@ export default function EstructuraAcademicaMasterDetail({
       structureActionRef.current = false;
       setActionLoading(false);
     }
-  }, [auth, functions, planCatalog, periodSelection, periodArchived, selectedSemesterId, allowEdit]);
+  }, [auth, functions, modulos, planCatalog, periodSelection, periodArchived, selectedSemesterId, allowEdit]);
 
   const beginDrag = useCallback((event: DragEvent<HTMLElement>, nextDragState: DragState) => {
     event.stopPropagation();
@@ -1075,10 +1073,12 @@ export default function EstructuraAcademicaMasterDetail({
     setMovePending(true);
     setActionLoading(true);
     const originalOrder = locations.get(`${move.entity}:${move.id}`)?.orden;
+    const deferred = Boolean(move.targetAncestor || move.targetIndicatorId || move.targetContinuacionId
+      || (move.entity === 'competenciaUnidadDidactica' && locations.get(`${move.entity}:${move.id}`)?.continuacionId != null));
     const originalTargetOrders = move.targetSiblingId ? [...locations].flatMap(([key, row]) =>
       key.startsWith(`${move.entity}:`) && row.parentId === move.parentId ? [{ id: Number(key.slice(move.entity.length + 1)), orden: row.orden }] : []) : [];
     setModulos(current => {
-      const next = applyAcademicReassignment(current, move);
+      const next = deferred ? current : applyAcademicReassignment(current, move);
       return move.targetSiblingId ? applyAcademicOrder(next, move.entity,
         academicReorderItems(next, move.entity, move.id, move.targetSiblingId, move.position ?? 'before')) : next;
     });
@@ -1089,7 +1089,7 @@ export default function EstructuraAcademicaMasterDetail({
       persisted = true;
       setModulos(current => {
         let next = current;
-        if (move.targetAncestor) {
+        if (deferred && !move.targetIndicatorId) {
           for (const created of result.data.creations ?? []) next = applyAcademicCreation(next, created);
           next = applyAcademicReassignment(next, result.data);
         }
@@ -1100,8 +1100,8 @@ export default function EstructuraAcademicaMasterDetail({
         return result.data.orders ? applyAcademicOrder(next, move.entity, result.data.orders)
           : result.data.orden != null ? applyAcademicOrder(next, move.entity, [{ id: move.id, orden: result.data.orden }]) : next;
       });
-      if (move.targetAncestor) {
-        const destination = locations.get(`${move.targetAncestor.entity}:${move.targetAncestor.id}`)?.module;
+      if (move.targetAncestor || move.targetContinuacionId) {
+        const destination = modulos.find(module => module.id === result.data.moduleId);
         const added = (result.data.creations ?? []).filter(item => Object.prototype.hasOwnProperty.call(selectionColumns, item.entity));
         const movedEntity = move.entity === 'competenciaUnidadDidactica' ? 'unidadDidactica' : move.entity;
         if (Object.prototype.hasOwnProperty.call(selectionColumns, movedEntity)) added.push({ entity: movedEntity,
@@ -1124,7 +1124,7 @@ export default function EstructuraAcademicaMasterDetail({
       setError(null);
     } catch (err) {
       // Restore only affected branches; keep any unrelated state and edits intact.
-      if (!persisted && !move.targetIndicatorId && !move.targetAncestor) setModulos(current => {
+      if (!persisted && !deferred) setModulos(current => {
         const next = applyAcademicReassignment(current, { ...move, parentId: move.previousParentId, previousParentId: move.parentId, orden: originalOrder });
         return originalTargetOrders.length ? applyAcademicOrder(next, move.entity, originalTargetOrders) : next;
       });
@@ -1148,10 +1148,10 @@ export default function EstructuraAcademicaMasterDetail({
       const move = reassignmentFor(modulos, source, target, locations);
       if (move) {
         event.preventDefault(); event.stopPropagation(); event.dataTransfer.dropEffect = 'move';
-        setMoveTarget(current => current?.entity === target.entity && current.id === target.id ? current : target);
+        setMoveTarget(current => current?.entity === target.entity && current.id === target.id && current.continuacionId === target.continuacionId ? current : target);
       } else reorder?.onDragOver?.(event);
       // Hovering an ancestor exposes its children without losing the dragged item.
-      const key = `${target.entity}:${target.id}`;
+      const key = `${target.entity}:${target.id}${target.continuacionId == null ? '' : `:${target.continuacionId}`}`;
       if (source.entity !== target.entity && hoverKeyRef.current !== key) {
         if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
         hoverKeyRef.current = key;
@@ -1166,7 +1166,7 @@ export default function EstructuraAcademicaMasterDetail({
     },
     onDragLeave: (event: DragEvent<HTMLElement>) => {
       if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
-      setMoveTarget(current => current?.entity === target.entity && current.id === target.id ? null : current);
+      setMoveTarget(current => current?.entity === target.entity && current.id === target.id && current.continuacionId === target.continuacionId ? null : current);
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
       hoverKeyRef.current = null;
       if (target.entity !== 'aprendizaje') clearDropIndicator(target.entity, target.id);
@@ -1182,6 +1182,7 @@ export default function EstructuraAcademicaMasterDetail({
     onDragEnd: endDrag,
     'data-academic-entity': target.entity,
     'data-academic-id': target.id,
+    'data-academic-continuacion-id': target.continuacionId,
   });
 
   const updateDropIndicator = useCallback((
@@ -1214,10 +1215,10 @@ export default function EstructuraAcademicaMasterDetail({
     setDropIndicator(null);
   }, []);
 
-  const dropIndicatorSx = (entity: DragState['entity'], id: number) => {
-    const active = dropIndicator?.entity === entity && dropIndicator.id === id;
-    const canReceive = allowEdit && !actionLoading && dragState && reassignmentFor(modulos, dragState, { entity, id }, locations);
-    const receiving = canReceive && moveTarget?.entity === entity && moveTarget.id === id;
+  const dropIndicatorSx = (entity: DragState['entity'], id: number, continuacionId?: number | null) => {
+    const active = continuacionId == null && dropIndicator?.entity === entity && dropIndicator.id === id;
+    const canReceive = allowEdit && !actionLoading && dragState && reassignmentFor(modulos, dragState, { entity, id, ...(continuacionId != null ? { continuacionId } : {}) }, locations);
+    const receiving = canReceive && moveTarget?.entity === entity && moveTarget.id === id && (moveTarget.continuacionId ?? null) === (continuacionId ?? null);
     return {
       position: 'relative' as const,
       ...(canReceive ? { outline: '1px dashed', outlineColor: 'primary.main', outlineOffset: -2 } : {}),
@@ -1321,37 +1322,61 @@ export default function EstructuraAcademicaMasterDetail({
     setContinuationDialogOpen(true);
   };
   const confirmContinuation = async () => {
-    if (!selectedModulo?.planModuloId || !continuationCompetenciaId || actionLoading) return;
+    if (!allowCreate || !selectedModulo?.planModuloId || !selectedModulo.planId || !continuationCompetenciaId || actionLoading || movePending || structureActionRef.current) return;
+    const competency = continuationOptions.find(item => item.id === Number(continuationCompetenciaId));
+    if (!competency) return;
+    const moduleId = selectedModulo.id;
+    const planId = selectedModulo.planId;
+    const payload = { entity: 'competencia', moduloId: moduleId, continuation: true };
+    structureActionRef.current = true;
+    setContinuationDialogOpen(false);
+    setPendingStructureAction({ kind: 'create', payload, card: null });
     setActionLoading(true);
     try {
       if (auth.currentUser) await auth.currentUser.getIdToken(true);
       const callable = httpsCallable<{ planModuloId: number; competenciaId: number }, { id: number }>(functions, 'continueEstructuraAcademicaCompetencia');
-      await callable({ planModuloId: selectedModulo.planModuloId, competenciaId: Number(continuationCompetenciaId) });
-      setContinuationDialogOpen(false);
-      setSelectedCompetenciaId(Number(continuationCompetenciaId));
-      await fetchEstructura();
+      const result = await callable({ planModuloId: selectedModulo.planModuloId, competenciaId: competency.id });
+      if (!Number.isSafeInteger(result.data.id) || result.data.id <= 0) throw new Error('No se pudo comprobar la continuación creada.');
+      createdCardRef.current = { entity: 'competencia', id: competency.id, continuacionId: result.data.id };
+      setPendingStructureAction({ kind: 'create', payload, card: createdCardRef.current });
+      setModulos(current => applyAcademicContinuation(current, moduleId, planId, competency, result.data.id));
+      setSelectedCompetenciaId(competency.id);
+      setShowHidden(current => ({ ...current, competencia: true }));
+      if (allowEdit && periodSelection && !periodArchived && !periodSelection.competenciaIds.includes(competency.id)) {
+        const activate = httpsCallable<Record<string, unknown>, { selection: PlanSelection }>(functions, 'setPlanSemesterVisibility');
+        const activation = await activate({ entity: 'competencia', id: competency.id, active: true, planId, semestreId: selectedSemesterId, revision: periodSelection.revision });
+        setSelections(current => current.map(item => item.planId === planId ? activation.data.selection : item));
+      }
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo continuar la competencia.');
     } finally {
+      structureActionRef.current = false;
+      setPendingStructureAction(null);
       setActionLoading(false);
     }
   };
   const handleDeleteCompetencia = async () => {
-    if (!selectedCompetencia) return;
+    if (!allowDelete || !selectedModulo || !selectedCompetencia || selectedCompetencia.hasSavedGrades || actionLoading || movePending || structureActionRef.current) return;
     if (selectedCompetencia.esContinuacion) {
       if (!selectedCompetencia.continuacionId || !window.confirm('Se eliminará esta continuación y todo lo creado dentro de ella en el módulo actual. ¿Deseas continuar?')) return;
+      const moduleId = selectedModulo.id;
+      const continuationId = selectedCompetencia.continuacionId;
+      structureActionRef.current = true;
+      setPendingStructureAction({ kind: 'delete', payload: { continuacionId: continuationId }, card: { entity: 'competencia', id: selectedCompetencia.id, continuacionId: continuationId } });
       setActionLoading(true);
       try {
         if (auth.currentUser) await auth.currentUser.getIdToken(true);
         const callable = httpsCallable<{ continuacionId: number }, { id: number }>(functions, 'deleteEstructuraAcademicaCompetenciaContinuacion');
         await callable({ continuacionId: selectedCompetencia.continuacionId });
         setSelectedCompetenciaId(null);
-        await fetchEstructura();
+        setModulos(current => removeAcademicContinuation(current, moduleId, continuationId));
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'No se pudo eliminar la continuación.');
       } finally {
+        structureActionRef.current = false;
+        setPendingStructureAction(null);
         setActionLoading(false);
       }
       return;
@@ -1529,7 +1554,7 @@ export default function EstructuraAcademicaMasterDetail({
                   </IconButton>
                 ) : null}
                 {allowDelete ? (
-                  <IconButton size="small" title="Quitar modulo del plan" color="error" disabled={actionLoading || !selectedModulo?.planId} onClick={handleDetachModulo}>
+                  <IconButton size="small" title="Quitar modulo del plan" color="error" disabled={actionLoading || !selectedModulo?.planId || selectedModulo.hasSavedGrades} onClick={handleDetachModulo}>
                     <DeleteOutlineIcon fontSize="small" />
                   </IconButton>
                 ) : null}
@@ -1590,18 +1615,16 @@ export default function EstructuraAcademicaMasterDetail({
             {hiddenToggle('competencia')}
             {allowCreate && <IconButton size="small" title="Crear competencia" disabled={actionLoading || !selectedModulo} onClick={handleCreateCompetencia}><AddIcon fontSize="small" /></IconButton>}
             {allowCreate && previousModulo && <IconButton size="small" title="Continuar competencia del módulo anterior" disabled={actionLoading || continuationOptions.length === 0} onClick={openContinuationDialog}><ReplayIcon fontSize="small" /></IconButton>}
-            {allowDelete && <IconButton size="small" title="Eliminar competencia" color="error" disabled={actionLoading || !selectedCompetencia} onClick={handleDeleteCompetencia}><DeleteOutlineIcon fontSize="small" /></IconButton>}
+            {allowDelete && <IconButton size="small" title="Eliminar competencia" color="error" disabled={actionLoading || !selectedCompetencia || selectedCompetencia.hasSavedGrades} onClick={handleDeleteCompetencia}><DeleteOutlineIcon fontSize="small" /></IconButton>}
           </>}>
-            <AcademicItems count={competencias.length} emptyLabel="Sin competencias." creating={isCreating({ entity: 'competencia', moduloId: selectedModulo?.id })}>
+            <AcademicItems count={competencias.length} emptyLabel="Sin competencias." creating={isCreating({ entity: 'competencia', moduloId: selectedModulo?.id })} creatingFirst={pendingStructureAction?.payload.continuation === true}>
                 {competencias.map(competencia => (
                   <AcademicListItem
                     key={`${competencia.continuacionId ?? 'original'}-${competencia.id}`}
-                    busy={isBusyCard('competencia', competencia.id)}
+                    busy={isBusyCard('competencia', competencia.id, competencia.continuacionId)}
                     busyLabel={pendingStructureAction?.kind === 'create' ? 'Creando competencia' : 'Eliminando competencia'}
-                    {...(competencia.esContinuacion ? {
-                      'data-academic-entity': 'competencia',
-                      'data-academic-id': competencia.id,
-                    } : extraDragProps('competencia', competencia.id, allowEdit && !actionLoading))}
+                    {...(competencia.esContinuacion ? rowDragProps({ entity: 'competencia', id: competencia.id, continuacionId: competencia.continuacionId ?? undefined })
+                      : extraDragProps('competencia', competencia.id, allowEdit && !actionLoading))}
                     data-empleabilidad={competencia.tipo === 'EMPLEABILIDAD' ? 'true' : undefined}
                     selected={selectedCompetencia?.id === competencia.id}
                     onClick={() => {
@@ -1610,7 +1633,7 @@ export default function EstructuraAcademicaMasterDetail({
                       setSelectedCapacidadId(null);
                       setSelectedIndicadorId(null);
                     }}
-                    sx={{ opacity: competencia.periodActive === false ? 0.4 : 1, ...(competencia.esContinuacion ? {} : dropIndicatorSx('competencia', competencia.id)) }}
+                    sx={{ opacity: competencia.periodActive === false ? 0.4 : 1, ...dropIndicatorSx('competencia', competencia.id, competencia.continuacionId) }}
                     dragHandle={
                       <DragHandle locked={competencia.esContinuacion} enabled={allowEdit && !actionLoading} onDragStart={event => beginDrag(event, { entity: 'competencia', id: competencia.id })} />
                     }
@@ -1637,7 +1660,7 @@ export default function EstructuraAcademicaMasterDetail({
                   </IconButton>
                 ) : null}
                 {allowDelete ? (
-                  <IconButton size="small" title="Quitar unidad del modulo" color="error" disabled={actionLoading || !selectedUnidad?.relacionId} onClick={handleDetachUnidad}>
+                  <IconButton size="small" title="Quitar unidad del modulo" color="error" disabled={actionLoading || !selectedUnidad?.relacionId || selectedUnidad.hasSavedGrades} onClick={handleDetachUnidad}>
                     <DeleteOutlineIcon fontSize="small" />
                   </IconButton>
                 ) : null}
@@ -1726,7 +1749,7 @@ export default function EstructuraAcademicaMasterDetail({
                   </IconButton>
                 ) : null}
                 {allowDelete ? (
-                  <IconButton size="small" title="Quitar capacidad" color="error" disabled={actionLoading || !selectedCapacidad?.id} onClick={handleDetachCapacidad}>
+                  <IconButton size="small" title="Quitar capacidad" color="error" disabled={actionLoading || !selectedCapacidad?.id || selectedCapacidad.hasSavedGrades} onClick={handleDetachCapacidad}>
                     <DeleteOutlineIcon fontSize="small" />
                   </IconButton>
                 ) : null}
@@ -1806,7 +1829,7 @@ export default function EstructuraAcademicaMasterDetail({
                   </IconButton>
                 ) : null}
                 {allowDelete ? (
-                  <IconButton size="small" title="Quitar indicador" color="error" disabled={actionLoading || !selectedIndicador?.id} onClick={handleDetachSelectedIndicador}>
+                  <IconButton size="small" title="Quitar indicador" color="error" disabled={actionLoading || !selectedIndicador?.id || selectedIndicador.hasSavedGrades} onClick={handleDetachSelectedIndicador}>
                     <DeleteOutlineIcon fontSize="small" />
                   </IconButton>
                 ) : null}

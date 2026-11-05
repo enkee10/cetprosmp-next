@@ -1,9 +1,22 @@
 import type { AprendizajeDetalle, CapacidadDetalle, CompetenciaDetalle, IndicadorDetalle, ModuloDetalle, SesionDetalle, UnidadDidacticaDetalle, AcademicDragEntity } from './curricularReassignment';
 import type { CurricularPlan } from './curricularFilters';
 
-export interface UnitAssignment { id: number; orden: number | null; unidadDidacticaId: number; competenciaId: number; competencia: CompetenciaDetalle & { moduloId: number } }
+export interface UnitAssignment { id: number; orden: number | null; unidadDidacticaId: number; competenciaId: number; competencia: CompetenciaDetalle & { moduloId: number }; competenciaContinuacionId?: number | null; competenciaContinuacionPlanId?: number | null }
 export interface AcademicCreationResult { id: number; entity: string; item: Record<string, unknown>; unitAssignments?: UnitAssignment[] }
 export interface AcademicRemovalResult { id: number; unitAssignments?: UnitAssignment[] }
+export function applyAcademicContinuation(modules: ModuloDetalle[], moduleId: number, planId: number, competency: CompetenciaDetalle, continuationId: number) {
+  return modules.map(module => module.id !== moduleId ? module : { ...module, competencias: [
+    { ...competency, esContinuacion: true, continuacionId: continuationId, continuacionPlanId: planId, moduloOrigenId: competency.moduloOrigenId ?? modules.find(row => row.competencias.some(item => item.id === competency.id && !item.esContinuacion))?.id,
+      hasSavedGrades: false, hasSavedGradesInAnyModule: competency.hasSavedGradesInAnyModule },
+    ...module.competencias.filter(row => row.continuacionId !== continuationId),
+  ] });
+}
+export function removeAcademicContinuation(modules: ModuloDetalle[], moduleId: number, continuationId: number) {
+  return modules.map(module => module.id !== moduleId ? module : { ...module,
+    competencias: module.competencias.filter(row => row.continuacionId !== continuationId),
+    unidadesDidacticas: module.unidadesDidacticas.filter(row => row.competenciaContinuacionId !== continuationId),
+  });
+}
 export type AcademicRemoval =
   | { entity: 'modulo'; moduloId: number; planId: number }
   | { entity: 'competencia'; competenciaId: number }
@@ -56,8 +69,10 @@ export function applyUnitAssignments(modules: ModuloDetalle[], assignments: Unit
   return updateTree(modules, {
     unidad: item => {
       const assignment = byUnit.get(item.id);
-      return !assignment || (assignment.id === item.relacionId && assignment.orden === item.orden && assignment.competenciaId === item.competenciaId) ? item : {
+      return !assignment || (assignment.id === item.relacionId && assignment.orden === item.orden && assignment.competenciaId === item.competenciaId
+        && (assignment.competenciaContinuacionId ?? null) === (item.competenciaContinuacionId ?? null)) ? item : {
         ...item, relacionId: assignment.id, orden: assignment.orden, competenciaId: assignment.competenciaId, competencia: assignment.competencia,
+        ...(assignment.competenciaContinuacionId !== undefined ? { competenciaContinuacionId: assignment.competenciaContinuacionId, competenciaContinuacionPlanId: assignment.competenciaContinuacionPlanId } : {}),
         capacidadesTerminales: item.capacidadesTerminales.map(cap => ({ ...cap, competencias: [assignment.competencia] })),
       };
     },
@@ -87,6 +102,7 @@ export function applyAcademicCreation(modules: ModuloDetalle[], result: Academic
       const assignment = result.unitAssignments?.find(row => row.unidadDidacticaId === id);
       if (entity !== 'unidadDidactica' || assignment?.competencia.moduloId !== modulo.id || modulo.unidadesDidacticas.some(row => row.id === id)) return modulo;
       return { ...modulo, unidadesDidacticas: [...modulo.unidadesDidacticas, { ...item, relacionId: assignment.id, orden: assignment.orden,
+        ...(assignment.competenciaContinuacionId !== undefined ? { competenciaContinuacionId: assignment.competenciaContinuacionId, competenciaContinuacionPlanId: assignment.competenciaContinuacionPlanId } : {}),
         competenciaId: assignment.competenciaId, competencia: assignment.competencia, capacidadesTerminales: [] } as unknown as UnidadDidacticaDetalle] };
     },
     unidad: unidad => entity === 'capacidadTerminal' && unidad.id === item.unidadDidacticaId && !unidad.capacidadesTerminales.some(row => row.id === id)

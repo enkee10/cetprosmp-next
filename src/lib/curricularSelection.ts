@@ -11,7 +11,7 @@ export interface PlanSelection {
   competenciaIds: number[]; unidadIds: number[]; capacidadIds: number[]; indicadorIds: number[];
 }
 export interface SelectionSemester { id: number; titulo?: string | null; inicio?: string | null; archivado?: boolean | null }
-export interface PeriodNode { periodActive?: boolean; periodSelected?: boolean }
+export interface PeriodNode { periodActive?: boolean; periodSelected?: boolean; hasOwnSavedGrades?: boolean; hasSavedGrades?: boolean; hasSavedGradesInAnyModule?: boolean }
 export const selectionColumns = { competencia: 'competenciaIds', unidadDidactica: 'unidadIds', capacidadTerminal: 'capacidadIds', indicadorCapacidad: 'indicadorIds' } as const;
 export type SelectionEntity = keyof typeof selectionColumns;
 

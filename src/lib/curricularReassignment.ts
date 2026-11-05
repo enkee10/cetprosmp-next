@@ -39,7 +39,7 @@ export interface UnidadDidacticaDetalle extends PeriodNode {
   orden: number | null; nombre: string | null; duracion: number | null; creditos: number | null; sigla: string | null;
   capacidadesTerminales: CapacidadDetalle[];
 }
-export interface ModuloDetalle {
+export interface ModuloDetalle extends PeriodNode {
   id: number; titulo: string | null; tituloComercial: string | null; orden: number | null; descripcion: string | null;
   competencias: CompetenciaDetalle[]; horas: number | null; creditos: number | null; metas: number | null;
   activo: boolean | null; slug: string | null; comun: boolean | null; planModuloId?: number | null;
@@ -49,11 +49,15 @@ export interface ModuloDetalle {
 }
 export type ReassignEntity = 'competencia' | 'competenciaUnidadDidactica' | 'capacidadTerminal' | 'indicadorCapacidad' | 'aprendizaje' | 'actividad';
 export type AcademicDragEntity = ReassignEntity | 'modulo';
-export interface AcademicDrag { entity: AcademicDragEntity; id: number }
+export interface AcademicDrag { entity: AcademicDragEntity; id: number; continuacionId?: number }
 export interface Reassignment {
   entity: ReassignEntity; id: number; parentId: number; previousParentId: number; orden?: number | null;
   targetIndicatorId?: number; targetSiblingId?: number; position?: 'before' | 'after';
   targetAncestor?: AcademicDrag;
+  targetContinuacionId?: number;
+  continuacionId?: number | null;
+  continuacionPlanId?: number | null;
+  moduleId?: number;
   creations?: AcademicCreationResult[];
   learning?: AprendizajeDetalle;
   orders?: Array<{ id: number; orden: number }>;
@@ -70,12 +74,12 @@ export const academicLabels: Record<AcademicDragEntity, string> = {
 
 /** Indexes visible objects without copying their subtrees. Unit drag IDs are relation IDs. */
 export function academicLocations(modules: ModuloDetalle[]) {
-  const result = new Map<string, { parentId: number | null; module: ModuloDetalle; text: string; tipo?: CompetenciaDetalle['tipo']; unitId?: number; orden?: number | null; numeroSesion?: number | null }>();
+  const result = new Map<string, { parentId: number | null; module: ModuloDetalle; text: string; tipo?: CompetenciaDetalle['tipo']; unitId?: number; orden?: number | null; numeroSesion?: number | null; continuacionId?: number | null }>();
   for (const modulo of modules) {
     result.set(`modulo:${modulo.id}`, { parentId: null, module: modulo, text: modulo.titulo || modulo.tituloComercial || `Módulo ${modulo.id}`, orden: modulo.orden });
     for (const comp of modulo.competencias) if (!comp.esContinuacion) result.set(`competencia:${comp.id}`, { parentId: modulo.id, module: modulo, text: comp.nombre, tipo: comp.tipo, orden: comp.orden });
     for (const unit of modulo.unidadesDidacticas) {
-      result.set(`competenciaUnidadDidactica:${unit.relacionId}`, { parentId: unit.competenciaId, module: modulo, text: unit.nombre || '', tipo: unit.competencia.tipo, unitId: unit.id, orden: unit.orden });
+      result.set(`competenciaUnidadDidactica:${unit.relacionId}`, { parentId: unit.competenciaId, module: modulo, text: unit.nombre || '', tipo: unit.competencia.tipo, unitId: unit.id, orden: unit.orden, continuacionId: unit.competenciaContinuacionId });
       for (const capacity of unit.capacidadesTerminales) {
         result.set(`capacidadTerminal:${capacity.id}`, { parentId: unit.id, module: modulo, text: capacity.descripcion || '', orden: capacity.orden });
         for (const indicator of capacity.indicadoresCapacidad) {
@@ -89,6 +93,17 @@ export function academicLocations(modules: ModuloDetalle[]) {
     }
   }
   return result;
+}
+
+/** A continuation receives children in its own module without becoming a draggable competency. */
+export function academicDropLocation(modules: ModuloDetalle[], target: AcademicDrag, locations = academicLocations(modules)) {
+  if (target.continuacionId == null) return locations.get(`${target.entity}:${target.id}`);
+  if (target.entity !== 'competencia') return undefined;
+  for (const module of modules) {
+    const competency = module.competencias.find(row => row.id === target.id && row.esContinuacion && row.continuacionId === target.continuacionId);
+    if (competency) return { parentId: module.id, module, text: competency.nombre, tipo: competency.tipo, orden: competency.orden, continuacionId: competency.continuacionId };
+  }
+  return undefined;
 }
 
 /** Reorder full siblings, including hidden items, without changing their parent. */
@@ -107,9 +122,12 @@ export function academicReorderItems(
   } else {
     const locations = academicLocations(modules);
     const source = locations.get(`${entity}:${sourceId}`), target = locations.get(`${entity}:${targetId}`);
-    if (!source || !target || source.parentId !== target.parentId) return [];
+    if (!source || !target || source.parentId !== target.parentId || source.module.id !== target.module.id
+      || (entity === 'competenciaUnidadDidactica' && (source.continuacionId ?? null) !== (target.continuacionId ?? null))) return [];
     if (entity === 'competencia' && source.tipo !== target.tipo) return [];
     siblings = [...locations].flatMap(([key, row]) => key.startsWith(`${entity}:`) && row.parentId === source.parentId
+      && row.module.id === source.module.id
+      && (entity !== 'competenciaUnidadDidactica' || (row.continuacionId ?? null) === (source.continuacionId ?? null))
       && (entity !== 'competencia' || row.tipo === source.tipo)
       ? [{ id: Number(key.slice(entity.length + 1)), orden: row.orden, numeroSesion: row.numeroSesion }] : []);
   }
@@ -126,8 +144,8 @@ export function academicReorderItems(
 }
 
 export function reassignmentFor(modules: ModuloDetalle[], source: AcademicDrag, target: AcademicDrag, locations = academicLocations(modules)): Reassignment | null {
-  if (source.entity === 'modulo') return null;
-  const from = locations.get(`${source.entity}:${source.id}`), to = locations.get(`${target.entity}:${target.id}`);
+  if (source.entity === 'modulo' || source.continuacionId != null) return null;
+  const from = locations.get(`${source.entity}:${source.id}`), to = academicDropLocation(modules, target, locations);
   if (!from || !to || from.parentId == null) return null;
   const levels: AcademicDragEntity[] = ['modulo', 'competencia', 'competenciaUnidadDidactica', 'capacidadTerminal', 'indicadorCapacidad', 'aprendizaje', 'actividad'];
   const sourceLevel = levels.indexOf(source.entity), targetLevel = levels.indexOf(target.entity);
@@ -137,7 +155,8 @@ export function reassignmentFor(modules: ModuloDetalle[], source: AcademicDrag, 
     let competencyType = target.entity === 'competencia' ? to.tipo : undefined;
     for (let index = targetLevel + 1; index < sourceLevel && parentId != null; index++) {
       const level = levels[index];
-      const first = [...locations].filter(([key, row]) => key.startsWith(`${level}:`) && row.parentId === parentId)
+      const first = [...locations].filter(([key, row]) => key.startsWith(`${level}:`) && row.parentId === parentId && row.module.id === to.module.id
+        && (level !== 'competenciaUnidadDidactica' || (row.continuacionId ?? null) === (target.continuacionId ?? null)))
         .sort(([aKey, a], [bKey, b]) => {
           const aId = Number(aKey.slice(level.length + 1)), bId = Number(bKey.slice(level.length + 1));
           const aOrderId = level === 'competenciaUnidadDidactica' ? a.unitId ?? aId : aId;
@@ -151,7 +170,7 @@ export function reassignmentFor(modules: ModuloDetalle[], source: AcademicDrag, 
     return { entity: source.entity, id: source.id, parentId: target.id, previousParentId: from.parentId, targetAncestor: target };
   }
   const parentId = target.entity === 'competenciaUnidadDidactica' ? to.unitId! : target.id;
-  if (from.parentId === parentId) return null;
+  if (from.parentId === parentId && (source.entity !== 'competenciaUnidadDidactica' || (from.continuacionId ?? null) === (target.continuacionId ?? null))) return null;
   if (source.entity === 'competenciaUnidadDidactica' && from.tipo !== to.tipo) return null;
   if (source.entity === 'competencia' && from.tipo === 'EMPLEABILIDAD') {
     const plans = [to.module.plan, ...(to.module.planModulos || []).map(row => row.plan)].filter(Boolean);
@@ -160,20 +179,25 @@ export function reassignmentFor(modules: ModuloDetalle[], source: AcademicDrag, 
       return tipo && !tipo.normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase().includes('PROGRAMA DE ESTUDIO');
     })) return null;
   }
-  return { entity: source.entity, id: source.id, parentId, previousParentId: from.parentId };
+  return { entity: source.entity, id: source.id, parentId, previousParentId: from.parentId,
+    ...(target.continuacionId != null ? { targetContinuacionId: target.continuacionId } : {}) };
 }
 
 /** Only replaces the source/destination branches. All IDs and descendant content survive. */
 export function applyAcademicReassignment(modules: ModuloDetalle[], move: Reassignment): ModuloDetalle[] {
   // An empty indicator needs its real learning ID from the atomic server operation.
-  if (move.targetIndicatorId || move.targetAncestor) return modules;
+  if (move.targetIndicatorId || move.targetAncestor || move.targetContinuacionId) return modules;
   const locations = academicLocations(modules);
   const source = locations.get(`${move.entity}:${move.id}`);
   const parentEntity = academicParent[move.entity];
   const destinationExists = parentEntity === 'competenciaUnidadDidactica'
     ? [...locations.values()].some(row => row.unitId === move.parentId)
-    : locations.has(`${parentEntity}:${move.parentId}`);
-  if (!source || source.parentId !== move.previousParentId || !destinationExists || move.parentId === move.previousParentId) return modules;
+    : parentEntity === 'competencia' && move.continuacionId != null
+      ? Boolean(academicDropLocation(modules, { entity: 'competencia', id: move.parentId, continuacionId: move.continuacionId }, locations))
+      : locations.has(`${parentEntity}:${move.parentId}`);
+  if (!source || source.parentId !== move.previousParentId || !destinationExists
+    || (move.parentId === move.previousParentId && (move.entity !== 'competenciaUnidadDidactica' || (source.continuacionId ?? null) === (move.continuacionId ?? null)))) return modules;
+  const destinationModuleId = move.moduleId ?? locations.get(`${parentEntity}:${move.parentId}`)?.module.id;
   type Node = CompetenciaDetalle | UnidadDidacticaDetalle | CapacidadDetalle | IndicadorDetalle | AprendizajeDetalle | SesionDetalle;
   let moving: Node | undefined;
   const movedActivityIds = new Set<number>();
@@ -195,14 +219,15 @@ export function applyAcademicReassignment(modules: ModuloDetalle[], move: Reassi
       if (!insert) return transfer(items, parentId, entity, getId);
       if (!moving || move.entity !== entity || parentId !== move.parentId) return items;
       const siblings = entity === 'competenciaUnidadDidactica'
-        ? items.filter(item => 'competenciaId' in item && item.competenciaId === parentId) : items;
+        ? items.filter(item => 'competenciaId' in item && item.competenciaId === parentId && (item.competenciaContinuacionId ?? null) === (move.continuacionId ?? null)) : items;
       const nextOrder = Math.max(0, ...siblings.map(item =>
         ('orden' in item ? item.orden : undefined) ?? ('numeroSesion' in item ? item.numeroSesion : undefined) ?? item.id,
       )) + 1;
       let added = { ...moving, orden: move.orden === undefined ? nextOrder : move.orden } as T;
       if (entity === 'competenciaUnidadDidactica') {
-        const comp = modulo.competencias.find(row => row.id === move.parentId)!;
-        added = { ...added, competenciaId: comp.id, competencia: { ...comp, moduloId: modulo.id } };
+        const comp = modulo.competencias.find(row => row.id === move.parentId && (row.continuacionId ?? null) === (move.continuacionId ?? null))!;
+        added = { ...added, competenciaId: comp.id, competencia: { ...comp, moduloId: modulo.id },
+          ...(('competenciaContinuacionId' in moving || move.continuacionId != null) ? { competenciaContinuacionId: move.continuacionId ?? null, competenciaContinuacionPlanId: move.continuacionPlanId ?? null } : {}) };
       } else if (entity === 'capacidadTerminal') added = { ...added, unidadDidacticaId: parentId };
       else if (entity === 'indicadorCapacidad') added = { ...added, capacidadTerminalId: parentId };
       else if (entity === 'aprendizaje' && 'indicadorCapacidadId' in added) added = { ...added, indicadorCapacidadId: parentId };
@@ -222,7 +247,7 @@ export function applyAcademicReassignment(modules: ModuloDetalle[], move: Reassi
       if (!insert) {
         const original = units.find(unit => unit.relacionId === move.id && unit.competenciaId === move.previousParentId);
         if (original) { moving = original; units = units.filter(unit => unit !== original); }
-      } else if (modulo.competencias.some(comp => comp.id === move.parentId)) units = list(units, move.parentId, 'competenciaUnidadDidactica');
+      } else if (modulo.id === destinationModuleId && modulo.competencias.some(comp => comp.id === move.parentId && (comp.continuacionId ?? null) === (move.continuacionId ?? null))) units = list(units, move.parentId, 'competenciaUnidadDidactica');
     }
     units = mapChanged(units, unit => {
       const capacities = mapChanged(list(unit.capacidadesTerminales, unit.id, 'capacidadTerminal'), originalCapacity => {

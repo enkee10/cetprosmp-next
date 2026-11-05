@@ -1,4 +1,5 @@
 import { https } from "firebase-functions/v1";
+import { savePartialRegistroGrades } from "./partialSave.js";
 import { curricularUnitIdsInOrder as buildUnidadIds, type CurricularUnitRelation } from "../academico/curricularUnitOrder.js";
 import { applyPeriodSelection } from "../planes/periodSelection.js";
 import { getConfiguredCurrentSemestreId, loadCurrentDocenteModulos } from "../core/docenteSemester.js";
@@ -48,6 +49,7 @@ type RegistroAuxiliarEfsrtPppInput = {
 };
 
 type RegistroAuxiliarSaveInput = {
+  partial?: boolean;
   grupoModuloId?: unknown;
   notas?: RegistroAuxiliarNotaInput[];
   efsrtPppPromedios?: RegistroAuxiliarEfsrtPppInput[];
@@ -1752,7 +1754,14 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
       throw new Error("No se pudo obtener el id del modulo-estudiante creado.");
     }
 
+    const student = await dataConnect.executeGraphql<{ moduloEstudiante: RegistroAuxiliarModuloEstudiante | null }, { id: number }>(
+      `query CreatedRegistroStudent($id:Int!){moduloEstudiante(id:$id){id matriculaId moduloId grupoId grupoModuloId promedio puntaje matricula{id codigoInscripcion user{id dni nombre apellidos apellidoPaterno apellidoMaterno username}}}}`,
+      { variables: { id: moduloEstudianteId } },
+    );
+    if (!student.data.moduloEstudiante) throw new Error("No se pudo leer el estudiante matriculado.");
+
     return {
+      estudiante: student.data.moduloEstudiante,
       userId,
       matriculaId,
       moduloEstudianteId,
@@ -1911,6 +1920,12 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
     }))
     .filter((item) => item.moduloEstudianteId > 0);
 
+  if (data.partial === true && (cleanNotas.length !== notas.length || cleanEfsrtPppPromedios.length !== efsrtPppPromedios.length
+    || notas.some(row => row.nota !== null && (typeof row.nota !== "number" || !Number.isFinite(row.nota) || row.nota < 0 || row.nota > 20))
+    || efsrtPppPromedios.some(row => row.promedioFinal !== null && (typeof row.promedioFinal !== "number" || !Number.isFinite(row.promedioFinal) || row.promedioFinal < 0 || row.promedioFinal > 20)))) {
+    throw new https.HttpsError("invalid-argument", "Las notas deben estar entre 0 y 20 y pertenecer a una matrícula e indicador válidos.");
+  }
+
   try {
     const grupoModuloResponse = await dataConnect.executeGraphql<
       {
@@ -1981,6 +1996,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
             competenciaContinuacionId
             competencia { id nombre tipo moduloId orden }
           }
+          ${data.partial === true ? '' : `
           unidadesDidacticas(limit: 50000) {
             id
             creditos
@@ -1999,6 +2015,7 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
             orden
             capacidadTerminalId
           }
+          `}
           modulosEstudiantesByGrupoModulo: modulosEstudiantes(where: { grupoModuloId: { eq: $grupoModuloId } }, limit: 1000) {
             id
             matriculaId
@@ -2013,6 +2030,16 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
       `,
       { variables: { grupoModuloId, grupoId, moduloId } },
     );
+
+    if (data.partial === true) {
+      const unitIds = buildUnidadIds(contextResponse.data);
+      const scoped = await dataConnect.executeGraphql<Pick<typeof contextResponse.data, "unidadesDidacticas" | "capacidadesTerminales" | "indicadoresCapacidad">, { units: number[] }>(`query PartialRegistroStructure($units:[Int!]!) {
+        unidadesDidacticas(where:{id:{in:$units}},limit:50000){id creditos}
+        capacidadesTerminales(where:{unidadDidacticaId:{in:$units}},limit:50000){id orden unidadDidacticaId}
+        indicadoresCapacidad(where:{capacidadTerminal:{unidadDidacticaId:{in:$units}}},limit:100000){id orden capacidadTerminalId}
+      }`, { variables: { units: unitIds } });
+      Object.assign(contextResponse.data, scoped.data);
+    }
 
     await applyPeriodSelection(contextResponse.data, moduloId, grupoModulo.grupo?.semestreId);
     const unidadIds = buildUnidadIds(contextResponse.data);
@@ -2045,6 +2072,10 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
     );
     const moduloEstudianteIds = new Set(moduloEstudiantes.map((item) => item.id));
     const moduloEstudianteIdByMatricula = new Map(moduloEstudiantes.map((item) => [item.matriculaId, item.id]));
+    if (data.partial === true) return await savePartialRegistroGrades({
+      grupoModuloId, usesOcupacionalRules, moduloCreditoEfsrt, unidadIds, unidadCreditoById,
+      capacidades, indicadores, moduloEstudiantes, notas: cleanNotas, efsrtPppPromedios: cleanEfsrtPppPromedios,
+    }, { average, roundPromedio, weightedAverage, sum });
     const efsrtPppByModuloEstudianteId = new Map(
       cleanEfsrtPppPromedios.map((item) => [item.moduloEstudianteId, item.promedioFinal] as const),
     );

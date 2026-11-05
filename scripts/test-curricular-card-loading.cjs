@@ -30,7 +30,7 @@ const mocks = {
       window.calls.push({name,input});
       if(name==='listEstructuraAcademica')return {data:window.fixture};
       if(input.previewOnly){if(window.previewFailure)throw Error('Falló la consulta de notas');return {data:{notasAsociadas:0}};}
-      if(name==='createEstructuraAcademicaItem'||name==='detachEstructuraAcademicaItem'||name==='setPlanSemesterVisibility'||name==='saveEstructuraAcademicaIndicadorContenido'||name==='reassignEstructuraAcademicaItem'){
+      if(name==='continueEstructuraAcademicaCompetencia'||name==='deleteEstructuraAcademicaCompetenciaContinuacion'||name==='createEstructuraAcademicaItem'||name==='detachEstructuraAcademicaItem'||name==='setPlanSemesterVisibility'||name==='saveEstructuraAcademicaIndicadorContenido'||name==='reassignEstructuraAcademicaItem'){
         return new Promise((resolve,reject)=>window.requests.push({name,input,resolve:data=>resolve({data}),reject:()=>reject(Error('Falló la solicitud'))}));
       }
       if(name==='updateEstructuraAcademicaCell')return {data:{id:input.id}};
@@ -69,6 +69,17 @@ function creation(entity) {
     stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';
       import View from './src/components/intranet/academico/EstructuraAcademicaMasterDetail';
       window.fixture=${JSON.stringify(fixture)};
+      if(location.search.includes('continuation')){
+        const original={id:110,nombre:'Competencia anterior',tipo:'TECNICA',orden:1,moduloId:2};
+        window.fixture.modulos[0].competencias.push({...original,esContinuacion:true,continuacionId:70,continuacionPlanId:5,moduloOrigenId:2});
+        window.fixture.modulos.push({id:2,titulo:'Modulo anterior',orden:0,planId:5,plan:window.fixture.planes[0],competencias:[original],
+          unidadesDidacticas:[{id:220,relacionId:221,nombre:'Unidad anterior intacta',orden:1,competenciaId:110,competencia:original,capacidadesTerminales:[]}]});
+        window.fixture.modulos[0].planModuloId=6;
+        if(location.search.includes('create'))window.fixture.modulos[0].competencias.pop();
+      }
+      if(location.search.includes('grades'))window.fixture.gradeUsage={modules:[],units:[],capacities:[],indicators:[40]};
+      if(location.search.includes('own-averages'))window.fixture.gradeUsage={modules:[],units:[20],capacities:[30],indicators:[]};
+      if(location.search.includes('hidden'))window.fixture.selecciones[0].indicadorIds=[];
       if(location.search.includes('ancestor')){
         const comp={id:110,nombre:'Competencia destino',tipo:'TECNICA',orden:1,moduloId:2};
         window.fixture.modulos.push({id:2,titulo:'Módulo destino',orden:2,planId:5,plan:window.fixture.planes[0],
@@ -186,6 +197,8 @@ function creation(entity) {
     await card('indicadorCapacidad', 40).waitFor();
     await require('./check-content-tree-browser.cjs')({ page, load, card, resolve, reject });
     await require('./check-curricular-ancestor-browser.cjs')({ page, card, resolve, reject });
+    await require('./check-curricular-continuation-browser.cjs')({ page, card, resolve, reject });
+    await require('./check-curricular-protection-browser.cjs')({ page, card, resolve, reject });
     assert.deepEqual(errors, []);
     console.log('Correcto en navegador: seis secciones, creación y eliminación pendientes, tarjetas translúcidas, fallos, cancelación, sección vacía, token y activación de semestre.');
   } finally {

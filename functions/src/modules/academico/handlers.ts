@@ -1,5 +1,6 @@
 import { isDocenteRole } from "../core/authCore.js";
 import { countCurricularRemovalNotes } from "./curricularRemoval.js";
+import { curricularGradeChecks, curricularHasGradesFilter, readCurricularGradeUsage } from "./curricularGradeProtection.js";
 import { displayMaterialLink, listMaterialCatalog } from "../materiales/handlers.js";
 import { updateCurricularExtraCell, createCurricularExtra, deleteCurricularExtra, reorderCurricularExtra } from "./curricularEditing.js";
 import { nextCurricularChildOrder, nextCurricularOrder, readCurricularCreatedItem, readCurricularUnitAssignments } from "./curricularCreation.js";
@@ -56,7 +57,6 @@ import {
   DELETE_CAPACIDAD_TERMINAL_MUTATION,
   DELETE_INDICADOR_CAPACIDAD_MUTATION,
   DELETE_UNIDAD_DIDACTICA_MUTATION,
-  DELETE_COMPETENCIA_UNIDAD_RELATION_MUTATION,
   DELETE_COMPETENCIA_UNIDADES_BY_UNIDAD_MUTATION,
   INSERT_ACTIVIDAD_MUTATION,
   INSERT_APRENDIZAJE_MUTATION,
@@ -536,13 +536,15 @@ const GET_ESTRUCTURA_MODULO_DETACH_QUERY = `
   query GetEstructuraModuloDetach($moduloId: Int!) {
     modulo(id: $moduloId) { id planId }
     planModulos(where: { moduloId: { eq: $moduloId } }, limit: 5000) { id orden planId moduloId }
+    units:competenciaUnidadesDidacticas(where:{_or:[{competencia:{moduloId:{eq:$moduloId}},competenciaContinuacionId:{isNull:true}},{competenciaContinuacion:{planModulo:{moduloId:{eq:$moduloId}}}}]},limit:50000){unidadDidacticaId}
   }
 `;
 
-const DETACH_ESTRUCTURA_MODULO_MUTATION = `
+const detachEstructuraModuloMutation = (unitIds: number[]) => `
   mutation DetachEstructuraModulo($planId: Int!, $moduloId: Int!, $data: Modulo_Data! @allow(fields: "planId")) @transaction {
-    planModulo_deleteMany(where: { planId: { eq: $planId }, moduloId: { eq: $moduloId } })
-    modulo_update(id: $moduloId, data: $data)
+    query { ${curricularGradeChecks("modulo", "$moduloId", unitIds)} }
+    planModulo_deleteMany(where: { planId: { eq: $planId }, moduloId: { eq: $moduloId }, modulo:{_not:${curricularHasGradesFilter("modulo")}} })
+    modulo_update(first:{where:{_and:[{id:{eq:$moduloId}},{_not:${curricularHasGradesFilter("modulo")}}]}}, data: $data) @check(expr:"this != null",message:"El módulo tiene notas guardadas.")
   }
 `;
 
@@ -1092,6 +1094,7 @@ export const listEstructuraAcademica = https.onCall(async (data, context) => {
 
     return {
       modulos: buildEstructuraAcademica(curriculum),
+      gradeUsage: await readCurricularGradeUsage(),
       planes,
       materiales: await listMaterialCatalog(),
       ...await academicPeriodData(planes, period.semestreId),
@@ -1198,6 +1201,7 @@ export const listEstructuraAcademicaDocente = https.onCall(async (data, context)
 
     return {
       modulos: buildEstructuraAcademica(estructuraResponse),
+      gradeUsage: await readCurricularGradeUsage(),
       competencyCodeModules: modulesForPlans(codeModules, response.data.planModulos ?? [], allowedPlanIds).map(module => ({
         ...module,
         planModulos: (codeRelations.get(module.id) ?? []).map(({ planId, orden }) => ({ planId, orden })),
@@ -1488,10 +1492,11 @@ export const deleteEstructuraAcademicaCompetenciaContinuacion = https.onCall(asy
   const continuation = current.data.competenciaContinuacion;
   if (!continuation) throw new https.HttpsError("not-found", "La continuacion ya no existe.");
   const unitIds = [...new Set(current.data.unidades.map(item => item.unidadDidacticaId))];
-  const deletes = unitIds.map((unitId, index) => `u${index}:unidadDidactica_delete(id:${unitId})`).join("\n");
+  const deletes = unitIds.map((unitId, index) => `u${index}:unidadDidactica_delete(first:{where:{_and:[{id:{eq:${unitId}}},{_not:${curricularHasGradesFilter("unidadDidactica")}}]}}) @check(expr:"this != null",message:"La unidad tiene notas guardadas.")`).join("\n");
   await dataConnect.executeGraphql(`mutation DeleteCurricularContinuation @transaction {
+    query { ${curricularGradeChecks("continuacion", id)} }
     ${deletes}
-    continuation:competenciaContinuacion_delete(id:${id}) @check(expr:"this != null",message:"La continuacion ya no existe.")
+    continuation:competenciaContinuacion_delete(first:{where:{_and:[{id:{eq:${id}}},{_not:${curricularHasGradesFilter("continuacion")}}]}}) @check(expr:"this != null",message:"La continuación tiene notas guardadas o ya no existe.")
   }`);
   return { id, competenciaId: continuation.competenciaId, planModuloId: continuation.planModuloId, deletedUnits: unitIds.length };
 });
@@ -1520,8 +1525,10 @@ export const detachEstructuraAcademicaItem = https.onCall(async (data, context) 
       const current = await dataConnect.executeGraphql<{
         modulo: { id: number; planId: number | null } | null;
         planModulos: DataConnectPlanModulo[];
+        units: Array<{ unidadDidacticaId: number }>;
       }, { moduloId: number }>(GET_ESTRUCTURA_MODULO_DETACH_QUERY, { variables: { moduloId } });
       if (!current.data.modulo) throw new https.HttpsError("not-found", "El modulo ya no existe.");
+      if (current.data.units.length === 50000) throw new https.HttpsError("failed-precondition", "Demasiadas unidades para comprobar las notas del módulo.");
       if (relacionId > 0) {
         const relation = current.data.planModulos.find(item => item.id === relacionId);
         if (!relation || (planId > 0 && relation.planId !== planId)) {
@@ -1535,7 +1542,7 @@ export const detachEstructuraAcademicaItem = https.onCall(async (data, context) 
       await dataConnect.executeGraphql<
         { planModulo_deleteMany: number; modulo_update: unknown },
         { planId: number; moduloId: number; data: { planId: number | null } }
-      >(DETACH_ESTRUCTURA_MODULO_MUTATION, { variables: { planId, moduloId, data: { planId: nextPlanId } } });
+      >(detachEstructuraModuloMutation([...new Set(current.data.units.map(item => item.unidadDidacticaId))]), { variables: { planId, moduloId, data: { planId: nextPlanId } } });
       return { id: moduloId };
     }
 
@@ -1547,7 +1554,10 @@ export const detachEstructuraAcademicaItem = https.onCall(async (data, context) 
       await dataConnect.executeGraphql<
         { competenciaUnidadDidactica_delete: unknown },
         { id: number }
-      >(DELETE_COMPETENCIA_UNIDAD_RELATION_MUTATION, { variables: { id: relacionId } });
+      >(`mutation DetachEmptyCurricularUnit($id:Int!) @transaction {
+        query { ${curricularGradeChecks("unidadRelation", "$id")} }
+        competenciaUnidadDidactica_delete(first:{where:{_and:[{id:{eq:$id}},{_not:${curricularHasGradesFilter("unidadRelation")}}]}}) @check(expr:"this != null",message:"La unidad tiene notas guardadas.")
+      }`, { variables: { id: relacionId } });
       if (previous.data.competenciaUnidadDidactica) {
         const moduloId = effectiveModuloId(previous.data.competenciaUnidadDidactica);
         await reconcileModuloUnits(moduloId);
@@ -1562,7 +1572,10 @@ export const detachEstructuraAcademicaItem = https.onCall(async (data, context) 
       await dataConnect.executeGraphql<
         { capacidadTerminal_delete: unknown },
         { id: number }
-      >(DELETE_CAPACIDAD_TERMINAL_MUTATION, { variables: { id: capacidadTerminalId } });
+      >(`mutation DeleteEmptyCurricularCapacity($id:Int!) @transaction {
+        query { ${curricularGradeChecks("capacidadTerminal", "$id")} }
+        capacidadTerminal_delete(first:{where:{_and:[{id:{eq:$id}},{_not:${curricularHasGradesFilter("capacidadTerminal")}}]}}) @check(expr:"this != null",message:"La capacidad tiene notas guardadas.")
+      }`, { variables: { id: capacidadTerminalId } });
       return { id: capacidadTerminalId };
     }
 
@@ -1571,7 +1584,10 @@ export const detachEstructuraAcademicaItem = https.onCall(async (data, context) 
     await dataConnect.executeGraphql<
       { indicadorCapacidad_delete: unknown },
       { id: number }
-    >(DELETE_INDICADOR_CAPACIDAD_MUTATION, { variables: { id: indicadorCapacidadId } });
+    >(`mutation DeleteEmptyCurricularIndicator($id:Int!) @transaction {
+      query { ${curricularGradeChecks("indicadorCapacidad", "$id")} }
+      indicadorCapacidad_delete(first:{where:{_and:[{id:{eq:$id}},{_not:${curricularHasGradesFilter("indicadorCapacidad")}}]}}) @check(expr:"this != null",message:"El indicador tiene notas guardadas.")
+    }`, { variables: { id: indicadorCapacidadId } });
     return { id: indicadorCapacidadId };
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;

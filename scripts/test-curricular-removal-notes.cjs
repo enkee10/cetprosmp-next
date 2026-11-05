@@ -39,20 +39,41 @@ function visit(node) {
 }
 visit(source);
 assert(action, 'The UI removal action must exist');
-async function runUi({ count = 0, confirm = true, failure, entity = 'indicadorCapacidad' } = {}) {
+
+// Exercise the actual callable dispatcher too: a preview must never reach a mutation.
+const handlers = ts.createSourceFile('handlers.ts', fs.readFileSync(
+  'functions/src/modules/academico/handlers.ts', 'utf8',
+), ts.ScriptTarget.Latest, true);
+let detachAction;
+function findDetach(node) {
+  if (ts.isVariableDeclaration(node) && node.name.getText(handlers) === 'detachEstructuraAcademicaItem') {
+    detachAction = node.initializer.arguments[0].getText(handlers);
+  }
+  ts.forEachChild(node, findDetach);
+}
+findDetach(handlers);
+assert(detachAction);
+let permissionChecks = 0, previewCalls = 0, mutationCalls = 0;
+const detach = new Function('requirePermission', 'parseEstructuraActionEntity', 'countCurricularRemovalNotes', 'dataConnect', 'https', 'console',
+  transpile(`const handler = ${detachAction};`) + '\nreturn handler;')(
+  async () => { permissionChecks++; }, entity => entity,
+  (...args) => { previewCalls++; return backend.exports.countCurricularRemovalNotes(...args); },
+  { executeGraphql: async () => { mutationCalls++; throw Error('A preview must not execute the deletion path'); } },
+  { HttpsError }, { error() {} },
+);
+async function runUi({ confirm = true, failure, protectedItem = false, entity = 'indicadorCapacidad' } = {}) {
   const calls = [], messages = [], loading = [], errors = [], removals = [], pending = [];
   const dependencies = {
-    auth: { currentUser: null }, functions: {}, planCatalog: [],
+    auth: { currentUser: null }, functions: {}, planCatalog: [], modulos: [],
+    curricularRemovalIsProtected: () => protectedItem,
     setActionLoading: value => loading.push(value),
     structureActionRef: { current: false },
     setPendingStructureAction: value => pending.push(value),
     setError: value => errors.push(value),
     httpsCallable: (_functions, name) => async payload => {
       calls.push({ name, payload });
-      if (payload.previewOnly) {
-        if (failure) throw failure;
-        return { data: { notasAsociadas: count } };
-      }
+      assert.equal(payload.previewOnly, undefined, 'Deletion must not request a preview');
+      if (failure) throw failure;
       return { data: { id: 7 } };
     },
     window: { confirm: message => { messages.push(message); return confirm; } },
@@ -64,13 +85,22 @@ async function runUi({ count = 0, confirm = true, failure, entity = 'indicadorCa
   const execute = new Function(...Object.keys(dependencies), `${compiled}\nreturn action;`)(...Object.values(dependencies));
   const idFields = { unidadDidactica: 'relacionId', capacidadTerminal: 'capacidadTerminalId', indicadorCapacidad: 'indicadorCapacidadId' };
   await execute('detachEstructuraAcademicaItem', { entity, [idFields[entity]]: 7 });
-  assert.deepEqual(loading, [true, false], 'Loading must finish on success, cancel and error');
-  assert.equal(pending.at(-1), null, 'Every exit clears the card loading indicator');
+  assert.deepEqual(loading, protectedItem ? [] : [true, false], 'Loading must finish on success, cancel and error');
+  if (!protectedItem) assert.equal(pending.at(-1), null, 'Every exit clears the card loading indicator');
   return { calls, messages, errors, removals, pending };
 }
 
 (async () => {
   const countNotes = backend.exports.countCurricularRemovalNotes;
+  for (const [entity, field] of [['unidadDidactica', 'relacionId'], ['capacidadTerminal', 'capacidadTerminalId'], ['indicadorCapacidad', 'indicadorCapacidadId']]) {
+    queries = [];
+    response = { relation: { unidadDidacticaId: 20 }, target: { id: 7 }, indicators: [{ _count: 2 }], capacities: [{ _count: 0 }], units: [{ _count: 0 }] };
+    assert.deepEqual(await detach({ entity, [field]: 7, previewOnly: true }, {}), { notasAsociadas: 2 });
+    assert(queries.every(query => query.source.trimStart().startsWith('query ')), 'The preview can only read data');
+  }
+  assert.equal(permissionChecks, 3);
+  assert.equal(previewCalls, 3);
+  assert.equal(mutationCalls, 0, 'The callable must return before any deletion');
   for (const [entity, field, expected] of [
     ['unidadDidactica', 'relacionId', 162],
     ['capacidadTerminal', 'capacidadTerminalId', 159],
@@ -104,31 +134,30 @@ async function runUi({ count = 0, confirm = true, failure, entity = 'indicadorCa
   assert.equal(queries.length, 0, 'Invalid requests must not query data');
 
   for (const entity of ['unidadDidactica', 'capacidadTerminal', 'indicadorCapacidad']) {
-    for (const count of [0, 1, 162]) {
-      const result = await runUi({ entity, count });
-      assert.equal(result.calls.length, 2, 'Preview precedes deletion');
-      assert.equal(result.calls[0].payload.previewOnly, true);
-      assert.equal(result.calls[1].payload.previewOnly, undefined);
+      const result = await runUi({ entity });
+      assert.equal(result.calls.length, 1, 'Only the confirmed deletion calls the server');
       assert.equal(result.messages.length, 1, 'Only one confirmation is shown');
-      assert.equal(result.messages[0].includes('Advertencia:'), count > 0);
-      assert.equal(result.messages[0].includes('notas'), count > 0);
-      if (count > 0) assert(result.messages[0].includes(`${count} notas asociadas`));
+      assert.equal(result.messages[0].includes('Advertencia:'), false);
+      assert.equal(result.messages[0].includes('notas'), false);
       assert.equal(result.removals.length, 1);
       assert.equal(result.pending[0].kind, 'delete');
       assert.deepEqual(result.pending[0].card, { entity: entity === 'unidadDidactica' ? 'competenciaUnidadDidactica' : entity, id: 7 });
-    }
+      const protectedResult = await runUi({ entity, protectedItem: true });
+      assert.equal(protectedResult.calls.length, 0);
+      assert.equal(protectedResult.messages.length, 0);
+      assert.deepEqual(protectedResult.pending, []);
   }
-  const cancelled = await runUi({ count: 5, confirm: false });
-  assert.equal(cancelled.calls.length, 1);
+  const cancelled = await runUi({ confirm: false });
+  assert.equal(cancelled.calls.length, 0);
   assert.equal(cancelled.removals.length, 0, 'Cancel must not delete');
   assert.deepEqual(cancelled.pending, [null], 'Cancel must not show a deleting card');
-  for (const options of [{ failure: new Error('Consulta fallida') }, { count: -1 }, { count: undefined, failure: new Error('Sin conexión') }]) {
+  for (const options of [{ failure: new Error('Solicitud fallida') }, { failure: new Error('Sin conexión') }]) {
     const failed = await runUi(options);
     assert.equal(failed.calls.length, 1);
-    assert.equal(failed.messages.length, 0);
-    assert.equal(failed.removals.length, 0, 'Failed previews must not delete');
+    assert.equal(failed.messages.length, 1);
+    assert.equal(failed.removals.length, 0, 'Failed requests must not remove the local card');
     assert(failed.errors.at(-1));
-    assert.deepEqual(failed.pending, [null], 'Failed grade checks must not show a deleting card');
+    assert.equal(failed.pending[0].kind, 'delete');
   }
-  console.log('Correcto: conteo de notas y promedios, dependientes, confirmación con/sin notas, cancelación y errores.');
+  console.log('Correcto: preview histórico de solo lectura, protección local y eliminación con una sola solicitud y confirmación sin conteo.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -31,11 +31,12 @@ const refId = (ref: Ref, saved: Record<string, { id: number }>) => "id" in ref ?
 const assign = (field: string, ref: Ref) => "id" in ref ? `${field}:${ref.id}` : `${field}_expr:"response.${ref.alias}.id"`;
 
 /** Read the first branch; missing levels are inserted by the caller's move transaction. */
-export async function prepareAncestorDestination(entity: string, source: Row, targetEntity: string, target: Row, graph: Graph) {
+export async function prepareAncestorDestination(entity: string, source: Row, targetEntity: string, target: Row, graph: Graph,
+  continuation?: { id: number; planId: number; moduloId: number }) {
   const from = levels.indexOf(entity as typeof levels[number]), start = levels.indexOf(targetEntity as typeof levels[number]);
   if (start < 0 || from < 1 || start >= from - 1) throw new https.HttpsError("invalid-argument", "El destino debe ser un nivel superior al padre inmediato.");
   let unitId = unitAt(target);
-  let moduleId = targetEntity === "modulo" ? target.id : targetEntity === "competencia" ? Number(target.moduloId)
+  let moduleId = targetEntity === "modulo" ? target.id : targetEntity === "competencia" ? continuation?.moduloId ?? Number(target.moduloId)
     : targetEntity === "competenciaUnidadDidactica" ? effectiveModuloId(target as Row & Parameters<typeof effectiveModuloId>[0]) : undefined;
   if (!moduleId && unitId) {
     const owners = await graph<{ owners: Array<{ competencia: { moduloId: number }; competenciaContinuacion?: { planModulo?: { moduloId: number } | null } | null }> }>(`query CurricularAncestorOwner($id:Int!) {
@@ -58,7 +59,8 @@ export async function prepareAncestorDestination(entity: string, source: Row, ta
     let first: Row | undefined;
     if ("id" in parent) {
       const selection = ancestorSelect[level] + (level === "competencia" ? " nombre" : "");
-      const query: string = `items:${config.list}(where:{${config.fk}:{eq:${parent.id}}},orderBy:{id:ASC},limit:10001)`;
+      const continuationFilter = level === "competenciaUnidadDidactica" ? `,competenciaContinuacionId:{${continuation ? `eq:${continuation.id}` : "isNull:true"}}` : "";
+      const query: string = `items:${config.list}(where:{${config.fk}:{eq:${parent.id}}${continuationFilter}},orderBy:{id:ASC},limit:10001)`;
       const rows: { items: Row[] } = await graph<{ items: Row[] }>(`query CurricularAncestorChildren { ${query} { ${selection} } }`, {});
       if (rows.items.length > 10000) throw new https.HttpsError("resource-exhausted", "El destino tiene demasiados elementos.");
       const ids = rows.items.map(row => row.id);
@@ -66,7 +68,7 @@ export async function prepareAncestorDestination(entity: string, source: Row, ta
       const units = `{${rows.items.map(row => `${row.id}:${row.unidadDidacticaId ?? "null"}`).join(",")}}`;
       const types = `{${rows.items.map(row => `${row.id}:${JSON.stringify(row.tipo ?? null)}`).join(",")}}`;
       const expression = `this.size() == ${ids.length}` + (ids.length ? ` && this.all(r, r.id in [${ids.join(",")}] && r.orden == ${orders}[r.id]${level === "competenciaUnidadDidactica" ? ` && r.unidadDidacticaId == ${units}[r.id]` : ""}${level === "competencia" ? ` && r.tipo == ${types}[r.id]` : ""})` : "");
-      checks.push(`route${index}:${config.list}(where:{${config.fk}:{eq_expr:"response.routeLock.id == ${moduleId} ? ${parent.id} : 0"}},orderBy:{id:ASC},limit:10001) @check(expr:${JSON.stringify(expression)},message:"La ruta de destino cambio. Actualiza la vista.") { id orden${level === "competenciaUnidadDidactica" ? " unidadDidacticaId" : ""}${level === "competencia" ? " tipo" : ""} }`);
+      checks.push(`route${index}:${config.list}(where:{${config.fk}:{eq_expr:"response.routeLock.id == ${moduleId} ? ${parent.id} : 0"}${continuationFilter}},orderBy:{id:ASC},limit:10001) @check(expr:${JSON.stringify(expression)},message:"La ruta de destino cambio. Actualiza la vista.") { id orden${level === "competenciaUnidadDidactica" ? " unidadDidacticaId" : ""}${level === "competencia" ? " tipo" : ""} }`);
       const orderId = (row: Row) => level === "competenciaUnidadDidactica" ? Number(row.unidadDidacticaId) : row.id;
       first = rows.items.sort((a, b) => (a.orden ?? orderId(a)) - (b.orden ?? orderId(b)) || orderId(a) - orderId(b))[0];
     }
@@ -89,7 +91,7 @@ export async function prepareAncestorDestination(entity: string, source: Row, ta
         competency = row.competency;
       }
       fields.push(`${alias}Unit:unidadDidactica_insert(data:{nombre:""})`);
-      fields.push(`${alias}:competenciaUnidadDidactica_insert(data:{${assign(config.fk, parent)},unidadDidacticaId_expr:"response.${alias}Unit.id",orden:1})`);
+      fields.push(`${alias}:competenciaUnidadDidactica_insert(data:{${assign(config.fk, parent)},unidadDidacticaId_expr:"response.${alias}Unit.id",orden:1${continuation ? `,competenciaContinuacionId:${continuation.id}` : ""}})`);
       created.push({ entity: "unidadDidactica", alias, unitAlias: `${alias}Unit`, parent, competency, competencyRef });
       parent = { alias: `${alias}Unit` }; unitId = undefined;
       continue;
@@ -104,7 +106,9 @@ export async function prepareAncestorDestination(entity: string, source: Row, ta
     if (row.entity === "unidadDidactica") {
       const compId = refId(row.competencyRef!, saved);
       return { id, entity: row.entity, item: { id, nombre: "", duracion: null, creditos: null, sigla: null },
-        unitAssignments: [{ id: saved[row.alias].id, unidadDidacticaId: id, orden: 1, competenciaId: compId, competencia: { ...row.competency, id: compId } }] };
+        unitAssignments: [{ id: saved[row.alias].id, unidadDidacticaId: id, orden: 1, competenciaId: compId,
+          ...(continuation ? { competenciaContinuacionId: continuation.id, competenciaContinuacionPlanId: continuation.planId } : {}),
+          competencia: { ...row.competency, id: compId, moduloId: moduleId } }] };
     }
     const item = row.entity === "competencia" ? { id, nombre: "", tipo: competency!.tipo, moduloId: moduleId, orden: 1 }
       : { id, descripcion: "", sigla: null, orden: 1, [children[row.entity].fk]: parentId };

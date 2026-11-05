@@ -970,6 +970,14 @@ function grupoModuloDisplayName(grupoModulo: ReporteGrupoModuloOption) {
   return cleanText(grupoModulo.nombre || getModuloDocumentName(grupoModulo) || `Grupo-modulo ${grupoModulo.id}`);
 }
 
+function registroAcademicoFileName(tipoDocumento: ReportDocumentType, data: ReporteDocumentoData) {
+  const nombre = cleanText([semestreTitulo(data).slice(-4), grupoModuloDisplayName(data.grupoModulo)].filter(Boolean).join(" ")
+    .replace(/_/g, " ")
+    .replace(/[<>:"/\\|?*\u0000-\u001f\u007f]/g, " "))
+    .replace(/[. ]+$/, "");
+  return `${tipoDocumento === "acta" ? "Acta" : "Nomina"}-${nombre}`;
+}
+
 function certificadoGrupoModuloLabel(grupoModulo: ReporteGrupoModuloOption) {
   const codigo = semestreCodigo(grupoModulo.grupo?.semestre?.titulo);
   return cleanText([codigo, grupoModuloDisplayName(grupoModulo)].filter(Boolean).join(" "));
@@ -1279,12 +1287,15 @@ function storageUrl(bucketName: string, path: string, token: string) {
   return `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(path)}?alt=media&token=${token}`;
 }
 
-async function uploadBuffer(path: string, buffer: Buffer, contentType: string) {
+async function uploadBuffer(path: string, buffer: Buffer, contentType: string, fileName?: string) {
   const token = randomUUID();
   const bucket = getStorage().bucket();
+  const asciiName = fileName?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x20-\x7e]|["\\]/g, "-");
+  const encodedName = fileName && encodeURIComponent(fileName).replace(/['()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
   await bucket.file(path).save(buffer, {
     contentType,
     metadata: {
+      ...(fileName ? { contentDisposition: `inline; filename="${asciiName}"; filename*=UTF-8''${encodedName}` } : {}),
       metadata: { firebaseStorageDownloadTokens: token },
     },
   });
@@ -3959,11 +3970,13 @@ async function generateReporteDocumentoInternal(input: {
     .replace(/[^\w.-]+/g, "-")
     .toLowerCase();
   const pdfBuffer = await convertXlsxToPdf(xlsxBuffer, baseName, input.pdfProvider);
-  const pdf = await uploadBuffer(`documentos/registros-academicos/${input.tipoDocumento}-${grupoModuloId}.pdf`, pdfBuffer, "application/pdf");
+  const fileName = registroAcademicoFileName(input.tipoDocumento, reporte);
+  const pdf = await uploadBuffer(`documentos/registros-academicos/${input.tipoDocumento}-${grupoModuloId}.pdf`, pdfBuffer, "application/pdf", `${fileName}.pdf`);
   const excel = await uploadBuffer(
     `documentos/registros-academicos/${input.tipoDocumento}-${grupoModuloId}.xlsx`,
     xlsxBuffer,
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    `${fileName}.xlsx`,
   );
   const documento = await upsertRegistroAcademicoDocumento({
     tipoDocumento: input.tipoDocumento,
@@ -4239,6 +4252,18 @@ export const descargarRegistrosAcademicosSeleccionados = runWith({ timeoutSecond
     );
     if (missingIndex >= 0) {
       throw new https.HttpsError("failed-precondition", "Todos los grupos seleccionados deben tener documento generado.");
+    }
+
+    if (orderedDocuments.length === 1 && (formato === "pdf" ? orderedDocuments[0]?.pdfUrl : orderedDocuments[0]?.excelUrl)) {
+      const documento = orderedDocuments[0]!;
+      return {
+        formato,
+        file: {
+          path: formato === "pdf" ? documento.pdfPath : documento.excelPath,
+          url: formato === "pdf" ? documento.pdfUrl : documento.excelUrl,
+          contentType: formato === "pdf" ? "application/pdf" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      };
     }
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");

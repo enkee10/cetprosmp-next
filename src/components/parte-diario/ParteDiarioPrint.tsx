@@ -32,7 +32,7 @@ export default function ParteDiarioPrint() {
   const { user, loading: authLoading, loginWithGoogle } = useAuth(), { can, loading: permissionLoading } = useIntranetPermissions();
   const [data, setData] = useState<ParteDiarioData | null>(null), [loading, setLoading] = useState(true), [error, setError] = useState('');
   const [orientation, setOrientation] = useState<PrintOrientation>('landscape'), [margins, setMargins] = useState<PrintMarginsCm>({ top: 0.7, right: 0.7, bottom: 0.7, left: 0.7 });
-  const [scale, setScale] = useState(100), [overflow, setOverflow] = useState(false), [pages, setPages] = useState<ParteDiarioRow[][]>([]);
+  const [overflow, setOverflow] = useState(false), [pages, setPages] = useState<ParteDiarioRow[][]>([]);
   const measure = useRef<HTMLDivElement>(null), paper = getA4PageSizeMm(orientation), width = getPrintContentWidthMm(paper, margins), height = getPrintContentHeightMm(paper, margins);
   useEffect(() => {
     let active = true;
@@ -68,14 +68,14 @@ export default function ParteDiarioPrint() {
     void Promise.all(images.map(image => image.decode().catch(() => undefined))).then(paginate);
     paginate();
     return () => { active = false; observer.disconnect(); };
-  }, [data, width, height, scale, loading, authLoading, permissionLoading]);
+  }, [data, width, height, loading, authLoading, permissionLoading]);
   if (!authLoading && !user) return <Box sx={{ p: 4 }}><Typography>Inicia sesión para ver el Parte Diario.</Typography><Button onClick={() => void loginWithGoogle().catch(cause => setError(cause.message))}>Iniciar sesión</Button>{error && <Typography color="error">{error}</Typography>}</Box>;
   const title = `PARTE DIARIO — ${parteDateLabel(fecha)}`;
   return <PrintDocumentViewer title="Parte Diario" orientation={orientation} onOrientationChange={setOrientation} margins={margins} onMarginsChange={setMargins}
-    showPageOverflow={overflow} onShowPageOverflowChange={setOverflow} scalePercent={scale} onScalePercentChange={setScale} minScalePercent={55} maxScalePercent={100}
+    showPageOverflow={overflow} onShowPageOverflowChange={setOverflow}
     loading={loading || authLoading || permissionLoading} error={error || (!can('parte-diario', 'view') && !permissionLoading ? 'No tienes permiso para ver el Parte Diario.' : !loading && data && !data.filas.length ? data.mensaje || 'No hay registros para esta fecha.' : null)}
     canPrint={pages.length > 0} pageSizeMm={paper} contentMinWidthMm={paper.width} globalStyles={{
-      '.parte-print-table': { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: `${7 * scale / 100}pt`, lineHeight: 1.25 },
+      '.parte-print-table': { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '7pt', lineHeight: 1.25 },
       '.parte-print-table th, .parte-print-table td': { border: '0.2mm solid #aacbdc', padding: '0.5mm', verticalAlign: 'middle', overflowWrap: 'anywhere', whiteSpace: 'normal' },
       '.parte-print-table th': { background: '#164863', color: 'white', textAlign: 'center' },
       '.parte-print-table th:first-child, .parte-print-table td:first-child': { padding: '0.1mm', whiteSpace: 'nowrap', textAlign: 'center' },

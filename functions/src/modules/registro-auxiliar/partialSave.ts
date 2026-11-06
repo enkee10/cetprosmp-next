@@ -72,7 +72,8 @@ export async function savePartialRegistroGrades(input: {
     for (const capacity of input.capacidades) {
       const ids = input.indicadores.filter(row => row.capacidadTerminalId === capacity.id).map(row => row.id);
       const values = ids.map(id => notes.get(key(matriculaId, id))?.promedio);
-      const value = input.usesOcupacionalRules ? math.roundPromedio(values[values.length - 1]) : math.average(values);
+      const completeAverage = math.average(values);
+      const value = input.usesOcupacionalRules && completeAverage !== null ? math.roundPromedio(values[values.length - 1]) : completeAverage;
       capacityValues.set(capacity.id, value);
       if (affectedCapacities.get(matriculaId)?.has(capacity.id)) {
         const id = capacityRows.get(key(matriculaId, capacity.id));
@@ -91,10 +92,9 @@ export async function savePartialRegistroGrades(input: {
     const student = students.get(matriculaId)!;
     const efsrt = efsrtRows.get(student.id)?.promedioFinal ?? null;
     write("moduloEstudiante", student.id, {
-      promedio: input.usesOcupacionalRules ? math.average(unitValues) : math.weightedAverage([
-        ...unitValues.map((value, index) => ({ value, weight: input.unidadCreditoById.get(input.unidadIds[index]) })),
-        { value: efsrt, weight: input.moduloCreditoEfsrt },
-      ]),
+      promedio: input.usesOcupacionalRules ? math.average(unitValues) : math.weightedAverage(
+        unitValues.map((value, index) => ({ value, weight: input.unidadCreditoById.get(input.unidadIds[index]) })),
+      ),
       puntaje: math.sum(input.usesOcupacionalRules ? unitValues : [...unitValues, efsrt]),
       grupoModuloId: input.grupoModuloId,
     });

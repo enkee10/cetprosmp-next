@@ -147,7 +147,6 @@ export default function ListaMatriculadosPrintPage() {
   const [orientation, setOrientation] = useState<PrintOrientation>('portrait');
   const [margins, setMargins] = useState<PrintMarginsCm>(DEFAULT_MARGINS);
   const [showOverflow, setShowOverflow] = useState(false);
-  const [scalePercent, setScalePercent] = useState(100);
   const [generatedAt, setGeneratedAt] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -246,10 +245,6 @@ export default function ListaMatriculadosPrintPage() {
       onMarginsChange={setMargins}
       showPageOverflow={showOverflow}
       onShowPageOverflowChange={setShowOverflow}
-      scalePercent={scalePercent}
-      onScalePercentChange={setScalePercent}
-      minScalePercent={70}
-      maxScalePercent={100}
       canPrint={Boolean(payload)}
       pageSizeMm={pageSizeMm}
       contentMinWidthMm={pageSizeMm.width}
@@ -293,8 +288,6 @@ export default function ListaMatriculadosPrintPage() {
             display: 'flex',
             flexDirection: 'column',
             overflow: showOverflow ? 'visible' : 'hidden',
-            transform: `scale(${scalePercent / 100})`,
-            transformOrigin: 'top left',
             fontFamily: 'Arial, Helvetica, sans-serif',
             color: '#111',
           },

@@ -50,6 +50,17 @@ test('legacy averages without indicator grades survive an unchanged selection', 
   assert.equal(data.unidadesDidacticasEstudiantes[0].promedio, 12);
 });
 
+test('occupational achievement waits for every active grade and keeps zero valid', () => {
+  for (const [first, second, expected] of [[null, 8, null], [18, null, null], [0, 8, 8], [18, 0, 0]]) {
+    const data = fixture();
+    data.indicadorCapacidadEstudiantes[0].promedio = first;
+    data.indicadorCapacidadEstudiantes[1].promedio = second;
+    recalculateSelectionAverages(data, caps, indicators, true);
+    assert.equal(data.capacidadesTerminalesEstudiantes[0].promedio, expected);
+    assert.equal(data.unidadesDidacticasEstudiantes[0].promedio, expected === null ? null : Math.round((expected + 10) / 2));
+  }
+});
+
 test('missing active grades clear capacity and unit averages while zero remains valid', () => {
   const data = fixture();
   data.indicadorCapacidadEstudiantes[1].promedio = null;

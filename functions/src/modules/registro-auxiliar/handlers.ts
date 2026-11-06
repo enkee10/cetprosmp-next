@@ -2097,9 +2097,11 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
         const indicadorIds = indicadores
           .filter((indicador) => indicador.capacidadTerminalId === capacidad.id)
           .map((indicador) => indicador.id);
-        const promedio = usesOcupacionalRules
-          ? roundPromedio(indicadorIds.length > 0 ? notasByIndicador.get(indicadorIds[indicadorIds.length - 1]) : null)
-          : average(indicadorIds.map((indicadorId) => notasByIndicador.get(indicadorId)));
+        const values = indicadorIds.map((indicadorId) => notasByIndicador.get(indicadorId));
+        const completeAverage = average(values);
+        const promedio = usesOcupacionalRules && completeAverage !== null
+          ? roundPromedio(values[values.length - 1])
+          : completeAverage;
         capacidadPromedios.set(capacidad.id, promedio);
         await upsertCapacidadPromedio(matriculaId, capacidad.id, promedio);
       }
@@ -2120,16 +2122,12 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
         grupoId,
         usesOcupacionalRules
           ? average(unidadIds.map((unidadId) => unidadPromedios.get(unidadId)))
-          : weightedAverage([
-            ...unidadIds.map((unidadId) => ({
+          : weightedAverage(
+            unidadIds.map((unidadId) => ({
               value: unidadPromedios.get(unidadId),
               weight: unidadCreditoById.get(unidadId),
             })),
-            {
-              value: efsrtPppByModuloEstudianteId.get(moduloEstudianteIdByMatricula.get(matriculaId) ?? -1),
-              weight: moduloCreditoEfsrt,
-            },
-          ]),
+          ),
         usesOcupacionalRules
           ? sum(unidadIds.map((unidadId) => unidadPromedios.get(unidadId)))
           : sum([

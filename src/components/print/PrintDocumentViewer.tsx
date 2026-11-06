@@ -66,10 +66,6 @@ type PrintDocumentViewerProps = {
   onMarginsChange: (margins: PrintMarginsCm) => void;
   showPageOverflow: boolean;
   onShowPageOverflowChange: (show: boolean) => void;
-  scalePercent: number;
-  onScalePercentChange?: (scale: number) => void;
-  minScalePercent?: number;
-  maxScalePercent?: number;
   filters?: ReactNode;
   children: ReactNode;
   loading?: boolean;
@@ -96,10 +92,6 @@ export default function PrintDocumentViewer({
   onMarginsChange,
   showPageOverflow,
   onShowPageOverflowChange,
-  scalePercent,
-  onScalePercentChange,
-  minScalePercent = 55,
-  maxScalePercent = 100,
   filters,
   children,
   loading = false,
@@ -234,21 +226,6 @@ export default function PrintDocumentViewer({
           Config...
         </Button>
         {filters}
-        <TextField
-          label="Escala"
-          size="small"
-          type="number"
-          value={scalePercent}
-          onChange={(event) => {
-            if (!onScalePercentChange) return;
-            const value = Number(event.target.value);
-            if (!Number.isFinite(value)) return;
-            onScalePercentChange(Math.max(minScalePercent, Math.min(maxScalePercent, Math.round(value))));
-          }}
-          inputProps={{ min: minScalePercent, max: maxScalePercent, step: 1, readOnly: !onScalePercentChange }}
-          InputProps={{ endAdornment: <Typography sx={{ ml: 0.5, color: 'text.secondary' }}>%</Typography> }}
-          sx={{ width: { xs: '100%', md: 100 }, flexShrink: 0 }}
-        />
         <span>
           <IconButton aria-label={printButtonLabel} color="primary" onClick={handlePrint} disabled={!canPrint || loading}>
             <PrintIcon />

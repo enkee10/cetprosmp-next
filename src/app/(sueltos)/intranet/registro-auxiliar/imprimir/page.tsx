@@ -9,6 +9,8 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useSearchParams } from 'next/navigation';
 import { app } from '@/lib/firebase';
 import { formatDateOnly } from '@/lib/dateOnly';
+import { useRegistroPrintLayout } from '@/hooks/useRegistroPrintLayout';
+import { PRINT_PX_TO_MM, REGISTRO_PRINT_SIZES, type RegistroPrintPage } from '@/lib/registroPrintLayout';
 import PrintDocumentViewer, {
   cmToMm,
   getA4PageSizeMm,
@@ -181,19 +183,13 @@ type RegistroAuxiliar = {
 type PrintColumn = {
   key: string;
   widthMm: number;
-  headerTextWidthMm?: number;
-  type: 'indicador' | 'capacidad' | 'efsrt' | 'puntaje' | 'promedio';
+  type: 'indicador' | 'unidad' | 'efsrt' | 'puntaje' | 'promedio';
   unidad: Unidad | null;
   capacidad: Capacidad | null;
   indicador?: Indicador | null;
 };
 
-type PrintPage = {
-  columns: PrintColumn[];
-  unscaledWidthMm: number;
-  scale: number;
-  headerHeightPx: number;
-};
+type PrintPage = RegistroPrintPage<PrintColumn>;
 
 type VisualPrintPage = PrintPage & {
   students: Estudiante[];
@@ -211,33 +207,14 @@ const DEFAULT_PRINT_MARGINS_CM: PrintMarginsCm = {
   right: 1,
 };
 const FIXED_COLUMNS = [
-  { key: 'nro', widthMm: 8 },
-  { key: 'estudiante', widthMm: 68 },
+  { key: 'nro', widthMm: REGISTRO_PRINT_SIZES.numberMm },
+  { key: 'estudiante', widthMm: REGISTRO_PRINT_SIZES.studentMm },
 ];
-const FIXED_WIDTH_MM = FIXED_COLUMNS.reduce((sum, column) => sum + column.widthMm, 0);
-const MIN_SCALE = 0.55;
-const MAX_SCALE = 1;
-const MAX_HORIZONTAL_PRINT_PAGES = 2;
 const STUDENT_ROW_HEIGHT_PX = 14;
-const DEFAULT_STUDENTS_PER_PAGE = 23;
 const MODULE_INFO_HEIGHT_PX = 84;
 const PAGE_NUMBER_HEIGHT_PX = 18;
-const UNIT_HEADER_HEIGHT_PX = 20;
-const INDICATOR_HEADER_HEIGHT_PX = 135;
-const PX_TO_MM = 25.4 / 96;
-const CAPACITY_HEADER_HORIZONTAL_PADDING_MM = 1.4;
-const CAPACITY_HEADER_VERTICAL_PADDING_PX = 4;
-const AUTO_CAPACITY_HEADER_REFERENCE_HEIGHT_PX = 120;
-const getCapacityHeaderHeightPx = (studentCount: number) => (studentCount <= 20 ? null : 93);
-const getCapacityHeaderContentHeightPx = (capacityHeaderHeightPx: number) =>
-  capacityHeaderHeightPx - CAPACITY_HEADER_VERTICAL_PADDING_PX;
-const getCapacityHeaderMeasureHeightPx = (capacityHeaderHeightPx: number) =>
-  getCapacityHeaderContentHeightPx(capacityHeaderHeightPx) - 8;
-const getTableHeaderHeightPx = (capacityHeaderHeightPx: number) =>
-  UNIT_HEADER_HEIGHT_PX + capacityHeaderHeightPx + INDICATOR_HEADER_HEIGHT_PX;
-const INDICATOR_TEXT_PADDING_PX = 10;
-const INDICATOR_TEXT_WIDTH_PX = Math.max(80, INDICATOR_HEADER_HEIGHT_PX - INDICATOR_TEXT_PADDING_PX);
-const INDICATOR_TEXT_WIDTH_MM = INDICATOR_TEXT_WIDTH_PX * PX_TO_MM;
+const UNIT_HEADER_HEIGHT_PX = REGISTRO_PRINT_SIZES.unitHeightPx;
+const PX_TO_MM = PRINT_PX_TO_MM;
 const selectMenuProps = {
   disableScrollLock: true,
   PaperProps: {
@@ -253,61 +230,6 @@ const normalizeText = (value: string | null | undefined) =>
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
-
-const clampNumber = (value: number, min: number, max: number) =>
-  Math.max(min, Math.min(max, value));
-
-const getHeaderTextMetrics = (value: string | null | undefined) => {
-  const text = String(value || '').replace(/\s+/g, ' ').trim();
-  const words = text.split(/\s+/).filter(Boolean);
-  const maxWordLength = words.reduce((max, word) => Math.max(max, word.length), 0);
-  return {
-    length: text.length,
-    wordCount: words.length,
-    maxWordLength,
-  };
-};
-
-const estimateWrappedLineCount = (text: string, maxCharsPerLine: number) => {
-  const words = text.replace(/\s+/g, ' ').trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return 1;
-
-  let lines = 1;
-  let currentLength = 0;
-
-  for (const word of words) {
-    const length = word.length;
-    if (length > maxCharsPerLine) {
-      if (currentLength > 0) {
-        lines += 1;
-        currentLength = 0;
-      }
-      lines += Math.max(0, Math.ceil(length / maxCharsPerLine) - 1);
-      currentLength = length % maxCharsPerLine;
-      continue;
-    }
-
-    const nextLength = currentLength === 0 ? length : currentLength + 1 + length;
-    if (nextLength <= maxCharsPerLine) {
-      currentLength = nextLength;
-    } else {
-      lines += 1;
-      currentLength = length;
-    }
-  }
-
-  return lines;
-};
-
-const estimateIndicatorLayout = (label: string) => {
-  const metrics = getHeaderTextMetrics(label);
-  const charsPerLine = Math.max(18, Math.floor(INDICATOR_TEXT_WIDTH_PX / 4));
-  const lineCount = estimateWrappedLineCount(label, charsPerLine);
-  const requiredTextHeightPx = lineCount * 7.4 + Math.min(metrics.wordCount, 4) * 0.3 + 4;
-  const widthMm = clampNumber(requiredTextHeightPx * 25.4 / 96 + 1.6, 7.5, 22);
-
-  return { widthMm, headerTextWidthMm: INDICATOR_TEXT_WIDTH_MM };
-};
 
 const toTitleCase = (value: string | null | undefined) =>
   String(value ?? '')
@@ -453,199 +375,38 @@ const buildEfsrtPppMap = (registro: RegistroAuxiliar | null) => {
   return next;
 };
 
-const curricularLabel = (...parts: Array<string | null | undefined>) =>
-  parts.map(part => part?.trim()).filter((part): part is string => Boolean(part)).join(' ');
-
 const capacityCode = (capacidad: Capacidad | null | undefined, unidad: Unidad | null | undefined) =>
   `${capacidad?.codigo?.replace(/:$/, '') || `C${Math.max(0, unidad?.capacidadesTerminales.findIndex(item => item.id === capacidad?.id) ?? 0) + 1}`}:`;
 
 const indicatorCode = (indicador: Indicador | null | undefined, capacidad: Capacidad | null | undefined) =>
   `${indicador?.codigo?.replace(/:$/, '') || `I${Math.max(0, capacidad?.indicadoresCapacidad.findIndex(item => item.id === indicador?.id) ?? 0) + 1}`}:`;
 
-const capacityHeaderText = (capacidad: Capacidad | null | undefined, unidad: Unidad | null | undefined) =>
-  curricularLabel(capacityCode(capacidad, unidad), capacidad?.descripcion);
-
-const indicatorHeaderText = (indicador: Indicador | null | undefined, capacidad: Capacidad | null | undefined) =>
-  curricularLabel(indicatorCode(indicador, capacidad), indicador?.descripcion || indicador?.sigla);
-
 const unitLabel = (unidad: Unidad | null | undefined) =>
   (unidad?.nombre || unidad?.sigla || '').trim().toLocaleUpperCase('es-PE');
+
+const printIndicatorLabel = (column: PrintColumn) => ({
+  code: indicatorCode(column.indicador, column.capacidad),
+  text: column.indicador?.descripcion || column.indicador?.sigla || '',
+});
+const printCapacityLabel = (column: PrintColumn) => ({
+  code: capacityCode(column.capacidad, column.unidad),
+  text: column.capacidad?.descripcion || '',
+});
 
 const buildPrintColumns = (registro: RegistroAuxiliar | null, showEfsrtPpp: boolean, isProgramaEstudio: boolean) => {
   const columns: PrintColumn[] = [];
   for (const unidad of registro?.estructura || []) {
     for (const capacidad of unidad.capacidadesTerminales || []) {
       for (const indicador of capacidad.indicadoresCapacidad || []) {
-        const label = indicatorHeaderText(indicador, capacidad);
-        const layout = estimateIndicatorLayout(label);
-        columns.push({
-          key: `indicator-${indicador.id}`,
-          widthMm: layout.widthMm,
-          headerTextWidthMm: layout.headerTextWidthMm,
-          type: 'indicador',
-          unidad,
-          capacidad,
-          indicador,
-        });
+        columns.push({ key: `indicator-${indicador.id}`, widthMm: REGISTRO_PRINT_SIZES.minimumIndicatorMm, type: 'indicador', unidad, capacidad, indicador });
       }
-      columns.push({
-        key: `capacidad-${capacidad.id}`,
-        widthMm: isProgramaEstudio ? 10 : 9,
-        type: 'capacidad',
-        unidad,
-        capacidad,
-      });
     }
+    columns.push({ key: `unidad-${unidad.id}`, widthMm: REGISTRO_PRINT_SIZES.averageMm, type: 'unidad', unidad, capacidad: null });
   }
-  if (showEfsrtPpp) {
-    columns.push({ key: 'efsrt-ppp', widthMm: 10, type: 'efsrt', unidad: null, capacidad: null });
-  }
-  if (!isProgramaEstudio) {
-    columns.push({ key: 'puntaje', widthMm: 10, type: 'puntaje', unidad: null, capacidad: null });
-  }
-  columns.push({ key: 'promedio-general', widthMm: isProgramaEstudio ? 9.7 : 11, type: 'promedio', unidad: null, capacidad: null });
+  if (showEfsrtPpp) columns.push({ key: 'efsrt-ppp', widthMm: REGISTRO_PRINT_SIZES.efsrtMm, type: 'efsrt', unidad: null, capacidad: null });
+  if (!isProgramaEstudio) columns.push({ key: 'puntaje', widthMm: REGISTRO_PRINT_SIZES.scoreMm, type: 'puntaje', unidad: null, capacidad: null });
+  columns.push({ key: 'promedio-general', widthMm: REGISTRO_PRINT_SIZES.averageMm, type: 'promedio', unidad: null, capacidad: null });
   return columns;
-};
-
-const widthOfColumns = (columns: PrintColumn[]) =>
-  FIXED_WIDTH_MM + columns.reduce((sum, column) => sum + column.widthMm, 0);
-
-const widthOfVariableColumns = (columns: PrintColumn[]) =>
-  columns.reduce((sum, column) => sum + column.widthMm, 0);
-
-const getMinimumColumnWidthMm = (column: PrintColumn) => {
-  if (column.type === 'indicador') return 4.2;
-  if (column.type === 'capacidad') return 5.2;
-  if (column.type === 'efsrt') return 6.2;
-  if (column.type === 'puntaje') return 6.2;
-  return 6.8;
-};
-
-const getColumnContentWeight = (column: PrintColumn) => {
-  const text = [
-    unitLabel(column.unidad),
-    column.capacidad?.competenciaCodigo,
-    column.capacidad?.codigo,
-    column.capacidad?.descripcion,
-    column.indicador?.codigo,
-    column.indicador?.descripcion,
-    column.indicador?.sigla,
-    column.type,
-  ]
-    .filter(Boolean)
-    .join(' ');
-  const metrics = getHeaderTextMetrics(text);
-  return Math.max(1, metrics.length + metrics.maxWordLength * 1.5);
-};
-
-const shrinkColumnsToVariableWidth = (columns: PrintColumn[], targetVariableWidthMm: number) => {
-  const currentVariableWidth = widthOfVariableColumns(columns);
-  if (currentVariableWidth <= targetVariableWidthMm) return columns;
-
-  const excessWidth = currentVariableWidth - targetVariableWidthMm;
-  const shrinkable = columns.map((column) => {
-    const minWidth = getMinimumColumnWidthMm(column);
-    const room = Math.max(0, column.widthMm - minWidth);
-    return {
-      column,
-      minWidth,
-      room,
-      weight: room / Math.sqrt(getColumnContentWeight(column)),
-    };
-  });
-  const totalWeight = shrinkable.reduce((sum, item) => sum + item.weight, 0);
-  if (totalWeight <= 0) return columns;
-
-  return shrinkable.map(({ column, minWidth, weight }) => ({
-    ...column,
-    widthMm: Math.max(minWidth, column.widthMm - excessWidth * (weight / totalWeight)),
-  }));
-};
-
-const buildPrintPage = (columns: PrintColumn[], contentWidthMm: number, tableHeaderHeightPx: number): PrintPage => {
-  const variableWidth = widthOfVariableColumns(columns);
-  const width = FIXED_WIDTH_MM + variableWidth;
-  const availableVariableWidth = Math.max(1, contentWidthMm - FIXED_WIDTH_MM);
-
-  return {
-    columns,
-    unscaledWidthMm: width,
-    scale: Math.max(MIN_SCALE, Math.min(MAX_SCALE, availableVariableWidth / Math.max(1, variableWidth))),
-    headerHeightPx: tableHeaderHeightPx,
-  };
-};
-
-const buildColumnGroups = (columns: PrintColumn[]) => {
-  const groups: PrintColumn[][] = [];
-  let currentUnitId: number | null = null;
-  let currentUnitColumns: PrintColumn[] = [];
-
-  for (const column of columns) {
-    if (!column.unidad) {
-      if (currentUnitColumns.length > 0) {
-        groups.push(currentUnitColumns);
-        currentUnitColumns = [];
-        currentUnitId = null;
-      }
-      groups.push([column]);
-      continue;
-    }
-
-    if (currentUnitId == null || currentUnitId === column.unidad.id) {
-      currentUnitId = column.unidad.id;
-      currentUnitColumns.push(column);
-      continue;
-    }
-
-    groups.push(currentUnitColumns);
-    currentUnitId = column.unidad.id;
-    currentUnitColumns = [column];
-  }
-
-  if (currentUnitColumns.length > 0) {
-    groups.push(currentUnitColumns);
-  }
-
-  return groups;
-};
-
-const buildPrintPages = (columns: PrintColumn[], contentWidthMm: number, tableHeaderHeightPx: number) => {
-  const columnGroups = buildColumnGroups(columns);
-  if (columnGroups.length === 0) return [buildPrintPage(columns, contentWidthMm, tableHeaderHeightPx)];
-
-  const availableVariableWidth = Math.max(1, contentWidthMm - FIXED_WIDTH_MM);
-  const getLayoutScale = (layout: PrintColumn[][]) =>
-    layout.reduce((minScale, pageColumns) => {
-      const variableWidth = widthOfVariableColumns(pageColumns);
-      return Math.min(minScale, Math.min(MAX_SCALE, availableVariableWidth / Math.max(1, variableWidth)));
-    }, MAX_SCALE);
-
-  let bestLayout: PrintColumn[][] = [columns];
-  let bestScale = getLayoutScale(bestLayout);
-
-  for (let splitIndex = 1; splitIndex < columnGroups.length; splitIndex += 1) {
-    const layout = [
-      columnGroups.slice(0, splitIndex).flat(),
-      columnGroups.slice(splitIndex).flat(),
-    ];
-    const scale = getLayoutScale(layout);
-    const improvesScale = scale > bestScale + 0.005;
-    const tiesWithFewerPages = Math.abs(scale - bestScale) <= 0.005 && layout.length < bestLayout.length;
-    if (improvesScale || tiesWithFewerPages) {
-      bestLayout = layout;
-      bestScale = scale;
-    }
-  }
-
-  const maxUnscaledVariableWidth = Math.max(1, availableVariableWidth / MIN_SCALE);
-  const normalizedLayout =
-    bestScale >= MIN_SCALE
-      ? bestLayout
-      : bestLayout.map((pageColumns) => shrinkColumnsToVariableWidth(pageColumns, maxUnscaledVariableWidth));
-
-  return normalizedLayout
-    .slice(0, MAX_HORIZONTAL_PRINT_PAGES)
-    .map((pageColumns) => buildPrintPage(pageColumns, contentWidthMm, tableHeaderHeightPx));
 };
 
 const groupConsecutive = <T,>(items: T[], getKey: (item: T) => string) => {
@@ -686,17 +447,12 @@ export default function RegistroAuxiliarPrintPage() {
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [scalePercent, setScalePercent] = useState(100);
   const [printOrientation, setPrintOrientation] = useState<PrintOrientation>('landscape');
   const [printMargins, setPrintMargins] = useState<PrintMarginsCm>(DEFAULT_PRINT_MARGINS_CM);
   const [showPageOverflow, setShowPageOverflow] = useState(false);
-  const [measuredIndicatorWidths, setMeasuredIndicatorWidths] = useState<Record<string, number>>({});
-  const [capacityColumnExtraWidths, setCapacityColumnExtraWidths] = useState<Record<string, number>>({});
   const printViewerRef = useRef<HTMLDivElement | null>(null);
   const floatingScrollbarRef = useRef<HTMLDivElement | null>(null);
   const floatingScrollbarWidthRef = useRef(0);
-  const capacityAdjustmentSignatureRef = useRef('');
-  const capacityAdjustmentPassRef = useRef(0);
   const [floatingScrollbarWidth, setFloatingScrollbarWidth] = useState(0);
   const pageSizeMm = useMemo(() => getA4PageSizeMm(printOrientation), [printOrientation]);
   const contentWidthMm = useMemo(() => getPrintContentWidthMm(pageSizeMm, printMargins), [pageSizeMm, printMargins]);
@@ -856,97 +612,8 @@ export default function RegistroAuxiliarPrintPage() {
   const isProgramaEstudio = useMemo(() => isProgramaEstudioRegistro(registro), [registro]);
   const showEfsrtPpp = !usesOcupacionalRules;
   const basePrintColumns = useMemo(() => buildPrintColumns(registro, showEfsrtPpp, isProgramaEstudio), [isProgramaEstudio, registro, showEfsrtPpp]);
-  const indicatorAdjustedColumns = useMemo(
-    () =>
-      basePrintColumns.map((column) => {
-        const measuredWidth = measuredIndicatorWidths[column.key];
-        if (column.type !== 'indicador' || !measuredWidth) return column;
-        return { ...column, widthMm: measuredWidth };
-      }),
-    [basePrintColumns, measuredIndicatorWidths],
-  );
-  const printColumns = useMemo(
-    () =>
-      indicatorAdjustedColumns.map((column) => {
-        const extraWidth = capacityColumnExtraWidths[column.key];
-        if (column.type !== 'indicador' || !extraWidth) return column;
-        return { ...column, widthMm: column.widthMm + extraWidth };
-      }),
-    [capacityColumnExtraWidths, indicatorAdjustedColumns],
-  );
-
-  useLayoutEffect(() => {
-    const indicatorColumns = basePrintColumns.filter((column) => column.type === 'indicador');
-    if (indicatorColumns.length === 0) {
-      setMeasuredIndicatorWidths({});
-      return;
-    }
-
-    const measureBox = document.createElement('div');
-    measureBox.style.position = 'absolute';
-    measureBox.style.left = '-10000px';
-    measureBox.style.top = '-10000px';
-    measureBox.style.visibility = 'hidden';
-    measureBox.style.pointerEvents = 'none';
-    measureBox.style.width = `${INDICATOR_TEXT_WIDTH_MM}mm`;
-    measureBox.style.fontFamily = 'Arial, Helvetica, sans-serif';
-    measureBox.style.fontSize = '6pt';
-    measureBox.style.fontWeight = '400';
-    measureBox.style.lineHeight = '1';
-    measureBox.style.whiteSpace = 'normal';
-    measureBox.style.overflowWrap = 'normal';
-    measureBox.style.wordBreak = 'normal';
-    measureBox.style.boxSizing = 'content-box';
-    measureBox.style.padding = '0';
-    measureBox.style.border = '0';
-    document.body.appendChild(measureBox);
-
-    const nextWidths: Record<string, number> = {};
-    for (const column of indicatorColumns) {
-      measureBox.textContent = indicatorHeaderText(column.indicador, column.capacidad);
-      const measuredHeightPx = Math.max(measureBox.scrollHeight, measureBox.getBoundingClientRect().height);
-      nextWidths[column.key] = clampNumber((measuredHeightPx + 10) * PX_TO_MM + 1.2, 7.5, 30);
-    }
-
-    setMeasuredIndicatorWidths((current) => {
-      const currentKeys = Object.keys(current);
-      const nextKeys = Object.keys(nextWidths);
-      const changed =
-        currentKeys.length !== nextKeys.length ||
-        nextKeys.some((key) => Math.abs((current[key] ?? 0) - nextWidths[key]) > 0.1);
-      return changed ? nextWidths : current;
-    });
-
-    return () => {
-      measureBox.remove();
-    };
-  }, [basePrintColumns]);
-
-  const studentCount = registro?.estudiantes?.length ?? 0;
-  const capacityHeaderHeightPx = getCapacityHeaderHeightPx(studentCount);
-  const isAutoCapacityHeaderHeight = capacityHeaderHeightPx === null;
-  const capacityHeaderReferenceHeightPx = capacityHeaderHeightPx ?? AUTO_CAPACITY_HEADER_REFERENCE_HEIGHT_PX;
-  const capacityHeaderContentHeightPx = isAutoCapacityHeaderHeight
-    ? null
-    : getCapacityHeaderContentHeightPx(capacityHeaderHeightPx);
-  const capacityHeaderMeasureHeightPx = isAutoCapacityHeaderHeight
-    ? Number.POSITIVE_INFINITY
-    : getCapacityHeaderMeasureHeightPx(capacityHeaderHeightPx);
-  const tableHeaderHeightPx = getTableHeaderHeightPx(capacityHeaderReferenceHeightPx);
-  const pages = useMemo(
-    () => buildPrintPages(printColumns, contentWidthMm, tableHeaderHeightPx),
-    [contentWidthMm, printColumns, tableHeaderHeightPx],
-  );
-  const autoScalePercent = useMemo(
-    () => Math.round((pages.reduce((min, page) => Math.min(min, page.scale), MAX_SCALE)) * 100),
-    [pages],
-  );
-
-  useEffect(() => {
-    setScalePercent(Math.max(Math.round(MIN_SCALE * 100), Math.min(Math.round(MAX_SCALE * 100), autoScalePercent)));
-  }, [autoScalePercent]);
-
-  const currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scalePercent / 100));
+  const pages = useRegistroPrintLayout(basePrintColumns, contentWidthMm, printIndicatorLabel, printCapacityLabel, usesOcupacionalRules ? 1 : 2);
+  const [measuredPageHeights, setMeasuredPageHeights] = useState<Record<number, { info: number; header: number; row: number }>>({});
 
   const updateFloatingScrollbar = useCallback(() => {
     const viewer = printViewerRef.current;
@@ -976,7 +643,7 @@ export default function RegistroAuxiliarPrintPage() {
       resizeObserver.disconnect();
       window.removeEventListener('resize', updateFloatingScrollbar);
     };
-  }, [currentScale, error, loading, pages.length, registro?.estudiantes?.length, updateFloatingScrollbar]);
+  }, [error, loading, pages, registro?.estudiantes?.length, updateFloatingScrollbar]);
 
   const handleViewerScroll = () => {
     const viewer = printViewerRef.current;
@@ -999,159 +666,45 @@ export default function RegistroAuxiliarPrintPage() {
   const visualPages = useMemo<VisualPrintPage[]>(() => {
     const students = registro?.estudiantes || [];
     let pageCounter = 0;
-
     return pages.flatMap((page, horizontalPageIndex) => {
-      const estimatedStudentsPerPage = Math.min(
-        DEFAULT_STUDENTS_PER_PAGE,
-        Math.max(
-          1,
-          Math.floor((printableHeightPx - MODULE_INFO_HEIGHT_PX - PAGE_NUMBER_HEIGHT_PX - tableHeaderHeightPx) / STUDENT_ROW_HEIGHT_PX),
-        ),
-      );
-      const studentChunks = chunkStudents(students, estimatedStudentsPerPage);
+      const measured = measuredPageHeights[horizontalPageIndex];
+      const studentsPerPage = Math.max(1, Math.floor((printableHeightPx
+        - (measured?.info ?? MODULE_INFO_HEIGHT_PX)
+        - Math.max(measured?.header ?? 0, page.headerHeightPx)
+        - PAGE_NUMBER_HEIGHT_PX - 2) / (measured?.row ?? STUDENT_ROW_HEIGHT_PX)));
+      const studentChunks = chunkStudents(students, studentsPerPage);
       return studentChunks.map((chunk, verticalPageIndex) => ({
-        ...page,
-        headerHeightPx: tableHeaderHeightPx,
-        students: chunk,
-        pageIndex: pageCounter++,
-        horizontalPageIndex,
-        verticalPageIndex,
-        verticalPageCount: studentChunks.length,
-        studentStartIndex: verticalPageIndex * estimatedStudentsPerPage,
+        ...page, students: chunk, pageIndex: pageCounter++, horizontalPageIndex, verticalPageIndex,
+        verticalPageCount: studentChunks.length, studentStartIndex: verticalPageIndex * studentsPerPage,
       }));
     });
-  }, [pages, printableHeightPx, registro?.estudiantes, tableHeaderHeightPx]);
+  }, [pages, printableHeightPx, registro?.estudiantes, measuredPageHeights]);
 
   useLayoutEffect(() => {
-    const capacidadGroups = groupConsecutive(
-      indicatorAdjustedColumns.filter((column) => column.capacidad),
-      (column) => String(column.capacidad?.id ?? column.key),
-    );
-
-    const signature = [
-      grupoModuloId,
-      contentWidthMm.toFixed(2),
-      capacityHeaderHeightPx ?? 'auto',
-      indicatorAdjustedColumns.map((column) => `${column.key}:${column.widthMm.toFixed(2)}`).join(','),
-    ].join('|');
-
-    if (capacityAdjustmentSignatureRef.current !== signature) {
-      capacityAdjustmentSignatureRef.current = signature;
-      capacityAdjustmentPassRef.current = 0;
-      if (Object.keys(capacityColumnExtraWidths).length > 0) {
-        setCapacityColumnExtraWidths({});
-        return;
-      }
-    }
-
-    if (isAutoCapacityHeaderHeight) {
-      setCapacityColumnExtraWidths((current) => (Object.keys(current).length > 0 ? {} : current));
-      return;
-    }
-
-    if (capacidadGroups.length === 0) {
-      setCapacityColumnExtraWidths((current) => (Object.keys(current).length > 0 ? {} : current));
-      return;
-    }
-
-    if (capacityAdjustmentPassRef.current >= 4) return;
-
-    const measureBox = document.createElement('div');
-    measureBox.style.position = 'absolute';
-    measureBox.style.left = '-10000px';
-    measureBox.style.top = '-10000px';
-    measureBox.style.visibility = 'hidden';
-    measureBox.style.pointerEvents = 'none';
-    measureBox.style.fontFamily = 'Arial, Helvetica, sans-serif';
-    measureBox.style.fontSize = '6.7pt';
-    measureBox.style.fontWeight = '400';
-    measureBox.style.lineHeight = '1';
-    measureBox.style.whiteSpace = 'normal';
-    measureBox.style.overflowWrap = 'normal';
-    measureBox.style.wordBreak = 'normal';
-    measureBox.style.boxSizing = 'border-box';
-    measureBox.style.padding = '0';
-    measureBox.style.border = '0';
-    document.body.appendChild(measureBox);
-
-    const fitsCapacityText = (text: string, widthPx: number) => {
-      measureBox.style.width = `${Math.max(1, widthPx)}px`;
-      measureBox.textContent = text;
-      return measureBox.scrollHeight <= capacityHeaderMeasureHeightPx + 0.5;
-    };
-
-    const findRequiredCapacityContentWidthPx = (text: string, initialWidthPx: number) => {
-      if (!text.trim()) return initialWidthPx;
-      if (fitsCapacityText(text, initialWidthPx)) return initialWidthPx;
-
-      let low = initialWidthPx;
-      let high = Math.max(low + 1, low * 1.25);
-      for (let index = 0; index < 12 && !fitsCapacityText(text, high); index += 1) {
-        low = high;
-        high *= 1.25;
-      }
-
-      for (let index = 0; index < 12; index += 1) {
-        const mid = (low + high) / 2;
-        if (fitsCapacityText(text, mid)) {
-          high = mid;
-        } else {
-          low = mid;
-        }
-      }
-
-      return high;
-    };
-
-    const nextExtraWidths: Record<string, number> = {};
-    for (const group of capacidadGroups) {
-      const text = capacityHeaderText(group.items[0].capacidad, group.items[0].unidad);
-      if (!text.trim()) continue;
-
-      const indicatorColumns = group.items.filter((column) => column.type === 'indicador');
-      if (indicatorColumns.length === 0) continue;
-
-      const currentGroupWidthMm = group.items.reduce((sum, column) => sum + column.widthMm, 0);
-      const currentContentWidthMm = Math.max(1, currentGroupWidthMm * currentScale - CAPACITY_HEADER_HORIZONTAL_PADDING_MM * 1.8);
-      const requiredContentWidthPx = findRequiredCapacityContentWidthPx(text, currentContentWidthMm / PX_TO_MM);
-      const requiredGroupWidthMm = requiredContentWidthPx * PX_TO_MM + CAPACITY_HEADER_HORIZONTAL_PADDING_MM * 1.8;
-      const desiredUnscaledGroupWidthMm = requiredGroupWidthMm / currentScale;
-      const extraGroupWidthMm = clampNumber(Math.max(0, desiredUnscaledGroupWidthMm - currentGroupWidthMm) * 1.18, 0, 90);
-      if (extraGroupWidthMm <= 0.05) continue;
-
-      const weights = indicatorColumns.map((column) => {
-        const label = indicatorHeaderText(column.indicador, column.capacidad);
-        const metrics = getHeaderTextMetrics(label);
-        return Math.max(1, metrics.length + metrics.maxWordLength * 0.5);
+    const viewer = printViewerRef.current;
+    if (!viewer || loading || error) return;
+    const measure = () => {
+      const next: Record<number, { info: number; header: number; row: number }> = {};
+      viewer.querySelectorAll<HTMLElement>('[data-print-horizontal-page]').forEach(page => {
+        const index = Number(page.dataset.printHorizontalPage);
+        if (next[index]) return;
+        const info = page.querySelector('.registro-print-info');
+        const header = page.querySelector('thead');
+        const rows = [...page.querySelectorAll('tbody tr')];
+        if (!info || !header) return;
+        next[index] = {
+          info: info.getBoundingClientRect().height,
+          header: header.getBoundingClientRect().height,
+          row: Math.max(STUDENT_ROW_HEIGHT_PX, ...rows.map(row => row.getBoundingClientRect().height)),
+        };
       });
-      const totalWeight = weights.reduce((sum, weight) => sum + weight, 0) || indicatorColumns.length;
-
-      indicatorColumns.forEach((column, index) => {
-        nextExtraWidths[column.key] = (nextExtraWidths[column.key] || 0) + extraGroupWidthMm * (weights[index] / totalWeight);
-      });
-    }
-
-    measureBox.remove();
-
-    setCapacityColumnExtraWidths((current) => {
-      const currentKeys = Object.keys(current);
-      const nextKeys = Object.keys(nextExtraWidths);
-      const changed =
-        currentKeys.length !== nextKeys.length ||
-        nextKeys.some((key) => Math.abs((current[key] ?? 0) - nextExtraWidths[key]) > 0.1);
-      if (changed) capacityAdjustmentPassRef.current += 1;
-      return changed ? nextExtraWidths : current;
-    });
-  }, [
-    capacityColumnExtraWidths,
-    capacityHeaderHeightPx,
-    capacityHeaderMeasureHeightPx,
-    contentWidthMm,
-    currentScale,
-    grupoModuloId,
-    indicatorAdjustedColumns,
-    isAutoCapacityHeaderHeight,
-  ]);
+      setMeasuredPageHeights(current => JSON.stringify(current) === JSON.stringify(next) ? current : next);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    viewer.querySelectorAll('.registro-print-info, thead, tbody tr:first-child').forEach(element => observer.observe(element));
+    return () => observer.disconnect();
+  }, [visualPages, loading, error]);
 
   const getNotaValue = useCallback(
     (matriculaId: number, indicadorId: number) => parseNota(notas[notaKey(matriculaId, indicadorId)]),
@@ -1161,11 +714,12 @@ export default function RegistroAuxiliarPrintPage() {
   const getCapacidadAverage = useCallback(
     (matriculaId: number, capacidad: Capacidad) => {
       const indicadores = capacidad.indicadoresCapacidad || [];
+      const values = indicadores.map((indicador) => getNotaValue(matriculaId, indicador.id));
+      const completeAverage = average(values);
       if (usesOcupacionalRules) {
-        const lastIndicador = indicadores[indicadores.length - 1];
-        return lastIndicador ? roundPromedio(getNotaValue(matriculaId, lastIndicador.id)) : null;
+        return completeAverage === null ? null : roundPromedio(values[values.length - 1]);
       }
-      return average(indicadores.map((indicador) => getNotaValue(matriculaId, indicador.id)));
+      return completeAverage;
     },
     [getNotaValue, usesOcupacionalRules],
   );
@@ -1185,18 +739,12 @@ export default function RegistroAuxiliarPrintPage() {
     (student: Estudiante) => {
       const unitGrades = (registro?.estructura || []).map((unidad) => getUnidadAverage(student.matriculaId, unidad));
       if (usesOcupacionalRules) return average(unitGrades);
-      return weightedAverage([
-        ...(registro?.estructura || []).map((unidad, index) => ({
-          value: unitGrades[index],
-          weight: unidad.creditos,
-        })),
-        {
-          value: getEfsrtPppAverage(student),
-          weight: registro?.grupoModulo?.modulo?.creditosEfsrt,
-        },
-      ]);
+      return weightedAverage((registro?.estructura || []).map((unidad, index) => ({
+        value: unitGrades[index],
+        weight: unidad.creditos,
+      })));
     },
-    [getEfsrtPppAverage, getUnidadAverage, registro, usesOcupacionalRules],
+    [getUnidadAverage, registro, usesOcupacionalRules],
   );
 
   const getModuloPuntaje = useCallback(
@@ -1243,10 +791,6 @@ export default function RegistroAuxiliarPrintPage() {
       page.columns.filter((column) => column.unidad),
       (column) => String(column.unidad?.id ?? column.key),
     );
-    const capacidadGroups = groupConsecutive(
-      page.columns.filter((column) => column.capacidad),
-      (column) => String(column.capacidad?.id ?? column.key),
-    );
     const standAloneColumns = page.columns.filter((column) => !column.unidad);
 
     return (
@@ -1255,14 +799,14 @@ export default function RegistroAuxiliarPrintPage() {
           <th
             rowSpan={3}
             className="fixed-header"
-            style={{ width: `${FIXED_COLUMNS[0].widthMm}mm`, height: isAutoCapacityHeaderHeight ? undefined : page.headerHeightPx }}
+            style={{ width: `${FIXED_COLUMNS[0].widthMm}mm`, height: page.headerHeightPx }}
           >
             Nro.
           </th>
           <th
             rowSpan={3}
             className="fixed-header"
-            style={{ width: `${studentWidthMm}mm`, height: isAutoCapacityHeaderHeight ? undefined : page.headerHeightPx }}
+            style={{ width: `${studentWidthMm}mm`, height: page.headerHeightPx }}
           >
             Apellidos y Nombres
           </th>
@@ -1276,39 +820,40 @@ export default function RegistroAuxiliarPrintPage() {
               key={`top-${column.key}`}
               rowSpan={3}
               className="summary-header vertical-header"
-              style={{ height: isAutoCapacityHeaderHeight ? undefined : page.headerHeightPx }}
+              style={{ height: page.headerHeightPx }}
             >
               <span>{column.type === 'efsrt' ? 'EFSRT/PPP' : column.type === 'puntaje' ? 'Puntaje' : isProgramaEstudio ? 'Promedio General' : 'Promedio'}</span>
             </th>
           ))}
         </tr>
         <tr>
-          {capacidadGroups.map((group) => (
+          {unitGroups.flatMap(unitGroup => [
+            ...groupConsecutive(unitGroup.items.filter(column => column.capacidad), column => String(column.capacidad!.id)).map((group) => (
             <th
               key={`cap-${group.key}`}
               colSpan={group.items.length}
               className="capacity-header"
-              style={{ height: capacityHeaderHeightPx ?? undefined }}
+              style={{ height: page.capacityHeightPx }}
             >
               <span className="capacity-header-content"><strong>{capacityCode(group.items[0].capacidad, group.items[0].unidad)}</strong>{' '}{group.items[0].capacidad?.descripcion}</span>
             </th>
-          ))}
+          )),
+            <th key={`unit-average-${unitGroup.key}`} data-registro-unit-average={unitGroup.key} rowSpan={2}
+              className="unit-grade-header vertical-header" style={{ height: page.capacityHeightPx + page.indicatorHeightPx }}>
+              <span>PROMEDIO UNIDAD</span>
+            </th>,
+          ])}
         </tr>
         <tr>
-          {page.columns.filter((column) => column.capacidad).map((column) => (
+          {page.columns.filter((column) => column.type === 'indicador').map((column) => (
             <th
               key={`leaf-${column.key}`}
-              className={column.type === 'capacidad' ? 'capacity-grade-header vertical-header' : 'indicator-header'}
+              className="indicator-header"
               style={{
-                height: INDICATOR_HEADER_HEIGHT_PX,
-                '--indicator-text-width': `${column.headerTextWidthMm ?? 30}mm`,
+                height: page.indicatorHeightPx,
               } as CSSProperties}
             >
-              {column.type === 'capacidad' ? (
-                <span>{isProgramaEstudio ? 'PROMEDIO' : 'LOGRO'}</span>
-              ) : (
-                <span><strong>{indicatorCode(column.indicador, column.capacidad)}</strong>{' '}{column.indicador?.descripcion || column.indicador?.sigla}</span>
-              )}
+              <span><strong>{indicatorCode(column.indicador, column.capacidad)}</strong>{' '}{column.indicador?.descripcion || column.indicador?.sigla}</span>
             </th>
           ))}
         </tr>
@@ -1321,9 +866,9 @@ export default function RegistroAuxiliarPrintPage() {
       const value = getNotaValue(student.matriculaId, column.indicador.id);
       return <td key={`${student.id}-${column.key}`} className="grade-cell" style={{ color: gradeColor(value) }}>{displayGrade(value)}</td>;
     }
-    if (column.type === 'capacidad' && column.capacidad) {
-      const value = getCapacidadAverage(student.matriculaId, column.capacidad);
-      return <td key={`${student.id}-${column.key}`} className="grade-cell calculated-cell" style={{ color: gradeColor(value) }}>{displayGrade(value)}</td>;
+    if (column.type === 'unidad' && column.unidad) {
+      const value = getUnidadAverage(student.matriculaId, column.unidad);
+      return <td key={`${student.id}-${column.key}`} data-registro-unit-average-key={`${student.matriculaId}:${column.unidad.id}`} className="grade-cell calculated-cell" style={{ color: gradeColor(value) }}>{displayGrade(value)}</td>;
     }
     if (column.type === 'efsrt') {
       const value = getEfsrtPppAverage(student);
@@ -1338,17 +883,14 @@ export default function RegistroAuxiliarPrintPage() {
 
   const renderPage = (page: VisualPrintPage) => {
     const nroWidthMm = FIXED_COLUMNS[0].widthMm;
-    const studentBaseWidthMm = FIXED_COLUMNS[1].widthMm;
-    const scaledColumnWidths = page.columns.map((column) => column.widthMm * currentScale);
-    const stretchableBaseWidthMm = studentBaseWidthMm + scaledColumnWidths.reduce((sum, width) => sum + width, 0);
-    const freeWidthMm = Math.max(0, contentWidthMm - nroWidthMm - stretchableBaseWidthMm);
-    const stretchFactor = stretchableBaseWidthMm > 0 ? freeWidthMm / stretchableBaseWidthMm : 0;
-    const studentWidthMm = studentBaseWidthMm * (1 + stretchFactor);
-    const columnWidthsMm = scaledColumnWidths.map((width) => width * (1 + stretchFactor));
-    const tableWidthMm = nroWidthMm + studentWidthMm + columnWidthsMm.reduce((sum, width) => sum + width, 0);
+    const studentWidthMm = FIXED_COLUMNS[1].widthMm;
+    const columnWidthsMm = page.columns.map(column => column.widthMm);
+    const tableWidthMm = page.widthMm;
 
     return (
-      <Box className="print-page" key={`page-${page.pageIndex}`}>
+      <Box className="print-page" key={`page-${page.pageIndex}`}
+        data-print-horizontal-page={page.horizontalPageIndex} data-print-vertical-page={page.verticalPageIndex}
+        style={{ '--capacity-header-height': `${page.capacityHeightPx}px`, '--indicator-text-width': `${(page.indicatorHeightPx - 10) * PX_TO_MM}mm` } as CSSProperties}>
         <Box className="print-page-inner">
           {renderModuloInfo(page)}
           <table className="registro-print-table" style={{ width: `${tableWidthMm}mm` }}>
@@ -1422,10 +964,6 @@ export default function RegistroAuxiliarPrintPage() {
       onMarginsChange={setPrintMargins}
       showPageOverflow={showPageOverflow}
       onShowPageOverflowChange={setShowPageOverflow}
-      scalePercent={scalePercent}
-      onScalePercentChange={setScalePercent}
-      minScalePercent={55}
-      maxScalePercent={100}
       filters={toolbarFilters}
       loading={loading}
       error={error}
@@ -1539,7 +1077,9 @@ export default function RegistroAuxiliarPrintPage() {
             printColorAdjust: 'exact',
             WebkitPrintColorAdjust: 'exact',
           },
+          '.registro-print-info, .registro-print-table': { flexShrink: 0 },
           '.registro-print-table th, .registro-print-table td': {
+            boxSizing: 'border-box',
             borderRight: '1px solid #2d2d2d',
             borderBottom: '1px solid #2d2d2d',
             padding: '0.45mm 0.7mm',
@@ -1556,15 +1096,14 @@ export default function RegistroAuxiliarPrintPage() {
             fontWeight: 500,
             fontSize: '6.7pt',
             lineHeight: 1,
-            height: capacityHeaderHeightPx === null ? undefined : `${capacityHeaderHeightPx}px !important`,
-            maxHeight: capacityHeaderHeightPx === null ? undefined : `${capacityHeaderHeightPx}px`,
-            overflow: capacityHeaderHeightPx === null ? 'visible' : 'hidden',
+            height: 'var(--capacity-header-height)',
+            maxHeight: 'var(--capacity-header-height)',
+            padding: '2px 0.7mm !important',
+            overflow: 'hidden',
           },
           '.capacity-header-content': {
-            display: 'block',
-            fontWeight: 400,
-            maxHeight: capacityHeaderContentHeightPx === null ? undefined : `${capacityHeaderContentHeightPx}px`,
-            overflow: capacityHeaderContentHeightPx === null ? 'visible' : 'hidden',
+            display: 'block', fontWeight: 400, whiteSpace: 'normal', overflowWrap: 'anywhere',
+            maxHeight: 'calc(var(--capacity-header-height) - 5px)', overflow: 'hidden',
           },
           '.indicator-header': { position: 'relative', padding: '0 !important', background: '#fff' },
           '.indicator-header span': {
@@ -1573,6 +1112,7 @@ export default function RegistroAuxiliarPrintPage() {
             top: '50%',
             width: 'var(--indicator-text-width, 30mm)',
             whiteSpace: 'normal',
+            overflowWrap: 'anywhere',
             textAlign: 'center',
             transform: 'translate(-50%, -50%) rotate(-90deg)',
             transformOrigin: 'center',
@@ -1594,7 +1134,7 @@ export default function RegistroAuxiliarPrintPage() {
             lineHeight: 1,
           },
           '.summary-header, .total-cell': { background: '#c6e0b4' },
-          '.capacity-grade-header, .calculated-cell': { background: '#d9ead3' },
+          '.unit-grade-header, .calculated-cell': { background: '#d9ead3' },
           '.registro-print-table tbody td': {
             height: `${STUDENT_ROW_HEIGHT_PX}px`,
             paddingTop: '0.2mm',

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Alert, Box, Button, CircularProgress } from '@mui/material';
 import { useAppSettings } from '@/hooks/useAppSettings';
@@ -18,6 +18,7 @@ export default function IntranetLayoutClient({
     const { settings, loading: loadingSettings, error: settingsError, reload } = useAppSettings();
     useIntranetPermissions();
     const router = useRouter();
+    const pathname = usePathname();
     const hasIntranetAccess = canAccessIntranet(user?.role, user?.level, user?.roleTitle, user?.email);
 
     useEffect(() => {
@@ -68,7 +69,7 @@ export default function IntranetLayoutClient({
                   minWidth: 0,
                   overflowX: 'hidden',
                   bgcolor: '#fff8e8',
-                  p: { xs: '0px', md: '10px' },
+                  p: { xs: '0px', md: pathname === '/intranet/registro-auxiliar' ? '10px 8px 10px 10px' : '10px' },
                 }}
             >
                 <Box sx={{ minHeight: 0 }} />

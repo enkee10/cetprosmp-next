@@ -373,7 +373,6 @@ function RadioMark({ checked = false }: { checked?: boolean }) {
 type ModularTemplateProps = {
   contentWidthMm: number;
   contentHeightMm: number;
-  scalePercent: number;
   periodoLectivo: string;
   codigoInscripcion: string;
   avatar: string;
@@ -406,7 +405,6 @@ type ModularTemplateProps = {
 function FichaMatriculaModularTemplate({
   contentWidthMm,
   contentHeightMm,
-  scalePercent,
   periodoLectivo,
   codigoInscripcion,
   avatar,
@@ -440,8 +438,6 @@ function FichaMatriculaModularTemplate({
       <Box
         className="print-page-inner"
         sx={{
-          transform: `scale(${scalePercent / 100})`,
-          transformOrigin: 'top left',
           fontFamily: 'Arial, Helvetica, sans-serif',
           color: '#111',
         }}
@@ -698,7 +694,6 @@ function FichaMatriculaModularTemplate({
 function FichaMatriculaModularTemplateV2({
   contentWidthMm,
   contentHeightMm,
-  scalePercent,
   periodoLectivo,
   codigoInscripcion,
   avatar,
@@ -733,8 +728,6 @@ function FichaMatriculaModularTemplateV2({
       <Box
         className="print-page-inner"
         sx={{
-          transform: `scale(${scalePercent / 100})`,
-          transformOrigin: 'top left',
           fontFamily: 'Arial, Helvetica, sans-serif',
           color: '#111',
         }}
@@ -1011,7 +1004,6 @@ function FichaMatriculaModularTemplateV2({
 function FichaMatriculaModularTemplateV3({
   contentWidthMm,
   contentHeightMm,
-  scalePercent,
   periodoLectivo,
   codigoInscripcion,
   avatar,
@@ -1076,8 +1068,6 @@ function FichaMatriculaModularTemplateV3({
       <Box
         className="print-page-inner"
         sx={{
-          transform: `scale(${scalePercent / 100})`,
-          transformOrigin: 'top left',
           fontFamily: 'Arial, Helvetica, sans-serif',
           color: '#111',
         }}
@@ -1398,7 +1388,6 @@ function FichaMatriculaModularTemplateV3({
 type FichaDniImagesPageProps = {
   contentWidthMm: number;
   contentHeightMm: number;
-  scalePercent: number;
   frenteUrl: string;
   reversoUrl: string;
   timelineRows?: FichaModuloTimelineRow[];
@@ -1408,7 +1397,6 @@ type FichaDniImagesPageProps = {
 function FichaDniImagesPage({
   contentWidthMm,
   contentHeightMm,
-  scalePercent,
   frenteUrl,
   reversoUrl,
   timelineRows = [],
@@ -1450,8 +1438,6 @@ function FichaDniImagesPage({
       <Box
         className="print-page-inner"
         sx={{
-          transform: `scale(${scalePercent / 100})`,
-          transformOrigin: 'top left',
           fontFamily: 'Arial, Helvetica, sans-serif',
           color: '#111',
         }}
@@ -1520,7 +1506,6 @@ export default function FichaMatriculaProgramaPage() {
   const [orientation, setOrientation] = useState<PrintOrientation>('landscape');
   const [margins, setMargins] = useState<PrintMarginsCm>(DEFAULT_MARGINS);
   const [showOverflow, setShowOverflow] = useState(false);
-  const [scalePercent, setScalePercent] = useState(100);
   const [editorTarget, setEditorTarget] = useState<DocumentoSide | null>(null);
   const [dniImageVersion, setDniImageVersion] = useState(0);
 
@@ -1693,10 +1678,6 @@ export default function FichaMatriculaProgramaPage() {
       onMarginsChange={setMargins}
       showPageOverflow={showOverflow}
       onShowPageOverflowChange={setShowOverflow}
-      scalePercent={scalePercent}
-      onScalePercentChange={setScalePercent}
-      minScalePercent={55}
-      maxScalePercent={100}
       loading={loading || loadingSettings}
       error={error}
       canPrint={Boolean(matricula) && !loadingSettings}
@@ -1747,7 +1728,6 @@ export default function FichaMatriculaProgramaPage() {
             <FichaMatriculaModularTemplateV3
               contentWidthMm={contentWidthMm}
               contentHeightMm={contentHeightMm}
-              scalePercent={scalePercent}
               periodoLectivo={periodoLectivo}
               codigoInscripcion={codigoInscripcion}
               avatar={fichaAvatar}
@@ -1781,8 +1761,6 @@ export default function FichaMatriculaProgramaPage() {
           <Box
             className="print-page-inner"
             sx={{
-              transform: `scale(${scalePercent / 100})`,
-              transformOrigin: 'top left',
               fontFamily: 'Arial, Helvetica, sans-serif',
               color: '#111',
             }}
@@ -2134,7 +2112,6 @@ export default function FichaMatriculaProgramaPage() {
           <FichaDniImagesPage
             contentWidthMm={contentWidthMm}
             contentHeightMm={contentHeightMm}
-            scalePercent={scalePercent}
             frenteUrl={dniFrenteUrl}
             reversoUrl={dniReversoUrl}
             timelineRows={cambiosModuloTimeline}

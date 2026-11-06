@@ -1420,13 +1420,15 @@ async function writeDocenteMatriculadosSheet(params: {
           updateSheetProperties: {
             properties: {
               sheetId,
+              index: 0,
+              hidden: false,
               gridProperties: {
                 frozenRowCount: 1,
                 rowCount: Math.max(rowCount, 50),
                 columnCount,
               },
             },
-            fields: "gridProperties.frozenRowCount,gridProperties.rowCount,gridProperties.columnCount",
+            fields: "index,hidden,gridProperties.frozenRowCount,gridProperties.rowCount,gridProperties.columnCount",
           },
         },
         {
@@ -1506,6 +1508,9 @@ async function writeDocenteMatriculadosSheet(params: {
       ],
     },
   });
+  const spreadsheetUrl = new URL(params.fileInfo.spreadsheetUrl);
+  spreadsheetUrl.hash = `gid=${sheetId}`;
+  return spreadsheetUrl.toString();
 }
 
 export async function exportDocenteMatriculadosGrupoSheet(
@@ -1528,14 +1533,14 @@ export async function exportDocenteMatriculadosGrupoSheet(
   const avatarMedianoByUserId = await hydrateAvatarMediano(userIds);
   const rows = buildDocenteSheetRows(matriculas, avatarMedianoByUserId,
     grupoModulo.nombre || grupoModulo.modulo?.titulo || grupoModulo.grupo?.nombreDisplay || `Grupo-módulo ${grupoModulo.id}`);
-  await writeDocenteMatriculadosSheet({ fileInfo, rows });
+  const spreadsheetUrl = await writeDocenteMatriculadosSheet({ fileInfo, rows });
 
   return {
     ok: true,
     name: fileName,
     rows: rows.length,
     spreadsheetId: fileInfo.spreadsheetId,
-    spreadsheetUrl: fileInfo.spreadsheetUrl,
+    spreadsheetUrl,
   };
 }
 
@@ -1599,14 +1604,14 @@ export async function exportListaMatriculasGeneralSheet(
   const rows = buildDocenteSheetRows(moduleRows, avatarMedianoByUserId);
   if (!rows.length) throw new https.HttpsError("failed-precondition", "No hay matrículas para los grupos-módulos seleccionados.");
   const fileInfo = await ensureSpreadsheetFile(MATRICULAS_GENERAL_LIST_SHEETS_FILE_NAME, DOCENTE_MATRICULADOS_SHEETS_FOLDER_ID);
-  await writeDocenteMatriculadosSheet({ fileInfo, rows });
+  const spreadsheetUrl = await writeDocenteMatriculadosSheet({ fileInfo, rows });
 
   return {
     ok: true,
     name: MATRICULAS_GENERAL_LIST_SHEETS_FILE_NAME,
     rows: rows.length,
     spreadsheetId: fileInfo.spreadsheetId,
-    spreadsheetUrl: fileInfo.spreadsheetUrl,
+    spreadsheetUrl,
   };
 }
 

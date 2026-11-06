@@ -7,6 +7,7 @@ import {
   Box,
   Button,
   CircularProgress,
+  ClickAwayListener,
   FormControl,
   IconButton,
   InputLabel,
@@ -32,6 +33,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useCurrentSemestreFilter } from '@/hooks/useCurrentSemestreFilter';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { useRegistroGradeQueue } from '@/hooks/useRegistroGradeQueue';
+import { useRegistroColumnWidths } from '@/hooks/useRegistroColumnWidths';
 import type { GradeChange } from '@/lib/registroGradeQueue';
 import { invalidateMatriculaLists } from '@/lib/matriculasListCache';
 import { app } from '@/lib/firebase';
@@ -225,6 +227,7 @@ type StudentNameDraft = {
 };
 
 const UNITS_PER_PAGE = 2;
+const SUMMARY_COLUMN_WIDTH = 45;
 const MODULE_INFO_ROW_COUNT = 5;
 const TABLE_HEADER_ONLY_ROW_COUNT = 3;
 const TABLE_HEADER_ROW_START = MODULE_INFO_ROW_COUNT;
@@ -398,8 +401,8 @@ const buildIndicatorColumns = (estructura: Unidad[]) => {
 const curricularLabel = (...parts: Array<string | null | undefined>) =>
   parts.map(part => part?.trim()).filter((part): part is string => Boolean(part)).join(' ');
 
-const unitLabel = (unidad: Unidad) =>
-  (unidad.nombre || unidad.sigla || '').trim().toLocaleUpperCase('es-PE');
+const unitLabel = (unidad: Unidad, position: number) =>
+  `${position}. ${(unidad.nombre || unidad.sigla || '').trim().toLocaleUpperCase('es-PE')}`;
 
 const getGrupoModuloLabel = (grupoModulo: GrupoModuloOption) => {
   const titulo = grupoModulo.modulo?.titulo?.trim();
@@ -433,6 +436,7 @@ export default function RegistroAuxiliarPage() {
   const [fechaFinModulo, setFechaFinModulo] = useState('');
   const [savingModuloFechas, setSavingModuloFechas] = useState(false);
   const [unitPage, setUnitPage] = useState(0);
+  const [registroViewportWidth, setRegistroViewportWidth] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editingNewMatricula, setEditingNewMatricula] = useState(false);
@@ -449,8 +453,11 @@ export default function RegistroAuxiliarPage() {
   const [cellSelection, setCellSelection] = useState<CellSelection | null>(null);
   const [selectingCells, setSelectingCells] = useState(false);
   const editableCellRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const editableFocusFrameRef = useRef<number | null>(null);
+  const pendingPageFocusRef = useRef<{ page: number; matriculaId: number; column: number } | null>(null);
   const registroFrameRef = useRef<HTMLDivElement | null>(null);
   const registroScrollRef = useRef<HTMLDivElement | null>(null);
+  const registroHeaderRef = useRef<HTMLTableSectionElement | null>(null);
   const selectionPointerRef = useRef<{ x: number; y: number } | null>(null);
   const autoScrollFrameRef = useRef<number | null>(null);
   const committingStudentNameRef = useRef(false);
@@ -474,18 +481,32 @@ export default function RegistroAuxiliarPage() {
 
     let frame: number | null = null;
     const viewport = window.visualViewport;
+    const scrollContainer = registroScrollRef.current;
+    const updateWidth = (width: number) => {
+      // Leave one CSS pixel for fractional layout rounding at different zoom levels.
+      setRegistroViewportWidth(Math.max(0, Math.floor(width) - 1));
+    };
     const updateHeight = () => {
       frame = null;
       const viewportBottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
-      const height = Math.max(0, viewportBottom - container.getBoundingClientRect().top - 10);
-      container.style.setProperty('--registro-frame-height', `${height}px`);
+      const height = `${Math.max(0, Math.floor(viewportBottom - container.getBoundingClientRect().top - 10))}px`;
+      if (container.style.getPropertyValue('--registro-frame-height') !== height) container.style.setProperty('--registro-frame-height', height);
     };
     const scheduleUpdate = () => {
       if (frame === null) frame = window.requestAnimationFrame(updateHeight);
     };
 
-    const observer = new ResizeObserver(scheduleUpdate);
+    const observer = new ResizeObserver(entries => {
+      const entry = entries.find(entry => entry.target === scrollContainer);
+      // contentRect excludes a visible scrollbar without rounding up like clientWidth.
+      if (entry) updateWidth(entry.contentRect.width);
+      scheduleUpdate();
+    });
     if (container.parentElement) observer.observe(container.parentElement);
+    if (scrollContainer) {
+      observer.observe(scrollContainer);
+      updateWidth(scrollContainer.getBoundingClientRect().width - (scrollContainer.offsetWidth - scrollContainer.clientWidth));
+    }
     window.addEventListener('scroll', scheduleUpdate, { passive: true });
     window.addEventListener('resize', scheduleUpdate);
     viewport?.addEventListener('resize', scheduleUpdate);
@@ -499,6 +520,7 @@ export default function RegistroAuxiliarPage() {
       viewport?.removeEventListener('resize', scheduleUpdate);
       viewport?.removeEventListener('scroll', scheduleUpdate);
       if (frame !== null) window.cancelAnimationFrame(frame);
+      if (editableFocusFrameRef.current !== null) window.cancelAnimationFrame(editableFocusFrameRef.current);
     };
   }, []);
 
@@ -663,6 +685,7 @@ export default function RegistroAuxiliarPage() {
   }, [fetchRegistro]);
 
   useEffect(() => {
+    pendingPageFocusRef.current = null;
     setUnitPage(0);
   }, [grupoModuloId]);
 
@@ -685,19 +708,60 @@ export default function RegistroAuxiliarPage() {
   const tipoCarreraRegistroLabel = useMemo(() => getTipoCarreraRegistroLabel(registro), [registro]);
   const showEfsrtPpp = !usesOcupacionalRules;
   const editableColumnCount = visibleIndicatorColumns.length + (showEfsrtPpp ? 1 : 0);
+  const fixedColumnWidth = 34 + 105 + 275 + SUMMARY_COLUMN_WIDTH * (showEfsrtPpp ? 3 : 2) + 1;
+  const visibleCapacityColumns = useMemo(() => visibleUnits.flatMap(unit => unit.capacidadesTerminales.map(capacity => ({
+    id: capacity.id,
+    indicatorIds: capacity.indicadoresCapacidad.map(indicator => indicator.id),
+  }))), [visibleUnits]);
+  const columnLayout = useRegistroColumnWidths(registroHeaderRef, visibleCapacityColumns, registroViewportWidth, fixedColumnWidth, visibleUnits.length);
+
+  const focusVisibleGradeInput = useCallback((input: HTMLInputElement | null | undefined) => {
+    if (!input) return;
+    input.focus({ preventScroll: true });
+    input.select();
+    const container = registroScrollRef.current;
+    if (!container) return;
+
+    const viewport = container.getBoundingClientRect();
+    const cell = (input.closest('td') ?? input).getBoundingClientRect();
+    const left = viewport.left + container.clientLeft;
+    const right = left + container.clientWidth;
+    const top = Math.max(viewport.top + container.clientTop, registroHeaderRef.current?.getBoundingClientRect().bottom ?? viewport.top);
+    const bottom = viewport.top + container.clientTop + container.clientHeight;
+    // Native focus scrolling does not account for the sticky header or cell borders.
+    if (cell.top < top) container.scrollTop += cell.top - top;
+    else if (cell.bottom > bottom) container.scrollTop += cell.bottom - bottom;
+    if (cell.left < left) container.scrollLeft += cell.left - left;
+    else if (cell.right > right) container.scrollLeft += cell.right - right;
+  }, []);
+
+  useLayoutEffect(() => {
+    if (editableFocusFrameRef.current !== null) {
+      window.cancelAnimationFrame(editableFocusFrameRef.current);
+      editableFocusFrameRef.current = null;
+    }
+    const pending = pendingPageFocusRef.current;
+    if (!pending || pending.page !== unitPage) return;
+    pendingPageFocusRef.current = null;
+    const row = registro?.estudiantes.findIndex(student => student.matriculaId === pending.matriculaId) ?? -1;
+    if (row < 0) return;
+    const input = editableCellRefs.current[editableCellKey(row, pending.column)];
+    focusVisibleGradeInput(input);
+  }, [focusVisibleGradeInput, registro, unitPage]);
 
   const focusEditableCell = useCallback(
     (rowIndex: number, columnIndex: number) => {
       if (!registro?.estudiantes.length || editableColumnCount <= 0) return;
       const nextRow = Math.max(0, Math.min(registro.estudiantes.length - 1, rowIndex));
       const nextColumn = Math.max(0, Math.min(editableColumnCount - 1, columnIndex));
-      window.requestAnimationFrame(() => {
+      if (editableFocusFrameRef.current !== null) window.cancelAnimationFrame(editableFocusFrameRef.current);
+      editableFocusFrameRef.current = window.requestAnimationFrame(() => {
+        editableFocusFrameRef.current = null;
         const nextInput = editableCellRefs.current[editableCellKey(nextRow, nextColumn)];
-        nextInput?.focus();
-        nextInput?.select();
+        focusVisibleGradeInput(nextInput);
       });
     },
-    [editableColumnCount, registro?.estudiantes.length],
+    [editableColumnCount, focusVisibleGradeInput, registro?.estudiantes.length],
   );
 
   const handleEditableCellKeyDown = useCallback(
@@ -718,9 +782,27 @@ export default function RegistroAuxiliarPage() {
       setCellSelection(null);
       setSelectingCells(false);
       selectionPointerRef.current = null;
+      const direction = key === 'ArrowRight' ? 1 : key === 'ArrowLeft' ? -1 : 0;
+      const atPageEdge = direction > 0 ? columnIndex >= visibleIndicatorColumns.length - 1 : columnIndex === 0;
+      if (direction && atPageEdge) {
+        for (let page = unitPage + direction; page >= 0 && page < unitPageCount; page += direction) {
+          const units = (registro?.estructura || []).slice(page * UNITS_PER_PAGE, (page + 1) * UNITS_PER_PAGE);
+          const columns = buildIndicatorColumns(units);
+          if (!columns.length) continue;
+          const student = registro?.estudiantes[rowIndex];
+          if (!student) return;
+          pendingPageFocusRef.current = {
+            page,
+            matriculaId: student.matriculaId,
+            column: direction > 0 ? 0 : columns.length - 1,
+          };
+          setUnitPage(page);
+          return;
+        }
+      }
       focusEditableCell(nextRow, nextColumn);
     },
-    [focusEditableCell],
+    [focusEditableCell, registro, unitPage, unitPageCount, visibleIndicatorColumns.length],
   );
 
   const startEditingStudentName = useCallback((student: Estudiante) => {
@@ -855,11 +937,12 @@ export default function RegistroAuxiliarPage() {
   const getCapacidadAverage = useCallback(
     (matriculaId: number, capacidad: Capacidad) => {
       const indicadores = capacidad.indicadoresCapacidad || [];
+      const values = indicadores.map((indicador) => getNotaValue(matriculaId, indicador.id));
+      const completeAverage = average(values);
       if (usesOcupacionalRules) {
-        const lastIndicador = indicadores[indicadores.length - 1];
-        return lastIndicador ? roundPromedio(getNotaValue(matriculaId, lastIndicador.id)) : null;
+        return completeAverage === null ? null : roundPromedio(values[values.length - 1]);
       }
-      return average(indicadores.map((indicador) => getNotaValue(matriculaId, indicador.id)));
+      return completeAverage;
     },
     [getNotaValue, usesOcupacionalRules],
   );
@@ -879,18 +962,12 @@ export default function RegistroAuxiliarPage() {
     (student: Estudiante) => {
       const unitGrades = (registro?.estructura || []).map((unidad) => getUnidadAverage(student.matriculaId, unidad));
       if (usesOcupacionalRules) return average(unitGrades);
-      return weightedAverage([
-        ...(registro?.estructura || []).map((unidad, index) => ({
-          value: unitGrades[index],
-          weight: unidad.creditos,
-        })),
-        {
-          value: getEfsrtPppAverage(student),
-          weight: registro?.grupoModulo?.modulo?.creditosEfsrt,
-        },
-      ]);
+      return weightedAverage((registro?.estructura || []).map((unidad, index) => ({
+        value: unitGrades[index],
+        weight: unidad.creditos,
+      })));
     },
-    [getEfsrtPppAverage, getUnidadAverage, registro, usesOcupacionalRules],
+    [getUnidadAverage, registro, usesOcupacionalRules],
   );
 
   const getModuloPuntaje = useCallback(
@@ -917,11 +994,11 @@ export default function RegistroAuxiliarPage() {
             getValue: (student) => displayGrade(getNotaValue(student.matriculaId, indicador.id)),
           });
         }
-        columns.push({
-          key: `capacidad-${capacidad.id}`,
-          getValue: (student) => displayGrade(getCapacidadAverage(student.matriculaId, capacidad)),
-        });
       }
+      columns.push({
+        key: `unidad-${unidad.id}`,
+        getValue: (student) => displayGrade(getUnidadAverage(student.matriculaId, unidad)),
+      });
     }
 
     if (showEfsrtPpp) {
@@ -942,7 +1019,7 @@ export default function RegistroAuxiliarPage() {
 
     return columns;
   }, [
-    getCapacidadAverage,
+    getUnidadAverage,
     getEfsrtPppAverage,
     getModuloAverage,
     getModuloPuntaje,
@@ -966,10 +1043,11 @@ export default function RegistroAuxiliarPage() {
     for (const unidad of visibleUnits) {
       const unitStart = col;
       for (const capacidad of unidad.capacidadesTerminales || []) {
-        const colSpan = Math.max(1, capacidad.indicadoresCapacidad.length) + 1;
+        const colSpan = capacidad.indicadoresCapacidad.length;
         capacidades.set(capacidad.id, { col, colSpan });
         col += colSpan;
       }
+      col += 1; // One average per unit, outside capacity spans.
       unidades.set(unidad.id, { col: unitStart, colSpan: col - unitStart });
     }
     return { unidades, capacidades };
@@ -1077,17 +1155,17 @@ export default function RegistroAuxiliarPage() {
 
     for (const unidad of visibleUnits) {
       const span = headerSpans.unidades.get(unidad.id);
-      if (span) headerRows[0][span.col] = unitLabel(unidad);
+      if (span) headerRows[0][span.col] = unitLabel(unidad, registro.estructura.indexOf(unidad) + 1);
       for (const capacidad of unidad.capacidadesTerminales || []) {
         const capacidadSpan = headerSpans.capacidades.get(capacidad.id);
-        if (capacidadSpan) headerRows[1][capacidadSpan.col] = curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion);
+        if (capacidadSpan?.colSpan) headerRows[1][capacidadSpan.col] = curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion);
         for (const indicador of capacidad.indicadoresCapacidad || []) {
           const indicatorCol = selectableColumnIndexByKey.get(`indicator-${indicador.id}`);
           if (indicatorCol != null) headerRows[2][indicatorCol] = curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`);
         }
-        const promedioCol = selectableColumnIndexByKey.get(`capacidad-${capacidad.id}`);
-        if (promedioCol != null) headerRows[2][promedioCol] = isProgramaEstudio ? 'PROMEDIO' : 'LOGRO';
       }
+      const promedioCol = selectableColumnIndexByKey.get(`unidad-${unidad.id}`);
+      if (promedioCol != null) headerRows[1][promedioCol] = 'PROMEDIO UNIDAD';
     }
 
     const efsrtCol = selectableColumnIndexByKey.get('efsrt-ppp');
@@ -1444,6 +1522,7 @@ export default function RegistroAuxiliarPage() {
     lineHeight: 1.2,
     textAlign: 'center',
     whiteSpace: 'normal',
+    overflowWrap: 'anywhere',
   };
 
   const criterioLabelSx = {
@@ -1452,6 +1531,7 @@ export default function RegistroAuxiliarPage() {
     top: '50%',
     width: 164,
     whiteSpace: 'normal',
+    overflowWrap: 'anywhere',
     lineHeight: 1.2,
     fontSize: 10,
     fontWeight: 400,
@@ -1488,7 +1568,7 @@ export default function RegistroAuxiliarPage() {
         spacing={1}
         useFlexGap
         alignItems="center"
-        sx={{ flexWrap: 'wrap', mb: 0, rowGap: 0.5 }}
+        sx={{ flexWrap: 'wrap', mb: 0, pb: '5px', rowGap: 0.5 }}
       >
         <Box sx={{ flex: '1 1 180px', minWidth: 0 }}>
           <Typography component="h1" variant="h6" sx={{ fontWeight: 800, fontSize: 18, lineHeight: 1.1, m: 0, overflowWrap: 'anywhere' }}>
@@ -1592,7 +1672,6 @@ export default function RegistroAuxiliarPage() {
             overscrollBehavior: 'contain',
             overscrollBehaviorX: 'contain',
             overscrollBehaviorY: 'contain',
-            scrollbarGutter: 'stable',
           }}
         >
           {loadingRegistro ? (
@@ -1600,7 +1679,7 @@ export default function RegistroAuxiliarPage() {
               <CircularProgress />
             </Box>
           ) : registro ? (
-            <Box sx={{ minWidth: Math.max(showEfsrtPpp ? 920 : 872, (showEfsrtPpp ? 478 : 430) + visibleIndicatorColumns.length * 56) }}>
+            <Box sx={{ minWidth: columnLayout.tableWidth }}>
               <Box
                 sx={{
                   display: 'grid',
@@ -1753,8 +1832,20 @@ export default function RegistroAuxiliarPage() {
                 </Box>
               </Box>
 
-              <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-                <Box component="thead" sx={{ position: 'sticky', top: 0, zIndex: 3 }}>
+              <Box component="table" sx={{ width: columnLayout.tableWidth, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: 34 }} />
+                  <col style={{ width: 105 }} />
+                  <col style={{ width: 275 }} />
+                  {visibleUnits.flatMap(unit => [
+                    ...unit.capacidadesTerminales.flatMap(capacity => capacity.indicadoresCapacidad.map(indicator => <col key={`indicator-${indicator.id}`} style={{ width: columnLayout.indicatorWidths[indicator.id] }} />)),
+                    <col key={`average-unit-${unit.id}`} style={{ width: columnLayout.averageWidth }} />,
+                  ])}
+                  {showEfsrtPpp && <col style={{ width: SUMMARY_COLUMN_WIDTH }} />}
+                  <col style={{ width: SUMMARY_COLUMN_WIDTH }} />
+                  <col style={{ width: SUMMARY_COLUMN_WIDTH }} />
+                </colgroup>
+                <Box component="thead" ref={registroHeaderRef} sx={{ position: 'sticky', top: 0, zIndex: 3 }}>
                   <Box component="tr">
                     <Box
                       component="th"
@@ -1815,8 +1906,8 @@ export default function RegistroAuxiliarPage() {
                     {visibleUnits.map((unidad) => {
                       const span = headerSpans.unidades.get(unidad.id) ?? { col: -1, colSpan: 1 };
                       const colSpan = unidad.capacidadesTerminales.reduce(
-                        (sum, capacidad) => sum + Math.max(1, capacidad.indicadoresCapacidad.length) + 1,
-                        0,
+                        (sum, capacidad) => sum + capacidad.indicadoresCapacidad.length,
+                        1,
                       );
                       return (
                         <Box
@@ -1826,7 +1917,7 @@ export default function RegistroAuxiliarPage() {
                           {...selectableCellProps(TABLE_HEADER_ROW_START, span.col, 1, span.colSpan)}
                           sx={{ ...cellBaseSx, ...selectableCellSx(TABLE_HEADER_ROW_START, span.col, 1, span.colSpan), bgcolor: '#eef6ff', height: 30 }}
                         >
-                          {unitLabel(unidad)}
+                          {unitLabel(unidad, registro.estructura.indexOf(unidad) + 1)}
                         </Box>
                       );
                     })}
@@ -1839,7 +1930,7 @@ export default function RegistroAuxiliarPage() {
                           ...cellBaseSx,
                           ...selectableCellSx(TABLE_HEADER_ROW_START, selectableColumnIndexByKey.get('efsrt-ppp') ?? -1, 3, 1),
                           bgcolor: '#fff',
-                          width: 48,
+                          width: SUMMARY_COLUMN_WIDTH,
                           writingMode: 'vertical-rl',
                           transform: 'rotate(180deg)',
                         }}
@@ -1855,7 +1946,7 @@ export default function RegistroAuxiliarPage() {
                         ...cellBaseSx,
                         ...selectableCellSx(TABLE_HEADER_ROW_START, selectableColumnIndexByKey.get('puntaje') ?? -1, 3, 1),
                         bgcolor: '#c6e0b4',
-                        width: 48,
+                        width: SUMMARY_COLUMN_WIDTH,
                         writingMode: 'vertical-rl',
                         transform: 'rotate(180deg)',
                       }}
@@ -1870,7 +1961,6 @@ export default function RegistroAuxiliarPage() {
                         ...cellBaseSx,
                         ...selectableCellSx(TABLE_HEADER_ROW_START, selectableColumnIndexByKey.get('promedio-general') ?? -1, 3, 1),
                         bgcolor: '#c6e0b4',
-                        width: 48,
                         writingMode: 'vertical-rl',
                         transform: 'rotate(180deg)',
                       }}
@@ -1880,22 +1970,30 @@ export default function RegistroAuxiliarPage() {
                   </Box>
                   <Box component="tr">
                     {visibleUnits.flatMap((unidad) =>
-                      unidad.capacidadesTerminales.map((capacidad) => {
+                      [...unidad.capacidadesTerminales.filter(capacidad => capacidad.indicadoresCapacidad.length > 0).map((capacidad) => {
                         const span = headerSpans.capacidades.get(capacidad.id) ?? { col: -1, colSpan: 1 };
                         return (
                           <Box
                             key={capacidad.id}
                             component="th"
-                            colSpan={Math.max(1, capacidad.indicadoresCapacidad.length) + 1}
+                            colSpan={capacidad.indicadoresCapacidad.length}
                             {...selectableCellProps(TABLE_HEADER_ROW_START + 1, span.col, 1, span.colSpan)}
                             sx={{ ...cellBaseSx, ...selectableCellSx(TABLE_HEADER_ROW_START + 1, span.col, 1, span.colSpan), bgcolor: '#fff', height: 64, verticalAlign: 'middle', p: 0 }}
                           >
-                            <Box title={curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion)} sx={capacidadLabelSx}>
-                              <span><strong>{`${capacidad.codigo?.replace(/:$/, '') || `C${(unidad.capacidadesTerminales.indexOf(capacidad) + 1)}`}:`}</strong>{' '}{capacidad.descripcion}</span>
+                            <Box data-registro-capacity-label={capacidad.id} title={curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion)} sx={capacidadLabelSx}>
+                              <span style={{ minWidth: 0 }}><strong>{`${capacidad.codigo?.replace(/:$/, '') || `C${(unidad.capacidadesTerminales.indexOf(capacidad) + 1)}`}:`}</strong>{' '}{capacidad.descripcion}</span>
                             </Box>
                           </Box>
                         );
-                      }),
+                      }), (() => {
+                        const col = selectableColumnIndexByKey.get(`unidad-${unidad.id}`) ?? -1;
+                        return <Box key={`unit-average-${unidad.id}`} component="th" rowSpan={2}
+                          data-registro-unit-average={unidad.id}
+                          {...selectableCellProps(TABLE_HEADER_ROW_START + 1, col, 2)}
+                          sx={{ ...cellBaseSx, ...selectableCellSx(TABLE_HEADER_ROW_START + 1, col, 2), bgcolor: '#d9ead3', writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+                          PROMEDIO UNIDAD
+                        </Box>;
+                      })()],
                     )}
                   </Box>
                   <Box component="tr">
@@ -1913,39 +2011,18 @@ export default function RegistroAuxiliarPage() {
                                 ...selectableCellSx(TABLE_HEADER_ROW_START + 2, col),
                                 bgcolor: '#fff',
                                 height: 180,
-                                width: 66,
                                 verticalAlign: 'bottom',
                                 position: 'relative',
                                 overflow: 'hidden',
                                 px: 0,
                               }}
                             >
-                              <Box title={curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`)} sx={criterioLabelSx}>
+                              <Box data-registro-indicator-label={indicador.id} title={curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`)} sx={criterioLabelSx}>
                                 <strong>{`${indicador.codigo?.replace(/:$/, '') || `I${capacidad.indicadoresCapacidad.indexOf(indicador) + 1}`}:`}</strong>{' '}{indicador.descripcion || indicador.sigla}
                               </Box>
                             </Box>
                           );
                         }),
-                        (() => {
-                          const col = selectableColumnIndexByKey.get(`capacidad-${capacidad.id}`) ?? -1;
-                          return (
-                            <Box
-                              key={`p-${capacidad.id}`}
-                              component="th"
-                              {...selectableCellProps(TABLE_HEADER_ROW_START + 2, col)}
-                              sx={{
-                                ...cellBaseSx,
-                                ...selectableCellSx(TABLE_HEADER_ROW_START + 2, col),
-                                bgcolor: '#d9ead3',
-                                width: 42,
-                                writingMode: 'vertical-rl',
-                                transform: 'rotate(180deg)',
-                              }}
-                            >
-                              {isProgramaEstudio ? 'PROMEDIO' : 'LOGRO'}
-                            </Box>
-                          );
-                        })(),
                       ]),
                     )}
                   </Box>
@@ -1988,7 +2065,7 @@ export default function RegistroAuxiliarPage() {
                                 if (nextTarget && event.currentTarget.contains(nextTarget)) return;
                                 void commitEditingStudentName();
                               }}
-                              sx={{ flex: 1, minWidth: 0, py: 0.35 }}
+                              sx={{ flex: 1, minWidth: 0, py: 0.35, '& .MuiInputBase-root': { bgcolor: '#fff' } }}
                             >
                               <TextField
                                 autoFocus
@@ -2092,7 +2169,7 @@ export default function RegistroAuxiliarPage() {
                         </Box>}
                       </Box>
                       {visibleUnits.flatMap((unidad) =>
-                        unidad.capacidadesTerminales.flatMap((capacidad) => [
+                        [...unidad.capacidadesTerminales.flatMap((capacidad) => [
                           ...capacidad.indicadoresCapacidad.map((indicador) => {
                             const indicatorIndex = visibleIndicatorColumns.findIndex((column) => column.indicador.id === indicador.id);
                             const selectableColIndex = selectableColumnIndexByKey.get(`indicator-${indicador.id}`) ?? -1;
@@ -2133,27 +2210,29 @@ export default function RegistroAuxiliarPage() {
                               </Box>
                             );
                           }),
+                        ]),
                           (() => {
-                            const selectableColIndex = selectableColumnIndexByKey.get(`capacidad-${capacidad.id}`) ?? -1;
+                            const selectableColIndex = selectableColumnIndexByKey.get(`unidad-${unidad.id}`) ?? -1;
                             return (
                               <Box
                                 component="td"
-                                key={`avg-${student.matriculaId}-${capacidad.id}`}
+                                key={`avg-unit-${student.matriculaId}-${unidad.id}`}
+                                data-registro-unit-average-key={`${student.matriculaId}:${unidad.id}`}
                                 {...selectableCellProps(tableRowIndex, selectableColIndex)}
                                 sx={{
                                   ...cellBaseSx,
                                   ...selectableCellSx(tableRowIndex, selectableColIndex),
                                   bgcolor: '#d9ead3',
-                                  color: gradeColor(getCapacidadAverage(student.matriculaId, capacidad)),
+                                  color: gradeColor(getUnidadAverage(student.matriculaId, unidad)),
                                   textAlign: 'center',
                                   fontWeight: 800,
                                 }}
                               >
-                                {displayGrade(getCapacidadAverage(student.matriculaId, capacidad))}
+                                {displayGrade(getUnidadAverage(student.matriculaId, unidad))}
                               </Box>
                             );
                           })(),
-                        ]),
+                        ],
                       )}
                       {showEfsrtPpp ? (
                         <Box
@@ -2247,62 +2326,66 @@ export default function RegistroAuxiliarPage() {
                       }}
                     >
                       {creatingMatricula ? <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} role="status"><CircularProgress size={20} /><Typography variant="caption">Matriculando estudiante…</Typography></Stack> : canCreateRegistroMatriculas && editingNewMatricula ? (
-                        <Stack
-                          direction="row"
-                          spacing={0.75}
-                          alignItems="center"
-                          onMouseDown={(event) => event.stopPropagation()}
-                        >
-                          <Box
-                            component="input"
-                            autoFocus
-                            inputMode="numeric"
-                            maxLength={8}
-                            placeholder="DNI"
-                            value={newMatriculaDni}
-                            onChange={(event) => setNewMatriculaDni(event.target.value.replace(/\D/g, '').slice(0, 8))}
-                            onKeyDown={(event) => {
-                              if (event.key === 'Enter') {
-                                event.preventDefault();
-                                void handleCreateMatricula();
-                              }
-                              if (event.key === 'Escape') {
+                        <ClickAwayListener onClickAway={() => {
+                          if (!newMatriculaDni) setEditingNewMatricula(false);
+                        }}>
+                          <Stack
+                            direction="row"
+                            spacing={0.75}
+                            alignItems="center"
+                            onMouseDown={(event) => event.stopPropagation()}
+                          >
+                            <Box
+                              component="input"
+                              autoFocus
+                              inputMode="numeric"
+                              maxLength={8}
+                              placeholder="DNI"
+                              value={newMatriculaDni}
+                              onChange={(event) => setNewMatriculaDni(event.target.value.replace(/\D/g, '').slice(0, 8))}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter') {
+                                  event.preventDefault();
+                                  void handleCreateMatricula();
+                                }
+                                if (event.key === 'Escape') {
+                                  setEditingNewMatricula(false);
+                                  setNewMatriculaDni('');
+                                }
+                              }}
+                              sx={{
+                                width: 92,
+                                border: '1px solid #8aa7c2',
+                                borderRadius: 0.75,
+                                px: 0.75,
+                                py: 0.35,
+                                fontSize: 12,
+                                outline: 'none',
+                              }}
+                            />
+                            <Button
+                              size="small"
+                              variant="contained"
+                              onClick={handleCreateMatricula}
+                              disabled={creatingMatricula || newMatriculaDni.length !== 8}
+                              sx={{ minWidth: 0, width: 'fit-content', py: 0.25, fontSize: 11 }}
+                            >
+                              MATRICULAR
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="text"
+                              onClick={() => {
                                 setEditingNewMatricula(false);
                                 setNewMatriculaDni('');
-                              }
-                            }}
-                            sx={{
-                              width: 92,
-                              border: '1px solid #8aa7c2',
-                              borderRadius: 0.75,
-                              px: 0.75,
-                              py: 0.35,
-                              fontSize: 12,
-                              outline: 'none',
-                            }}
-                          />
-                          <Button
-                            size="small"
-                            variant="contained"
-                            onClick={handleCreateMatricula}
-                            disabled={creatingMatricula || newMatriculaDni.length !== 8}
-                            sx={{ minWidth: 108, py: 0.25, fontSize: 11 }}
-                          >
-                            {creatingMatricula ? 'Creando...' : 'Crear matricula'}
-                          </Button>
-                          <Button
-                            size="small"
-                            variant="text"
-                            onClick={() => {
-                              setEditingNewMatricula(false);
-                              setNewMatriculaDni('');
-                            }}
-                            disabled={creatingMatricula}
-                            sx={{ minWidth: 62, py: 0.25, fontSize: 11 }}
-                          >
-                            Cancelar
-                          </Button>
-                        </Stack>
+                              }}
+                              disabled={creatingMatricula}
+                              sx={{ minWidth: 62, py: 0.25, fontSize: 11 }}
+                            >
+                              Cancelar
+                            </Button>
+                          </Stack>
+                        </ClickAwayListener>
                       ) : canCreateRegistroMatriculas ? (
                         <Box sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
                           Doble clic para agregar estudiante por DNI

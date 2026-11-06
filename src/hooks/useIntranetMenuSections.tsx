@@ -69,11 +69,6 @@ const getSemestreKey = (
   return `titulo:${normalizeMenuText(title)}`;
 };
 
-const getDocenteMenuPairKey = (item: DocenteMenuItem) =>
-  item.grupoModuloId
-    ? `grupoModulo:${item.grupoModuloId}`
-    : `${item.semestreKey || ''}|${normalizeMenuText(item.moduloName || item.title)}`;
-
 const buildDocenteMatriculaPath = (
   grupoModuloId: number,
   moduloName: string,
@@ -204,27 +199,31 @@ const buildDocenteSemestreItems = (
 ) => {
   const listas = matriculaItems.filter((item) => item.semestreKey === semestreKey);
   const notas = registroItems.filter((item) => item.semestreKey === semestreKey);
-  const listasByPairKey = new Map(listas.map((item) => [getDocenteMenuPairKey(item), item]));
-  const notasByPairKey = new Map(notas.map((item) => [getDocenteMenuPairKey(item), item]));
-  const orderedPairKeys = Array.from(new Set([
-    ...listas.map(getDocenteMenuPairKey),
-    ...notas.map(getDocenteMenuPairKey),
-  ]));
-
-  return orderedPairKeys.flatMap((pairKey) => {
-    const pairItems: DocenteMenuItem[] = [];
-    const lista = listasByPairKey.get(pairKey);
-    const nota = notasByPairKey.get(pairKey);
-    if (lista) pairItems.push(lista);
-    if (nota) pairItems.push(nota);
-    return pairItems;
-  });
+  return [
+    ...listas,
+    ...(listas.length && notas.length ? [{
+      id: `docente-listas-notas-${semestreKey}`,
+      title: '',
+      path: '',
+      icon: null,
+      divider: true,
+    }] : []),
+    ...notas,
+  ];
 };
 
 function buildDocenteRegistrosItems(data: DocenteMenuData): IntranetMenuItem[] {
+  const semestreItems = buildDocenteSemestreItems(data.currentSemestreKey, data.matriculaItems, data.registroItems);
   return [
     ...(data.estructuraItem ? [data.estructuraItem] : []),
-    ...buildDocenteSemestreItems(data.currentSemestreKey, data.matriculaItems, data.registroItems),
+    ...(data.estructuraItem && semestreItems.length ? [{
+      id: 'docente-programacion-curricular-divider',
+      title: '',
+      path: '',
+      icon: null,
+      divider: true,
+    }] : []),
+    ...semestreItems,
   ];
 }
 

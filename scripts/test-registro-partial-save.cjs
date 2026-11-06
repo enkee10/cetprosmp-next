@@ -49,9 +49,10 @@ const read = async (table, where, fields) => (await graph(`query LocalPartialSav
     const unitValues = await read('unidadesDidacticasEstudiantes', `matriculaId:{eq:${ids.students[0]}}`, 'unidadDidacticaId promedio');
     assert.equal(unitValues[0].promedio, 18, 'Other capacity grades are included when calculating the unit');
     const moduleValue = (await read('modulosEstudiantes', `id:{eq:${modules[0]}}`, 'promedio puntaje'))[0];
-    assert.deepEqual(moduleValue, { promedio: 14, puntaje: 46 }, 'Module averages retain untouched units and EFSRT');
+    assert.deepEqual(moduleValue, { promedio: 14, puntaje: 46 }, 'Module average uses only units and retains untouched grades');
     await save({ grupoModuloId: groupModule, partial: true, notas: [], efsrtPppPromedios: [{ moduloEstudianteId: modules[0], promedioFinal: 20 }] }, {});
-    assert.equal((await read('modulosEstudiantes', `id:{eq:${modules[0]}}`, 'promedio'))[0].promedio, 16, 'EFSRT-only edits recalculate the module');
+    assert.equal((await read('modulosEstudiantes', `id:{eq:${modules[0]}}`, 'promedio'))[0].promedio, 14, 'EFSRT-only edits do not change the module average');
+    assert.equal((await read('efsrtPppEstudiantes', `moduloEstudianteId:{eq:${modules[0]}}`, 'promedioFinal'))[0].promedioFinal, 20, 'EFSRT remains an independently saved grade');
     await save({ grupoModuloId: groupModule, partial: true, notas: [nota(null)] }, {});
     assert.equal((await read('indicadoresCapacidadEstudiantes', `matriculaId:{eq:${ids.students[0]}},indicadorCapacidadId:{eq:${indicators[0]}}`, 'promedio'))[0].promedio, null);
     assert.equal((await read('indicadoresCapacidadEstudiantes', `matriculaId:{eq:${ids.students[1]}},indicadorCapacidadId:{eq:${indicators[0]}}`, 'promedio'))[0].promedio, 10, 'Other students are untouched');

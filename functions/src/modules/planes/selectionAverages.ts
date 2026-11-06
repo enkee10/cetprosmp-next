@@ -32,7 +32,8 @@ export function recalculateSelectionAverages(data: Record<string, Row[]>, origin
       if (changedCaps.has(cap.id) || originalIndicators.some(i => i.capacidadTerminalId === cap.id && grades.has(`${matriculaId}:${i.id}`))) {
         const children = indicators.filter(i => i.capacidadTerminalId === cap.id).sort((a, b) => Number(a.orden ?? a.id) - Number(b.orden ?? b.id) || Number(a.id) - Number(b.id));
         const values = children.map(i => grades.get(`${matriculaId}:${i.id}`));
-        const value = occupational ? values[values.length - 1] : average(values);
+        const completeAverage = average(values);
+        const value = occupational && completeAverage !== null ? values[values.length - 1] : completeAverage;
         capGrades.set(key, typeof value === "number" ? Math.round(value) : null);
         recalculated.add(cap.id);
       }

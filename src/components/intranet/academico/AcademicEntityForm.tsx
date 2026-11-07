@@ -1,5 +1,7 @@
 'use client';
 
+import { toDateOnlyInputValue, toDateTimeLocalInputValue, appTimestampIso } from '@/lib/dateOnly';
+
 import { useEffect, useMemo, useState } from 'react';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
@@ -66,14 +68,14 @@ function formatInitialValue(value: unknown, type?: AcademicFieldType) {
   if (type === 'boolean') return value === true ? 'true' : 'false';
   if (type === 'string-list' && Array.isArray(value)) return JSON.stringify(value.map(item => typeof item === 'string' ? item : String(item?.texto ?? '')));
   if ((type === 'number-list' || type === 'multi-select') && Array.isArray(value)) return value.join(',');
-  if (type === 'date' && typeof value === 'string') return value.slice(0, 10);
-  if (type === 'timestamp' && typeof value === 'string') return value.slice(0, 16);
+  if (type === 'date' && typeof value === 'string') return toDateOnlyInputValue(value);
+  if (type === 'timestamp' && typeof value === 'string') return toDateTimeLocalInputValue(value);
   return String(value);
 }
 
 function buildPayload(fields: AcademicFieldConfig[], values: Record<string, string>) {
   return fields.reduce<Record<string, string | number | number[] | string[] | boolean | null>>((payload, field) => {
-    const raw = values[field.name]?.trim() ?? '';
+    const raw = field.type === 'timestamp' ? appTimestampIso(values[field.name]) ?? '' : values[field.name]?.trim() ?? '';
     if (field.type === 'string-list') {
       payload[field.name] = (JSON.parse(raw || '[]') as string[]).map(item => item.trim()).filter(Boolean);
     } else if (field.type === 'number') {

@@ -1,3 +1,4 @@
+import { dayInAppTimeZone, getDateOnlyLocalDate } from "../../shared/appDateTime.js";
 import { getStorage } from "firebase-admin/storage";
 import { buildMatriculaModuloRows } from "../core/matriculaModuloRows.js";
 import { matriculaPageNeedsSearch, selectMatriculaPage, type MatriculaGridRequest, type MatriculaGridIndex } from "../core/matriculaListPagination.js";
@@ -1600,7 +1601,7 @@ function parseDateOnly(value: unknown): Date | null {
 }
 
 function todayDateOnly(now = new Date()): Date {
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return getDateOnlyLocalDate(dayInAppTimeZone(now))!;
 }
 
 function isExpiredDate(value: unknown, now = new Date()): boolean {

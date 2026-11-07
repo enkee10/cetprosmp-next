@@ -22,47 +22,29 @@ const deferred = () => { let resolve; let reject; const promise = new Promise((y
 async function testMenu() {
   const file = 'src/hooks/useIntranetMenuSections.tsx';
   const source = ts.createSourceFile(file, fs.readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const names = new Set(['docenteMenuCache', 'docenteMenuRequests', 'formatPeriodoMenu', 'normalizeMenuText',
-    'getSemestreTitle', 'getSemestreKey', 'getDocenteMenuPairKey', 'buildDocenteMatriculaPath',
-    'buildDocenteRegistroItems', 'buildDocenteMatriculaItems', 'buildDocenteEstructuraItem',
-    'loadDocenteMenuData', 'buildDocenteSemestreItems', 'buildDocenteRegistrosItems']);
-  const code = source.statements.filter((node) =>
-    ts.isFunctionDeclaration(node) ? names.has(node.name?.text) : ts.isVariableStatement(node)
-      && node.declarationList.declarations.some((item) => names.has(item.name.getText(source))))
-    .map((node) => node.getText(source)).join('\n');
-  let calls = 0;
-  let semesterTitle = '2026-2';
-  const args = [];
-  const { loadMenu, menuItems } = vm.runInNewContext(ts.transpileModule(code, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
-  }).outputText + '\n({loadMenu:loadDocenteMenuData,menuItems:buildDocenteRegistrosItems})', {
-    Map, Set, Promise, URLSearchParams, React: { createElement: () => null },
-    functions: {}, AssignmentIcon: 'list', FactCheckIcon: 'notes', AccountTreeIcon: 'structure',
-    docenteMenuModuloName, docenteMenuPeriodo, curricularTitle: (title) => title,
-    loadDocenteModulos: async (input) => {
-      calls += 1; args.push(input);
-      return { semestreTitulo: semesterTitle, modulos: [{ id: 20, moduloId: 2,
-        nombre: 'Carpintería (oct-dic) [Noche] Lun, Mie, @Vie (Richard Ramos)', docenteNombre: 'Richard Ramos',
-        grupo: { semestre: { id: 4, titulo: semesterTitle } } }] };
-    },
+  const hook = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === 'useIntranetMenuSections');
+  const code = ts.transpileModule(hook.getText(source).replace('export ', ''), {
+    compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS },
+  }).outputText;
+  const sections = [{ id: 'registros', items: [
+    { id: 'estructura-academica', title: 'Programaci\u00f3n Curricular', path: '/intranet/estructura-academica' },
+    { id: 'matriculas', title: 'Matr\u00edculas', path: '/intranet/matriculas' },
+    { id: 'registro-auxiliar', title: 'Registro Auxiliar', path: '/intranet/registro-auxiliar' },
+  ] }];
+  let role = 4;
+  const run = vm.runInNewContext(code + '\nuseIntranetMenuSections', {
+    useMemo: fn => fn(), useAuth: () => ({user:{role}}), isDocenteRole: value => value === 4 || value === 10,
+    useIntranetPermissions: () => ({ filterSections: items => items, loading: false, isSuperUser: false }),
+    menuSections: sections,
+    loadDocenteModulos: () => { throw Error('The menu must not query modules'); },
   });
-  const options = { key: 'teacher-a|4', uid: 'teacher-a', semestreId: 4, canViewRegistroAuxiliar: true, canViewMatriculas: true, canViewEstructuraAcademica: true };
-  const [first, otherConsumer] = await Promise.all([loadMenu(options), loadMenu(options)]);
-  assert.equal(calls, 1, 'Desktop/mobile menu consumers share one request for lists and notes');
-  assert.equal(first, otherConsumer);
-  const titles = Array.from(menuItems(first), (item) => item.title);
-  assert.deepEqual(titles, ['Programación Curricular 26-2',
-    'Lista Carpintería (oct-dic) [Noche] Lun, Mie, @Vie 26-2', 'Notas Carpintería (oct-dic) [Noche] Lun, Mie, @Vie 26-2']);
-  await loadMenu(options); assert.equal(calls, 1, 'Menu navigation uses the session cache');
-  semesterTitle = '2027-1';
-  const changed = await loadMenu({ ...options, key: 'teacher-a|5' });
-  assert.equal(calls, 2, 'A new current semester reloads the menu');
-  assert.ok(Array.from(menuItems(changed)).some((item) => item.title.startsWith('Lista ') && item.title.endsWith('27-1')));
-  const onlyLists = await loadMenu({ ...options, key: 'teacher-a|5|list-only', canViewRegistroAuxiliar: false, canViewEstructuraAcademica: false });
-  assert.equal(menuItems(onlyLists).length, 1);
-  assert.equal(args[2].notas, false);
-  const globalSemester = await loadMenu({ ...options, key: 'teacher-a|global-title', semestreTitulo: '2028-2' });
-  assert.ok(Array.from(menuItems(globalSemester)).every(item => item.title.endsWith('28-2')), 'The global current semester title takes precedence over cached module semester labels');
+  const result = run();
+  assert.equal(result.loading, false, 'The menu does not wait for semester or module requests');
+  assert.deepEqual(Array.from(result.sections[0].items, x => x.path),
+    ['/intranet/estructura-academica-docente', '/intranet/matriculas', '/intranet/registro-auxiliar']);
+  assert.equal(result.sections[0].items.length, 3, 'Use the conventional menu, without a link per module');
+  role = 3;
+  assert.equal(run().sections, sections, 'Other users retain the permission-filtered menu');
 }
 
 (async () => {
@@ -175,5 +157,5 @@ async function testMenu() {
   assert.equal(docenteMenuPeriodo('2026-2'), '26-2');
   assert.equal(docenteMenuPeriodo('2027-1'), '27-1');
   await testMenu();
-  console.log('Passed: shared configuration, request deduplication, unchanged values, semester updates, logout/race protection, one-call menu, cache invalidation, and labels.');
+  console.log('Passed: shared configuration, request deduplication, unchanged values, semester updates, logout/race protection, conventional teacher menu without extra queries, and labels.');
 })().catch((error) => { console.error(error); process.exitCode = 1; });

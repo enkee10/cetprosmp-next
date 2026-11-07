@@ -1,3 +1,4 @@
+import { toTimeOnlyInputValue, toDateOnlyInputValue } from "../../shared/appDateTime.js";
 export interface ScheduleHorario {
   nombre?: string | null;
   regla?: string | null;
@@ -48,7 +49,7 @@ const DAY_MS = 86400000;
 function dayNumber(value?: string | null): number | null {
   if (!value) return null;
   // Academic dates use the same date-only convention as the group forms.
-  const day = value.slice(0, 10);
+  const day = toDateOnlyInputValue(value);
   const timestamp = Date.parse(`${day}T00:00:00Z`);
   if (!Number.isFinite(timestamp) || new Date(timestamp).toISOString().slice(0, 10) !== day) {
     throw new Error("Las fechas del grupo-modulo no son validas.");
@@ -58,10 +59,8 @@ function dayNumber(value?: string | null): number | null {
 
 function turnoMinute(value?: string | null): number | null {
   if (!value) return null;
-  const time = new Date(value);
-  if (!Number.isFinite(time.getTime())) return null;
-  // TurnoForm stores wall-clock times as 1970-01-01THH:mmZ, not real instants.
-  return time.getUTCHours() * 60 + time.getUTCMinutes() + time.getUTCSeconds() / 60 + time.getUTCMilliseconds() / 60000;
+  const time = toTimeOnlyInputValue(value, true);
+  return time ? Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5)) + Number(time.slice(6)) / 60 : null;
 }
 
 function weekday(day: number): number {

@@ -1,5 +1,7 @@
 'use client';
 
+import { isCalendarPeriodActive } from '@/lib/dateOnly';
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
@@ -86,12 +88,8 @@ const sortSemestresAsc = (items: SemestreOption[]) =>
       a.id - b.id,
     );
 
-const isSemestreVigente = (semestre: SemestreOption, today = new Date()) => {
-  if (!semestre.inicio || !semestre.fin) return false;
-  const start = new Date(`${semestre.inicio}T00:00:00`);
-  const end = new Date(`${semestre.fin}T23:59:59`);
-  return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start <= today && today <= end;
-};
+const isSemestreVigente = (semestre: SemestreOption, date = new Date()) =>
+  Boolean(semestre.inicio && semestre.fin) && isCalendarPeriodActive(semestre, date);
 
 const pickMonitorSemestre = (semestres: SemestreOption[], semestreActualId: number | null | undefined) => {
   const ordered = sortSemestresAsc(semestres);

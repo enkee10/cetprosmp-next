@@ -1,5 +1,7 @@
 'use client';
 
+import { toTimeOnlyInputValue, timeOnlyTimestamp } from '@/lib/dateOnly';
+
 import { useEffect, useState } from 'react';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
@@ -33,14 +35,8 @@ interface TurnoData {
   estado: string | null;
 }
 
-const toTimeInput = (value: string | null) => {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toISOString().slice(11, 16);
-};
-
-const timeToTimestamp = (value: string) => (value ? `1970-01-01T${value}:00.000Z` : null);
+const toTimeInput = toTimeOnlyInputValue;
+const timeToTimestamp = timeOnlyTimestamp;
 
 export function TurnoForm({ turnoId, asModal = false, onSaved, onCancel }: TurnoFormProps) {
   const [nombre, setNombre] = useState('');

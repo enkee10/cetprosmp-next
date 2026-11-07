@@ -14,7 +14,7 @@ function loadSource(path, dependencies = {}) {
   });
   return module.exports;
 }
-const model = loadSource('functions/src/modules/core/matriculaSchedule.ts');
+const model = loadSource('functions/src/modules/core/matriculaSchedule.ts', { '../../shared/appDateTime.js': require('../functions/lib/shared/appDateTime.js') });
 const time = value => `1970-01-01T${value}:00.000Z`;
 const period = { inicio: '2026-05-04', fin: '2026-06-30', titulo: '2026-1' };
 function groupModule(id, days = '1,3,5', start = '08:00', end = '10:00', dates = {}) {

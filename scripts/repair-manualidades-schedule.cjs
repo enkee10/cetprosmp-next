@@ -1,3 +1,4 @@
+const { toTimeOnlyInputValue } = require('../functions/lib/shared/appDateTime.js');
 // Preview by default. --apply writes one transaction to the explicitly selected target.
 // node scripts/repair-manualidades-schedule.cjs --remote [--apply]
 const assert = require('node:assert/strict');
@@ -9,7 +10,7 @@ const limaDay = value => new Date(Date.parse(value) - 5 * 3600000).toISOString()
 const duration = row => Date.parse(row.fin) - Date.parse(row.inicio);
 const active = row => row.evento?.estado !== 'cancelado';
 const equalTime = (a, b) => Date.parse(a) === Date.parse(b);
-const startOf = (date, g) => Date.parse(`${date}T${g.grupo.turno.horaInicio.slice(11, 19)}-05:00`);
+const startOf = (date, g) => Date.parse(`${date}T${toTimeOnlyInputValue(g.grupo.turno.horaInicio, true)}-05:00`);
 
 async function readState(graph) {
   const base = await graph(`query ManualidadesRepairBase {

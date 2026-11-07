@@ -1,5 +1,7 @@
 'use client';
 
+import { dateOnlyTimestamp, isCalendarPeriodActive } from '@/lib/dateOnly';
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import {
@@ -40,7 +42,7 @@ const getSemestreLabel = (semestre: SemestreOption) =>
 
 const getSemestreTime = (value?: string | null) => {
   if (!value) return Number.NEGATIVE_INFINITY;
-  const time = new Date(`${value}T00:00:00`).getTime();
+  const time = dateOnlyTimestamp(value) ?? Number.NEGATIVE_INFINITY;
   return Number.isFinite(time) ? time : Number.NEGATIVE_INFINITY;
 };
 
@@ -167,9 +169,7 @@ export default function SettingsPage() {
     const today = new Date();
     const currentIndex = ordered.findIndex((semestre) => {
       if (!semestre.inicio || !semestre.fin) return false;
-      const start = new Date(`${semestre.inicio}T00:00:00`);
-      const end = new Date(`${semestre.fin}T23:59:59`);
-      return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start <= today && today <= end;
+      return isCalendarPeriodActive(semestre, today);
     });
     if (currentIndex < 0) return ordered;
     return ordered.slice(Math.max(0, currentIndex - 1));

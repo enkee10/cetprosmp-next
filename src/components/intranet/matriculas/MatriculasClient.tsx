@@ -1,5 +1,7 @@
 'use client';
 
+import { isCalendarPeriodActive, dayInAppTimeZone, ageInAppTimeZone, formatInstantDateInAppTimeZone, formatDateOnly, formatDateTimeInAppTimeZone, getDateOnlyLocalDate } from '@/lib/dateOnly';
+
 import { isDocenteRole } from '@/lib/intranetPermissions';
 
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
@@ -52,7 +54,6 @@ import type { SelectChangeEvent } from '@mui/material/Select';
 import { httpsCallable } from 'firebase/functions';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { functions, storage } from '@/lib/firebase';
-import { formatDateOnly, formatDateTimeInAppTimeZone, getDateOnlyLocalDate } from '@/lib/dateOnly';
 import FormLoadingOverlay from '@/components/FormLoadingOverlay';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import CameraCaptureDialog from '@/components/intranet/CameraCaptureDialog';
@@ -455,29 +456,8 @@ const detectDocumentContentType = (file: File) => {
   return 'image/jpeg';
 };
 
-const parseSemestreDate = (value?: string | null) => {
-  return getDateOnlyLocalDate(value);
-};
-
-const startOfDay = (date: Date) => {
-  const copy = new Date(date);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
-};
-
-const endOfDay = (date: Date) => {
-  const copy = new Date(date);
-  copy.setHours(23, 59, 59, 999);
-  return copy;
-};
-
 const getCurrentSemestre = (semestres: SemestreOption[], now = new Date()) =>
-  semestres.find((semestre) => {
-    const inicio = parseSemestreDate(semestre.inicio);
-    const fin = parseSemestreDate(semestre.fin);
-    if (!inicio || !fin) return false;
-    return startOfDay(inicio).getTime() <= now.getTime() && now.getTime() <= endOfDay(fin).getTime();
-  }) ?? null;
+  semestres.find(semestre => Boolean(semestre.inicio && semestre.fin) && isCalendarPeriodActive(semestre, now)) ?? null;
 
 const asString = (value: unknown) => (typeof value === 'string' ? value : '');
 
@@ -706,7 +686,6 @@ const getGrupoOptionLabel = (grupoOpcion: GrupoOption) =>
 
 const getGrupoOptionGrupoId = (grupoOpcion: GrupoOption) => grupoOpcion.grupoId ?? grupoOpcion.id;
 
-
 const parseDateOnly = (value: unknown) => {
   const normalized = normalizeDateInput(value);
   if (!normalized) return null;
@@ -716,8 +695,7 @@ const parseDateOnly = (value: unknown) => {
 };
 
 const todayDateOnly = () => {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return getDateOnlyLocalDate(dayInAppTimeZone())!;
 };
 
 const isExpiredDate = (value: unknown) => {
@@ -922,7 +900,6 @@ const fileSignature = (file: File | null) => (
   file ? `${file.name}|${file.size}|${file.lastModified}` : ''
 );
 
-
 const fullName = (user?: MatriculaUser | null) =>
   [user?.apellidoPaterno, user?.apellidoMaterno, user?.nombre].filter(Boolean).join(' ').trim();
 
@@ -1052,13 +1029,8 @@ const formatDate = (value?: string | null) => {
 };
 
 const calculateAgeToday = (value?: string | null) => {
-  const date = getDateOnlyLocalDate(value);
-  if (!date) return '';
-  const today = new Date();
-  let age = today.getFullYear() - date.getFullYear();
-  const monthDiff = today.getMonth() - date.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) age -= 1;
-  return Number.isFinite(age) && age >= 0 ? String(age) : '';
+  const age = ageInAppTimeZone(value);
+  return age === null ? '' : String(age);
 };
 
 const formatDateTimeForDisplay = (value?: string | null) => {
@@ -3239,7 +3211,10 @@ export function MatriculasPage() {
         setGrupoModuloFilterOptions(options);
         setSelectedGrupoModuloFilterIds((current) => {
           const availableIds = new Set(options.map((item) => String(item.id)));
-          const nextIds = current.filter((id) => availableIds.has(id));
+          const validIds = current.filter((id) => availableIds.has(id));
+          const nextIds = isDocente
+            ? validIds.length > 0 ? validIds.slice(0, 1) : options.length > 0 ? [String(options[0].id)] : []
+            : validIds;
           return areStringArraysEqual(current, nextIds) ? current : nextIds;
         });
       } catch (err) {
@@ -3289,13 +3264,13 @@ export function MatriculasPage() {
   type PageResult = { rows: MatriculaModuloRow<MatriculaListItem>[]; rowCount: number };
 
   const fetchMatriculas = useCallback(async () => {
-    if (loadingSettings) {
+    if (loadingSettings || (isDocente && loadingFilters)) {
       setLoading(true);
       return;
     }
 
     const semestreId = Number(selectedSemestreFilterId);
-    if (!semestreId) {
+    if (!semestreId || (isDocente && !grupoModuloFilterOptions.length)) {
       setPageRows([]);
       setRowCount(0);
       setLoading(false);
@@ -3335,6 +3310,9 @@ export function MatriculasPage() {
     directGrupoModuloId,
     isDirectGrupoModuloView,
     loadingSettings,
+    isDocente,
+    loadingFilters,
+    grupoModuloFilterOptions,
     selectedGrupoModuloFilterIds,
     selectedSemestreFilterId,
     pageCacheKey,
@@ -3397,6 +3375,14 @@ export function MatriculasPage() {
       : selectedGrupoModuloFilterOptions.length === 1
         ? selectedGrupoModuloFilterOptions[0]
         : null;
+
+    if (isDocente) {
+      const moduleTitle = (item: MatriculaGrupoModuloOption) =>
+        item.modulo?.titulo || item.modulo?.tituloComercial || `Modulo ${item.moduloId}`;
+      const names = targetGrupoModulo ? [moduleTitle(targetGrupoModulo)]
+        : Array.from(new Set(selectedGrupoModuloFilterOptions.map(moduleTitle)));
+      return names.length ? `Lista ${names.join(', ')}` : 'Lista de Matriculas';
+    }
 
     if (targetGrupoModulo) {
       const semestreLabel = getSemestreLabel(getGrupoModuloSemestreOption(targetGrupoModulo))
@@ -3949,7 +3935,7 @@ export function MatriculasPage() {
         width: 90,
         minWidth: 90,
         maxWidth: 90,
-        valueGetter: (_value, row: MatriculaListItem) => formatDate(row.fecha),
+        valueGetter: (_value, row: MatriculaListItem) => formatInstantDateInAppTimeZone(row.fecha, { dateStyle: 'short' }),
       },
       {
         field: 'estudiante',
@@ -4137,9 +4123,9 @@ export function MatriculasPage() {
       messageSeverity={error ? 'error' : 'warning'}
       title={pageTitle}
       commands={
-        <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
-          {!isDocente ? (
-            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: { xs: '100%', md: 'auto' }, minWidth: 0 }}>
+        <Stack direction="row" spacing={1.5} alignItems="center" flexWrap={isDocente ? { xs: 'wrap', md: 'nowrap' } : 'wrap'} useFlexGap>
+          {!isDirectGrupoModuloView || isDocente ? (
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: { xs: '100%', md: 'auto' }, flex: isDocente && !isDirectGrupoModuloView ? { md: '1 1 0' } : undefined, minWidth: 0 }}>
               <FormControl size="small" sx={{ width: 100, flexShrink: 0 }}>
                 <InputLabel id="matriculas-semestre-filter-label">Semestre</InputLabel>
                 <Select
@@ -4147,7 +4133,7 @@ export function MatriculasPage() {
                   label="Semestre"
                   value={selectedSemestreFilterId}
                   onChange={handleSemestreFilterChange}
-                  disabled={loadingSettings || semestreFilterOptions.length === 0}
+                  disabled={isDocente || loadingSettings || semestreFilterOptions.length === 0}
                   MenuProps={{ disableScrollLock: true }}
                 >
                   {semestreFilterOptions.map((semestre) => (
@@ -4157,13 +4143,31 @@ export function MatriculasPage() {
                   ))}
                 </Select>
               </FormControl>
-              <MultiSelectWithActions
+              {!isDirectGrupoModuloView && (isDocente ? (
+                <FormControl size="small" disabled={loadingFilters || grupoModuloFilterOptions.length === 0}
+                  sx={{ width: 0, flexGrow: 1, minWidth: 0, maxWidth: '100%' }}>
+                  <InputLabel id="matriculas-grupo-modulo-filter-label">Grupo-modulo</InputLabel>
+                  <Select
+                    labelId="matriculas-grupo-modulo-filter-label"
+                    label="Grupo-modulo"
+                    value={selectedGrupoModuloFilterIds[0] ?? ''}
+                    onChange={event => handleGrupoModuloFilterChange([String(event.target.value)])}
+                    MenuProps={{ disableScrollLock: true }}
+                  >
+                    {grupoModuloFilterOptions.map(grupoModulo => (
+                      <MenuItem key={grupoModulo.id} value={String(grupoModulo.id)}>
+                        {getGrupoModuloFilterLabel(grupoModulo)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              ) : <MultiSelectWithActions
                 label="Grupo-modulo"
                 labelId="matriculas-grupo-modulo-filter-label"
                 value={selectedGrupoModuloFilterIds}
                 onChange={handleGrupoModuloFilterChange}
                 disabled={loadingFilters || grupoModuloFilterOptions.length === 0}
-                sx={{ width: { xs: 0, md: 320 }, flexGrow: { xs: 1, md: 0 }, minWidth: 0, maxWidth: '100%' }}
+                sx={{ width: { xs: 0, md: 470 }, flexGrow: { xs: 1, md: 0 }, minWidth: 0, maxWidth: '100%' }}
                 options={grupoModuloFilterOptions.map((grupoModulo) => ({
                   value: String(grupoModulo.id),
                   label: getGrupoModuloFilterLabel(grupoModulo),
@@ -4179,7 +4183,7 @@ export function MatriculasPage() {
                   if (selected.length === 1) return grupoModuloFilterLabelById.get(selected[0]) || selected[0];
                   return `${selected.length} seleccionados`;
                 }}
-              />
+              />)}
             </Stack>
           ) : null}
           {canCreateRecords ? (

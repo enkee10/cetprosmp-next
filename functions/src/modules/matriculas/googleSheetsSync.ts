@@ -1,3 +1,4 @@
+import { formatDateOnly, formatInstantDateInAppTimeZone } from "../../shared/appDateTime.js";
 import { isDocenteRole } from "../core/authCore.js";
 import { getFirestore } from "firebase-admin/firestore";
 import { google, sheets_v4 } from "googleapis";
@@ -579,15 +580,7 @@ function formatLimaDateTime(value: unknown): string {
 
 function formatLimaDate(value: unknown): string {
   const text = asCleanString(value);
-  if (!text) return "";
-  const date = new Date(text);
-  if (Number.isNaN(date.getTime())) return text;
-  return new Intl.DateTimeFormat("es-PE", {
-    timeZone: LIMA_TIME_ZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(date);
+  return text ? formatDateOnly(text, { year: "numeric", month: "2-digit", day: "2-digit" }) || text : "";
 }
 
 function getDateMs(value: unknown): number {
@@ -1002,7 +995,9 @@ async function applyMatriculasSheetFormatting(
   const rowCount = sheet.properties?.gridProperties?.rowCount ?? 0;
   const columnCount = sheet.properties?.gridProperties?.columnCount ?? 0;
   const protectedRanges = sheet.protectedRanges ?? [];
-  const requests: sheets_v4.Schema$Request[] = [];
+  const requests: sheets_v4.Schema$Request[] = [{
+    updateSpreadsheetProperties: { properties: { timeZone: LIMA_TIME_ZONE }, fields: "timeZone" },
+  }];
   const targetRowCount = Math.max(rowCount, minimumRows, MATRICULAS_SHEETS_MIN_ROW_COUNT);
   const targetColumnCount = Math.max(columnCount, layout.headers.length);
 
@@ -1367,7 +1362,7 @@ function buildDocenteSheetRows(
     const recibo = asCleanString(matricula.recibo);
     const avatarMediano = user?.id ? avatarMedianoByUserId.get(user.id) : null;
     return [
-      formatLimaDate(matricula.fecha),
+      formatInstantDateInAppTimeZone(matricula.fecha, { year: "numeric", month: "2-digit", day: "2-digit" }),
       recibo ? `${matricula.id} - ${recibo}` : String(matricula.id),
       toUpperName(user?.apellidoPaterno),
       toUpperName(user?.apellidoMaterno),
@@ -1416,6 +1411,7 @@ async function writeDocenteMatriculadosSheet(params: {
     spreadsheetId: params.fileInfo.spreadsheetId,
     requestBody: {
       requests: [
+        { updateSpreadsheetProperties: { properties: { timeZone: LIMA_TIME_ZONE }, fields: "timeZone" } },
         {
           updateSheetProperties: {
             properties: {

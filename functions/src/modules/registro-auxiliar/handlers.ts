@@ -1,3 +1,4 @@
+import { isCalendarPeriodFinished, toDateOnlyInputValue } from "../../shared/appDateTime.js";
 import { https } from "firebase-functions/v1";
 import { savePartialRegistroGrades } from "./partialSave.js";
 import { curricularUnitIdsInOrder as buildUnidadIds, type CurricularUnitRelation } from "../academico/curricularUnitOrder.js";
@@ -488,6 +489,7 @@ const REGISTRO_AUXILIAR_ACCESS_QUERY = `
       grupo {
         id
         personalId
+        semestre { fin }
         semestreId
       }
     }
@@ -889,7 +891,7 @@ async function ensureRegistroAuxiliarAccess(
     personals: Array<{ id: number; userId?: number | null }>;
     grupoModulo: {
       id: number;
-      grupo?: { id?: number | null; personalId?: number | null; semestreId?: number | null } | null;
+      grupo?: { id?: number | null; personalId?: number | null; semestreId?: number | null; semestre?: { fin?: string | null } | null } | null;
     } | null;
   }, { uid: string; grupoModuloId: number }>(
     REGISTRO_AUXILIAR_ACCESS_QUERY,
@@ -902,6 +904,9 @@ async function ensureRegistroAuxiliarAccess(
   if (!personalId || !personalIds.has(personalId) || !currentSemestreId
     || response.data.grupoModulo?.grupo?.semestreId !== currentSemestreId) {
     throw new https.HttpsError("permission-denied", "No tienes permiso para abrir este modulo.");
+  }
+  if (action !== "view" && isCalendarPeriodFinished(response.data.grupoModulo?.grupo?.semestre?.fin)) {
+    throw new https.HttpsError("failed-precondition", "Modulo Finalizado. Las notas solo se pueden consultar.");
   }
 }
 
@@ -1511,9 +1516,7 @@ export const getRegistroAuxiliar = https.onCall(async (data, context) => {
         horasAcademicas: item.actividad.duracion ?? null,
       })),
       ...(response.data.practicasProgramadas ?? []).flatMap((item) => {
-        const fecha = item.fecha ? new Intl.DateTimeFormat("en-CA", {
-          timeZone: "America/Lima", year: "numeric", month: "2-digit", day: "2-digit",
-        }).format(new Date(item.fecha)) : null;
+        const fecha = toDateOnlyInputValue(item.fecha) || null;
         const jornada = fecha ? jornadasPpp.get(fecha) : null;
         return jornada ? [{
           id: `ppp-${item.id}`,
@@ -1610,6 +1613,7 @@ export const updateRegistroAuxiliarGrupoModuloFechas = https.onCall(async (data:
     throw new https.HttpsError("invalid-argument", "grupoModuloId is required.");
   }
 
+  await ensureRegistroAuxiliarAccess(context, grupoModuloId, "edit");
   const inicio = asNullableTimestamp(data?.inicio) ?? null;
   const fin = asNullableTimestamp(data?.fin) ?? null;
   const inicioTime = inicio ? Date.parse(inicio) : null;

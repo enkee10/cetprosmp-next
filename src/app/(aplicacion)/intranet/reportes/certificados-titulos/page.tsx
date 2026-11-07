@@ -1,5 +1,7 @@
 'use client';
 
+import { formatDateTimeInAppTimeZone } from '@/lib/dateOnly';
+
 import { useCurrentSemestresFilter } from '@/hooks/useCurrentSemestreFilter';
 import { useAppSettings } from '@/hooks/useAppSettings';
 
@@ -116,15 +118,7 @@ function selectionModelToIds(model: GridRowSelectionModel) {
   return Array.from(model.ids).map((id) => String(id));
 }
 
-function formatDateTime(value?: string | null) {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleString('es-PE', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  });
-}
+const formatDateTime = formatDateTimeInAppTimeZone;
 
 function openUrl(url?: string | null) {
   if (!url) return;

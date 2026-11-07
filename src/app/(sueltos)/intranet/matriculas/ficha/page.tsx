@@ -1,12 +1,13 @@
 'use client';
 
+import { formatInstantDateInAppTimeZone, dayInAppTimeZone, formatDateOnly, formatDateTimeInAppTimeZone, getDateOnlyLocalDate } from '@/lib/dateOnly';
+
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Box, Button, GlobalStyles } from '@mui/material';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useSearchParams } from 'next/navigation';
 import { app } from '@/lib/firebase';
-import { formatDateOnly, formatDateTimeInAppTimeZone, getDateOnlyLocalDate } from '@/lib/dateOnly';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import PrintDocumentViewer, {
   cmToMm,
@@ -279,7 +280,7 @@ const getPeriodoLectivo = (matricula: MatriculaFicha | null) => {
   const semestreTitle = asValue(matricula?.semestre?.titulo);
   const yearFromSemestre = semestreTitle.match(/\d{4}/)?.[0];
   const yearFromDate = asValue(matricula?.fecha).match(/\d{4}/)?.[0];
-  return yearFromSemestre || yearFromDate || String(new Date().getFullYear());
+  return yearFromSemestre || yearFromDate || dayInAppTimeZone().slice(0, 4);
 };
 
 const getSemestreShortLabel = (value: string | null | undefined) => {
@@ -300,7 +301,7 @@ const getTurnoValue = (link: MatriculaFichaModuloLink | null | undefined) => {
 
 const getAge = (value: string | null | undefined, reference: string | null | undefined) => {
   const birth = getDateOnlyLocalDate(value);
-  const date = getDateOnlyLocalDate(reference) ?? new Date();
+  const date = getDateOnlyLocalDate(reference) ?? getDateOnlyLocalDate(dayInAppTimeZone())!;
   if (!birth) return '';
 
   let age = date.getFullYear() - birth.getFullYear();
@@ -1603,7 +1604,7 @@ export default function FichaMatriculaProgramaPage() {
       return map;
     }, new Map<string, MatriculaFichaCambioModulo>()).values(),
   );
-  const fechaFicha = asDate(cambiosModuloEventos[0]?.fechaCambio || matricula?.fecha);
+  const fechaFicha = formatInstantDateInAppTimeZone(cambiosModuloEventos[0]?.fechaCambio || matricula?.fecha);
   const matriculaActorName = formatFichaPersonalActorName(matricula?.responsable, matricula?.responsableUser);
   const cambiosModuloTimeline: FichaModuloTimelineRow[] = cambiosModuloEventos.length > 0
     ? [
@@ -1753,7 +1754,7 @@ export default function FichaMatriculaProgramaPage() {
               duracion={asValue(modulo?.horas)}
               inicio={asDate(grupoModulo?.inicio)}
               termino={asDate(grupoModulo?.fin)}
-              fechaMatricula={asDate(matricula.fecha)}
+              fechaMatricula={formatInstantDateInAppTimeZone(matricula.fecha)}
               cambiosModuloText={cambiosModuloText}
             />
           ) : (

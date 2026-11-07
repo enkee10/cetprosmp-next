@@ -13,7 +13,7 @@ function load(file, dependencies = {}) {
   });
   return module.exports;
 }
-const gridFilters = load('functions/src/modules/core/matriculaListPagination.ts');
+const gridFilters = load('functions/src/modules/core/matriculaListPagination.ts', { '../../shared/appDateTime.js': require('../functions/lib/shared/appDateTime.js') });
 const pagination = load('functions/src/modules/core/userListPagination.ts', { './matriculaListPagination.js': gridFilters });
 const users = Array.from({ length: 3251 }, (_, index) => ({
   id: 3251 - index, documentId: `user-${3251 - index}`, username: index === 3200 ? 'Ángela Ríos' : `Usuario ${index}`,

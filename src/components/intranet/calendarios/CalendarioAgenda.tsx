@@ -13,7 +13,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { functions } from '@/lib/firebase';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 import { addCalendarDays, AgendaData, CALENDAR_EVENT_TYPES, calendarEventTypeLabel, CalendarEvent, CalendarView, countedMinutes, dayEventLayout, dayInLima, dayStart, monthDays, visibleDays } from '@/lib/calendar';
-import { formatDateTimeInAppTimeZone } from '@/lib/dateOnly';
+import { formatDateTimeInAppTimeZone, toDateOnlyInputValue } from '@/lib/dateOnly';
 import { EventoForm } from './EventoForm';
 import ProgramacionHorariaForm from './ProgramacionHorariaForm';
 
@@ -159,7 +159,7 @@ export default function CalendarioAgenda() {
             setGroupModule('');
             setDetails(null);
             if (selected?.inicio) {
-              const inicio = selected.inicio.slice(0, 10), fin = selected.fin?.slice(0, 10);
+              const inicio = toDateOnlyInputValue(selected.inicio), fin = toDateOnlyInputValue(selected.fin);
               if (day < inicio || (fin && day > fin)) setDay(inicio);
             }
           }}>

@@ -1,5 +1,7 @@
 'use client';
 
+import { toDateOnlyInputValue, getDateOnlyParts as calendarParts, formatDateOnly, getDateOnlyLocalDate } from '@/lib/dateOnly';
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
 import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
@@ -11,7 +13,6 @@ import IntranetDataGrid from '@/components/intranet/IntranetDataGrid';
 import IntranetListLayout from '@/components/intranet/IntranetListLayout';
 import Modal1 from '@/components/Modal1';
 import { CalendarioForm } from '@/components/intranet/calendarios/CalendarioForm';
-import { formatDateOnly, getDateOnlyLocalDate } from '@/lib/dateOnly';
 
 interface Calendario {
   id: number;
@@ -65,25 +66,7 @@ const getDateOrNull = (value: string | null | undefined) => {
   return getDateOnlyLocalDate(value);
 };
 
-const getDatePartsOrNull = (value: string | null | undefined) => {
-  if (!value) return null;
-  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (match) {
-    return {
-      year: Number(match[1]),
-      month: Number(match[2]),
-      day: Number(match[3]),
-    };
-  }
-
-  const date = getDateOrNull(value);
-  if (!date) return null;
-  return {
-    year: date.getFullYear(),
-    month: date.getMonth() + 1,
-    day: date.getDate(),
-  };
-};
+const getDatePartsOrNull = (value: string | null | undefined) => calendarParts(toDateOnlyInputValue(value));
 
 const getDateKey = (year: number, month: number, day: number) => year * 10000 + month * 100 + day;
 

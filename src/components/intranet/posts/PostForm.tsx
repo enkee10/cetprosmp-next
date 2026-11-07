@@ -1,5 +1,7 @@
 'use client';
 
+import { appTimestampIso, toDateTimeLocalInputValue } from '@/lib/dateOnly';
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, Resolver, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -98,20 +100,8 @@ const normalizeSlug = (value: string): string =>
 
 const asString = (value: unknown): string => (typeof value === 'string' ? value : '');
 
-const toDatetimeLocal = (value: unknown): string => {
-  const raw = asString(value);
-  if (!raw) return '';
-  const date = new Date(raw);
-  if (Number.isNaN(date.getTime())) return raw.slice(0, 16);
-  return date.toISOString().slice(0, 16);
-};
-
-const toIsoOrNull = (value: string | null): string | null => {
-  const raw = String(value || '').trim();
-  if (!raw) return null;
-  const date = new Date(raw);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
-};
+const toDatetimeLocal = (value: unknown): string => toDateTimeLocalInputValue(asString(value));
+const toIsoOrNull = appTimestampIso;
 
 export default function PostForm({
   onCancel,

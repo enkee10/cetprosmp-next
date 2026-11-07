@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { Publicacion } from '@/types/publicaciones';
-import { formatDateOnly } from '@/lib/dateOnly';
+import { formatInstantDateInAppTimeZone } from '@/lib/dateOnly';
 
 const rutaPublicaciones = path.join(process.cwd(), 'public', 'data', 'publicaciones.json');
 
@@ -28,5 +28,5 @@ export async function getPublicacionBySlug(slug: string): Promise<Publicacion | 
 }
 
 export function formatFecha(iso?: string | null) {
-    return formatDateOnly(iso, { dateStyle: 'long' });
+    return formatInstantDateInAppTimeZone(iso, { dateStyle: 'long' });
 }

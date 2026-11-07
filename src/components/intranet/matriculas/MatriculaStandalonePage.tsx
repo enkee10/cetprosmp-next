@@ -1,5 +1,7 @@
 'use client';
 
+import { dateOnlyTimestamp, formatDateOnly } from '@/lib/dateOnly';
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import { Box, Button, CircularProgress, Paper, Stack, Typography } from '@mui/material';
@@ -7,7 +9,6 @@ import { getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signInWithRe
 import { httpsCallable } from 'firebase/functions';
 import { MatriculaForm } from '@/components/intranet/matriculas/MatriculasClient';
 import { AppSettings, defaultAppSettings } from '@/hooks/useAppSettings';
-import { formatDateOnly } from '@/lib/dateOnly';
 import { auth, functions } from '@/lib/firebase';
 
 interface SemestreOption {
@@ -87,7 +88,7 @@ const normalizeStandaloneSettings = (value: Partial<AppSettings> | undefined | n
 };
 
 const getSemestreSortTime = (semestre: SemestreOption) => {
-  const time = new Date(`${semestre.inicio || ''}T00:00:00`).getTime();
+  const time = dateOnlyTimestamp(semestre.inicio) ?? NaN;
   return Number.isFinite(time) ? time : Number.POSITIVE_INFINITY;
 };
 

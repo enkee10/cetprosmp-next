@@ -1,3 +1,4 @@
+import { appTimestampIso, dayInAppTimeZone, toDateTimeLocalInputValue } from './dateOnly';
 export type CalendarView = 'anio' | 'mes' | 'semana' | 'dia';
 export const CALENDAR_EVENT_TYPES = ['clase', 'evaluacion', 'feriado', 'reunion', 'actividad', 'empleabilidad', 'ppp', 'efsrt', 'gestion', 'vacaciones_gestion', 'inicio_clases', 'fin_clases', 'dia_logro', 'otro'];
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -17,13 +18,9 @@ export interface CalendarEvent {
   grupoModuloIds: number[]; grupoIds: number[]; relaciones: { entidadTipo?: string | null; entidadId?: number | null }[];
 }
 export interface AgendaData { eventos: CalendarEvent[]; calendarios: CalendarOption[]; grupoModulos: GroupModuleOption[]; semestres?: CalendarSemestre[] }
-export const dayInLima = (value: string | Date) => new Intl.DateTimeFormat('en-CA', {
-  timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit',
-}).format(new Date(value));
-export const localInputInLima = (value: string) => value ? `${dayInLima(value)}T${new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-}).format(new Date(value))}` : '';
-export const limaInputToIso = (value: string) => value ? new Date(`${value}:00-05:00`).toISOString() : null;
+export const dayInLima = dayInAppTimeZone;
+export const localInputInLima = toDateTimeLocalInputValue;
+export const limaInputToIso = appTimestampIso;
 export const dayStart = (day: string) => Date.parse(`${day}T00:00:00-05:00`);
 export const addCalendarDays = (day: string, days: number) => new Date(Date.parse(`${day}T12:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
 export const weekday = (day: string) => new Date(`${day}T12:00:00Z`).getUTCDay();

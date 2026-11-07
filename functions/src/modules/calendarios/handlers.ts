@@ -1,3 +1,4 @@
+import { toTimeOnlyInputValue } from "../../shared/appDateTime.js";
 import { https } from "firebase-functions/v1";
 import {
   asNullableString,
@@ -548,8 +549,8 @@ export function generateEventoOcurrencias(
 
   const pushOccurrence = (date: Date) => {
     if (until && date.getTime() + limaOffset > until.getTime()) return false;
-    const localTurnoStart = turno?.horaInicio ? new Date(Date.parse(turno.horaInicio) - limaOffset).toISOString() : null;
-    const localTurnoEnd = turno?.horaFin ? new Date(Date.parse(turno.horaFin) - limaOffset).toISOString() : null;
+    const localTurnoStart = turno?.horaInicio ? `2000-01-01T${toTimeOnlyInputValue(turno.horaInicio, true)}Z` : null;
+    const localTurnoEnd = turno?.horaFin ? `2000-01-01T${toTimeOnlyInputValue(turno.horaFin, true)}Z` : null;
     const occurrenceStart = localTurnoStart ? applyTurnoTime(date, localTurnoStart) : date;
     let occurrenceEnd = turno?.horaFin
       ? applyTurnoTime(date, localTurnoEnd)

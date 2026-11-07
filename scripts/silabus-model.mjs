@@ -1,3 +1,4 @@
+import dates from '../functions/lib/shared/appDateTime.js';
 export const text = value => String(value ?? '').replace(/\s+/g, ' ').trim();
 export const normalize = value => text(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -95,7 +96,7 @@ export function allowedDay(day, days, semesterStart) {
 }
 
 // Turno timestamps store wall-clock times, as written by TurnoForm, not actual instants.
-export const turnoTime = timestamp => timestamp ? new Date(timestamp).toISOString().slice(11, 16) : null;
+export const turnoTime = timestamp => dates.toTimeOnlyInputValue(timestamp) || null;
 export const atLima = (day, time) => new Date(`${day}T${time}:00-05:00`).toISOString();
 
 export function groupPeriod(group, semesterStart, semesterEnd) {

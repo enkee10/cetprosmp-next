@@ -1,5 +1,7 @@
 'use client';
 
+import { formatDateTimeInAppTimeZone } from '@/lib/dateOnly';
+
 import { useCurrentSemestreFilter } from '@/hooks/useCurrentSemestreFilter';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -141,15 +143,7 @@ function getGrupoModuloLabel(option: GrupoModuloOption) {
   return String(option.moduloNombre || option.nombre || `Modulo ${option.id}`).trim();
 }
 
-function formatDateTime(value?: string | null) {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleString('es-PE', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  });
-}
+const formatDateTime = formatDateTimeInAppTimeZone;
 
 function openUrl(url?: string | null) {
   if (!url) return;

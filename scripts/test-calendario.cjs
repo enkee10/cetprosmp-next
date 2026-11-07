@@ -4,9 +4,10 @@ const ts = require('typescript');
 const { validateRules, distributeHours } = require('../functions/lib/modules/calendarios/scheduling.js');
 process.env.GOOGLE_CLOUD_PROJECT = 'cetprosmp-2026';
 const { generateEventoOcurrencias } = require('../functions/lib/modules/calendarios/handlers.js');
-const source = fs.readFileSync('src/lib/calendar.ts', 'utf8');
-const utility = { exports: {} };
-new Function('module', 'exports', ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText)(utility, utility.exports);
+const { buildSync } = require('esbuild');
+const { Module } = require('node:module');
+const utility = new Module(require('node:path').resolve('src/lib/calendar.ts'));
+utility._compile(buildSync({entryPoints:['src/lib/calendar.ts'], bundle:true, write:false, platform:'node', format:'cjs'}).outputFiles[0].text, 'calendar.cjs');
 const { dayInLima, dayStart, localInputInLima, limaInputToIso, monthDays, visibleDays, countedMinutes, dayEventLayout } = utility.exports;
 const rules = validateRules({ titulo: 'Sesiones', calendarioId: 1, horasObjetivo: 2.5, minutosHoraAcademica: 60,
   minutosSesion: 120, fechaInicio: '2026-05-04', fechaFin: '2026-05-10', diasSemana: [1, 2, 3, 4, 5], horaInicio: '08:00', horaFin: '12:00' });

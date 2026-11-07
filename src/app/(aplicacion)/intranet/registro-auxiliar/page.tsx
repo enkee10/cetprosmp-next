@@ -1,5 +1,6 @@
 'use client';
 
+import { useCalendarPeriodFinished } from '@/hooks/useCalendarPeriodFinished';
 import { isDocenteRole } from '@/lib/intranetPermissions';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -407,9 +408,6 @@ const unitLabel = (unidad: Unidad, position: number) =>
 const getGrupoModuloLabel = (grupoModulo: GrupoModuloOption) => {
   const titulo = grupoModulo.modulo?.titulo?.trim();
   const nombre = grupoModulo.nombre?.trim();
-  if (titulo && nombre && !nombre.toLocaleLowerCase('es-PE').startsWith(titulo.toLocaleLowerCase('es-PE'))) {
-    return `${titulo} — ${nombre}`;
-  }
   return nombre || `${grupoModulo.grupo.nombreDisplay || `Grupo ${grupoModulo.grupo.id}`} - ${
     titulo || grupoModulo.modulo?.tituloComercial || `Modulo ${grupoModulo.moduloId}`
   }`;
@@ -469,11 +467,14 @@ export default function RegistroAuxiliarPage() {
   const directGrupoModuloId = searchParams.get('grupoModuloId') || '';
   const isDirectRegistro = Boolean(directGrupoModuloId);
   const isDocente = isDocenteRole(user?.role) && Number(user?.level ?? 0) < 600;
-  const registroTitle = isDocente ? (getModuloName(registro) || PAGE_TITLE).toLocaleUpperCase('es-PE') : PAGE_TITLE;
-  const canEditRegistro = can('registro-auxiliar', 'edit');
+  const registroTitle = PAGE_TITLE;
+  const currentSemestre = settings.general.semestres.find(item => item.id === settings.general.semestreActualId);
+  const semestreFinished = useCalendarPeriodFinished(currentSemestre?.fin ?? registro?.grupo?.semestre?.fin);
+  const docenteReadOnly = isDocente && semestreFinished;
+  const canEditRegistro = can('registro-auxiliar', 'edit') && !docenteReadOnly;
   const canEditModuloFechas = canEditRegistro;
-  const canCreateRegistroMatriculas = can('registro-auxiliar', 'create');
-  const canDeleteRegistroMatriculas = can('registro-auxiliar', 'delete');
+  const canCreateRegistroMatriculas = can('registro-auxiliar', 'create') && !docenteReadOnly;
+  const canDeleteRegistroMatriculas = can('registro-auxiliar', 'delete') && !docenteReadOnly;
 
   useLayoutEffect(() => {
     const container = registroFrameRef.current;
@@ -615,11 +616,11 @@ export default function RegistroAuxiliarPage() {
   }, [availableSemestreIds, loadingOptions, semestres, settings.general.semestres, settings.general.semestreActualId]);
 
   const filteredGrupoModuloOptions = useMemo(
-    () =>
-      semestreId
-        ? grupoModuloOptions.filter((option) => String(option.grupo.semestreId ?? '') === semestreId)
-        : [],
-    [grupoModuloOptions, semestreId],
+    () => {
+      const selectedSemester = isDocente ? String(settings.general.semestreActualId ?? '') : semestreId;
+      return selectedSemester ? grupoModuloOptions.filter(option => String(option.grupo.semestreId ?? '') === selectedSemester) : [];
+    },
+    [grupoModuloOptions, semestreId, isDocente, settings.general.semestreActualId],
   );
 
   // Resolve the default in the same render as the options, without waiting for another effect.
@@ -1094,6 +1095,10 @@ export default function RegistroAuxiliarPage() {
     (rowIndex: number, columnIndex: number, rowSpan = 1, colSpan = 1) => ({
       onMouseDown: (event: React.MouseEvent<HTMLElement>) => {
         if (columnIndex < 0) return;
+        if (event.target instanceof HTMLElement && !event.target.closest('input, textarea, button, select, [contenteditable="true"]')) {
+          event.preventDefault();
+          registroScrollRef.current?.focus({ preventScroll: true });
+        }
         selectionPointerRef.current = { x: event.clientX, y: event.clientY };
         const endRow = rowIndex + rowSpan - 1;
         const endCol = columnIndex + colSpan - 1;
@@ -1121,6 +1126,40 @@ export default function RegistroAuxiliarPage() {
     if (!selectingCells) return;
     selectionPointerRef.current = { x: event.clientX, y: event.clientY };
   }, [selectingCells]);
+
+  const handleSelectionKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Delete' || !canEditRegistro || !registro || !selectionBounds) return;
+    const target = event.target;
+    if (target !== event.currentTarget && !(target instanceof HTMLInputElement
+      && (target.hasAttribute('data-nota-key') || target.hasAttribute('data-efsrt-key')))) return;
+    event.preventDefault();
+    const selectedIndicators = visibleIndicatorColumns.filter(({ indicador }) => {
+      const col = selectableColumnIndexByKey.get(`indicator-${indicador.id}`);
+      return col != null && col >= selectionBounds.minCol && col <= selectionBounds.maxCol;
+    });
+    const efsrtCol = selectableColumnIndexByKey.get('efsrt-ppp');
+    const clearEfsrt = efsrtCol != null && efsrtCol >= selectionBounds.minCol && efsrtCol <= selectionBounds.maxCol;
+    const next: Record<string, string> = {};
+    const nextEfsrt: Record<string, string> = {};
+    const changes: GradeChange[] = [];
+    const firstStudent = Math.max(0, selectionBounds.minRow - TABLE_HEADER_ROW_COUNT);
+    const lastStudent = Math.min(registro.estudiantes.length - 1, selectionBounds.maxRow - TABLE_HEADER_ROW_COUNT);
+    for (let index = firstStudent; index <= lastStudent; index += 1) {
+      const student = registro.estudiantes[index];
+      for (const { indicador } of selectedIndicators) {
+        next[notaKey(student.matriculaId, indicador.id)] = '';
+        changes.push({ kind: 'nota', matriculaId: student.matriculaId, indicadorCapacidadId: indicador.id, value: null });
+      }
+      if (clearEfsrt) {
+        nextEfsrt[efsrtPppKey(student.id)] = '';
+        changes.push({ kind: 'efsrt', moduloEstudianteId: student.id, value: null });
+      }
+    }
+    if (!changes.length) return;
+    setNotas(prev => ({ ...prev, ...next }));
+    setEfsrtPppNotas(prev => ({ ...prev, ...nextEfsrt }));
+    queueGrades(changes);
+  };
 
   const tableCopyMatrix = useMemo(() => {
     if (!registro) return [];
@@ -1273,6 +1312,7 @@ export default function RegistroAuxiliarPage() {
   }, [grupoModuloId, unitPage]);
 
   const updateNota = (matriculaId: number, indicadorId: number, value: string) => {
+    if (!canEditRegistro) return;
     const cleaned = value.replace(',', '.');
     if (cleaned !== '' && !/^\d{0,2}(\.\d{0,2})?$/.test(cleaned)) return;
     const numeric = parseNota(cleaned);
@@ -1292,6 +1332,7 @@ export default function RegistroAuxiliarPage() {
   };
 
   const updateEfsrtPppNota = (moduloEstudianteId: number, value: string) => {
+    if (!canEditRegistro) return;
     const cleaned = value.replace(',', '.');
     if (cleaned !== '' && !/^\d{0,2}(\.\d{0,2})?$/.test(cleaned)) return;
     const numeric = parseNota(cleaned);
@@ -1311,6 +1352,7 @@ export default function RegistroAuxiliarPage() {
   };
 
   const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>, position: CellPosition) => {
+    if (!canEditRegistro) { event.preventDefault(); return; }
     const text = event.clipboardData.getData('text');
     if (!text.includes('\t') && !text.includes('\n')) return;
     event.preventDefault();
@@ -1568,24 +1610,26 @@ export default function RegistroAuxiliarPage() {
         spacing={1}
         useFlexGap
         alignItems="center"
-        sx={{ flexWrap: 'wrap', mb: 0, pb: '5px', rowGap: 0.5 }}
+        sx={{ flexWrap: isDocente ? { xs: 'wrap', md: 'nowrap' } : 'wrap', mb: 0, pb: '5px', rowGap: 0.5 }}
       >
-        <Box sx={{ flex: '1 1 180px', minWidth: 0 }}>
+        <Box sx={{ flex: isDocente ? '0 0 100px' : '1 1 180px', minWidth: 0, ...(isDocente ? { width: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignSelf: 'stretch', minHeight: 32 } : {}) }}>
           <Typography component="h1" variant="h6" sx={{ fontWeight: 800, fontSize: 18, lineHeight: 1.1, m: 0, overflowWrap: 'anywhere' }}>
-            {registroTitle}
+            {isDocente ? 'RAE' : registroTitle}
           </Typography>
           {canEditRegistro && registro && !gradeSaveStatus.error && <Typography variant="caption" color="text.secondary" role="status" aria-live="polite" sx={{ display: 'block', m: 0, lineHeight: 1 }}>
             {gradeSaveStatus.saving || gradeSaveStatus.pending > 0 ? 'Guardando…' : 'Listo'}
           </Typography>}
         </Box>
-        {!isDirectRegistro && !isDocente && (
+        {docenteReadOnly && <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: { md: 'nowrap' } }}>(Modulo Finalizado)</Typography>}
+        {(!isDirectRegistro || isDocente) && (
           <>
-            <Stack direction="row" spacing={1} sx={{ flex: '1 1 300px', maxWidth: 628, minWidth: 0 }}>
-              <FormControl size="small" sx={{ width: 100, minWidth: 100, flexShrink: 0 }} disabled={!semestreOptions.length}>
-                <InputLabel>Semestre</InputLabel>
+            <Stack direction="row" spacing={1} sx={{ flex: isDirectRegistro ? '0 0 auto' : isDocente ? { xs: '1 1 240px', md: '1 1 0' } : { xs: '1 1 300px', md: '1 1 450px' }, maxWidth: isDocente ? { xs: 778, md: 'none' } : 778, minWidth: 0 }}>
+              <FormControl size="small" sx={{ width: 100, minWidth: 100, flexShrink: 0 }} disabled={isDocente || !semestreOptions.length}>
+                <InputLabel id="registro-semestre-label">Semestre</InputLabel>
                 <Select
+                  labelId="registro-semestre-label"
                   label="Semestre"
-                  value={semestreId}
+                  value={isDocente ? String(settings.general.semestreActualId ?? '') : semestreId}
                   MenuProps={selectMenuProps}
                   onChange={(event) => {
                     setSemestreId(String(event.target.value));
@@ -1602,9 +1646,10 @@ export default function RegistroAuxiliarPage() {
                   ))}
                 </Select>
               </FormControl>
-              <FormControl size="small" sx={{ flex: 1, minWidth: 0 }} disabled={loadingOptions || !semestreId || !filteredGrupoModuloOptions.length}>
-                <InputLabel>Modulo</InputLabel>
+              {!isDirectRegistro && <FormControl size="small" sx={{ flex: 1, minWidth: 0 }} disabled={loadingOptions || !filteredGrupoModuloOptions.length}>
+                <InputLabel id="registro-modulo-label">Modulo</InputLabel>
                 <Select
+                  labelId="registro-modulo-label"
                   label="Modulo"
                   value={grupoModuloId}
                   MenuProps={selectMenuProps}
@@ -1616,7 +1661,7 @@ export default function RegistroAuxiliarPage() {
                     </MenuItem>
                   ))}
                 </Select>
-              </FormControl>
+              </FormControl>}
             </Stack>
           </>
         )}
@@ -1662,6 +1707,8 @@ export default function RegistroAuxiliarPage() {
       >
         <Box
           ref={registroScrollRef}
+          tabIndex={-1}
+          onKeyDownCapture={handleSelectionKeyDown}
           onWheelCapture={stopScrollChaining}
           onMouseMove={handleSelectionMouseMove}
           sx={{
@@ -2404,7 +2451,7 @@ export default function RegistroAuxiliarPage() {
           ) : (
             <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
               {isDocente
-                ? 'Selecciona un modulo desde el menu Registros.'
+                ? 'Selecciona uno de tus modulos para cargar el registro.'
                 : 'Selecciona un semestre y modulo para cargar el registro.'}
             </Box>
           )}

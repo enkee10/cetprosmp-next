@@ -1,5 +1,7 @@
 'use client';
 
+import { toTimeOnlyInputValue } from '@/lib/dateOnly';
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, IconButton, Menu, MenuItem, Stack } from '@mui/material';
 import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
@@ -20,12 +22,7 @@ interface Turno {
   estado: string | null;
 }
 
-const formatTime = (value: string | null) => {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toISOString().slice(11, 16);
-};
+const formatTime = toTimeOnlyInputValue;
 
 export default function TurnosPage() {
   const [turnos, setTurnos] = useState<Turno[]>([]);

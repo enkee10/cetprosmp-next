@@ -5,6 +5,7 @@
  */
 
 import type { NextConfig } from "next";
+import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 
 const allowedDevOrigins = [
   "http://localhost:3000",
@@ -19,6 +20,8 @@ const allowedDevOrigins = [
 ];
 
 const nextConfig: NextConfig = {
+  // Firebase's runtime requires the standard production output directory.
+  distDir: '.next',
   async headers() {
     return [
       {
@@ -98,4 +101,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default (phase: string): NextConfig => ({
+  ...nextConfig,
+  distDir: phase === PHASE_DEVELOPMENT_SERVER ? '.next-dev' : '.next',
+});

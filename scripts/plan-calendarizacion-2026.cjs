@@ -1,3 +1,4 @@
+const { toTimeOnlyInputValue } = require('../functions/lib/shared/appDateTime.js');
 // Pure planner: reads an exported database, never connects to local or remote services.
 const fs = require('node:fs');
 const assert = require('node:assert/strict');
@@ -87,7 +88,7 @@ function scheduleActivities(activities, durations, slots, gm, shift) {
     let left = Math.round(durations.get(activity.id) * 60), segment = 1;
     while (left > 0) {
       const slot = slots[slotIndex]; assert.ok(slot, `No caben las actividades del grupo-módulo ${gm.id}.`);
-      const seconds = Math.min(left, Math.round(slot.minutes * 60) - used), start = Date.parse(`${slot.date}T${shift.hora_inicio.slice(11, 19)}-05:00`) + Math.round(slot.offset * 60000) + used * 1000;
+      const seconds = Math.min(left, Math.round(slot.minutes * 60) - used), start = Date.parse(`${slot.date}T${toTimeOnlyInputValue(shift.hora_inicio, true)}-05:00`) + Math.round(slot.offset * 60000) + used * 1000;
       segments.push({ activityId: activity.id, unitId: activity.unitId, segment: segment++, start: new Date(start).toISOString(), end: new Date(start + seconds * 1000).toISOString(), minutes: seconds / 60, phase: slot.phase });
       left -= seconds; used += seconds;
       if (used === Math.round(slot.minutes * 60)) { slotIndex++; used = 0; }
@@ -101,7 +102,7 @@ function reconcileTechnicalDates(plan, data, holidays) {
   const pending = [];
   const ordered = plan.groups.flatMap(g => [...g.slots.employ, ...g.slots.technical].map(s => ({ group: g, slot: s }))).sort((a,b) => Number(a.slot.phase==='tecnica')-Number(b.slot.phase==='tecnica') || a.slot.date.localeCompare(b.slot.date) || a.group.id-b.group.id);
   const accepted = [];
-  const bounds = (g,s) => {const start=Date.parse(`${s.date}T${g.shift.hora_inicio.slice(11,19)}-05:00`)+s.offset*60000;return {start,end:start+s.minutes*60000};};
+  const bounds = (g,s) => {const start=Date.parse(`${s.date}T${toTimeOnlyInputValue(g.shift.hora_inicio, true)}-05:00`)+s.offset*60000;return {start,end:start+s.minutes*60000};};
   const conflicts = (g,s) => {const t=bounds(g,s);return accepted.some(a=>a.group.teacherId===g.teacherId&&t.start<a.end&&t.end>a.start);};
   for(const {group:g,slot:s} of ordered) {
     if(conflicts(g,s)){assert.equal(s.phase,'tecnica','Los PDF asignan empleabilidad simultánea al mismo docente.');pending.push({group:g,slot:s});g.slots.technical=g.slots.technical.filter(a=>a!==s);}
@@ -159,7 +160,7 @@ function reconcileTechnicalDates(plan, data, holidays) {
 function makeJourneys(slots,segments,shift,practiceType){
   const phases=[...slots.technical,...slots.employ,...slots.practice];
   const localDate=value=>new Date(Date.parse(value)-5*3600000).toISOString().slice(0,10);
-  return [...new Set(phases.map(s=>s.date))].sort().map(date=>{const practice=slots.practice.find(s=>s.date===date),curr=[...slots.technical,...slots.employ].filter(s=>s.date===date),selected=practice?[practice]:curr;const base=Date.parse(`${date}T${shift.hora_inicio.slice(11,19)}-05:00`);return {date,type:practice?practiceType:'curricular',start:new Date(base+Math.round(Math.min(...selected.map(s=>s.offset))*60000)).toISOString(),end:new Date(base+Math.round(Math.max(...selected.map(s=>s.offset+s.minutes))*60000)).toISOString(),hours:sum(selected)/MINUTES,curricularHours:sum(curr)/MINUTES,pending:!segments.some(s=>localDate(s.start)===date)&&!practice};});
+  return [...new Set(phases.map(s=>s.date))].sort().map(date=>{const practice=slots.practice.find(s=>s.date===date),curr=[...slots.technical,...slots.employ].filter(s=>s.date===date),selected=practice?[practice]:curr;const base=Date.parse(`${date}T${toTimeOnlyInputValue(shift.hora_inicio, true)}-05:00`);return {date,type:practice?practiceType:'curricular',start:new Date(base+Math.round(Math.min(...selected.map(s=>s.offset))*60000)).toISOString(),end:new Date(base+Math.round(Math.max(...selected.map(s=>s.offset+s.minutes))*60000)).toISOString(),hours:sum(selected)/MINUTES,curricularHours:sum(curr)/MINUTES,pending:!segments.some(s=>localDate(s.start)===date)&&!practice};});
 }
 
 function buildPlan(data, options = {}) {

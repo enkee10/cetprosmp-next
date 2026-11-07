@@ -1,3 +1,4 @@
+import { formatInstantDateInAppTimeZone } from "../../shared/appDateTime.js";
 import { type MatriculaModuloRow } from './matriculaModuloRows.js';
 
 export type MatriculaGridRequest = {
@@ -20,7 +21,7 @@ const date = (value: unknown) => {
   const raw = String(value ?? '');
   const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
   if (!parts) return raw;
-  const calendarOnly = !/[T\s]\d{2}:\d{2}/.test(raw) || /^\d{4}-\d{2}-\d{2}T00:00:00(?:\.000)?Z$/i.test(raw);
+  const calendarOnly = !/[T\s]\d{2}:\d{2}/.test(raw) || /^\d{4}-\d{2}-\d{2}T00:00:00(?:\.0+)?Z$/i.test(raw);
   const parsed = calendarOnly ? new Date(Date.UTC(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]), 12)) : new Date(raw);
   return Number.isNaN(parsed.getTime()) ? raw : shortDate.format(parsed);
 };
@@ -34,7 +35,7 @@ export function matriculaGridValue(row: MatriculaModuloRow<MatriculaGridIndex>, 
   switch (field) {
     case 'estudiante': return name(user, true);
     case 'responsableFormulario': return name(row.responsableUser);
-    case 'fecha': return date(row.fecha);
+    case 'fecha': return formatInstantDateInAppTimeZone(row.fecha, { dateStyle: 'short' });
     case 'fechaNacimiento': return date(user?.fechaNacimiento);
     case 'edad': {
       const raw = String(user?.fechaNacimiento ?? '');

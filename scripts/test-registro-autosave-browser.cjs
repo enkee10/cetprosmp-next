@@ -62,14 +62,15 @@ const mocks = {
   '@/context/AuthContext': `const teacher=location.search.includes('docente');const user={uid:'teacher-fixture',level:teacher?100:600,role:teacher?4:'admin'};export const useAuth=()=>({user});`,
   '@/hooks/useIntranetPermissions': `export const useIntranetPermissions=()=>({can:()=>true});`,
   '@/hooks/useCurrentSemestreFilter': `import{useState}from'react';export const useCurrentSemestreFilter=()=>useState('1');`,
-  '@/hooks/useAppSettings': `import{defaultAppSettings}from'@/lib/appSettings';const settings={...defaultAppSettings,general:{...defaultAppSettings.general,semestres:[{id:1,titulo:'2026-2'}],semestreActualId:1}};export const useAppSettings=()=>({settings});`,
+  '@/hooks/useAppSettings': `import{defaultAppSettings}from'@/lib/appSettings';const settings={...defaultAppSettings,general:{...defaultAppSettings.general,semestres:[{id:1,titulo:'2026-2',fin:location.search.includes('finalizado')?'2000-01-01':'2026-12-23'}],semestreActualId:1}};export const useAppSettings=()=>({settings});`,
   '@/lib/matriculasListCache': `export const invalidateMatriculaLists=()=>{};`,
-  'next/navigation': `const params=new URLSearchParams('grupoModuloId=50');export const useSearchParams=()=>params;`,
+  'next/navigation': `const params=new URLSearchParams(location.search.includes('convencional')?'':'grupoModuloId=50');export const useSearchParams=()=>params;`,
   'firebase/auth': `const auth={currentUser:{uid:'teacher-fixture',getIdToken:async()=>''}};export const getAuth=()=>auth;`,
   'firebase/functions': `const f={};export const getFunctions=()=>f;export const httpsCallable=(_,name)=>async input=>{
     window.calls.push({name,input});
     if(name==='getDatosGeneralesGlobales')return{data:{}};
     if(name==='getRegistroAuxiliar')return{data:window.fixture};
+    if(name==='listRegistroAuxiliarOpciones')return{data:{grupos:[{id:40,semestreId:1,nombreDisplay:'Mi grupo',grupoModulos:[{id:50,grupoId:40,moduloId:10,nombre:'Primer modulo [Tarde] (Grupo A)',modulo:{titulo:'Nombre oficial del primer modulo'}},{id:51,grupoId:40,moduloId:11,nombre:'Segundo modulo',modulo:{titulo:'Segundo modulo'}}]}],semestres:[{id:1,titulo:'2026-2'}]}};
     return new Promise((resolve,reject)=>window.requests.push({name,input,resolve:data=>resolve({data}),reject:()=>reject(Error('Sin conexión de prueba'))}));
   };`,
 };
@@ -91,23 +92,105 @@ const mocks = {
     const cell = (student, indicator) => page.locator(`[data-nota-key="${student}:${indicator}"]`);
     const resolveSave = async index => page.evaluate(index => { const request = window.requests[index]; request.resolve({ saved: request.input.notas.length, efsrtPppSaved: request.input.efsrtPppPromedios.length }); }, index);
     const noReload = async () => assert.equal(await page.evaluate(() => window.calls.filter(call => call.name === 'getRegistroAuxiliar').length), 1);
+    await page.goto('http://127.0.0.1:3001/?deleteRange'); await cell(201, 3).waitFor();
+    await cell(201, 3).evaluate(element => {
+      const data = new DataTransfer(); data.setData('text', '10\t11\t12\n13\t14\t15\n16\t17\t18');
+      element.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+    });
+    await page.waitForFunction(() => window.requests.length === 1); await resolveSave(0);
+    await page.waitForFunction(() => !Object.keys(localStorage).some(key => key.startsWith('cetpro.registro-notas')));
+    const selectedInput = await cell(201, 3).elementHandle();
+    await page.locator('[data-efsrt-key="302"]').click();
+    await cell(201, 3).click({ modifiers: ['Shift'] });
+    await page.keyboard.press('Delete');
+    for (const student of [201, 202]) {
+      for (const indicator of [3, 4]) assert.equal(await cell(student, indicator).inputValue(), '');
+      assert.equal(await page.locator(`[data-efsrt-key="${student + 100}"]`).inputValue(), '');
+      assert.equal(await page.locator(`[data-registro-unit-average-key="${student}:1"]`).innerText(), '');
+    }
+    assert.equal(await cell(203, 3).inputValue(), '16', 'Delete preserves notes outside the selected rectangle');
+    assert.equal(await page.locator('[data-efsrt-key="303"]').inputValue(), '18');
+    assert.equal(await selectedInput.evaluate(element => element === document.querySelector('[data-nota-key="201:3"]')), true);
+    await page.waitForFunction(() => window.requests.length === 2);
+    const cleared = await page.evaluate(() => window.requests[1].input);
+    assert.equal(cleared.notas.length, 4);
+    assert.equal(cleared.efsrtPppPromedios.length, 2);
+    assert(cleared.notas.every(row => row.nota === null) && cleared.efsrtPppPromedios.every(row => row.promedioFinal === null));
+    await resolveSave(1);
+    await page.waitForFunction(() => !Object.keys(localStorage).some(key => key.startsWith('cetpro.registro-notas')));
+    // Selecting across noneditable cells also works when no grade input has focus.
+    await page.locator('[data-registro-unit-average-key="203:1"]').click();
+    await page.locator('[data-registro-student-id="303"] td').nth(1).click({ modifiers: ['Shift'] });
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('tabindex')), '-1');
+    await page.keyboard.press('Delete');
+    assert.equal(await cell(203, 3).inputValue(), '');
+    assert.equal(await cell(203, 4).inputValue(), '');
+    assert.equal(await page.locator('[data-efsrt-key="303"]').inputValue(), '18');
+    await page.waitForFunction(() => window.requests.length === 3); await resolveSave(2);
+    await page.waitForFunction(() => !Object.keys(localStorage).some(key => key.startsWith('cetpro.registro-notas')));
+    await noReload();
     await page.goto('http://127.0.0.1:3001/?docente'); await cell(201, 3).waitFor();
-    const teacherTitle = fixture.grupoModulo.modulo.titulo.toLocaleUpperCase('es-PE');
-    const teacherHeading = page.getByRole('heading', { level: 1, name: teacherTitle, exact: true });
-    await teacherHeading.waitFor();
-    assert.equal(await page.title(), teacherTitle);
+    assert.equal(await page.getByRole('heading', { level: 1, name: 'RAE', exact: true }).innerText(), 'RAE');
+    const semester = page.getByRole('combobox', {name:'Semestre', exact:true});
+    assert.equal(await semester.isDisabled(), true);
+    assert.equal(await semester.innerText(), '2026-2');
     for (const width of [390, 700, 1000]) {
       await page.setViewportSize({ width, height: 1100 });
-      const titleBox = await teacherHeading.boundingBox();
-      const status = teacherHeading.locator('..').getByRole('status');
-      const statusBox = await status.boundingBox();
+      const status = page.getByRole('status');
+      const statusBox = await status.boundingBox(), semesterBox = await semester.boundingBox();
       const buttonBox = await page.getByRole('button', { name: 'Vista previa de impresion', exact: true }).boundingBox();
-      assert(buttonBox.y < statusBox.y + statusBox.height, `At ${width}px the buttons stay alongside the title`);
-      assert(Math.abs(statusBox.y - titleBox.y - titleBox.height) < 1, 'Save status sits directly below the title');
+      assert.equal(await status.innerText(), 'Listo');
+      assert(buttonBox.y < statusBox.y + statusBox.height, 'Buttons stay on the toolbar');
+      assert(Math.abs(statusBox.y + statusBox.height - semesterBox.y - semesterBox.height) < 2, 'Status stays at the bottom of the toolbar');
       assert.equal(await status.evaluate(element => getComputedStyle(element).marginBottom), '0px');
     }
     await page.setViewportSize({ width: 1500, height: 1100 });
     assert.equal(await page.getByText(`REGISTRO AUXILIAR DE EVALUACION ${fixture.grupo.semestre.titulo}`, { exact: true }).count(), 1, 'The table keeps its register heading for teachers');
+    // Teacher uses the conventional entry and chooses only supplied assigned modules.
+    await page.goto('http://127.0.0.1:3001/?docente&convencional');
+    await cell(201, 3).waitFor();
+    const moduleSelector = page.getByRole('combobox', { name: 'Modulo', exact: true });
+    assert.equal(await page.getByRole('combobox', {name:'Semestre', exact:true}).isDisabled(), true);
+    let previousModuleWidth = Infinity;
+    for (const width of [1500, 1200, 1000, 900]) {
+      await page.setViewportSize({width,height:1100});
+      await page.evaluate(width=>{document.getElementById('root').style.width=(width-250)+'px';},width);
+      const semesterBox=await page.getByRole('combobox',{name:'Semestre',exact:true}).locator('..').boundingBox();
+      const moduleBox=await moduleSelector.locator('..').boundingBox();
+      const actionBox=await page.getByRole('button',{name:'Vista previa de impresion',exact:true}).locator('../..').boundingBox();
+      const statusBox=await page.getByRole('status').boundingBox();
+      assert(Math.abs(semesterBox.y-moduleBox.y)<2,'Register filters remain on one desktop row');
+      assert(Math.abs(actionBox.y+actionBox.height/2-moduleBox.y-moduleBox.height/2)<2,'Register actions remain on the same desktop row');
+      assert(Math.abs(actionBox.x-moduleBox.x-moduleBox.width-8)<2,'The register module selector uses all space up to the actions');
+      assert(Math.abs(statusBox.width-100)<1,'The RAE title and status keep their fixed 100px width');
+      assert(moduleBox.width<previousModuleWidth,'The register selector shrinks with the desktop viewport');
+      previousModuleWidth=moduleBox.width;
+    }
+    await page.setViewportSize({width:1500,height:1100});
+    await page.evaluate(()=>{document.getElementById('root').style.width='';});
+    await moduleSelector.click();
+    assert.equal(await page.getByRole('option').count(), 2);
+    assert.deepEqual(await page.getByRole('option').allTextContents(), ['Primer modulo [Tarde] (Grupo A)', 'Segundo modulo'], 'Module labels preserve the saved name without adding the official title');
+    await page.getByRole('option').last().click();
+    await page.waitForFunction(() => window.calls.some(call => call.name === 'getRegistroAuxiliar' && call.input.grupoModuloId === 51));
+    await page.goto('http://127.0.0.1:3001/?docente&finalizado');
+    await cell(201, 3).waitFor();
+    await page.getByText('(Modulo Finalizado)', {exact:true}).waitFor();
+    assert.equal(await cell(201, 3).getAttribute('readonly'), '');
+    await cell(201, 3).click(); await cell(202, 4).click({ modifiers: ['Shift'] });
+    await page.keyboard.press('Delete');
+    assert.equal(await cell(201, 3).inputValue(), '14', 'Delete respects the closed-semester read-only state');
+    assert.equal(await page.getByRole('status').count(), 0);
+    assert.equal(await page.getByRole('button', { name: 'Vista previa de impresion', exact: true }).isEnabled(), true);
+    assert.equal(await page.evaluate(() => window.calls.some(call => call.name === 'saveRegistroAuxiliar')), false);
+    // Open register crosses Peru midnight without reloading.
+    await page.clock.install({time: new Date('2026-12-24T04:59:59Z')});
+    await page.goto('http://127.0.0.1:3001/?docente'); await cell(201, 3).waitFor();
+    assert.equal(await cell(201, 3).getAttribute('readonly'), null);
+    await page.clock.runFor(1100);
+    await page.getByText('(Modulo Finalizado)', {exact:true}).waitFor();
+    assert.equal(await cell(201, 3).getAttribute('readonly'), '');
+    await page.clock.setFixedTime(new Date());
     await page.goto('http://127.0.0.1:3001/'); await cell(201, 3).waitFor();
     const registerHeading = page.getByRole('heading', { level: 1, name: 'Registro Auxiliar de Evaluación', exact: true });
     const saveStatus = registerHeading.locator('..').getByRole('status');

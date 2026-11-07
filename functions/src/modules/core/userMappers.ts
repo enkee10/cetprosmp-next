@@ -1,3 +1,4 @@
+import { appTimestampIso, timeOnlyTimestamp } from "../../shared/appDateTime.js";
 import {
   DataConnectActEconomicaInput,
   DataConnectActividadInput,
@@ -56,23 +57,9 @@ export function asNullableTimestamp(value: unknown): string | null | undefined {
   if (typeof value === "string") {
     const raw = value.trim();
     if (!raw) return null;
-    const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
-    if (ymd) {
-      const year = Number(ymd[1]);
-      if (year < 1900 || year > 2100) return null;
-      const dt = new Date(`${raw}T00:00:00.000Z`);
-      if (Number.isNaN(dt.getTime())) return null;
-      return dt.toISOString().slice(0, 10) === raw ? dt.toISOString() : null;
-    }
-    const iso = /^(\d{4})-(\d{2})-(\d{2})T/.exec(raw);
-    if (iso) {
-      const year = Number(iso[1]);
-      if (year < 1900 || year > 2100) return null;
-      const dt = new Date(raw);
-      if (Number.isNaN(dt.getTime())) return null;
-      return dt.toISOString();
-    }
-    return null;
+    const year = Number(raw.slice(0, 4));
+    if (year < 1900 || year > 2100) return null;
+    return appTimestampIso(raw);
   }
   if (typeof value === "object" && value !== null && "_seconds" in (value as Record<string, unknown>)) {
     const seconds = Number((value as { _seconds: number })._seconds);
@@ -349,8 +336,8 @@ export function buildCalendarioDataFromInput(input: Record<string, unknown>): Da
 export function buildTurnoDataFromInput(input: Record<string, unknown>) {
   return compactUndefined({
     nombre: asNullableString(input.nombre),
-    horaInicio: asNullableTimestamp(input.horaInicio),
-    horaFin: asNullableTimestamp(input.horaFin),
+    horaInicio: input.horaInicio === undefined ? undefined : timeOnlyTimestamp(asNullableString(input.horaInicio)),
+    horaFin: input.horaFin === undefined ? undefined : timeOnlyTimestamp(asNullableString(input.horaFin)),
     estado: asNullableString(input.estado),
     fechaCreacion: asNullableTimestamp(input.fechaCreacion),
     fechaActualizacion: asNullableTimestamp(input.fechaActualizacion),

@@ -1,3 +1,4 @@
+import { dayInAppTimeZone, getDateOnlyParts, toDateOnlyInputValue, ageInAppTimeZone } from "../../shared/appDateTime.js";
 import { randomUUID } from "crypto";
 import { execFile } from "child_process";
 import { mkdtemp, readFile, rm, writeFile } from "fs/promises";
@@ -1024,22 +1025,7 @@ function getDateValue(value: string | null | undefined) {
 }
 
 function getCalendarDateParts(value: string | null | undefined) {
-  if (!value) return null;
-  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value).trim());
-  if (!match) return null;
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const date = new Date(year, month - 1, day);
-  if (
-    Number.isNaN(date.getTime()) ||
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
-    return null;
-  }
-  return { year, month, day };
+  return getDateOnlyParts(toDateOnlyInputValue(value));
 }
 
 function formatDate(value: string | null | undefined) {
@@ -1102,7 +1088,7 @@ function getCivilDatePartsFromValue(value: string | Date | null | undefined) {
   const calendarDate = typeof value === "string" ? getCalendarDateParts(value) : null;
   if (calendarDate) return calendarDate;
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return { year: value.getUTCFullYear(), month: value.getUTCMonth() + 1, day: value.getUTCDate() };
+    return getDateOnlyParts(dayInAppTimeZone(value));
   }
   return null;
 }
@@ -1145,16 +1131,8 @@ function getDocumentDateLong(data: ReporteDocumentoData, type: "acta" | "certifi
 }
 
 function calculateAge(dateValue?: string | null, at = new Date()) {
-  if (!dateValue) return "";
-  const calendarDate = getCalendarDateParts(dateValue);
-  const birthDate = calendarDate
-    ? new Date(calendarDate.year, calendarDate.month - 1, calendarDate.day)
-    : new Date(dateValue);
-  if (Number.isNaN(birthDate.getTime())) return "";
-  let age = at.getFullYear() - birthDate.getFullYear();
-  const monthDelta = at.getMonth() - birthDate.getMonth();
-  if (monthDelta < 0 || (monthDelta === 0 && at.getDate() < birthDate.getDate())) age -= 1;
-  return age >= 0 && age < 130 ? age : "";
+  const age = ageInAppTimeZone(dateValue, at);
+  return age !== null && age < 130 ? age : "";
 }
 
 function normalizeSex(value?: string | null) {

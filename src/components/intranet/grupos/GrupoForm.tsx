@@ -1,5 +1,7 @@
 'use client';
 
+import { isCalendarPeriodActive, getDateOnlyLocalDate, toDateOnlyInputValue } from '@/lib/dateOnly';
+
 import { useEffect, useMemo, useState } from 'react';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import MultiSelectWithActions from '@/components/intranet/MultiSelectWithActions';
@@ -25,7 +27,6 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { useRouter } from 'next/navigation';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
-import { getDateOnlyLocalDate, toDateOnlyInputValue } from '@/lib/dateOnly';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { getPersonalShortName } from './personalName';
 import { isNombreGrupoGenerado, nombreGrupoCalculado, tituloModulo, tituloModulos } from './nombres';
@@ -260,24 +261,8 @@ const isAssignablePersonalForGrupo = (personal: PersonalOption) => {
   );
 };
 
-const isSemestreVigente = (semestre: SemestreOption, date: Date) => {
-  if (!semestre.inicio || !semestre.fin) return false;
-  const inicio = getDateOrNull(semestre.inicio);
-  const fin = getDateOrNull(semestre.fin);
-  if (!inicio || !fin) return false;
-
-  const finInclusivo = new Date(fin);
-  if (
-    finInclusivo.getUTCHours() === 0 &&
-    finInclusivo.getUTCMinutes() === 0 &&
-    finInclusivo.getUTCSeconds() === 0 &&
-    finInclusivo.getUTCMilliseconds() === 0
-  ) {
-    finInclusivo.setUTCHours(23, 59, 59, 999);
-  }
-
-  return inicio.getTime() <= date.getTime() && date.getTime() <= finInclusivo.getTime();
-};
+const isSemestreVigente = (semestre: SemestreOption, date = new Date()) =>
+  Boolean(semestre.inicio && semestre.fin) && isCalendarPeriodActive(semestre, date);
 
 export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: GrupoFormProps) {
   const [nombreDisplay, setNombreDisplay] = useState('');

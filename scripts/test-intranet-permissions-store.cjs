@@ -1,0 +1,53 @@
+const assert = require('node:assert/strict');
+const { buildSync } = require('esbuild');
+const { Module } = require('node:module');
+const mod = new Module(__filename);
+mod._compile(buildSync({ entryPoints: ['src/lib/intranetPermissionsStore.ts'], bundle: true, write: false, platform: 'node', format: 'cjs' }).outputFiles[0].text, __filename);
+const { createIntranetPermissionsStore, PERMISSIONS_CACHE_TTL } = mod.exports;
+const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
+const permission = entity => ({ entity, canView: true });
+
+(async () => {
+  let clock = 1000, calls = 0, request = deferred();
+  const cache = new Map([['teacher|4', { savedAt: clock, permissions: [permission('matriculas')] }]]);
+  const store = createIntranetPermissionsStore(() => { calls++; return request.promise; }, {
+    read: key => cache.get(key), write: (key, value) => cache.set(key, value), remove: key => cache.delete(key),
+  }, () => clock);
+  const first = store.activate('teacher|4');
+  assert.equal(store.getSnapshot().loading, false, 'A reload restores the menu without waiting for the network');
+  assert.equal(store.getSnapshot().permissions[0].entity, 'matriculas');
+  const permissions = store.getSnapshot().permissions;
+  const consumers = Array.from({ length: 8 }, () => store.activate('teacher|4'));
+  await Promise.resolve();
+  assert.equal(calls, 1, 'Desktop, mobile and header consumers share one request');
+  request.resolve([permission('matriculas')]); await Promise.all([first, ...consumers]);
+  assert.equal(store.getSnapshot().permissions, permissions, 'Unchanged permissions do not rebuild the menu');
+  await store.activate('teacher|4'); await store.refreshIfStale(); assert.equal(calls, 1, 'Navigating does not refetch permissions');
+  clock += PERMISSIONS_CACHE_TTL;
+  request = deferred();
+  const refresh = store.refreshIfStale(); await Promise.resolve(); assert.equal(calls, 2);
+  request.resolve([permission('registro-auxiliar')]); await refresh;
+  assert.equal(store.getSnapshot().permissions[0].entity, 'registro-auxiliar', 'Background checks replace revoked permissions');
+  request = deferred();
+  const stale = store.reload(); await Promise.resolve();
+  await store.activate(null);
+  assert.equal(cache.has('teacher|4'), false, 'Logout removes the previous user cache');
+  request.resolve([permission('users')]); await stale;
+  assert.equal(store.getSnapshot().permissions.length, 0, 'A late response cannot restore signed-out permissions');
+  request = deferred();
+  const other = store.activate('other|3');
+  assert.equal(store.getSnapshot().loading, true);
+  assert.equal(store.getSnapshot().permissions.length, 0, 'Another user never sees previous permissions');
+  request.resolve([permission('posts')]); await other;
+  request = deferred();
+  const changedRole = store.activate('other|4');
+  assert.equal(store.getSnapshot().permissions.length, 0, 'Changing role invalidates the previous permissions');
+  request.reject(Error('Offline')); await changedRole;
+  assert.equal(store.getSnapshot().loading, false);
+  assert.equal(store.getSnapshot().permissions.length, 0, 'A first-load failure grants no permissions');
+  const expired = createIntranetPermissionsStore(async () => [], { read: () => ({ savedAt: 0, permissions: [permission('users')] }), write() {}, remove() {} }, () => PERMISSIONS_CACHE_TTL + 1);
+  const expiredLoad = expired.activate('expired');
+  assert.equal(expired.getSnapshot().permissions.length, 0, 'Expired cached grants stay hidden until revalidated');
+  await expiredLoad;
+  console.log('Menu: cached immediate rendering, shared request, background revocation, navigation, role change, logout races and expiration verified.');
+})().catch(error => { console.error(error); process.exitCode = 1; });

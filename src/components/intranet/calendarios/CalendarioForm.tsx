@@ -1,5 +1,7 @@
 'use client';
 
+import { getDateOnlyParts as calendarParts, isCalendarPeriodActive, getDateOnlyLocalDate, toDateOnlyInputValue } from '@/lib/dateOnly';
+
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
@@ -19,7 +21,6 @@ import {
 } from '@mui/material';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
-import { getDateOnlyLocalDate, toDateOnlyInputValue } from '@/lib/dateOnly';
 import { useAppSettings } from '@/hooks/useAppSettings';
 
 interface CalendarioFormProps {
@@ -84,25 +85,7 @@ const getDateOrNull = (value: string | null | undefined) => {
   return getDateOnlyLocalDate(value);
 };
 
-const getDatePartsOrNull = (value: string | null | undefined) => {
-  if (!value) return null;
-  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (match) {
-    return {
-      year: Number(match[1]),
-      month: Number(match[2]),
-      day: Number(match[3]),
-    };
-  }
-
-  const date = getDateOrNull(value);
-  if (!date) return null;
-  return {
-    year: date.getFullYear(),
-    month: date.getMonth() + 1,
-    day: date.getDate(),
-  };
-};
+const getDatePartsOrNull = (value: string | null | undefined) => calendarParts(toDateOnlyInputValue(value));
 
 const getDateKey = (year: number, month: number, day: number) => year * 10000 + month * 100 + day;
 
@@ -144,32 +127,8 @@ const getCalendarioPeriodoSuffix = (
   return calendarioFinDate.getTime() < limitePrimerBloque.getTime() ? '-1' : '-2';
 };
 
-const isSemestreVigente = (semestre: SemestreOption, date: Date) => {
-  if (!semestre.inicio || !semestre.fin) return false;
-  const inicio = new Date(semestre.inicio);
-  const fin = new Date(semestre.fin);
-  if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) return false;
-
-  const finInclusivo = new Date(fin);
-  const endsAtLocalMidnight =
-    finInclusivo.getHours() === 0 &&
-    finInclusivo.getMinutes() === 0 &&
-    finInclusivo.getSeconds() === 0 &&
-    finInclusivo.getMilliseconds() === 0;
-  const endsAtUtcMidnight =
-    finInclusivo.getUTCHours() === 0 &&
-    finInclusivo.getUTCMinutes() === 0 &&
-    finInclusivo.getUTCSeconds() === 0 &&
-    finInclusivo.getUTCMilliseconds() === 0;
-
-  if (endsAtUtcMidnight) {
-    finInclusivo.setUTCHours(23, 59, 59, 999);
-  } else if (endsAtLocalMidnight) {
-    finInclusivo.setHours(23, 59, 59, 999);
-  }
-
-  return inicio.getTime() <= date.getTime() && date.getTime() <= finInclusivo.getTime();
-};
+const isSemestreVigente = (semestre: SemestreOption, date = new Date()) =>
+  Boolean(semestre.inicio && semestre.fin) && isCalendarPeriodActive(semestre, date);
 
 const getSemestreAnioId = (semestre: SemestreOption | null | undefined) => semestre?.anioId ?? semestre?.anio?.id ?? null;
 

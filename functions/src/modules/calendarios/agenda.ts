@@ -1,3 +1,4 @@
+import { appTimestampIso, dateOnlyTimestamp, calendarDayEndExclusive } from "../../shared/appDateTime.js";
 import { https, runWith } from "firebase-functions/v1";
 import { createHash } from "node:crypto";
 import { dataConnect } from "../core/dataConnectCore.js";
@@ -81,7 +82,8 @@ export async function loadAgenda(inicio: string, fin: string) {
 }
 
 const range = (data: Record<string, unknown>) => {
-  const inicio = new Date(String(data.inicio)).toISOString(); const fin = new Date(String(data.fin)).toISOString();
+  const inicio = appTimestampIso(String(data.inicio)); const fin = appTimestampIso(String(data.fin));
+  if (!inicio || !fin) throw new Error("Fechas invalidas.");
   if (fin <= inicio || Date.parse(fin) - Date.parse(inicio) > 370 * 86400000) throw new Error("El intervalo debe ser de hasta un año.");
   return { inicio, fin };
 };
@@ -137,8 +139,8 @@ async function preview(rules: ScheduleRules) {
     }
   }
   const proposed = distributeHours(rules, holidays, busy);
-  if (proposed.sesiones.some(row => (calendar.inicio && Date.parse(row.fechaInicio) < Date.parse(calendar.inicio))
-    || (calendar.fin && Date.parse(row.fechaFin) > Date.parse(calendar.fin)))) {
+  if (proposed.sesiones.some(row => (calendar.inicio && Date.parse(row.fechaInicio) < (dateOnlyTimestamp(calendar.inicio) ?? -Infinity))
+    || (calendar.fin && Date.parse(row.fechaFin) > (calendarDayEndExclusive(calendar.fin) ?? Infinity)))) {
     throw new https.HttpsError("invalid-argument", "Las sesiones deben quedar dentro de las fechas y horas del calendario.");
   }
   const huella = createHash("sha256").update(JSON.stringify({ rules, sesiones: proposed.sesiones })).digest("hex");

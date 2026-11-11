@@ -35,7 +35,9 @@ import { useCurrentSemestreFilter } from '@/hooks/useCurrentSemestreFilter';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { useRegistroGradeQueue } from '@/hooks/useRegistroGradeQueue';
 import { useRegistroColumnWidths } from '@/hooks/useRegistroColumnWidths';
-import type { GradeChange } from '@/lib/registroGradeQueue';
+import { gradeChangeKey, type GradeChange } from '@/lib/registroGradeQueue';
+import { RegistroGradeHistory } from '@/lib/registroGradeHistory';
+import { repeatRegistroFill, type RegistroFillRange } from '@/lib/registroFill';
 import { invalidateMatriculaLists } from '@/lib/matriculasListCache';
 import { app } from '@/lib/firebase';
 import { formatDateOnly, toDateOnlyInputValue } from '@/lib/dateOnly';
@@ -216,6 +218,23 @@ type CellSelection = {
   endCol: number;
 };
 
+type GradeHistoryLocation = { page: number; cell: GradeChange };
+type GradeValues = { notas: Record<string, string>; efsrtPppNotas: Record<string, string> };
+type EditableGridColumn = { index: number; col: number; indicadorId?: number };
+type FillDrag = {
+  page: number;
+  original: GradeValues;
+  selection: CellSelection;
+  source: Array<Array<number | null>>;
+  bounds: RegistroFillRange;
+  expanded: RegistroFillRange;
+  preview: GradeChange[];
+  startX: number;
+  startY: number;
+  moved: boolean;
+  axis: 'row' | 'col' | null;
+};
+
 type SelectableColumn = {
   key: string;
   getValue: (student: Estudiante, studentIndex: number) => string;
@@ -229,6 +248,10 @@ type StudentNameDraft = {
 
 const UNITS_PER_PAGE = 2;
 const SUMMARY_COLUMN_WIDTH = 45;
+const REGISTRO_CUT_CLIPBOARD_TYPE = 'application/x-cetprosmp-registro-cut';
+// Keep consumed cuts across unit pages and component remounts in this tab.
+const consumedCutIds = new Set<string>();
+const FILL_CURSOR = 'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27%3E%3Cpath d=%27M7 1h2v6h6v2H9v6H7V9H1V7h6z%27 fill=%27black%27/%3E%3C/svg%3E") 8 8, crosshair';
 const MODULE_INFO_ROW_COUNT = 5;
 const TABLE_HEADER_ONLY_ROW_COUNT = 3;
 const TABLE_HEADER_ROW_START = MODULE_INFO_ROW_COUNT;
@@ -332,6 +355,18 @@ const parseNota = (value: string | null | undefined) => {
   if (!Number.isFinite(numeric)) return null;
   return Math.max(0, Math.min(20, Math.round(numeric * 100) / 100));
 };
+
+const gradeValue = (values: GradeValues, change: GradeChange) => parseNota(change.kind === 'nota'
+  ? values.notas[notaKey(change.matriculaId, change.indicadorCapacidadId)]
+  : values.efsrtPppNotas[efsrtPppKey(change.moduloEstudianteId)]);
+
+const gradeEdits = (changes: GradeChange[], original: GradeValues) => changes.map(after => ({
+  before: { ...after, value: gradeValue(original, after) }, after,
+}));
+
+const gridGradeChange = (student: Estudiante, column: EditableGridColumn, value: number | null): GradeChange => column.indicadorId != null
+  ? { kind: 'nota', matriculaId: student.matriculaId, indicadorCapacidadId: column.indicadorId, value }
+  : { kind: 'efsrt', moduloEstudianteId: student.id, value };
 
 const displayNumber = (value: number | null) => {
   if (value == null) return '';
@@ -450,9 +485,12 @@ export default function RegistroAuxiliarPage() {
   const [savingStudentNameId, setSavingStudentNameId] = useState<number | null>(null);
   const [cellSelection, setCellSelection] = useState<CellSelection | null>(null);
   const [selectingCells, setSelectingCells] = useState(false);
+  const [fillingCells, setFillingCells] = useState(false);
+  const fillHandleRef = useRef<HTMLButtonElement | null>(null);
+  const fillDragRef = useRef<FillDrag | null>(null);
   const editableCellRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const editableFocusFrameRef = useRef<number | null>(null);
-  const pendingPageFocusRef = useRef<{ page: number; matriculaId: number; column: number } | null>(null);
+  const pendingPageFocusRef = useRef<{ page: number; matriculaId: number; column: number; selectCell?: boolean } | null>(null);
   const registroFrameRef = useRef<HTMLDivElement | null>(null);
   const registroScrollRef = useRef<HTMLDivElement | null>(null);
   const registroHeaderRef = useRef<HTMLTableSectionElement | null>(null);
@@ -630,9 +668,30 @@ export default function RegistroAuxiliarPage() {
       : String(filteredGrupoModuloOptions[0]?.id ?? '')
   );
   const { queue: gradeQueue, status: gradeSaveStatus, enqueue: queueGrades, flush: flushGrades } = useRegistroGradeQueue(user?.uid, grupoModuloId, canEditRegistro);
+  const [gradeHistory] = useState(() => new RegistroGradeHistory<GradeHistoryLocation>());
+
+  const recordGradeChanges = (changes: GradeChange[], editingKey?: string) => {
+    if (!changes.length) return;
+    gradeHistory.record(gradeEdits(changes, { notas, efsrtPppNotas }), editingKey, { page: unitPage, cell: changes[0] });
+  };
+
+  const applyGradeChanges = useCallback((changes: GradeChange[], save = true) => {
+    if (!changes.length) return;
+    const next: Record<string, string> = {};
+    const nextEfsrt: Record<string, string> = {};
+    for (const change of changes) {
+      const value = displayGrade(change.value);
+      if (change.kind === 'nota') next[notaKey(change.matriculaId, change.indicadorCapacidadId)] = value;
+      else nextEfsrt[efsrtPppKey(change.moduloEstudianteId)] = value;
+    }
+    if (Object.keys(next).length) setNotas(prev => ({ ...prev, ...next }));
+    if (Object.keys(nextEfsrt).length) setEfsrtPppNotas(prev => ({ ...prev, ...nextEfsrt }));
+    if (save) gradeQueue?.enqueue(changes);
+  }, [gradeQueue]);
 
   const fetchRegistro = useCallback(async () => {
     const request = ++registroRequestRef.current;
+    gradeHistory.clear();
     if (!grupoModuloId) {
       setRegistro(null);
       setNotas({});
@@ -679,7 +738,7 @@ export default function RegistroAuxiliarPage() {
     } finally {
       if (request === registroRequestRef.current) setLoadingRegistro(false);
     }
-  }, [functions, grupoModuloId, gradeQueue]);
+  }, [functions, grupoModuloId, gradeQueue, gradeHistory]);
 
   useEffect(() => {
     void fetchRegistro();
@@ -689,8 +748,6 @@ export default function RegistroAuxiliarPage() {
     pendingPageFocusRef.current = null;
     setUnitPage(0);
   }, [grupoModuloId]);
-
-  const indicatorColumns = useMemo(() => buildIndicatorColumns(registro?.estructura || []), [registro]);
 
   const unitPageCount = Math.max(1, Math.ceil((registro?.estructura?.length || 0) / UNITS_PER_PAGE));
 
@@ -708,7 +765,19 @@ export default function RegistroAuxiliarPage() {
   const isProgramaEstudio = useMemo(() => isProgramaEstudioRegistro(registro), [registro]);
   const tipoCarreraRegistroLabel = useMemo(() => getTipoCarreraRegistroLabel(registro), [registro]);
   const showEfsrtPpp = !usesOcupacionalRules;
-  const editableColumnCount = visibleIndicatorColumns.length + (showEfsrtPpp ? 1 : 0);
+  const editableGridColumns = useMemo(() => {
+    const columns: EditableGridColumn[] = [];
+    let col = 3;
+    for (const unit of visibleUnits) {
+      for (const capacity of unit.capacidadesTerminales) {
+        for (const indicator of capacity.indicadoresCapacidad) columns.push({ index: columns.length, col: col++, indicadorId: indicator.id });
+      }
+      col += 1;
+    }
+    if (showEfsrtPpp) columns.push({ index: columns.length, col });
+    return columns;
+  }, [showEfsrtPpp, visibleUnits]);
+  const editableColumnCount = editableGridColumns.length;
   const fixedColumnWidth = 34 + 105 + 275 + SUMMARY_COLUMN_WIDTH * (showEfsrtPpp ? 3 : 2) + 1;
   const visibleCapacityColumns = useMemo(() => visibleUnits.flatMap(unit => unit.capacidadesTerminales.map(capacity => ({
     id: capacity.id,
@@ -716,15 +785,12 @@ export default function RegistroAuxiliarPage() {
   }))), [visibleUnits]);
   const columnLayout = useRegistroColumnWidths(registroHeaderRef, visibleCapacityColumns, registroViewportWidth, fixedColumnWidth, visibleUnits.length);
 
-  const focusVisibleGradeInput = useCallback((input: HTMLInputElement | null | undefined) => {
-    if (!input) return;
-    input.focus({ preventScroll: true });
-    input.select();
+  const scrollVisibleCellIntoView = useCallback((element: HTMLElement) => {
     const container = registroScrollRef.current;
     if (!container) return;
 
     const viewport = container.getBoundingClientRect();
-    const cell = (input.closest('td') ?? input).getBoundingClientRect();
+    const cell = (element.closest('td') ?? element).getBoundingClientRect();
     const left = viewport.left + container.clientLeft;
     const right = left + container.clientWidth;
     const top = Math.max(viewport.top + container.clientTop, registroHeaderRef.current?.getBoundingClientRect().bottom ?? viewport.top);
@@ -735,6 +801,25 @@ export default function RegistroAuxiliarPage() {
     if (cell.left < left) container.scrollLeft += cell.left - left;
     else if (cell.right > right) container.scrollLeft += cell.right - right;
   }, []);
+
+  const focusVisibleGradeInput = useCallback((input: HTMLInputElement | null | undefined, selectCell = false) => {
+    if (!input) return;
+    input.focus({ preventScroll: true });
+    input.select();
+    if (selectCell) {
+      const cell = input.closest<HTMLElement>('[data-selection-row]');
+      if (cell) {
+        const row = Number(cell.dataset.selectionRow);
+        const col = Number(cell.dataset.selectionCol);
+        setCellSelection({ startRow: row, startCol: col, endRow: row, endCol: col });
+      }
+    }
+    scrollVisibleCellIntoView(input);
+  }, [scrollVisibleCellIntoView]);
+
+  useLayoutEffect(() => {
+    setCellSelection(null);
+  }, [grupoModuloId, unitPage]);
 
   useLayoutEffect(() => {
     if (editableFocusFrameRef.current !== null) {
@@ -747,11 +832,11 @@ export default function RegistroAuxiliarPage() {
     const row = registro?.estudiantes.findIndex(student => student.matriculaId === pending.matriculaId) ?? -1;
     if (row < 0) return;
     const input = editableCellRefs.current[editableCellKey(row, pending.column)];
-    focusVisibleGradeInput(input);
+    focusVisibleGradeInput(input, pending.selectCell);
   }, [focusVisibleGradeInput, registro, unitPage]);
 
   const focusEditableCell = useCallback(
-    (rowIndex: number, columnIndex: number) => {
+    (rowIndex: number, columnIndex: number, selectCell = false) => {
       if (!registro?.estudiantes.length || editableColumnCount <= 0) return;
       const nextRow = Math.max(0, Math.min(registro.estudiantes.length - 1, rowIndex));
       const nextColumn = Math.max(0, Math.min(editableColumnCount - 1, columnIndex));
@@ -759,11 +844,57 @@ export default function RegistroAuxiliarPage() {
       editableFocusFrameRef.current = window.requestAnimationFrame(() => {
         editableFocusFrameRef.current = null;
         const nextInput = editableCellRefs.current[editableCellKey(nextRow, nextColumn)];
-        focusVisibleGradeInput(nextInput);
+        focusVisibleGradeInput(nextInput, selectCell);
       });
     },
     [editableColumnCount, focusVisibleGradeInput, registro?.estudiantes.length],
   );
+
+  const restoreHistoryLocation = useCallback((location: GradeHistoryLocation | undefined) => {
+    if (!registro || !location) return;
+    const { page, cell } = location;
+    const row = registro.estudiantes.findIndex(student => cell.kind === 'nota'
+      ? student.matriculaId === cell.matriculaId : student.id === cell.moduloEstudianteId);
+    const units = registro.estructura.slice(page * UNITS_PER_PAGE, (page + 1) * UNITS_PER_PAGE);
+    const columns = buildIndicatorColumns(units);
+    const column = cell.kind === 'nota'
+      ? columns.findIndex(item => item.indicador.id === cell.indicadorCapacidadId) : columns.length;
+    if (row < 0 || column < 0) return;
+    setCellSelection(null);
+    setSelectingCells(false);
+    selectionPointerRef.current = null;
+    if (page !== unitPage) {
+      pendingPageFocusRef.current = { page, matriculaId: registro.estudiantes[row].matriculaId, column, selectCell: true };
+      setUnitPage(page);
+    } else {
+      focusEditableCell(row, column, true);
+    }
+  }, [focusEditableCell, registro, unitPage]);
+
+  useEffect(() => {
+    const handleHistoryKeyDown = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      if (!(event.ctrlKey || event.metaKey) || event.altKey
+        || !(key === 'z' || key === 'y' && !event.shiftKey)) return;
+      const target = event.target;
+      // A paging button can become disabled and leave keyboard focus on the body.
+      if (!(target instanceof HTMLElement)
+        || target !== document.body && !registroFrameRef.current?.contains(target)) return;
+      const isGradeInput = target instanceof HTMLInputElement
+        && (target.hasAttribute('data-nota-key') || target.hasAttribute('data-efsrt-key'));
+      if (!isGradeInput && target.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (!canEditRegistro || !registro || loadingRegistro) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const operation = key === 'y' || event.shiftKey ? gradeHistory.redo() : gradeHistory.undo();
+      if (operation) {
+        applyGradeChanges(operation.changes);
+        restoreHistoryLocation(operation.location);
+      }
+    };
+    document.addEventListener('keydown', handleHistoryKeyDown);
+    return () => document.removeEventListener('keydown', handleHistoryKeyDown);
+  }, [applyGradeChanges, canEditRegistro, gradeHistory, loadingRegistro, registro, restoreHistoryLocation]);
 
   const handleEditableCellKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>, rowIndex: number, columnIndex: number) => {
@@ -980,14 +1111,14 @@ export default function RegistroAuxiliarPage() {
     [getEfsrtPppAverage, getUnidadAverage, registro, usesOcupacionalRules],
   );
 
-  const selectableColumns = useMemo<SelectableColumn[]>(() => {
+  const buildSelectableColumns = useCallback((units: Unidad[]): SelectableColumn[] => {
     const columns: SelectableColumn[] = [
       { key: 'nro', getValue: (_student, studentIndex) => String(studentIndex + 1) },
       { key: 'codigo', getValue: (student) => student.matricula?.codigoInscripcion || '' },
       { key: 'estudiante', getValue: (student) => getStudentName(student) },
     ];
 
-    for (const unidad of visibleUnits) {
+    for (const unidad of units) {
       for (const capacidad of unidad.capacidadesTerminales || []) {
         for (const indicador of capacidad.indicadoresCapacidad || []) {
           columns.push({
@@ -1026,8 +1157,9 @@ export default function RegistroAuxiliarPage() {
     getModuloPuntaje,
     getNotaValue,
     showEfsrtPpp,
-    visibleUnits,
   ]);
+
+  const selectableColumns = useMemo(() => buildSelectableColumns(visibleUnits), [buildSelectableColumns, visibleUnits]);
 
   const selectableColumnIndexByKey = useMemo(
     () => new Map(selectableColumns.map((column, index) => [column.key, index])),
@@ -1064,6 +1196,171 @@ export default function RegistroAuxiliarPage() {
     };
   }, [cellSelection]);
 
+  const finishFillDrag = useCallback((cancel = false, restoreSelection = true) => {
+    const drag = fillDragRef.current;
+    if (!drag) return;
+    fillDragRef.current = null;
+    if (cancel) {
+      applyGradeChanges(drag.preview.map(change => ({ ...change, value: gradeValue(drag.original, change) })), false);
+      setCellSelection(restoreSelection ? drag.selection : null);
+    } else if (drag.preview.length) {
+      gradeHistory.record(gradeEdits(drag.preview, drag.original), undefined, { page: drag.page, cell: drag.preview[0] });
+      gradeQueue?.enqueue(drag.preview);
+    }
+    setFillingCells(false);
+    setSelectingCells(false);
+    selectionPointerRef.current = null;
+    if (restoreSelection) {
+      const input = editableCellRefs.current[editableCellKey(drag.bounds.minRow, drag.bounds.minCol)];
+      input?.focus({ preventScroll: true });
+      input?.select();
+    }
+  }, [applyGradeChanges, gradeHistory, gradeQueue]);
+
+  useLayoutEffect(() => {
+    finishFillDrag(true, false);
+  }, [canEditRegistro, finishFillDrag, grupoModuloId, loadingRegistro, registro, unitPage]);
+
+  const updateFillDrag = useCallback((x: number, y: number) => {
+    const drag = fillDragRef.current;
+    const container = registroScrollRef.current;
+    if (!drag || !container || !registro?.estudiantes.length) return;
+    if (!drag.moved) {
+      if (Math.abs(x - drag.startX) < 4 && Math.abs(y - drag.startY) < 4) return;
+      drag.moved = true;
+    }
+    const viewport = container.getBoundingClientRect();
+    const top = Math.max(viewport.top + container.clientTop, registroHeaderRef.current?.getBoundingClientRect().bottom ?? viewport.top);
+    const bottom = viewport.top + container.clientTop + container.clientHeight;
+    if (bottom <= top) return;
+    const pointX = Math.max(viewport.left + container.clientLeft + 1, Math.min(viewport.left + container.clientLeft + container.clientWidth - 1, x - 1));
+    let pointY = Math.max(top + 1, Math.min(bottom - 1, y - 1));
+    const lastRow = container.querySelector<HTMLElement>(`[data-selection-row="${TABLE_HEADER_ROW_COUNT + registro.estudiantes.length - 1}"][data-selection-col="3"]`);
+    if (lastRow) pointY = Math.min(pointY, lastRow.getBoundingClientRect().bottom - 1);
+    const cell = document.elementsFromPoint(pointX, pointY)
+      .map(element => element.closest<HTMLElement>('[data-selection-row]'))
+      .find(element => element && container.contains(element) && Number(element.dataset.selectionRow) >= TABLE_HEADER_ROW_COUNT);
+    if (!cell) return;
+    const row = Math.min(registro.estudiantes.length - 1, Number(cell.dataset.selectionRow) - TABLE_HEADER_ROW_COUNT);
+    const tableCol = Number(cell.dataset.selectionCol);
+    let col = x < drag.startX
+      ? editableGridColumns.findIndex(column => column.col >= tableCol)
+      : editableGridColumns.findLastIndex(column => column.col <= tableCol);
+    if (col < 0) col = editableGridColumns.length - 1;
+    const outsideRow = row < drag.bounds.minRow || row > drag.bounds.maxRow;
+    const outsideCol = col < drag.bounds.minCol || col > drag.bounds.maxCol;
+    if (!outsideRow && !outsideCol) drag.axis = null;
+    else if (!drag.axis) drag.axis = outsideRow && (!outsideCol || Math.abs(y - drag.startY) >= Math.abs(x - drag.startX)) ? 'row' : 'col';
+    const expanded = {
+      minRow: drag.axis === 'row' ? Math.min(drag.bounds.minRow, row) : drag.bounds.minRow,
+      maxRow: drag.axis === 'row' ? Math.max(drag.bounds.maxRow, row) : drag.bounds.maxRow,
+      minCol: drag.axis === 'col' ? Math.min(drag.bounds.minCol, col) : drag.bounds.minCol,
+      maxCol: drag.axis === 'col' ? Math.max(drag.bounds.maxCol, col) : drag.bounds.maxCol,
+    };
+    if (expanded.minRow === drag.expanded.minRow && expanded.maxRow === drag.expanded.maxRow
+      && expanded.minCol === drag.expanded.minCol && expanded.maxCol === drag.expanded.maxCol) return;
+    const changes = repeatRegistroFill(drag.source, drag.bounds, expanded).map(({ row, col, value }) =>
+      gridGradeChange(registro.estudiantes[row], editableGridColumns[col], value),
+    ).filter(change => change.value !== gradeValue(drag.original, change));
+    const restored = drag.preview.map(change => ({ ...change, value: gradeValue(drag.original, change) }));
+    drag.preview = changes;
+    drag.expanded = expanded;
+    applyGradeChanges([...restored, ...changes], false);
+    setCellSelection({
+      startRow: expanded.minRow + TABLE_HEADER_ROW_COUNT,
+      endRow: expanded.maxRow + TABLE_HEADER_ROW_COUNT,
+      startCol: Math.min(drag.selection.startCol, drag.selection.endCol, editableGridColumns[expanded.minCol].col),
+      endCol: Math.max(drag.selection.startCol, drag.selection.endCol, editableGridColumns[expanded.maxCol].col),
+    });
+  }, [applyGradeChanges, editableGridColumns, registro]);
+
+  const startFillDrag = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (event.button !== 0 || !canEditRegistro || !registro || !selectionBounds || !cellSelection) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const selectedColumns = editableGridColumns.filter(column => column.col >= selectionBounds.minCol && column.col <= selectionBounds.maxCol);
+    if (!selectedColumns.length || selectionBounds.minRow < TABLE_HEADER_ROW_COUNT) return;
+    const bounds = {
+      minRow: selectionBounds.minRow - TABLE_HEADER_ROW_COUNT,
+      maxRow: selectionBounds.maxRow - TABLE_HEADER_ROW_COUNT,
+      minCol: selectedColumns[0].index,
+      maxCol: selectedColumns[selectedColumns.length - 1].index,
+    };
+    const original = { notas, efsrtPppNotas };
+    const source = Array.from({ length: bounds.maxRow - bounds.minRow + 1 }, (_, row) => selectedColumns.map(column =>
+      gradeValue(original, gridGradeChange(registro.estudiantes[bounds.minRow + row], column, null)),
+    ));
+    gradeHistory.endEdit();
+    fillDragRef.current = { page: unitPage, original, selection: cellSelection, source, bounds, expanded: bounds, preview: [],
+      startX: event.clientX, startY: event.clientY, moved: false, axis: null };
+    selectionPointerRef.current = { x: event.clientX, y: event.clientY };
+    setFillingCells(true);
+    setSelectingCells(true);
+  };
+
+  useEffect(() => {
+    if (!fillingCells) return;
+    const cursor = document.body.style.cursor;
+    document.body.style.cursor = FILL_CURSOR;
+    const move = (event: MouseEvent) => { selectionPointerRef.current = { x: event.clientX, y: event.clientY }; };
+    const release = (event: MouseEvent) => { updateFillDrag(event.clientX, event.clientY); finishFillDrag(); };
+    const cancel = () => finishFillDrag(true);
+    const keyDown = (event: KeyboardEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.key === 'Escape' || (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') cancel();
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', release);
+    window.addEventListener('blur', cancel);
+    window.addEventListener('keydown', keyDown, true);
+    return () => {
+      document.body.style.cursor = cursor;
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', release);
+      window.removeEventListener('blur', cancel);
+      window.removeEventListener('keydown', keyDown, true);
+    };
+  }, [fillingCells, finishFillDrag, updateFillDrag]);
+
+  useLayoutEffect(() => {
+    const handle = fillHandleRef.current;
+    const container = registroScrollRef.current;
+    const frame = registroFrameRef.current;
+    if (!handle || !container || !frame) return;
+    handle.style.display = 'none';
+    if (!canEditRegistro || !selectionBounds || loadingRegistro || selectingCells && !fillingCells
+      || selectionBounds.minRow < TABLE_HEADER_ROW_COUNT
+      || !editableGridColumns.some(column => column.col >= selectionBounds.minCol && column.col <= selectionBounds.maxCol)) return;
+    let pending: number | null = null;
+    const update = () => {
+      pending = null;
+      const cell = container.querySelector<HTMLElement>(`[data-selection-row="${selectionBounds.maxRow}"][data-selection-col="${selectionBounds.maxCol}"]`);
+      if (!cell) { handle.style.display = 'none'; return; }
+      const rect = cell.getBoundingClientRect();
+      const viewport = container.getBoundingClientRect();
+      const headerBottom = registroHeaderRef.current?.getBoundingClientRect().bottom ?? viewport.top;
+      const visible = rect.bottom >= Math.max(headerBottom, viewport.top) && rect.bottom <= viewport.top + container.clientHeight
+        && rect.right >= viewport.left && rect.right <= viewport.left + container.clientWidth;
+      handle.style.display = visible ? 'block' : 'none';
+      const origin = frame.getBoundingClientRect();
+      handle.style.left = `${rect.right - origin.left - frame.clientLeft}px`;
+      handle.style.top = `${rect.bottom - origin.top - frame.clientTop}px`;
+    };
+    const schedule = () => { if (pending === null) pending = window.requestAnimationFrame(update); };
+    const observer = new ResizeObserver(schedule);
+    observer.observe(container);
+    const table = container.querySelector('table');
+    if (table) observer.observe(table);
+    container.addEventListener('scroll', schedule, { passive: true });
+    update();
+    return () => {
+      observer.disconnect();
+      container.removeEventListener('scroll', schedule);
+      if (pending !== null) window.cancelAnimationFrame(pending);
+    };
+  }, [canEditRegistro, editableGridColumns, fillingCells, loadingRegistro, selectingCells, selectionBounds]);
+
   const isCellSelected = useCallback(
     (rowIndex: number, columnIndex: number, rowSpan = 1, colSpan = 1) =>
       Boolean(
@@ -1093,7 +1390,12 @@ export default function RegistroAuxiliarPage() {
 
   const selectableCellProps = useCallback(
     (rowIndex: number, columnIndex: number, rowSpan = 1, colSpan = 1) => ({
+      'data-selection-row': rowIndex,
+      'data-selection-col': columnIndex,
+      'data-selection-rowspan': rowSpan,
+      'data-selection-colspan': colSpan,
       onMouseDown: (event: React.MouseEvent<HTMLElement>) => {
+        if (fillDragRef.current) return;
         if (columnIndex < 0) return;
         if (event.target instanceof HTMLElement && !event.target.closest('input, textarea, button, select, [contenteditable="true"]')) {
           event.preventDefault();
@@ -1110,6 +1412,7 @@ export default function RegistroAuxiliarPage() {
         setSelectingCells(true);
       },
       onMouseEnter: (event: React.MouseEvent<HTMLElement>) => {
+        if (fillDragRef.current) return;
         if (!selectingCells || columnIndex < 0) return;
         selectionPointerRef.current = { x: event.clientX, y: event.clientY };
         setCellSelection((current) => (
@@ -1127,39 +1430,99 @@ export default function RegistroAuxiliarPage() {
     selectionPointerRef.current = { x: event.clientX, y: event.clientY };
   }, [selectingCells]);
 
-  const handleSelectionKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== 'Delete' || !canEditRegistro || !registro || !selectionBounds) return;
-    const target = event.target;
-    if (target !== event.currentTarget && !(target instanceof HTMLInputElement
-      && (target.hasAttribute('data-nota-key') || target.hasAttribute('data-efsrt-key')))) return;
-    event.preventDefault();
-    const selectedIndicators = visibleIndicatorColumns.filter(({ indicador }) => {
-      const col = selectableColumnIndexByKey.get(`indicator-${indicador.id}`);
-      return col != null && col >= selectionBounds.minCol && col <= selectionBounds.maxCol;
-    });
-    const efsrtCol = selectableColumnIndexByKey.get('efsrt-ppp');
-    const clearEfsrt = efsrtCol != null && efsrtCol >= selectionBounds.minCol && efsrtCol <= selectionBounds.maxCol;
-    const next: Record<string, string> = {};
-    const nextEfsrt: Record<string, string> = {};
+  const clearSelectedGrades = (bounds: NonNullable<typeof selectionBounds>) => {
+    if (!canEditRegistro || !registro || loadingRegistro) return;
+    const columns = editableGridColumns.filter(column => column.col >= bounds.minCol && column.col <= bounds.maxCol);
     const changes: GradeChange[] = [];
-    const firstStudent = Math.max(0, selectionBounds.minRow - TABLE_HEADER_ROW_COUNT);
-    const lastStudent = Math.min(registro.estudiantes.length - 1, selectionBounds.maxRow - TABLE_HEADER_ROW_COUNT);
+    const firstStudent = Math.max(0, bounds.minRow - TABLE_HEADER_ROW_COUNT);
+    const lastStudent = Math.min(registro.estudiantes.length - 1, bounds.maxRow - TABLE_HEADER_ROW_COUNT);
     for (let index = firstStudent; index <= lastStudent; index += 1) {
-      const student = registro.estudiantes[index];
-      for (const { indicador } of selectedIndicators) {
-        next[notaKey(student.matriculaId, indicador.id)] = '';
-        changes.push({ kind: 'nota', matriculaId: student.matriculaId, indicadorCapacidadId: indicador.id, value: null });
-      }
-      if (clearEfsrt) {
-        nextEfsrt[efsrtPppKey(student.id)] = '';
-        changes.push({ kind: 'efsrt', moduloEstudianteId: student.id, value: null });
-      }
+      for (const column of columns) changes.push(gridGradeChange(registro.estudiantes[index], column, null));
     }
     if (!changes.length) return;
-    setNotas(prev => ({ ...prev, ...next }));
-    setEfsrtPppNotas(prev => ({ ...prev, ...nextEfsrt }));
-    queueGrades(changes);
+    recordGradeChanges(changes);
+    applyGradeChanges(changes);
   };
+
+  const handleSelectionKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const target = event.target;
+    const isGradeInput = target instanceof HTMLInputElement
+      && (target.hasAttribute('data-nota-key') || target.hasAttribute('data-efsrt-key'));
+
+    if (target !== event.currentTarget && !isGradeInput) return;
+
+    if (event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey
+      && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      if (!registro || !selectableColumns.length) return;
+      const cell = target instanceof HTMLElement ? target.closest<HTMLElement>('[data-selection-row]') : null;
+      const current = cellSelection ?? (cell ? {
+        startRow: Number(cell.dataset.selectionRow),
+        startCol: Number(cell.dataset.selectionCol),
+        endRow: Number(cell.dataset.selectionRow),
+        endCol: Number(cell.dataset.selectionCol),
+      } : null);
+      if (!current) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      const endRow = Math.max(0, Math.min(
+        TABLE_HEADER_ROW_COUNT + registro.estudiantes.length - 1,
+        current.endRow + (event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0),
+      ));
+      const endCol = Math.max(0, Math.min(
+        selectableColumns.length - 1,
+        current.endCol + (event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0),
+      ));
+      setCellSelection({ ...current, endRow, endCol });
+      setSelectingCells(false);
+      selectionPointerRef.current = null;
+
+      const endCell = event.currentTarget.querySelector<HTMLElement>(
+        `[data-selection-row="${endRow}"][data-selection-col="${endCol}"]`,
+      ) ?? Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
+        '[data-selection-row]:not([data-selection-rowspan="1"][data-selection-colspan="1"])',
+      )).find(element => {
+        const row = Number(element.dataset.selectionRow);
+        const col = Number(element.dataset.selectionCol);
+        return row <= endRow && endRow < row + Number(element.dataset.selectionRowspan)
+          && col <= endCol && endCol < col + Number(element.dataset.selectionColspan);
+      });
+      if (endCell) scrollVisibleCellIntoView(endCell);
+      return;
+    }
+
+    if (event.key !== 'Delete' || !canEditRegistro || !registro || !selectionBounds) return;
+    event.preventDefault();
+    clearSelectedGrades(selectionBounds);
+  };
+
+  const buildTableCopyRows = useCallback((units: Unidad[], columns: SelectableColumn[]) => {
+    if (!registro) return [];
+    const headerRows = Array.from({ length: TABLE_HEADER_ONLY_ROW_COUNT }, () => columns.map(() => ''));
+    headerRows[0][0] = 'Nro.';
+    headerRows[0][1] = 'Codigo';
+    headerRows[0][2] = 'Apellidos y Nombres';
+    let col = 3;
+    for (const unidad of units) {
+      headerRows[0][col] = unitLabel(unidad, registro.estructura.indexOf(unidad) + 1);
+      for (const capacidad of unidad.capacidadesTerminales || []) {
+        if (capacidad.indicadoresCapacidad.length) {
+          headerRows[1][col] = curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion);
+        }
+        for (const indicador of capacidad.indicadoresCapacidad || []) {
+          headerRows[2][col++] = curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`);
+        }
+      }
+      headerRows[1][col++] = 'PROMEDIO UNIDAD';
+    }
+    if (showEfsrtPpp) headerRows[0][col++] = 'EFSRT/PPP';
+    headerRows[0][col++] = 'Puntaje';
+    headerRows[0][col] = isProgramaEstudio ? 'Promedio General' : 'Promedio';
+    const bodyRows = registro.estudiantes.map((student, studentIndex) =>
+      columns.map(column => column.getValue(student, studentIndex)),
+    );
+    return [...headerRows, ...bodyRows];
+  }, [isProgramaEstudio, registro, showEfsrtPpp]);
 
   const tableCopyMatrix = useMemo(() => {
     if (!registro) return [];
@@ -1187,43 +1550,11 @@ export default function RegistroAuxiliarPage() {
     setValue(moduleRows[4], MODULE_INFO_RIGHT_LABEL_COL, 'CICLO');
     setValue(moduleRows[4], MODULE_INFO_RIGHT_VALUE_COL, getModuloCiclo(registro).toUpperCase());
 
-    const headerRows = [makeRow(), makeRow(), makeRow()];
-    headerRows[0][0] = 'Nro.';
-    headerRows[0][1] = 'Codigo';
-    headerRows[0][2] = 'Apellidos y Nombres';
-
-    for (const unidad of visibleUnits) {
-      const span = headerSpans.unidades.get(unidad.id);
-      if (span) headerRows[0][span.col] = unitLabel(unidad, registro.estructura.indexOf(unidad) + 1);
-      for (const capacidad of unidad.capacidadesTerminales || []) {
-        const capacidadSpan = headerSpans.capacidades.get(capacidad.id);
-        if (capacidadSpan?.colSpan) headerRows[1][capacidadSpan.col] = curricularLabel(capacidad.competenciaCodigo, capacidad.codigo, capacidad.descripcion);
-        for (const indicador of capacidad.indicadoresCapacidad || []) {
-          const indicatorCol = selectableColumnIndexByKey.get(`indicator-${indicador.id}`);
-          if (indicatorCol != null) headerRows[2][indicatorCol] = curricularLabel(capacidad.codigo, indicador.codigo, indicador.descripcion || indicador.sigla || `C.E. ${indicador.id}`);
-        }
-      }
-      const promedioCol = selectableColumnIndexByKey.get(`unidad-${unidad.id}`);
-      if (promedioCol != null) headerRows[1][promedioCol] = 'PROMEDIO UNIDAD';
-    }
-
-    const efsrtCol = selectableColumnIndexByKey.get('efsrt-ppp');
-    if (efsrtCol != null) headerRows[0][efsrtCol] = 'EFSRT/PPP';
-    const puntajeCol = selectableColumnIndexByKey.get('puntaje');
-    if (puntajeCol != null) headerRows[0][puntajeCol] = 'Puntaje';
-    const promedioCol = selectableColumnIndexByKey.get('promedio-general');
-    if (promedioCol != null) headerRows[0][promedioCol] = isProgramaEstudio ? 'Promedio General' : 'Promedio';
-
-    const bodyRows = registro.estudiantes.map((student, studentIndex) =>
-      selectableColumns.map((column) => column.getValue(student, studentIndex)),
-    );
-    return [...moduleRows, ...headerRows, ...bodyRows];
+    return [...moduleRows, ...buildTableCopyRows(visibleUnits, selectableColumns)];
   }, [
+    buildTableCopyRows,
     datosGenerales?.nombreInstitucion,
-    headerSpans,
-    isProgramaEstudio,
     registro,
-    selectableColumnIndexByKey,
     selectableColumns,
     tipoCarreraRegistroLabel,
     visibleUnits,
@@ -1280,9 +1611,15 @@ export default function RegistroAuxiliarPage() {
           deltaX = -Math.ceil((((rect.left + edge) - pointer.x) / edge) * maxSpeed);
         }
 
+        const drag = fillDragRef.current;
+        if (drag) {
+          if (!drag.axis || drag.axis === 'col') deltaY = 0;
+          if (!drag.axis || drag.axis === 'row') deltaX = 0;
+        }
         if (deltaY !== 0 || deltaX !== 0) {
           container.scrollBy({ top: deltaY, left: deltaX });
         }
+        if (fillDragRef.current) updateFillDrag(pointer.x, pointer.y);
       }
       autoScrollFrameRef.current = window.requestAnimationFrame(step);
     };
@@ -1294,22 +1631,36 @@ export default function RegistroAuxiliarPage() {
         autoScrollFrameRef.current = null;
       }
     };
-  }, [selectingCells]);
+  }, [selectingCells, updateFillDrag]);
 
   useEffect(() => {
     const handleCopy = (event: ClipboardEvent) => {
       if (!selectedText) return;
       event.preventDefault();
       event.clipboardData?.setData('text/plain', selectedText);
-      setMessage('Rango copiado al portapapeles.');
     };
     document.addEventListener('copy', handleCopy);
     return () => document.removeEventListener('copy', handleCopy);
   }, [selectedText]);
 
-  useEffect(() => {
-    setCellSelection(null);
-  }, [grupoModuloId, unitPage]);
+  const handleCut = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    const target = event.target;
+    const isGradeInput = target instanceof HTMLInputElement
+      && (target.hasAttribute('data-nota-key') || target.hasAttribute('data-efsrt-key'));
+    if (target !== event.currentTarget && !isGradeInput) return;
+    event.preventDefault();
+    if (!canEditRegistro || !registro || loadingRegistro || !event.clipboardData) return;
+    const cell = target instanceof HTMLElement ? target.closest<HTMLElement>('[data-selection-row]') : null;
+    const row = cell ? Number(cell.dataset.selectionRow) : null;
+    const col = cell ? Number(cell.dataset.selectionCol) : null;
+    const bounds = selectionBounds ?? (row != null && col != null
+      ? { minRow: row, maxRow: row, minCol: col, maxCol: col } : null);
+    if (!bounds) return;
+    const text = selectionBounds ? selectedText : tableCopyMatrix[bounds.minRow]?.[bounds.minCol] ?? '';
+    event.clipboardData.setData('text/plain', text);
+    event.clipboardData.setData(REGISTRO_CUT_CLIPBOARD_TYPE, crypto.randomUUID());
+    clearSelectedGrades(bounds);
+  };
 
   const updateNota = (matriculaId: number, indicadorId: number, value: string) => {
     if (!canEditRegistro) return;
@@ -1317,11 +1668,14 @@ export default function RegistroAuxiliarPage() {
     if (cleaned !== '' && !/^\d{0,2}(\.\d{0,2})?$/.test(cleaned)) return;
     const numeric = parseNota(cleaned);
     if (cleaned !== '' && Number(cleaned) > 20) return;
+    const change: GradeChange = { kind: 'nota', matriculaId, indicadorCapacidadId: indicadorId, value: numeric };
+    recordGradeChanges([change], gradeChangeKey(change));
     setNotas((prev) => ({ ...prev, [notaKey(matriculaId, indicadorId)]: cleaned }));
-    if (cleaned === '' || Number.isFinite(Number(cleaned))) queueGrades([{ kind: 'nota', matriculaId, indicadorCapacidadId: indicadorId, value: numeric }]);
+    if (cleaned === '' || Number.isFinite(Number(cleaned))) queueGrades([change]);
   };
 
   const formatNota = (matriculaId: number, indicadorId: number) => {
+    gradeHistory.endEdit();
     if (notas[notaKey(matriculaId, indicadorId)] === '.') queueGrades([{ kind: 'nota', matriculaId, indicadorCapacidadId: indicadorId, value: null }]);
     flushGrades();
     setNotas((prev) => {
@@ -1337,11 +1691,14 @@ export default function RegistroAuxiliarPage() {
     if (cleaned !== '' && !/^\d{0,2}(\.\d{0,2})?$/.test(cleaned)) return;
     const numeric = parseNota(cleaned);
     if (cleaned !== '' && Number(cleaned) > 20) return;
+    const change: GradeChange = { kind: 'efsrt', moduloEstudianteId, value: numeric };
+    recordGradeChanges([change], gradeChangeKey(change));
     setEfsrtPppNotas((prev) => ({ ...prev, [efsrtPppKey(moduloEstudianteId)]: cleaned }));
-    if (cleaned === '' || Number.isFinite(Number(cleaned))) queueGrades([{ kind: 'efsrt', moduloEstudianteId, value: numeric }]);
+    if (cleaned === '' || Number.isFinite(Number(cleaned))) queueGrades([change]);
   };
 
   const formatEfsrtPppNota = (moduloEstudianteId: number) => {
+    gradeHistory.endEdit();
     if (efsrtPppNotas[efsrtPppKey(moduloEstudianteId)] === '.') queueGrades([{ kind: 'efsrt', moduloEstudianteId, value: null }]);
     flushGrades();
     setEfsrtPppNotas((prev) => {
@@ -1351,57 +1708,73 @@ export default function RegistroAuxiliarPage() {
     });
   };
 
-  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>, position: CellPosition) => {
-    if (!canEditRegistro) { event.preventDefault(); return; }
-    const text = event.clipboardData.getData('text');
-    if (!text.includes('\t') && !text.includes('\n')) return;
+  const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    const target = event.target;
+    const isGradeInput = target instanceof HTMLInputElement
+      && (target.hasAttribute('data-nota-key') || target.hasAttribute('data-efsrt-key'));
+    if (target !== event.currentTarget && !isGradeInput) return;
     event.preventDefault();
-    const rows = text.replace(/\r/g, '').split('\n');
-    if (rows.at(-1) === '') rows.pop();
-    const next: Record<string, string> = {};
-    const nextEfsrt: Record<string, string> = {};
+    if (!canEditRegistro || !registro || loadingRegistro) return;
+
+    const cutId = event.clipboardData.getData(REGISTRO_CUT_CLIPBOARD_TYPE);
+    if (cutId && consumedCutIds.has(cutId)) return;
+    const text = event.clipboardData.getData('text/plain');
+    if (text === '' && !event.clipboardData.types.includes('text/plain')) return;
+    const rows = text.replace(/\r\n?/g, '\n').split('\n');
+    if (rows.length > 1 && rows.at(-1) === '') rows.pop();
+    const source = rows.map(row => row.split('\t'));
+    const sourceWidth = source.reduce((width, row) => Math.max(width, row.length), 0);
+    const columns = editableGridColumns;
+
+    const cell = target instanceof HTMLElement ? target.closest<HTMLElement>('[data-selection-row]') : null;
+    const row = cell ? Number(cell.dataset.selectionRow) : selectionBounds?.minRow;
+    const col = cell ? Number(cell.dataset.selectionCol) : selectionBounds?.minCol;
+    if (row == null || col == null) return;
+    const fillSelection = selectionBounds
+      && (selectionBounds.minRow !== selectionBounds.maxRow || selectionBounds.minCol !== selectionBounds.maxCol)
+      && row >= selectionBounds.minRow && row <= selectionBounds.maxRow
+      && col >= selectionBounds.minCol && col <= selectionBounds.maxCol;
+    const firstRow = Math.max(0, (fillSelection ? selectionBounds.minRow : row) - TABLE_HEADER_ROW_COUNT);
+    const lastRow = Math.min(registro.estudiantes.length - 1, fillSelection
+      ? selectionBounds.maxRow - TABLE_HEADER_ROW_COUNT : firstRow + source.length - 1);
+    const firstColumn = columns.findIndex(column => column.col === col);
+    const targetColumns = fillSelection
+      ? columns.filter(column => column.col >= selectionBounds.minCol && column.col <= selectionBounds.maxCol)
+      : firstColumn < 0 ? [] : columns.slice(firstColumn, firstColumn + sourceWidth);
+    if (!targetColumns.length || firstRow > lastRow) return;
+
     const changes: GradeChange[] = [];
-      rows.forEach((row, rowOffset) => {
-        const student = registro?.estudiantes[position.estudianteIndex + rowOffset];
-        if (!student) return;
-        row.split('\t').forEach((cell, columnOffset) => {
-          const index = position.indicadorIndex + columnOffset;
-          const indicator = visibleIndicatorColumns[index]?.indicador;
-          if (!indicator && !(showEfsrtPpp && index === visibleIndicatorColumns.length)) return;
-          const nota = parseNota(cell);
-          const numeric = Number(cell.trim().replace(',', '.'));
-          if (cell.trim() !== '' && (!Number.isFinite(numeric) || numeric < 0 || numeric > 20)) return;
-          if (indicator) {
-            next[notaKey(student.matriculaId, indicator.id)] = nota == null ? '' : displayGrade(nota);
-            changes.push({ kind: 'nota', matriculaId: student.matriculaId, indicadorCapacidadId: indicator.id, value: nota });
-          } else {
-            nextEfsrt[efsrtPppKey(student.id)] = nota == null ? '' : displayGrade(nota);
-            changes.push({ kind: 'efsrt', moduloEstudianteId: student.id, value: nota });
-          }
-        });
+    for (let studentIndex = firstRow; studentIndex <= lastRow; studentIndex += 1) {
+      const student = registro.estudiantes[studentIndex];
+      const sourceRow = source[(studentIndex - firstRow) % source.length];
+      targetColumns.forEach((column, offset) => {
+        const value = sourceRow[offset % sourceWidth] ?? '';
+        const numeric = Number(value.trim().replace(',', '.'));
+        if (value.trim() !== '' && (!Number.isFinite(numeric) || numeric < 0 || numeric > 20)) return;
+        const nota = parseNota(value);
+        changes.push(gridGradeChange(student, column, nota));
       });
-    setNotas(prev => ({ ...prev, ...next }));
-    setEfsrtPppNotas(prev => ({ ...prev, ...nextEfsrt }));
-    queueGrades(changes);
+    }
+    if (!changes.length) return;
+    if (cutId) consumedCutIds.add(cutId);
+    recordGradeChanges(changes);
+    applyGradeChanges(changes);
+    setCellSelection({
+      startRow: firstRow + TABLE_HEADER_ROW_COUNT,
+      startCol: targetColumns[0].col,
+      endRow: lastRow + TABLE_HEADER_ROW_COUNT,
+      endCol: targetColumns[targetColumns.length - 1].col,
+    });
+    setSelectingCells(false);
+    selectionPointerRef.current = null;
+    focusEditableCell(firstRow, targetColumns[0].index);
   };
 
   const handleCopyNotas = async () => {
     if (!registro) return;
-    const header = [
-      'Estudiante',
-      ...indicatorColumns.map((column) => curricularLabel(column.capacidad.codigo, column.indicador.codigo, column.indicador.descripcion || column.indicador.sigla || `CE ${column.indicador.id}`)),
-      ...(showEfsrtPpp ? ['EFSRT/PPP'] : []),
-      'Puntaje',
-      isProgramaEstudio ? 'Promedio General' : 'Promedio',
-    ];
-    const rows = registro.estudiantes.map((student) => [
-      getStudentName(student),
-      ...indicatorColumns.map((column) => notas[notaKey(student.matriculaId, column.indicador.id)] || ''),
-      ...(showEfsrtPpp ? [displayGrade(getEfsrtPppAverage(student))] : []),
-      displayNumber(getModuloPuntaje(student)),
-      displayGrade(getModuloAverage(student)),
-    ]);
-    await navigator.clipboard.writeText([header, ...rows].map((row) => row.join('\t')).join('\n'));
+    const columns = buildSelectableColumns(registro.estructura);
+    const rows = buildTableCopyRows(registro.estructura, columns);
+    await navigator.clipboard.writeText(rows.map(row => row.join('\t')).join('\n'));
     setMessage('Matriz copiada al portapapeles.');
   };
 
@@ -1483,6 +1856,7 @@ export default function RegistroAuxiliarPage() {
       invalidateMatriculaLists();
       setMessage('Estudiante retirado de este grupo-módulo.');
       gradeQueue?.discardStudent(student.matriculaId, student.id);
+      gradeHistory.clear();
       setRegistro(current => current && current.grupoModulo?.id === registro.grupoModulo?.id
         ? { ...current, estudiantes: current.estudiantes.filter(row => row.id !== student.id) } : current);
     } catch (err) {
@@ -1610,9 +1984,9 @@ export default function RegistroAuxiliarPage() {
         spacing={1}
         useFlexGap
         alignItems="center"
-        sx={{ flexWrap: isDocente ? { xs: 'wrap', md: 'nowrap' } : 'wrap', mb: 0, pb: '5px', rowGap: 0.5 }}
+        sx={{ flexWrap: { xs: 'wrap', md: 'nowrap' }, mb: 0, pb: '5px', rowGap: 0.5 }}
       >
-        <Box sx={{ flex: isDocente ? '0 0 100px' : '1 1 180px', minWidth: 0, ...(isDocente ? { width: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignSelf: 'stretch', minHeight: 32 } : {}) }}>
+        <Box sx={{ flex: isDocente ? '0 0 100px' : { xs: '1 1 180px', md: '0 1 auto' }, minWidth: 0, ...(isDocente ? { width: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignSelf: 'stretch', minHeight: 32 } : {}) }}>
           <Typography component="h1" variant="h6" sx={{ fontWeight: 800, fontSize: 18, lineHeight: 1.1, m: 0, overflowWrap: 'anywhere' }}>
             {isDocente ? 'RAE' : registroTitle}
           </Typography>
@@ -1623,7 +1997,7 @@ export default function RegistroAuxiliarPage() {
         {docenteReadOnly && <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: { md: 'nowrap' } }}>(Modulo Finalizado)</Typography>}
         {(!isDirectRegistro || isDocente) && (
           <>
-            <Stack direction="row" spacing={1} sx={{ flex: isDirectRegistro ? '0 0 auto' : isDocente ? { xs: '1 1 240px', md: '1 1 0' } : { xs: '1 1 300px', md: '1 1 450px' }, maxWidth: isDocente ? { xs: 778, md: 'none' } : 778, minWidth: 0 }}>
+            <Stack direction="row" spacing={1} sx={{ flex: isDirectRegistro ? '0 0 auto' : { xs: isDocente ? '1 1 240px' : '1 1 300px', md: '1 1 0' }, maxWidth: { xs: 778, md: 'none' }, minWidth: 0 }}>
               <FormControl size="small" sx={{ width: 100, minWidth: 100, flexShrink: 0 }} disabled={isDocente || !semestreOptions.length}>
                 <InputLabel id="registro-semestre-label">Semestre</InputLabel>
                 <Select
@@ -1695,6 +2069,8 @@ export default function RegistroAuxiliarPage() {
       <Paper
         ref={registroFrameRef}
         sx={{
+          position: 'relative',
+          ...(fillingCells ? { '&, & *': { cursor: FILL_CURSOR } } : {}),
           display: 'flex',
           flexDirection: 'column',
           height: 'var(--registro-frame-height, 550px)',
@@ -1709,6 +2085,8 @@ export default function RegistroAuxiliarPage() {
           ref={registroScrollRef}
           tabIndex={-1}
           onKeyDownCapture={handleSelectionKeyDown}
+          onCutCapture={handleCut}
+          onPasteCapture={handlePaste}
           onWheelCapture={stopScrollChaining}
           onMouseMove={handleSelectionMouseMove}
           sx={{
@@ -2237,7 +2615,6 @@ export default function RegistroAuxiliarPage() {
                                   }}
                                   value={notas[key] ?? ''}
                                   onFocus={() => setFocusedCell({ estudianteIndex: studentIndex, indicadorIndex: indicatorIndex })}
-                                  onPaste={(event) => handlePaste(event, { estudianteIndex: studentIndex, indicadorIndex: indicatorIndex })}
                                   onKeyDown={(event) => handleEditableCellKeyDown(event, studentIndex, indicatorIndex)}
                                   onBlur={() => formatNota(student.matriculaId, indicador.id)}
                                   onChange={(event) => updateNota(student.matriculaId, indicador.id, event.target.value)}
@@ -2301,7 +2678,6 @@ export default function RegistroAuxiliarPage() {
                             }}
                             value={efsrtPppNotas[efsrtPppKey(student.id)] ?? ''}
                             onFocus={() => setFocusedCell({ estudianteIndex: studentIndex, indicadorIndex: visibleIndicatorColumns.length })}
-                            onPaste={event => handlePaste(event, { estudianteIndex: studentIndex, indicadorIndex: visibleIndicatorColumns.length })}
                             onKeyDown={(event) => handleEditableCellKeyDown(event, studentIndex, visibleIndicatorColumns.length)}
                             onBlur={() => formatEfsrtPppNota(student.id)}
                             onChange={(event) => updateEfsrtPppNota(student.id, event.target.value)}
@@ -2456,6 +2832,22 @@ export default function RegistroAuxiliarPage() {
             </Box>
           )}
         </Box>
+        <Box
+          component="button"
+          ref={fillHandleRef}
+          type="button"
+          tabIndex={-1}
+          aria-label="Rellenar seleccion arrastrando"
+          data-testid="registro-fill-handle"
+          onMouseDown={startFillDrag}
+          sx={{
+            position: 'absolute', display: 'none', width: 14, height: 14,
+            p: 0, m: 0, border: 0, bgcolor: 'transparent', zIndex: 4,
+            transform: 'translate(-50%, -50%)', cursor: FILL_CURSOR,
+            '&::after': { content: '""', position: 'absolute', left: 3, top: 3, width: 8, height: 8,
+              bgcolor: '#000', border: '1px solid #fff', boxSizing: 'border-box' },
+          }}
+        />
       </Paper>
     </Box>
   );

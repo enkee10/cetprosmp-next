@@ -661,7 +661,7 @@ const UsersPage = () => {
               padding: 0,
               background: 'transparent',
               font: 'inherit',
-              color: 'primary.main',
+              color: 'inherit',
               textAlign: 'left',
               cursor: 'pointer',
               '&:hover': { textDecoration: 'underline' },

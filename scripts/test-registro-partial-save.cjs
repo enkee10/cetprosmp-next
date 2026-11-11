@@ -62,6 +62,41 @@ const read = async (table, where, fields) => (await graph(`query LocalPartialSav
     const before = await read('indicadoresCapacidadEstudiantes', `matriculaId:{eq:${ids.students[0]}}`, 'id indicadorCapacidadId promedio');
     await assert.rejects(() => savePartialRegistroGrades({ grupoModuloId: groupModule, usesOcupacionalRules: false, moduloCreditoEfsrt: 2, unidadIds: ids.units, unidadCreditoById: new Map(), capacidades: capacities.map((id, i) => ({ id, unidadDidacticaId: ids.units[i === 2 ? 1 : 0] })), indicadores: indicators.map((id, i) => ({ id, capacidadTerminalId: capacities[i < 2 ? 0 : i - 1] })), moduloEstudiantes: [{ id: 2147483640, matriculaId: ids.students[0] }], notas: [nota(19)], efsrtPppPromedios: [] }, helpers));
     assert.deepEqual(await read('indicadoresCapacidadEstudiantes', `matriculaId:{eq:${ids.students[0]}}`, 'id indicadorCapacidadId promedio'), before, 'A failed save cannot leave partially updated grades');
+    for (let index = 2; index < 12; index++) {
+      const id = await insert('matricula', `semestreId:${ids.semester}`); ids.students.push(id);
+      modules.push(await insert('moduloEstudiante', `matriculaId:${id},moduloId:${ids.module},grupoId:${ids.group},grupoModuloId:${groupModule}`));
+    }
+    // This used to produce over 100 mutation fields and hit PostgreSQL's JSON argument limit.
+    const manyGrades = ids.students.flatMap(matriculaId => indicators.map((indicadorCapacidadId, index) => ({ matriculaId, indicadorCapacidadId, nota: [12,16,18,20][index] })));
+    const batch = await save({ grupoModuloId: groupModule, partial: true, notas: manyGrades,
+      efsrtPppPromedios: modules.map(moduloEstudianteId => ({ moduloEstudianteId, promedioFinal: 16 })) }, {});
+    assert.deepEqual(batch, { saved: 48, efsrtPppSaved: 12 }, 'A large mixed insert/update batch is fully acknowledged');
+    for (const studentId of ids.students) {
+      const grades = await read('indicadoresCapacidadEstudiantes', `matriculaId:{eq:${studentId}}`, 'indicadorCapacidadId promedio');
+      assert.deepEqual(indicators.map(id => grades.find(row => row.indicadorCapacidadId === id).promedio), [12,16,18,20]);
+    }
+    const moduleResults = await read('modulosEstudiantes', `id:{in:[${modules.join(',')}]}`, 'id promedio puntaje');
+    assert.equal(moduleResults.length, 12);
+    assert(moduleResults.every(row => row.promedio === 19 && row.puntaje === 52), 'Every module average includes all unit grades and EFSRT');
+    const snapshot = async () => graph(`query LocalLargeSaveSnapshot {
+      notes:indicadoresCapacidadEstudiantes(where:{matriculaId:{in:[${ids.students}]}},orderBy:{id:ASC}){id promedio}
+      capacities:capacidadesTerminalesEstudiantes(where:{matriculaId:{in:[${ids.students}]}},orderBy:{id:ASC}){id promedio}
+      units:unidadesDidacticasEstudiantes(where:{matriculaId:{in:[${ids.students}]}},orderBy:{id:ASC}){id promedio}
+      modules:modulosEstudiantes(where:{id:{in:[${modules}]}},orderBy:{id:ASC}){id promedio puntaje}
+    }`);
+    const beforeLargeFailure = await snapshot();
+    await assert.rejects(() => savePartialRegistroGrades({
+      grupoModuloId: groupModule, usesOcupacionalRules: false, moduloCreditoEfsrt: 2,
+      unidadIds: ids.units, unidadCreditoById: new Map(ids.units.map((id, i) => [id, [1, 3][i]])),
+      capacidades: capacities.map((id, i) => ({ id, unidadDidacticaId: ids.units[i === 2 ? 1 : 0] })),
+      indicadores: indicators.map((id, i) => ({ id, capacidadTerminalId: capacities[i < 2 ? 0 : i - 1] })),
+      moduloEstudiantes: modules.map((id, i) => ({ id: i === modules.length - 1 ? 2147483640 : id, matriculaId: ids.students[i] })),
+      notas: manyGrades.map(row => ({ ...row, nota: 5 })), efsrtPppPromedios: [],
+    }, helpers));
+    assert.deepEqual(await snapshot(), beforeLargeFailure, 'A failure in a later SQL phase rolls back every grade and average in the batch');
+    await save({ grupoModuloId: groupModule, partial: true, notas: manyGrades.map(row => ({ ...row, nota: null })),
+      efsrtPppPromedios: modules.map(moduloEstudianteId => ({ moduloEstudianteId, promedioFinal: null })) }, {});
+    assert((await read('modulosEstudiantes', `id:{in:[${modules.join(',')}]}`, 'promedio puntaje')).every(row => row.promedio === null && row.puntaje === null), 'A large range deletion clears downstream results');
     await graph(`query CreatedRegistroStudent($id:Int!){moduloEstudiante(id:$id){id matriculaId moduloId grupoId grupoModuloId promedio puntaje matricula{id codigoInscripcion user{id dni nombre apellidos apellidoPaterno apellidoMaterno username}}}}`, { id: modules[0] });
     console.log('Base local: guardado parcial real, promedios por capacidad/unidad/módulo, EFSRT, borrado de nota, aislamiento de estudiantes, validación y reversión atómica.');
   } finally {

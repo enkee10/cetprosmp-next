@@ -92,6 +92,369 @@ const mocks = {
     const cell = (student, indicator) => page.locator(`[data-nota-key="${student}:${indicator}"]`);
     const resolveSave = async index => page.evaluate(index => { const request = window.requests[index]; request.resolve({ saved: request.input.notas.length, efsrtPppSaved: request.input.efsrtPppPromedios.length }); }, index);
     const noReload = async () => assert.equal(await page.evaluate(() => window.calls.filter(call => call.name === 'getRegistroAuxiliar').length), 1);
+    {
+      const fillHandle = page.getByTestId('registro-fill-handle');
+      const fillValues = (student, first, length) => page.evaluate(({ student, first, length }) =>
+        Array.from({ length }, (_, index) => document.querySelector(`[data-nota-key="${student}:${first + index}"]`).value), { student, first, length });
+      const point = async locator => { const box = await locator.boundingBox(); assert(box); return { x: box.x + box.width / 2, y: box.y + box.height / 2 }; };
+      const beginFill = async () => { await fillHandle.waitFor({ state: 'visible' }); const position = await point(fillHandle); await page.mouse.move(position.x, position.y); await page.mouse.down(); };
+      const moveFill = async locator => { const position = await point(locator); await page.mouse.move(position.x, position.y, { steps: 8 }); };
+      const waitValue = (student, indicator, value) => page.waitForFunction(({ key, value }) => document.querySelector(`[data-nota-key="${key}"]`)?.value === value, { key: `${student}:${indicator}`, value });
+      await page.goto('http://127.0.0.1:3001/?dense&fillHandle'); await cell(201, 6000).waitFor();
+      for (const [offset, value] of ['10','20','05','06','07','08'].entries()) await cell(201, 6000 + offset).fill(value);
+      await cell(201, 6000).click(); await page.keyboard.press('Shift+ArrowRight');
+      await fillHandle.waitFor({ state: 'visible' });
+      const handleStyle = await fillHandle.evaluate(element => ({ cursor: getComputedStyle(element).cursor, color: getComputedStyle(element, '::after').backgroundColor }));
+      assert(handleStyle.cursor.includes('crosshair') && handleStyle.cursor.includes('data:image/svg+xml')); assert.equal(handleStyle.color, 'rgb(0, 0, 0)');
+      const handlePoint = await point(fillHandle), corner = await cell(201, 6001).locator('..').boundingBox();
+      assert(Math.abs(handlePoint.x - corner.x - corner.width) < 1 && Math.abs(handlePoint.y - corner.y - corner.height) < 1, 'The black handle sits at the bottom-right corner');
+      await beginFill(); await page.mouse.up();
+      assert.deepEqual(await fillValues(201, 6000, 6), ['10','20','05','06','07','08'], 'Clicking the handle without dragging changes nothing');
+      await beginFill(); await moveFill(cell(201, 6004)); await waitValue(201, 6004, '10');
+      assert.deepEqual(await fillValues(201, 6000, 5), ['10','20','10','20','10'], 'Values are copied while the mouse is still down');
+      await page.mouse.up();
+      assert.equal(await cell(201, 6004).locator('..').evaluate(element => getComputedStyle(element).boxShadow !== 'none'), true, 'The filled range stays selected');
+      await page.keyboard.press('Control+z'); assert.deepEqual(await fillValues(201, 6000, 6), ['10','20','05','06','07','08'], 'One undo restores all overwritten values');
+      await page.keyboard.press('Control+y'); assert.deepEqual(await fillValues(201, 6000, 5), ['10','20','10','20','10']);
+      await cell(201, 6000).click(); await page.keyboard.press('Shift+ArrowRight');
+      await beginFill(); await moveFill(cell(201, 6006)); await waitValue(201, 6006, '10');
+      await page.keyboard.press('Escape'); await page.mouse.up();
+      assert.equal(await cell(201, 6006).inputValue(), '', 'Escape restores the preview without saving it');
+      await page.keyboard.press('Control+z'); assert.deepEqual(await fillValues(201, 6000, 6), ['10','20','05','06','07','08'], 'Cancelling adds no history operation');
+      await cell(201, 6000).click(); await page.keyboard.press('Shift+ArrowRight');
+      await beginFill(); await moveFill(cell(201, 6005)); await waitValue(201, 6005, '20');
+      await moveFill(cell(201, 6002)); await waitValue(201, 6003, '06'); await page.mouse.up();
+      assert.deepEqual(await fillValues(201, 6000, 6), ['10','20','10','06','07','08'], 'Shrinking a drag restores cells outside the final range');
+      await cell(201, 6004).fill('12'); await cell(201, 6005).fill('18');
+      await cell(201, 6004).click(); await page.keyboard.press('Shift+ArrowRight');
+      await beginFill(); await moveFill(cell(201, 6001)); await waitValue(201, 6001, '18'); await page.mouse.up();
+      assert.deepEqual(await fillValues(201, 6001, 5), ['18','12','18','12','18'], 'Left fill preserves the original pattern order');
+      await cell(201, 6002).fill('11'); await cell(202, 6002).fill('19'); await cell(203, 6002).fill('04');
+      await cell(201, 6002).click(); await page.keyboard.press('Shift+ArrowDown');
+      await beginFill(); await moveFill(cell(203, 6002)); await waitValue(203, 6002, '11'); await page.mouse.up();
+      assert.equal(await cell(202, 6002).inputValue(), '19');
+      await cell(201, 6003).fill('02'); await cell(202, 6003).fill('13'); await cell(203, 6003).fill('17');
+      await cell(202, 6003).click(); await page.keyboard.press('Shift+ArrowDown');
+      await beginFill(); await moveFill(cell(201, 6003)); await waitValue(201, 6003, '17'); await page.mouse.up();
+      assert.equal(await cell(202, 6003).inputValue(), '13'); assert.equal(await cell(203, 6003).inputValue(), '17');
+      for (const [student, values] of [[201,['10','20']], [202,['12','18']], [203,['05','06']]]) {
+        for (const [offset, value] of values.entries()) await cell(student, 6000 + offset).fill(value);
+      }
+      await cell(201, 6000).click(); await page.keyboard.press('Shift+ArrowRight'); await page.keyboard.press('Shift+ArrowDown');
+      await beginFill(); await moveFill(cell(203, 6001)); await waitValue(203, 6001, '20'); await page.mouse.up();
+      assert.deepEqual(await fillValues(203, 6000, 2), ['10','20'], 'A two-dimensional source repeats both columns in order');
+      await noReload(); await page.evaluate(() => localStorage.clear());
+      await page.goto('http://127.0.0.1:3001/?fillEfsrt'); await cell(201, 3).waitFor();
+      await page.locator('[data-efsrt-key="301"]').fill('0');
+      await cell(202, 4).fill('17'); await page.locator('[data-efsrt-key="302"]').fill('18');
+      await cell(203, 4).fill('19'); await page.locator('[data-efsrt-key="303"]').fill('20');
+      await cell(201, 4).click(); await page.keyboard.press('Shift+ArrowRight'); await page.keyboard.press('Shift+ArrowRight');
+      await beginFill(); await moveFill(page.locator('[data-efsrt-key="303"]')); await waitValue(203, 4, ''); await page.mouse.up();
+      assert.equal(await page.locator('[data-efsrt-key="302"]').inputValue(), '00');
+      assert.equal(await page.locator('[data-efsrt-key="303"]').inputValue(), '00');
+      assert.equal(await cell(202, 4).inputValue(), ''); assert.equal(await cell(201, 3).inputValue(), '14');
+      await page.evaluate(() => localStorage.clear());
+      await page.setViewportSize({ width: 800, height: 800 });
+      await page.goto('http://127.0.0.1:3001/?dense&fillScrollX'); await cell(201, 6000).waitFor(); await cell(201, 6000).fill('16'); await cell(201, 6000).click();
+      await beginFill();
+      const horizontalPoint = await cell(201, 6000).evaluate(element => { const scroll = element.closest('[tabindex="-1"]'), bounds = scroll.getBoundingClientRect(), cell = element.getBoundingClientRect(); return { x: bounds.left + scroll.clientWidth - 3, y: cell.top + cell.height / 2 }; });
+      await page.mouse.move(horizontalPoint.x, horizontalPoint.y);
+      await page.waitForFunction(() => { const input = document.querySelector('[data-nota-key="201:6020"]'); return input.value === '16' && input.closest('[tabindex="-1"]').scrollLeft > 100; });
+      await page.mouse.up(); await page.keyboard.press('Control+z'); assert.equal(await cell(201, 6020).inputValue(), '');
+      assert.equal(await cell(201, 6000).inputValue(), '16'); await noReload(); await page.evaluate(() => localStorage.clear());
+      await page.setViewportSize({ width: 1100, height: 800 });
+      await page.goto('http://127.0.0.1:3001/?manyStudents&fillHandle'); await cell(201, 3).waitFor(); await cell(201, 3).click();
+      await beginFill();
+      const scrollPoint = await cell(201, 3).evaluate(element => { const scroll = element.closest('[tabindex="-1"]'), bounds = scroll.getBoundingClientRect(), cell = element.getBoundingClientRect(); return { x: cell.left + cell.width / 2, y: bounds.top + scroll.clientHeight - 3 }; });
+      await page.mouse.move(scrollPoint.x, scrollPoint.y);
+      await page.waitForFunction(() => { const input = document.querySelector('[data-nota-key="215:3"]'); return input.value === '14' && input.closest('[tabindex="-1"]').scrollTop > 150; });
+      await page.mouse.up();
+      await page.keyboard.press('Control+z'); assert.equal(await cell(215, 3).inputValue(), '', 'Auto-scrolled fill is also a single undo operation');
+      assert.equal(await cell(201, 3).inputValue(), '14'); await noReload();
+      await page.evaluate(() => localStorage.clear());
+      await page.setViewportSize({ width: 1500, height: 1100 });
+      await page.goto('http://127.0.0.1:3001/?docente&finalizado'); await cell(201, 3).waitFor();
+      await cell(201, 3).click(); await page.keyboard.press('Shift+ArrowRight');
+      assert.equal(await fillHandle.isVisible(), false, 'Read-only registers do not expose the fill handle');
+      console.log('Arrastre: cuadrado y cruz negros, vista previa, cuatro direcciones, reemplazo, deshacer/rehacer, cancelar, reducir y autodesplazamiento. Correcto.');
+    }
+    {
+      await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://127.0.0.1:3001' });
+      const clipboard = () => page.evaluate(() => navigator.clipboard.readText());
+      const writeClipboard = text => page.evaluate(text => navigator.clipboard.writeText(text), text);
+      const values = () => page.locator('[data-nota-key], [data-efsrt-key]').evaluateAll(elements => elements.map(element => element.value));
+      const selectRange = async (rows, columns) => {
+        await cell(201, 3).click();
+        for (let col = 1; col < columns; col++) await page.keyboard.press('Shift+ArrowRight');
+        for (let row = 1; row < rows; row++) await page.keyboard.press('Shift+ArrowDown');
+      };
+      await page.evaluate(() => localStorage.clear());
+      await page.goto('http://127.0.0.1:3001/?cutClipboard'); await cell(201, 3).waitFor();
+      await cell(201, 3).click(); await page.keyboard.press('Control+x');
+      assert.equal(await clipboard(), '14');
+      assert.equal(await cell(201, 3).inputValue(), '', 'Ctrl+X immediately clears the source grade');
+      await page.waitForFunction(() => window.requests.length === 1);
+      assert.deepEqual(await page.evaluate(() => window.requests[0].input.notas), [{ matriculaId: 201, indicadorCapacidadId: 3, nota: null }], 'The cut is queued for saving');
+      await resolveSave(0);
+      await page.evaluate(() => document.addEventListener('paste', event => {
+        window.usedCutClipboard = { text: event.clipboardData.getData('text/plain'), id: event.clipboardData.getData('application/x-cetprosmp-registro-cut') };
+      }, { once: true }));
+      await cell(202, 3).click(); await page.keyboard.press('Control+v');
+      assert.equal(await cell(202, 3).inputValue(), '14');
+      assert(await page.evaluate(() => window.usedCutClipboard.id), 'Native paste preserves the cut marker');
+      await cell(203, 3).click(); await page.keyboard.press('Control+v');
+      assert.equal(await cell(203, 3).inputValue(), '', 'A cut can only be pasted once');
+      await page.keyboard.press('Control+v'); assert.equal(await cell(203, 3).inputValue(), '');
+      await cell(202, 3).click(); await page.keyboard.press('Control+v');
+      assert.equal(await cell(202, 3).inputValue(), '14', 'Repeating a consumed cut does not erase existing values');
+      await page.keyboard.press('Control+z'); assert.equal(await cell(202, 3).inputValue(), '');
+      await page.keyboard.press('Control+z'); assert.equal(await cell(201, 3).inputValue(), '14', 'Undo restores the cut source');
+      await page.keyboard.press('Control+y'); assert.equal(await cell(201, 3).inputValue(), '');
+      await page.keyboard.press('Control+y'); assert.equal(await cell(202, 3).inputValue(), '14');
+      await cell(203, 3).click(); await page.keyboard.press('Control+v');
+      assert.equal(await cell(203, 3).inputValue(), '', 'Undo and redo do not reactivate a consumed cut');
+      await cell(202, 3).click(); await page.keyboard.press('Control+c');
+      await cell(201, 3).click(); await page.keyboard.press('Control+v');
+      await cell(203, 3).click(); await page.keyboard.press('Control+v');
+      assert.equal(await cell(201, 3).inputValue(), '14'); assert.equal(await cell(203, 3).inputValue(), '14', 'Copying the same value replaces the cut and permits repeated pastes');
+      await selectRange(3, 2); await page.keyboard.press('Delete');
+
+      await cell(201, 3).click(); await writeClipboard('10\t11\n12\t13'); await page.keyboard.press('Control+v');
+      await selectRange(2, 2); await page.keyboard.press('Control+x');
+      assert.equal(await clipboard(), '10\t11\n12\t13', 'Cut preserves the order and shape of a range');
+      assert.deepEqual(await values(), Array(9).fill(''));
+      await cell(202, 3).click(); await page.keyboard.press('Control+v');
+      assert.deepEqual(await values(), ['', '', '', '10', '11', '', '12', '13', '']);
+      assert.equal(await cell(202, 3).evaluate(element => document.activeElement === element), true, 'Paste keeps the active cell at the destination start');
+      await page.keyboard.press('Control+v');
+      assert.deepEqual(await values(), ['', '', '', '10', '11', '', '12', '13', ''], 'A cut range is consumed as one paste without changing the selected result');
+      await page.keyboard.press('Control+z'); assert.deepEqual(await values(), Array(9).fill(''));
+      await page.keyboard.press('Control+z'); assert.deepEqual(await values(), ['10','11','','12','13','','','',''], 'A range cut is one undo operation');
+
+      await cell(201, 3).click(); await writeClipboard('10\t11\t12\n13\t14\t15'); await page.keyboard.press('Control+v');
+      await selectRange(2, 4); await page.keyboard.press('Control+x');
+      assert.deepEqual((await clipboard()).split('\n').map(row => row.split('\t')).map(row => [row[0], row[1], row[3]]), [['10','11','12'], ['13','14','15']]);
+      assert.deepEqual(await values(), Array(9).fill(''), 'Cut clears selected EFSRT and grades together');
+      await page.keyboard.press('Control+z'); assert.deepEqual(await values(), ['10','11','12','13','14','15','','','']);
+      await cell(201, 3).click(); await page.keyboard.press('ArrowRight'); await page.keyboard.press('Control+x');
+      assert.equal(await clipboard(), '11'); assert.equal(await cell(201, 4).inputValue(), '', 'Cut works after keyboard navigation without a range selection');
+      await page.keyboard.press('Control+z'); assert.equal(await cell(201, 4).inputValue(), '11');
+
+      await selectRange(2, 2);
+      await cell(201, 3).locator('..').evaluate(element => {
+        element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+        window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      });
+      await page.keyboard.press('Shift+ArrowRight'); await page.keyboard.press('Shift+ArrowDown'); await page.keyboard.press('Control+x');
+      assert.equal(await clipboard(), '10\t11\n13\t14', 'Cut works with focus on the table container');
+      assert.deepEqual(await values(), ['','','12','','','15','','','']);
+      assert.equal(await page.getByText(/copiad[oa].*(satisfactoriamente|portapapeles)/i).count(), 0, 'Cut does not show a success alert');
+      await noReload();
+      await page.evaluate(() => { const input = document.createElement('input'); input.id = 'outside-cut'; input.value = 'Texto externo'; document.body.append(input); input.focus(); input.select(); });
+      await page.keyboard.press('Control+x');
+      assert.equal(await clipboard(), 'Texto externo'); assert.equal(await page.locator('#outside-cut').inputValue(), '', 'Inputs outside the table retain native cut behavior');
+      await page.evaluate(() => localStorage.clear());
+      await page.goto('http://127.0.0.1:3001/?docente&finalizado'); await cell(201, 3).waitFor();
+      await cell(201, 3).click(); await page.keyboard.press('Control+x');
+      assert.equal(await cell(201, 3).inputValue(), '14', 'Read-only grades cannot be cut');
+      assert.equal(await page.evaluate(() => window.calls.filter(call => call.name === 'saveRegistroAuxiliar').length), 0);
+      console.log('Cortar: Ctrl+X/Ctrl+V reales, celda, rangos, EFSRT, guardado, deshacer/rehacer, foco y solo lectura. Correcto.');
+    }
+    {
+      const pasteRange = (locator, text) => locator.evaluate((element, text) => {
+        const data = new DataTransfer(); data.setData('text/plain', text);
+        element.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+      }, text);
+      const pastedGrid = (height, width) => page.evaluate(({ height, width }) => Array.from({ length: height }, (_, row) =>
+        Array.from({ length: width }, (_, col) => document.querySelector(`[data-nota-key="${201 + row}:${6000 + col}"]`).value)), { height, width });
+      const selectGrid = async (height, width) => {
+        await cell(201, 6000).click();
+        for (let col = 1; col < width; col++) await page.keyboard.press('Shift+ArrowRight');
+        for (let row = 1; row < height; row++) await page.keyboard.press('Shift+ArrowDown');
+      };
+      const selectedPositions = () => page.locator('[data-selection-row]').evaluateAll(elements => elements
+        .filter(element => getComputedStyle(element).boxShadow !== 'none')
+        .map(element => [Number(element.dataset.selectionRow), Number(element.dataset.selectionCol)]));
+      const assertPastedRange = async (height, width) => {
+        await page.waitForFunction(() => document.activeElement?.getAttribute('data-nota-key') === '201:6000');
+        assert.deepEqual(await selectedPositions(), Array.from({ length: height }, (_, row) =>
+          Array.from({ length: width }, (_, col) => [8 + row, 3 + col])).flat(), 'The pasted range stays selected at its starting cell');
+      };
+      await page.goto('http://127.0.0.1:3001/?dense&pasteSelection'); await cell(201, 6000).waitFor();
+      await cell(201, 6000).click();
+      const originalGrid = Array.from({ length: 3 }, (_, row) => Array.from({ length: 6 }, (_, col) => String(1 + row * 6 + col)));
+      await pasteRange(cell(201, 6000), originalGrid.map(row => row.join('\t')).join('\r\n') + '\r\n');
+      assert.deepEqual(await pastedGrid(3, 6), originalGrid.map(row => row.map(value => value.padStart(2, '0'))));
+      await assertPastedRange(3, 6);
+      await cell(201, 6006).fill('17'); await cell(201, 6006).click();
+      const copied = await page.evaluate(() => {
+        const data = new DataTransfer(); document.dispatchEvent(new ClipboardEvent('copy', { clipboardData: data, bubbles: true, cancelable: true }));
+        return data.getData('text/plain');
+      });
+      assert.equal(copied, '17');
+      await selectGrid(3, 6); await pasteRange(cell(201, 6000), copied);
+      assert.deepEqual(await pastedGrid(3, 6), Array.from({ length: 3 }, () => Array(6).fill('17')), 'An internal single value overwrites every selected grade');
+      await assertPastedRange(3, 6);
+      await page.keyboard.press('Control+z');
+      assert.deepEqual(await pastedGrid(3, 6), originalGrid.map(row => row.map(value => value.padStart(2, '0'))), 'One undo restores the entire fill');
+      await page.keyboard.press('Control+y');
+      assert.deepEqual(await pastedGrid(3, 6), Array.from({ length: 3 }, () => Array(6).fill('17')));
+      await selectGrid(3, 5); await pasteRange(cell(201, 6000), '10\t11\r\n12\t13\r\n');
+      assert.deepEqual(await pastedGrid(3, 5), [['10','11','10','11','10'], ['12','13','12','13','12'], ['10','11','10','11','10']], 'The clipboard block tiles in both directions and clips to the selection');
+      await assertPastedRange(3, 5);
+      await cell(201, 6000).locator('..').evaluate(element => {
+        element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+        window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      });
+      await page.keyboard.press('Shift+ArrowRight'); await page.keyboard.press('Shift+ArrowDown');
+      await cell(201, 6000).evaluate(element => {
+        const data = new DataTransfer(); data.setData('text/plain', '15\r\n');
+        element.closest('[tabindex="-1"]').dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+      });
+      assert.deepEqual(await pastedGrid(2, 2), [['15','15'], ['15','15']], 'Paste also works when the selected table container has focus');
+      await assertPastedRange(2, 2);
+      await cell(201, 6000).click(); await pasteRange(cell(201, 6000), '0\t21\ttexto\t7,5\t-1\t');
+      assert.deepEqual((await pastedGrid(1, 6))[0], ['00','15','10','07.5','10',''], 'Blank cells clear values, comma decimals work, and invalid grades are skipped');
+      await assertPastedRange(1, 6);
+      await selectGrid(2, 2); await pasteRange(cell(201, 6000), '');
+      assert.deepEqual(await pastedGrid(2, 2), [['',''], ['','']], 'An explicitly copied blank clears the selection');
+      await cell(203, 6024).click(); await pasteRange(cell(203, 6024), '12\t13\t14\n15\t16\t17');
+      assert.equal(await cell(203, 6024).inputValue(), '12');
+      assert.equal(await page.locator('[data-efsrt-key="303"]').inputValue(), '13');
+      await page.waitForFunction(() => document.activeElement?.getAttribute('data-nota-key') === '203:6024');
+      assert.deepEqual(await selectedPositions(), [[10,27], [10,28], [10,29]], 'The pasted selection stops at table boundaries and includes its calculated average');
+      await noReload();
+      await page.evaluate(() => localStorage.clear());
+      await page.goto('http://127.0.0.1:3001/?docente&finalizado'); await cell(201, 3).waitFor();
+      await pasteRange(cell(201, 3), '19');
+      assert.equal(await cell(201, 3).inputValue(), '14', 'Read-only grades reject pasted values');
+      console.log('Pegado: valor repetido, bloques en dos direcciones, reemplazo, seleccion y foco, vacios, limites, validacion y deshacer/rehacer. Correcto.');
+    }
+    await page.goto('http://127.0.0.1:3001/?gradeHistory'); await cell(201, 3).waitFor();
+    await cell(201, 3).fill('');
+    await cell(201, 3).pressSequentially('18');
+    await page.waitForFunction(() => window.requests.length === 1);
+    await page.keyboard.press('Control+z');
+    assert.equal(await cell(201, 3).inputValue(), '14', 'Undo groups the complete cell edit while saving');
+    await resolveSave(0);
+    await page.waitForFunction(() => window.requests.length === 2);
+    assert.equal(await page.evaluate(() => window.requests[1].input.notas[0].nota), 14, 'Undo is saved after the older request');
+    await page.keyboard.press('Control+y');
+    assert.equal(await cell(201, 3).inputValue(), '18');
+    await resolveSave(1);
+    await page.waitForFunction(() => window.requests.length === 3);
+    assert.equal(await page.evaluate(() => window.requests[2].input.notas[0].nota), 18, 'Redo is also saved');
+    await resolveSave(2);
+    await page.keyboard.press('Control+z');
+    await page.keyboard.press('Control+Shift+z');
+    assert.equal(await cell(201, 3).inputValue(), '18');
+    await noReload();
+    await cell(201, 3).evaluate(element => {
+      const data = new DataTransfer(); data.setData('text', '10\t11\t12\n13\t14\t15');
+      element.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+    });
+    const historyValues = () => page.locator('[data-nota-key], [data-efsrt-key]').evaluateAll(elements => elements.map(el => el.value));
+    const pastedValues = ['10', '11', '12', '13', '14', '15', '', '', ''];
+    assert.deepEqual(await historyValues(), pastedValues);
+    await page.keyboard.press('Control+z');
+    assert.deepEqual(await historyValues(), ['18', '', '', '', '', '', '', '', ''], 'Undo restores the entire mixed paste');
+    await page.keyboard.press('Control+y');
+    assert.deepEqual(await historyValues(), pastedValues);
+    await cell(201, 3).click();
+    for (let index = 0; index < 3; index++) await page.keyboard.press('Shift+ArrowRight');
+    await page.keyboard.press('Shift+ArrowDown');
+    await page.keyboard.press('Delete');
+    assert.deepEqual(await historyValues(), Array(9).fill(''));
+    await page.keyboard.press('Control+z');
+    assert.deepEqual(await historyValues(), pastedValues, 'One undo restores the deleted range including EFSRT');
+    await page.keyboard.press('Control+y');
+    assert.deepEqual(await historyValues(), Array(9).fill(''));
+    await page.keyboard.press('Control+z');
+    await cell(203, 3).fill('17');
+    await page.keyboard.press('Control+y');
+    assert.equal(await cell(203, 3).inputValue(), '17', 'A new edit discards redo');
+    await page.keyboard.press('Control+z');
+    assert.equal(await cell(203, 3).inputValue(), '');
+    await page.locator('[data-efsrt-key="301"]').fill('19');
+    await page.keyboard.press('Control+z');
+    assert.equal(await page.locator('[data-efsrt-key="301"]').inputValue(), '12');
+    await page.keyboard.press('Control+y');
+    assert.equal(await page.locator('[data-efsrt-key="301"]').inputValue(), '19');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload(); await cell(201, 3).waitFor();
+    await cell(201, 3).focus(); await page.keyboard.press('Control+z');
+    assert.equal(await cell(201, 3).inputValue(), '14', 'Reload starts a new history');
+    console.log('Historial en navegador: escritura, pegado, rangos, EFSRT, rehacer, guardado en curso y reinicio. Correcto.');
+
+    const waitForGradeFocus = (student, indicator, selected = true) => page.waitForFunction(({ key, selected }) => {
+      const input = document.activeElement;
+      return input?.getAttribute('data-nota-key') === key && (!selected || getComputedStyle(input.closest('td')).boxShadow !== 'none');
+    }, { key: `${student}:${indicator}`, selected });
+    const assertHistoryCellVisible = async () => {
+      const bounds = await page.evaluate(() => {
+        const input = document.activeElement;
+        const cell = input.closest('td');
+        const container = input.closest('[tabindex="-1"]');
+        const viewport = container.getBoundingClientRect();
+        const header = container.querySelector('thead').getBoundingClientRect();
+        const rect = cell.getBoundingClientRect();
+        return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right,
+          minTop: header.bottom, maxBottom: viewport.bottom - (container.offsetHeight - container.clientHeight),
+          minLeft: viewport.left, maxRight: viewport.left + container.clientWidth,
+          selected: getComputedStyle(cell).boxShadow !== 'none' };
+      });
+      assert(bounds.selected, `The active grade is highlighted: ${JSON.stringify(bounds)}`);
+      assert(bounds.top >= bounds.minTop - 1 && bounds.bottom <= bounds.maxBottom + 1, `The active grade is vertically visible: ${JSON.stringify(bounds)}`);
+      assert(bounds.left >= bounds.minLeft - 1 && bounds.right <= bounds.maxRight + 1, `The active grade is horizontally visible: ${JSON.stringify(bounds)}`);
+    };
+    await page.setViewportSize({ width: 800, height: 800 });
+    await page.goto('http://127.0.0.1:3001/?historyFocus&manyStudents&dense'); await cell(201, 6000).waitFor();
+    await cell(201, 6000).fill('10');
+    await cell(290, 6024).fill('19');
+    await cell(201, 6000).click();
+    await page.keyboard.press('Control+z'); await waitForGradeFocus(290, 6024);
+    assert.equal(await cell(290, 6024).inputValue(), ''); await assertHistoryCellVisible();
+    await page.keyboard.press('Control+z'); await waitForGradeFocus(201, 6000);
+    assert.equal(await cell(201, 6000).inputValue(), ''); await assertHistoryCellVisible();
+    await page.keyboard.press('Control+y'); await waitForGradeFocus(201, 6000);
+    assert.equal(await cell(201, 6000).inputValue(), '10'); await assertHistoryCellVisible();
+    await page.keyboard.press('Control+y'); await waitForGradeFocus(290, 6024);
+    assert.equal(await cell(290, 6024).inputValue(), '19'); await assertHistoryCellVisible();
+    await noReload();
+    await page.setViewportSize({ width: 1500, height: 1100 });
+    await page.goto('http://127.0.0.1:3001/?navigation&historyFocus'); await cell(202, 1102).waitFor();
+    await cell(202, 1102).fill('17'); await page.keyboard.press('ArrowRight'); await waitForGradeFocus(202, 1400, false);
+    await cell(203, 1522).fill('19'); await page.keyboard.press('ArrowRight'); await waitForGradeFocus(203, 1600, false);
+    await page.keyboard.press('Control+z'); await waitForGradeFocus(203, 1522);
+    assert.equal(await cell(203, 1522).inputValue(), ''); await assertHistoryCellVisible();
+    await page.keyboard.press('Control+z'); await waitForGradeFocus(202, 1102);
+    assert.equal(await cell(202, 1102).inputValue(), ''); await assertHistoryCellVisible();
+    await page.keyboard.press('Control+y'); await waitForGradeFocus(202, 1102);
+    assert.equal(await cell(202, 1102).inputValue(), '17'); await assertHistoryCellVisible();
+    await page.keyboard.press('Control+y'); await waitForGradeFocus(203, 1522);
+    assert.equal(await cell(203, 1522).inputValue(), '19'); await assertHistoryCellVisible();
+    await page.getByTestId('ChevronRightIcon').locator('..').click();
+    await cell(201, 1600).waitFor();
+    await page.keyboard.press('Control+z'); await waitForGradeFocus(203, 1522);
+    assert.equal(await cell(203, 1522).inputValue(), ''); await assertHistoryCellVisible();
+    const efsrtCell = page.locator('[data-efsrt-key="302"]');
+    const waitForEfsrtFocus = () => page.waitForFunction(() => {
+      const input = document.activeElement;
+      return input?.getAttribute('data-efsrt-key') === '302' && getComputedStyle(input.closest('td')).boxShadow !== 'none';
+    });
+    await efsrtCell.fill('16');
+    await page.getByTestId('ChevronLeftIcon').locator('..').click();
+    await page.keyboard.press('Control+z');
+    await waitForEfsrtFocus();
+    assert.equal(await efsrtCell.inputValue(), ''); await assertHistoryCellVisible();
+    assert.equal(await cell(201, 1400).count(), 1, 'EFSRT restores the page on which it was edited');
+    await page.keyboard.press('Control+y');
+    await waitForEfsrtFocus();
+    assert.equal(await efsrtCell.inputValue(), '16'); await assertHistoryCellVisible();
+    await noReload();
+    await page.evaluate(() => localStorage.clear());
+    console.log('Historial y foco: celda activa, desplazamiento, paginas de unidades, botones y EFSRT. Correcto.');
+
     await page.goto('http://127.0.0.1:3001/?deleteRange'); await cell(201, 3).waitFor();
     await cell(201, 3).evaluate(element => {
       const data = new DataTransfer(); data.setData('text', '10\t11\t12\n13\t14\t15\n16\t17\t18');

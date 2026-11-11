@@ -48,8 +48,17 @@ export async function savePartialRegistroGrades(input: {
   const efsrtRows = new Map(data.efsrt.map(row => [row.moduloEstudianteId, row]));
   const mutations: string[] = [];
   const write = (table: string, id: number | undefined, fields: Record<string, unknown>) => {
-    const literal = Object.entries(fields).map(([name, value]) => `${name}:${JSON.stringify(value)}`).join(",");
-    mutations.push(`w${mutations.length}:${table}_${id ? "update" : "insert"}(${id ? `id:${id},` : ""}data:{${literal}}) @check(expr:"this != null",message:"El registro cambió durante el guardado. Inténtalo otra vez.")`);
+    const index = mutations.length;
+    // A response dependency starts another SQL phase inside the same transaction.
+    // Keep each phase below PostgreSQL's 100-argument jsonb_build_object limit.
+    const dependency = index > 0 && index % 40 === 0 ? ` + response.w${index - 1}.id * 0` : "";
+    const entries = Object.entries(fields);
+    const dependentField = !id && dependency ? entries.find(([, value]) => Number.isInteger(value))?.[0] : undefined;
+    const literal = entries.map(([name, value]) => name === dependentField
+      ? `${name}_expr:${JSON.stringify(`${value}${dependency}`)}`
+      : `${name}:${JSON.stringify(value)}`).join(",");
+    const identifier = id ? dependency ? `id_expr:${JSON.stringify(`${id}${dependency}`)},` : `id:${id},` : "";
+    mutations.push(`w${index}:${table}_${id ? "update" : "insert"}(${identifier}data:{${literal}}) @check(expr:"this != null",message:"El registro cambió durante el guardado. Inténtalo otra vez.")`);
   };
   const affectedCapacities = new Map<number, Set<number>>();
   for (const row of input.notas) {

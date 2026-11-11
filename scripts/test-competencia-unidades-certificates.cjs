@@ -22,6 +22,20 @@ async function main() {
   assert.deepEqual(rows.map(r => r.competencia), ['Tecnica','Tecnica','Tecnica','Empleabilidad 4','Empleabilidad 5']);
   assert.ok(rows[3].capacidades.includes('Capacidad conservada'));
   assert.equal(Number(rows[3].nota), 18);
+  const numbered = buildCertificateUnitRows({ ...data,
+    unidades: data.unidades.map(unit => ({ ...unit, competencia: { ...unit.competencia, id: unit.id < 4 ? 11 : 22 } })),
+    capacidades: [
+      ...data.capacidades,
+      { id: 2, descripcion: 'Otra capacidad', unidadDidacticaId: 4 },
+    ],
+  }, { matriculaId: 9 }, {
+    competencias: new Map([[11, 'UC3'], [22, 'CE2']]),
+    capacidades: new Map([[1, 'C4'], [2, 'C5']]),
+  });
+  assert.equal(numbered[0].competencia, 'UC3 Tecnica');
+  assert.equal(numbered[3].competencia, 'CE2 Empleabilidad 4');
+  assert.equal(numbered[3].capacidades, 'CE2 C4 Capacidad conservada\n\nCE2 C5 Otra capacidad');
+  assert(!numbered[3].capacidades.includes('•'), 'Curricular codes replace capacity bullets');
   assert.equal(certificateTechnicalCompetencyText({
     grupoModulo: { modulo: { competencias: [{ id: 1, nombre: 'Tecnica original', tipo: 'TECNICA' }] } },
     unidades: [

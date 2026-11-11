@@ -881,8 +881,10 @@ export default function EstructuraAcademicaMasterDetail({
     return sortCompetencias(previousModulo?.competencias ?? []).filter(item => !currentIds.has(item.id));
   }, [previousModulo, selectedModulo?.competencias, sortCompetencias]);
   const todasUnidades = useMemo(() => curricularUnitsInOrder(selectedModulo), [selectedModulo]);
-  const descendantCodes = useMemo(() => curricularPlanDescendantCodes(selectedPlanModules, selectedModulo?.planId), [selectedPlanModules, selectedModulo?.planId]);
-  const competencyCodes = useMemo(() => curricularPlanCompetencyCodes([...competencyCodeModules, ...modulos], selectedModulo?.planId), [competencyCodeModules, modulos, selectedModulo?.planId]);
+  const careerType = (selectedModulo?.plan?.carrera?.tipoCarrera?.nombre ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ');
+  const restartCodesPerModule = /\bopcion(?:es)? ocupacional(?:es)?\b/.test(careerType);
+  const descendantCodes = useMemo(() => curricularPlanDescendantCodes(selectedPlanModules, selectedModulo?.planId, restartCodesPerModule), [selectedPlanModules, selectedModulo?.planId, restartCodesPerModule]);
+  const competencyCodes = useMemo(() => curricularPlanCompetencyCodes([...competencyCodeModules, ...modulos], selectedModulo?.planId, restartCodesPerModule), [competencyCodeModules, modulos, selectedModulo?.planId, restartCodesPerModule]);
   const competencias = useMemo(() => sortCompetencias((selectedModulo?.competencias ?? []).filter(item => showHidden.competencia || item.periodActive !== false)),
     [selectedModulo, showHidden.competencia, sortCompetencias]);
   const selectedCompetencia = competencias.find(competencia => competencia.id === selectedCompetenciaId) ?? competencias[0] ?? null;

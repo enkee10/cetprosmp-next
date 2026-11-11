@@ -81,6 +81,14 @@ assert.equal(planCompetencyCodes(sharedPlans, 2).get(10), 'UC4', 'Shared modules
 assert.equal(planCompetencyCodes([{ id: 0, planId: 1, orden: 0, competencias: [] }, ...planModules], 1).get(21), 'UC4', 'An empty module consumes no competency numbers');
 assert.deepEqual(planModules, planSnapshot, 'Plan coding never changes stored orders or content');
 
+const terminalCompetencies = planCompetencyCodes(planModules, 1, true);
+assert.deepEqual([10, 12, 14, 21, 23].map(id => terminalCompetencies.get(id)), ['UC1', 'UC2', 'UC3', 'UC1', 'UC2'], 'Occupational competencies restart in each terminal module');
+assert.deepEqual([11, 13, 22].map(id => terminalCompetencies.get(id)), ['CE1', 'CE2', 'CE1'], 'Each terminal module also has its own employability sequence');
+assert.equal(terminalCompetencies.has(31), false, 'Independent numbering still excludes other plans');
+assert.deepEqual(planCompetencyCodes(movedModules, 1, true), terminalCompetencies, 'Reordering terminal modules does not renumber their competencies');
+assert.equal(planCompetencyCodes(sharedPlans, 2, true).get(10), 'UC1', 'Shared terminal modules restart in the selected plan edition');
+assert.equal(planCompetencyCodes(planModules.filter(module => module.planId === 1), undefined, true).get(21), 'UC1', 'Terminal numbering also works without an explicit plan ID');
+
 const indicator = (id, activities = [], orden = 1) => ({ id, orden, aprendizajes: [{ id: id + 1000, actividades: activities }] });
 const capacity = (id, indicators, orden = 1) => ({ id, orden, indicadoresCapacidad: indicators });
 const unit = (id, competenciaId, orden, capacities) => ({ id, competenciaId, orden, capacidadesTerminales: capacities });
@@ -141,6 +149,24 @@ const continuedPlan = [
     unit(1002, 300, 1, [capacity(2002, [indicator(3002)])]),
   ] },
 ];
+const terminalPlan = continuedPlan.map(module => ({ ...module,
+  competencias: module.competencias.filter(item => !item.esContinuacion),
+  unidadesDidacticas: module.unidadesDidacticas.filter(item => item.competenciaId !== 200 || module.id === 1),
+}));
+const terminalSnapshot = structuredClone(terminalPlan);
+const terminalDescendants = planDescendantCodes(terminalPlan, 7, true);
+assert.deepEqual([1000, 1002].map(id => terminalDescendants.unidades.get(id)), ['UD1', 'UD1'], 'Units restart in every independent terminal module');
+assert.deepEqual([1000, 1002].map(id => planDescendantCodes(terminalPlan, 7).unidades.get(id)), ['UD1', 'UD2'], 'Study programs retain continuous numbering across modules');
+const terminalWithHidden = terminalPlan.map(module => ({ ...module,
+  unidadesDidacticas: module.unidadesDidacticas.map(item => ({ ...item, periodActive: false })),
+}));
+assert.deepEqual(planDescendantCodes(terminalWithHidden, 7, true), terminalDescendants, 'Hiding units does not change terminal module codes');
+assert.deepEqual(planDescendantCodes(terminalPlan.slice().reverse(), 7, true), terminalDescendants, 'Terminal numbering preserves stored module order');
+assert.deepEqual(planDescendantCodes(terminalPlan.filter(module => module.id === 2), 7, true), {
+  unidades: new Map([[1002, 'UD1']]), capacidades: new Map([[2002, 'C1']]),
+  indicadores: new Map([[3002, 'I1']]), sesiones: new Map(),
+}, 'Teachers assigned only a later terminal module start its numbering at one');
+assert.deepEqual(terminalPlan, terminalSnapshot, 'Terminal numbering never changes stored curriculum data');
 const continuedCompetencyCodes = planCompetencyCodes(continuedPlan, 7);
 assert.deepEqual([100, 200, 300].map(id => continuedCompetencyCodes.get(id)), ['UC1', 'UC2', 'UC3'], 'A continuation keeps its first-appearance code and new competencies follow it');
 const continuedDescendantCodes = planDescendantCodes(continuedPlan, 7);
@@ -215,6 +241,7 @@ const teacherHandlers = load('functions/src/modules/academico/handlers.ts', {
   '../settings/handlers.js': { getConfiguredSemestreConsultaIds: async () => [] },
   '../planes/periodSelection.js': { listCurricularSemesters: async () => [semestre], academicPeriodData: async () => ({}) },
   '../competencias/model.js': { projectUnidadRelations: rows => rows },
+  './curricularGradeProtection.js': { readCurricularGradeUsage: async () => ({ modules: [], units: [], capacities: [], indicators: [] }) },
   './semesterPlans.js': load('functions/src/modules/academico/semesterPlans.ts'),
 });
 (async () => {

@@ -106,6 +106,7 @@ type DownloadResponse = {
 };
 
 const createEmptySelectionModel = (): GridRowSelectionModel => ({ type: 'include', ids: new Set<GridRowId>() });
+const getRowHeight = () => 'auto' as const;
 
 const selectMenuProps = {
   disableScrollLock: true,
@@ -339,6 +340,11 @@ export default function CertificadosTitulosPage() {
       headerName: 'Grupo-modulo',
       minWidth: 300,
       flex: 1,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ py: 1, whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
+          {params.row.grupoModuloNombre}
+        </Typography>
+      ),
     },
     {
       field: 'selectionOrder',
@@ -495,6 +501,7 @@ export default function CertificadosTitulosPage() {
         <IntranetDataGrid
           rows={rows}
           columns={columns}
+          getRowHeight={getRowHeight}
           checkboxSelection
           loading={loadingOptions}
           rowSelectionModel={selectionModel}

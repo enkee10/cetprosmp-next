@@ -16,6 +16,9 @@ import { applyPeriodSelection } from "../planes/periodSelection.js";
 import { getDatosGeneralesGlobales } from "../datos-generales/service.js";
 import { requirePermission } from "../core/permissions.js";
 import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
+import { fitCertificateTable } from "./certificateTableLayout.js";
+import { buildCurriculumDescendantCodes } from "../planes/curriculumCodes.js";
+import { readCurriculumGraph } from "../planes/curriculumGraph.js";
 
 type ReportDocumentType = "acta" | "nomina";
 
@@ -105,6 +108,7 @@ type ReporteGrupoModuloOption = {
     duracionEfsrt?: number | null;
     creditosEfsrt?: number | null;
     plan?: {
+      id?: number;
       planEstudio?: string | null;
       resolucionTipo?: string | null;
       nro?: string | null;
@@ -440,6 +444,7 @@ const REPORTE_DETALLE_QUERY = `
         duracionEfsrt
         creditosEfsrt
         plan {
+          id
           planEstudio
           resolucionTipo
           nro
@@ -2116,20 +2121,6 @@ function removeWorksheetMergeRanges(xml: string, predicate: (range: string) => b
   return `${xml.slice(0, match.index)}${nextSection}${xml.slice((match.index ?? 0) + match[0].length)}`;
 }
 
-function setRowHeight(xml: string, row: number, heightPoints: number) {
-  const normalizedHeight = Math.max(1, heightPoints);
-  const regex = new RegExp(`<row\\b[^>]*\\br="${row}"[^>]*(?:/>|>[\\s\\S]*?</row>)`, "i");
-  if (regex.test(xml)) {
-    return xml.replace(regex, (rowXml) =>
-      rowXml.replace(/^<row\b[^>]*(?:\/>|>)/i, (tag) =>
-        setXmlAttribute(setXmlAttribute(tag, "ht", normalizedHeight.toFixed(2)), "customHeight", "1"),
-      ),
-    );
-  }
-  const newRow = `<row r="${row}" ht="${normalizedHeight.toFixed(2)}" customHeight="1"/>`;
-  return xml.replace(/<\/sheetData>/i, `${newRow}</sheetData>`);
-}
-
 function retiredStudentMergeRange(cell: string) {
   const { column, row } = cellParts(cell);
   if (column === "X") return `X${row}:AC${row}`;
@@ -2487,20 +2478,6 @@ async function applyCertificatePlanEstudiosUpdates(
     nextXml = addWorksheetMergeRange(nextXml, `F${row}:H${row}`);
   }
 
-  const weights = Array.from({ length: rowCount }, (_, index) => certificateRowWeight(unitRows[index] ?? {
-    competencia: "",
-    unidad: "",
-    creditos: "",
-    horas: "",
-    capacidades: "",
-    nota: "",
-  }));
-  const totalWeight = weights.reduce((sum, value) => sum + value, 0) || 1;
-  const totalHeightPoints = 400 * 0.75;
-  for (let index = 0; index < rowCount; index += 1) {
-    nextXml = setRowHeight(nextXml, firstDataRow + index, totalHeightPoints * (weights[index] / totalWeight));
-  }
-
   const competencia = cleanText(unitRows[0]?.competencia);
   for (let index = 0; index < rowCount; index += 1) {
     const row = firstDataRow + index;
@@ -2532,6 +2509,7 @@ async function applyCertificatePlanEstudiosUpdates(
     }
   }
   sharedStrings.save();
+  await fitCertificateTable(zip, worksheet.path, worksheet.name, firstDataRow, rowCount);
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
 
@@ -3013,32 +2991,31 @@ function certificateTechnicalCompetencyText(data: ReporteDocumentoData) {
     .join("\n\n");
 }
 
-function buildCertificateUnitRows(data: ReporteDocumentoData, student: ReporteEstudiante): CertificateUnitTableRow[] {
+function buildCertificateUnitRows(data: ReporteDocumentoData, student: ReporteEstudiante,
+  codes?: Pick<ReturnType<typeof buildCurriculumDescendantCodes>, "competencias" | "capacidades">,
+): CertificateUnitTableRow[] {
   const unitMap = unidadPromedioMap(data);
   const capacitiesByUnit = new Map<number, string[]>();
+  const competencyByUnit = new Map(data.unidades.map(unit => [unit.id, unit.competencia?.id]));
   for (const capacidad of data.capacidades) {
     if (!capacidad.unidadDidacticaId) continue;
     const current = capacitiesByUnit.get(capacidad.unidadDidacticaId) ?? [];
     const description = cleanText(capacidad.descripcion || capacidad.sigla || "");
-    if (description) current.push(description);
+    const competenciaId = competencyByUnit.get(capacidad.unidadDidacticaId);
+    const prefix = [codes?.competencias.get(competenciaId ?? -1), codes?.capacidades.get(capacidad.id)].filter(Boolean).join(" ");
+    if (description) current.push([prefix, description].filter(Boolean).join(" "));
     capacitiesByUnit.set(capacidad.unidadDidacticaId, current);
   }
 
   const competencia = certificateTechnicalCompetencyText(data);
   return data.unidades.map((unit) => ({
-    competencia: cleanText(unit.competencia?.nombre ?? competencia),
+    competencia: [codes?.competencias.get(unit.competencia?.id ?? -1), cleanText(unit.competencia?.nombre ?? competencia)].filter(Boolean).join(" "),
     unidad: cleanText(unit.nombre || unit.sigla || "").toLocaleUpperCase("es-PE"),
     creditos: unit.creditos ?? "",
     horas: unit.duracion ?? "",
-    capacidades: (capacitiesByUnit.get(unit.id) ?? []).map((value) => `• ${value}`).join("\n\n"),
+    capacidades: (capacitiesByUnit.get(unit.id) ?? []).join("\n\n"),
     nota: formatGrade(unitMap.get(`${student.matriculaId}:${unit.id}`)),
   }));
-}
-
-function certificateRowWeight(row: CertificateUnitTableRow) {
-  const text = cleanText(row.capacidades);
-  const lineCount = row.capacidades.split(/\n+/).filter((line) => cleanText(line)).length;
-  return Math.max(1, text.length / 90, lineCount * 0.9);
 }
 
 function buildCertificateTokens(
@@ -3210,10 +3187,13 @@ async function generateCertificadoPlanEstudios(input: {
   const avatarUrl = useAvatars ? cleanText(student.matricula?.user?.avatar || "") : "";
   const generatedAt = new Date().toISOString();
   const certificado = await ensureCertificadoRegistro(data, student, generatedAt);
+  const planId = data.grupoModulo.modulo?.plan?.id;
+  if (!planId) throw new https.HttpsError("failed-precondition", "El modulo necesita un plan para numerar sus competencias y capacidades.");
+  const curricularCodes = buildCurriculumDescendantCodes(await readCurriculumGraph(planId));
   const xlsxBuffer = await applyCertificatePlanEstudiosUpdates(
     templateBuffer,
     buildCertificateTokens(data, student, avatarUrl, certificado.codigoInstitucional),
-    buildCertificateUnitRows(data, student),
+    buildCertificateUnitRows(data, student, curricularCodes),
     avatarUrl,
   );
 

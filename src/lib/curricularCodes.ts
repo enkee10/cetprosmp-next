@@ -50,8 +50,8 @@ export type CurricularCodeModule = Pick<ModuloDetalle, 'id' | 'orden' | 'planId'
   planModulos?: ReadonlyArray<{ planId: number; orden?: number | null }>;
 };
 
-/** Each type spans the complete plan in module/competency order, including hidden items. */
-export function curricularCompetencyCodes(modulos: ReadonlyArray<CurricularCodeModule>, planId: number | null) {
+/** Each type follows plan order, or starts over in each independent terminal module. */
+export function curricularCompetencyCodes(modulos: ReadonlyArray<CurricularCodeModule>, planId: number | null, restartPerModule = false) {
   const codes = new Map<number, string>();
   const counts = new Map<CompetenciaDetalle['tipo'], number>();
   const modules = modulos.flatMap(modulo => {
@@ -61,6 +61,7 @@ export function curricularCompetencyCodes(modulos: ReadonlyArray<CurricularCodeM
       : [];
   });
   for (const modulo of orderedCurricularItems(modules)) {
+    if (restartPerModule) counts.clear();
     for (const competencia of orderedCurricularItems(modulo.competencias)) {
       if (competencia.esContinuacion || codes.has(competencia.id)) continue;
       const position = (counts.get(competencia.tipo) ?? 0) + 1;
@@ -81,9 +82,9 @@ function modulesForPlan<T extends CurricularCodeModule>(modulos: ReadonlyArray<T
 }
 
 /** A competency keeps its first-appearance code in every continuation of the selected plan. */
-export function curricularPlanCompetencyCodes(modulos: ReadonlyArray<CurricularCodeModule>, planId?: number | null) {
-  if (planId != null) return curricularCompetencyCodes(modulos, planId);
-  return curricularCompetencyCodes(modulesForPlan(modulos).map(modulo => ({ ...modulo, planId: null, planModulos: [] })), null);
+export function curricularPlanCompetencyCodes(modulos: ReadonlyArray<CurricularCodeModule>, planId?: number | null, restartPerModule = false) {
+  if (planId != null) return curricularCompetencyCodes(modulos, planId, restartPerModule);
+  return curricularCompetencyCodes(modulesForPlan(modulos).map(modulo => ({ ...modulo, planId: null, planModulos: [] })), null, restartPerModule);
 }
 
 /** Units span the module; capacities span their UC. Hidden branches keep their positions. */
@@ -110,8 +111,8 @@ export function curricularDescendantCodes(modulo: CurricularTree | null) {
   return { unidades, capacidades, indicadores, sesiones };
 }
 
-/** Descendant sequences traverse the complete plan, so a continued competency never restarts. */
-export function curricularPlanDescendantCodes(modulos: ReadonlyArray<ModuloDetalle>, planId?: number | null) {
+/** Plan sequences continue across modules unless the modules are independent and terminal. */
+export function curricularPlanDescendantCodes(modulos: ReadonlyArray<ModuloDetalle>, planId?: number | null, restartPerModule = false) {
   const unidades = new Map<number, string>();
   const capacidades = new Map<number, string>();
   const indicadores = new Map<number, string>();
@@ -120,6 +121,10 @@ export function curricularPlanDescendantCodes(modulos: ReadonlyArray<ModuloDetal
   let unitCount = 0;
   const orderedModules = orderedCurricularItems(modulesForPlan(modulos, planId));
   for (const modulo of orderedModules) {
+    if (restartPerModule) {
+      unitCount = 0;
+      capacityCounts.clear();
+    }
     for (const unidad of curricularUnitsInOrder(modulo)) {
       unidades.set(unidad.id, `UD${++unitCount}`);
       let capacityCount = capacityCounts.get(unidad.competenciaId) ?? 0;

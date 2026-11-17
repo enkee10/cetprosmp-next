@@ -32,7 +32,7 @@ import HowToRegIcon from '@mui/icons-material/HowToReg';
 import dynamic from 'next/dynamic';
 import Modal1 from '@/components/Modal1';
 import type { RegistroStudentValues } from '@/components/intranet/matriculas/RegistroMatriculaForm';
-import { getIdentityDocumentError, IDENTITY_STUDENT_FIELDS } from '@/lib/identityDocument';
+import { getDniError, getIdentityDocumentError, IDENTITY_STUDENT_FIELDS } from '@/lib/identityDocument';
 import SearchIcon from '@mui/icons-material/Search';
 import { useSearchParams } from 'next/navigation';
 import { getAuth } from 'firebase/auth';
@@ -535,6 +535,8 @@ export default function RegistroAuxiliarPage() {
   const semestreFinished = useCalendarPeriodFinished(currentSemestre?.fin ?? registro?.grupo?.semestre?.fin);
   const docenteReadOnly = isDocente && semestreFinished;
   const canEditRegistro = can('registro-auxiliar', 'edit') && !docenteReadOnly;
+  const canEditStudentUser = canEditRegistro && can('users', 'edit');
+  const showStudentEditButton = canEditStudentUser && settings.registroAuxiliar?.mostrarBotonEditarEstudiantes !== false;
   const canEditModuloFechas = canEditRegistro;
   const canCreateRegistroMatriculas = can('registro-auxiliar', 'create') && !docenteReadOnly;
   const canDeleteRegistroMatriculas = can('registro-auxiliar', 'delete') && !docenteReadOnly;
@@ -963,7 +965,7 @@ export default function RegistroAuxiliarPage() {
   );
 
   const startEditingStudentName = useCallback((student: Estudiante) => {
-    if (!canEditRegistro || savingStudentNameId) return;
+    if (!canEditStudentUser || savingStudentNameId) return;
     setError(null);
     setMessage(null);
     setCellSelection(null);
@@ -971,7 +973,7 @@ export default function RegistroAuxiliarPage() {
     selectionPointerRef.current = null;
     setEditingStudentNameId(student.id);
     setStudentNameDraft(studentNameDraftFromStudent(student));
-  }, [canEditRegistro, savingStudentNameId]);
+  }, [canEditStudentUser, savingStudentNameId]);
 
   const cancelEditingStudentName = useCallback(() => {
     setEditingStudentNameId(null);
@@ -979,7 +981,7 @@ export default function RegistroAuxiliarPage() {
   }, []);
 
   const commitEditingStudentName = useCallback(async () => {
-    if (!registro || !editingStudentNameId || committingStudentNameRef.current) return;
+    if (!canEditStudentUser || !registro || !editingStudentNameId || committingStudentNameRef.current) return;
 
     const student = registro.estudiantes.find((item) => item.id === editingStudentNameId);
     if (!student) {
@@ -1077,6 +1079,7 @@ export default function RegistroAuxiliarPage() {
   }, [
     auth,
     cancelEditingStudentName,
+    canEditStudentUser,
     editingStudentNameId,
     functions,
     grupoModuloId,
@@ -1811,14 +1814,19 @@ export default function RegistroAuxiliarPage() {
   const openManualMatricula = () => {
     if (!canCreateRegistroMatriculas || !registro?.grupoModulo?.id) return;
     setStudentFormError(null);
-    setStudentForm({ grupoModuloId: registro.grupoModulo.id, initialValues: { dni: newMatriculaDni } });
+    setStudentForm({ grupoModuloId: registro.grupoModulo.id, initialValues: { dni: newMatriculaDni.trim() } });
   };
 
   const handleCreateMatricula = async (manual?: RegistroStudentValues) => {
     const dni = String(manual?.dni ?? newMatriculaDni).trim();
     const selectedGrupoModuloId = manual ? studentForm?.grupoModuloId : registro?.grupoModulo?.id;
     if (!canCreateRegistroMatriculas || creatingMatriculaRef.current || !selectedGrupoModuloId || !dni) return;
-    const documentError = getIdentityDocumentError(dni);
+    if (!manual && dni.length > 8) {
+      setError(null);
+      openManualMatricula();
+      return;
+    }
+    const documentError = manual ? getIdentityDocumentError(dni) : getDniError(dni);
     if (documentError) {
       if (manual) setStudentFormError(documentError);
       else setError(documentError);
@@ -1878,7 +1886,7 @@ export default function RegistroAuxiliarPage() {
   };
 
   const handleEditStudent = async (student: Estudiante) => {
-    if (!canEditRegistro || !registro?.grupoModulo?.id || loadingStudentId !== null) return;
+    if (!showStudentEditButton || !registro?.grupoModulo?.id || loadingStudentId !== null) return;
     const selectedGrupoModuloId = registro.grupoModulo.id;
     setLoadingStudentId(student.id);
     setError(null);
@@ -1898,6 +1906,7 @@ export default function RegistroAuxiliarPage() {
 
   const handleSaveStudentForm = async (values: RegistroStudentValues) => {
     if (!studentForm || studentFormSubmitting) return;
+    if (studentForm.moduloEstudianteId && !canEditStudentUser) return;
     setStudentFormSubmitting(true);
     setStudentFormError(null);
     try {
@@ -2569,7 +2578,7 @@ export default function RegistroAuxiliarPage() {
                         sx={{ ...cellBaseSx, ...selectableCellSx(tableRowIndex, 2), bgcolor: '#fff', fontWeight: focusedCell?.estudianteIndex === studentIndex ? 700 : 400, position: 'relative' }}
                       >
                         <Stack direction="row" spacing={0.5} alignItems="center" inert={isRetiring || undefined} sx={{ minWidth: 0, opacity: isRetiring ? 0.35 : 1 }}>
-                          {editingStudentNameId === student.id ? (
+                          {canEditStudentUser && editingStudentNameId === student.id ? (
                             <Stack
                               direction={{ xs: 'column', md: 'row' }}
                               spacing={0.5}
@@ -2641,25 +2650,25 @@ export default function RegistroAuxiliarPage() {
                             </Stack>
                           ) : (
                             <Box
-                              onDoubleClick={(event) => {
+                              onDoubleClick={canEditStudentUser ? (event) => {
                                 event.preventDefault();
                                 event.stopPropagation();
                                 startEditingStudentName(student);
-                              }}
-                              title={canEditRegistro ? 'Doble clic para editar nombres' : undefined}
+                              } : undefined}
+                              title={canEditStudentUser ? 'Doble clic para editar nombres' : undefined}
                               sx={{
                                 flex: 1,
                                 minWidth: 0,
-                                cursor: canEditRegistro ? 'text' : 'inherit',
-                                borderBottom: canEditRegistro ? '1px dotted transparent' : undefined,
-                                '&:hover': canEditRegistro ? { borderBottomColor: 'text.secondary' } : undefined,
+                                cursor: canEditStudentUser ? 'text' : 'inherit',
+                                borderBottom: canEditStudentUser ? '1px dotted transparent' : undefined,
+                                '&:hover': canEditStudentUser ? { borderBottomColor: 'text.secondary' } : undefined,
                               }}
                             >
                               {getStudentName(student)}
                             </Box>
                           )}
                           {savingStudentNameId === student.id ? <CircularProgress size={14} /> : null}
-                          {canEditRegistro ? (
+                          {showStudentEditButton ? (
                             <Tooltip title="Editar datos del estudiante">
                               <span><IconButton
                                 size="small" aria-label="Editar datos del estudiante"
@@ -2864,11 +2873,10 @@ export default function RegistroAuxiliarPage() {
                               component="input"
                               autoFocus
                               inputMode="numeric"
-                              maxLength={9}
-                              aria-label="Documento"
-                              placeholder="Documento"
+                              aria-label="DNI"
+                              placeholder="DNI"
                               value={newMatriculaDni}
-                              onChange={(event) => setNewMatriculaDni(event.target.value.replace(/\D/g, '').slice(0, 9))}
+                              onChange={(event) => setNewMatriculaDni(event.target.value)}
                               onKeyDown={(event) => {
                                 if (event.key === 'Enter') {
                                   event.preventDefault();
@@ -2893,7 +2901,7 @@ export default function RegistroAuxiliarPage() {
                               size="small"
                               variant="contained"
                               onClick={() => void handleCreateMatricula()}
-                              disabled={creatingMatricula || ![8, 9].includes(newMatriculaDni.length)}
+                              disabled={creatingMatricula || newMatriculaDni.trim().length < 8}
                               sx={{ minWidth: 0, width: 'fit-content', py: 0.25, fontSize: 11 }}
                             >
                               MATRICULAR
@@ -2957,7 +2965,7 @@ export default function RegistroAuxiliarPage() {
           }}
         />
       </Paper>
-      {studentForm && <Modal1
+      {studentForm && (!studentForm.moduloEstudianteId || canEditStudentUser) && <Modal1
         open title={studentForm.moduloEstudianteId ? 'Editar datos del estudiante' : 'Crear matrícula'} maxWidth="md"
         onClose={() => { if (!studentFormSubmitting) setStudentForm(null); }}
       >

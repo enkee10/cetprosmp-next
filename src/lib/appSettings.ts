@@ -6,6 +6,9 @@ export type AppSettings = {
     mostrarContenidoEnCuadroEmergente: boolean;
     usarOtroColorCompetenciasEmpleabilidad: boolean;
   };
+  registroAuxiliar: {
+    mostrarBotonEditarEstudiantes: boolean;
+  };
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: boolean;
     usarAvataresEnCertificadosTitulos: boolean;
@@ -41,6 +44,9 @@ export const defaultAppSettings: AppSettings = {
     mostrarContenidoEnCuadroEmergente: true,
     usarOtroColorCompetenciasEmpleabilidad: true,
   },
+  registroAuxiliar: {
+    mostrarBotonEditarEstudiantes: true,
+  },
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: false,
     usarAvataresEnCertificadosTitulos: false,
@@ -75,6 +81,9 @@ export const normalizeSettings = (value: Partial<AppSettings> | undefined | null
     mostrarRecursosEnSesiones: value?.programacionCurricular?.mostrarRecursosEnSesiones === true,
     mostrarContenidoEnCuadroEmergente: value?.programacionCurricular?.mostrarContenidoEnCuadroEmergente !== false,
     usarOtroColorCompetenciasEmpleabilidad: value?.programacionCurricular?.usarOtroColorCompetenciasEmpleabilidad !== false,
+  },
+  registroAuxiliar: {
+    mostrarBotonEditarEstudiantes: value?.registroAuxiliar?.mostrarBotonEditarEstudiantes !== false,
   },
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: value?.general?.poderOcultarProgramacionOpcionesOcupacionales === true,

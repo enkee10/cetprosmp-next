@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const { https } = require('firebase-functions/v1');
 process.env.GCLOUD_PROJECT = 'demo-registro-close-test';
 const permissions = require('../functions/lib/modules/core/permissions.js');
 const { dataConnect } = require('../functions/lib/modules/core/dataConnectCore.js');
@@ -12,8 +13,12 @@ global.Date = class extends RealDate {
 const teacher = { auth: { uid: 'teacher', token: { role: 4, level: 100 } } };
 const admin = { auth: { uid: 'admin', token: { role: 600, level: 600 } } };
 const calls = [];
-let assigned = true, current = 4;
-permissions.requirePermission = async () => {};
+let assigned = true, current = 4, canEditUsers = true;
+permissions.requirePermission = async (_, entity, action) => {
+  if (entity === 'users' && action === 'edit' && !canEditUsers) {
+    throw new https.HttpsError('permission-denied', 'Falta permiso de edición de usuarios.');
+  }
+};
 dataConnect.executeGraphql = async query => {
   calls.push(query);
   if (query.includes('query CurrentSemestreSetting')) return { data: { appSettings: [{ settingKey: 'general.semestreActualId', intValue: current }] } };
@@ -23,11 +28,25 @@ dataConnect.executeGraphql = async query => {
   } };
   if (query.includes('query RegistroAuxiliarContext')) return { data: { grupoModulo: null } };
   if (query.includes('query RegistroAuxiliarSaveGrupoModulo')) return { data: { grupoModulo: null } };
+  if (query.includes('query RegistroStudentProfile')) return { data: {
+    grupoModulo: { id: 50, grupoId: 40, moduloId: 20 },
+    moduloEstudiante: { grupoModuloId: 50, matricula: { user: { id: 5 } } },
+  } };
   throw Error('Unexpected database operation');
 };
 (async () => {
   // Reaching not-found proves authorization allowed the operation before the cutoff.
   await assert.rejects(handlers.saveRegistroAuxiliar.run({ grupoModuloId: 50, notas: [] }, teacher), error => error.code === 'not-found');
+  const student = { grupoModuloId: 50, moduloEstudianteId: 1 };
+  canEditUsers = false;
+  calls.length = 0;
+  for (const endpoint of [handlers.getRegistroAuxiliarEstudianteDatos, handlers.updateRegistroAuxiliarEstudianteDatos, handlers.updateRegistroAuxiliarEstudianteNombre]) {
+    await assert.rejects(endpoint.run(student, teacher), { code: 'permission-denied' });
+  }
+  assert(calls.every(query => !query.includes('RegistroStudentProfile') && !query.includes('mutation')), 'Students are protected before profile reads or writes');
+  await assert.rejects(handlers.saveRegistroAuxiliar.run({ grupoModuloId: 50, notas: [] }, teacher), error => error.code === 'not-found');
+  canEditUsers = true;
+  assert.deepEqual(await handlers.getRegistroAuxiliarEstudianteDatos.run(student, teacher), { user: { id: 5 } });
   clock = RealDate.parse('2026-12-24T05:00:00Z');
   calls.length = 0;
   const endpoints = [
@@ -43,5 +62,5 @@ dataConnect.executeGraphql = async query => {
   await assert.rejects(handlers.getRegistroAuxiliar.run({ grupoModuloId: 50 }, teacher), error => error.code === 'permission-denied');
   assigned = true; current = 5;
   await assert.rejects(handlers.getRegistroAuxiliar.run({ grupoModuloId: 50 }, teacher), error => error.code === 'permission-denied');
-  console.log('Registro: cierre a medianoche de Lima, consulta posterior, asignación, semestre actual y administradores verificados.');
+  console.log('Registro: permisos de Usuarios para ficha y nombre, acceso a notas, cierre de semestre y alcance del módulo verificados.');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => { global.Date = RealDate; });

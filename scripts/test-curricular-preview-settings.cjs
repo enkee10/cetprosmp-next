@@ -20,6 +20,7 @@ let permission = true;
 let writes = 0;
 const settingKey = 'programacionCurricular.mostrarContenidoEnCuadroEmergente';
 const colorSettingKey = 'programacionCurricular.usarOtroColorCompetenciasEmpleabilidad';
+const studentEditButtonKey = 'registroAuxiliar.mostrarBotonEditarEstudiantes';
 const handlers = load('functions/src/modules/settings/handlers.ts', {
   'firebase-functions/v1': { https: { onCall: handler => handler, HttpsError: class extends Error {} } },
   '../core/docenteSemester.js': {},
@@ -63,15 +64,18 @@ const handlers = load('functions/src/modules/settings/handlers.ts', {
   assert.equal(result.settings.programacionCurricular.mostrarContenidoEnCuadroEmergente, true, 'The backend defaults to enabled without a stored row');
   assert.equal(result.settings.programacionCurricular.usarOtroColorCompetenciasEmpleabilidad, true);
   assert.equal(result.settings.programacionCurricular.mostrarRecursosEnSesiones, false);
+  assert.equal(result.settings.registroAuxiliar.mostrarBotonEditarEstudiantes, true);
+  assert.equal(normalizeSettings({}).registroAuxiliar.mostrarBotonEditarEstudiantes, true);
 
   for (const enabled of [false, true, false]) {
     const colorEnabled = !enabled;
-    const input = { ...defaultAppSettings, programacionCurricular: { mostrarContenidoEnCuadroEmergente: enabled, usarOtroColorCompetenciasEmpleabilidad: colorEnabled, mostrarRecursosEnSesiones: enabled } };
+    const input = { ...defaultAppSettings, programacionCurricular: { mostrarContenidoEnCuadroEmergente: enabled, usarOtroColorCompetenciasEmpleabilidad: colorEnabled, mostrarRecursosEnSesiones: enabled }, registroAuxiliar: { mostrarBotonEditarEstudiantes: enabled } };
     result = await handlers.saveAppSettings(input, {});
     assert.equal(result.settings.programacionCurricular.mostrarContenidoEnCuadroEmergente, enabled);
     assert.equal(result.settings.programacionCurricular.usarOtroColorCompetenciasEmpleabilidad, colorEnabled);
     assert.equal(result.settings.programacionCurricular.mostrarRecursosEnSesiones, enabled);
     assert.equal(stored.get(resourcesKey).boolValue, enabled);
+    assert.equal(stored.get(studentEditButtonKey).boolValue, enabled);
     assert.equal(stored.get(resourcesKey).label, 'Mostrar recursos en sesiones');
     assert.equal(stored.get(colorSettingKey).boolValue, colorEnabled);
     assert.equal(stored.get(colorSettingKey).section, 'programacionCurricular');
@@ -83,16 +87,19 @@ const handlers = load('functions/src/modules/settings/handlers.ts', {
     assert.equal(normalizeSettings(reloaded.settings).programacionCurricular.mostrarContenidoEnCuadroEmergente, enabled, 'The saved value survives fetching and client normalization');
     assert.equal(normalizeSettings(reloaded.settings).programacionCurricular.usarOtroColorCompetenciasEmpleabilidad, colorEnabled, 'Both independent options survive saving and reloading');
     assert.equal(normalizeSettings(reloaded.settings).programacionCurricular.mostrarRecursosEnSesiones, enabled, 'Resource visibility survives saving and reloading independently');
+    assert.equal(normalizeSettings(reloaded.settings).registroAuxiliar.mostrarBotonEditarEstudiantes, enabled);
   }
   permission = false;
   const before = writes;
   await assert.rejects(() => handlers.saveAppSettings(defaultAppSettings, {}), /permission-denied/);
   assert.equal(writes, before, 'Users without edit permission cannot change the setting');
   permission = true;
-  const { programacionCurricular: ignored, ...legacySettings } = defaultAppSettings;
+  const { programacionCurricular: ignored, registroAuxiliar: ignoredRegistro, ...legacySettings } = defaultAppSettings;
   result = await handlers.saveAppSettings(legacySettings, {});
   assert.equal(result.settings.programacionCurricular.mostrarContenidoEnCuadroEmergente, true, 'Legacy clients use the enabled default');
   assert.equal(result.settings.programacionCurricular.usarOtroColorCompetenciasEmpleabilidad, true);
   assert.equal(result.settings.programacionCurricular.mostrarRecursosEnSesiones, false);
-  console.log('Passed: preview and employability color enabled and session resources hidden by default, independent save/reload, legacy settings and edit permission checks.');
+  assert.equal(result.settings.registroAuxiliar.mostrarBotonEditarEstudiantes, false, 'Legacy clients preserve the saved edit button preference');
+  assert.equal(stored.get(studentEditButtonKey).boolValue, false);
+  console.log('Passed: curricular settings and student edit button defaults, independent save/reload, legacy settings and edit permission checks.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

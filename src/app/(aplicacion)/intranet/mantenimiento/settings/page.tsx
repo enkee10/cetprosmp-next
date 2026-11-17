@@ -82,6 +82,9 @@ const normalizeDraftSettings = (value: Partial<AppSettings> | null | undefined):
       mostrarRecursosEnSesiones: value?.programacionCurricular?.mostrarRecursosEnSesiones === true,
       usarOtroColorCompetenciasEmpleabilidad: value?.programacionCurricular?.usarOtroColorCompetenciasEmpleabilidad !== false,
     },
+    registroAuxiliar: {
+      mostrarBotonEditarEstudiantes: value?.registroAuxiliar?.mostrarBotonEditarEstudiantes !== false,
+    },
     general: {
       ...defaultAppSettings.general,
       ...value?.general,
@@ -441,6 +444,25 @@ export default function SettingsPage() {
               onChange={(_, checked) => setDraft(current => ({
                 ...normalizeDraftSettings(current),
                 programacionCurricular: { ...normalizeDraftSettings(current).programacionCurricular, mostrarRecursosEnSesiones: checked },
+              }))}
+            />}
+          />
+
+          <Box>
+            <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+              Registro Auxiliar
+            </Typography>
+            <Divider />
+          </Box>
+
+          <FormControlLabel
+            label="Mostrar botón editar en estudiantes"
+            control={<Switch
+              checked={safeDraft.registroAuxiliar.mostrarBotonEditarEstudiantes}
+              disabled={loading || saving || !canEditSettings}
+              onChange={(_, checked) => setDraft(current => ({
+                ...current,
+                registroAuxiliar: { ...current.registroAuxiliar, mostrarBotonEditarEstudiantes: checked },
               }))}
             />}
           />

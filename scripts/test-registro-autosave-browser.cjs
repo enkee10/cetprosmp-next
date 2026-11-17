@@ -637,7 +637,7 @@ const mocks = {
     await page.waitForFunction(() => !Object.keys(localStorage).some(key => key.startsWith('cetpro.registro-notas')));
     // Enrollment keeps the table and edited inputs mounted while the last row spins.
     await page.getByText('Doble clic para agregar estudiante por documento', { exact: true }).dblclick();
-    await page.getByPlaceholder('Documento', { exact: true }).fill('12345678');
+    await page.getByPlaceholder('DNI', { exact: true }).fill('12345678');
     await page.getByRole('button', { name: 'MATRICULAR', exact: true }).click();
     await page.getByRole('status').filter({ hasText: 'Matriculando estudiante' }).locator('[role="progressbar"]').waitFor();
     await cell(201, 3).fill('15');

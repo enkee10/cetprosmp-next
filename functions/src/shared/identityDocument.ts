@@ -28,6 +28,10 @@ export function getIdentityDocumentType(value: string): IdentityDocumentType | n
   return null;
 }
 
+export function getDniError(value: string): string | null {
+  return getIdentityDocumentType(value) === 'DNI' ? null : 'Ingresa un DNI de 8 dígitos.';
+}
+
 export function getIdentityDocumentError(value: string): string | null {
   if (getIdentityDocumentType(value)) return null;
   if (/^\d{9}$/.test(value)) return 'El CE debe comenzar con 0. Si es un DNI, revisa que tenga solo 8 dígitos.';

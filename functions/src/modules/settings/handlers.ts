@@ -53,12 +53,17 @@ const CURRICULAR_EMPLOYABILITY_COLOR_KEY =
   "programacionCurricular.usarOtroColorCompetenciasEmpleabilidad";
 const CURRICULAR_SESSION_RESOURCES_KEY =
   "programacionCurricular.mostrarRecursosEnSesiones";
+const SHOW_REGISTRO_STUDENT_EDIT_BUTTON_KEY =
+  "registroAuxiliar.mostrarBotonEditarEstudiantes";
 
 const DEFAULT_SETTINGS = {
   programacionCurricular: {
     mostrarRecursosEnSesiones: false,
     mostrarContenidoEnCuadroEmergente: true,
     usarOtroColorCompetenciasEmpleabilidad: true,
+  },
+  registroAuxiliar: {
+    mostrarBotonEditarEstudiantes: true,
   },
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: false,
@@ -121,6 +126,12 @@ const SETTING_DEFINITIONS: Record<string, SettingDefinition> = {
   [CURRICULAR_CONTENT_PREVIEW_KEY]: {
     section: "programacionCurricular",
     label: "Mostrar contenido en cuadro emergente al hacer clic",
+    valueType: "boolean",
+    defaultValue: true,
+  },
+  [SHOW_REGISTRO_STUDENT_EDIT_BUTTON_KEY]: {
+    section: "registroAuxiliar",
+    label: "Mostrar botón editar en estudiantes",
     valueType: "boolean",
     defaultValue: true,
   },
@@ -345,6 +356,9 @@ function buildSettingsResponse(items: DataConnectAppSetting[]) {
     programacionCurricular: {
       ...DEFAULT_SETTINGS.programacionCurricular,
     },
+    registroAuxiliar: {
+      ...DEFAULT_SETTINGS.registroAuxiliar,
+    },
     general: {
       ...DEFAULT_SETTINGS.general,
     },
@@ -360,6 +374,9 @@ function buildSettingsResponse(items: DataConnectAppSetting[]) {
     if (item.settingKey === CURRICULAR_CONTENT_PREVIEW_KEY) settings.programacionCurricular.mostrarContenidoEnCuadroEmergente = item.boolValue !== false;
     if (item.settingKey === CURRICULAR_EMPLOYABILITY_COLOR_KEY) settings.programacionCurricular.usarOtroColorCompetenciasEmpleabilidad = item.boolValue !== false;
     if (item.settingKey === CURRICULAR_SESSION_RESOURCES_KEY) settings.programacionCurricular.mostrarRecursosEnSesiones = item.boolValue === true;
+    if (item.settingKey === SHOW_REGISTRO_STUDENT_EDIT_BUTTON_KEY) {
+      settings.registroAuxiliar.mostrarBotonEditarEstudiantes = item.boolValue !== false;
+    }
     if (item.settingKey === HIDE_OCCUPATIONAL_CURRICULUM_KEY) settings.general.poderOcultarProgramacionOpcionesOcupacionales = item.boolValue === true;
     if (item.settingKey === USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY) {
       settings.general.usarAvataresEnCertificadosTitulos = Boolean(item.boolValue);
@@ -457,6 +474,17 @@ function buildSettingsResponse(items: DataConnectAppSetting[]) {
   return settings;
 }
 
+async function getSettingByKey(settingKey: string) {
+  const existing = await dataConnect.executeGraphql<
+    { appSettings: DataConnectAppSetting[] },
+    { settingKey: string }
+  >(
+    GET_APP_SETTING_BY_KEY_QUERY,
+    { variables: { settingKey } },
+  );
+  return existing.data.appSettings?.[0] ?? null;
+}
+
 async function upsertSetting(
   settingKey: string,
   value: boolean | number | string | null,
@@ -466,14 +494,7 @@ async function upsertSetting(
     throw new https.HttpsError("invalid-argument", "Configuracion no soportada.");
   }
 
-  const existing = await dataConnect.executeGraphql<
-    { appSettings: DataConnectAppSetting[] },
-    { settingKey: string }
-  >(
-    GET_APP_SETTING_BY_KEY_QUERY,
-    { variables: { settingKey } },
-  );
-  const current = existing.data.appSettings?.[0] ?? null;
+  const current = await getSettingByKey(settingKey);
   const payload: DataConnectAppSettingInput = {
     section: definition.section,
     label: definition.label,
@@ -572,6 +593,7 @@ export const saveAppSettings = https.onCall(async (data, context) => {
   const mostrarContenidoEnCuadroEmergente = programacionCurricular?.mostrarContenidoEnCuadroEmergente !== false;
   const usarOtroColorCompetenciasEmpleabilidad = programacionCurricular?.usarOtroColorCompetenciasEmpleabilidad !== false;
   const mostrarRecursosEnSesiones = programacionCurricular?.mostrarRecursosEnSesiones === true;
+  const showStudentEditButton = data?.registroAuxiliar?.mostrarBotonEditarEstudiantes;
   const general = data?.general as Record<string, unknown> | undefined;
   const formularioMatricula = data?.formularioMatricula as Record<string, unknown> | undefined;
   const visualizaciones = data?.visualizaciones as Record<string, unknown> | undefined;
@@ -703,6 +725,12 @@ export const saveAppSettings = https.onCall(async (data, context) => {
       SHOW_STUDENT_AVATAR_IN_TITLES_KEY,
       visualizarAvatarEstudianteTitulos,
     );
+    if (typeof showStudentEditButton === "boolean") {
+      await upsertSetting(SHOW_REGISTRO_STUDENT_EDIT_BUTTON_KEY, showStudentEditButton);
+    }
+    const mostrarBotonEditarEstudiantes = typeof showStudentEditButton === "boolean"
+      ? showStudentEditButton
+      : (await getSettingByKey(SHOW_REGISTRO_STUDENT_EDIT_BUTTON_KEY))?.boolValue !== false;
 
     return {
       settings: {
@@ -710,6 +738,9 @@ export const saveAppSettings = https.onCall(async (data, context) => {
           mostrarContenidoEnCuadroEmergente,
           usarOtroColorCompetenciasEmpleabilidad,
           mostrarRecursosEnSesiones,
+        },
+        registroAuxiliar: {
+          mostrarBotonEditarEstudiantes,
         },
         general: {
           poderOcultarProgramacionOpcionesOcupacionales,

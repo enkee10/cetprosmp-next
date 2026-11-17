@@ -1,7 +1,7 @@
 import { dayInAppTimeZone, isCalendarPeriodFinished, toDateOnlyInputValue } from "../../shared/appDateTime.js";
 import { https, runWith } from "firebase-functions/v1";
 import { savePartialRegistroGrades } from "./partialSave.js";
-import { lookupIdentityDocument } from "./documentLookup.js";
+import { lookupIdentityDocument, PANEL_API_PERU_SECRET } from "./documentLookup.js";
 import {
   getIdentityDocumentType, getIdentityDocumentError, normalizeIdentityDate, normalizeIdentitySexo,
   validateManualStudent, type IdentityStudentData,
@@ -1616,7 +1616,7 @@ export const updateRegistroAuxiliarGrupoModuloFechas = https.onCall(async (data:
   }
 });
 
-export const createRegistroAuxiliarMatricula = runWith({ timeoutSeconds: 180 }).https.onCall(async (data: RegistroAuxiliarMatriculaInput, context) => {
+export const createRegistroAuxiliarMatricula = runWith({ timeoutSeconds: 180, secrets: [PANEL_API_PERU_SECRET] }).https.onCall(async (data: RegistroAuxiliarMatriculaInput, context) => {
   const grupoModuloId = toNumber(data?.grupoModuloId, -1);
   const dni = typeof data?.dni === "string" ? data.dni.trim() : "";
   if (grupoModuloId <= 0) {
@@ -1674,6 +1674,9 @@ export const createRegistroAuxiliarMatricula = runWith({ timeoutSeconds: 180 }).
         }
         dniData = data.manual;
       } else {
+        if (getIdentityDocumentType(dni) === "CE") {
+          throw new https.HttpsError("failed-precondition", "Completa la matrícula manualmente.", { manualEntryRequired: true });
+        }
         dniData = await lookupIdentityDocument(dni);
       }
       userId = await ensureRegistroAuxiliarStudentUser(dni, dniData, null, context);
@@ -1803,6 +1806,7 @@ export const updateRegistroAuxiliarEstudianteNombre = https.onCall(async (
   }
 
   await ensureRegistroAuxiliarAccess(context, grupoModuloId, "edit");
+  await requirePermission(context, "users", "edit");
 
   const apellidoPaterno = asCleanString(data?.apellidoPaterno);
   const apellidoMaterno = asCleanString(data?.apellidoMaterno);
@@ -1897,6 +1901,7 @@ async function loadRegistroStudentProfile(data: RegistroStudentProfileInput, con
     throw new https.HttpsError("invalid-argument", "Selecciona un estudiante del registro.");
   }
   await ensureRegistroAuxiliarAccess(context, grupoModuloId, "edit");
+  await requirePermission(context, "users", "edit");
   const response = await dataConnect.executeGraphql<{
     grupoModulo: { id: number; grupoId: number; moduloId: number } | null;
     moduloEstudiante: {

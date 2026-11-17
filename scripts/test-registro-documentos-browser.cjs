@@ -14,9 +14,9 @@ const fixture = {
 const mocks = {
   '@/lib/firebase': `export const app={options:{projectId:'document-fixture'}};`,
   '@/context/AuthContext': `const user={uid:'teacher-fixture',level:600,role:'admin'};export const useAuth=()=>({user});`,
-  '@/hooks/useIntranetPermissions': `export const useIntranetPermissions=()=>({can:()=>true});`,
+  '@/hooks/useIntranetPermissions': `import{useState}from'react';export const useIntranetPermissions=()=>{const [canEditUsers,setCanEditUsers]=useState(true);window.setCanEditUsers=setCanEditUsers;return{can:(entity,action)=>entity!=='users'||action!=='edit'||canEditUsers};};`,
   '@/hooks/useCurrentSemestreFilter': `import{useState}from'react';export const useCurrentSemestreFilter=()=>useState('1');`,
-  '@/hooks/useAppSettings': `import{defaultAppSettings}from'@/lib/appSettings';const settings={...defaultAppSettings,general:{...defaultAppSettings.general,semestres:[{id:1,titulo:'2026-2',fin:'2099-12-23'}],semestreActualId:1}};export const useAppSettings=()=>({settings});`,
+  '@/hooks/useAppSettings': `import{useState}from'react';import{defaultAppSettings}from'@/lib/appSettings';const settings={...defaultAppSettings,general:{...defaultAppSettings.general,semestres:[{id:1,titulo:'2026-2',fin:'2099-12-23'}],semestreActualId:1}};export const useAppSettings=()=>{const [visible,setVisible]=useState(settings.registroAuxiliar.mostrarBotonEditarEstudiantes);window.setStudentEditButtonVisible=setVisible;return{settings:{...settings,registroAuxiliar:{mostrarBotonEditarEstudiantes:visible}}};};`,
   '@/lib/matriculasListCache': `export const invalidateMatriculaLists=()=>{};`,
   'next/navigation': `const params=new URLSearchParams('grupoModuloId=50');export const useSearchParams=()=>params;`,
   'next/dynamic': `import React,{lazy,Suspense}from'react';export default function dynamic(loader){const View=lazy(loader);return props=><Suspense fallback={null}><View {...props}/></Suspense>;}`,
@@ -52,7 +52,22 @@ const mocks = {
       body: route.request().url().endsWith('/bundle.js') ? bundle.outputFiles[0].text : '<div id="root"></div><script src="/bundle.js"></script>',
     }));
     await page.goto('http://127.0.0.1:3001/');
-    await page.getByRole('button', { name: 'Editar datos del estudiante' }).click();
+    const studentEditButton = page.getByRole('button', { name: 'Editar datos del estudiante' });
+    await studentEditButton.waitFor();
+    await page.evaluate(() => window.setCanEditUsers(false));
+    await studentEditButton.waitFor({ state: 'hidden' });
+    assert.equal(await page.getByTitle('Doble clic para editar nombres').count(), 0);
+    await page.locator('[data-registro-student-id="301"]').getByText('PRUEBA LOCAL, Alumno', { exact: true }).dblclick();
+    assert.equal(await page.getByRole('textbox', { name: 'Nombres', exact: true }).count(), 0);
+    assert.equal(await page.getByRole('button', { name: 'Retirar de este grupo-módulo' }).count(), 1);
+    await page.evaluate(() => window.setCanEditUsers(true));
+    await studentEditButton.waitFor();
+    await page.evaluate(() => window.setStudentEditButtonVisible(false));
+    await studentEditButton.waitFor({ state: 'hidden' });
+    assert.equal(await page.getByRole('button', { name: 'Retirar de este grupo-módulo' }).count(), 1);
+    assert.equal(await page.getByTitle('Doble clic para editar nombres').count(), 1);
+    await page.evaluate(() => window.setStudentEditButtonVisible(true));
+    await studentEditButton.click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Guardar cambios' }).waitFor();
     const editFields = await dialog.locator('input[name]').evaluateAll(inputs => inputs.map(input => input.name).sort());
@@ -67,13 +82,29 @@ const mocks = {
     assert.equal(edited.input.user.dni, '');
     assert.equal(edited.input.moduloEstudianteId, 301);
     await page.getByText('Doble clic para agregar estudiante por documento').dblclick();
-    const documentInput = page.getByRole('textbox', { name: 'Documento', exact: true });
-    await documentInput.fill('123456789');
-    await page.getByRole('button', { name: 'MATRICULAR', exact: true }).click();
-    await page.getByText(/El CE debe comenzar con 0/).waitFor();
-    assert.equal(await page.evaluate(() => window.calls.filter(call => call.name === 'createRegistroAuxiliarMatricula').length), 0);
-    await page.getByRole('button', { name: 'Abrir formulario de matrícula' }).click();
+    const documentInput = page.getByRole('textbox', { name: 'DNI', exact: true });
+    const enrollButton = page.getByRole('button', { name: 'MATRICULAR', exact: true });
+    await documentInput.fill('0012345678');
+    await enrollButton.click();
     await dialog.getByRole('button', { name: 'Crear matrícula', exact: true }).waitFor();
+    assert.equal(await dialog.locator('input[name="dni"]').inputValue(), '0012345678', 'El ingreso largo se conserva completo');
+    assert.equal(await page.getByRole('alert').count(), 0, 'Abrir el modal no muestra un error');
+    assert.equal(await page.evaluate(() => window.calls.filter(call => call.name === 'createRegistroAuxiliarMatricula').length), 0);
+    await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
+    await documentInput.fill('01234567');
+    await enrollButton.click();
+    await dialog.getByRole('button', { name: 'Crear matrícula', exact: true }).waitFor();
+    assert.equal(await dialog.locator('input[name="dni"]').inputValue(), '01234567');
+    const consulted = await page.evaluate(() => window.calls.find(call => call.name === 'createRegistroAuxiliarMatricula'));
+    assert.equal(consulted.input.dni, '01234567');
+    assert.equal(consulted.input.manual, undefined);
+    await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
+    await documentInput.fill('001234567');
+    await enrollButton.click();
+    await dialog.getByRole('button', { name: 'Crear matrícula', exact: true }).waitFor();
+    assert.equal(await dialog.locator('input[name="dni"]').inputValue(), '001234567');
+    await dialog.getByText('CE', { exact: true }).waitFor();
+    assert.equal(await page.evaluate(() => window.calls.filter(call => call.name === 'createRegistroAuxiliarMatricula').length), 1);
     const createFields = await dialog.locator('input[name]').evaluateAll(inputs => inputs.map(input => input.name).sort());
     assert.deepEqual(createFields, editFields, 'El lápiz y matrícula muestran los mismos campos');
     assert.equal(await dialog.locator('input[required]').count(), 6);
@@ -83,8 +114,7 @@ const mocks = {
     await page.getByRole('option', { name: 'Secundaria en curso..', exact: true }).click();
     assert.equal(await dialog.locator('input[name="nombreColegio"]').getAttribute('required'), '');
     await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
-    await documentInput.fill('001234567');
-    await page.getByRole('button', { name: 'MATRICULAR', exact: true }).click();
+    await page.getByRole('button', { name: 'Abrir formulario de matrícula' }).click();
     await dialog.getByRole('button', { name: 'Crear matrícula', exact: true }).waitFor();
     assert.equal(await dialog.locator('input[name="dni"]').inputValue(), '001234567');
     for (const [name, value] of Object.entries({ nombre: 'NUEVO', apellidoPaterno: 'PRUEBA', apellidoMaterno: 'LOCAL', fechaNacimiento: '2010-01-01' })) {
@@ -101,6 +131,6 @@ const mocks = {
     assert.equal(created.input.manual.celular, undefined, 'Los datos opcionales vacíos no bloquean la matrícula');
     await page.getByText(/LOCAL PRUEBA|PRUEBA LOCAL/).first().waitFor();
     assert.deepEqual(errors, []);
-    console.log('Navegador: formulario compartido, edición sin obligatorios, documento DNI/CE, colegio condicional, apertura directa y por fallo de APIs, creación sin campos opcionales.');
+    console.log('Navegador: campo DNI, apertura manual con más de ocho caracteres, matrícula manual con CE y consulta automática con DNI.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

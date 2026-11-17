@@ -68,7 +68,11 @@ function creation({ existing = null, lookupError = null } = {}) {
     const { create, state } = creation();
     await assert.rejects(create({ grupoModuloId: 50, dni: '123456789' }, context), /comenzar con 0/);
     const manual = { nombre: 'MANUAL', apellidoPaterno: 'PRUEBA', apellidoMaterno: 'LOCAL', sexo: 'F', fechaNacimiento: '2010-01-01' };
+    await assert.rejects(create({ grupoModuloId: 50, dni: '001234567' }, context), error => error.details?.manualEntryRequired === true);
+    assert.equal(state.newUsers.length, 0);
+    assert.equal(state.enrollments.length, 0);
     await create({ grupoModuloId: 50, dni: '001234567', manual }, context);
+    assert.equal(state.newUsers[0].dni, '001234567');
     assert.equal(state.lookups, 0, 'El ingreso manual directo no llama a las APIs');
     assert.equal(state.enrollments.length, 1);
     const other = creation();

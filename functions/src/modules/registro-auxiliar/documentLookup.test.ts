@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { lookupIdentityDocument } from './documentLookup.js';
-import { getIdentityDocumentType, getIdentityDocumentError, normalizeIdentityDate, validateManualStudent } from '../../shared/identityDocument.js';
+import { getDniError, getIdentityDocumentType, normalizeIdentityDate, validateManualStudent } from '../../shared/identityDocument.js';
 
-const dni = '12345678';
+const dni = '01234567';
 const ce = '001234567';
-const factiliza = (numero = dni) => ({ status: 200, success: true, message: 'Exito', data: {
-  numero, nombres: 'ALUMNO', apellido_paterno: 'PRUEBA', apellido_materno: 'LOCAL',
-  fecha_nacimiento: '', sexo: '', direccion: 'DIRECCIÓN DE PRUEBA',
-} });
+const panel = (number = dni) => ({
+  DNI: number, NOMBRES: 'ALUMNO', AP_PAT: 'PRUEBA', AP_MAT: 'LOCAL', FECHA_NAC: '15/06/1990',
+  SEXO: '2', DIRECCION: 'DIRECCIÓN DE PRUEBA', UBIGEO_DIR: 'LIMA-LIMA-MIRAFLORES', EST_CIVIL: 'SOLTERO',
+});
 const perudevs = { estado: true, resultado: { id: dni, nombres: 'RESPALDO', apellido_paterno: 'PRUEBA', fecha_nacimiento: '03/02/2010', genero: 'M' } };
 function options(responses: Array<Response | Error>) {
   const calls: Array<{ url: string; init?: RequestInit }> = [];
@@ -19,50 +19,52 @@ function options(responses: Array<Response | Error>) {
     assert.ok(response, 'No se esperaban más consultas');
     return response;
   }) as typeof fetch;
-  return { request, calls, factilizaToken: 'test-token', peruDevsKey: 'test-key' };
+  return { request, calls, panelApiPeruToken: 'test-token', peruDevsKey: 'test-key' };
 }
 
 test('detects DNI/CE without dropping leading zeros or truncating an invalid DNI', () => {
   assert.equal(getIdentityDocumentType(dni), 'DNI');
   assert.equal(getIdentityDocumentType(ce), 'CE');
   for (const invalid of ['123456789', '1234567', '0012345678', '1234567a']) assert.equal(getIdentityDocumentType(invalid), null);
-  assert.match(getIdentityDocumentError('123456789')!, /comenzar con 0/);
+  assert.equal(getDniError(dni), null);
+  assert.match(getDniError(ce)!, /DNI de 8 dígitos/);
   assert.equal(normalizeIdentityDate('31/02/2010'), null);
   assert.equal(normalizeIdentityDate('03/02/2010'), '2010-02-03');
 });
 
-test('Factiliza success uses its data only, without requiring birth date or gender', async () => {
-  const config = options([Response.json(factiliza())]);
+test('Panel API Perú maps its documented response without requesting a second provider', async () => {
+  const config = options([Response.json(panel())]);
+  const result = await lookupIdentityDocument(dni, config);
+  assert.deepEqual(result, {
+    nombre: 'ALUMNO', apellidoPaterno: 'PRUEBA', apellidoMaterno: 'LOCAL', fechaNacimiento: '1990-06-15',
+    sexo: 'F', direccion: 'DIRECCIÓN DE PRUEBA', distrito: 'MIRAFLORES', estadoCivil: 'Soltero',
+  });
+  assert.equal(config.calls.length, 1);
+  assert.equal(config.calls[0].url, `https://api2.cluzter.dev/api/dni/${dni}`);
+  assert.equal((config.calls[0].init!.headers as Record<string, string>).Authorization, 'Bearer test-token');
+});
+
+test('accepts a Panel result with optional data missing', async () => {
+  const config = options([Response.json({ DNI: dni, NOMBRES: 'ALUMNO', AP_PAT: 'PRUEBA' })]);
   const result = await lookupIdentityDocument(dni, config);
   assert.equal(result.nombre, 'ALUMNO');
   assert.equal(result.sexo, null);
   assert.equal(result.fechaNacimiento, null);
-  assert.equal(result.nacionalidad, null);
   assert.equal(config.calls.length, 1);
-  assert.equal(config.calls[0].url, `https://api.factiliza.com/v1/dni/info/${dni}`);
-  assert.equal((config.calls[0].init!.headers as Record<string, string>).Authorization, 'Bearer test-token');
 });
 
-test('CE uses /cee and accepts the documented response without success; never consults PeruDevs', async () => {
-  const payload = factiliza(ce) as Record<string, unknown>;
-  delete payload.success;
-  const config = options([Response.json(payload)]);
-  assert.equal((await lookupIdentityDocument(ce, config)).nombre, 'ALUMNO');
-  assert.match(config.calls[0].url, /\/cee\/info\/001234567$/);
-  const failure = options([Response.json({ status: 400, message: 'Saldo vencido' })]);
-  await assert.rejects(lookupIdentityDocument(ce, failure), (error: unknown) =>
-    Boolean((error as { details: { manualEntryRequired: boolean } }).details.manualEntryRequired));
-  assert.equal(failure.calls.length, 1);
+test('rejects CE before consulting any provider', async () => {
+  const config = options([]);
+  await assert.rejects(lookupIdentityDocument(ce, config), { code: 'invalid-argument' });
+  assert.equal(config.calls.length, 0);
 });
 
-test('every Factiliza failure falls back to PeruDevs for DNI', async () => {
+test('Panel API Perú failures fall back to PeruDevs for DNI', async () => {
   for (const failure of [
-    Response.json({ status: 400, success: false, message: 'Saldo vencido' }),
-    Response.json({ status: 200, success: true, message: 'Tiempo de saldo vencido', data: factiliza().data }),
-    Response.json({ status: 401 }, { status: 401 }),
-    Response.json({ status: 200, success: false, message: 'Error' }),
-    Response.json({ status: 200, success: true, data: {} }),
-    Response.json(factiliza('87654321')),
+    Response.json({ message: 'Saldo vencido' }),
+    Response.json(panel(), { status: 401 }),
+    Response.json({}),
+    Response.json(panel('87654321')),
     new Response('not JSON'), new TypeError('network'), new DOMException('timeout', 'TimeoutError'),
   ]) {
     const config = options([failure, Response.json(perudevs)]);

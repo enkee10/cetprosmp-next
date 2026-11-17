@@ -1,5 +1,7 @@
 'use client';
 
+import { nombreConTransitabilidad } from '@/lib/transitabilidad';
+
 import { useAppSettings } from '@/hooks/useAppSettings';
 
 import { CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -53,6 +55,8 @@ type GrupoOption = {
 
 type GrupoModuloOption = {
   id: number;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
   nombre?: string | null;
   orden: number | null;
   moduloId: number;
@@ -152,6 +156,8 @@ type RegistroAuxiliar = {
   } | null;
   grupoModulo: {
     id: number;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
     nombre?: string | null;
     inicio?: string | null;
     fin?: string | null;
@@ -256,8 +262,10 @@ const getPersonalName = (grupo: RegistroAuxiliar['grupo']) => {
   return personal?.displayName || [user?.nombre, user?.apellidoPaterno, user?.apellidoMaterno].filter(Boolean).join(' ') || user?.username || '';
 };
 
-const getModuloName = (registro: RegistroAuxiliar | null) =>
-  registro?.grupoModulo?.modulo?.titulo || registro?.grupoModulo?.modulo?.tituloComercial || '';
+const getModuloName = (registro: RegistroAuxiliar | null, uppercase = false) => {
+  const titulo = registro?.grupoModulo?.modulo?.titulo || registro?.grupoModulo?.modulo?.tituloComercial || '';
+  return nombreConTransitabilidad(uppercase ? titulo.toLocaleUpperCase('es-PE') : titulo, registro?.grupoModulo?.transitabilidad, registro?.grupoModulo?.numeroTransitabilidad);
+};
 
 const getModuloCiclo = (registro: RegistroAuxiliar | null) =>
   registro?.grupoModulo?.modulo?.plan?.carrera?.nivel || '';
@@ -776,7 +784,7 @@ export default function RegistroAuxiliarPrintPage() {
       <Box className="print-label">INICIO / TERMINO</Box>
       <Box>{[formatDateOnly(registro?.grupoModulo?.inicio), formatDateOnly(registro?.grupoModulo?.fin)].filter(Boolean).join(' al ')}</Box>
       <Box className="print-label">MODULO</Box>
-      <Box>{getModuloName(registro).toUpperCase()}</Box>
+      <Box>{getModuloName(registro, true)}</Box>
       <Box className="print-label">TURNO</Box>
       <Box>{getTurnoHorarioName(registro?.grupo ?? null)}</Box>
       <Box className="print-label">DURACION</Box>

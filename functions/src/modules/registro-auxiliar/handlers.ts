@@ -1,6 +1,11 @@
-import { isCalendarPeriodFinished, toDateOnlyInputValue } from "../../shared/appDateTime.js";
-import { https } from "firebase-functions/v1";
+import { dayInAppTimeZone, isCalendarPeriodFinished, toDateOnlyInputValue } from "../../shared/appDateTime.js";
+import { https, runWith } from "firebase-functions/v1";
 import { savePartialRegistroGrades } from "./partialSave.js";
+import { lookupIdentityDocument } from "./documentLookup.js";
+import {
+  getIdentityDocumentType, getIdentityDocumentError, normalizeIdentityDate, normalizeIdentitySexo,
+  validateManualStudent, type IdentityStudentData,
+} from "../../shared/identityDocument.js";
 import { curricularUnitIdsInOrder as buildUnidadIds, type CurricularUnitRelation } from "../academico/curricularUnitOrder.js";
 import { applyPeriodSelection } from "../planes/periodSelection.js";
 import { getConfiguredCurrentSemestreId, loadCurrentDocenteModulos } from "../core/docenteSemester.js";
@@ -14,7 +19,7 @@ import {
   toNumber,
 } from "../core/userMappers.js";
 import { authAdmin, DEFAULT_LEVEL, STUDENT_ROLE_ID, isDocenteRole } from "../core/authCore.js";
-import { getRoleById, upsertDataConnectUserByDocumentId } from "../core/dataConnectCore.js";
+import { findDataConnectUserIdByDocumentId, getRoleById, upsertDataConnectUserByDocumentId } from "../core/dataConnectCore.js";
 import {
   INSERT_MATRICULA_MUTATION,
   INSERT_MODULO_ESTUDIANTE_MUTATION,
@@ -65,6 +70,7 @@ type RegistroAuxiliarFechasInput = {
 type RegistroAuxiliarMatriculaInput = {
   grupoModuloId?: unknown;
   dni?: unknown;
+  manual?: IdentityStudentData;
 };
 
 type RegistroAuxiliarRetireMatriculaInput = {
@@ -151,6 +157,8 @@ type RegistroAuxiliarEfsrtPppEstudiante = {
 
 type RegistroAuxiliarGrupoModulo = {
   id: number;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
   nombre?: string | null;
   orden?: number | null;
   inicio?: string | null;
@@ -163,6 +171,8 @@ type RegistroAuxiliarGrupoModulo = {
 
 type RegistroAuxiliarDocenteModulo = {
   id: number;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
   nombre?: string | null;
   orden?: number | null;
   grupoId: number;
@@ -208,28 +218,13 @@ type RegistroAuxiliarGrupoOption = {
   personal?: RegistroAuxiliarPersonalOption | null;
   grupoModulos: Array<{
     id: number;
+    transitabilidad?: boolean | null;
+    numeroTransitabilidad?: number | null;
     nombre?: string | null;
     orden?: number | null;
     moduloId: number;
     modulo?: RegistroAuxiliarDocenteModulo["modulo"] | null;
   }>;
-};
-
-type PeruDevsDniResult = {
-  id?: string;
-  nombres?: string;
-  apellido_paterno?: string;
-  apellido_materno?: string;
-  fecha_nacimiento?: string;
-  genero?: string;
-  nombre_completo?: string;
-  codigo_verificacion?: string;
-};
-
-type PeruDevsDniResponse = {
-  estado?: boolean;
-  mensaje?: string;
-  resultado?: PeruDevsDniResult | null;
 };
 
 type RegistroAuxiliarUserRow = DataConnectUserInput & {
@@ -241,6 +236,8 @@ const REGISTRO_AUXILIAR_CONTEXT_QUERY = `
   query RegistroAuxiliarContext($grupoModuloId: Int!) {
     grupoModulo(id: $grupoModuloId) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
       orden
       inicio
@@ -441,6 +438,8 @@ const REGISTRO_AUXILIAR_DOCENTE_MODULOS_QUERY = `
     }
     grupoModulos(limit: 3000) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
       orden
       grupoId
@@ -486,6 +485,8 @@ const REGISTRO_AUXILIAR_ACCESS_QUERY = `
     }
     grupoModulo(id: $grupoModuloId) {
       id
+      transitabilidad
+      numeroTransitabilidad
       grupo {
         id
         personalId
@@ -607,6 +608,8 @@ const REGISTRO_AUXILIAR_CREATE_MATRICULA_CONTEXT_QUERY = `
   query RegistroAuxiliarCreateMatriculaContext($grupoModuloId: Int!) {
     grupoModulo(id: $grupoModuloId) {
       id
+      transitabilidad
+      numeroTransitabilidad
       grupoId
       moduloId
       grupo {
@@ -647,6 +650,8 @@ const REGISTRO_AUXILIAR_RETIRE_MATRICULA_QUERY = `
   query RegistroAuxiliarRetireMatriculaContext($grupoModuloId: Int!, $moduloEstudianteId: Int!) {
     grupoModulo(id: $grupoModuloId) {
       id
+      transitabilidad
+      numeroTransitabilidad
       grupoId
       moduloId
     }
@@ -838,6 +843,8 @@ function buildRegistroAuxiliarGrupos(modulos: RegistroAuxiliarDocenteModulo[]) {
     current.grupoModulos.push({
       id: item.id,
       nombre: item.nombre ?? null,
+      transitabilidad: item.transitabilidad ?? false,
+      numeroTransitabilidad: item.numeroTransitabilidad ?? null,
       orden: item.orden ?? null,
       moduloId: item.moduloId,
       modulo: item.modulo ?? null,
@@ -969,24 +976,6 @@ function asCleanString(value: unknown) {
   return text ? text : null;
 }
 
-function normalizeDni(value: unknown) {
-  return String(value ?? "").replace(/\D/g, "").slice(0, 8);
-}
-
-function normalizePeruDevsDate(value: unknown) {
-  const raw = String(value ?? "").trim();
-  const match = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/.exec(raw);
-  if (!match) return null;
-  return `${match[3]}-${match[2].padStart(2, "0")}-${match[1].padStart(2, "0")}`;
-}
-
-function normalizePeruDevsSexo(value: unknown) {
-  const text = String(value ?? "").trim().toUpperCase();
-  if (text === "M" || text.startsWith("MASC")) return "M";
-  if (text === "F" || text.startsWith("FEM")) return "F";
-  return null;
-}
-
 function resolveInstitutionalEmailForDni(dni: string) {
   return `${dni}@cetprosmp.edu.pe`;
 }
@@ -997,37 +986,6 @@ function buildStudentUsername(data: {
   apellidoMaterno?: string | null;
 }) {
   return [data.nombres, data.apellidoPaterno, data.apellidoMaterno].filter(Boolean).join(" ").trim() || "Estudiante";
-}
-
-function getPeruDevsDniApiKey() {
-  const configured = String(process.env.PERUDEVS_DNI_API_KEY || "").trim();
-  if (configured) return configured;
-  return [
-    "cGVydWRldnMucHJvZHVjdGlvbi5maXRjb2RlcnMu",
-    "NjlmOTVkMTcxYzlhY2M1YmI0MjI2YWYz",
-  ].join("");
-}
-
-async function fetchPeruDevsDni(dni: string) {
-  const key = getPeruDevsDniApiKey();
-  if (!key) {
-    throw new https.HttpsError("failed-precondition", "No esta configurado el token para consultar DNI.");
-  }
-
-  const url = new URL("https://api.perudevs.com/api/v1/dni/complete");
-  url.searchParams.set("document", dni);
-  url.searchParams.set("key", key);
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new https.HttpsError("unavailable", "No se pudo consultar el DNI en este momento.");
-  }
-
-  const payload = await response.json() as PeruDevsDniResponse;
-  if (!payload.estado || !payload.resultado?.id) {
-    throw new https.HttpsError("not-found", "No se encontraron datos para el DNI ingresado.");
-  }
-  return payload.resultado;
 }
 
 async function getAuthUserByEmailOrNull(email: string) {
@@ -1052,22 +1010,22 @@ async function findRegistroAuxiliarUserByDni(dni: string) {
   const response = await dataConnect.executeGraphql<
     { users: RegistroAuxiliarUserRow[] },
     { tipoDocumento: string; dni: string }
-  >(FIND_USER_BY_DNI_QUERY, { variables: { tipoDocumento: "DNI", dni } });
+  >(FIND_USER_BY_DNI_QUERY, { variables: { tipoDocumento: getIdentityDocumentType(dni)!, dni } });
   return response.data.users?.[0] ?? null;
 }
 
 async function ensureRegistroAuxiliarStudentUser(
   dni: string,
-  dniData: PeruDevsDniResult,
+  dniData: IdentityStudentData,
   existingUser: RegistroAuxiliarUserRow | null,
   context: https.CallableContext,
 ) {
   const role = await getRoleById(STUDENT_ROLE_ID);
   const permissionLevel = role?.scala ?? DEFAULT_LEVEL;
   const now = new Date().toISOString();
-  const nombre = asCleanString(dniData.nombres);
-  const apellidoPaterno = asCleanString(dniData.apellido_paterno);
-  const apellidoMaterno = asCleanString(dniData.apellido_materno);
+  const nombre = asCleanString(dniData.nombre);
+  const apellidoPaterno = asCleanString(dniData.apellidoPaterno);
+  const apellidoMaterno = asCleanString(dniData.apellidoMaterno);
   const username = buildStudentUsername({ nombres: nombre, apellidoPaterno, apellidoMaterno });
   const institutionalEmail = resolveInstitutionalEmailForDni(dni);
   const existingAuth = await getAuthUserByEmailOrNull(institutionalEmail)
@@ -1094,19 +1052,26 @@ async function ensureRegistroAuxiliarStudentUser(
   const payload = buildUserDataFromInput({
     documentId: authUser.uid,
     username,
-    email: existingUser?.email || institutionalEmail,
+    email: asCleanString(dniData.email) || existingUser?.email || institutionalEmail,
     correoInstitucional: institutionalEmail,
     provider: "password",
     confirmed: true,
     blocked: false,
-    tipoDocumento: "DNI",
+    tipoDocumento: getIdentityDocumentType(dni),
     dni,
     nombre,
     apellidoPaterno,
     apellidoMaterno,
-    sexo: normalizePeruDevsSexo(dniData.genero),
-    nacionalidad: existingUser?.nacionalidad || "PERUANA",
-    fechaNacimiento: normalizePeruDevsDate(dniData.fecha_nacimiento),
+    sexo: normalizeIdentitySexo(dniData.sexo),
+    nacionalidad: asCleanString(dniData.nacionalidad),
+    fechaNacimiento: normalizeIdentityDate(dniData.fechaNacimiento),
+    estadoCivil: asCleanString(dniData.estadoCivil),
+    instruccion: asCleanString(dniData.instruccion),
+    nombreColegio: asCleanString(dniData.nombreColegio),
+    direccion: asCleanString(dniData.direccion),
+    distrito: asCleanString(dniData.distrito),
+    celular: asCleanString(dniData.celular),
+    telefono: asCleanString(dniData.telefono),
     fechaCreacion: existingUser?.fechaCreacion ?? now,
     fechaModificacion: now,
     emailCreador: existingUser?.emailCreador ?? asCleanString(context.auth?.token?.email),
@@ -1651,14 +1616,15 @@ export const updateRegistroAuxiliarGrupoModuloFechas = https.onCall(async (data:
   }
 });
 
-export const createRegistroAuxiliarMatricula = https.onCall(async (data: RegistroAuxiliarMatriculaInput, context) => {
+export const createRegistroAuxiliarMatricula = runWith({ timeoutSeconds: 180 }).https.onCall(async (data: RegistroAuxiliarMatriculaInput, context) => {
   const grupoModuloId = toNumber(data?.grupoModuloId, -1);
-  const dni = normalizeDni(data?.dni);
+  const dni = typeof data?.dni === "string" ? data.dni.trim() : "";
   if (grupoModuloId <= 0) {
     throw new https.HttpsError("invalid-argument", "grupoModuloId is required.");
   }
-  if (!/^\d{8}$/.test(dni)) {
-    throw new https.HttpsError("invalid-argument", "Ingresa un DNI valido de 8 digitos.");
+  const documentError = getIdentityDocumentError(dni);
+  if (documentError) {
+    throw new https.HttpsError("invalid-argument", documentError);
   }
 
   await ensureRegistroAuxiliarAccess(context, grupoModuloId, "create");
@@ -1689,10 +1655,27 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
       throw new https.HttpsError("failed-precondition", "El grupo-modulo no tiene grupo, modulo o semestre asociado.");
     }
 
-    const existingUser = await findRegistroAuxiliarUserByDni(dni);
+    const [existingUser, responsableUserId] = await Promise.all([
+      findRegistroAuxiliarUserByDni(dni),
+      findDataConnectUserIdByDocumentId(context.auth!.uid),
+    ]);
+    if (!responsableUserId) throw new https.HttpsError("failed-precondition", "Tu usuario no está registrado en la aplicación.");
     let userId = existingUser?.id ?? null;
     if (!userId) {
-      const dniData = await fetchPeruDevsDni(dni);
+      let dniData: IdentityStudentData;
+      if (data.manual !== undefined) {
+        if (!data.manual || typeof data.manual !== "object" || Array.isArray(data.manual)
+          || Object.values(data.manual).some(value => value !== null && typeof value !== "string")) {
+          throw new https.HttpsError("invalid-argument", "Los datos del estudiante no son válidos.");
+        }
+        const errors = validateManualStudent(data.manual, true, dayInAppTimeZone());
+        if (Object.keys(errors).length) {
+          throw new https.HttpsError("invalid-argument", "Completa los campos obligatorios.", { fields: errors });
+        }
+        dniData = data.manual;
+      } else {
+        dniData = await lookupIdentityDocument(dni);
+      }
       userId = await ensureRegistroAuxiliarStudentUser(dni, dniData, null, context);
     }
 
@@ -1731,6 +1714,7 @@ export const createRegistroAuxiliarMatricula = https.onCall(async (data: Registr
       grupoId,
       semestreId,
       userId,
+      responsableUserId,
     });
     const created = await dataConnect.executeGraphql<
       { matricula_insert: unknown },
@@ -1900,6 +1884,94 @@ export const updateRegistroAuxiliarEstudianteNombre = https.onCall(async (
   }
 });
 
+type RegistroStudentProfileInput = {
+  grupoModuloId?: unknown;
+  moduloEstudianteId?: unknown;
+  user?: IdentityStudentData & { dni?: string | null };
+};
+
+async function loadRegistroStudentProfile(data: RegistroStudentProfileInput, context: https.CallableContext) {
+  const grupoModuloId = toNumber(data?.grupoModuloId, -1);
+  const moduloEstudianteId = toNumber(data?.moduloEstudianteId, -1);
+  if (grupoModuloId <= 0 || moduloEstudianteId <= 0) {
+    throw new https.HttpsError("invalid-argument", "Selecciona un estudiante del registro.");
+  }
+  await ensureRegistroAuxiliarAccess(context, grupoModuloId, "edit");
+  const response = await dataConnect.executeGraphql<{
+    grupoModulo: { id: number; grupoId: number; moduloId: number } | null;
+    moduloEstudiante: {
+      grupoModuloId?: number | null; grupoId?: number | null; moduloId: number;
+      matricula?: { archivado?: boolean | null; user?: RegistroAuxiliarUserRow | null } | null;
+    } | null;
+  }, { grupoModuloId: number; moduloEstudianteId: number }>(`
+    query RegistroStudentProfile($grupoModuloId: Int!, $moduloEstudianteId: Int!) {
+      grupoModulo(id: $grupoModuloId) { id grupoId moduloId }
+      moduloEstudiante(id: $moduloEstudianteId) {
+        grupoModuloId grupoId moduloId
+        matricula { archivado user {
+          id documentId dni tipoDocumento nombre apellidoPaterno apellidoMaterno username
+          fechaNacimiento sexo instruccion nombreColegio nacionalidad estadoCivil
+          direccion distrito celular telefono email
+        } }
+      }
+    }`, { variables: { grupoModuloId, moduloEstudianteId } });
+  const { grupoModulo, moduloEstudiante } = response.data;
+  const belongs = moduloEstudiante?.grupoModuloId
+    ? moduloEstudiante.grupoModuloId === grupoModuloId
+    : moduloEstudiante?.grupoId === grupoModulo?.grupoId && moduloEstudiante?.moduloId === grupoModulo?.moduloId;
+  const user = moduloEstudiante?.matricula?.user;
+  if (!grupoModulo || !moduloEstudiante || !belongs || moduloEstudiante.matricula?.archivado || !user?.id) {
+    throw new https.HttpsError("not-found", "No se encontró el estudiante en este registro.");
+  }
+  return user;
+}
+
+export const getRegistroAuxiliarEstudianteDatos = https.onCall(async (data: RegistroStudentProfileInput, context) => {
+  const user = await loadRegistroStudentProfile(data, context);
+  return { user };
+});
+
+export const updateRegistroAuxiliarEstudianteDatos = https.onCall(async (data: RegistroStudentProfileInput, context) => {
+  const existingUser = await loadRegistroStudentProfile(data, context);
+  const input = data.user;
+  if (!input || typeof input !== "object" || Array.isArray(input)
+    || Object.values(input).some(value => value !== null && typeof value !== "string")) {
+    throw new https.HttpsError("invalid-argument", "Los datos del estudiante no son válidos.");
+  }
+  const errors = validateManualStudent(input, false, dayInAppTimeZone());
+  if (Object.keys(errors).length) throw new https.HttpsError("invalid-argument", "Revisa los datos ingresados.", { fields: errors });
+  const payload: DataConnectUserInput = { fechaModificacion: new Date().toISOString() };
+  for (const key of ["nombre", "apellidoPaterno", "apellidoMaterno", "sexo", "nacionalidad", "estadoCivil",
+    "instruccion", "nombreColegio", "direccion", "distrito", "celular", "telefono", "email"] as const) {
+    if (key in input) payload[key] = asCleanString(input[key]);
+  }
+  if ("fechaNacimiento" in input) payload.fechaNacimiento = asNullableTimestamp(normalizeIdentityDate(input.fechaNacimiento));
+  if ("dni" in input) {
+    const dni = String(input.dni ?? "").trim();
+    const documentError = dni ? getIdentityDocumentError(dni) : null;
+    if (documentError) throw new https.HttpsError("invalid-argument", documentError);
+    if (dni && (dni !== existingUser.dni || getIdentityDocumentType(dni) !== existingUser.tipoDocumento)) {
+      const duplicate = await findRegistroAuxiliarUserByDni(dni);
+      if (duplicate && duplicate.id !== existingUser.id) throw new https.HttpsError("already-exists", "El documento pertenece a otro usuario.");
+    }
+    payload.dni = dni || null;
+    payload.tipoDocumento = dni ? getIdentityDocumentType(dni) : null;
+  }
+  const merged = { ...existingUser, ...payload };
+  if (["nombre", "apellidoPaterno", "apellidoMaterno"].some(key => key in input)) {
+    payload.apellidos = [merged.apellidoPaterno, merged.apellidoMaterno].filter(Boolean).join(" ") || null;
+    payload.username = buildStudentUsername({ nombres: merged.nombre, apellidoPaterno: merged.apellidoPaterno, apellidoMaterno: merged.apellidoMaterno });
+  }
+  await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
+    UPDATE_USER_MUTATION, { variables: { id: existingUser.id, data: payload } });
+  if (payload.username && existingUser.documentId && !existingUser.documentId.startsWith("matricula:")) {
+    await authAdmin.updateUser(existingUser.documentId, { displayName: payload.username }).catch((error: unknown) => {
+      if ((error as { code?: string })?.code !== "auth/user-not-found") throw error;
+    });
+  }
+  return { user: { ...existingUser, ...payload } };
+});
+
 export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSaveInput, context) => {
   const grupoModuloId = toNumber(data?.grupoModuloId, -1);
   const notas = Array.isArray(data?.notas) ? data.notas : [];
@@ -1951,6 +2023,8 @@ export const saveRegistroAuxiliar = https.onCall(async (data: RegistroAuxiliarSa
       `query RegistroAuxiliarSaveGrupoModulo($grupoModuloId: Int!) {
         grupoModulo(id: $grupoModuloId) {
           id
+          transitabilidad
+          numeroTransitabilidad
           grupoId
           moduloId
           grupo { semestreId }

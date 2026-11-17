@@ -29,6 +29,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '@/lib/firebase';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { getPersonalShortName } from './personalName';
+import { asignarNumerosTransitabilidad, nombreConTransitabilidad, permiteTransitabilidad } from '@/lib/transitabilidad';
 import { isNombreGrupoGenerado, nombreGrupoCalculado, tituloModulo, tituloModulos } from './nombres';
 
 interface GrupoFormProps {
@@ -65,6 +66,7 @@ interface ModuloResumen {
   orden?: number | null;
   plan?: {
     carrera?: {
+      tipoCarrera?: { nombre?: string | null } | null;
       especialidad?: {
         orden?: number | null;
       } | null;
@@ -122,6 +124,8 @@ interface GrupoModuloDetalle {
   obligatorio: boolean | null;
   instancia?: number | null;
   sufijo?: string | null;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
   inicio?: string | null;
   fin?: string | null;
   grupoId?: number;
@@ -215,7 +219,7 @@ const toDateInputValue = (value: string | null | undefined) => {
 
 const getModuloLabel = (modulo: GrupoModuloDetalle) =>
   [
-    [tituloModulo(modulo), modulo.sufijo?.trim()].filter(Boolean).join(' '),
+    nombreConTransitabilidad([tituloModulo(modulo), modulo.sufijo?.trim()].filter(Boolean).join(' '), modulo.transitabilidad, modulo.numeroTransitabilidad),
     `Instancia ${modulo.instancia ?? 1}`,
   ].filter(Boolean).join(' ');
 
@@ -518,7 +522,13 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
       const current=prev.filter(item=>item.moduloId===moduloId).sort((a,b)=>(a.instancia??1)-(b.instancia??1));
       const option=modulosOpciones.find(item=>item.id===moduloId);
       const units=(option?.unidadDidacticas??[]).map((ud,index)=>({unidadDidacticaId:ud.id,unidadDidactica:ud,orden:index+1,inicio:null,fin:null}));
-      const expanded=Array.from({length:count},(_,index)=>current[index]??{moduloId,modulo:option??current[0]?.modulo,instancia:index+1,sufijo:null,orden:Math.max(0,...prev.map(item=>item.orden??0))+index+1,obligatorio:true,unidadDidacticas:units});
+      const used = new Set(current.map(item => item.instancia ?? 1));
+      const expanded = Array.from({length:count}, (_,index) => {
+        if (current[index]) return current[index];
+        const instancia = Array.from({length:6}, (_,i) => i+1).find(value => !used.has(value))!;
+        used.add(instancia);
+        return {moduloId,modulo:option??current[0]?.modulo,instancia,sufijo:null,transitabilidad:current[0]?.transitabilidad??false,orden:Math.max(0,...prev.map(item=>item.orden??0))+index+1,obligatorio:true,unidadDidacticas:units};
+      });
       const first=prev.findIndex(item=>item.moduloId===moduloId);
       const others=prev.filter(item=>item.moduloId!==moduloId);
       others.splice(first,0,...expanded);
@@ -585,6 +595,8 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
             moduloId: number;
             instancia?: number | null;
             sufijo?: string | null;
+            transitabilidad?: boolean | null;
+            numeroTransitabilidad?: number | null;
             orden?: number | null;
             obligatorio?: boolean | null;
             inicio?: string | null;
@@ -618,6 +630,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
           moduloId: item.moduloId,
           instancia: item.instancia ?? 1,
           sufijo: item.sufijo?.trim() || null,
+          transitabilidad: item.transitabilidad ?? false,
           orden: item.orden,
           obligatorio: item.obligatorio ?? true,
           inicio: item.inicio || null,
@@ -895,7 +908,7 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
                 Programacion academica
               </Typography>
               <Box sx={{ display: 'grid', gap: 1.5 }}>
-                {grupoModulos.map((modulo) => (
+                {asignarNumerosTransitabilidad(grupoModulos).map((modulo) => (
                   <Box
                     key={getGrupoModuloKey(modulo.moduloId, modulo.instancia)}
                     sx={{
@@ -941,6 +954,9 @@ export function GrupoForm({ grupoId, asModal = false, onSaved, onCancel }: Grupo
                     <Box sx={{display:'flex',gap:1,alignItems:'center',flexWrap:'wrap'}}>
                       <TextField label={`Sufijo de instancia ${modulo.instancia??1}`} value={modulo.sufijo??''} onChange={event=>actualizarInstancia(modulo.moduloId,modulo.instancia??1,{sufijo:event.target.value})} inputProps={{maxLength:80}} size="small" sx={{flex:1,minWidth:180}} />
                       <TextField label="Orden" type="number" value={modulo.orden??''} onChange={event=>actualizarInstancia(modulo.moduloId,modulo.instancia??1,{orden:event.target.value?Number(event.target.value):null})} size="small" inputProps={{min:1}} sx={{width:100}} />
+                      {permiteTransitabilidad(modulo.modulo?.plan?.carrera?.tipoCarrera?.nombre) && (
+                        <FormControlLabel label="Transitabilidad" control={<Checkbox checked={modulo.transitabilidad ?? false} onChange={event => actualizarInstancia(modulo.moduloId, modulo.instancia ?? 1, { transitabilidad: event.target.checked })} />} />
+                      )}
                       <FormControlLabel label="Obligatorio" control={<Checkbox checked={modulo.obligatorio??true} onChange={event=>actualizarInstancia(modulo.moduloId,modulo.instancia??1,{obligatorio:event.target.checked})} />} />
                     </Box>
 

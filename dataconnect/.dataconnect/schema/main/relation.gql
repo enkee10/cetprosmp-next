@@ -9711,6 +9711,15 @@ extend type GrupoModulo {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "GrupoModulo.nombre", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `GrupoModulo` table where the `numeroTransitabilidad` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  numeroTransitabilidad_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "GrupoModulo.numeroTransitabilidad", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `GrupoModulo` table where the `obligatorio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   obligatorio_count(
@@ -9737,6 +9746,15 @@ extend type GrupoModulo {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "GrupoModulo.sufijo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `GrupoModulo` table where the `transitabilidad` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  transitabilidad_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "GrupoModulo.transitabilidad", purpose: QUERY_COUNT)
   """
   ✨ Sum the `calendarioId` field in the `GrupoModulo` table.
   """
@@ -9782,6 +9800,15 @@ extend type GrupoModulo {
     """
     distinct: Boolean = false
   ): Int @fdc_generated(from: "GrupoModulo.moduloId", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `numeroTransitabilidad` field in the `GrupoModulo` table.
+  """
+  numeroTransitabilidad_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "GrupoModulo.numeroTransitabilidad", purpose: QUERY_SUM)
   """
   ✨ Sum the `orden` field in the `GrupoModulo` table.
   """
@@ -9837,6 +9864,15 @@ extend type GrupoModulo {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "GrupoModulo.moduloId", purpose: QUERY_AVG)
   """
+  ✨ Average the `numeroTransitabilidad` field in the `GrupoModulo` table.
+  """
+  numeroTransitabilidad_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "GrupoModulo.numeroTransitabilidad", purpose: QUERY_AVG)
+  """
   ✨ Average the `orden` field in the `GrupoModulo` table.
   """
   orden_avg(
@@ -9874,6 +9910,10 @@ extend type GrupoModulo {
   """
   moduloId_min: Int @fdc_generated(from: "GrupoModulo.moduloId", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `numeroTransitabilidad` field in the `GrupoModulo` table.
+  """
+  numeroTransitabilidad_min: Int @fdc_generated(from: "GrupoModulo.numeroTransitabilidad", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `orden` field in the `GrupoModulo` table.
   """
   orden_min: Int @fdc_generated(from: "GrupoModulo.orden", purpose: QUERY_MIN)
@@ -9905,6 +9945,10 @@ extend type GrupoModulo {
   ✨ Maximum of the `moduloId` field in the `GrupoModulo` table.
   """
   moduloId_max: Int @fdc_generated(from: "GrupoModulo.moduloId", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `numeroTransitabilidad` field in the `GrupoModulo` table.
+  """
+  numeroTransitabilidad_max: Int @fdc_generated(from: "GrupoModulo.numeroTransitabilidad", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `orden` field in the `GrupoModulo` table.
   """

@@ -1017,6 +1017,8 @@ const LIST_MATRICULA_GRUPO_MODULOS_BY_GRUPO_IDS_QUERY = `
   query ListMatriculaGrupoModulosByGrupoIds($grupoIds: [Int!]!) {
     grupoModulos(where: { grupoId: { in: $grupoIds } }, limit: 5000) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
       orden
       instancia
@@ -1034,6 +1036,8 @@ const LIST_MATRICULA_GRUPO_MODULOS_BY_IDS_QUERY = `
   query ListMatriculaGrupoModulosByIds($grupoModuloIds: [Int!]!) {
     grupoModulos(where: { id: { in: $grupoModuloIds } }, limit: 500) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
       orden
       instancia
@@ -1129,6 +1133,8 @@ const LIST_MODULO_ESTUDIANTES_BY_MATRICULA_IDS_FOR_LIST_QUERY = `
       puntaje
       grupoModulo {
         id
+        transitabilidad
+        numeroTransitabilidad
         nombre
         inicio
         fin
@@ -1169,6 +1175,8 @@ const GET_MATRICULA_QUERY = `
       puntaje
       grupoModulo {
         id
+        transitabilidad
+        numeroTransitabilidad
         nombre
         inicio
         fin
@@ -1209,6 +1217,8 @@ const GET_MATRICULA_QUERY = `
     }
     grupoModulos(limit: 50000) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
       inicio
       fin
@@ -1335,7 +1345,7 @@ const LIST_MATRICULA_GRUPOS_BY_SEMESTRE_QUERY = `
       id nombreDisplay descripcion grupoOrd
     }
     grupoModulos(where: { grupo: { _and: [{ semestreId: { eq: $semestreId }, archivado: { ne: true } }, { _or: [{ estado: { isNull: true } }, { estado: { ne: "inactivo" } }] }] } }, limit: 3000) {
-      id grupoId nombre orden modulo { titulo orden plan { carrera { especialidad { orden } } } }
+      id transitabilidad numeroTransitabilidad grupoId nombre orden modulo { titulo orden plan { carrera { especialidad { orden } } } }
     }
   }
 `;
@@ -1435,6 +1445,8 @@ const GET_GRUPO_MODULOS_FOR_MATRICULA_QUERY = `
   query GetGrupoModulosForMatricula($grupoId: Int!) {
     grupoModulos(where: { grupoId: { eq: $grupoId } }, limit: 50) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
       orden
       obligatorio
@@ -2380,7 +2392,7 @@ const LIST_DOCENTE_MODULOS_FOR_MATRICULA_LIST_QUERY = `
       id: { in: $grupoModuloIds },
       grupo: { semestreId: { eq: $semestreId }, archivado: { ne: true }, personal: { user: { documentId: { eq: $uid } } } }
     }, limit: 500) {
-      id nombre orden grupoId moduloId grupo { id semestreId personalId }
+      id transitabilidad numeroTransitabilidad nombre orden grupoId moduloId grupo { id semestreId personalId }
     }
   }
 `;
@@ -4882,7 +4894,7 @@ async function loadMatriculaListIndex(scope: MatriculaListScope, request: Matric
       ${matriculaPageNeedsSearch(request) ? MATRICULA_INDEX_SEARCH_FIELDS : ''}
       modulosEstudiantes: modulosEstudiantes_on_matricula(limit: 1000, orderBy: [{id: ASC}]) {
         id grupoModuloId grupoId moduloId
-        grupoModulo { id nombre grupoId moduloId modulo { titulo tituloComercial } grupo { id nombreDisplay } }
+        grupoModulo { id transitabilidad numeroTransitabilidad nombre grupoId moduloId modulo { titulo tituloComercial } grupo { id nombreDisplay } }
       }
     }
   }`;
@@ -4902,7 +4914,7 @@ async function loadMatriculaListIndex(scope: MatriculaListScope, request: Matric
       const response = await dataConnect.executeGraphql<{ grupoModulos: MatriculaDocenteGrupoModulo[] }, { ids: number[] }>(`
         query MatriculaPageLegacyGroups($ids: [Int!]!) {
           grupoModulos(where: {grupoId: {in: $ids}}, limit: 10000) {
-            id nombre grupoId moduloId grupo { id nombreDisplay }
+            id transitabilidad numeroTransitabilidad nombre grupoId moduloId grupo { id nombreDisplay }
           }
         }`, { variables: { ids: groupIds } });
       catalog.push(...response.data.grupoModulos);

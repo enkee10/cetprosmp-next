@@ -189,6 +189,8 @@ export {
   retireRegistroAuxiliarMatricula,
   saveRegistroAuxiliar,
   updateRegistroAuxiliarEstudianteNombre,
+  getRegistroAuxiliarEstudianteDatos,
+  updateRegistroAuxiliarEstudianteDatos,
   updateRegistroAuxiliarGrupoModuloFechas,
   descargarCertificadosTitulosSeleccionados,
   descargarRegistrosAcademicosSeleccionados,

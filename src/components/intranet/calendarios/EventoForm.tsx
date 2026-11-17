@@ -1,5 +1,7 @@
 'use client';
 
+import { nombreConTransitabilidad } from '@/lib/transitabilidad';
+
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
@@ -130,6 +132,8 @@ interface GrupoModuloOption {
   grupoId: number;
   moduloId: number;
   sufijo?: string | null;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
   instancia?: number | null;
   modulo?: {
     titulo: string | null;
@@ -215,7 +219,7 @@ const getGrupoLabel = (grupo: GrupoOption) => {
 const getGrupoModuloLabel = (grupo: GrupoOption, grupoModulo: GrupoModuloOption) =>
   [
     getGrupoLabel(grupo),
-    [grupoModulo.modulo?.titulo || `Modulo ${grupoModulo.moduloId}`, grupoModulo.sufijo?.trim()].filter(Boolean).join(' '),
+    nombreConTransitabilidad([grupoModulo.modulo?.titulo || `Modulo ${grupoModulo.moduloId}`, grupoModulo.sufijo?.trim()].filter(Boolean).join(' '), grupoModulo.transitabilidad, grupoModulo.numeroTransitabilidad),
   ].filter(Boolean).join(' / ');
 
 const getTextLabel = (item: TextoAcademicoOption) =>

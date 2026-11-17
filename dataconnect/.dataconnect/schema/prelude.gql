@@ -2675,7 +2675,7 @@ type _PostgresMetadata {
   """
   migrations(limit: Int = 100, offset: Int = 0): [_PostgresMigration!]!
   """
-  Lists security lint findings for tables in the service's schema.
+  Lists lint findings for tables in the service's schema.
   """
   lints: [_PostgresLint!]!
 }
@@ -3040,7 +3040,7 @@ type _PostgresMigration {
 }
 
 """
-Represents a security lint finding.
+Represents a lint finding.
 """
 type _PostgresLint {
   """
@@ -3048,6 +3048,7 @@ type _PostgresLint {
   """
   name: String!
   level: _PostgresLintLevel!
+  category: _PostgresLintCategory!
   """
   The finding, naming the affected object.
   """
@@ -3065,6 +3066,14 @@ enum _PostgresLintLevel {
   ERROR
   WARN
   INFO
+}
+
+"""
+Represents what a lint finding is about.
+"""
+enum _PostgresLintCategory {
+  SECURITY
+  PERFORMANCE
 }
 
 

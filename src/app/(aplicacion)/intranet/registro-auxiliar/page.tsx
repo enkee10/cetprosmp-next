@@ -1,5 +1,7 @@
 'use client';
 
+import { nombreConTransitabilidad } from '@/lib/transitabilidad';
+
 import { useCalendarPeriodFinished } from '@/hooks/useCalendarPeriodFinished';
 import { isDocenteRole } from '@/lib/intranetPermissions';
 
@@ -24,6 +26,13 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
+import CloseIcon from '@mui/icons-material/Close';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import HowToRegIcon from '@mui/icons-material/HowToReg';
+import dynamic from 'next/dynamic';
+import Modal1 from '@/components/Modal1';
+import type { RegistroStudentValues } from '@/components/intranet/matriculas/RegistroMatriculaForm';
+import { getIdentityDocumentError, IDENTITY_STUDENT_FIELDS } from '@/lib/identityDocument';
 import SearchIcon from '@mui/icons-material/Search';
 import { useSearchParams } from 'next/navigation';
 import { getAuth } from 'firebase/auth';
@@ -42,6 +51,10 @@ import { invalidateMatriculaLists } from '@/lib/matriculasListCache';
 import { app } from '@/lib/firebase';
 import { formatDateOnly, toDateOnlyInputValue } from '@/lib/dateOnly';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
+
+const RegistroMatriculaForm = dynamic(() => import('@/components/intranet/matriculas/RegistroMatriculaForm'), {
+  loading: () => <Box sx={{ p: 3, textAlign: 'center' }}><CircularProgress size={24} /></Box>,
+});
 
 type GrupoOption = {
   id: number;
@@ -72,6 +85,8 @@ type GrupoOption = {
 
 type GrupoModuloOption = {
   id: number;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
   nombre?: string | null;
   orden: number | null;
   moduloId: number;
@@ -178,6 +193,8 @@ type RegistroAuxiliar = {
   } | null;
   grupoModulo: {
     id: number;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
     nombre?: string | null;
     inicio?: string | null;
     fin?: string | null;
@@ -293,8 +310,10 @@ const getPersonalName = (grupo: RegistroAuxiliar['grupo']) => {
   return personal?.displayName || [user?.nombre, user?.apellidoPaterno, user?.apellidoMaterno].filter(Boolean).join(' ') || user?.username || '';
 };
 
-const getModuloName = (registro: RegistroAuxiliar | null) =>
-  registro?.grupoModulo?.modulo?.titulo || registro?.grupoModulo?.modulo?.tituloComercial || '';
+const getModuloName = (registro: RegistroAuxiliar | null, uppercase = false) => {
+  const titulo = registro?.grupoModulo?.modulo?.titulo || registro?.grupoModulo?.modulo?.tituloComercial || '';
+  return nombreConTransitabilidad(uppercase ? titulo.toLocaleUpperCase('es-PE') : titulo, registro?.grupoModulo?.transitabilidad, registro?.grupoModulo?.numeroTransitabilidad);
+};
 
 const getModuloCiclo = (registro: RegistroAuxiliar | null) =>
   registro?.grupoModulo?.modulo?.plan?.carrera?.nivel || '';
@@ -475,6 +494,12 @@ export default function RegistroAuxiliarPage() {
   const [editingNewMatricula, setEditingNewMatricula] = useState(false);
   const [newMatriculaDni, setNewMatriculaDni] = useState('');
   const [creatingMatricula, setCreatingMatricula] = useState(false);
+  const [studentForm, setStudentForm] = useState<{
+    grupoModuloId: number; moduloEstudianteId?: number; initialValues: RegistroStudentValues;
+  } | null>(null);
+  const [loadingStudentId, setLoadingStudentId] = useState<number | null>(null);
+  const [studentFormError, setStudentFormError] = useState<string | null>(null);
+  const [studentFormSubmitting, setStudentFormSubmitting] = useState(false);
   const [retiringModuloEstudianteId, setRetiringModuloEstudianteId] = useState<number | null>(null);
   const [editingStudentNameId, setEditingStudentNameId] = useState<number | null>(null);
   const [studentNameDraft, setStudentNameDraft] = useState<StudentNameDraft>({
@@ -1542,7 +1567,7 @@ export default function RegistroAuxiliarPage() {
     setValue(moduleRows[2], MODULE_INFO_RIGHT_LABEL_COL, 'INICIO / TERMINO');
     setValue(moduleRows[2], MODULE_INFO_RIGHT_VALUE_COL, [formatDate(registro.grupoModulo?.inicio), formatDate(registro.grupoModulo?.fin)].filter(Boolean).join(' al '));
     setValue(moduleRows[3], MODULE_INFO_LEFT_LABEL_COL, 'MODULO');
-    setValue(moduleRows[3], MODULE_INFO_LEFT_VALUE_COL, getModuloName(registro).toUpperCase());
+    setValue(moduleRows[3], MODULE_INFO_LEFT_VALUE_COL, getModuloName(registro, true));
     setValue(moduleRows[3], MODULE_INFO_RIGHT_LABEL_COL, 'TURNO');
     setValue(moduleRows[3], MODULE_INFO_RIGHT_VALUE_COL, getTurnoHorarioName(registro.grupo));
     setValue(moduleRows[4], MODULE_INFO_LEFT_LABEL_COL, 'DURACION');
@@ -1783,11 +1808,20 @@ export default function RegistroAuxiliarPage() {
     window.open(`/intranet/registro-auxiliar/imprimir?grupoModuloId=${encodeURIComponent(grupoModuloId)}`, '_blank', 'noopener,noreferrer');
   };
 
-  const handleCreateMatricula = async () => {
-    const dni = newMatriculaDni.replace(/\D/g, '');
-    if (!canCreateRegistroMatriculas || creatingMatriculaRef.current || !registro?.grupoModulo?.id || !dni) return;
-    if (!/^\d{8}$/.test(dni)) {
-      setError('Ingresa un DNI valido de 8 digitos.');
+  const openManualMatricula = () => {
+    if (!canCreateRegistroMatriculas || !registro?.grupoModulo?.id) return;
+    setStudentFormError(null);
+    setStudentForm({ grupoModuloId: registro.grupoModulo.id, initialValues: { dni: newMatriculaDni } });
+  };
+
+  const handleCreateMatricula = async (manual?: RegistroStudentValues) => {
+    const dni = String(manual?.dni ?? newMatriculaDni).trim();
+    const selectedGrupoModuloId = manual ? studentForm?.grupoModuloId : registro?.grupoModulo?.id;
+    if (!canCreateRegistroMatriculas || creatingMatriculaRef.current || !selectedGrupoModuloId || !dni) return;
+    const documentError = getIdentityDocumentError(dni);
+    if (documentError) {
+      if (manual) setStudentFormError(documentError);
+      else setError(documentError);
       return;
     }
 
@@ -1797,16 +1831,17 @@ export default function RegistroAuxiliarPage() {
     setMessage(null);
     try {
       const createRegistroAuxiliarMatricula = httpsCallable<
-        { grupoModuloId: number; dni: string },
+        { grupoModuloId: number; dni: string; manual?: RegistroStudentValues },
         { matriculaId: number; moduloEstudianteId: number; dni: string; estudiante: Estudiante }
       >(functions, 'createRegistroAuxiliarMatricula');
       const result = await createRegistroAuxiliarMatricula({
-        grupoModuloId: registro.grupoModulo.id,
+        grupoModuloId: selectedGrupoModuloId,
         dni,
+        ...(manual ? { manual: Object.fromEntries(Object.entries(manual).filter(([key]) => key !== 'dni')) } : {}),
       });
       if (!result.data.estudiante?.id) throw new Error('No se pudo leer el estudiante matriculado.');
       setRegistro(current => {
-        if (!current || current.grupoModulo?.id !== registro.grupoModulo?.id
+        if (!current || current.grupoModulo?.id !== selectedGrupoModuloId
           || current.estudiantes.some(student => student.id === result.data.estudiante.id)) return current;
         const estudiantes = [...current.estudiantes, result.data.estudiante].sort((a, b) => {
           const aUser = a.matricula?.user;
@@ -1821,15 +1856,71 @@ export default function RegistroAuxiliarPage() {
       invalidateMatriculaLists();
       setEditingNewMatricula(false);
       setNewMatriculaDni('');
+      setStudentForm(null);
     } catch (err) {
-      console.error('Error creating registro auxiliar matricula', err);
       const message = typeof err === 'object' && err !== null && 'message' in err
         ? String((err as { message?: unknown }).message || '')
         : '';
-      setError(message || 'No se pudo crear la matricula.');
+      const details = (err as { details?: { manualEntryRequired?: boolean } })?.details;
+      if (!manual && details?.manualEntryRequired) {
+        setStudentFormError(null);
+        setStudentForm({ grupoModuloId: selectedGrupoModuloId, initialValues: { dni } });
+      } else if (manual) {
+        setStudentFormError(message || 'No se pudo crear la matrícula.');
+      } else {
+        console.error('Error creating registro auxiliar matricula', err);
+        setError(message || 'No se pudo crear la matrícula.');
+      }
     } finally {
       creatingMatriculaRef.current = false;
       setCreatingMatricula(false);
+    }
+  };
+
+  const handleEditStudent = async (student: Estudiante) => {
+    if (!canEditRegistro || !registro?.grupoModulo?.id || loadingStudentId !== null) return;
+    const selectedGrupoModuloId = registro.grupoModulo.id;
+    setLoadingStudentId(student.id);
+    setError(null);
+    try {
+      const getProfile = httpsCallable<{ grupoModuloId: number; moduloEstudianteId: number }, { user: RegistroStudentValues }>(functions, 'getRegistroAuxiliarEstudianteDatos');
+      const response = await getProfile({ grupoModuloId: selectedGrupoModuloId, moduloEstudianteId: student.id });
+      const initialValues: RegistroStudentValues = { dni: response.data.user.dni ?? '' };
+      for (const key of IDENTITY_STUDENT_FIELDS) initialValues[key] = response.data.user[key] ?? '';
+      setStudentFormError(null);
+      setStudentForm({ grupoModuloId: selectedGrupoModuloId, moduloEstudianteId: student.id, initialValues });
+    } catch (error) {
+      setError((error as Error)?.message || 'No se pudieron cargar los datos del estudiante.');
+    } finally {
+      setLoadingStudentId(null);
+    }
+  };
+
+  const handleSaveStudentForm = async (values: RegistroStudentValues) => {
+    if (!studentForm || studentFormSubmitting) return;
+    setStudentFormSubmitting(true);
+    setStudentFormError(null);
+    try {
+      if (!studentForm.moduloEstudianteId) {
+        await handleCreateMatricula(values);
+        return;
+      }
+      const saveProfile = httpsCallable<{
+        grupoModuloId: number; moduloEstudianteId: number; user: RegistroStudentValues;
+      }, { user: NonNullable<NonNullable<Estudiante['matricula']>['user']> }>(functions, 'updateRegistroAuxiliarEstudianteDatos');
+      const result = await saveProfile({ grupoModuloId: studentForm.grupoModuloId, moduloEstudianteId: studentForm.moduloEstudianteId, user: values });
+      if (!result.data.user.id) throw new Error('No se pudo identificar el estudiante actualizado.');
+      setRegistro(current => !current || current.grupoModulo?.id !== studentForm.grupoModuloId ? current : ({
+        ...current, estudiantes: current.estudiantes.map(student => student.matricula && student.matricula.user?.id === result.data.user.id
+          ? { ...student, matricula: { ...student.matricula, user: { ...student.matricula.user, ...result.data.user } } } : student),
+      }));
+      invalidateMatriculaLists();
+      setStudentForm(null);
+      setMessage('Datos del estudiante actualizados.');
+    } catch (error) {
+      setStudentFormError((error as Error)?.message || 'No se pudieron guardar los datos del estudiante.');
+    } finally {
+      setStudentFormSubmitting(false);
     }
   };
 
@@ -2217,7 +2308,7 @@ export default function RegistroAuxiliarPage() {
                   {...selectableCellProps(3, MODULE_INFO_LEFT_VALUE_COL, 1, moduleInfoLeftValueSpan)}
                   sx={{ ...cellBaseSx, ...selectableCellSx(3, MODULE_INFO_LEFT_VALUE_COL, 1, moduleInfoLeftValueSpan) }}
                 >
-                  {getModuloName(registro).toUpperCase()}
+                  {getModuloName(registro, true)}
                 </Box>
                 <Box
                   {...selectableCellProps(3, MODULE_INFO_RIGHT_LABEL_COL)}
@@ -2568,6 +2659,17 @@ export default function RegistroAuxiliarPage() {
                             </Box>
                           )}
                           {savingStudentNameId === student.id ? <CircularProgress size={14} /> : null}
+                          {canEditRegistro ? (
+                            <Tooltip title="Editar datos del estudiante">
+                              <span><IconButton
+                                size="small" aria-label="Editar datos del estudiante"
+                                disabled={loadingStudentId !== null || retiringModuloEstudianteId !== null}
+                                onMouseDown={event => event.stopPropagation()}
+                                onClick={event => { event.stopPropagation(); void handleEditStudent(student); }}
+                                sx={{ width: 22, height: 22 }}
+                              >{loadingStudentId === student.id ? <CircularProgress size={14} /> : <EditOutlinedIcon sx={{ fontSize: 16 }} />}</IconButton></span>
+                            </Tooltip>
+                          ) : null}
                           {canDeleteRegistroMatriculas ? (
                             <Tooltip title="Retirar de este grupo-módulo">
                               <span>
@@ -2762,10 +2864,11 @@ export default function RegistroAuxiliarPage() {
                               component="input"
                               autoFocus
                               inputMode="numeric"
-                              maxLength={8}
-                              placeholder="DNI"
+                              maxLength={9}
+                              aria-label="Documento"
+                              placeholder="Documento"
                               value={newMatriculaDni}
-                              onChange={(event) => setNewMatriculaDni(event.target.value.replace(/\D/g, '').slice(0, 8))}
+                              onChange={(event) => setNewMatriculaDni(event.target.value.replace(/\D/g, '').slice(0, 9))}
                               onKeyDown={(event) => {
                                 if (event.key === 'Enter') {
                                   event.preventDefault();
@@ -2777,7 +2880,7 @@ export default function RegistroAuxiliarPage() {
                                 }
                               }}
                               sx={{
-                                width: 92,
+                                width: 110,
                                 border: '1px solid #8aa7c2',
                                 borderRadius: 0.75,
                                 px: 0.75,
@@ -2789,29 +2892,34 @@ export default function RegistroAuxiliarPage() {
                             <Button
                               size="small"
                               variant="contained"
-                              onClick={handleCreateMatricula}
-                              disabled={creatingMatricula || newMatriculaDni.length !== 8}
+                              onClick={() => void handleCreateMatricula()}
+                              disabled={creatingMatricula || ![8, 9].includes(newMatriculaDni.length)}
                               sx={{ minWidth: 0, width: 'fit-content', py: 0.25, fontSize: 11 }}
                             >
                               MATRICULAR
                             </Button>
-                            <Button
+                            <IconButton
                               size="small"
-                              variant="text"
+                              color="error"
+                              aria-label="Cancelar matrícula"
+                              title="Cancelar"
                               onClick={() => {
                                 setEditingNewMatricula(false);
                                 setNewMatriculaDni('');
                               }}
                               disabled={creatingMatricula}
-                              sx={{ minWidth: 62, py: 0.25, fontSize: 11 }}
+                              sx={{ width: 26, height: 26 }}
                             >
-                              Cancelar
-                            </Button>
+                              <CloseIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                            <IconButton size="small" color="primary" aria-label="Abrir formulario de matrícula" title="Abrir formulario de matrícula" onClick={openManualMatricula}>
+                              <HowToRegIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
                           </Stack>
                         </ClickAwayListener>
                       ) : canCreateRegistroMatriculas ? (
                         <Box sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-                          Doble clic para agregar estudiante por DNI
+                          Doble clic para agregar estudiante por documento
                         </Box>
                       ) : null}
                     </Box>
@@ -2849,6 +2957,18 @@ export default function RegistroAuxiliarPage() {
           }}
         />
       </Paper>
+      {studentForm && <Modal1
+        open title={studentForm.moduloEstudianteId ? 'Editar datos del estudiante' : 'Crear matrícula'} maxWidth="md"
+        onClose={() => { if (!studentFormSubmitting) setStudentForm(null); }}
+      >
+        <RegistroMatriculaForm
+          key={`${studentForm.grupoModuloId}-${studentForm.moduloEstudianteId ?? 'new'}`}
+          initialValues={studentForm.initialValues} editing={Boolean(studentForm.moduloEstudianteId)}
+          submitting={studentFormSubmitting} error={studentFormError}
+          onCancel={() => { if (!studentFormSubmitting) setStudentForm(null); }}
+          onSubmit={handleSaveStudentForm}
+        />
+      </Modal1>}
     </Box>
   );
 }

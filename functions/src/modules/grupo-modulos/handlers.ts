@@ -25,6 +25,8 @@ import {
   UPDATE_GRUPO_MODULO_MUTATION,
 } from "../../dataconnectOperations.js";
 import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
+import { nombreConTransitabilidad, permiteTransitabilidad } from '../core/transitabilidad.js';
+import { saveTransitabilidadGrupoModulo } from '../grupos/saveGrupo.js';
 
 type GrupoModuloRow = DataConnectGrupoModulo & {
   grupo?: Pick<DataConnectGrupo, "id" | "nombreDisplay" | "semestreId"> & {
@@ -63,7 +65,10 @@ const LIST_GRUPO_MODULOS_QUERY = `
   query ListGrupoModulosManual {
     grupoModulos(limit: 5000) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
+      sufijo
       orden
       obligatorio
       inicio
@@ -120,7 +125,10 @@ const GET_GRUPO_MODULO_QUERY = `
   query GetGrupoModuloManual($id: Int!) {
     grupoModulo(id: $id) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
+      sufijo
       orden
       obligatorio
       inicio
@@ -166,6 +174,7 @@ const GET_GRUPO_MODULO_NOMBRE_CONTEXT_QUERY = `
       id
       titulo
       tituloComercial
+      plan { carrera { tipoCarrera { nombre } } }
     }
   }
 `;
@@ -181,6 +190,7 @@ const LIST_GRUPO_MODULO_OPCIONES_QUERY = `
       titulo
       tituloComercial
       orden
+      plan { carrera { tipoCarrera { nombre } } }
     }
     calendarios(limit: 1000) {
       id
@@ -213,23 +223,26 @@ function decorateGrupoModulo(row: GrupoModuloRow) {
   return {
     ...row,
     grupoLabel: grupoLabel(row.grupo),
-    moduloLabel: moduloLabel(row.modulo),
+    moduloLabel: nombreConTransitabilidad(moduloLabel(row.modulo), row.transitabilidad, row.numeroTransitabilidad),
     calendarioLabel: calendarioLabel(row.calendario),
     docenteAvatar: row.grupo?.personal?.user?.avatar ?? null,
     docenteNombre,
   };
 }
 
-async function buildNombreForCreate(grupoId: number, moduloId: number) {
+async function buildNombreForCreate(grupoId: number, moduloId: number, sufijo?: string | null, transitabilidad = false) {
   const response = await dataConnect.executeGraphql<{
     grupo: GrupoModuloNombreContext;
-    modulo: GrupoModuloNombreModulo;
+    modulo: GrupoModuloNombreModulo & { plan?: { carrera?: { tipoCarrera?: { nombre?: string | null } | null } | null } | null };
   }, { grupoId: number; moduloId: number }>(
     GET_GRUPO_MODULO_NOMBRE_CONTEXT_QUERY,
     { variables: { grupoId, moduloId } },
   );
 
-  const nombre = buildGrupoModuloNombreRelacional(response.data.grupo, response.data.modulo);
+  if (transitabilidad && !permiteTransitabilidad(response.data.modulo?.plan?.carrera?.tipoCarrera?.nombre)) {
+    throw new https.HttpsError('invalid-argument', 'La transitabilidad solo está disponible para módulos de programas de estudio.');
+  }
+  const nombre = buildGrupoModuloNombreRelacional(response.data.grupo, response.data.modulo, sufijo, transitabilidad);
   if (!nombre) {
     throw new https.HttpsError("failed-precondition", "No se pudo calcular el nombre del grupo-modulo.");
   }
@@ -306,7 +319,7 @@ export const listGrupoModuloOpciones = https.onCall(async (_data, context) => {
   try {
     const response = await dataConnect.executeGraphql<{
       grupos: Array<Pick<DataConnectGrupo, "id" | "nombreDisplay">>;
-      modulos: Array<Pick<DataConnectModulo, "id" | "titulo" | "tituloComercial" | "orden">>;
+      modulos: Array<Pick<DataConnectModulo, "id" | "titulo" | "tituloComercial" | "orden" | "plan">>;
       calendarios: Array<Pick<DataConnectCalendario, "id" | "titulo">>;
     }, Record<string, never>>(LIST_GRUPO_MODULO_OPCIONES_QUERY);
 
@@ -315,7 +328,7 @@ export const listGrupoModuloOpciones = https.onCall(async (_data, context) => {
         .map((grupo) => ({ ...grupo, label: grupoLabel(grupo) }))
         .sort((a, b) => a.label.localeCompare(b.label, "es", { numeric: true })),
       modulos: (response.data.modulos ?? [])
-        .map((modulo) => ({ ...modulo, label: moduloLabel(modulo) }))
+        .map((modulo) => ({ ...modulo, label: moduloLabel(modulo), permiteTransitabilidad: permiteTransitabilidad(modulo.plan?.carrera?.tipoCarrera?.nombre) }))
         .sort((a, b) => a.label.localeCompare(b.label, "es", { numeric: true })),
       calendarios: (response.data.calendarios ?? [])
         .map((calendario) => ({ ...calendario, label: calendarioLabel(calendario) }))
@@ -341,6 +354,16 @@ export const createOrUpdateGrupoModulo = https.onCall(async (data, context) => {
   payload.instancia = payload.instancia ?? 1;
 
   try {
+    const previous = grupoModuloId
+      ? (await dataConnect.executeGraphql<{ grupoModulo: DataConnectGrupoModulo | null }, { id: number }>(
+        `query PreviousGrupoModuloMode($id:Int!){grupoModulo(id:$id){id sufijo transitabilidad numeroTransitabilidad}}`,
+        { variables: { id: grupoModuloId } },
+      )).data.grupoModulo
+      : null;
+    if (grupoModuloId && !previous) throw new https.HttpsError('not-found', 'El grupo-módulo no existe.');
+    payload.transitabilidad = payload.transitabilidad ?? previous?.transitabilidad ?? false;
+    if (payload.sufijo === undefined) payload.sufijo = previous?.sufijo;
+    if (payload.transitabilidad || previous?.transitabilidad) return {id: await saveTransitabilidadGrupoModulo(grupoModuloId ?? null, payload)};
     if (grupoModuloId) {
       const updated = await dataConnect.executeGraphql<
         { grupoModulo_update: unknown },
@@ -352,7 +375,7 @@ export const createOrUpdateGrupoModulo = https.onCall(async (data, context) => {
 
     const createPayload: DataConnectGrupoModuloInput = {
       ...payload,
-      nombre: await buildNombreForCreate(payload.grupoId, payload.moduloId),
+      nombre: await buildNombreForCreate(payload.grupoId, payload.moduloId, payload.sufijo),
     };
 
     const created = await dataConnect.executeGraphql<
@@ -362,6 +385,10 @@ export const createOrUpdateGrupoModulo = https.onCall(async (data, context) => {
 
     return { id: getIdFromKeyOutput(created.data.grupoModulo_insert) };
   } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    if ((error as Error).message.includes('No se puede cambiar la transitabilidad')) {
+      throw new https.HttpsError('failed-precondition', 'No se puede cambiar la transitabilidad de un grupo-módulo con documentos emitidos.');
+    }
     console.error("Error in createOrUpdateGrupoModulo:", error);
     throw new https.HttpsError("internal", "No se pudo guardar el grupo-modulo.");
   }

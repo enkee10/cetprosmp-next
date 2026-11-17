@@ -3,8 +3,9 @@
 import { Avatar, Box } from '@mui/material';
 import type { GridRenderCellParams } from '@mui/x-data-grid';
 import { AcademicCrudPage } from '@/components/intranet/academico/AcademicCrudPage';
+import type { AcademicFieldConfig } from '@/components/intranet/academico/AcademicEntityForm';
 
-const fields = [
+const fields: AcademicFieldConfig[] = [
   { name: 'nombre', label: 'Nombre' },
   {
     name: 'grupoId',
@@ -28,6 +29,10 @@ const fields = [
   },
   { name: 'instancia', label: 'Instancia', type: 'number' as const },
   { name: 'orden', label: 'Orden', type: 'number' as const },
+  {
+    name: 'transitabilidad', label: 'Transitabilidad', type: 'boolean',
+    visibleWhen: (values, options) => options.moduloId?.find(option => String(option.value) === values.moduloId)?.source?.permiteTransitabilidad === true,
+  },
   { name: 'obligatorio', label: 'Obligatorio', type: 'boolean' as const },
   { name: 'inicio', label: 'Inicio', type: 'date' as const },
   { name: 'fin', label: 'Fin', type: 'date' as const },
@@ -97,6 +102,7 @@ const columns = [
   { field: 'moduloLabel', headerName: 'Modulo', flex: 1.2, minWidth: 190, hidden: true },
   { field: 'instancia', headerName: 'Inst.', flex: 0.45, minWidth: 80, hidden: true },
   { field: 'orden', headerName: 'Orden', flex: 0.55, minWidth: 90, hidden: true },
+  { field: 'transitabilidad', headerName: 'Transitabilidad', flex: 0.75, minWidth: 130, hidden: true },
   { field: 'obligatorio', headerName: 'Obligatorio', flex: 0.75, minWidth: 120, hidden: true },
   { field: 'inicio', headerName: 'Inicio', width: 100, minWidth: 100, maxWidth: 100 },
   { field: 'fin', headerName: 'Fin', width: 100, minWidth: 100, maxWidth: 100 },

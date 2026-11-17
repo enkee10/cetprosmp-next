@@ -160,7 +160,10 @@ const LIST_GRUPO_MODULOS_FOR_MODULO_RENAME_QUERY = `
   query ListGrupoModulosForModuloRename($moduloId: Int!) {
     grupoModulos(where: { moduloId: { eq: $moduloId } }, limit: 5000) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
+      sufijo
       modulo {
         id
         titulo
@@ -297,6 +300,9 @@ async function syncGrupoModulosNombreForModulo(moduloId: number) {
     grupoModulos: Array<{
       id: number;
       nombre?: string | null;
+      sufijo?: string | null;
+      transitabilidad?: boolean | null;
+      numeroTransitabilidad?: number | null;
       modulo?: GrupoModuloNombreModulo;
       grupo?: GrupoModuloNombreContext;
     }>;
@@ -308,7 +314,7 @@ async function syncGrupoModulosNombreForModulo(moduloId: number) {
   await Promise.all(
     (response.data.grupoModulos ?? []).map((grupoModulo) => {
       if (grupoModulo.nombre?.trim()) return Promise.resolve();
-      const nombre = buildGrupoModuloNombreRelacional(grupoModulo.grupo ?? null, grupoModulo.modulo);
+      const nombre = buildGrupoModuloNombreRelacional(grupoModulo.grupo ?? null, grupoModulo.modulo, grupoModulo.sufijo, grupoModulo.transitabilidad ?? false, grupoModulo.numeroTransitabilidad);
       if (!nombre) return Promise.resolve();
 
       const payload = { nombre } as DataConnectGrupoModuloInput;

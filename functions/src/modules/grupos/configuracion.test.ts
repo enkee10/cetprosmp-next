@@ -13,6 +13,12 @@ test('new repeated modules need different suffixes on consecutive instances', ()
   validarInstancias([{moduloId:1,instancia:1,sufijo:'A'},{moduloId:1,instancia:2,sufijo:'B'}]);
 });
 
+test('numbered transitabilidad instances use automatic identities and preserve gaps', () => {
+  validarInstancias([{moduloId:10,instancia:1,transitabilidad:true,numeroTransitabilidad:1},{moduloId:10,instancia:2,transitabilidad:true,numeroTransitabilidad:2}]);
+  validarInstancias([{moduloId:10,instancia:2,transitabilidad:true,numeroTransitabilidad:2}]);
+  assert.throws(() => validarInstancias([{moduloId:10,instancia:1,transitabilidad:true,numeroTransitabilidad:1},{moduloId:10,instancia:2,transitabilidad:true,numeroTransitabilidad:1}]), /números diferentes/);
+});
+
 test('existing configurations without suffixes remain unchanged; adding an instance requires suffixes', () => {
   const old = [{moduloId:1,instancia:1},{moduloId:1,instancia:2}];
   validarInstancias(old,old);

@@ -269,13 +269,13 @@ export const DELETE_GRUPO_MUTATION = `
 `;
 
 export const INSERT_GRUPO_MODULO_MUTATION = `
-  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "sufijo nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia")) {
+  mutation InsertGrupoModulo($data: GrupoModulo_Data! @allow(fields: "transitabilidad numeroTransitabilidad sufijo nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia")) {
     grupoModulo_insert(data: $data)
   }
 `;
 
 export const UPDATE_GRUPO_MODULO_MUTATION = `
-  mutation UpdateGrupoModulo($id: Int!, $data: GrupoModulo_Data! @allow(fields: "sufijo nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia")) {
+  mutation UpdateGrupoModulo($id: Int!, $data: GrupoModulo_Data! @allow(fields: "transitabilidad numeroTransitabilidad sufijo nombre grupoId moduloId orden obligatorio inicio fin calendarioId instancia")) {
     grupoModulo_update(id: $id, data: $data)
   }
 `;

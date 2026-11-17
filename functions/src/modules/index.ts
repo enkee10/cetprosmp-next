@@ -223,6 +223,8 @@ export {
   retireRegistroAuxiliarMatricula,
   saveRegistroAuxiliar,
   updateRegistroAuxiliarEstudianteNombre,
+  getRegistroAuxiliarEstudianteDatos,
+  updateRegistroAuxiliarEstudianteDatos,
   updateRegistroAuxiliarGrupoModuloFechas,
 } from "./registro-auxiliar/handlers.js";
 export {

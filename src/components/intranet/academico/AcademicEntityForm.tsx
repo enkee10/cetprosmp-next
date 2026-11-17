@@ -47,6 +47,7 @@ export interface AcademicFieldConfig {
   optionLabelField?: string;
   optionValueType?: 'string' | 'number';
   optionFilters?: Array<{ optionField: string; formField: string }>;
+  visibleWhen?: (values: Record<string, string>, options: Record<string, AcademicSelectOption[]>) => boolean;
 
 }
 
@@ -73,8 +74,12 @@ function formatInitialValue(value: unknown, type?: AcademicFieldType) {
   return String(value);
 }
 
-function buildPayload(fields: AcademicFieldConfig[], values: Record<string, string>) {
+function buildPayload(fields: AcademicFieldConfig[], values: Record<string, string>, options: Record<string, AcademicSelectOption[]> = {}) {
   return fields.reduce<Record<string, string | number | number[] | string[] | boolean | null>>((payload, field) => {
+    if (field.visibleWhen && !field.visibleWhen(values, options)) {
+      if (field.type === 'boolean') payload[field.name] = false;
+      return payload;
+    }
     const raw = field.type === 'timestamp' ? appTimestampIso(values[field.name]) ?? '' : values[field.name]?.trim() ?? '';
     if (field.type === 'string-list') {
       payload[field.name] = (JSON.parse(raw || '[]') as string[]).map(item => item.trim()).filter(Boolean);
@@ -232,7 +237,7 @@ export function AcademicEntityForm({
 
       await createOrUpdateEntity({
         id: entityId ? Number(entityId) : undefined,
-        ...buildPayload(fields, values),
+        ...buildPayload(fields, values, selectOptions),
       });
 
       onSaved?.();
@@ -265,6 +270,7 @@ export function AcademicEntityForm({
 
       <form onSubmit={handleSubmit}>
         {fields.map((field) => {
+          if (field.visibleWhen && !field.visibleWhen(values, selectOptions)) return null;
           if (field.type === 'string-list') {
             const items = JSON.parse(values[field.name] || '[]') as string[];
             const updateItems = (next: string[]) => setValues(prev => ({ ...prev, [field.name]: JSON.stringify(next) }));

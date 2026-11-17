@@ -1,5 +1,7 @@
 'use client';
 
+import { nombreConTransitabilidad } from '@/lib/transitabilidad';
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Stack } from '@mui/material';
 import { GridColDef, GridColumnVisibilityModel, GridPaginationModel } from '@mui/x-data-grid';
@@ -49,6 +51,8 @@ interface Grupo {
     obligatorio: boolean | null;
     instancia?: number | null;
     sufijo?: string | null;
+    transitabilidad?: boolean | null;
+    numeroTransitabilidad?: number | null;
     grupoId: number;
     moduloId: number;
     modulo?: { titulo: string | null; tituloComercial: string | null } | null;
@@ -225,7 +229,7 @@ export default function GruposPage() {
           (row.grupoModulos || [])
             .slice()
             .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId)
-            .map((item) => [item.modulo?.titulo || `Modulo ${item.moduloId}`, item.sufijo?.trim()].filter(Boolean).join(' '))
+            .map((item) => nombreConTransitabilidad([item.modulo?.titulo || `Modulo ${item.moduloId}`, item.sufijo?.trim()].filter(Boolean).join(' '), item.transitabilidad, item.numeroTransitabilidad))
             .join(' / '),
       },
       {

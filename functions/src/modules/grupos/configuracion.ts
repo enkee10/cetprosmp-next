@@ -3,7 +3,7 @@ export const MAX_INSTANCIAS_GRUPO = 6;
 export const claveInstancia = (moduloId: number, instancia = 1) => `${moduloId}:${instancia}`;
 
 export function validarInstancias(
-  items: Array<{ moduloId: number; instancia: number; sufijo?: string | null }>,
+  items: Array<{ moduloId: number; instancia: number; sufijo?: string | null; transitabilidad?: boolean | null; numeroTransitabilidad?: number | null }>,
   anteriores: Array<{ moduloId: number; instancia?: number | null; sufijo?: string | null }> = [],
 ) {
   if (!items.length || items.length > MAX_INSTANCIAS_GRUPO) throw new Error('El grupo debe tener entre 1 y 6 instancias de módulos.');
@@ -20,8 +20,13 @@ export function validarInstancias(
   }
   for (const [moduloId, list] of byModulo) {
     const ordered = list.slice().sort((a,b) => a.instancia - b.instancia);
-    if (ordered.some((item,i) => item.instancia !== i + 1)) throw new Error('Las instancias deben numerarse consecutivamente desde 1.');
+    if (!ordered.every(item => item.transitabilidad && item.numeroTransitabilidad) && ordered.some((item,i) => item.instancia !== i + 1)) throw new Error('Las instancias deben numerarse consecutivamente desde 1.');
     if (list.length === 1) {
+      continue;
+    }
+    if (list.some(item => item.transitabilidad)) {
+      const labels = list.map(item => `${item.sufijo?.trim().toLocaleLowerCase('es-PE') ?? ''}|${item.transitabilidad ? `trans:${item.numeroTransitabilidad ?? ''}` : 'regular'}`);
+      if (new Set(labels).size !== labels.length) throw new Error('Las instancias de transitabilidad deben tener números diferentes.');
       continue;
     }
     const old = anteriores.filter(item => item.moduloId === moduloId);

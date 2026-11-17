@@ -21,6 +21,7 @@ const source = declarations('src/components/intranet/grupos/personalName.ts', [
 const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
 const { nombreGrupoCalculado, isNombreGrupoGenerado } = vm.runInNewContext(
   `${compiled}\n({ nombreGrupoCalculado, isNombreGrupoGenerado })`,
+  require('../functions/lib/modules/core/transitabilidad.js'),
 );
 const melamina = { moduloId: 32, orden: 1, instancia: 1, sufijo: null,
   modulo: { titulo: 'Confecciones de Muebles en Melamine', tituloComercial: 'Carpintería en Melamina' } };

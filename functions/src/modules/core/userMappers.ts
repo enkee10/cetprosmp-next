@@ -378,6 +378,7 @@ export function buildGrupoDataFromInput(input: Record<string, unknown>) {
 
 export function buildGrupoModuloDataFromInput(input: Record<string, unknown>) {
   return compactUndefined({
+    transitabilidad: toBoolean(input.transitabilidad),
     nombre: asNullableString(input.nombre),
     sufijo: asNullableString(input.sufijo),
     grupoId: toNumber(input.grupoId, 0),

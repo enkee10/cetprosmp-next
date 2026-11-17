@@ -81,6 +81,8 @@ const LIST_GRUPOS_QUERY = `
     }
     grupoModulos(limit: 3000) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
       sufijo
       orden
@@ -96,6 +98,7 @@ const LIST_GRUPOS_QUERY = `
         orden
         plan {
           carrera {
+            tipoCarrera { nombre }
             especialidad {
               orden
             }
@@ -126,6 +129,8 @@ const LIST_GRUPOS_QUERY = `
       unidadDidacticaId
       grupoModulo {
         id
+        transitabilidad
+        numeroTransitabilidad
         grupoId
         moduloId
       }
@@ -186,6 +191,8 @@ const GET_GRUPO_QUERY = `
     }
     grupoModulos(where: { grupoId: { eq: $id } }, limit: 50) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
       sufijo
       orden
@@ -201,6 +208,7 @@ const GET_GRUPO_QUERY = `
         orden
         plan {
           carrera {
+            tipoCarrera { nombre }
             especialidad {
               orden
             }
@@ -231,6 +239,8 @@ const GET_GRUPO_QUERY = `
       unidadDidacticaId
       grupoModulo {
         id
+        transitabilidad
+        numeroTransitabilidad
         grupoId
         moduloId
       }
@@ -454,6 +464,7 @@ const normalizeGrupoModuloDetalles = (value: unknown) => {
       instancia,
       sufijo: raw.sufijo == null ? null : String(raw.sufijo).trim(),
       hasSufijo: Object.prototype.hasOwnProperty.call(raw, "sufijo"),
+      transitabilidad: toBoolean(raw.transitabilidad),
       orden: toNumberOrNull(raw.orden),
       obligatorio: toBoolean(raw.obligatorio),
       inicio: asNullableTimestamp(raw.inicio),
@@ -546,7 +557,7 @@ export const listGrupoConfiguracionOpciones = https.onCall(async (_data, context
     modulos: Array<{id:number; titulo?:string|null; tituloComercial?:string|null; orden?:number|null}>;
     competenciaUnidadesDidacticas: DataConnectCompetenciaUnidadDidactica[];
   }, Record<string, never>>(`query GrupoModuloOpciones {
-    modulos(limit:1000){id titulo tituloComercial orden plan{carrera{especialidad{orden}}}}
+    modulos(limit:1000){id titulo tituloComercial orden plan{carrera{tipoCarrera{nombre} especialidad{orden}}}}
     competenciaUnidadesDidacticas(limit:5000){id orden competenciaId competenciaContinuacionId unidadDidacticaId competencia{id nombre tipo moduloId} competenciaContinuacion{planModulo{moduloId}} unidadDidactica{id nombre duracion creditos sigla}}
   }`);
   const relations = projectUnidadRelations(data.competenciaUnidadesDidacticas);
@@ -624,6 +635,7 @@ export const createOrUpdateGrupo = https.onCall(async (data, context) => {
     if (error instanceof https.HttpsError) throw error;
     if (error instanceof WorkspaceSyncError) throw new https.HttpsError("failed-precondition",error.message);
     const message = (error as Error).message;
+    if (message.includes('No se puede cambiar la transitabilidad')) throw new https.HttpsError('failed-precondition', 'No se puede cambiar la transitabilidad de un grupo-módulo con documentos emitidos.');
     if (message.includes("No se puede retirar una instancia")) throw new https.HttpsError("failed-precondition", "No se puede retirar una instancia que tiene matrículas, programación o registros asociados.");
     console.error("Error in createOrUpdateGrupo:",error);
     throw new https.HttpsError("internal","No se pudo guardar el grupo.");

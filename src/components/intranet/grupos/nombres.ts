@@ -1,10 +1,13 @@
 import { getPersonalShortName } from './personalName';
+import { asignarNumerosTransitabilidad, nombreConTransitabilidad } from '@/lib/transitabilidad';
 
 export interface GrupoNombreModulo {
   moduloId: number;
   orden?: number | null;
   instancia?: number | null;
   sufijo?: string | null;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
   modulo?: { titulo?: string | null; tituloComercial?: string | null } | null;
 }
 
@@ -25,9 +28,9 @@ export const tituloModulo = (item: GrupoNombreModulo, comercial = false) =>
   || `Módulo ${item.moduloId}`;
 
 export const tituloModulos = (items: GrupoNombreModulo[], comercial = false, conSufijo = true) =>
-  items.slice()
+  asignarNumerosTransitabilidad(items).slice()
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.moduloId - b.moduloId || (a.instancia ?? 1) - (b.instancia ?? 1))
-    .map(item => [tituloModulo(item, comercial), conSufijo ? item.sufijo?.trim() : ''].filter(Boolean).join(' '))
+    .map(item => nombreConTransitabilidad([tituloModulo(item, comercial), conSufijo ? item.sufijo?.trim() : ''].filter(Boolean).join(' '), item.transitabilidad, item.numeroTransitabilidad))
     .join(' / ');
 
 const tituloModulosAgrupadosAnterior = (items: GrupoNombreModulo[], comercial: boolean) => {

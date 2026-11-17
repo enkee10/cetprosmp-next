@@ -1,5 +1,7 @@
 'use client';
 
+import { nombreConTransitabilidad } from '@/lib/transitabilidad';
+
 import { isCalendarPeriodActive, dayInAppTimeZone, ageInAppTimeZone, formatInstantDateInAppTimeZone, formatDateOnly, formatDateTimeInAppTimeZone, getDateOnlyLocalDate } from '@/lib/dateOnly';
 
 import { isDocenteRole } from '@/lib/intranetPermissions';
@@ -212,6 +214,8 @@ interface MatriculaListItem {
     puntaje?: number | null;
     grupoModulo?: {
       id?: number | null;
+      transitabilidad?: boolean | null;
+      numeroTransitabilidad?: number | null;
       nombre?: string | null;
       inicio?: string | null;
       fin?: string | null;
@@ -272,6 +276,8 @@ interface MatriculaFormProps {
 
 interface MatriculaGrupoModuloOption {
   id: number;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
   nombre?: string | null;
   moduloId?: number | null;
   grupo?: {
@@ -3378,7 +3384,7 @@ export function MatriculasPage() {
 
     if (isDocente) {
       const moduleTitle = (item: MatriculaGrupoModuloOption) =>
-        item.modulo?.titulo || item.modulo?.tituloComercial || `Modulo ${item.moduloId}`;
+        nombreConTransitabilidad(item.modulo?.titulo || item.modulo?.tituloComercial || `Modulo ${item.moduloId}`, item.transitabilidad, item.numeroTransitabilidad);
       const names = targetGrupoModulo ? [moduleTitle(targetGrupoModulo)]
         : Array.from(new Set(selectedGrupoModuloFilterOptions.map(moduleTitle)));
       return names.length ? `Lista ${names.join(', ')}` : 'Lista de Matriculas';

@@ -18956,6 +18956,18 @@ input GrupoModulo_Data {
   """
   nombre_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad` of type `Int`
+  """
+  numeroTransitabilidad: Int
+  """
+  ✨ `_expr` server value variant of `numeroTransitabilidad` (✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad` of type `Int`)
+  """
+  numeroTransitabilidad_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `numeroTransitabilidad` (✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad` of type `Int`)
+  """
+  numeroTransitabilidad_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `GrupoModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: Boolean
@@ -18983,6 +18995,14 @@ input GrupoModulo_Data {
   ✨ `_expr` server value variant of `sufijo` (✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`)
   """
   sufijo_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `GrupoModulo`.`transitabilidad` of type `Boolean`
+  """
+  transitabilidad: Boolean
+  """
+  ✨ `_expr` server value variant of `transitabilidad` (✨ Generated from Field `GrupoModulo`.`transitabilidad` of type `Boolean`)
+  """
+  transitabilidad_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `GrupoModulo`.`certificados_on_grupoModulo` of type `[Certificado!]!`
   """
@@ -19097,6 +19117,10 @@ input GrupoModulo_Filter {
   """
   nombre: String_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad` of type `Int`
+  """
+  numeroTransitabilidad: Int_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: Boolean_Filter
@@ -19108,6 +19132,10 @@ input GrupoModulo_Filter {
   ✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`
   """
   sufijo: String_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`transitabilidad` of type `Boolean`
+  """
+  transitabilidad: Boolean_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`certificados_on_grupoModulo` of type `[Certificado!]!`
   """
@@ -19231,6 +19259,10 @@ input GrupoModulo_Having {
   """
   nombre_count: Int_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad_count` of type `Int!`
+  """
+  numeroTransitabilidad_count: Int_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`obligatorio_count` of type `Int!`
   """
   obligatorio_count: Int_Filter
@@ -19242,6 +19274,10 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`sufijo_count` of type `Int!`
   """
   sufijo_count: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`transitabilidad_count` of type `Int!`
+  """
+  transitabilidad_count: Int_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`calendarioId_sum` of type `Int`
   """
@@ -19262,6 +19298,10 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`moduloId_sum` of type `Int`
   """
   moduloId_sum: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad_sum` of type `Int`
+  """
+  numeroTransitabilidad_sum: Int_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`orden_sum` of type `Int`
   """
@@ -19286,6 +19326,10 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`moduloId_avg` of type `Float`
   """
   moduloId_avg: Float_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad_avg` of type `Float`
+  """
+  numeroTransitabilidad_avg: Float_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`orden_avg` of type `Float`
   """
@@ -19319,6 +19363,10 @@ input GrupoModulo_Having {
   """
   moduloId_min: Int_Filter
   """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad_min` of type `Int`
+  """
+  numeroTransitabilidad_min: Int_Filter
+  """
   ✨ Generated from Field `GrupoModulo`.`orden_min` of type `Int`
   """
   orden_min: Int_Filter
@@ -19350,6 +19398,10 @@ input GrupoModulo_Having {
   ✨ Generated from Field `GrupoModulo`.`moduloId_max` of type `Int`
   """
   moduloId_max: Int_Filter
+  """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad_max` of type `Int`
+  """
+  numeroTransitabilidad_max: Int_Filter
   """
   ✨ Generated from Field `GrupoModulo`.`orden_max` of type `Int`
   """
@@ -19430,6 +19482,10 @@ input GrupoModulo_Order {
   """
   nombre: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad` of type `Int`
+  """
+  numeroTransitabilidad: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`obligatorio` of type `Boolean`
   """
   obligatorio: OrderDirection
@@ -19441,6 +19497,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`sufijo` of type `String`
   """
   sufijo: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`transitabilidad` of type `Boolean`
+  """
+  transitabilidad: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`_count` of type `Int!`
   """
@@ -19478,6 +19538,10 @@ input GrupoModulo_Order {
   """
   nombre_count: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad_count` of type `Int!`
+  """
+  numeroTransitabilidad_count: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`obligatorio_count` of type `Int!`
   """
   obligatorio_count: OrderDirection
@@ -19489,6 +19553,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`sufijo_count` of type `Int!`
   """
   sufijo_count: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`transitabilidad_count` of type `Int!`
+  """
+  transitabilidad_count: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`calendarioId_sum` of type `Int`
   """
@@ -19509,6 +19577,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`moduloId_sum` of type `Int`
   """
   moduloId_sum: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad_sum` of type `Int`
+  """
+  numeroTransitabilidad_sum: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`orden_sum` of type `Int`
   """
@@ -19533,6 +19605,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`moduloId_avg` of type `Float`
   """
   moduloId_avg: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad_avg` of type `Float`
+  """
+  numeroTransitabilidad_avg: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`orden_avg` of type `Float`
   """
@@ -19566,6 +19642,10 @@ input GrupoModulo_Order {
   """
   moduloId_min: OrderDirection
   """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad_min` of type `Int`
+  """
+  numeroTransitabilidad_min: OrderDirection
+  """
   ✨ Generated from Field `GrupoModulo`.`orden_min` of type `Int`
   """
   orden_min: OrderDirection
@@ -19597,6 +19677,10 @@ input GrupoModulo_Order {
   ✨ Generated from Field `GrupoModulo`.`moduloId_max` of type `Int`
   """
   moduloId_max: OrderDirection
+  """
+  ✨ Generated from Field `GrupoModulo`.`numeroTransitabilidad_max` of type `Int`
+  """
+  numeroTransitabilidad_max: OrderDirection
   """
   ✨ Generated from Field `GrupoModulo`.`orden_max` of type `Int`
   """

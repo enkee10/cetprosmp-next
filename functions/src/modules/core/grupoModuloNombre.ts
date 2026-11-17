@@ -1,3 +1,5 @@
+import { nombreConTransitabilidad } from './transitabilidad.js';
+
 type NombrePersonal = {
   displayName?: string | null;
   user?: {
@@ -77,8 +79,10 @@ export function buildGrupoModuloNombreRelacional(
   grupo: GrupoModuloNombreContext,
   modulo: GrupoModuloNombreModulo,
   sufijo?: string | null,
+  transitabilidad = false,
+  numeroTransitabilidad?: number | null,
 ) {
-  const moduloNombre = [getModuloNombreForGrupoModulo(modulo), normalizeSpaces(sufijo)].filter(Boolean).join(" ");
+  const moduloNombre = nombreConTransitabilidad([getModuloNombreForGrupoModulo(modulo), normalizeSpaces(sufijo)].filter(Boolean).join(" "), transitabilidad, numeroTransitabilidad);
   const turnoNombre = normalizeSpaces(grupo?.turno?.nombre || grupo?.turnoNombre);
   const horarioNombre = normalizeSpaces(grupo?.horario?.nombre);
   const docenteNombre = getDocenteNombreForGrupoModulo(grupo?.personal ?? null);

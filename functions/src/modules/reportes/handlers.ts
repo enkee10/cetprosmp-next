@@ -1,3 +1,4 @@
+import { nombreConTransitabilidad } from '../core/transitabilidad.js';
 import { dayInAppTimeZone, getDateOnlyParts, toDateOnlyInputValue, ageInAppTimeZone } from "../../shared/appDateTime.js";
 import { randomUUID } from "crypto";
 import { execFile } from "child_process";
@@ -82,6 +83,8 @@ type ReportePersonal = {
 
 type ReporteGrupoModuloOption = {
   id: number;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
   nombre?: string | null;
   orden?: number | null;
   inicio?: string | null;
@@ -342,6 +345,8 @@ const REPORTE_OPTIONS_QUERY = `
     }
     grupoModulos(limit: 5000) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
       orden
       inicio
@@ -398,6 +403,8 @@ const REPORTE_DETALLE_QUERY = `
   query ReporteDocumentoDetalle($grupoModuloId: Int!, $grupoId: Int!, $moduloId: Int!, $semestreId: Int!) {
     grupoModulo(id: $grupoModuloId) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
       orden
       inicio
@@ -466,6 +473,8 @@ const REPORTE_DETALLE_QUERY = `
     }
     grupoModulos(limit: 5000) {
       id
+      transitabilidad
+      numeroTransitabilidad
       nombre
       orden
       grupoId
@@ -660,6 +669,8 @@ const CERTIFICADOS_TITULOS_OPTIONS_QUERY = `
       moduloEstudianteId
       grupoModulo {
         id
+        transitabilidad
+        numeroTransitabilidad
         nombre
         grupo {
           id
@@ -1014,8 +1025,9 @@ function getModuloName(grupoModulo: ReporteGrupoModuloOption) {
   return cleanText(grupoModulo.nombre || grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || "");
 }
 
-function getModuloDocumentName(grupoModulo: ReporteGrupoModuloOption) {
-  return cleanText(grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || grupoModulo.nombre || "");
+function getModuloDocumentName(grupoModulo: ReporteGrupoModuloOption, uppercase = false) {
+  const titulo = cleanText(grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || grupoModulo.nombre || "");
+  return nombreConTransitabilidad(uppercase ? titulo.toLocaleUpperCase('es-PE') : titulo, grupoModulo.transitabilidad, grupoModulo.numeroTransitabilidad);
 }
 
 function getCarreraName(grupoModulo: ReporteGrupoModuloOption) {
@@ -2645,7 +2657,7 @@ function efsrtPromedioMap(data: ReporteDocumentoData) {
 function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, data: ReporteDocumentoData, mode: ReportDocumentType) {
   const datos = dataHelpers.datosGenerales;
   const carrera = getCarreraName(data.grupoModulo);
-  const modulo = getModuloDocumentName(data.grupoModulo).toLocaleUpperCase("es-PE");
+  const modulo = getModuloDocumentName(data.grupoModulo, true);
   const docente = getPersonalName(data.grupoModulo.grupo?.personal);
   const director = getPersonalName(data.semestre?.director);
   const coordinador = getPersonalName(data.semestre?.coordinador1);
@@ -3043,7 +3055,7 @@ function buildCertificateTokens(
   return {
     "[APELLIDO PATERNO APELLIDO MATERNO, Nombres]": getStudentName(student),
     "[codigo inscripcion]": cleanText(codigoInstitucional),
-    "[NOMBRE MODULO]": getModuloDocumentName(data.grupoModulo).toLocaleUpperCase("es-PE"),
+    "[NOMBRE MODULO]": getModuloDocumentName(data.grupoModulo, true),
     "[carrera]": getCarreraName(data.grupoModulo),
     "[CARRERA]": getCarreraName(data.grupoModulo).toLocaleUpperCase("es-PE"),
     "[INICIO MODULO]": formatDate(data.grupoModulo.inicio || data.semestre?.inicio),
@@ -3225,6 +3237,8 @@ async function buildReporteData(grupoModuloId: number) {
     `query ReporteGrupoModuloSeed($grupoModuloId: Int!) {
       grupoModulo(id: $grupoModuloId) {
         id
+        transitabilidad
+        numeroTransitabilidad
         grupoId
         moduloId
         grupo { semestreId }
@@ -3307,6 +3321,8 @@ async function getGrupoModuloIdsForSemestre(semestreId: number) {
     `query ReporteGrupoModulosBySemestre($semestreId: Int!) {
       grupoModulos(limit: 5000) {
         id
+        transitabilidad
+        numeroTransitabilidad
         nombre
         orden
         grupoId
@@ -3360,6 +3376,8 @@ async function docenteNameByGrupoModuloId() {
     `query ReporteGrupoModuloDocentesManual {
       grupoModulos(limit: 10000) {
         id
+        transitabilidad
+        numeroTransitabilidad
         grupo {
           personal {
             id
@@ -3859,7 +3877,7 @@ async function generateReporteDocumentoInternal(input: {
     ? semestreConSufijoRomano(semestreTitulo(reporte))
     : semestreTitulo(reporte);
   const carreraNombreToken = isNomina ? upperText(carreraNombre) : carreraNombre;
-  const moduloNombreToken = isNomina ? upperText(moduloNombre) : moduloNombre;
+  const moduloNombreToken = isNomina ? getModuloDocumentName(reporte.grupoModulo, true) : moduloNombre;
   const nivelToken = isNomina ? upperText(nivel) : nivel;
   const cicloToken = isNomina ? upperText(ciclo) : ciclo;
   const turnoToken = isNomina ? upperText(turno) : turno;

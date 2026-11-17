@@ -52,6 +52,8 @@ const LIST_GRUPO_MODULOS_NOMBRE_QUERY = `
       id
       nombre
       sufijo
+      transitabilidad
+      numeroTransitabilidad
       grupoId
       grupo {
         id
@@ -149,7 +151,7 @@ async function main() {
 
   const changes = grupoModulos
     .map((item) => {
-      const nextNombre = normalize([buildGrupoModuloNombreRelacional(item.grupo, item.modulo), item.sufijo].filter(Boolean).join(' '));
+      const nextNombre = normalize(buildGrupoModuloNombreRelacional(item.grupo, item.modulo, item.sufijo, item.transitabilidad ?? false, item.numeroTransitabilidad));
       return {
         id: item.id,
         grupoId: item.grupoId,

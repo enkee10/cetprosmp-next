@@ -451,6 +451,8 @@ export interface DataConnectGrupoInput {
 
 export interface DataConnectGrupoModulo {
   id: number;
+  transitabilidad?: boolean | null;
+  numeroTransitabilidad?: number | null;
   nombre?: string | null;
   sufijo?: string | null;
   orden?: number | null;
@@ -467,6 +469,8 @@ export interface DataConnectGrupoModulo {
 }
 
 export interface DataConnectGrupoModuloInput {
+  transitabilidad?: boolean;
+  numeroTransitabilidad?: number | null;
   nombre?: string | null;
   sufijo?: string | null;
   orden?: number | null;
@@ -696,6 +700,7 @@ export interface DataConnectModulo {
       nombre?: string | null;
       titulo?: string | null;
       tituloComercial?: string | null;
+      tipoCarrera?: { nombre?: string | null } | null;
       especialidad?: {
         id?: number | null;
         titulo?: string | null;

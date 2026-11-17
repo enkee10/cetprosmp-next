@@ -1,5 +1,7 @@
 'use client';
 
+import { nombreConTransitabilidad } from '@/lib/transitabilidad';
+
 import { formatInstantDateInAppTimeZone, dayInAppTimeZone, formatDateOnly, formatDateTimeInAppTimeZone, getDateOnlyLocalDate } from '@/lib/dateOnly';
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
@@ -83,6 +85,8 @@ type MatriculaFichaModuloLink = {
   moduloId?: number | null;
   grupoModulo?: {
     id?: number | null;
+    transitabilidad?: boolean | null;
+    numeroTransitabilidad?: number | null;
     nombre?: string | null;
     inicio?: string | null;
     fin?: string | null;
@@ -1563,7 +1567,7 @@ export default function FichaMatriculaProgramaPage() {
   const tipoCarrera = normalizeText(carrera?.tipoCarrera?.nombre);
   const isOpcionOcupacional = tipoCarrera.includes('opcion') || tipoCarrera.includes('ocupacional');
   const programaNombre = asUpper(carrera?.titulo || carrera?.nombre || modulo?.plan?.planEstudio);
-  const moduloNombre = asUpper(modulo?.titulo || modulo?.tituloComercial || grupoModulo?.nombre);
+  const moduloNombre = nombreConTransitabilidad(asUpper(modulo?.titulo || modulo?.tituloComercial || grupoModulo?.nombre), grupoModulo?.transitabilidad, grupoModulo?.numeroTransitabilidad);
   const periodoAcademico = asValue(matricula?.semestre?.titulo) || asValue(grupoModulo?.grupo?.semestre?.titulo);
   const periodoLectivo = getPeriodoLectivo(matricula);
   const codigoInscripcion = formatCodigoInscripcionFicha(matricula?.codigoInscripcion, matricula?.recibo);

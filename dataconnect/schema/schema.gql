@@ -743,6 +743,8 @@ type Grupo @table(name: "grupos") @index(fields: ["calendarioId"]) @index(fields
 type GrupoModulo @table(name: "grupo_modulos", singular: "grupoModulo", plural: "grupoModulos") @unique(fields: ["grupo", "modulo", "instancia"]) {
   id: Int! @col(dataType: "serial")
   nombre: String
+  transitabilidad: Boolean @default(value: false)
+  numeroTransitabilidad: Int @col(name: "numero_transitabilidad")
   sufijo: String
   orden: Int
   obligatorio: Boolean

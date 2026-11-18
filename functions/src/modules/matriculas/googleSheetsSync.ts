@@ -1,4 +1,5 @@
 import { formatDateOnly, formatInstantDateInAppTimeZone } from "../../shared/appDateTime.js";
+import { nombreGrupoDocumento } from "../../shared/turnoDocumento.js";
 import { isDocenteRole } from "../core/authCore.js";
 import { getFirestore } from "firebase-admin/firestore";
 import { google, sheets_v4 } from "googleapis";
@@ -823,24 +824,48 @@ function getSheetsAuth() {
   });
 }
 
-async function ensureSpreadsheetFile(fileName: string, folderId: string): Promise<SheetsFileInfo> {
+async function ensureSpreadsheetFile(
+  fileName: string,
+  folderId: string,
+  group?: { id: number; previousName: string },
+): Promise<SheetsFileInfo> {
   const auth = getSheetsAuth();
   const drive = google.drive({ version: "v3", auth });
-  const escapedName = fileName.replace(/'/g, "\\'");
-  const response = await drive.files.list({
+  const listFiles = (filter: string, pageSize: number) => drive.files.list({
     q: [
       `'${folderId}' in parents`,
-      `name = '${escapedName}'`,
+      filter,
       `mimeType = '${GOOGLE_SHEETS_MIME_TYPE}'`,
       "trashed = false",
     ].join(" and "),
-    fields: "files(id, webViewLink)",
-    pageSize: 1,
+    fields: "nextPageToken, files(id, name, webViewLink, appProperties)",
+    pageSize,
     supportsAllDrives: true,
     includeItemsFromAllDrives: true,
   });
-  const existing = response.data.files?.[0];
+  const groupId = group ? String(group.id) : undefined;
+  const nameFilter = (name: string) => `name = '${name.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
+  let existing;
+  if (groupId && group) {
+    const linked = await listFiles(`appProperties has { key='grupoModuloId' and value='${groupId}' }`, 1);
+    existing = linked.data.files?.[0];
+    if (!existing) {
+      const legacy = await listFiles(nameFilter(group.previousName), 100);
+      const unlinked = legacy.data.files?.filter((file) => !file.appProperties?.grupoModuloId);
+      if (!legacy.data.nextPageToken && unlinked?.length === 1) existing = unlinked[0];
+    }
+  } else {
+    const response = await listFiles(nameFilter(fileName), 1);
+    existing = response.data.files?.[0];
+  }
   if (existing?.id) {
+    if (groupId && (existing.name !== fileName || existing.appProperties?.grupoModuloId !== groupId)) {
+      await drive.files.update({
+        fileId: existing.id,
+        requestBody: { name: fileName, appProperties: { ...existing.appProperties, grupoModuloId: groupId } },
+        supportsAllDrives: true,
+      });
+    }
     return {
       spreadsheetId: existing.id,
       spreadsheetUrl: existing.webViewLink ?? `https://docs.google.com/spreadsheets/d/${existing.id}/edit`,
@@ -852,6 +877,7 @@ async function ensureSpreadsheetFile(fileName: string, folderId: string): Promis
       name: fileName,
       mimeType: GOOGLE_SHEETS_MIME_TYPE,
       parents: [folderId],
+      ...(groupId ? { appProperties: { grupoModuloId: groupId } } : {}),
     },
     fields: "id, webViewLink",
     supportsAllDrives: true,
@@ -1232,7 +1258,7 @@ function buildWritableRows(
         celular: asCleanString(user?.celular) ?? "",
         "programa de estudio": academic.programa,
         plan: academic.plan,
-        grupo: academic.grupo,
+        grupo: nombreGrupoDocumento(academic.grupo),
         "grado de Instruccion": asCleanString(user?.instruccion) ?? "",
         "estado civil": asCleanString(user?.estadoCivil) ?? "",
         direccion: asCleanString(user?.direccion) ?? "",
@@ -1380,7 +1406,7 @@ function buildDocenteSheetRows(
       buildHyperlinkFormula(avatarMediano ?? user?.avatar, "avatar"),
       buildHyperlinkFormula(user?.dniImagenFrenteProcesadaUrl, "frente"),
       buildHyperlinkFormula(user?.dniImagenReversoProcesadaUrl, "reverso"),
-      matricula.grupoModuloNombre ?? grupoModuloNombre,
+      nombreGrupoDocumento(matricula.grupoModuloNombre ?? grupoModuloNombre),
     ];
   });
 }
@@ -1518,9 +1544,10 @@ export async function exportDocenteMatriculadosGrupoSheet(
   }
 
   const grupoModulo = await loadDocenteGrupoModuloForSheet(grupoModuloId, context);
-  const fileName = buildDocenteMatriculadosFileName(grupoModulo);
+  const previousName = buildDocenteMatriculadosFileName(grupoModulo);
+  const fileName = nombreGrupoDocumento(previousName);
   const [fileInfo, matriculas] = await Promise.all([
-    ensureSpreadsheetFile(fileName, DOCENTE_MATRICULADOS_SHEETS_FOLDER_ID),
+    ensureSpreadsheetFile(fileName, DOCENTE_MATRICULADOS_SHEETS_FOLDER_ID, { id: grupoModulo.id, previousName }),
     listDocenteMatriculadosForSheet(grupoModulo),
   ]);
   const userIds = matriculas

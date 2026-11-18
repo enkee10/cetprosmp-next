@@ -1,5 +1,6 @@
 import { nombreConTransitabilidad } from '../core/transitabilidad.js';
 import { dayInAppTimeZone, getDateOnlyParts, toDateOnlyInputValue, ageInAppTimeZone } from "../../shared/appDateTime.js";
+import { nombreGrupoDocumento, nombreTurnoDocumento } from "../../shared/turnoDocumento.js";
 import { randomUUID } from "crypto";
 import { execFile } from "child_process";
 import { mkdtemp, readFile, rm, writeFile } from "fs/promises";
@@ -984,7 +985,7 @@ function semestreUltimoDigitoRomano(value?: string | null) {
 }
 
 function grupoModuloDisplayName(grupoModulo: ReporteGrupoModuloOption) {
-  return cleanText(grupoModulo.nombre || getModuloDocumentName(grupoModulo) || `Grupo-modulo ${grupoModulo.id}`);
+  return cleanText(nombreGrupoDocumento(grupoModulo.nombre) || getModuloDocumentName(grupoModulo) || `Grupo-modulo ${grupoModulo.id}`);
 }
 
 function registroAcademicoFileName(tipoDocumento: ReportDocumentType, data: ReporteDocumentoData) {
@@ -1026,8 +1027,12 @@ function getModuloName(grupoModulo: ReporteGrupoModuloOption) {
 }
 
 function getModuloDocumentName(grupoModulo: ReporteGrupoModuloOption, uppercase = false) {
-  const titulo = cleanText(grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || grupoModulo.nombre || "");
+  const titulo = cleanText(grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || nombreGrupoDocumento(grupoModulo.nombre));
   return nombreConTransitabilidad(uppercase ? titulo.toLocaleUpperCase('es-PE') : titulo, grupoModulo.transitabilidad, grupoModulo.numeroTransitabilidad);
+}
+
+function getTurnoDocumentName(grupoModulo: ReporteGrupoModuloOption) {
+  return nombreTurnoDocumento(grupoModulo.grupo?.turno?.nombre) || nombreTurnoDocumento(grupoModulo.grupo?.turnoNombre);
 }
 
 function getCarreraName(grupoModulo: ReporteGrupoModuloOption) {
@@ -2663,7 +2668,7 @@ function fillInstitutionHeader(updates: SpreadsheetUpdate[], sheetName: string, 
   const coordinador = getPersonalName(data.semestre?.coordinador1);
   const inicio = data.grupoModulo.inicio || data.semestre?.inicio || null;
   const fin = data.grupoModulo.fin || data.semestre?.fin || null;
-  const turno = cleanText(data.grupoModulo.grupo?.turno?.nombre || data.grupoModulo.grupo?.turnoNombre || "");
+  const turno = getTurnoDocumentName(data.grupoModulo);
   const nivel = cleanText(data.grupoModulo.modulo?.plan?.carrera?.nivel || "");
   const ciclo = cleanText(data.grupoModulo.modulo?.plan?.carrera?.ciclo || nivel);
   const semestre = semestreTitulo(data);
@@ -3051,11 +3056,14 @@ function buildCertificateTokens(
   const sumaHoras = units.reduce<number>((sum, unit) => sum + toNumber(unit.duracion, 0), 0);
   const notas = units.map((unit) => formatGrade(unitMap.get(`${student.matriculaId}:${unit.id}`)));
   const capacidades = units.map((unit) => (capacitiesByUnit.get(unit.id) ?? []).filter(Boolean).join("; "));
+  const turno = getTurnoDocumentName(data.grupoModulo);
 
   return {
     "[APELLIDO PATERNO APELLIDO MATERNO, Nombres]": getStudentName(student),
     "[codigo inscripcion]": cleanText(codigoInstitucional),
     "[NOMBRE MODULO]": getModuloDocumentName(data.grupoModulo, true),
+    "[turno]": turno,
+    "[TURNO]": upperText(turno),
     "[carrera]": getCarreraName(data.grupoModulo),
     "[CARRERA]": getCarreraName(data.grupoModulo).toLocaleUpperCase("es-PE"),
     "[INICIO MODULO]": formatDate(data.grupoModulo.inicio || data.semestre?.inicio),
@@ -3867,7 +3875,7 @@ async function generateReporteDocumentoInternal(input: {
   const carrera = reporte.grupoModulo.modulo?.plan?.carrera;
   const nivel = cleanText(carrera?.nivel || "");
   const ciclo = cleanText(carrera?.ciclo || nivel);
-  const turno = cleanText(reporte.grupoModulo.grupo?.turno?.nombre || reporte.grupoModulo.grupo?.turnoNombre || "");
+  const turno = getTurnoDocumentName(reporte.grupoModulo);
   const resolucionPlan = formatPlanResolucion(reporte.grupoModulo.modulo?.plan) || cleanText(dataHelpers.datosGenerales.rd || "");
   const resolucionDocumento = formatDocumentoResolucion(reporte.grupoModulo.modulo?.plan) || resolucionPlan;
   const directorNombre = getPersonalName(reporte.semestre?.director).toLocaleUpperCase("es-PE");
@@ -3899,6 +3907,7 @@ async function generateReporteDocumentoInternal(input: {
     "[modulo]": moduloNombreToken,
     "[nivel]": nivelToken,
     "[turno]": turnoToken,
+    "[TURNO]": upperText(turno),
     "[seccion]": reporte.seccion,
     "[resolucion del programa]": resolucionToken,
     "[resolucion modulo]": resolucionToken,
@@ -4043,11 +4052,11 @@ export const listReporteDocumentosOptions = https.onCall(async (_data, context) 
       )
       .map((item) => ({
         id: item.id,
-        nombre: item.nombre || getModuloName(item),
+        nombre: nombreGrupoDocumento(item.nombre || getModuloName(item)),
         semestreId: item.grupo?.semestreId ?? null,
         semestreTitulo: item.grupo?.semestre?.titulo ?? null,
-        grupoNombre: item.grupo?.nombreDisplay ?? null,
-        turno: item.grupo?.turno?.nombre || item.grupo?.turnoNombre || null,
+        grupoNombre: nombreGrupoDocumento(item.grupo?.nombreDisplay) || null,
+        turno: getTurnoDocumentName(item) || null,
         horario: item.grupo?.horario?.nombre || item.grupo?.horario?.diasSemana || null,
         docente: getPersonalName(item.grupo?.personal),
         moduloNombre: grupoModuloDisplayName(item),

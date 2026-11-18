@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 import { dayInLima } from '@/lib/calendar';
 import { activityLabel, isParteSaved, parteDateLabel, ParteDiarioData, ParteDiarioRow, parteTeacherGroupLabel, unitLabel } from '@/lib/parteDiario';
+import { nombreGrupoDocumento } from '@/lib/turnoDocumento';
 import { parteColumnWidths, parteHeadings, parteRowColors } from '@/lib/parteDiarioTable';
 import PrintDocumentViewer, { cmToMm, getA4PageSizeMm, getPrintContentHeightMm, getPrintContentWidthMm, PrintMarginsCm, PrintOrientation } from '@/components/print/PrintDocumentViewer';
 import { parteSavedColor } from './parteFieldStyles';
@@ -18,7 +19,7 @@ function PrintTable({ rows }: { rows: ParteDiarioRow[] }) {
   return <table className="parte-print-table"><colgroup>{columns.map(column => <col key={column.index} style={{ width: `${100 * column.width / totalWidth}%` }} />)}</colgroup>
     <thead><tr>{columns.map(column => <th key={column.index}>{column.label}</th>)}</tr></thead>
     <tbody>{rows.map(row => <tr key={row.key} data-row-key={row.key} style={{ background: parteRowColors[row.turnoOrden], color: isParteSaved(row) ? parteSavedColor : '#153447' }}>
-      <td>{row.orden}</td><td><strong>{row.docenteNombre}</strong><br />{parteTeacherGroupLabel(row)}{isParteSaved(row) && <strong style={{ color: '#c62828' }}> (Guardado)</strong>}</td>
+      <td>{row.orden}</td><td><strong>{row.docenteNombre}</strong><br />{nombreGrupoDocumento(parteTeacherGroupLabel(row))}{isParteSaved(row) && <strong style={{ color: '#c62828' }}> (Guardado)</strong>}</td>
       <td>{unitLabel(row.unidad)}</td><td>{activityLabel(row.actividad)}</td><td>{row.matriculados}</td><td>{row.asistentes}</td>
       <td>{row.usoMedios}</td><td>{row.silabo}</td><td>{row.fichaActividad}</td><td>{row.instrumentoEvaluacion}</td><td>{row.registroAsistencia}</td><td>{row.registroAuxiliarEvaluacion}</td><td>{row.material}</td><td>{row.tareas}</td>
       <td>{row.firma && <Box component="img" src={row.firma} alt={`Firma de ${row.docenteNombre}`} sx={{ width: '100%', height: 'auto', maxHeight: '24mm', objectFit: 'contain' }} />}</td>

@@ -11,6 +11,7 @@ import PrintDocumentViewer, {
   type PrintOrientation,
 } from '@/components/print/PrintDocumentViewer';
 import { formatDateOnly } from '@/lib/dateOnly';
+import { nombreGrupoDocumento } from '@/lib/turnoDocumento';
 
 type MatriculaListaPrintRow = {
   id?: number | string | null;
@@ -185,7 +186,7 @@ export default function ListaMatriculadosPrintPage() {
           CETPRO SAN MARTIN DE PORRES
         </Typography>
         <Typography className="matricula-list-subtitle">
-          Grupo: {asText(group.grupoNombre) || 'Lista de matriculados'}
+          Grupo: {nombreGrupoDocumento(asText(group.grupoNombre)) || 'Lista de matriculados'}
         </Typography>
       </Box>
       <Box className="matricula-list-meta">

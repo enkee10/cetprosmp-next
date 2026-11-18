@@ -26,9 +26,9 @@ exports.testHelpers = {registroAcademicoFileName, uploadBuffer, generateReporteD
    docenteNameByGrupoModuloId = async()=>new Map();
  }};`, filename);
 const {registroAcademicoFileName,uploadBuffer,generateReporteDocumentoInternal,setup} = loaded.exports.testHelpers;
-const nombre = 'técnicas_de_tizado_tendido_y_corte_de_prendas_de_vestir_[Noche] Lun-Vie_(Liliana Millán)';
+const nombre = 'técnicas_de_tizado_tendido_y_corte_de_prendas_de_vestir_[Noche extendida] Lun-Vie_(Liliana Millán)';
 const fixture = {semestre:{titulo:'2026-1'},grupoModulo:{id:12,nombre,grupo:{semestre:{titulo:'2026-2'}},modulo:{}},estudiantes:[],unidades:[],opcionOcupacional:false};
-const plain = nombre.replaceAll('_',' ');
+const plain = nombre.replaceAll('_',' ').replace('[Noche extendida]', '[Noche]');
 function downloadedName(save) {
   const disposition=save.options.metadata.contentDisposition;
   assert(!/[\r\n]/.test(disposition));

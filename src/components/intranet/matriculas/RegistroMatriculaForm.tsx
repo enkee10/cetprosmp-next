@@ -20,21 +20,25 @@ interface Props {
   onSubmit: (values: RegistroStudentValues) => Promise<void>;
 }
 
-// The enrollment button and each student's pencil use exactly the same fields.
 export default function RegistroMatriculaForm({ initialValues, editing = false, submitting, error, onCancel, onSubmit }: Props) {
   const [values, setValues] = useState<RegistroStudentValues>({
     ...initialValues, fechaNacimiento: toDateOnlyInputValue(initialValues.fechaNacimiento),
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const required = !editing;
+  const canEditSchool = isAttendingSecondary(values.instruccion);
   const update = (field: keyof RegistroStudentValues, value: string) => {
-    setValues(current => ({ ...current, [field]: value }));
-    setErrors(current => ({ ...current, [field]: '' }));
+    const freezeSchool = field === 'instruccion' && !isAttendingSecondary(value);
+    setValues(current => ({
+      ...current, [field]: value,
+      ...(freezeSchool ? { nombreColegio: editing ? initialValues.nombreColegio ?? '' : '' } : {}),
+    }));
+    setErrors(current => ({ ...current, [field]: '', ...(freezeSchool ? { nombreColegio: '' } : {}) }));
   };
-  const field = (name: keyof RegistroStudentValues, label: string, options: { required?: boolean; type?: string; choices?: string[] } = {}) => (
+  const field = (name: keyof RegistroStudentValues, label: string, options: { required?: boolean; disabled?: boolean; type?: string; choices?: string[] } = {}) => (
     <TextField
       key={name} name={name} label={label} fullWidth size="small"
-      value={values[name] ?? ''} disabled={submitting}
+      value={values[name] ?? ''} disabled={submitting || options.disabled}
       required={Boolean(options.required)} type={options.type || 'text'}
       select={Boolean(options.choices)}
       onChange={event => update(name, name === 'dni' ? event.target.value.replace(/\D/g, '') : event.target.value)}
@@ -61,7 +65,9 @@ export default function RegistroMatriculaForm({ initialValues, editing = false, 
       if (documentError) validation.dni = documentError;
       setErrors(validation);
       if (Object.keys(validation).length) return;
-      await onSubmit({ ...values, dni: document });
+      const submittedValues = { ...values, dni: document };
+      if (!canEditSchool) delete submittedValues.nombreColegio;
+      await onSubmit(submittedValues);
     }}>
       <Stack spacing={2} sx={{ pt: 1 }}>
         {error && <AutoDismissAlert severity="error">{error}</AutoDismissAlert>}
@@ -76,7 +82,7 @@ export default function RegistroMatriculaForm({ initialValues, editing = false, 
           {field('fechaNacimiento', 'Fecha de nacimiento', { required, type: 'date' })}
           {field('sexo', 'Sexo', { required, choices: ['F', 'M'] })}
           {field('instruccion', 'Grado de instrucción', { choices: ['Primaria', 'Secundaria en curso..', 'Secundaria', 'Superior'] })}
-          {field('nombreColegio', 'Colegio', { required: required && isAttendingSecondary(values.instruccion) })}
+          {(editing || canEditSchool) && field('nombreColegio', 'Colegio', { required, disabled: !canEditSchool })}
           {field('nacionalidad', 'Nacionalidad')}
           {field('estadoCivil', 'Estado civil', { choices: ['Soltero', 'Casado(a)', 'Viudo(a)', 'Divorciado(a)'] })}
           {field('direccion', 'Dirección')}

@@ -25,8 +25,11 @@ const mocks = {
     window.calls.push({name,input});
     if(name==='getDatosGeneralesGlobales')return{data:{}};
     if(name==='getRegistroAuxiliar')return{data:window.fixture};
-    if(name==='getRegistroAuxiliarEstudianteDatos')return{data:{user:{...window.fixture.estudiantes[0].matricula.user,sexo:'M',fechaNacimiento:'2010-01-01T05:00:00Z'}}};
-    if(name==='updateRegistroAuxiliarEstudianteDatos')return{data:{user:{...window.fixture.estudiantes[0].matricula.user,...input.user}}};
+    if(name==='getRegistroAuxiliarEstudianteDatos')return{data:{user:{...window.fixture.estudiantes[0].matricula.user,sexo:'M',fechaNacimiento:'2010-01-01T05:00:00Z',instruccion:'Secundaria en curso..',nombreColegio:'Colegio guardado',...window.savedProfile}}};
+    if(name==='updateRegistroAuxiliarEstudianteDatos'){
+      window.savedProfile={nombreColegio:'Colegio guardado',...window.savedProfile,...input.user};
+      return{data:{user:{...window.fixture.estudiantes[0].matricula.user,...window.savedProfile}}};
+    }
     if(name==='createRegistroAuxiliarMatricula'){
       if(!input.manual){const error=new Error('Completa la matrícula manualmente.');error.details={manualEntryRequired:true};throw error;}
       return{data:{estudiante:{id:302,matriculaId:202,matricula:{id:202,user:{id:2,dni:input.dni,...input.manual}}}}};
@@ -69,9 +72,18 @@ const mocks = {
     await page.evaluate(() => window.setStudentEditButtonVisible(true));
     await studentEditButton.click();
     const dialog = page.getByRole('dialog');
+    const school = dialog.locator('input[name="nombreColegio"]');
+    const selectEducation = async (name) => {
+      await dialog.getByLabel('Grado de instrucción').click();
+      await page.getByRole('option', { name, exact: true }).click();
+    };
     await dialog.getByRole('button', { name: 'Guardar cambios' }).waitFor();
     const editFields = await dialog.locator('input[name]').evaluateAll(inputs => inputs.map(input => input.name).sort());
     assert.equal(await dialog.locator('input[required]').count(), 0, 'Editar no exige campos obligatorios');
+    await school.fill('Cambio pendiente');
+    await selectEducation('Primaria');
+    assert.equal(await school.isDisabled(), true);
+    assert.equal(await school.inputValue(), 'Colegio guardado');
     await dialog.locator('input[name="nombre"]').fill('');
     await dialog.locator('input[name="dni"]').fill('');
     await dialog.locator('input[name="fechaNacimiento"]').fill('');
@@ -80,7 +92,19 @@ const mocks = {
     const edited = await page.evaluate(() => window.calls.find(call => call.name === 'updateRegistroAuxiliarEstudianteDatos'));
     assert.equal(edited.input.user.nombre, '');
     assert.equal(edited.input.user.dni, '');
+    assert.equal(edited.input.user.instruccion, 'Primaria');
+    assert.equal(edited.input.user.nombreColegio, undefined);
     assert.equal(edited.input.moduloEstudianteId, 301);
+    await studentEditButton.click();
+    await dialog.getByRole('button', { name: 'Guardar cambios' }).waitFor();
+    assert.equal(await school.isDisabled(), true);
+    assert.equal(await school.inputValue(), 'Colegio guardado');
+    await selectEducation('Secundaria en curso..');
+    assert.equal(await school.isEnabled(), true);
+    await school.fill('Colegio actualizado');
+    await dialog.getByRole('button', { name: 'Guardar cambios' }).click();
+    await dialog.waitFor({ state: 'hidden' });
+    assert.equal(await page.evaluate(() => window.savedProfile.nombreColegio), 'Colegio actualizado');
     await page.getByText('Doble clic para agregar estudiante por documento').dblclick();
     const documentInput = page.getByRole('textbox', { name: 'DNI', exact: true });
     const enrollButton = page.getByRole('button', { name: 'MATRICULAR', exact: true });
@@ -106,13 +130,10 @@ const mocks = {
     await dialog.getByText('CE', { exact: true }).waitFor();
     assert.equal(await page.evaluate(() => window.calls.filter(call => call.name === 'createRegistroAuxiliarMatricula').length), 1);
     const createFields = await dialog.locator('input[name]').evaluateAll(inputs => inputs.map(input => input.name).sort());
-    assert.deepEqual(createFields, editFields, 'El lápiz y matrícula muestran los mismos campos');
+    assert.deepEqual(createFields, editFields.filter(name => name !== 'nombreColegio'), 'Colegio está oculto al iniciar la matrícula');
     assert.equal(await dialog.locator('input[required]').count(), 6);
     assert.equal(await dialog.locator('input[type="file"]').count(), 0);
     assert.equal(await dialog.getByText(/Seleccione un Modulo|Responsable|Periodo/, { exact: true }).count(), 0);
-    await dialog.getByLabel('Grado de instrucción').click();
-    await page.getByRole('option', { name: 'Secundaria en curso..', exact: true }).click();
-    assert.equal(await dialog.locator('input[name="nombreColegio"]').getAttribute('required'), '');
     await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
     await page.getByRole('button', { name: 'Abrir formulario de matrícula' }).click();
     await dialog.getByRole('button', { name: 'Crear matrícula', exact: true }).waitFor();
@@ -122,15 +143,29 @@ const mocks = {
     }
     await dialog.getByLabel(/^Sexo/).click();
     await page.getByRole('option', { name: 'Masculino', exact: true }).click();
+    await selectEducation('Secundaria en curso..');
+    assert.equal(await school.getAttribute('required'), '');
+    await dialog.getByRole('button', { name: 'Crear matrícula', exact: true }).click();
+    await dialog.getByText('Ingresa el colegio donde cursa secundaria.').waitFor();
+    await school.fill('Colegio de prueba');
+    await selectEducation('Primaria');
+    await school.waitFor({ state: 'hidden' });
+    await selectEducation('Secundaria en curso..');
+    assert.equal(await school.inputValue(), '', 'Cambiar de grado elimina el colegio ingresado');
+    await school.fill('Otro colegio de prueba');
+    await selectEducation('Secundaria');
+    await school.waitFor({ state: 'hidden' });
     await dialog.getByRole('button', { name: 'Crear matrícula', exact: true }).click();
     await dialog.waitFor({ state: 'hidden' });
     const created = await page.evaluate(() => window.calls.filter(call => call.name === 'createRegistroAuxiliarMatricula').at(-1));
     assert.equal(created.input.dni, '001234567');
     assert.equal(created.input.grupoModuloId, 50);
     assert.equal(created.input.manual.nombre, 'NUEVO');
+    assert.equal(created.input.manual.instruccion, 'Secundaria');
+    assert.equal(created.input.manual.nombreColegio, undefined);
     assert.equal(created.input.manual.celular, undefined, 'Los datos opcionales vacíos no bloquean la matrícula');
     await page.getByText(/LOCAL PRUEBA|PRUEBA LOCAL/).first().waitFor();
     assert.deepEqual(errors, []);
-    console.log('Navegador: campo DNI, apertura manual con más de ocho caracteres, matrícula manual con CE y consulta automática con DNI.');
+    console.log('Navegador: Colegio bloqueado y conservado en edición, editable en secundaria en curso y obligatorio en el alta.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

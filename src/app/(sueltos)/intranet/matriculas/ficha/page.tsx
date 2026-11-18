@@ -1,6 +1,7 @@
 'use client';
 
 import { nombreConTransitabilidad } from '@/lib/transitabilidad';
+import { nombreGrupoDocumento } from '@/lib/turnoDocumento';
 
 import { formatInstantDateInAppTimeZone, dayInAppTimeZone, formatDateOnly, formatDateTimeInAppTimeZone, getDateOnlyLocalDate } from '@/lib/dateOnly';
 
@@ -215,14 +216,14 @@ const asTitleCase = (value: string | null | undefined) =>
     .replace(/(^|\s)(\p{L})/gu, (_match, separator: string, letter: string) => `${separator}${letter.toLocaleUpperCase('es-PE')}`);
 
 const getPreviousModuloChangeName = (change: MatriculaFichaCambioModulo) =>
-  asValue(change.grupoModuloAnterior?.nombre)
-  || asValue(change.grupoAnterior?.nombreDisplay)
+  nombreGrupoDocumento(asValue(change.grupoModuloAnterior?.nombre))
+  || nombreGrupoDocumento(asValue(change.grupoAnterior?.nombreDisplay))
   || asValue(change.moduloAnterior?.titulo)
   || asValue(change.moduloAnterior?.tituloComercial);
 
 const getNewModuloChangeName = (change: MatriculaFichaCambioModulo) =>
-  asValue(change.grupoModuloNuevo?.nombre)
-  || asValue(change.grupoNuevo?.nombreDisplay)
+  nombreGrupoDocumento(asValue(change.grupoModuloNuevo?.nombre))
+  || nombreGrupoDocumento(asValue(change.grupoNuevo?.nombreDisplay))
   || asValue(change.moduloNuevo?.titulo)
   || asValue(change.moduloNuevo?.tituloComercial);
 
@@ -1567,7 +1568,7 @@ export default function FichaMatriculaProgramaPage() {
   const tipoCarrera = normalizeText(carrera?.tipoCarrera?.nombre);
   const isOpcionOcupacional = tipoCarrera.includes('opcion') || tipoCarrera.includes('ocupacional');
   const programaNombre = asUpper(carrera?.titulo || carrera?.nombre || modulo?.plan?.planEstudio);
-  const moduloNombre = nombreConTransitabilidad(asUpper(modulo?.titulo || modulo?.tituloComercial || grupoModulo?.nombre), grupoModulo?.transitabilidad, grupoModulo?.numeroTransitabilidad);
+  const moduloNombre = nombreConTransitabilidad(asUpper(modulo?.titulo || modulo?.tituloComercial || nombreGrupoDocumento(grupoModulo?.nombre)), grupoModulo?.transitabilidad, grupoModulo?.numeroTransitabilidad);
   const periodoAcademico = asValue(matricula?.semestre?.titulo) || asValue(grupoModulo?.grupo?.semestre?.titulo);
   const periodoLectivo = getPeriodoLectivo(matricula);
   const codigoInscripcion = formatCodigoInscripcionFicha(matricula?.codigoInscripcion, matricula?.recibo);
@@ -1614,7 +1615,7 @@ export default function FichaMatriculaProgramaPage() {
     ? [
       {
         marker: '*',
-        name: getNewModuloChangeName(cambiosModuloEventos[0]) || asValue(grupoModulo?.nombre) || 'Modulo actual',
+        name: getNewModuloChangeName(cambiosModuloEventos[0]) || nombreGrupoDocumento(asValue(grupoModulo?.nombre)) || 'Modulo actual',
         details: formatModuloTimelineDetails(
           cambiosModuloEventos[0]?.fechaCambio,
           formatFichaActorName(cambiosModuloEventos[0]?.registradoPor),

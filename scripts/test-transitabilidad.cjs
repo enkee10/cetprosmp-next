@@ -34,18 +34,26 @@ loaded.require = name => name === '../core/dataConnectCore.js'
 loaded._compile(fs.readFileSync(filename, 'utf8') + '\nexports.testHelpers = { getModuloDocumentName, fillInstitutionHeader, buildCertificateTokens, REPORTE_DETALLE_QUERY };', filename);
 const helpers = loaded.exports.testHelpers;
 const fixture = {
-  grupoModulo: { id: 1, transitabilidad: true, grupo: { ...context, semestre: { titulo: '2026-2' } }, modulo: { titulo: 'Acondicionamiento y elaboración de productos de Panadería y Pastelería' } },
+  grupoModulo: { id: 1, transitabilidad: true, grupo: { ...context, turno: { nombre: 'Noche extendida' }, semestre: { titulo: '2026-2' } }, modulo: { titulo: 'Acondicionamiento y elaboración de productos de Panadería y Pastelería' } },
   semestre: { titulo: '2026-2', fechaCertificado: '2026-11-17T17:00:00Z' }, opcionOcupacional: false,
   unidades: [], capacidades: [], promediosUnidad: [], estudiantes: [],
 };
 const expected = fixture.grupoModulo.modulo.titulo.toLocaleUpperCase('es-PE') + ' (Trans.)';
 assert.equal(helpers.getModuloDocumentName(fixture.grupoModulo, true), expected);
-for (const [mode, cell] of [['nomina', 'F12'], ['acta', 'AO6']]) {
+for (const [mode, cell, turnoCell] of [['nomina', 'F12', 'AD13'], ['acta', 'AO6', 'AO10']]) {
   const updates = [];
   helpers.fillInstitutionHeader(updates, 'Hoja', fixture, mode);
   assert.equal(updates.find(update => update.range.endsWith(`!${cell}`))?.values[0][0], expected, `${mode} contains the marker in its module cell`);
+  assert.equal(updates.find(update => update.range.endsWith(`!${turnoCell}`))?.values[0][0], 'NOCHE');
 }
-assert.equal(helpers.buildCertificateTokens(fixture, { matriculaId: 1 }, '', 'TEST')['[NOMBRE MODULO]'], expected);
+const opcionUpdates = [];
+const legacyShift = { ...fixture.grupoModulo.grupo, turno: null, turnoNombre: 'Noche ampliada' };
+helpers.fillInstitutionHeader(opcionUpdates, 'Hoja', { ...fixture, opcionOcupacional: true, grupoModulo: { ...fixture.grupoModulo, grupo: legacyShift } }, 'acta');
+assert.equal(opcionUpdates.find(update => update.range.endsWith('!AF13'))?.values[0][0], 'Noche');
+const tokens = helpers.buildCertificateTokens(fixture, { matriculaId: 1 }, '', 'TEST');
+assert.equal(tokens['[NOMBRE MODULO]'], expected);
+assert.equal(tokens['[turno]'], 'Noche');
+assert.equal(tokens['[TURNO]'], 'NOCHE');
 for (const numero of [1,2]) {
   fixture.grupoModulo.numeroTransitabilidad = numero;
   const numberedName = expected.replace('(Trans.)', `(Trans. ${numero})`);

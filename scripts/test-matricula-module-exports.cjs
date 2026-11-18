@@ -16,9 +16,11 @@ function loadModule(file, mocks = {}) {
   return module.exports;
 }
 const helper = loadModule('functions/src/modules/core/matriculaModuloRows.ts');
+const { nombreGrupoDocumento } = loadModule('functions/src/shared/turnoDocumento.ts');
+const { formatInstantDateInAppTimeZone } = loadModule('functions/src/shared/appDateTime.ts');
 class HttpsError extends Error { constructor(code, message) { super(message); this.code = code; } }
 const grupos = Array.from({ length: 6 }, (_, i) => ({
-  id: i + 1, nombre: `Manualidades ${i + 1}`, grupoId: Math.floor(i / 2) + 10, moduloId: 20,
+  id: i + 1, nombre: `Manualidades ${i + 1} [Noche ${i === 0 ? 'extendida' : 'ampliada'}] Lun-Vie`, grupoId: Math.floor(i / 2) + 10, moduloId: 20,
   grupo: { id: Math.floor(i / 2) + 10, personalId: i === 5 ? 10 : 9, semestreId: 2, archivado: false },
   modulo: { id: 20, titulo: 'Pintura', orden: 1, planId: 1, carreraId: 1 },
 }));
@@ -51,13 +53,15 @@ async function testSheets() {
   const module = { exports: {} };
   vm.runInNewContext(compile(declarations.map(node => node.getText(ast)).join('\n') +
     '\nmodule.exports.write = writeDocenteMatriculadosSheet;'), {
-    module, exports: module.exports, Map, Set,
+    module, exports: module.exports, Map, Set, URL,
     buildMatriculaModuloRows: helper.buildMatriculaModuloRows,
+    nombreGrupoDocumento,
+    formatInstantDateInAppTimeZone,
     https: { HttpsError }, isSuperUserContext: () => !docente, getRequesterRoleId: () => docente ? 4 : 1,
     isDocenteRole: role => [4, 10].includes(Number(role)),
     LIST_MATRICULAS_BY_IDS_FOR_DOCENTE_SHEET_QUERY: 'matriculas', LIST_GENERAL_SHEET_MODULE_ROWS_QUERY: 'modulos',
     MATRICULAS_GENERAL_LIST_SHEETS_FILE_NAME: 'Lista', DOCENTE_MATRICULADOS_SHEETS_FOLDER_ID: 'folder',
-    DOCENTE_MATRICULADOS_SHEETS_TAB_NAME: 'Matriculados',
+    DOCENTE_MATRICULADOS_SHEETS_TAB_NAME: 'Matriculados', LIMA_TIME_ZONE: 'America/Lima',
     dataConnect: { executeGraphql: async (query, { variables }) => {
       if (query === 'matriculas') queryBatchSizes.push(variables.matriculaIds.length);
       return { data: query === 'matriculas'
@@ -76,8 +80,8 @@ async function testSheets() {
   const update = apiCalls.find(([name]) => name === 'update')[1];
   assert.equal(update.range, 'Matriculados!A1:S94');
   assert.equal(update.requestBody.values[0][18], 'Grupo-Módulo');
-  assert.equal(update.requestBody.values[1][18], 'Manualidades 1');
-  assert.equal(update.requestBody.values[2][18], 'Manualidades 2');
+  assert.equal(update.requestBody.values[1][18], 'Manualidades 1 [Noche] Lun-Vie');
+  assert.equal(update.requestBody.values[2][18], 'Manualidades 2 [Noche] Lun-Vie');
   assert.equal(update.requestBody.values[1][1], update.requestBody.values[2][1], 'Two module rows retain one original enrollment');
   assert.ok(update.requestBody.values.every(row => row.length === 19));
   assert.equal(update.requestBody.values[93][7], 'AGE(94)', 'Age formulas remain aligned after expanding rows');

@@ -56,7 +56,7 @@ export function normalizeIdentitySexo(value: unknown): 'F' | 'M' | null {
 }
 
 export function isAttendingSecondary(value: unknown): boolean {
-  return /secundaria.*(?:curso|incomplet|escolar)|cursando.*secundaria/i.test(String(value ?? ''));
+  return /^secundaria\s+en\s+curso[.…]*$/i.test(String(value ?? '').trim());
 }
 
 export function validateManualStudent(data: IdentityStudentData, required = true, today?: string): Partial<Record<keyof IdentityStudentData, string>> {

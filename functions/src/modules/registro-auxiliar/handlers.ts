@@ -3,7 +3,7 @@ import { https, runWith } from "firebase-functions/v1";
 import { savePartialRegistroGrades } from "./partialSave.js";
 import { lookupIdentityDocument, PANEL_API_PERU_SECRET } from "./documentLookup.js";
 import {
-  getIdentityDocumentType, getIdentityDocumentError, normalizeIdentityDate, normalizeIdentitySexo,
+  getIdentityDocumentType, getIdentityDocumentError, isAttendingSecondary, normalizeIdentityDate, normalizeIdentitySexo,
   validateManualStudent, type IdentityStudentData,
 } from "../../shared/identityDocument.js";
 import { curricularUnitIdsInOrder as buildUnidadIds, type CurricularUnitRelation } from "../academico/curricularUnitOrder.js";
@@ -1672,7 +1672,9 @@ export const createRegistroAuxiliarMatricula = runWith({ timeoutSeconds: 180, se
         if (Object.keys(errors).length) {
           throw new https.HttpsError("invalid-argument", "Completa los campos obligatorios.", { fields: errors });
         }
-        dniData = data.manual;
+        dniData = isAttendingSecondary(data.manual.instruccion)
+          ? data.manual
+          : { ...data.manual, nombreColegio: null };
       } else {
         if (getIdentityDocumentType(dni) === "CE") {
           throw new https.HttpsError("failed-precondition", "Completa la matrícula manualmente.", { manualEntryRequired: true });
@@ -1894,6 +1896,15 @@ type RegistroStudentProfileInput = {
   user?: IdentityStudentData & { dni?: string | null };
 };
 
+const UPDATE_REGISTRO_STUDENT_WITH_EXPECTED_INSTRUCTION_MUTATION = `
+  mutation UpdateRegistroStudentWithExpectedInstruction(
+    $id: Int!, $instruction: String!,
+    $data: User_Data! @allow(fields: "nombre apellidoPaterno apellidoMaterno apellidos username sexo nacionalidad estadoCivil instruccion nombreColegio direccion distrito celular telefono email fechaNacimiento dni tipoDocumento fechaModificacion")
+  ) {
+    user_updateMany(where: { id: { eq: $id }, instruccion: { eq: $instruction } }, data: $data)
+  }
+`;
+
 async function loadRegistroStudentProfile(data: RegistroStudentProfileInput, context: https.CallableContext) {
   const grupoModuloId = toNumber(data?.grupoModuloId, -1);
   const moduloEstudianteId = toNumber(data?.moduloEstudianteId, -1);
@@ -1947,8 +1958,12 @@ export const updateRegistroAuxiliarEstudianteDatos = https.onCall(async (data: R
   if (Object.keys(errors).length) throw new https.HttpsError("invalid-argument", "Revisa los datos ingresados.", { fields: errors });
   const payload: DataConnectUserInput = { fechaModificacion: new Date().toISOString() };
   for (const key of ["nombre", "apellidoPaterno", "apellidoMaterno", "sexo", "nacionalidad", "estadoCivil",
-    "instruccion", "nombreColegio", "direccion", "distrito", "celular", "telefono", "email"] as const) {
+    "instruccion", "direccion", "distrito", "celular", "telefono", "email"] as const) {
     if (key in input) payload[key] = asCleanString(input[key]);
+  }
+  const instruction = "instruccion" in input ? payload.instruccion : existingUser.instruccion;
+  if ("nombreColegio" in input && isAttendingSecondary(instruction)) {
+    payload.nombreColegio = asCleanString(input.nombreColegio);
   }
   if ("fechaNacimiento" in input) payload.fechaNacimiento = asNullableTimestamp(normalizeIdentityDate(input.fechaNacimiento));
   if ("dni" in input) {
@@ -1967,8 +1982,16 @@ export const updateRegistroAuxiliarEstudianteDatos = https.onCall(async (data: R
     payload.apellidos = [merged.apellidoPaterno, merged.apellidoMaterno].filter(Boolean).join(" ") || null;
     payload.username = buildStudentUsername({ nombres: merged.nombre, apellidoPaterno: merged.apellidoPaterno, apellidoMaterno: merged.apellidoMaterno });
   }
-  await dataConnect.executeGraphql<{ user_update: unknown }, { id: number; data: DataConnectUserInput }>(
-    UPDATE_USER_MUTATION, { variables: { id: existingUser.id, data: payload } });
+  const variables = { id: existingUser.id, data: payload };
+  if (!("instruccion" in input) && "nombreColegio" in payload && instruction) {
+    const result = await dataConnect.executeGraphql<{ user_updateMany: number }, typeof variables & { instruction: string }>(
+      UPDATE_REGISTRO_STUDENT_WITH_EXPECTED_INSTRUCTION_MUTATION, { variables: { ...variables, instruction } });
+    if (result.data.user_updateMany !== 1) {
+      throw new https.HttpsError("aborted", "El grado de instrucción cambió. Vuelve a abrir la ficha.");
+    }
+  } else {
+    await dataConnect.executeGraphql<{ user_update: unknown }, typeof variables>(UPDATE_USER_MUTATION, { variables });
+  }
   if (payload.username && existingUser.documentId && !existingUser.documentId.startsWith("matricula:")) {
     await authAdmin.updateUser(existingUser.documentId, { displayName: payload.username }).catch((error: unknown) => {
       if ((error as { code?: string })?.code !== "auth/user-not-found") throw error;

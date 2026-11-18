@@ -11,6 +11,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useSearchParams } from 'next/navigation';
 import { app } from '@/lib/firebase';
 import { formatDateOnly } from '@/lib/dateOnly';
+import { nombreGrupoDocumento, nombreTurnoDocumento } from '@/lib/turnoDocumento';
 import { useRegistroPrintLayout } from '@/hooks/useRegistroPrintLayout';
 import { PRINT_PX_TO_MM, REGISTRO_PRINT_SIZES, type RegistroPrintPage } from '@/lib/registroPrintLayout';
 import PrintDocumentViewer, {
@@ -296,16 +297,16 @@ const getTipoCarreraRegistroLabel = (registro: RegistroAuxiliar | null) => {
 };
 
 const getTurnoHorarioName = (grupo: RegistroAuxiliar['grupo']) => {
-  const turno = grupo?.turno?.nombre || grupo?.turnoNombre || '';
+  const turno = nombreTurnoDocumento(grupo?.turno?.nombre) || nombreTurnoDocumento(grupo?.turnoNombre);
   const horario = grupo?.horario?.nombre || grupo?.horario?.diasSemana || '';
   return [turno, horario].filter(Boolean).join(' - ');
 };
 
 const getGrupoModuloLabel = (grupoModulo: GrupoModuloOption) =>
-  grupoModulo.nombre ||
+  nombreGrupoDocumento(grupoModulo.nombre ||
   `${grupoModulo.grupo.nombreDisplay || `Grupo ${grupoModulo.grupo.id}`} - ${
     grupoModulo.modulo?.titulo || grupoModulo.modulo?.tituloComercial || `Modulo ${grupoModulo.moduloId}`
-  }`;
+  }`);
 
 const notaKey = (matriculaId: number, indicadorId: number) => `${matriculaId}:${indicadorId}`;
 const efsrtPppKey = (moduloEstudianteId: number) => String(moduloEstudianteId);
@@ -784,7 +785,7 @@ export default function RegistroAuxiliarPrintPage() {
       <Box className="print-label">INICIO / TERMINO</Box>
       <Box>{[formatDateOnly(registro?.grupoModulo?.inicio), formatDateOnly(registro?.grupoModulo?.fin)].filter(Boolean).join(' al ')}</Box>
       <Box className="print-label">MODULO</Box>
-      <Box>{getModuloName(registro, true)}</Box>
+      <Box>{nombreGrupoDocumento(getModuloName(registro, true))}</Box>
       <Box className="print-label">TURNO</Box>
       <Box>{getTurnoHorarioName(registro?.grupo ?? null)}</Box>
       <Box className="print-label">DURACION</Box>

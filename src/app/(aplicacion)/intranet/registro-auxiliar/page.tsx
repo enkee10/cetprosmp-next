@@ -50,6 +50,7 @@ import { repeatRegistroFill, type RegistroFillRange } from '@/lib/registroFill';
 import { invalidateMatriculaLists } from '@/lib/matriculasListCache';
 import { app } from '@/lib/firebase';
 import { formatDateOnly, toDateOnlyInputValue } from '@/lib/dateOnly';
+import { nombreGrupoDocumento, nombreTurnoDocumento } from '@/lib/turnoDocumento';
 import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
 const RegistroMatriculaForm = dynamic(() => import('@/components/intranet/matriculas/RegistroMatriculaForm'), {
@@ -358,10 +359,10 @@ const formatDateInput = (value: string | null | undefined) => {
   return toDateOnlyInputValue(value);
 };
 
-const getTurnoHorarioName = (grupo: RegistroAuxiliar['grupo']) => {
+const getTurnoHorarioName = (grupo: RegistroAuxiliar['grupo'], paraDocumento = false) => {
   const turno = grupo?.turno?.nombre || grupo?.turnoNombre || '';
   const horario = grupo?.horario?.nombre || grupo?.horario?.diasSemana || '';
-  return [turno, horario].filter(Boolean).join(' - ');
+  return [paraDocumento ? nombreTurnoDocumento(turno) : turno, horario].filter(Boolean).join(' - ');
 };
 
 const notaKey = (matriculaId: number, indicadorId: number) => `${matriculaId}:${indicadorId}`;
@@ -1570,9 +1571,9 @@ export default function RegistroAuxiliarPage() {
     setValue(moduleRows[2], MODULE_INFO_RIGHT_LABEL_COL, 'INICIO / TERMINO');
     setValue(moduleRows[2], MODULE_INFO_RIGHT_VALUE_COL, [formatDate(registro.grupoModulo?.inicio), formatDate(registro.grupoModulo?.fin)].filter(Boolean).join(' al '));
     setValue(moduleRows[3], MODULE_INFO_LEFT_LABEL_COL, 'MODULO');
-    setValue(moduleRows[3], MODULE_INFO_LEFT_VALUE_COL, getModuloName(registro, true));
+    setValue(moduleRows[3], MODULE_INFO_LEFT_VALUE_COL, nombreGrupoDocumento(getModuloName(registro, true)));
     setValue(moduleRows[3], MODULE_INFO_RIGHT_LABEL_COL, 'TURNO');
-    setValue(moduleRows[3], MODULE_INFO_RIGHT_VALUE_COL, getTurnoHorarioName(registro.grupo));
+    setValue(moduleRows[3], MODULE_INFO_RIGHT_VALUE_COL, getTurnoHorarioName(registro.grupo, true));
     setValue(moduleRows[4], MODULE_INFO_LEFT_LABEL_COL, 'DURACION');
     setValue(moduleRows[4], MODULE_INFO_LEFT_VALUE_COL, registro.grupoModulo?.modulo?.horas ? `${registro.grupoModulo.modulo.horas} horas` : '');
     setValue(moduleRows[4], MODULE_INFO_RIGHT_LABEL_COL, 'CICLO');

@@ -71,24 +71,36 @@ function creation({ existing = null, lookupError = null } = {}) {
     await assert.rejects(create({ grupoModuloId: 50, dni: '001234567' }, context), error => error.details?.manualEntryRequired === true);
     assert.equal(state.newUsers.length, 0);
     assert.equal(state.enrollments.length, 0);
-    await create({ grupoModuloId: 50, dni: '001234567', manual }, context);
+    await create({ grupoModuloId: 50, dni: '001234567', manual: { ...manual, instruccion: 'Secundaria', nombreColegio: 'No guardar' } }, context);
     assert.equal(state.newUsers[0].dni, '001234567');
+    assert.equal(state.newUsers[0].data.nombreColegio, null);
     assert.equal(state.lookups, 0, 'El ingreso manual directo no llama a las APIs');
     assert.equal(state.enrollments.length, 1);
     const other = creation();
     await assert.rejects(other.create({ grupoModuloId: 50, dni: '12345678', manual: { ...manual, instruccion: 'Secundaria en curso..' } }, context), error => Boolean(error.details.fields.nombreColegio));
     assert.equal(other.state.newUsers.length, 0);
+    await other.create({ grupoModuloId: 50, dni: '12345678', manual: { ...manual, instruccion: 'Secundaria en curso...', nombreColegio: 'Colegio de prueba' } }, context);
+    assert.equal(other.state.newUsers[0].data.nombreColegio, 'Colegio de prueba');
   }
   {
-    let saved;
-    const existing = { id: 9, dni: '12345678', tipoDocumento: 'DNI' };
+    let saved, conditionalCount = 1;
+    const existing = { id: 9, dni: '12345678', tipoDocumento: 'DNI', instruccion: 'Secundaria en curso..', nombreColegio: 'Colegio guardado' };
     const update = callable('updateRegistroAuxiliarEstudianteDatos', {
       ...identity, ...dates, https, asCleanString: value => String(value ?? '').trim() || null,
       asNullableTimestamp: mappers.asNullableTimestamp,
       loadRegistroStudentProfile: async () => existing,
       findRegistroAuxiliarUserByDni: async () => ({ id: 22 }),
       buildStudentUsername: () => 'Estudiante', UPDATE_USER_MUTATION: 'update',
-      dataConnect: { executeGraphql: async (_, options) => { saved = options.variables.data; return { data: { user_update: { id: 9 } } }; } },
+      UPDATE_REGISTRO_STUDENT_WITH_EXPECTED_INSTRUCTION_MUTATION: 'conditional-update',
+      dataConnect: { executeGraphql: async (query, options) => {
+        if (query === 'conditional-update') {
+          assert.equal(options.variables.instruction, 'Secundaria en curso..');
+          if (conditionalCount) saved = options.variables.data;
+          return { data: { user_updateMany: conditionalCount } };
+        }
+        saved = options.variables.data;
+        return { data: { user_update: { id: 9 } } };
+      } },
       authAdmin: { updateUser: async () => { throw new Error('No debe cambiar auth sin documentId'); } },
     });
     await update({ user: {} }, context);
@@ -98,6 +110,22 @@ function creation({ existing = null, lookupError = null } = {}) {
     assert.equal(saved.dni, null);
     assert.equal(saved.rolId, undefined, 'El editor solo actualiza campos personales permitidos');
     await assert.rejects(update({ user: { dni: '87654321' } }, context), /otro usuario/);
+    for (const value of ['Colegio incorrecto', '', null]) {
+      const frozen = await update({ user: { instruccion: 'Primaria', nombreColegio: value } }, context);
+      assert.equal(saved.nombreColegio, undefined);
+      assert.equal(frozen.user.nombreColegio, 'Colegio guardado');
+    }
+    existing.instruccion = 'Superior';
+    await update({ user: { nombreColegio: 'Cambio de colegio' } }, context);
+    assert.equal(saved.nombreColegio, undefined, 'Un guardado parcial respeta el grado guardado');
+    await update({ user: { instruccion: 'Secundaria en curso..', nombreColegio: 'Colegio actualizado' } }, context);
+    assert.equal(saved.nombreColegio, 'Colegio actualizado');
+    existing.instruccion = 'Secundaria en curso..';
+    await update({ user: { nombreColegio: 'Otro colegio válido' } }, context);
+    assert.equal(saved.nombreColegio, 'Otro colegio válido');
+    conditionalCount = 0;
+    await assert.rejects(update({ user: { nombreColegio: 'Cambio concurrente' } }, context), { code: 'aborted' });
+    assert.equal(saved.nombreColegio, 'Otro colegio válido');
   }
   console.log('Servidor: usuario existente, datos de API sin completar, fallo sin crear cuentas, matrícula manual, periodo/módulo/responsable del servidor y edición sin campos requeridos.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

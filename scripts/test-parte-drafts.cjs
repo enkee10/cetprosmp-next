@@ -30,4 +30,28 @@ storage.setItem(drafts.parteDraftKey('2026-10-16',10),'{invalid');assert.equal(d
 // Local drafts are never submitted as report records; unsigned legacy records also contribute nothing.
 const metrics=analytics.aggregateParte([{...row,id:1,fecha:'2026-10-16',docenteId:1,docente:'Docente',familia:'Familia',familiaId:1,fechaActualizacion:row.version,firma:null}],[]);
 assert.equal(metrics.registros,0);assert.equal(metrics.asistentesAcumulados,0);
+
+const complete = {
+  ...row,
+  ...Object.fromEntries(valuations.VALUATION_FIELDS.map(field => [field, valuations.valuationLabels(field)[0]])),
+  registroAsistencia: '',
+};
+assert.deepEqual(parte.parteMissingFields(complete), []);
+assert.deepEqual(parte.parteMissingFields({ ...complete, registroAsistencia: 'inválido' }), ['Registro de Asistencia']);
+assert.deepEqual(parte.parteMissingFields({ ...complete, registroAuxiliarEvaluacion: '' }), ['Registro Auxiliar de Evaluación']);
+assert.equal(valuations.valuationScore('registroAsistencia', 'No tiene'), 0);
+assert.equal(valuations.valuationScore('registroAsistencia', 'Sí tiene, en proceso'), 2);
+assert.equal(valuations.valuationScore('registroAsistencia', 'Sí tiene'), 4);
+const reportRow = {
+  ...complete, id: 1, fecha: '2026-10-16', docenteId: 1, docente: 'Docente', familia: 'Familia',
+  familiaId: 1, matriculados: 8, asistentes: 5, fechaActualizacion: row.version,
+};
+const attendanceMetrics = analytics.aggregateParte([
+  { ...reportRow, registroAsistencia: null, registroAsistenciaValor: null },
+  { ...reportRow, id: 2, fecha: '2026-10-17', registroAsistencia: 'Sí tiene', registroAsistenciaValor: 4 },
+], []);
+assert.deepEqual(attendanceMetrics.valoraciones.registroAsistencia, { promedio: 2, cantidad: 2, distribucion: [1, 0, 0, 0, 1] });
+assert.equal(attendanceMetrics.indice, 3.75);
+assert.equal(attendanceMetrics.asistentesAcumulados, 10);
 console.log('Borradores: persistencia, observación pendiente, autor, fechas, firma pendiente, conflictos, limpieza y exclusión de informes: correctos.');
+console.log('Registro de asistencia: opcional y con valor cero en estadísticas; asistentes y demás valoraciones conservados.');

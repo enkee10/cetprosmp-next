@@ -11,6 +11,13 @@ from flask import Flask, Response, jsonify, request
 
 app = Flask(__name__)
 
+OFFICE_EXTENSIONS = {
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+    "application/octet-stream": "xlsx",
+    "": "xlsx",
+}
+
 
 def clean_text(value: Any) -> str:
     return str(value or "").strip()
@@ -42,40 +49,41 @@ def require_authorization() -> tuple[bool, str | None]:
     return False, "No autorizado para ejecutar el conversor."
 
 
-def convert_to_pdf(xlsx_bytes: bytes, base_name: str) -> Path:
+def convert_to_pdf(content: bytes, base_name: str, extension: str) -> bytes:
     binary = office_binary()
     timeout = int(os.getenv("OFFICE_CONVERT_TIMEOUT_SECONDS", "180"))
-    work_dir = Path(tempfile.mkdtemp(prefix="office-convert-"))
-    profile_dir = work_dir / "profile"
-    input_path = work_dir / f"{safe_name(base_name)}.xlsx"
-    output_path = work_dir / f"{safe_name(base_name)}.pdf"
-    input_path.write_bytes(xlsx_bytes)
+    with tempfile.TemporaryDirectory(prefix="office-convert-") as temp_dir:
+        work_dir = Path(temp_dir)
+        name = safe_name(base_name)
+        input_path = work_dir / f"{name}.{extension}"
+        output_path = work_dir / f"{name}.pdf"
+        input_path.write_bytes(content)
 
-    command = [
-        binary,
-        "--headless",
-        "--nologo",
-        "--nofirststartwizard",
-        "--nodefault",
-        "--nolockcheck",
-        f"-env:UserInstallation=file://{profile_dir.as_posix()}",
-        "--convert-to",
-        "pdf",
-        "--outdir",
-        str(work_dir),
-        str(input_path),
-    ]
-    completed = subprocess.run(
-        command,
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-    )
-    if completed.returncode != 0 or not output_path.exists():
-        message = (completed.stderr or completed.stdout or "LibreOffice no genero el PDF.").strip()
-        raise RuntimeError(message)
-    return output_path
+        command = [
+            binary,
+            "--headless",
+            "--nologo",
+            "--nofirststartwizard",
+            "--nodefault",
+            "--nolockcheck",
+            f"-env:UserInstallation={(work_dir / 'profile').as_uri()}",
+            "--convert-to",
+            "pdf",
+            "--outdir",
+            str(work_dir),
+            str(input_path),
+        ]
+        completed = subprocess.run(
+            command,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        if completed.returncode != 0 or not output_path.exists():
+            message = (completed.stderr or completed.stdout or "LibreOffice no genero el PDF.").strip()
+            raise RuntimeError(message)
+        return output_path.read_bytes()
 
 
 @app.get("/health")
@@ -103,21 +111,19 @@ def convert():
 
     content = request.get_data()
     if not content:
-        return jsonify({"status": "rejected", "message": "No se recibio archivo XLSX."}), 400
+        return jsonify({"status": "rejected", "message": "No se recibio un archivo de Office."}), 400
+    extension = OFFICE_EXTENSIONS.get(request.mimetype or "")
+    if not extension:
+        return jsonify({"status": "rejected", "message": "Formato no admitido. Envia un XLSX o DOCX."}), 415
 
     base_name = clean_text(request.headers.get("x-report-name")) or "reporte"
     try:
-        pdf_path = convert_to_pdf(content, base_name)
+        pdf_bytes = convert_to_pdf(content, base_name, extension)
     except subprocess.TimeoutExpired:
         return jsonify({"status": "failed", "message": "LibreOffice excedio el tiempo maximo de conversion."}), 504
     except Exception as exc:
         app.logger.exception("Conversion failed")
         return jsonify({"status": "failed", "message": str(exc)}), 422
-
-    try:
-        pdf_bytes = pdf_path.read_bytes()
-    finally:
-        shutil.rmtree(pdf_path.parent, ignore_errors=True)
 
     return Response(
         pdf_bytes,

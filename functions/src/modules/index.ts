@@ -31,6 +31,9 @@ export {
 } from "./permisos/handlers.js";
 export {
   getAppSettings,
+  getCertificateNextNumber,
+  saveCertificateNextNumber,
+  saveCertificateIssueDate,
   listSettingsSemestresConGrupos,
   saveAppSettings,
 } from "./settings/handlers.js";
@@ -231,6 +234,7 @@ export {
   descargarCertificadosTitulosSeleccionados,
   descargarRegistrosAcademicosSeleccionados,
   generateCertificadosTitulos,
+  deleteCertificado,
   generateReporteDocumento,
   listCertificadosTitulosOptions,
   listReporteDocumentosOptions,

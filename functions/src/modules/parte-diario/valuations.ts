@@ -10,9 +10,11 @@ export const PARTE_VALUATIONS = {
 } as const;
 export type ValuationField = keyof typeof PARTE_VALUATIONS;
 export const VALUATION_FIELDS = Object.keys(PARTE_VALUATIONS) as ValuationField[];
+export const isOptionalValuation = (field: ValuationField) => field === 'registroAsistencia';
 export const valuationLabels = (field: ValuationField) => [...PARTE_VALUATIONS[field]].reverse();
 export const valuationScore = (field: ValuationField, value: unknown): number | null => {
  const normalized = String(value ?? '').trim().toLocaleLowerCase('es');
+ if (!normalized && isOptionalValuation(field)) return 0;
  const index = PARTE_VALUATIONS[field].findIndex(label => label.toLocaleLowerCase('es') === normalized);
  return index < 0 ? null : field === 'registroAsistencia' || field === 'registroAuxiliarEvaluacion' ? index * 2 : index;
 };

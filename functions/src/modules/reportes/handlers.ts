@@ -6,6 +6,7 @@ import { execFile } from "child_process";
 import { mkdtemp, readFile, rm, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { basename, join } from "path";
+import { pathToFileURL } from "url";
 import { promisify } from "util";
 import JSZip from "jszip";
 import { PDFDocument } from "pdf-lib";
@@ -18,7 +19,12 @@ import { applyPeriodSelection } from "../planes/periodSelection.js";
 import { getDatosGeneralesGlobales } from "../datos-generales/service.js";
 import { requirePermission } from "../core/permissions.js";
 import { getConfiguredSemestreConsultaIds } from "../settings/handlers.js";
-import { fitCertificateTable } from "./certificateTableLayout.js";
+import { combineCertificateWordDocuments, fillCertificateWord, WORD_CONTENT_TYPE, type CertificateUnitTableRow } from "./certificateWord.js";
+import {
+  CERTIFICATE_DOCUMENT_CHANGED, CERTIFICATE_SEQUENCE_ATTEMPTS, deleteCertificateRecords,
+  certificateNumberToIssue, insertCertificateWithSequence, isCertificateSequenceConflict, readCertificateSequence,
+} from "./certificateSequence.js";
+import { getIdFromKeyOutput } from "../core/userMappers.js";
 import { buildCurriculumDescendantCodes } from "../planes/curriculumCodes.js";
 import { readCurriculumGraph } from "../planes/curriculumGraph.js";
 
@@ -289,6 +295,7 @@ type CertificadoTituloRow = {
   grupoModuloNombre: string;
   moduloNombre: string;
   promedioFinal: number;
+  codigoInstitucional: string | null;
 };
 
 type SharedStringWriter = (value: string) => number;
@@ -326,11 +333,10 @@ const TEMPLATES = {
     storageName: "nomina-opcion-ocupacional",
     worksheetName: "nomina",
   },
-  certificadoPlanEstudios: {
-    name: "Certificado - Plan de Estudios",
-    storageName: "certificados-plan-estudios",
-  },
 };
+
+const CERTIFICATE_WORD_TEMPLATE = join(__dirname, "../../../assets/reportes/certificados-plan-estudio.docx");
+const XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 const REPORTE_OPTIONS_QUERY = `
   query ReporteDocumentosOptions {
@@ -707,6 +713,10 @@ const CERTIFICADOS_TITULOS_OPTIONS_QUERY = `
       moduloEstudiante {
         id
         matriculaId
+        registros: certificados_on_moduloEstudiante {
+          grupoModuloId
+          codigoInstitucional
+        }
         matricula {
           id
           archivado
@@ -779,15 +789,30 @@ const LIST_CERTIFICADO_TITULO_DOCUMENTOS_QUERY = `
   }
 `;
 
+const KEEP_CERTIFICATE_REGISTRY = `
+    certificado_updateMany(where: { id: { eq: $certificadoId } }, data: { actualizadoEn: $now })
+      @check(expr: "this == 1", message: "${CERTIFICATE_DOCUMENT_CHANGED}")
+`;
+
 const INSERT_CERTIFICADO_TITULO_DOCUMENTO_MUTATION = `
-  mutation InsertCertificadoTituloDocumento($data: CertificadoTituloDocumento_Data! @allow(fields: "tipoDocumento semestreCodigo grupoModuloId moduloEstudianteId pdfPath pdfUrl excelPath excelUrl generadoEn")) {
+  mutation InsertCertificadoTituloDocumento(
+    $certificadoId: Int!, $now: Timestamp!,
+    $data: CertificadoTituloDocumento_Data! @allow(fields: "tipoDocumento semestreCodigo grupoModuloId moduloEstudianteId pdfPath pdfUrl excelPath excelUrl generadoEn")
+  ) @transaction {
+    ${KEEP_CERTIFICATE_REGISTRY}
     certificadoTituloDocumento_insert(data: $data)
   }
 `;
 
 const UPDATE_CERTIFICADO_TITULO_DOCUMENTO_MUTATION = `
-  mutation UpdateCertificadoTituloDocumento($id: Int!, $data: CertificadoTituloDocumento_Data! @allow(fields: "semestreCodigo pdfPath pdfUrl excelPath excelUrl generadoEn")) {
-    certificadoTituloDocumento_update(id: $id, data: $data)
+  mutation UpdateCertificadoTituloDocumento(
+    $certificadoId: Int!, $now: Timestamp!, $id: Int!, $previousPdf: String, $previousEditable: String,
+    $data: CertificadoTituloDocumento_Data! @allow(fields: "semestreCodigo pdfPath pdfUrl excelPath excelUrl generadoEn")
+  ) @transaction {
+    ${KEEP_CERTIFICATE_REGISTRY}
+    certificadoTituloDocumento_updateMany(where: {
+      id: { eq: $id }, pdfPath: { eq: $previousPdf }, excelPath: { eq: $previousEditable }
+    }, data: $data) @check(expr: "this == 1", message: "${CERTIFICATE_DOCUMENT_CHANGED}")
   }
 `;
 
@@ -817,21 +842,6 @@ const GET_CERTIFICADO_REGISTRO_QUERY = `
       creadoEn
       actualizadoEn
     }
-  }
-`;
-
-const GET_LAST_CERTIFICADO_CORRELATIVO_QUERY = `
-  query GetLastCertificadoCorrelativoManual {
-    certificados(limit: 1, orderBy: [{ correlativo: DESC }]) {
-      id
-      correlativo
-    }
-  }
-`;
-
-const INSERT_CERTIFICADO_REGISTRO_MUTATION = `
-  mutation InsertCertificadoRegistro($data: Certificado_Data! @allow(fields: "codigoInstitucional correlativo codigoLag periodoNumero anio semestreId estudianteId matriculaId grupoModuloId moduloEstudianteId docenteId carreraId generadoEn creadoEn actualizadoEn")) {
-    certificado_insert(data: $data)
   }
 `;
 
@@ -1001,6 +1011,12 @@ function certificadoGrupoModuloLabel(grupoModulo: ReporteGrupoModuloOption) {
   return cleanText([codigo, grupoModuloDisplayName(grupoModulo)].filter(Boolean).join(" "));
 }
 
+function certificadoFileName(data: ReporteDocumentoData, student: ReporteEstudiante) {
+  const group = [semestreCodigo(semestreTitulo(data)), grupoModuloDisplayName(data.grupoModulo)].filter(Boolean).join(" ");
+  return cleanText(`${group} - ${getStudentName(student)}`.replace(/[<>:"/\\|?*\u0000-\u001f\u007f]/g, " "))
+    .replace(/[. ]+$/, "");
+}
+
 function certificadoSheetName(value: { apellidoPaterno?: string | null; dni?: string | null }, used: Set<string>) {
   const apellido = cleanText(value.apellidoPaterno || "Estudiante").split(/\s+/)[0] || "Estudiante";
   const dni = cleanText(value.dni);
@@ -1064,6 +1080,13 @@ function formatDate(value: string | null | undefined) {
 function formatMonthName(value: string | null | undefined) {
   const calendarDate = getCalendarDateParts(value);
   return calendarDate ? MONTH_NAMES_ES_PE[calendarDate.month - 1] ?? "" : "";
+}
+
+function formatCertificateModuleDate(value: string | null | undefined, includeYear: boolean) {
+  const date = getCalendarDateParts(value);
+  if (!date) return "";
+  const month = MONTH_NAMES_ES_PE[date.month - 1];
+  return includeYear ? `${date.day} de ${month} de ${date.year}` : `${date.day} ${month}`;
 }
 
 function getReportYear(data: ReporteDocumentoData) {
@@ -1144,11 +1167,13 @@ function formatDateLong(value: string | Date | null | undefined = new Date()) {
 }
 
 function getDocumentDateLong(data: ReporteDocumentoData, type: "acta" | "certificado" | "nomina") {
+  if (type === "certificado") {
+    const issueDate = toDateOnlyInputValue(data.semestre?.fechaCertificado ?? data.semestre?.fin);
+    return issueDate ? formatDateLong(issueDate) : "";
+  }
   const configuredDate = type === "acta"
     ? data.semestre?.fechaActa
-    : type === "certificado"
-      ? data.semestre?.fechaCertificado
-      : data.semestre?.fechaNomina;
+    : data.semestre?.fechaNomina;
   return formatDateLong(configuredDate);
 }
 
@@ -1369,45 +1394,51 @@ async function upsertRegistroAcademicoDocumento(input: {
   } satisfies RegistroAcademicoDocumento;
 }
 
-async function upsertCertificadoTituloDocumento(input: {
-  tipoDocumento: CertificadoTituloTipo;
-  semestreCodigo: string;
-  grupoModuloId: number;
-  moduloEstudianteId: number;
-  pdf: { path: string; url: string };
-  excel: { path: string; url: string };
-  generadoEn: string;
-}) {
+async function findCertificadoTituloDocumento(
+  grupoModuloId: number,
+  moduloEstudianteId: number,
+  tipoDocumento: CertificadoTituloTipo = "certificado",
+) {
   const existing = await dataConnect.executeGraphql<{
     certificadoTituloDocumentos: CertificadoTituloDocumento[];
   }, { tipoDocumento: string; grupoModuloId: number; moduloEstudianteId: number }>(
     GET_CERTIFICADO_TITULO_DOCUMENTO_QUERY,
     {
       variables: {
-        tipoDocumento: input.tipoDocumento,
-        grupoModuloId: input.grupoModuloId,
-        moduloEstudianteId: input.moduloEstudianteId,
+        tipoDocumento,
+        grupoModuloId,
+        moduloEstudianteId,
       },
     },
   );
-  const current = existing.data.certificadoTituloDocumentos?.[0] ?? null;
+  return existing.data.certificadoTituloDocumentos?.[0] ?? null;
+}
+
+async function upsertCertificadoTituloDocumento(input: {
+  certificadoId: number;
+  tipoDocumento: CertificadoTituloTipo;
+  semestreCodigo: string;
+  grupoModuloId: number;
+  moduloEstudianteId: number;
+  pdf: { path: string; url: string };
+  editable: { path: string; url: string };
+  generadoEn: string;
+}, current: CertificadoTituloDocumento | null) {
   const data = {
     semestreCodigo: input.semestreCodigo,
     pdfPath: input.pdf.path,
     pdfUrl: input.pdf.url,
-    excelPath: input.excel.path,
-    excelUrl: input.excel.url,
+    // These existing columns also hold the editable Word file for new certificates.
+    excelPath: input.editable.path,
+    excelUrl: input.editable.url,
     generadoEn: input.generadoEn,
   };
 
+  const guard = { certificadoId: input.certificadoId, now: input.generadoEn };
   if (current?.id) {
-    await dataConnect.executeGraphql<
-      { certificadoTituloDocumento_update: unknown },
-      { id: number; data: typeof data }
-    >(
-      UPDATE_CERTIFICADO_TITULO_DOCUMENTO_MUTATION,
-      { variables: { id: current.id, data } },
-    );
+    await dataConnect.executeGraphql(UPDATE_CERTIFICADO_TITULO_DOCUMENTO_MUTATION, { variables: {
+      ...guard, id: current.id, data, previousPdf: current.pdfPath ?? null, previousEditable: current.excelPath ?? null,
+    } });
     return { ...current, ...data } satisfies CertificadoTituloDocumento;
   }
 
@@ -1419,15 +1450,26 @@ async function upsertCertificadoTituloDocumento(input: {
   };
   const inserted = await dataConnect.executeGraphql<
     { certificadoTituloDocumento_insert: unknown },
-    { data: typeof insertData }
+    typeof guard & { data: typeof insertData }
   >(
     INSERT_CERTIFICADO_TITULO_DOCUMENTO_MUTATION,
-    { variables: { data: insertData } },
+    { variables: { ...guard, data: insertData } },
   );
   return {
-    id: Number((inserted.data.certificadoTituloDocumento_insert as { id?: number } | null)?.id ?? 0),
+    id: getIdFromKeyOutput(inserted.data.certificadoTituloDocumento_insert) ?? 0,
     ...insertData,
   } satisfies CertificadoTituloDocumento;
+}
+
+async function deleteCertificateFiles(paths: Array<string | null | undefined>) {
+  let pending = Array.from(new Set(paths.filter((path): path is string => Boolean(path))));
+  const bucket = getStorage().bucket();
+  for (let attempt = 0; pending.length && attempt < 2; attempt++) {
+    const results = await Promise.allSettled(pending.map(path => bucket.file(path).delete({ ignoreNotFound: true })));
+    pending = pending.filter((_path, index) => results[index].status === "rejected");
+  }
+  if (pending.length) console.warn("No se pudieron retirar archivos de certificados.", { paths: pending });
+  return pending.length === 0;
 }
 
 async function findCertificadoRegistro(grupoModuloId: number, moduloEstudianteId: number) {
@@ -1440,29 +1482,12 @@ async function findCertificadoRegistro(grupoModuloId: number, moduloEstudianteId
   return response.data.certificados?.[0] ?? null;
 }
 
-async function nextCertificadoCorrelativo() {
-  const response = await dataConnect.executeGraphql<{
-    certificados: Array<{ correlativo?: number | null }>;
-  }, Record<string, never>>(GET_LAST_CERTIFICADO_CORRELATIVO_QUERY);
-  const current = Number(response.data.certificados?.[0]?.correlativo ?? 0);
-  return Math.max(86, Number.isFinite(current) ? current : 0) + 1;
-}
-
-function isDuplicateRecordError(error: unknown) {
-  const reason = JSON.stringify({
-    message: (error as { message?: unknown } | null)?.message,
-    errors: (error as { errors?: unknown } | null)?.errors,
-    responseData: (error as { response?: { data?: unknown } } | null)?.response?.data,
-  }).toLowerCase();
-  return reason.includes("unique")
-    || reason.includes("duplicate")
-    || reason.includes("already exists")
-    || reason.includes("constraint");
-}
-
 async function ensureCertificadoRegistro(data: ReporteDocumentoData, student: ReporteEstudiante, generadoEn: string) {
   const grupoModuloId = data.grupoModulo.id;
   const moduloEstudianteId = student.id;
+  const existing = await findCertificadoRegistro(grupoModuloId, moduloEstudianteId);
+  if (existing) return existing;
+
   const semestreId = data.semestre?.id ?? data.grupoModulo.grupo?.semestreId ?? null;
   const matriculaId = student.matriculaId;
   const estudianteId = student.matricula?.user?.id ?? null;
@@ -1481,11 +1506,9 @@ async function ensureCertificadoRegistro(data: ReporteDocumentoData, student: Re
     throw new https.HttpsError("failed-precondition", "No se pudo determinar el periodo y anio del semestre.");
   }
 
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const existing = await findCertificadoRegistro(grupoModuloId, moduloEstudianteId);
-    if (existing) return existing;
-
-    const correlativo = await nextCertificadoCorrelativo();
+  for (let attempt = 0; attempt < CERTIFICATE_SEQUENCE_ATTEMPTS; attempt++) {
+    const sequence = await readCertificateSequence();
+    const correlativo = certificateNumberToIssue(sequence);
     const insertData = {
       codigoInstitucional: formatCodigoInstitucionalCertificado({ correlativo, codigoLag, periodoNumero, anio }),
       correlativo,
@@ -1505,25 +1528,15 @@ async function ensureCertificadoRegistro(data: ReporteDocumentoData, student: Re
     };
 
     try {
-      const inserted = await dataConnect.executeGraphql<
-        { certificado_insert: unknown },
-        { data: typeof insertData }
-      >(
-        INSERT_CERTIFICADO_REGISTRO_MUTATION,
-        { variables: { data: insertData } },
-      );
-      return {
-        id: Number((inserted.data.certificado_insert as { id?: number } | null)?.id ?? 0),
-        ...insertData,
-      } satisfies CertificadoRegistro;
+      return await insertCertificateWithSequence(sequence, insertData);
     } catch (error) {
-      if (!isDuplicateRecordError(error) || attempt === 2) throw error;
+      if (!isCertificateSequenceConflict(error)) throw error;
+      const concurrentlyCreated = await findCertificadoRegistro(grupoModuloId, moduloEstudianteId);
+      if (concurrentlyCreated) return concurrentlyCreated;
     }
   }
 
-  const existing = await findCertificadoRegistro(grupoModuloId, moduloEstudianteId);
-  if (existing) return existing;
-  throw new https.HttpsError("internal", "No se pudo crear el codigo institucional del certificado.");
+  throw new https.HttpsError("aborted", "El consecutivo cambió mientras se generaba el certificado. Vuelve a intentarlo.");
 }
 
 function templateStoragePath(template: ReportTemplate) {
@@ -1551,7 +1564,6 @@ async function ensureAllTemplatesInStorage() {
     ensureTemplateInStorage(TEMPLATES.actaPrograma),
     ensureTemplateInStorage(TEMPLATES.nominaPrograma),
     ensureTemplateInStorage(TEMPLATES.nominaOpcion),
-    ensureTemplateInStorage(TEMPLATES.certificadoPlanEstudios),
   ]);
 }
 
@@ -2070,74 +2082,6 @@ async function adjustActaStudentClosureLine(zip: JSZip, adjustment?: ActaClosure
   }
 }
 
-function shiftCellRefsInXmlFragment(xml: string, startRow: number, offset: number) {
-  if (offset === 0) return xml;
-  return xml.replace(/(\$?[A-Z]{1,3}\$?)(\d+)/g, (match, column: string, rowValue: string) => {
-    const row = Number(rowValue);
-    if (!Number.isFinite(row) || row < startRow) return match;
-    return `${column}${row + offset}`;
-  });
-}
-
-function shiftWorksheetRows(xml: string, startRow: number, offset: number) {
-  if (offset <= 0) return xml;
-  let nextXml = xml.replace(/<row\b[^>]*(?:\/>|>[\s\S]*?<\/row>)/gi, (rowXml) => {
-    const rowTag = rowXml.match(/^<row\b[^>]*>/i)?.[0] ?? rowXml.match(/^<row\b[^>]*\/>/i)?.[0] ?? "";
-    const row = Number(parseAttributes(rowTag).get("r"));
-    if (!Number.isFinite(row) || row < startRow) return rowXml;
-    const nextRowXml = shiftCellRefsInXmlFragment(rowXml, startRow, offset);
-    return nextRowXml.replace(/^<row\b[^>]*>/i, (tag) => setXmlAttribute(tag, "r", String(row + offset)));
-  });
-
-  nextXml = nextXml.replace(/<mergeCells\b[^>]*>[\s\S]*?<\/mergeCells>/i, (section) =>
-    shiftCellRefsInXmlFragment(section, startRow, offset),
-  );
-  nextXml = nextXml.replace(/<dimension\b[^>]*\/>/i, (tag) =>
-    shiftCellRefsInXmlFragment(tag, startRow, offset),
-  );
-  return nextXml;
-}
-
-function expandPrintAreaRows(printAreaRange: string, rowOffset: number) {
-  if (rowOffset <= 0 || !printAreaRange) return printAreaRange;
-  return printAreaRange.replace(/(\$?[A-Z]{1,3}\$?)(\d+)\s*$/i, (match, column: string, rowValue: string) => {
-    const row = Number(rowValue);
-    return Number.isFinite(row) ? `${column}${row + rowOffset}` : match;
-  });
-}
-
-function rowXmlByNumber(xml: string, row: number) {
-  const regex = new RegExp(`<row\\b[^>]*\\br="${row}"[^>]*(?:/>|>[\\s\\S]*?</row>)`, "i");
-  return xml.match(regex)?.[0] ?? null;
-}
-
-function cloneRowXml(rowXml: string, fromRow: number, toRow: number) {
-  const shifted = shiftCellRefsInXmlFragment(rowXml, fromRow, toRow - fromRow);
-  return shifted.replace(/^<row\b[^>]*>/i, (tag) => setXmlAttribute(tag, "r", String(toRow)));
-}
-
-function insertRowsAfter(xml: string, afterRow: number, rows: string[]) {
-  if (rows.length === 0) return xml;
-  const existingRow = rowXmlByNumber(xml, afterRow);
-  if (!existingRow) return xml.replace(/<\/sheetData>/i, `${rows.join("")}</sheetData>`);
-  const index = xml.indexOf(existingRow);
-  const insertAt = index + existingRow.length;
-  return `${xml.slice(0, insertAt)}${rows.join("")}${xml.slice(insertAt)}`;
-}
-
-function removeWorksheetMergeRanges(xml: string, predicate: (range: string) => boolean) {
-  const mergeCellsRegex = /<mergeCells\b[^>]*>[\s\S]*?<\/mergeCells>/i;
-  const match = xml.match(mergeCellsRegex);
-  if (!match?.[0]) return xml;
-  const kept = (match[0].match(/<mergeCell\b[^>]*\/>/gi) ?? [])
-    .filter((tag) => !predicate((parseAttributes(tag).get("ref") || "").toUpperCase()));
-  if (kept.length === 0) {
-    return `${xml.slice(0, match.index)}${xml.slice((match.index ?? 0) + match[0].length)}`;
-  }
-  const nextSection = `<mergeCells count="${kept.length}">${kept.join("")}</mergeCells>`;
-  return `${xml.slice(0, match.index)}${nextSection}${xml.slice((match.index ?? 0) + match[0].length)}`;
-}
-
 function retiredStudentMergeRange(cell: string) {
   const { column, row } = cellParts(cell);
   if (column === "X") return `X${row}:AC${row}`;
@@ -2292,34 +2236,6 @@ async function createSharedStringWriter(zip: JSZip) {
   return { add, save };
 }
 
-function nextRelationshipId(relsXml: string) {
-  let max = 0;
-  for (const rel of relsXml.match(/<Relationship\b[^>]*>/g) ?? []) {
-    const id = parseAttributes(rel).get("Id") || "";
-    const number = Number(/^rId(\d+)$/i.exec(id)?.[1] ?? 0);
-    if (Number.isFinite(number)) max = Math.max(max, number);
-  }
-  return `rId${max + 1}`;
-}
-
-function nextDrawingObjectId(drawingXml: string) {
-  let max = 0;
-  for (const tag of drawingXml.match(/<xdr:cNvPr\b[^>]*>/g) ?? []) {
-    const id = Number(parseAttributes(tag).get("id") ?? 0);
-    if (Number.isFinite(id)) max = Math.max(max, id);
-  }
-  return max + 1;
-}
-
-function nextMediaImagePath(zip: JSZip, extension = "png") {
-  let max = 0;
-  for (const filePath of Object.keys(zip.files)) {
-    const number = Number(new RegExp(`^xl/media/image(\\d+)\\.${extension}$`, "i").exec(filePath)?.[1] ?? 0);
-    if (Number.isFinite(number)) max = Math.max(max, number);
-  }
-  return `xl/media/image${max + 1}.${extension}`;
-}
-
 async function fetchImageBuffer(url: string) {
   const response = await fetch(url);
   if (!response.ok) {
@@ -2339,53 +2255,13 @@ async function prepareContainedPng(buffer: Buffer, widthPx: number, heightPx: nu
     .toBuffer();
 }
 
-async function addCertificateAvatarImage(zip: JSZip, avatarUrl: string) {
-  const cleanUrl = cleanText(avatarUrl);
-  if (!cleanUrl) return;
-
-  const drawingPath = "xl/drawings/drawing1.xml";
-  const drawingRelsPath = "xl/drawings/_rels/drawing1.xml.rels";
-  const drawingFile = zip.file(drawingPath);
-  const relsFile = zip.file(drawingRelsPath);
-  let drawingXml = await drawingFile?.async("string");
-  let relsXml = await relsFile?.async("string");
-  if (!drawingFile || !relsFile || !drawingXml || !relsXml) return;
-
-  const shapeAnchor = drawingXml.match(/<xdr:oneCellAnchor>[\s\S]*?<xdr:sp\b[\s\S]*?<\/xdr:oneCellAnchor>/i)?.[0];
-  const from = shapeAnchor?.match(/<xdr:from>[\s\S]*?<\/xdr:from>/i)?.[0];
-  const ext = shapeAnchor?.match(/<xdr:ext\b[^>]*\/>/i)?.[0];
-  const transform = shapeAnchor?.match(/<a:xfrm>[\s\S]*?<\/a:xfrm>/i)?.[0];
-  if (!shapeAnchor || !from || !ext) return;
-
-  const extAttrs = parseAttributes(ext);
-  const widthEmu = Number(extAttrs.get("cx"));
-  const heightEmu = Number(extAttrs.get("cy"));
-  if (!Number.isFinite(widthEmu) || !Number.isFinite(heightEmu) || widthEmu <= 0 || heightEmu <= 0) return;
-
+async function prepareCertificateAvatar(url: string) {
+  if (!url) return undefined;
   try {
-    const imageBuffer = await fetchImageBuffer(cleanUrl);
-    const widthPx = Math.max(1, Math.round(widthEmu / 9525));
-    const heightPx = Math.max(1, Math.round(heightEmu / 9525));
-    const pngBuffer = await prepareContainedPng(imageBuffer, widthPx, heightPx);
-    const mediaPath = nextMediaImagePath(zip, "png");
-    const relId = nextRelationshipId(relsXml);
-    const objectId = nextDrawingObjectId(drawingXml);
-
-    zip.file(mediaPath, pngBuffer);
-    const target = `../media/${basename(mediaPath)}`;
-    const rel = `<Relationship Id="${relId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="${xmlEscape(target)}"/>`;
-    relsXml = relsXml.replace(/<\/Relationships>\s*$/i, `${rel}</Relationships>`);
-
-    const xfrm = transform || `<a:xfrm><a:off x="0" y="0"/><a:ext cx="${widthEmu}" cy="${heightEmu}"/></a:xfrm>`;
-    const pic = `<xdr:oneCellAnchor>${from}${ext}<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${objectId}" name="avatar-certificado.png"/><xdr:cNvPicPr preferRelativeResize="0"/></xdr:nvPicPr><xdr:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${relId}" cstate="print"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr>${xfrm}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></xdr:spPr></xdr:pic><xdr:clientData fLocksWithSheet="0"/></xdr:oneCellAnchor>`;
-    drawingXml = drawingXml.replace(/<\/xdr:wsDr>\s*$/i, `${pic}</xdr:wsDr>`);
-
-    zip.file(drawingPath, drawingXml);
-    zip.file(drawingRelsPath, relsXml);
+    return await prepareContainedPng(await fetchImageBuffer(url), 190, 224);
   } catch (error) {
-    console.warn("No se pudo insertar el avatar en el certificado.", {
-      message: String((error as { message?: string } | null)?.message || error),
-    });
+    console.warn("No se pudo preparar el avatar del certificado.", { message: String(error) });
+    return undefined;
   }
 }
 
@@ -2448,88 +2324,6 @@ async function applyExcelUpdates(
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
 
-async function applyCertificatePlanEstudiosUpdates(
-  templateBuffer: Buffer,
-  tokenReplacements: TemplateTokenReplacements,
-  unitRows: CertificateUnitTableRow[],
-  avatarUrl: string,
-) {
-  const zip = await JSZip.loadAsync(templateBuffer);
-  await replaceTemplateTokensInWorkbook(zip, tokenReplacements);
-  await addCertificateAvatarImage(zip, avatarUrl);
-
-  const worksheet = await getFirstVisibleWorksheet(zip);
-  const sharedStrings = await createSharedStringWriter(zip);
-  const sheetFile = zip.file(worksheet.path);
-  const originalXml = await sheetFile?.async("string");
-  if (!sheetFile || !originalXml) throw new Error(`No se pudo leer la hoja ${worksheet.path}.`);
-
-  const baseRows = 3;
-  const rowCount = Math.max(baseRows, unitRows.length || 1);
-  const extraRows = Math.max(0, rowCount - baseRows);
-  const firstDataRow = 39;
-  const lastDataRow = firstDataRow + rowCount - 1;
-  const totalsRow = lastDataRow + 1;
-  let nextXml = extraRows > 0 ? shiftWorksheetRows(originalXml, 42, extraRows) : originalXml;
-
-  if (extraRows > 0) {
-    const templateRow = rowXmlByNumber(nextXml, 41);
-    const rowsToInsert = templateRow
-      ? Array.from({ length: extraRows }, (_, index) => cloneRowXml(templateRow, 41, 42 + index))
-      : [];
-    nextXml = insertRowsAfter(nextXml, 41, rowsToInsert);
-  }
-
-  nextXml = removeWorksheetMergeRanges(nextXml, (range) => /^A39:A\d+$/i.test(range));
-  const competenciaStarts = new Set<number>();
-  for (let start = 0; start < unitRows.length;) {
-    let end = start + 1;
-    while (end < unitRows.length && unitRows[end].competencia === unitRows[start].competencia) end += 1;
-    competenciaStarts.add(start);
-    if (end - start > 1) nextXml = addWorksheetMergeRange(nextXml, `A${firstDataRow + start}:A${firstDataRow + end - 1}`);
-    start = end;
-  }
-  nextXml = setSheetCellValue(nextXml, `A${totalsRow}`, "", sharedStrings.add);
-  for (let row = firstDataRow; row <= lastDataRow; row += 1) {
-    nextXml = addWorksheetMergeRange(nextXml, `B${row}:C${row}`);
-    nextXml = addWorksheetMergeRange(nextXml, `F${row}:H${row}`);
-  }
-
-  const competencia = cleanText(unitRows[0]?.competencia);
-  for (let index = 0; index < rowCount; index += 1) {
-    const row = firstDataRow + index;
-    const item = unitRows[index] ?? {
-      competencia,
-      unidad: "",
-      creditos: "",
-      horas: "",
-      capacidades: "",
-      nota: "",
-    };
-
-    nextXml = setSheetCellValue(nextXml, `A${row}`, competenciaStarts.has(index) ? item.competencia : "", sharedStrings.add);
-    nextXml = setSheetCellValue(nextXml, `B${row}`, item.unidad, sharedStrings.add);
-    nextXml = setSheetCellValue(nextXml, `D${row}`, item.creditos, sharedStrings.add);
-    nextXml = setSheetCellValue(nextXml, `E${row}`, item.horas, sharedStrings.add);
-    nextXml = setSheetCellValue(nextXml, `F${row}`, item.capacidades, sharedStrings.add);
-    nextXml = setSheetCellValue(nextXml, `I${row}`, item.nota, sharedStrings.add);
-  }
-
-  nextXml = ensureWorksheetPrintSetup(nextXml, 95, "landscape", true, "9", false);
-  zip.file(worksheet.path, nextXml);
-  if (extraRows > 0) {
-    const workbookXml = await zip.file("xl/workbook.xml")?.async("string");
-    if (workbookXml) {
-      const printArea = getWorkbookPrintArea(workbookXml);
-      const expandedPrintArea = expandPrintAreaRows(printArea, extraRows);
-      zip.file("xl/workbook.xml", upsertWorkbookPrintArea(workbookXml, worksheet.name, 0, expandedPrintArea));
-    }
-  }
-  sharedStrings.save();
-  await fitCertificateTable(zip, worksheet.path, worksheet.name, firstDataRow, rowCount);
-  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
-}
-
 function officeBinaryCandidates() {
   return [
     String(process.env.REPORTES_OFFICE_BIN || "").trim(),
@@ -2570,9 +2364,11 @@ async function getIdentityToken(audience: string) {
   return response.text();
 }
 
-async function convertXlsxToPdfWithService(xlsxBuffer: Buffer, baseName: string, converterUrl: string) {
+type OfficeFormat = "xlsx" | "docx";
+
+async function convertOfficeToPdfWithService(buffer: Buffer, baseName: string, format: OfficeFormat, converterUrl: string) {
   const headers: Record<string, string> = {
-    "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "Content-Type": format === "docx" ? WORD_CONTENT_TYPE : XLSX_CONTENT_TYPE,
     "X-Report-Name": baseName,
   };
   const token = String(process.env.REPORTES_OFFICE_CONVERTER_TOKEN || "").trim();
@@ -2585,52 +2381,49 @@ async function convertXlsxToPdfWithService(xlsxBuffer: Buffer, baseName: string,
   const response = await fetch(`${converterUrl}/convert`, {
     method: "POST",
     headers,
-    body: xlsxBuffer as unknown as BodyInit,
+    body: buffer as unknown as BodyInit,
   });
   if (!response.ok) {
     const message = await response.text().catch(() => "");
-    throw new Error(`No se pudo convertir el Excel a PDF en Cloud Run. HTTP ${response.status}: ${message}`);
+    throw new Error(`No se pudo convertir el archivo ${format.toUpperCase()} a PDF en Cloud Run. HTTP ${response.status}: ${message}`);
   }
   return Buffer.from(await response.arrayBuffer());
 }
 
-async function convertXlsxToPdfWithOffice(xlsxBuffer: Buffer, baseName: string) {
+async function convertOfficeToPdf(buffer: Buffer, baseName: string, format: OfficeFormat, providerInput?: unknown) {
+  reportesPdfProvider(providerInput);
   const converterUrl = reportesOfficeConverterUrl();
   if (converterUrl) {
-    return convertXlsxToPdfWithService(xlsxBuffer, baseName, converterUrl);
+    return convertOfficeToPdfWithService(buffer, baseName, format, converterUrl);
   }
 
   const dir = await mkdtemp(join(tmpdir(), "reportes-"));
-  const xlsxPath = join(dir, `${baseName}.xlsx`);
+  const inputPath = join(dir, `${baseName}.${format}`);
   const pdfPath = join(dir, `${baseName}.pdf`);
-  await writeFile(xlsxPath, xlsxBuffer);
 
   const errors: string[] = [];
   try {
+    await writeFile(inputPath, buffer);
     for (const binary of officeBinaryCandidates()) {
       try {
         await execFileAsync(binary, [
           "--headless",
+          `-env:UserInstallation=${pathToFileURL(join(dir, "profile")).href}`,
           "--convert-to",
           "pdf",
           "--outdir",
           dir,
-          xlsxPath,
+          inputPath,
         ], { timeout: 180000 });
         return await readFile(pdfPath);
       } catch (error) {
         errors.push(`${basename(binary)}: ${String((error as { message?: string } | null)?.message || error)}`);
       }
     }
-    throw new Error(`No se pudo convertir el Excel a PDF con LibreOffice/OpenOffice. ${errors.join(" | ")}`);
+    throw new Error(`No se pudo convertir el archivo ${format.toUpperCase()} a PDF con LibreOffice/OpenOffice. ${errors.join(" | ")}`);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
-}
-
-async function convertXlsxToPdf(xlsxBuffer: Buffer, baseName: string, providerInput?: unknown) {
-  reportesPdfProvider(providerInput);
-  return convertXlsxToPdfWithOffice(xlsxBuffer, baseName);
 }
 
 function unidadPromedioMap(data: ReporteDocumentoData) {
@@ -2984,15 +2777,6 @@ function certificadoTituloAvatarSettingKey(tipoDocumento: CertificadoTituloTipo)
     : SHOW_STUDENT_AVATAR_IN_CERTIFICATES_KEY;
 }
 
-type CertificateUnitTableRow = {
-  competencia: string;
-  unidad: string;
-  creditos: string | number;
-  horas: string | number;
-  capacidades: string;
-  nota: string | number;
-};
-
 function certificateTechnicalCompetencyText(data: ReporteDocumentoData) {
   const names = data.unidades
     .map(unit => unit.competencia)
@@ -3025,7 +2809,7 @@ function buildCertificateUnitRows(data: ReporteDocumentoData, student: ReporteEs
   }
 
   const competencia = certificateTechnicalCompetencyText(data);
-  return data.unidades.map((unit) => ({
+  const rows = data.unidades.map((unit) => ({
     competencia: [codes?.competencias.get(unit.competencia?.id ?? -1), cleanText(unit.competencia?.nombre ?? competencia)].filter(Boolean).join(" "),
     unidad: cleanText(unit.nombre || unit.sigla || "").toLocaleUpperCase("es-PE"),
     creditos: unit.creditos ?? "",
@@ -3033,29 +2817,25 @@ function buildCertificateUnitRows(data: ReporteDocumentoData, student: ReporteEs
     capacidades: (capacitiesByUnit.get(unit.id) ?? []).join("\n\n"),
     nota: formatGrade(unitMap.get(`${student.matriculaId}:${unit.id}`)),
   }));
+  if (rows.length === 0) {
+    throw new https.HttpsError("failed-precondition", "El grupo-módulo no tiene unidades didácticas para certificar.");
+  }
+  const missingGrades = rows.flatMap((row, index) => row.nota === "" ? [`${index + 1}. ${row.unidad}`] : []);
+  if (missingGrades.length > 0) {
+    throw new https.HttpsError(
+      "failed-precondition",
+      `Faltan calificaciones en el Registro Auxiliar de ${getStudentName(student)} para las unidades ${missingGrades.join(", ")}.`,
+    );
+  }
+  return rows;
 }
 
 function buildCertificateTokens(
   data: ReporteDocumentoData,
   student: ReporteEstudiante,
-  avatarUrl: string,
   codigoInstitucional: string,
+  notaEfsrt: number,
 ) {
-  const unitMap = unidadPromedioMap(data);
-  const capacitiesByUnit = new Map<number, string[]>();
-  for (const capacidad of data.capacidades) {
-    if (!capacidad.unidadDidacticaId) continue;
-    const current = capacitiesByUnit.get(capacidad.unidadDidacticaId) ?? [];
-    current.push(cleanText(capacidad.descripcion || capacidad.sigla || ""));
-    capacitiesByUnit.set(capacidad.unidadDidacticaId, current);
-  }
-  const units = data.unidades;
-  const creditos = units.map((unit) => unit.creditos ?? "");
-  const horas = units.map((unit) => unit.duracion ?? "");
-  const sumaCreditos = units.reduce<number>((sum, unit) => sum + toNumber(unit.creditos, 0), 0);
-  const sumaHoras = units.reduce<number>((sum, unit) => sum + toNumber(unit.duracion, 0), 0);
-  const notas = units.map((unit) => formatGrade(unitMap.get(`${student.matriculaId}:${unit.id}`)));
-  const capacidades = units.map((unit) => (capacitiesByUnit.get(unit.id) ?? []).filter(Boolean).join("; "));
   const turno = getTurnoDocumentName(data.grupoModulo);
 
   return {
@@ -3066,21 +2846,15 @@ function buildCertificateTokens(
     "[TURNO]": upperText(turno),
     "[carrera]": getCarreraName(data.grupoModulo),
     "[CARRERA]": getCarreraName(data.grupoModulo).toLocaleUpperCase("es-PE"),
-    "[INICIO MODULO]": formatDate(data.grupoModulo.inicio || data.semestre?.inicio),
-    "[FIN MODULO]": formatDate(data.grupoModulo.fin || data.semestre?.fin),
+    "[INICIO MODULO]": formatCertificateModuleDate(data.grupoModulo.inicio || data.semestre?.inicio, false),
+    "[FIN MODULO]": formatCertificateModuleDate(data.grupoModulo.fin || data.semestre?.fin, true),
     "[CREDITOS MODULO]": data.grupoModulo.modulo?.creditos ?? "",
     "[HORAS MODULO]": data.grupoModulo.modulo?.horas ?? "",
     "[fecha actual larga]": getDocumentDateLong(data, "certificado"),
     "[director]": getPersonalName(data.semestre?.director),
-    "[UNIDAD DE COMPETENCIA]": certificateTechnicalCompetencyText(data),
-    "[UNIDAD DIDACTICA 1]": units.map((unit) => cleanText(unit.nombre || unit.sigla || "").toLocaleUpperCase("es-PE")).join("\n"),
-    "[suma creditos]": sumaCreditos,
-    "[suma horas]": sumaHoras,
-    "[creditos unidad didactica]": creditos.join("\n"),
-    "[horas unidad didactica]": horas.join("\n"),
-    "[nota unidad didactica]": notas.join("\n"),
-    "[Capacidades de la unidad]": capacidades.join("\n"),
-    "[avatar]": cleanText(avatarUrl),
+    "[creditos EFSRT]": data.grupoModulo.modulo?.creditosEfsrt ?? "",
+    "[horas EFSRT]": data.grupoModulo.modulo?.duracionEfsrt ?? "",
+    "[nota EFSRT]": formatGrade(notaEfsrt),
   };
 }
 
@@ -3096,6 +2870,7 @@ async function buildCertificadoTituloRows() {
       moduloEstudiante: {
         id: number;
         matriculaId: number;
+        registros?: Array<{ grupoModuloId: number; codigoInstitucional: string }>;
         matricula?: {
           id: number;
           archivado?: boolean | null;
@@ -3161,6 +2936,8 @@ async function buildCertificadoTituloRows() {
       grupoModuloNombre: grupoNombre,
       moduloNombre,
       promedioFinal,
+      codigoInstitucional: item.moduloEstudiante.registros
+        ?.find(registro => registro.grupoModuloId === item.grupoModuloId)?.codigoInstitucional ?? null,
     });
   }
 
@@ -3183,7 +2960,7 @@ async function buildCertificadoTituloRows() {
   };
 }
 
-async function generateCertificadoPlanEstudios(input: {
+async function generateCertificadoPlanEstudios(templateBuffer: Buffer, input: {
   grupoModuloId: number;
   moduloEstudianteId: number;
   pdfProvider?: ReportPdfProvider;
@@ -3202,40 +2979,53 @@ async function generateCertificadoPlanEstudios(input: {
     throw new https.HttpsError("failed-precondition", "El estudiante no tiene promedio aprobatorio para generar certificado.");
   }
 
-  const { buffer: templateBuffer } = await ensureTemplateInStorage(TEMPLATES.certificadoPlanEstudios);
+  const planId = data.grupoModulo.modulo?.plan?.id;
+  if (!planId) throw new https.HttpsError("failed-precondition", "El modulo necesita un plan para numerar sus competencias y capacidades.");
+  const curricularCodes = buildCurriculumDescendantCodes(await readCurriculumGraph(planId));
+  const unitRows = buildCertificateUnitRows(data, student, curricularCodes);
   const useAvatars = await getBooleanAppSetting(certificadoTituloAvatarSettingKey("certificado"), true);
   const avatarUrl = useAvatars ? cleanText(student.matricula?.user?.avatar || "") : "";
   const generatedAt = new Date().toISOString();
   const certificado = await ensureCertificadoRegistro(data, student, generatedAt);
-  const planId = data.grupoModulo.modulo?.plan?.id;
-  if (!planId) throw new https.HttpsError("failed-precondition", "El modulo necesita un plan para numerar sus competencias y capacidades.");
-  const curricularCodes = buildCurriculumDescendantCodes(await readCurriculumGraph(planId));
-  const xlsxBuffer = await applyCertificatePlanEstudiosUpdates(
+  const wordBuffer = await fillCertificateWord(
     templateBuffer,
-    buildCertificateTokens(data, student, avatarUrl, certificado.codigoInstitucional),
-    buildCertificateUnitRows(data, student, curricularCodes),
-    avatarUrl,
+    buildCertificateTokens(data, student, certificado.codigoInstitucional, promedioFinal),
+    unitRows,
+    await prepareCertificateAvatar(avatarUrl),
   );
 
   const baseName = `certificado-${input.grupoModuloId}-${input.moduloEstudianteId}`;
-  const pdfBuffer = await convertXlsxToPdf(xlsxBuffer, baseName, input.pdfProvider);
-  const storageBase = certificadoTituloStorageBase("certificado", input.grupoModuloId, input.moduloEstudianteId);
-  const pdf = await uploadBuffer(`${storageBase}.pdf`, pdfBuffer, "application/pdf");
-  const excel = await uploadBuffer(
-    `${storageBase}.xlsx`,
-    xlsxBuffer,
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  );
-  const documento = await upsertCertificadoTituloDocumento({
-    tipoDocumento: "certificado",
-    semestreCodigo: semestreCodigo(data.semestre?.titulo || data.grupoModulo.grupo?.semestre?.titulo),
-    grupoModuloId: input.grupoModuloId,
-    moduloEstudianteId: input.moduloEstudianteId,
-    pdf,
-    excel,
-    generadoEn: generatedAt,
-  });
-  return { pdf, excel, documento };
+  const fileName = certificadoFileName(data, student);
+  const pdfBuffer = await convertOfficeToPdf(wordBuffer, baseName, "docx", input.pdfProvider);
+  const current = await findCertificadoTituloDocumento(input.grupoModuloId, input.moduloEstudianteId);
+  const storageBase = `${certificadoTituloStorageBase("certificado", input.grupoModuloId, input.moduloEstudianteId)}-${randomUUID()}`;
+  const wordPath = `${storageBase}.docx`;
+  const pdfPath = `${storageBase}.pdf`;
+  let documento: CertificadoTituloDocumento;
+  try {
+    const editable = await uploadBuffer(wordPath, wordBuffer, WORD_CONTENT_TYPE, `${fileName}.docx`);
+    const pdf = await uploadBuffer(pdfPath, pdfBuffer, "application/pdf", `${fileName}.pdf`);
+    documento = await upsertCertificadoTituloDocumento({
+      certificadoId: certificado.id,
+      tipoDocumento: "certificado",
+      semestreCodigo: semestreCodigo(data.semestre?.titulo || data.grupoModulo.grupo?.semestre?.titulo),
+      grupoModuloId: input.grupoModuloId,
+      moduloEstudianteId: input.moduloEstudianteId,
+      pdf,
+      editable,
+      generadoEn: generatedAt,
+    }, current);
+  } catch (error) {
+    const saved = await findCertificadoTituloDocumento(input.grupoModuloId, input.moduloEstudianteId).catch(() => undefined);
+    if (saved?.pdfPath === pdfPath && saved.excelPath === wordPath) return saved;
+    if (saved !== undefined) await deleteCertificateFiles([pdfPath, wordPath]);
+    if (String(error).includes(CERTIFICATE_DOCUMENT_CHANGED) || isCertificateSequenceConflict(error)) {
+      throw new https.HttpsError("aborted", CERTIFICATE_DOCUMENT_CHANGED);
+    }
+    throw error;
+  }
+  if (current) await deleteCertificateFiles([current.pdfPath, current.excelPath]);
+  return documento;
 }
 
 async function buildReporteData(grupoModuloId: number) {
@@ -3954,7 +3744,7 @@ async function generateReporteDocumentoInternal(input: {
   const baseName = `${input.tipoDocumento}-${semestreTitle}-${grupoModuloId}`
     .replace(/[^\w.-]+/g, "-")
     .toLowerCase();
-  const pdfBuffer = await convertXlsxToPdf(xlsxBuffer, baseName, input.pdfProvider);
+  const pdfBuffer = await convertOfficeToPdf(xlsxBuffer, baseName, "xlsx", input.pdfProvider);
   const fileName = registroAcademicoFileName(input.tipoDocumento, reporte);
   const pdf = await uploadBuffer(`documentos/registros-academicos/${input.tipoDocumento}-${grupoModuloId}.pdf`, pdfBuffer, "application/pdf", `${fileName}.pdf`);
   const excel = await uploadBuffer(
@@ -3990,8 +3780,8 @@ function getReporteGenerationErrorMessage(error: unknown) {
     responseData: (error as { response?: { data?: unknown } } | null)?.response?.data,
   }).toLowerCase();
 
-  if (reason.includes("libreoffice") || reason.includes("openoffice") || reason.includes("soffice") || reason.includes("convertir el excel a pdf")) {
-    return "No se pudo convertir el Excel a PDF. Instala LibreOffice/OpenOffice o configura REPORTES_OFFICE_BIN con la ruta de soffice.";
+  if (reason.includes("libreoffice") || reason.includes("openoffice") || reason.includes("soffice")) {
+    return "No se pudo convertir el archivo a PDF. Instala LibreOffice/OpenOffice o configura REPORTES_OFFICE_BIN con la ruta de soffice.";
   }
   return message || "No se pudo generar el documento.";
 }
@@ -4075,7 +3865,6 @@ export const listCertificadosTitulosOptions = https.onCall(async (_data, context
   await requirePermission(context, "certificados-titulos", "view");
 
   try {
-    await ensureTemplateInStorage(TEMPLATES.certificadoPlanEstudios);
     return await buildCertificadoTituloRows();
   } catch (error) {
     if (error instanceof https.HttpsError) throw error;
@@ -4098,10 +3887,10 @@ export const generateCertificadosTitulos = runWith({ timeoutSeconds: 180, memory
   }
 
   try {
+    const templateBuffer = await readFile(CERTIFICATE_WORD_TEMPLATE);
     const documentos: CertificadoTituloDocumento[] = [];
     for (const item of items) {
-      const result = await generateCertificadoPlanEstudios({ ...item, pdfProvider });
-      documentos.push(result.documento);
+      documentos.push(await generateCertificadoPlanEstudios(templateBuffer, { ...item, pdfProvider }));
     }
     return { tipoDocumento, total: documentos.length, documentos };
   } catch (error) {
@@ -4111,29 +3900,62 @@ export const generateCertificadosTitulos = runWith({ timeoutSeconds: 180, memory
   }
 });
 
+export const deleteCertificado = runWith({ timeoutSeconds: 180 }).https.onCall(async (data, context) => {
+  await requirePermission(context, "certificados-titulos", "delete");
+  const { grupoModuloId, moduloEstudianteId, documentoId } = data ?? {};
+  if (![grupoModuloId, moduloEstudianteId, documentoId].every(id =>
+    Number.isInteger(id) && id >= 1 && id <= 2_147_483_647,
+  )) {
+    throw new https.HttpsError("invalid-argument", "Selecciona un certificado generado.");
+  }
+
+  try {
+    const [documento, certificado] = await Promise.all([
+      findCertificadoTituloDocumento(grupoModuloId, moduloEstudianteId),
+      findCertificadoRegistro(grupoModuloId, moduloEstudianteId),
+    ]);
+    if (!documento) throw new https.HttpsError("not-found", "El certificado ya no está generado.");
+    if (documento.id !== documentoId || (documento.generadoEn ?? null) !== (data?.generadoEn ?? null)) {
+      throw new https.HttpsError("aborted", CERTIFICATE_DOCUMENT_CHANGED);
+    }
+
+    const reusable = await deleteCertificateRecords(documento, certificado);
+    const legacyBase = certificadoTituloStorageBase("certificado", grupoModuloId, moduloEstudianteId);
+    const filesRemoved = await deleteCertificateFiles([
+      documento.pdfPath, documento.excelPath, `${legacyBase}.pdf`, `${legacyBase}.docx`, `${legacyBase}.xlsx`,
+    ]);
+    return { reusable, filesRemoved };
+  } catch (error) {
+    if (error instanceof https.HttpsError) throw error;
+    if (String(error).includes(CERTIFICATE_DOCUMENT_CHANGED) || isCertificateSequenceConflict(error)) {
+      throw new https.HttpsError("aborted", CERTIFICATE_DOCUMENT_CHANGED);
+    }
+    console.error("Error in deleteCertificado:", error);
+    throw new https.HttpsError("internal", "No se pudo eliminar el certificado.");
+  }
+});
+
 export const descargarCertificadosTitulosSeleccionados = runWith({ timeoutSeconds: 180, memory: "1GB" }).https.onCall(async (data: DownloadCertificadosTitulosInput, context) => {
   await requirePermission(context, "certificados-titulos", "view");
 
   const tipoDocumento = certificadoTituloTipo(data?.tipoDocumento);
-  const formato = String(data?.formato || "pdf").toLowerCase() === "excel" ? "excel" : "pdf";
+  const requestedFormat = String(data?.formato || "pdf").toLowerCase();
+  const formato = requestedFormat === "word" || requestedFormat === "excel" ? requestedFormat : "pdf";
   const items = parseCertificadoTituloItems(data?.items);
   if (items.length === 0) {
     throw new https.HttpsError("invalid-argument", "Selecciona al menos un estudiante.");
   }
 
   try {
-    const [documentsResponse, options] = await Promise.all([
-      dataConnect.executeGraphql<{ certificadoTituloDocumentos: CertificadoTituloDocumento[] }, Record<string, never>>(
-        LIST_CERTIFICADO_TITULO_DOCUMENTOS_QUERY,
-      ),
-      buildCertificadoTituloRows(),
-    ]);
+    const documentsResponse = await dataConnect.executeGraphql<
+      { certificadoTituloDocumentos: CertificadoTituloDocumento[] },
+      Record<string, never>
+    >(LIST_CERTIFICADO_TITULO_DOCUMENTOS_QUERY);
     const documentoByKey = new Map(
       (documentsResponse.data.certificadoTituloDocumentos ?? [])
         .filter((documento) => documento.tipoDocumento === tipoDocumento)
         .map((documento) => [certificadoItemKey(documento), documento]),
     );
-    const rowByKey = new Map(options.estudiantes.map((row) => [row.id, row]));
     const orderedDocuments = items.map((item) => documentoByKey.get(certificadoItemKey(item)) ?? null);
     const missingIndex = orderedDocuments.findIndex((documento) =>
       !documento || (formato === "pdf" ? !documento.pdfPath : !documento.excelPath),
@@ -4142,8 +3964,12 @@ export const descargarCertificadosTitulosSeleccionados = runWith({ timeoutSecond
       throw new https.HttpsError("failed-precondition", "Todos los estudiantes seleccionados deben tener documento generado.");
     }
 
+    const single = orderedDocuments.length === 1 ? orderedDocuments[0] : null;
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     if (formato === "pdf") {
+      if (single?.pdfPath && single.pdfUrl) {
+        return { formato, file: { path: single.pdfPath, url: single.pdfUrl, contentType: "application/pdf" } };
+      }
       const buffers = await Promise.all(orderedDocuments.map((documento) => downloadStorageBuffer(documento?.pdfPath ?? "")));
       const combined = await combinePdfBuffers(buffers);
       const file = await uploadBuffer(
@@ -4154,6 +3980,29 @@ export const descargarCertificadosTitulosSeleccionados = runWith({ timeoutSecond
       return { formato, file };
     }
 
+    if (formato === "word") {
+      if (orderedDocuments.some(documento => !documento?.excelPath?.endsWith(".docx"))) {
+        throw new https.HttpsError("failed-precondition", "Usa Generar para preparar en Word los certificados seleccionados que todavía están en Excel.");
+      }
+      if (single?.excelPath && single.excelUrl) {
+        return { formato, file: { path: single.excelPath, url: single.excelUrl, contentType: WORD_CONTENT_TYPE } };
+      }
+      const buffers = await Promise.all(orderedDocuments.map(documento => downloadStorageBuffer(documento!.excelPath!)));
+      const fileName = `${tipoDocumento}-${timestamp}.docx`;
+      const file = await uploadBuffer(
+        `documentos/certificados-titulos/lotes/${fileName}`,
+        await combineCertificateWordDocuments(buffers),
+        WORD_CONTENT_TYPE,
+        fileName,
+      );
+      return { formato, file };
+    }
+
+    if (orderedDocuments.some(documento => !documento?.excelPath?.endsWith(".xlsx"))) {
+      throw new https.HttpsError("failed-precondition", "Todos los documentos seleccionados deben tener una versión en Excel.");
+    }
+    const options = await buildCertificadoTituloRows();
+    const rowByKey = new Map(options.estudiantes.map((row) => [row.id, row]));
     const usedNames = new Set<string>();
     const excelItems = await Promise.all(orderedDocuments.map(async (documento) => {
       const key = certificadoItemKey({

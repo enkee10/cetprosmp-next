@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Avatar, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
-import { selectedParteUnitLabel,isProgrammedParteUnit,numberedUnitLabel,parteMissingFields,changeParteUnit, MEDIOS_OPTIONS, FICHA_OPTIONS,INSTRUMENTO_OPTIONS,REG_ASISTENCIA_OPTIONS,REG_AUX_EVALUACION_OPTIONS,TAREAS_OPTIONS, MATERIAL_OPTIONS, parteTeacherGroupLabel, ParteDiarioRow, parteUnitValue, ParteUnidad, SILABO_OPTIONS } from '@/lib/parteDiario';
+import { selectedParteUnitLabel,isProgrammedParteUnit,numberedUnitLabel,parteMissingFields,changeParteUnit, MEDIOS_OPTIONS, FICHA_OPTIONS,INSTRUMENTO_OPTIONS,REG_ASISTENCIA_OPTIONS,REG_AUX_EVALUACION_OPTIONS,TAREAS_OPTIONS, MATERIAL_OPTIONS, parteTeacherGroupLabel, ParteDiarioRow, parteUnitValue, ParteUnidad, SILABO_OPTIONS, isOptionalValuation, type ValuationField } from '@/lib/parteDiario';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
 import SignaturePad from './SignaturePad';
 import ParteObservations, { ParteObservationInput } from './ParteObservations';
@@ -14,7 +14,7 @@ import ParteRecordStatus from './ParteRecordStatus';
 import { useAuth } from '@/context/AuthContext';
 import { clearParteDraft, editedParteDraft, emptyParteObservation, readParteDraft, writeParteDraft } from '@/lib/parteDiarioDrafts';
 
-const requiredControls = [
+const validationControls = [
   ['Unidad','unidad'], ['Actividad','actividad'], ['Asistentes','asistentes'],
   ['Uso de medios en clase','usoMedios'], ['Sílabo','silabo'], ['Ficha de Actividad','fichaActividad'],
   ['Instrumento de Evaluación','instrumentoEvaluacion'], ['Registro de Asistencia','registroAsistencia'],
@@ -30,7 +30,7 @@ export default function ParteDiarioModal({ row, fecha, onClose, onSaved, onDraft
   const [attempted,setAttempted]=useState(false);
   const contentRef=useRef<HTMLDivElement>(null);
   const missing=parteMissingFields(draft);
-  const invalid=(field:string)=>attempted&&requiredControls.some(([label,key])=>key===field&&missing.includes(label));
+  const invalid=(field:string)=>attempted&&validationControls.some(([label,key])=>key===field&&missing.includes(label));
   const draftRef=useRef(draft),inputRef=useRef(activeObservation);draftRef.current=draft;inputRef.current=activeObservation;
   const persistLocal=(next:ParteDiarioRow,input:ParteObservationInput)=>{
     if(!user)return;
@@ -53,7 +53,7 @@ export default function ParteDiarioModal({ row, fecha, onClose, onSaved, onDraft
   const setFirma = (firma: string | null) => setDraft(previous => ({ ...previous, firma }));
   const save = async () => {
     setAttempted(true);
-    const firstMissing=requiredControls.find(([label])=>missing.includes(label));
+    const firstMissing=validationControls.find(([label])=>missing.includes(label));
     if(firstMissing||!draft.firma){
       setError('Completa los campos marcados en rojo antes de guardar.');
       const id=`parte-${firstMissing?.[1]||'firma'}`;
@@ -70,9 +70,15 @@ export default function ParteDiarioModal({ row, fecha, onClose, onSaved, onDraft
     finally { setSaving(false); }
   };
   const remove=async()=>{if(!row.recordId||!window.confirm('¿Eliminar este registro del Parte Diario?'))return;setSaving(true);try{await httpsCallable(functions,'deleteParteDiarioRegistro')({id:row.recordId,version:row.version});clearParteDraft(window.localStorage,fecha,row);onDeleted?.();}catch(err){setError(err instanceof Error?err.message:'No se pudo eliminar el registro.');}finally{setSaving(false);}};
-  const documentSelect = (field: 'usoMedios' | 'silabo' | 'fichaActividad' | 'instrumentoEvaluacion' | 'registroAsistencia' | 'registroAuxiliarEvaluacion' | 'material' | 'tareas', label: string, options: string[]) => <TextField id={`parte-${field}`} key={field} error={invalid(field)} helperText={invalid(field)?'Selecciona una opción.':undefined} select label={label} value={draft[field]} disabled={saving} onChange={event => setDraft(previous => ({ ...previous, [field]: event.target.value }))} fullWidth required sx={{'& .MuiSelect-select':{minHeight:56,display:'flex',alignItems:'center',whiteSpace:'normal'}}} slotProps={{inputLabel:{shrink:true},select:{displayEmpty:true,renderValue:value=><Typography component="span" sx={parteThreeLines}>{String(value||'Seleccionar')}</Typography>}}}>
-    <MenuItem value="" disabled>Seleccionar</MenuItem>{!options.includes(draft[field])&&!!draft[field]&&<MenuItem value={draft[field]} disabled>{draft[field]} (sin valoración)</MenuItem>}{options.map(value => <MenuItem key={value} value={value}><Typography sx={parteThreeLines}>{value}</Typography></MenuItem>)}
-  </TextField>;
+  const documentSelect = (field: ValuationField, label: string, options: string[]) => {
+    const optional = isOptionalValuation(field);
+    const emptyLabel = optional ? 'Sin registrar' : 'Seleccionar';
+    return <TextField id={`parte-${field}`} key={field} error={invalid(field)} helperText={invalid(field)?'Selecciona una opción.':undefined} select label={label} value={draft[field]} disabled={saving} onChange={event => setDraft(previous => ({ ...previous, [field]: event.target.value }))} fullWidth required={!optional} sx={{'& .MuiSelect-select':{minHeight:56,display:'flex',alignItems:'center',whiteSpace:'normal'}}} slotProps={{inputLabel:{shrink:true},select:{displayEmpty:true,renderValue:value=><Typography component="span" sx={parteThreeLines}>{String(value||emptyLabel)}</Typography>}}}>
+      <MenuItem value="" disabled={!optional}>{emptyLabel}</MenuItem>
+      {!options.includes(draft[field])&&!!draft[field]&&<MenuItem value={draft[field]} disabled>{draft[field]} (sin valoración)</MenuItem>}
+      {options.map(value => <MenuItem key={value} value={value}><Typography sx={parteThreeLines}>{value}</Typography></MenuItem>)}
+    </TextField>;
+  };
   return <Dialog open onClose={() => { if (!saving) onClose(); }} fullWidth maxWidth="md" slotProps={{ paper: { sx: { maxHeight: 'calc(100dvh - 24px)', m: 1.5, width: 'calc(100% - 24px)' } } }} aria-labelledby="parte-diario-modal-title">
     <DialogTitle id="parte-diario-modal-title" sx={{pr:7,position:'relative'}}><IconButton aria-label="Cerrar formulario" title="Cerrar y conservar borrador" onClick={onClose} disabled={saving} sx={{position:'absolute',right:8,top:8}}><CloseIcon/></IconButton><Stack direction="row" alignItems="center" gap={2}><Avatar src={row.avatar ?? undefined} alt={row.docenteNombreCompleto} sx={{ width: 76, height: 76 }} /><Box><Typography component="span" fontWeight={700}>{row.docenteNombre}</Typography><Typography variant="body2">{parteTeacherGroupLabel(row)}<ParteRecordStatus row={draft}/></Typography></Box></Stack></DialogTitle>
     <DialogContent dividers ref={contentRef}>

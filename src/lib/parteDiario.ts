@@ -1,4 +1,4 @@
-import { valuationLabels, ValuationField } from '../../functions/src/modules/parte-diario/valuations';
+import { isOptionalValuation, valuationLabels, ValuationField } from '../../functions/src/modules/parte-diario/valuations';
 import type { ParteCompromiso } from '../../functions/src/modules/parte-diario/commitmentModel';
 export type { ParteCompromiso };
 export const SILABO_OPTIONS = valuationLabels('silabo');
@@ -9,7 +9,8 @@ export const REG_ASISTENCIA_OPTIONS = valuationLabels('registroAsistencia');
 export const REG_AUX_EVALUACION_OPTIONS = valuationLabels('registroAuxiliarEvaluacion');
 export const MATERIAL_OPTIONS = valuationLabels('material');
 export const TAREAS_OPTIONS = valuationLabels('tareas');
-export { valuationLabels };
+export { isOptionalValuation, valuationLabels };
+export type { ValuationField };
 export const isParteSaved = (row: ParteDiarioRow) => !row.borrador && !!(row.recordId && row.firma);
 export const isParteDraft = (row: ParteDiarioRow) => !!row.borrador || !!(row.recordId && !row.firma);
 export interface ParteEditor { uid: string; nombre: string; avatar: string | null }
@@ -26,7 +27,10 @@ export function parteMissingFields(row: ParteDiarioRow): string[] {
     ['registroAsistencia', 'Registro de Asistencia', REG_ASISTENCIA_OPTIONS], ['registroAuxiliarEvaluacion', 'Registro Auxiliar de Evaluación', REG_AUX_EVALUACION_OPTIONS],
     ['material', 'Materiales', MATERIAL_OPTIONS], ['tareas', 'Tareas', TAREAS_OPTIONS],
   ] as const;
-  for (const [field, label, options] of fields) if (!(options as readonly string[]).includes(row[field])) missing.push(label);
+  for (const [field, label, options] of fields) {
+    if (isOptionalValuation(field) && !row[field]?.trim()) continue;
+    if (!(options as readonly string[]).includes(row[field])) missing.push(label);
+  }
   return missing;
 }
 export interface ParteDiarioRow {

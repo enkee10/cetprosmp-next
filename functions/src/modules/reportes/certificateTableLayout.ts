@@ -3,7 +3,7 @@ import JSZip from "jszip";
 import sharp from "sharp";
 import { join } from "path";
 
-const TABLE_HEIGHT_POINTS = 310;
+export const CERTIFICATE_TABLE_HEIGHT_POINTS = 310;
 const separatorFontSize = (size: number) => Math.max(1, size / 2);
 const xmlAttribute = (xml: string, name: string) => new RegExp(`\\b${name}="([^"]*)"`).exec(xml)?.[1];
 const attribute = (xml: string, name: string, value: string) => new RegExp(`\\s${name}="[^"]*"`).test(xml)
@@ -52,9 +52,9 @@ export function certificateMinimumRowHeights(firstRow: number, rowCount: number,
   return heights.map(height => Math.ceil(height * 100) / 100);
 }
 
-function distributeRemainingHeight(minimum: number[]) {
+export function distributeRemainingHeight(minimum: number[]) {
   const total = minimum.reduce((sum, height) => sum + height, 0);
-  const remainingCents = Math.round((TABLE_HEIGHT_POINTS - total) * 100);
+  const remainingCents = Math.round((CERTIFICATE_TABLE_HEIGHT_POINTS - total) * 100);
   const shares = minimum.map(height => remainingCents * height / total);
   const cents = shares.map(Math.floor);
   const remainder = remainingCents - cents.reduce((sum, value) => sum + value, 0);
@@ -101,12 +101,12 @@ export async function fitCertificateTable(zip: JSZip, sheetPath: string, sheetNa
       height: await certificateTextHeight(cell.text, cell.widthPx, cell.font, reduction, cell.compactSeparators),
     })));
     const minimum = certificateMinimumRowHeights(firstRow, rowCount, measured);
-    if (minimum.reduce((sum, height) => sum + height, 0) <= TABLE_HEIGHT_POINTS) {
+    if (minimum.reduce((sum, height) => sum + height, 0) <= CERTIFICATE_TABLE_HEIGHT_POINTS) {
       heights = distributeRemainingHeight(minimum);
       break;
     }
   }
-  if (!heights.length) throw new Error(`El contenido del certificado no cabe en ${TABLE_HEIGHT_POINTS} puntos incluso con fuente de 1 punto.`);
+  if (!heights.length) throw new Error(`El contenido del certificado no cabe en ${CERTIFICATE_TABLE_HEIGHT_POINTS} puntos incluso con fuente de 1 punto.`);
 
   let sheetXml = await zip.file(sheetPath)!.async("string");
   let stylesXml = await zip.file("xl/styles.xml")!.async("string");
@@ -170,6 +170,6 @@ export async function fitCertificateTable(zip: JSZip, sheetPath: string, sheetNa
   });
   zip.file(sheetPath, sheetXml);
   zip.file("xl/styles.xml", stylesXml);
-  console.info("Certificate table layout", { rows: rowCount, fontReductionPoints: reduction, totalHeightPoints: TABLE_HEIGHT_POINTS });
+  console.info("Certificate table layout", { rows: rowCount, fontReductionPoints: reduction, totalHeightPoints: CERTIFICATE_TABLE_HEIGHT_POINTS });
   return { reduction, heights };
 }

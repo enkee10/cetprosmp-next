@@ -5,8 +5,8 @@ ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    libreoffice \
     libreoffice-calc \
+    libreoffice-writer \
     fonts-crosextra-caladea \
     fonts-crosextra-carlito \
     fonts-dejavu \

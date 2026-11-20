@@ -1,12 +1,11 @@
 # Reportes Office Converter
 
-Servicio Cloud Run para convertir los Excel generados por Functions a PDF usando
-LibreOffice en modo headless.
+Servicio Cloud Run para convertir los archivos Word y Excel generados por Functions a PDF con LibreOffice en modo headless.
 
 ## Endpoints
 
 - `GET /health`: verifica que LibreOffice este disponible.
-- `POST /convert`: recibe un `.xlsx` como body binario y devuelve `application/pdf`.
+- `POST /convert` recibe el binario de un `.docx` o `.xlsx` con su tipo MIME y devuelve `application/pdf`.
 
 ## Variables
 

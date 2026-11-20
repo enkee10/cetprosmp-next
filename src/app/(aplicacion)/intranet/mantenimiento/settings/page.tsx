@@ -1,6 +1,6 @@
 'use client';
 
-import { dateOnlyTimestamp, isCalendarPeriodActive } from '@/lib/dateOnly';
+import { dateOnlyTimestamp, isCalendarPeriodActive, toDateOnlyInputValue } from '@/lib/dateOnly';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AutoDismissAlert from '@/components/intranet/AutoDismissAlert';
@@ -34,7 +34,14 @@ type SemestreOption = {
   nombre?: string | null;
   inicio?: string | null;
   fin?: string | null;
+  fechaCertificado?: string | null;
   grupoCount?: number | null;
+};
+
+type CertificateNumberSettings = {
+  nextNumber: number;
+  nextReusableNumber?: number | null;
+  reuseReleased?: boolean;
 };
 
 const getSemestreLabel = (semestre: SemestreOption) =>
@@ -161,12 +168,32 @@ export default function SettingsPage() {
   const [generatingCodes, setGeneratingCodes] = useState(false);
   const [semestres, setSemestres] = useState<SemestreOption[]>([]);
   const [loadingSemestres, setLoadingSemestres] = useState(false);
+  const [certificateNumbers, setCertificateNumbers] = useState<CertificateNumberSettings | null>(null);
+  const [certificateNumberDraft, setCertificateNumberDraft] = useState('');
+  const [certificateReuseDraft, setCertificateReuseDraft] = useState<boolean | null>(null);
+  const [savingCertificateNumber, setSavingCertificateNumber] = useState(false);
+  const [savedCertificateDates, setSavedCertificateDates] = useState<Record<number, string | null>>({});
+  const [certificateDateDraft, setCertificateDateDraft] = useState<{ semestreId: number; value: string } | null>(null);
+  const [savingCertificateDate, setSavingCertificateDate] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageSeverity, setMessageSeverity] = useState<'success' | 'error' | 'info'>('info');
 
   const canViewSettings = can('settings', 'view');
   const canEditSettings = can('settings', 'edit');
+  const certificateNextNumber = certificateNumbers?.nextNumber ?? null;
+  const certificateNumber = /^\d+$/.test(certificateNumberDraft) ? Number(certificateNumberDraft) : NaN;
+  const certificateNumberChanged = certificateNumber !== certificateNextNumber;
+  const certificateNumberInvalid = certificateNextNumber !== null && certificateNumberChanged && (
+    !Number.isInteger(certificateNumber) || certificateNumber < certificateNextNumber || certificateNumber >= 2_147_483_647
+  );
   const safeDraft = normalizeDraftSettings(draft);
+  const certificateSemester = semestres.find(semestre => semestre.id === safeDraft.general.semestreActualId);
+  const dateOverride = certificateSemester ? savedCertificateDates[certificateSemester.id] : undefined;
+  const savedIssueDate = dateOverride === undefined ? certificateSemester?.fechaCertificado : dateOverride;
+  const defaultIssueDate = toDateOnlyInputValue(certificateSemester?.fin);
+  const editedIssueDate = certificateDateDraft && certificateDateDraft.semestreId === certificateSemester?.id
+    ? certificateDateDraft.value : undefined;
+  const certificateIssueDate = editedIssueDate ?? (toDateOnlyInputValue(savedIssueDate) || defaultIssueDate);
   const semestreActualOptions = useMemo(() => {
     const ordered = sortSemestresAsc(semestres);
     const today = new Date();
@@ -213,6 +240,74 @@ export default function SettingsPage() {
       active = false;
     };
   }, [canViewSettings, loadingPermissions]);
+
+  useEffect(() => {
+    if (loadingPermissions || !canViewSettings) return;
+    let active = true;
+    const getCertificateNextNumber = httpsCallable<undefined, CertificateNumberSettings>(functions, 'getCertificateNextNumber');
+    void getCertificateNextNumber().then(({ data }) => {
+      if (!active) return;
+      setCertificateNumbers(data);
+      setCertificateNumberDraft(String(data.nextNumber));
+    }).catch((error) => {
+      console.error('Error loading certificate number:', error);
+      if (!active) return;
+      setMessage('No se pudo cargar el siguiente número de código de inscripción.');
+      setMessageSeverity('error');
+    });
+    return () => { active = false; };
+  }, [canViewSettings, loadingPermissions]);
+
+  const handleSaveCertificateNumber = async () => {
+    if (!canEditSettings || certificateNextNumber === null || certificateNumberInvalid) return;
+    setSavingCertificateNumber(true);
+    setMessage(null);
+    try {
+      const saveCertificateNextNumber = httpsCallable<{ nextNumber?: number; reuseReleased?: boolean }, CertificateNumberSettings>(
+        functions, 'saveCertificateNextNumber',
+      );
+      const { data } = await saveCertificateNextNumber({
+        ...(certificateNumberChanged ? { nextNumber: certificateNumber } : {}),
+        ...(certificateReuseDraft !== null ? { reuseReleased: certificateReuseDraft } : {}),
+      });
+      setCertificateNumbers(data);
+      setCertificateNumberDraft(String(data.nextNumber));
+      setCertificateReuseDraft(null);
+      setMessage('Numeración de certificados guardada.');
+      setMessageSeverity('success');
+    } catch (error) {
+      const result = error as { message?: string; details?: Partial<CertificateNumberSettings> & { minimum?: number } };
+      const minimum = result.details?.minimum;
+      if (typeof minimum === 'number') setCertificateNumbers({ ...result.details, nextNumber: minimum });
+      setMessage(result.message || 'No se pudo guardar el siguiente número de código de inscripción.');
+      setMessageSeverity('error');
+    } finally {
+      setSavingCertificateNumber(false);
+    }
+  };
+
+  const handleSaveCertificateDate = async () => {
+    if (!canEditSettings || !certificateSemester || editedIssueDate === undefined || savingCertificateDate) return;
+    setSavingCertificateDate(true);
+    setMessage(null);
+    try {
+      const saveCertificateIssueDate = httpsCallable<
+        { semestreId: number; fecha: string | null },
+        { semestreId: number; fechaCertificado: string | null }
+      >(functions, 'saveCertificateIssueDate');
+      const { data } = await saveCertificateIssueDate({ semestreId: certificateSemester.id, fecha: editedIssueDate || null });
+      setSavedCertificateDates(current => ({ ...current, [data.semestreId]: data.fechaCertificado }));
+      setCertificateDateDraft(null);
+      setMessage('Fecha de emisión de certificados guardada.');
+      setMessageSeverity('success');
+    } catch (error) {
+      const result = error as { message?: string };
+      setMessage(result.message || 'No se pudo guardar la fecha de emisión de certificados.');
+      setMessageSeverity('error');
+    } finally {
+      setSavingCertificateDate(false);
+    }
+  };
 
   const handleSave = useCallback(async () => {
     setSaving(true);
@@ -340,7 +435,8 @@ export default function SettingsPage() {
               label="Semestre Actual"
               value={safeDraft.general.semestreActualId ? String(safeDraft.general.semestreActualId) : ''}
               MenuProps={selectMenuProps}
-              onChange={(event) =>
+              onChange={(event) => {
+                setCertificateDateDraft(null);
                 setDraft((current) => {
                   const normalized = normalizeDraftSettings(current);
                   const semestreActualId = Number(event.target.value) || null;
@@ -359,8 +455,8 @@ export default function SettingsPage() {
                       semestreId: semestreActualId,
                     },
                   };
-                })
-              }
+                });
+              }}
             >
               <MenuItem value="">Sin definir</MenuItem>
               {semestreActualOptions.map((semestre) => (
@@ -749,6 +845,77 @@ export default function SettingsPage() {
                 </MenuItem>
               </Select>
             </FormControl>
+          </Stack>
+
+          <Box>
+            <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+              Certificados y títulos
+            </Typography>
+            <Divider />
+          </Box>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'flex-start' }}>
+            <TextField
+              label="Siguiente número de código de inscripción"
+              value={certificateNumberDraft}
+              disabled={!canEditSettings || certificateNextNumber === null || savingCertificateNumber}
+              onChange={(event) => setCertificateNumberDraft(event.target.value)}
+              error={certificateNumberInvalid}
+              helperText={certificateNextNumber === null ? undefined : certificateNumbers?.nextReusableNumber != null
+                ? `El próximo correlativo a reutilizar es ${certificateNumbers.nextReusableNumber}. La numeración regular seguirá desde ${certificateNextNumber}.`
+                : `Número actual ${certificateNextNumber}. Puedes mantenerlo o aumentarlo.`}
+              slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+              fullWidth
+              size="small"
+            />
+            <Button
+              variant="outlined"
+              sx={{ whiteSpace: 'nowrap' }}
+              disabled={!canEditSettings || certificateNextNumber === null || certificateNumberInvalid || savingCertificateNumber
+                || (!certificateNumberChanged && certificateReuseDraft === null)}
+              onClick={() => void handleSaveCertificateNumber()}
+            >
+              {savingCertificateNumber ? 'Guardando…' : 'Guardar numeración'}
+            </Button>
+          </Stack>
+          <Box>
+            <FormControlLabel
+              label="Usar códigos de registro institucional eliminados"
+              control={
+                <Switch
+                  checked={certificateReuseDraft ?? certificateNumbers?.reuseReleased ?? false}
+                  disabled={!canEditSettings || certificateNumbers === null || savingCertificateNumber}
+                  onChange={(_, checked) => setCertificateReuseDraft(checked === (certificateNumbers?.reuseReleased ?? false) ? null : checked)}
+                />
+              }
+            />
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              Activa la opción para reutilizar los correlativos eliminados de menor a mayor. Desactivada, solo se reutiliza el tramo consecutivo del final.
+            </Typography>
+          </Box>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'flex-start' }}>
+            <TextField
+              label="Fecha de emisión de certificados"
+              type="date"
+              value={certificateIssueDate}
+              disabled={!canEditSettings || !certificateSemester || loadingSemestres || savingCertificateDate}
+              onChange={(event) => {
+                if (certificateSemester) setCertificateDateDraft({ semestreId: certificateSemester.id, value: event.target.value });
+              }}
+              helperText={certificateSemester
+                ? `Semestre ${getSemestreLabel(certificateSemester)}. Si dejas la fecha en blanco, se usa el fin del semestre.`
+                : 'Selecciona un semestre actual.'}
+              slotProps={{ inputLabel: { shrink: true } }}
+              fullWidth
+              size="small"
+            />
+            <Button
+              variant="outlined"
+              sx={{ whiteSpace: 'nowrap' }}
+              disabled={!canEditSettings || !certificateSemester || editedIssueDate === undefined || savingCertificateDate}
+              onClick={() => void handleSaveCertificateDate()}
+            >
+              {savingCertificateDate ? 'Guardando…' : 'Guardar fecha'}
+            </Button>
           </Stack>
         </Stack>
       </Box>

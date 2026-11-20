@@ -8,6 +8,8 @@ import { dataConnect } from "../core/dataConnectCore.js";
 import { requireAuthenticated, requirePermission } from "../core/permissions.js";
 import { DataConnectAppSetting, DataConnectAppSettingInput } from "../core/types.js";
 import { HIDE_OCCUPATIONAL_CURRICULUM_KEY } from "../planes/visibilityPolicy.js";
+import { certificateNumberSettings, readCertificateSequence, updateCertificateNumberSettings } from "../reportes/certificateSequence.js";
+import { getDateOnlyParts } from "../../shared/appDateTime.js";
 
 const USE_CROPPED_PHOTO_AS_STUDENT_AVATAR_KEY =
   "visualizaciones.usarRecorteFotografiaComoAvatarEstudiantes";
@@ -295,6 +297,7 @@ const LIST_SETTINGS_SEMESTRES_CON_GRUPOS_QUERY = `
       titulo
       inicio
       fin
+      fechaCertificado
       archivado
       anio {
         id
@@ -310,12 +313,19 @@ const LIST_SETTINGS_SEMESTRES_CON_GRUPOS_QUERY = `
   }
 `;
 
+const UPDATE_CERTIFICATE_ISSUE_DATE = `
+  mutation UpdateCertificateIssueDate($semestreId: Int!, $fecha: Date) {
+    semestre_update(id: $semestreId, data: { fechaCertificado: $fecha })
+  }
+`;
+
 type SettingsSemestreOption = {
   id: number;
   titulo?: string | null;
   nombre?: string | null;
   inicio?: string | null;
   fin?: string | null;
+  fechaCertificado?: string | null;
   archivado?: boolean | null;
   grupoCount?: number | null;
   anio?: {
@@ -584,6 +594,41 @@ export const getAppSettings = https.onCall(async (_data, context) => {
     console.error("Error in getAppSettings:", error);
     throw new https.HttpsError("internal", "No se pudieron cargar las configuraciones.");
   }
+});
+
+export const getCertificateNextNumber = https.onCall(async (_data, context) => {
+  await requirePermission(context, "settings", "view");
+  return certificateNumberSettings(await readCertificateSequence());
+});
+
+export const saveCertificateNextNumber = https.onCall(async (data, context) => {
+  await requirePermission(context, "settings", "edit");
+  return updateCertificateNumberSettings(data?.nextNumber, data?.reuseReleased);
+});
+
+export async function updateCertificateIssueDate(semestreId: unknown, fecha: unknown) {
+  if (typeof semestreId !== "number" || !Number.isInteger(semestreId) || semestreId < 1 || semestreId > 2_147_483_647) {
+    throw new https.HttpsError("invalid-argument", "Selecciona un semestre válido.");
+  }
+  if (fecha !== null && (
+    typeof fecha !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !getDateOnlyParts(fecha)
+  )) {
+    throw new https.HttpsError("invalid-argument", "Ingresa una fecha de emisión válida.");
+  }
+
+  const result = await dataConnect.executeGraphql<
+    { semestre_update: unknown },
+    { semestreId: number; fecha: string | null }
+  >(UPDATE_CERTIFICATE_ISSUE_DATE, { variables: { semestreId, fecha } });
+  if (!result.data.semestre_update) {
+    throw new https.HttpsError("not-found", "El semestre seleccionado no existe.");
+  }
+  return { semestreId, fechaCertificado: fecha };
+}
+
+export const saveCertificateIssueDate = https.onCall(async (data, context) => {
+  await requirePermission(context, "settings", "edit");
+  return updateCertificateIssueDate(data?.semestreId, data?.fecha);
 });
 
 export const saveAppSettings = https.onCall(async (data, context) => {

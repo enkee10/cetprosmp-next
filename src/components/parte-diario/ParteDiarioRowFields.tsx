@@ -1,12 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Box, ButtonBase, MenuItem, TableCell, TextField, Typography } from '@mui/material';
-import { activityLabel, changeParteUnit, FICHA_OPTIONS, INSTRUMENTO_OPTIONS, REG_ASISTENCIA_OPTIONS, REG_AUX_EVALUACION_OPTIONS, isParteSaved, isProgrammedParteUnit, MATERIAL_OPTIONS, MEDIOS_OPTIONS, numberedUnitLabel, selectedParteActivityLabel, selectedParteUnitLabel, parteUnitValue, ParteDiarioRow, ParteUnidad, SILABO_OPTIONS, TAREAS_OPTIONS } from '@/lib/parteDiario';
+import { activityLabel, changeParteUnit, FICHA_OPTIONS, INSTRUMENTO_OPTIONS, REG_ASISTENCIA_OPTIONS, REG_AUX_EVALUACION_OPTIONS, isParteSaved, isProgrammedParteUnit, MATERIAL_OPTIONS, MEDIOS_OPTIONS, numberedUnitLabel, selectedParteActivityLabel, selectedParteUnitLabel, parteUnitValue, ParteDiarioRow, ParteUnidad, SILABO_OPTIONS, TAREAS_OPTIONS, isOptionalValuation, type ValuationField } from '@/lib/parteDiario';
 import ParteActivitySelect from './ParteActivitySelect';
 import ParteObservations, { ParteObservationList, ParteObservationInput } from './ParteObservations';
 import ParteObservationsHistory from './ParteObservationsHistory';
 import { parteSavedColor, parteThreeLines } from './parteFieldStyles';
-type Field = 'usoMedios' | 'silabo' | 'fichaActividad' | 'instrumentoEvaluacion' | 'registroAsistencia' | 'registroAuxiliarEvaluacion' | 'material' | 'tareas';
 export default function ParteDiarioRowFields({ row, fecha, units, onLoadUnits, onChange, onSign, onObservationPending, observationInput, onObservationInputChange, observationsOpen, onOpenObservations, editable, disabled }: {
   row: ParteDiarioRow; fecha: string; units: ParteUnidad[]; onLoadUnits: () => void; onChange: (row: ParteDiarioRow) => void; onSign: () => void;
   onObservationPending: (pending: boolean) => void; observationsOpen: boolean; onOpenObservations: () => void; editable: boolean; disabled: boolean;
@@ -17,13 +16,18 @@ export default function ParteDiarioRowFields({ row, fecha, units, onLoadUnits, o
   useEffect(() => { if (observationsOpen) setObservationsVisited(true); }, [observationsOpen]);
   const openObservations = () => { setObservationsVisited(true); onOpenObservations(); };
   const text = (value: string | number | null) => <Typography variant="body2" title={String(value ?? '')} sx={{ ...parteThreeLines, px: '6px', color: saved ? parteSavedColor : 'inherit' }}>{value ?? ''}</Typography>;
-  const select = (field: Field, label: string, options: string[]) => <TableCell>{saved || !editable ? text(row[field]) : <TextField select value={row[field]} fullWidth size="small" disabled={disabled}
-    sx={{ '& .MuiSelect-select': { minHeight: 56, display: 'flex', alignItems: 'center', whiteSpace: 'normal' } }}
-    slotProps={{ select: { displayEmpty: true, renderValue: value => text(String(value || 'Seleccionar')), inputProps: { 'aria-label': `${label} de ${row.docenteNombre}` } } }}
-    onChange={event => update({ [field]: event.target.value })}>
-    <MenuItem value="" disabled>Seleccionar</MenuItem>{!options.includes(row[field]) && !!row[field] && <MenuItem value={row[field]} disabled>{text(row[field])}</MenuItem>}
-    {options.map(value => <MenuItem key={value} value={value}>{text(value)}</MenuItem>)}
-  </TextField>}</TableCell>;
+  const select = (field: ValuationField, label: string, options: string[]) => {
+    const optional = isOptionalValuation(field);
+    const emptyLabel = optional ? 'Sin registrar' : 'Seleccionar';
+    return <TableCell>{saved || !editable ? text(row[field]) : <TextField select value={row[field]} fullWidth size="small" disabled={disabled}
+      sx={{ '& .MuiSelect-select': { minHeight: 56, display: 'flex', alignItems: 'center', whiteSpace: 'normal' } }}
+      slotProps={{ select: { displayEmpty: true, renderValue: value => text(String(value || emptyLabel)), inputProps: { 'aria-label': `${label} de ${row.docenteNombre}` } } }}
+      onChange={event => update({ [field]: event.target.value })}>
+      <MenuItem value="" disabled={!optional}>{emptyLabel}</MenuItem>
+      {!options.includes(row[field]) && !!row[field] && <MenuItem value={row[field]} disabled>{text(row[field])}</MenuItem>}
+      {options.map(value => <MenuItem key={value} value={value}>{text(value)}</MenuItem>)}
+    </TextField>}</TableCell>;
+  };
   const activities = units.find(unit => unit.id === row.unidadDidacticaId)?.actividades ?? [];
   return <>
     <TableCell>{saved || !editable ? text(selectedParteUnitLabel(row, units)) : <TextField select value={parteUnitValue(row)} size="small" fullWidth disabled={disabled}

@@ -227,7 +227,12 @@ export async function validateParteInput(data: Record<string,unknown>, row: Part
  if (asistentes === null) throw new https.HttpsError('invalid-argument','Completa Asistentes antes de guardar.');
  if (asistentes !== null && (!Number.isInteger(asistentes) || asistentes < 0 || asistentes > row.matriculados)) throw new https.HttpsError("invalid-argument", "Asistentes debe estar entre 0 y el número de matriculados.");
  const values: Record<string, string|number|null> = {};
- for (const field of VALUATION_FIELDS) { const value = clean(data[field]), score=valuationScore(field,value);if(score===null)throw new https.HttpsError('invalid-argument','Selecciona una valoración válida.');values[field]=PARTE_VALUATIONS[field].find(label=>valuationScore(field,label)===score)!;values[scoreColumn(field)]=score; }
+ for (const field of VALUATION_FIELDS) {
+  const value = clean(data[field]), score = valuationScore(field, value);
+  if (score === null) throw new https.HttpsError('invalid-argument', 'Selecciona una valoración válida.');
+  values[field] = value ? PARTE_VALUATIONS[field].find(label => valuationScore(field, label) === score)! : null;
+  values[scoreColumn(field)] = score;
+ }
  const observaciones = data.observaciones ?? [];
  if (!Array.isArray(observaciones) || observaciones.length > 50 || observaciones.some((v: unknown) => typeof v !== "string" || !v.trim() || v.length > 4000)) throw new https.HttpsError("invalid-argument", "Observaciones inválidas.");
  let compromisos;

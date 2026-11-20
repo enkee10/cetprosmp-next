@@ -9,6 +9,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   FormControl,
   IconButton,
   InputLabel,
@@ -21,6 +26,8 @@ import {
   Typography,
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DescriptionIcon from '@mui/icons-material/Description';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -39,7 +46,7 @@ import { useIntranetPermissions } from '@/hooks/useIntranetPermissions';
 
 type TipoDocumento = 'certificado' | 'titulo';
 const PAGE_TITLE = 'Certificados y Titulos';
-type DownloadFormat = 'pdf' | 'excel';
+type DownloadFormat = 'pdf' | 'word' | 'excel';
 
 type SemestreOption = {
   id: number;
@@ -81,6 +88,7 @@ type CertificadoTituloRow = {
   grupoModuloNombre: string;
   moduloNombre: string;
   promedioFinal: number;
+  codigoInstitucional: string | null;
   selectionOrder: number | null;
   documento?: CertificadoTituloDocumento | null;
   generado: boolean;
@@ -126,6 +134,10 @@ function openUrl(url?: string | null) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
+function hasEditableFile(documento: CertificadoTituloDocumento | null | undefined, extension: 'docx' | 'xlsx') {
+  return Boolean(documento?.excelPath?.endsWith(`.${extension}`) && documento.excelUrl);
+}
+
 function renderSelectedNames(ids: number[], options: Array<{ id: number; nombre?: string | null; titulo?: string | null }>) {
   if (!ids.length) return 'Todos';
   const names = ids
@@ -155,9 +167,12 @@ export default function CertificadosTitulosPage() {
   const [rowMenuAnchor, setRowMenuAnchor] = useState<HTMLElement | null>(null);
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const [toolbarDownloadAnchor, setToolbarDownloadAnchor] = useState<HTMLElement | null>(null);
+  const [certificateToDelete, setCertificateToDelete] = useState<CertificadoTituloRow | null>(null);
+  const [deletingCertificate, setDeletingCertificate] = useState(false);
 
   const canView = can('certificados-titulos', 'view');
   const canGenerate = can('certificados-titulos', 'create');
+  const canDelete = can('certificados-titulos', 'delete');
 
   const loadOptions = useCallback(async () => {
     setLoadingOptions(true);
@@ -227,11 +242,12 @@ export default function CertificadosTitulosPage() {
           ...item,
           selectionOrder: orderById.get(item.id) ?? null,
           documento,
+          codigoInstitucional: tipoDocumento === 'certificado' && documento ? item.codigoInstitucional : null,
           generado: Boolean(documento?.pdfUrl && documento?.excelUrl),
           generadoEnText: formatDateTime(documento?.generadoEn),
         };
       });
-  }, [documentoByKey, estudiantes, grupoModuloIds, selectionOrder, semestreIds]);
+  }, [documentoByKey, estudiantes, grupoModuloIds, selectionOrder, semestreIds, tipoDocumento]);
 
   const selectedRows = useMemo(
     () => selectionOrder.map((id) => rows.find((row) => row.id === id)).filter((row): row is CertificadoTituloRow => Boolean(row)),
@@ -239,6 +255,8 @@ export default function CertificadosTitulosPage() {
   );
   const singleSelectedRow = selectedRows.length === 1 ? selectedRows[0] : null;
   const selectedHasMissingDocuments = selectedRows.some((row) => !row.generado);
+  const selectedAllWord = selectedRows.length > 0 && selectedRows.every((row) => hasEditableFile(row.documento, 'docx'));
+  const selectedAllExcel = selectedRows.length > 0 && selectedRows.every((row) => hasEditableFile(row.documento, 'xlsx'));
   const activeRow = activeRowId ? rows.find((row) => row.id === activeRowId) ?? null : null;
   const generationInProgress = generatingIds.size > 0;
 
@@ -288,6 +306,12 @@ export default function CertificadosTitulosPage() {
       setToolbarDownloadAnchor(null);
       return;
     }
+    if (formato === 'word' && !selectedAllWord) {
+      setMessage('Usa Generar para preparar en Word los certificados seleccionados que todavía están en Excel.');
+      setMessageSeverity('info');
+      setToolbarDownloadAnchor(null);
+      return;
+    }
 
     setDownloading(true);
     setMessage('');
@@ -310,7 +334,37 @@ export default function CertificadosTitulosPage() {
       setDownloading(false);
       setToolbarDownloadAnchor(null);
     }
-  }, [selectedHasMissingDocuments, selectedItems, selectedRows, tipoDocumento]);
+  }, [selectedAllWord, selectedHasMissingDocuments, selectedItems, selectedRows, tipoDocumento]);
+
+  const handleDeleteCertificate = async () => {
+    const documento = certificateToDelete?.documento;
+    if (!canDelete || !documento || deletingCertificate) return;
+    setDeletingCertificate(true);
+    setMessage('');
+    try {
+      const deleteCertificado = httpsCallable<
+        { grupoModuloId: number; moduloEstudianteId: number; documentoId: number; generadoEn: string | null },
+        { reusable: boolean; filesRemoved: boolean }
+      >(functions, 'deleteCertificado');
+      const { data } = await deleteCertificado({
+        grupoModuloId: documento.grupoModuloId,
+        moduloEstudianteId: documento.moduloEstudianteId,
+        documentoId: documento.id,
+        generadoEn: documento.generadoEn ?? null,
+      });
+      setDocumentos(current => current.filter(item => item.id !== documento.id));
+      setMessage(data.filesRemoved ? 'Certificado eliminado.' : 'Se eliminó el certificado. Quedaron archivos pendientes de retirar.');
+      setMessageSeverity(data.filesRemoved ? 'success' : 'info');
+    } catch (error) {
+      const result = error as { code?: string; message?: string };
+      if (result.code === 'functions/aborted' || result.code === 'functions/not-found') await loadOptions();
+      setMessage(result.message || 'No se pudo eliminar el certificado.');
+      setMessageSeverity('error');
+    } finally {
+      setDeletingCertificate(false);
+      setCertificateToDelete(null);
+    }
+  };
 
   const columns = useMemo<GridColDef<CertificadoTituloRow>[]>(() => [
     {
@@ -357,10 +411,9 @@ export default function CertificadosTitulosPage() {
       valueGetter: (_value, row) => row.selectionOrder ?? '',
     },
     {
-      field: 'generado',
-      headerName: 'Generado',
-      width: 115,
-      valueGetter: (_value, row) => (row.generado ? 'Si' : 'No'),
+      field: 'codigoInstitucional',
+      headerName: 'Registro',
+      width: 175,
     },
     {
       field: 'generadoEnText',
@@ -485,10 +538,18 @@ export default function CertificadosTitulosPage() {
               <PictureAsPdfIcon fontSize="small" sx={{ mr: 1 }} />
               PDF unido
             </MenuItem>
-            <MenuItem onClick={() => void handleDownloadSelected('excel')}>
-              <TableChartIcon fontSize="small" sx={{ mr: 1 }} />
-              Excel con hojas
-            </MenuItem>
+            {tipoDocumento === 'certificado' && (
+              <MenuItem onClick={() => void handleDownloadSelected('word')}>
+                <DescriptionIcon fontSize="small" sx={{ mr: 1 }} />
+                Word unido
+              </MenuItem>
+            )}
+            {selectedAllExcel && (
+              <MenuItem onClick={() => void handleDownloadSelected('excel')}>
+                <TableChartIcon fontSize="small" sx={{ mr: 1 }} />
+                Excel con hojas
+              </MenuItem>
+            )}
           </Menu>
         </Stack>
 
@@ -524,11 +585,46 @@ export default function CertificadosTitulosPage() {
           <PictureAsPdfIcon fontSize="small" sx={{ mr: 1 }} />
           Descargar PDF
         </MenuItem>
-        <MenuItem disabled={!activeRow?.documento?.excelUrl} onClick={() => { openUrl(activeRow?.documento?.excelUrl); setRowMenuAnchor(null); }}>
-          <TableChartIcon fontSize="small" sx={{ mr: 1 }} />
-          Descargar Excel
-        </MenuItem>
+        {hasEditableFile(activeRow?.documento, 'docx') && (
+          <MenuItem onClick={() => { openUrl(activeRow?.documento?.excelUrl); setRowMenuAnchor(null); }}>
+            <DescriptionIcon fontSize="small" sx={{ mr: 1 }} />
+            Descargar Word
+          </MenuItem>
+        )}
+        {hasEditableFile(activeRow?.documento, 'xlsx') && (
+          <MenuItem onClick={() => { openUrl(activeRow?.documento?.excelUrl); setRowMenuAnchor(null); }}>
+            <TableChartIcon fontSize="small" sx={{ mr: 1 }} />
+            Descargar Excel
+          </MenuItem>
+        )}
+        {tipoDocumento === 'certificado' && canDelete && (
+          <MenuItem
+            disabled={!activeRow?.documento || generationInProgress || deletingCertificate}
+            onClick={() => {
+              setCertificateToDelete(activeRow);
+              setRowMenuAnchor(null);
+            }}
+            sx={{ color: 'error.main' }}
+          >
+            <DeleteOutlineIcon fontSize="small" sx={{ mr: 1 }} />
+            Eliminar
+          </MenuItem>
+        )}
       </Menu>
+      <Dialog open={Boolean(certificateToDelete)} onClose={() => { if (!deletingCertificate) setCertificateToDelete(null); }}>
+        <DialogTitle>Eliminar certificado</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Se eliminará el certificado de {certificateToDelete?.estudianteNombre}. Podrás volver a generarlo.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus disabled={deletingCertificate} onClick={() => setCertificateToDelete(null)}>Cancelar</Button>
+          <Button color="error" variant="contained" disabled={deletingCertificate} onClick={() => void handleDeleteCertificate()}>
+            {deletingCertificate ? 'Eliminando…' : 'Eliminar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <FormLoadingOverlay
         open={generationInProgress}
         message={tipoDocumento === 'certificado' ? 'Generando certificado...' : 'Generando titulo...'}

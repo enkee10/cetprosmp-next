@@ -87,7 +87,7 @@ type CertificadoTituloRow = {
   estudianteNombre: string;
   grupoModuloNombre: string;
   moduloNombre: string;
-  promedioFinal: number;
+  promedioFinal: number | null;
   codigoInstitucional: string | null;
   selectionOrder: number | null;
   documento?: CertificadoTituloDocumento | null;
@@ -202,7 +202,7 @@ export default function CertificadosTitulosPage() {
     } finally {
       setLoadingOptions(false);
     }
-  }, [currentSemestreId]);
+  }, [currentSemestreId, settings.general.mostrarCertificadosSinEfsrt]);
 
   useEffect(() => {
     if (permissionsLoading) return;

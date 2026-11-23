@@ -97,7 +97,7 @@ async function main() {
     semestre: { titulo: '2026-2' }, grupoModulo: { nombre: 'Diseño / Producción' },
   }, {
     matriculaId: 9, matricula: { user: { apellidoPaterno: 'Pérez', apellidoMaterno: 'Díaz', nombre: 'ana' } },
-  }), '26-2 Diseño Producción - PÉREZ DÍAZ, Ana');
+  }), 'certificado 26-2 Diseño Producción - PÉREZ DÍAZ, Ana');
   const datesData = {
     ...data,
     grupoModulo: {

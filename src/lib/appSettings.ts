@@ -12,6 +12,7 @@ export type AppSettings = {
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: boolean;
     usarAvataresEnCertificadosTitulos: boolean;
+    mostrarCertificadosSinEfsrt: boolean;
     formularioMatriculaAceptaRespuestas: boolean;
     activarReconocimientoDni: boolean;
     semestreActualId: number | null;
@@ -50,6 +51,7 @@ export const defaultAppSettings: AppSettings = {
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: false,
     usarAvataresEnCertificadosTitulos: false,
+    mostrarCertificadosSinEfsrt: false,
     formularioMatriculaAceptaRespuestas: false,
     activarReconocimientoDni: true,
     semestreActualId: null,
@@ -91,6 +93,7 @@ export const normalizeSettings = (value: Partial<AppSettings> | undefined | null
       ? value.general.semestres.filter((item) => Number.isInteger(item.id) && item.id > 0)
         .map(({ id, titulo, inicio, fin }) => ({ id, titulo, inicio, fin }))
       : [],
+    mostrarCertificadosSinEfsrt: value?.general?.mostrarCertificadosSinEfsrt === true,
     usarAvataresEnCertificadosTitulos: Boolean(
       value?.general?.usarAvataresEnCertificadosTitulos,
     ),

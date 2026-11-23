@@ -42,6 +42,7 @@ type CertificateNumberSettings = {
   nextNumber: number;
   nextReusableNumber?: number | null;
   reuseReleased?: boolean;
+  reuseFromNumber?: number;
 };
 
 const getSemestreLabel = (semestre: SemestreOption) =>
@@ -171,6 +172,7 @@ export default function SettingsPage() {
   const [certificateNumbers, setCertificateNumbers] = useState<CertificateNumberSettings | null>(null);
   const [certificateNumberDraft, setCertificateNumberDraft] = useState('');
   const [certificateReuseDraft, setCertificateReuseDraft] = useState<boolean | null>(null);
+  const [certificateReuseFromDraft, setCertificateReuseFromDraft] = useState('139');
   const [savingCertificateNumber, setSavingCertificateNumber] = useState(false);
   const [savedCertificateDates, setSavedCertificateDates] = useState<Record<number, string | null>>({});
   const [certificateDateDraft, setCertificateDateDraft] = useState<{ semestreId: number; value: string } | null>(null);
@@ -186,6 +188,9 @@ export default function SettingsPage() {
   const certificateNumberInvalid = certificateNextNumber !== null && certificateNumberChanged && (
     !Number.isInteger(certificateNumber) || certificateNumber < certificateNextNumber || certificateNumber >= 2_147_483_647
   );
+  const certificateReuseFrom = /^\d+$/.test(certificateReuseFromDraft) ? Number(certificateReuseFromDraft) : NaN;
+  const certificateReuseFromChanged = certificateReuseFrom !== (certificateNumbers?.reuseFromNumber ?? 139);
+  const certificateReuseFromInvalid = !Number.isInteger(certificateReuseFrom) || certificateReuseFrom < 1 || certificateReuseFrom >= 2_147_483_647;
   const safeDraft = normalizeDraftSettings(draft);
   const certificateSemester = semestres.find(semestre => semestre.id === safeDraft.general.semestreActualId);
   const dateOverride = certificateSemester ? savedCertificateDates[certificateSemester.id] : undefined;
@@ -249,6 +254,7 @@ export default function SettingsPage() {
       if (!active) return;
       setCertificateNumbers(data);
       setCertificateNumberDraft(String(data.nextNumber));
+      setCertificateReuseFromDraft(String(data.reuseFromNumber ?? 139));
     }).catch((error) => {
       console.error('Error loading certificate number:', error);
       if (!active) return;
@@ -259,20 +265,22 @@ export default function SettingsPage() {
   }, [canViewSettings, loadingPermissions]);
 
   const handleSaveCertificateNumber = async () => {
-    if (!canEditSettings || certificateNextNumber === null || certificateNumberInvalid) return;
+    if (!canEditSettings || certificateNextNumber === null || certificateNumberInvalid || certificateReuseFromInvalid) return;
     setSavingCertificateNumber(true);
     setMessage(null);
     try {
-      const saveCertificateNextNumber = httpsCallable<{ nextNumber?: number; reuseReleased?: boolean }, CertificateNumberSettings>(
+      const saveCertificateNextNumber = httpsCallable<{ nextNumber?: number; reuseReleased?: boolean; reuseFromNumber?: number }, CertificateNumberSettings>(
         functions, 'saveCertificateNextNumber',
       );
       const { data } = await saveCertificateNextNumber({
         ...(certificateNumberChanged ? { nextNumber: certificateNumber } : {}),
         ...(certificateReuseDraft !== null ? { reuseReleased: certificateReuseDraft } : {}),
+        ...(certificateReuseFromChanged ? { reuseFromNumber: certificateReuseFrom } : {}),
       });
       setCertificateNumbers(data);
       setCertificateNumberDraft(String(data.nextNumber));
       setCertificateReuseDraft(null);
+      setCertificateReuseFromDraft(String(data.reuseFromNumber ?? 139));
       setMessage('Numeración de certificados guardada.');
       setMessageSeverity('success');
     } catch (error) {
@@ -853,6 +861,24 @@ export default function SettingsPage() {
             </Typography>
             <Divider />
           </Box>
+          <Box>
+            <FormControlLabel
+              label="Mostrar certificados solo con promedios de unidades aprobadas, sin EFSRT/PPP"
+              control={
+                <Switch
+                  checked={safeDraft.general.mostrarCertificadosSinEfsrt === true}
+                  disabled={loading || saving || !canEditSettings}
+                  onChange={(_, checked) => setDraft((current) => ({
+                    ...normalizeDraftSettings(current),
+                    general: { ...normalizeDraftSettings(current).general, mostrarCertificadosSinEfsrt: checked },
+                  }))}
+                />
+              }
+            />
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              Exige todas las notas completas y promedio de 13 o más en cada unidad. Activada, no exige EFSRT/PPP; desactivada, también exige EFSRT/PPP de 13 o más.
+            </Typography>
+          </Box>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'flex-start' }}>
             <TextField
               label="Siguiente número de código de inscripción"
@@ -870,26 +896,40 @@ export default function SettingsPage() {
             <Button
               variant="outlined"
               sx={{ whiteSpace: 'nowrap' }}
-              disabled={!canEditSettings || certificateNextNumber === null || certificateNumberInvalid || savingCertificateNumber
-                || (!certificateNumberChanged && certificateReuseDraft === null)}
+              disabled={!canEditSettings || certificateNextNumber === null || certificateNumberInvalid || certificateReuseFromInvalid || savingCertificateNumber
+                || (!certificateNumberChanged && certificateReuseDraft === null && !certificateReuseFromChanged)}
               onClick={() => void handleSaveCertificateNumber()}
             >
               {savingCertificateNumber ? 'Guardando…' : 'Guardar numeración'}
             </Button>
           </Stack>
           <Box>
-            <FormControlLabel
-              label="Usar códigos de registro institucional eliminados"
-              control={
-                <Switch
-                  checked={certificateReuseDraft ?? certificateNumbers?.reuseReleased ?? false}
-                  disabled={!canEditSettings || certificateNumbers === null || savingCertificateNumber}
-                  onChange={(_, checked) => setCertificateReuseDraft(checked === (certificateNumbers?.reuseReleased ?? false) ? null : checked)}
-                />
-              }
-            />
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ sm: 'center' }}>
+              <FormControlLabel
+                label="Usar códigos de registro institucional eliminados desde el número:"
+                control={
+                  <Switch
+                    checked={certificateReuseDraft ?? certificateNumbers?.reuseReleased ?? false}
+                    disabled={!canEditSettings || certificateNumbers === null || savingCertificateNumber}
+                    onChange={(_, checked) => setCertificateReuseDraft(checked === (certificateNumbers?.reuseReleased ?? false) ? null : checked)}
+                  />
+                }
+              />
+              <TextField
+                label="Desde el número"
+                type="number"
+                value={certificateReuseFromDraft}
+                onChange={(event) => setCertificateReuseFromDraft(event.target.value)}
+                disabled={!canEditSettings || certificateNumbers === null || savingCertificateNumber}
+                error={certificateReuseFromInvalid}
+                helperText={certificateReuseFromInvalid ? 'Ingresa un número entero positivo.' : undefined}
+                slotProps={{ htmlInput: { min: 1, max: 2_147_483_646, step: 1, inputMode: 'numeric' } }}
+                size="small"
+                sx={{ width: { xs: '100%', sm: 180 }, flexShrink: 0 }}
+              />
+            </Stack>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              Activa la opción para reutilizar los correlativos eliminados de menor a mayor. Desactivada, solo se reutiliza el tramo consecutivo del final.
+              Activada, reutiliza los correlativos eliminados desde el número indicado, incluido, de menor a mayor. Desactivada, solo se reutiliza el tramo consecutivo del final.
             </Typography>
           </Box>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'flex-start' }}>

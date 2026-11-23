@@ -1,3 +1,4 @@
+import { CERTIFICATES_WITHOUT_EFSRT_KEY } from "../reportes/certificateEligibility.js";
 import { https } from "firebase-functions/v1";
 import { getConfiguredCurrentSemestreId } from "../core/docenteSemester.js";
 import {
@@ -70,6 +71,7 @@ const DEFAULT_SETTINGS = {
   general: {
     poderOcultarProgramacionOpcionesOcupacionales: false,
     usarAvataresEnCertificadosTitulos: false,
+    mostrarCertificadosSinEfsrt: false,
     formularioMatriculaAceptaRespuestas: false,
     activarReconocimientoDni: true,
     semestreActualId: null as number | null,
@@ -113,6 +115,12 @@ const normalizeHexColor = (value: unknown, fallback = "#ffffff") => {
 };
 
 const SETTING_DEFINITIONS: Record<string, SettingDefinition> = {
+  [CERTIFICATES_WITHOUT_EFSRT_KEY]: {
+    section: "general",
+    label: "Mostrar certificados solo con promedios de unidades aprobadas, sin EFSRT/PPP",
+    valueType: "boolean",
+    defaultValue: false,
+  },
   [CURRICULAR_SESSION_RESOURCES_KEY]: {
     section: "programacionCurricular",
     label: "Mostrar recursos en sesiones",
@@ -388,6 +396,9 @@ function buildSettingsResponse(items: DataConnectAppSetting[]) {
       settings.registroAuxiliar.mostrarBotonEditarEstudiantes = item.boolValue !== false;
     }
     if (item.settingKey === HIDE_OCCUPATIONAL_CURRICULUM_KEY) settings.general.poderOcultarProgramacionOpcionesOcupacionales = item.boolValue === true;
+    if (item.settingKey === CERTIFICATES_WITHOUT_EFSRT_KEY) {
+      settings.general.mostrarCertificadosSinEfsrt = item.boolValue === true;
+    }
     if (item.settingKey === USE_AVATARS_IN_CERTIFICADOS_TITULOS_KEY) {
       settings.general.usarAvataresEnCertificadosTitulos = Boolean(item.boolValue);
     }
@@ -603,7 +614,7 @@ export const getCertificateNextNumber = https.onCall(async (_data, context) => {
 
 export const saveCertificateNextNumber = https.onCall(async (data, context) => {
   await requirePermission(context, "settings", "edit");
-  return updateCertificateNumberSettings(data?.nextNumber, data?.reuseReleased);
+  return updateCertificateNumberSettings(data?.nextNumber, data?.reuseReleased, data?.reuseFromNumber);
 });
 
 export async function updateCertificateIssueDate(semestreId: unknown, fecha: unknown) {
@@ -642,6 +653,7 @@ export const saveAppSettings = https.onCall(async (data, context) => {
   const general = data?.general as Record<string, unknown> | undefined;
   const formularioMatricula = data?.formularioMatricula as Record<string, unknown> | undefined;
   const visualizaciones = data?.visualizaciones as Record<string, unknown> | undefined;
+  const mostrarCertificadosSinEfsrt = general?.mostrarCertificadosSinEfsrt === true;
   const usarAvataresEnCertificadosTitulos = Boolean(
     general?.usarAvataresEnCertificadosTitulos,
   );
@@ -694,6 +706,7 @@ export const saveAppSettings = https.onCall(async (data, context) => {
     : semestresConsultaIds;
 
   try {
+    await upsertSetting(CERTIFICATES_WITHOUT_EFSRT_KEY, mostrarCertificadosSinEfsrt);
     await upsertSetting(CURRICULAR_CONTENT_PREVIEW_KEY, mostrarContenidoEnCuadroEmergente);
     await upsertSetting(CURRICULAR_EMPLOYABILITY_COLOR_KEY, usarOtroColorCompetenciasEmpleabilidad);
     await upsertSetting(CURRICULAR_SESSION_RESOURCES_KEY, mostrarRecursosEnSesiones);
@@ -790,6 +803,7 @@ export const saveAppSettings = https.onCall(async (data, context) => {
         general: {
           poderOcultarProgramacionOpcionesOcupacionales,
           usarAvataresEnCertificadosTitulos,
+          mostrarCertificadosSinEfsrt,
           activarReconocimientoDni,
           formularioMatriculaAceptaRespuestas: formularioMatriculaAceptaRespuestas,
           semestreActualId,

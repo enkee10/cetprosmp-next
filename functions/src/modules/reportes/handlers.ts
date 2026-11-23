@@ -1,3 +1,4 @@
+import { approvedCertificateCandidates, CERTIFICATES_WITHOUT_EFSRT_KEY } from "./certificateEligibility.js";
 import { nombreConTransitabilidad } from '../core/transitabilidad.js';
 import { dayInAppTimeZone, getDateOnlyParts, toDateOnlyInputValue, ageInAppTimeZone } from "../../shared/appDateTime.js";
 import { nombreGrupoDocumento, nombreTurnoDocumento } from "../../shared/turnoDocumento.js";
@@ -294,7 +295,7 @@ type CertificadoTituloRow = {
   dni: string;
   grupoModuloNombre: string;
   moduloNombre: string;
-  promedioFinal: number;
+  promedioFinal: number | null;
   codigoInstitucional: string | null;
 };
 
@@ -659,7 +660,7 @@ const UPDATE_REGISTRO_ACADEMICO_DOCUMENTO_MUTATION = `
 `;
 
 const CERTIFICADOS_TITULOS_OPTIONS_QUERY = `
-  query CertificadosTitulosOptions {
+  query CertificadosTitulosOptions($sinEfsrt: Boolean!) {
     semestres(limit: 200) {
       id
       titulo
@@ -674,7 +675,28 @@ const CERTIFICADOS_TITULOS_OPTIONS_QUERY = `
       promedioFinal
       grupoModuloId
       moduloEstudianteId
-      grupoModulo {
+      grupoModulo { ...CertificateOptionGroup }
+      moduloEstudiante { ...CertificateOptionStudent }
+    }
+    modulosEstudiantes(limit:20000) @include(if:$sinEfsrt) {
+      ...CertificateOptionStudent
+      grupoModuloId
+      grupoModulo { ...CertificateOptionGroup }
+    }
+    certificadoTituloDocumentos(limit: 20000) {
+      id
+      tipoDocumento
+      semestreCodigo
+      grupoModuloId
+      moduloEstudianteId
+      pdfPath
+      pdfUrl
+      excelPath
+      excelUrl
+      generadoEn
+    }
+  }
+  fragment CertificateOptionGroup on GrupoModulo {
         id
         transitabilidad
         numeroTransitabilidad
@@ -709,8 +731,8 @@ const CERTIFICADOS_TITULOS_OPTIONS_QUERY = `
             }
           }
         }
-      }
-      moduloEstudiante {
+  }
+  fragment CertificateOptionStudent on ModuloEstudiante {
         id
         matriculaId
         registros: certificados_on_moduloEstudiante {
@@ -731,20 +753,6 @@ const CERTIFICADOS_TITULOS_OPTIONS_QUERY = `
             dni
           }
         }
-      }
-    }
-    certificadoTituloDocumentos(limit: 20000) {
-      id
-      tipoDocumento
-      semestreCodigo
-      grupoModuloId
-      moduloEstudianteId
-      pdfPath
-      pdfUrl
-      excelPath
-      excelUrl
-      generadoEn
-    }
   }
 `;
 
@@ -1013,7 +1021,7 @@ function certificadoGrupoModuloLabel(grupoModulo: ReporteGrupoModuloOption) {
 
 function certificadoFileName(data: ReporteDocumentoData, student: ReporteEstudiante) {
   const group = [semestreCodigo(semestreTitulo(data)), grupoModuloDisplayName(data.grupoModulo)].filter(Boolean).join(" ");
-  return cleanText(`${group} - ${getStudentName(student)}`.replace(/[<>:"/\\|?*\u0000-\u001f\u007f]/g, " "))
+  return cleanText(`certificado ${group} - ${getStudentName(student)}`.replace(/[<>:"/\\|?*\u0000-\u001f\u007f]/g, " "))
     .replace(/[. ]+$/, "");
 }
 
@@ -2834,7 +2842,7 @@ function buildCertificateTokens(
   data: ReporteDocumentoData,
   student: ReporteEstudiante,
   codigoInstitucional: string,
-  notaEfsrt: number,
+  notaEfsrt: number | null | undefined,
 ) {
   const turno = getTurnoDocumentName(data.grupoModulo);
 
@@ -2859,6 +2867,7 @@ function buildCertificateTokens(
 }
 
 async function buildCertificadoTituloRows() {
+  const sinEfsrt = await getBooleanAppSetting(CERTIFICATES_WITHOUT_EFSRT_KEY, false);
   const [response, semestreConsultaIds] = await Promise.all([
     dataConnect.executeGraphql<{
     semestres: ReporteSemestre[];
@@ -2888,7 +2897,13 @@ async function buildCertificadoTituloRows() {
       } | null;
     }>;
     certificadoTituloDocumentos: CertificadoTituloDocumento[];
-  }, Record<string, never>>(CERTIFICADOS_TITULOS_OPTIONS_QUERY),
+    modulosEstudiantes?: Array<{
+      id: number; matriculaId: number; grupoModuloId?: number | null;
+      grupoModulo: ReporteGrupoModuloOption | null;
+      registros?: Array<{ grupoModuloId: number; codigoInstitucional: string }>;
+      matricula?: ReporteEstudiante["matricula"];
+    }>;
+  }, { sinEfsrt: boolean }>(CERTIFICADOS_TITULOS_OPTIONS_QUERY, { variables: { sinEfsrt } }),
     getConfiguredSemestreConsultaIds(),
   ]);
   const allowedSemestreIds = semestreConsultaIds.length > 0 ? new Set(semestreConsultaIds) : null;
@@ -2902,11 +2917,27 @@ async function buildCertificadoTituloRows() {
     moduloNombre: string;
   }>();
 
-  for (const item of response.data.efsrtPppEstudiantes ?? []) {
-    const promedioFinal = Number(item.promedioFinal);
-    if (!Number.isFinite(promedioFinal) || promedioFinal < 13) continue;
-    if (!item.grupoModulo || !item.moduloEstudiante || item.moduloEstudiante.matricula?.archivado) continue;
-
+  const candidates = [...(response.data.efsrtPppEstudiantes ?? [])];
+  const existingPairs = new Set(candidates.map(item => `${item.grupoModuloId}:${item.moduloEstudianteId}`));
+  for (const student of response.data.modulosEstudiantes ?? []) {
+    if (!student.grupoModuloId || !student.grupoModulo || existingPairs.has(`${student.grupoModuloId}:${student.id}`)) continue;
+    candidates.push({ promedioFinal: null, grupoModuloId: student.grupoModuloId, moduloEstudianteId: student.id,
+      grupoModulo: student.grupoModulo, moduloEstudiante: student });
+  }
+  const eligibleCandidates = candidates.filter(item => {
+    if (!item.grupoModulo?.modulo || !item.moduloEstudiante || item.moduloEstudiante.matricula?.archivado) return false;
+    if (!item.grupoModulo.grupo?.semestreId) return false;
+    if (allowedSemestreIds && !allowedSemestreIds.has(Number(item.grupoModulo.grupo?.semestreId))) return false;
+    return sinEfsrt || (typeof item.promedioFinal === "number" && Number.isFinite(item.promedioFinal) && item.promedioFinal >= 13);
+  });
+  const approved = await approvedCertificateCandidates(eligibleCandidates.map(item => ({
+    grupoModuloId: item.grupoModuloId, moduloId: item.grupoModulo!.modulo!.id,
+    semestreId: item.grupoModulo!.grupo?.semestreId ?? 0, matriculaId: item.moduloEstudiante!.matriculaId,
+    occupational: usesOpcionOcupacionalRules(item.grupoModulo!.modulo?.plan?.carrera?.tipoCarrera?.nombre),
+  })));
+  for (const item of eligibleCandidates) {
+    if (!item.grupoModulo || !item.moduloEstudiante || !approved.has(`${item.grupoModuloId}:${item.moduloEstudiante.matriculaId}`)) continue;
+    const promedioFinal = item.promedioFinal ?? null;
     const grupoModulo = item.grupoModulo;
     const semestreId = grupoModulo.grupo?.semestreId ?? null;
     if (allowedSemestreIds && !allowedSemestreIds.has(Number(semestreId))) continue;
@@ -2975,8 +3006,17 @@ async function generateCertificadoPlanEstudios(templateBuffer: Buffer, input: {
     throw new https.HttpsError("not-found", "No se encontro el estudiante en el grupo-modulo.");
   }
   const promedioFinal = efsrtPromedioMap(data).get(input.moduloEstudianteId);
-  if (typeof promedioFinal !== "number" || !Number.isFinite(promedioFinal) || promedioFinal < 13) {
+  const sinEfsrt = await getBooleanAppSetting(CERTIFICATES_WITHOUT_EFSRT_KEY, false);
+  if (!sinEfsrt && (typeof promedioFinal !== "number" || !Number.isFinite(promedioFinal) || promedioFinal < 13)) {
     throw new https.HttpsError("failed-precondition", "El estudiante no tiene promedio aprobatorio para generar certificado.");
+  }
+
+  const approved = await approvedCertificateCandidates([{
+    grupoModuloId: input.grupoModuloId, moduloId: data.grupoModulo.moduloId,
+    semestreId: data.grupoModulo.grupo?.semestreId ?? 0, matriculaId: student.matriculaId, occupational: data.opcionOcupacional,
+  }]);
+  if (!approved.has(`${input.grupoModuloId}:${student.matriculaId}`)) {
+    throw new https.HttpsError("failed-precondition", "El estudiante debe tener todas las notas completas y promedio de 13 o más en cada unidad didáctica.");
   }
 
   const planId = data.grupoModulo.modulo?.plan?.id;
@@ -3861,7 +3901,7 @@ export const listReporteDocumentosOptions = https.onCall(async (_data, context) 
   }
 });
 
-export const listCertificadosTitulosOptions = https.onCall(async (_data, context) => {
+export const listCertificadosTitulosOptions = runWith({ timeoutSeconds: 180, memory: "512MB" }).https.onCall(async (_data, context) => {
   await requirePermission(context, "certificados-titulos", "view");
 
   try {
